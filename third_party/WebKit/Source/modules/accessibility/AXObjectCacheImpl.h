@@ -103,6 +103,9 @@ public:
     void handleLayoutComplete(RenderObject*) override;
     void handleScrolledToAnchor(const Node* anchorNode) override;
 
+    virtual const AtomicString& computedRoleForNode(Node*) override;
+    virtual String computedNameForNode(Node*) override;
+
     // Returns the root object for the entire document.
     AXObject* rootObject();
 

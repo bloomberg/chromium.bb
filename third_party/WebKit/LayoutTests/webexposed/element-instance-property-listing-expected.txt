@@ -18,6 +18,8 @@ namespace http://www.w3.org/1999/xhtml
     property clientLeft
     property clientTop
     property clientWidth
+    property computedName
+    property computedRole
     property contentEditable
     property contextMenu
     property dataset
@@ -913,6 +915,8 @@ namespace http://www.w3.org/2000/svg
     property clientLeft
     property clientTop
     property clientWidth
+    property computedName
+    property computedRole
     property contentEditable
     property contextMenu
     property dataset

@@ -40,4 +40,34 @@ AXObjectCache::~AXObjectCache()
 {
 }
 
+ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
+    : m_document(document)
+    , m_cache(0)
+{
+    if (AXObjectCache* existingCache = document.axObjectCache()) {
+        m_cache = existingCache;
+        m_isScoped = false;
+    } else {
+        m_isScoped = true;
+        m_cache = AXObjectCache::create(m_document);
+    }
+}
+
+ScopedAXObjectCache::~ScopedAXObjectCache()
+{
+    if (m_isScoped)
+        delete m_cache;
+}
+
+AXObjectCache* ScopedAXObjectCache::get()
+{
+    ASSERT(m_cache);
+    return m_cache;
+}
+
+AXObjectCache* ScopedAXObjectCache::operator->()
+{
+    return get();
+}
+
 } // namespace blink

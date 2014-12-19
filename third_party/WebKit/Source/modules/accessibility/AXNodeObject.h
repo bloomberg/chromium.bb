@@ -155,11 +155,10 @@ protected:
 
     // Accessibility Text.
     virtual String textUnderElement() const override;
-
-    // Accessibility Text - (To be deprecated).
     virtual String accessibilityDescription() const override;
     virtual String title() const override;
     virtual String helpText() const override;
+    virtual String computedName() const override;
 
     // Location and click point in frame-relative coordinates.
     virtual LayoutRect elementRect() const override;

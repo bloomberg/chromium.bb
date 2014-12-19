@@ -199,6 +199,9 @@ public:
     PassRefPtrWillBeRawPtr<ClientRectList> getClientRects();
     PassRefPtrWillBeRawPtr<ClientRect> getBoundingClientRect();
 
+    const AtomicString& computedRole();
+    String computedName();
+
     // Returns the absolute bounding box translated into screen coordinates:
     IntRect screenRect() const;
 

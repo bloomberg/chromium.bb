@@ -119,8 +119,26 @@ public:
     virtual void handleLayoutComplete(RenderObject*) = 0;
     virtual void handleScrolledToAnchor(const Node* anchorNode) = 0;
 
+    virtual const AtomicString& computedRoleForNode(Node*) = 0;
+    virtual String computedNameForNode(Node*) = 0;
+
 protected:
     AXObjectCache();
+};
+
+class ScopedAXObjectCache {
+    WTF_MAKE_NONCOPYABLE(ScopedAXObjectCache);
+public:
+    explicit ScopedAXObjectCache(Document&);
+    ~ScopedAXObjectCache();
+
+    AXObjectCache* get();
+    AXObjectCache* operator->();
+
+private:
+    Document& m_document;
+    AXObjectCache* m_cache;
+    bool m_isScoped;
 };
 
 }

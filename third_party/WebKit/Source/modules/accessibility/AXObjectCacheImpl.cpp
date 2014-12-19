@@ -1074,6 +1074,50 @@ void AXObjectCacheImpl::handleScrollPositionChanged(RenderObject* renderObject)
     postPlatformNotification(getOrCreate(renderObject), AXScrollPositionChanged);
 }
 
+const AtomicString& AXObjectCacheImpl::computedRoleForNode(Node* node)
+{
+    AXObject* obj = getOrCreate(node);
+    if (!obj)
+        return AXObject::roleName(UnknownRole);
+    return AXObject::roleName(obj->roleValue());
+}
+
+String AXObjectCacheImpl::computedNameForNode(Node* node)
+{
+    AXObject* obj = getOrCreate(node);
+    if (!obj)
+        return "";
+
+    String title = obj->title();
+
+    String titleUIText;
+    if (title.isEmpty()) {
+        AXObject* titleUIElement = obj->titleUIElement();
+        if (titleUIElement) {
+            titleUIText = titleUIElement->textUnderElement();
+            if (!titleUIText.isEmpty())
+                return titleUIText;
+        }
+    }
+
+    String description = obj->accessibilityDescription();
+    if (!description.isEmpty())
+        return description;
+
+    if (!title.isEmpty())
+        return title;
+
+    String placeholder;
+    if (isHTMLInputElement(node)) {
+        HTMLInputElement* element = toHTMLInputElement(node);
+        placeholder = element->strippedPlaceholder();
+        if (!placeholder.isEmpty())
+            return placeholder;
+    }
+
+    return String();
+}
+
 void AXObjectCacheImpl::setCanvasObjectBounds(Element* element, const LayoutRect& rect)
 {
     AXObject* obj = getOrCreate(element);

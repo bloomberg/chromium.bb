@@ -117,6 +117,10 @@ interface Element : Node {
 
     [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
 
+    // Experimental accessibility API
+    [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
+    [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedName;
+
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;

@@ -71,7 +71,8 @@ enum WebAXEvent {
 // These values must match blink::AccessibilityRole values.
 // Enforced in AssertMatchingEnums.cpp.
 enum WebAXRole {
-    WebAXRoleAlertDialog = 1,
+    WebAXRoleUnknown = 0,
+    WebAXRoleAlertDialog,
     WebAXRoleAlert,
     WebAXRoleAnnotation,
     WebAXRoleApplication,
@@ -181,7 +182,6 @@ enum WebAXRole {
     WebAXRoleTreeGrid,
     WebAXRoleTreeItem,
     WebAXRoleTree,
-    WebAXRoleUnknown,
     WebAXRoleUserInterfaceTooltip,
     WebAXRoleWebArea,
     WebAXRoleWindow,

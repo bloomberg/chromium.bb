@@ -40,6 +40,7 @@
 namespace blink {
 
 class AXObject;
+class AXObjectCache;
 class AXObjectCacheImpl;
 class Element;
 class FrameView;
@@ -52,7 +53,8 @@ class Widget;
 typedef unsigned AXID;
 
 enum AccessibilityRole {
-    AlertDialogRole = 1,
+    UnknownRole = 0,
+    AlertDialogRole,
     AlertRole,
     AnnotationRole,
     ApplicationRole,
@@ -162,10 +164,10 @@ enum AccessibilityRole {
     TreeGridRole,
     TreeItemRole,
     TreeRole,
-    UnknownRole,
     UserInterfaceTooltipRole,
     WebAreaRole,
     WindowRole,
+    NumRoles
 };
 
 enum AccessibilityTextSource {
@@ -490,11 +492,12 @@ public:
 
     // Accessibility Text.
     virtual String textUnderElement() const { return String(); }
-
-    // Accessibility Text - (To be deprecated).
     virtual String accessibilityDescription() const { return String(); }
     virtual String title() const { return String(); }
     virtual String helpText() const { return String(); }
+    // Returns result of Accessible Name Calculation algorithm
+    // TODO(aboxhall): ensure above and replace title() with this logic
+    virtual String computedName() const { return String(); }
 
     // Location and click point in frame-relative coordinates.
     virtual LayoutRect elementRect() const { return m_explicitElementRect; }
@@ -589,6 +592,7 @@ public:
     static bool isARIAInput(AccessibilityRole);
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
     static IntRect boundingBoxForQuads(RenderObject*, const Vector<FloatQuad>&);
+    static const AtomicString& roleName(AccessibilityRole);
 
 protected:
     AXID m_id;

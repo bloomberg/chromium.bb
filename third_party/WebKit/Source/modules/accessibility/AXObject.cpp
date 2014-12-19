@@ -49,86 +49,101 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
 typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
 
 struct RoleEntry {
-    String ariaRole;
+    const char* ariaRole;
     AccessibilityRole webcoreRole;
+};
+
+const RoleEntry roles[] = {
+    { "alert", AlertRole },
+    { "alertdialog", AlertDialogRole },
+    { "application", ApplicationRole },
+    { "article", ArticleRole },
+    { "banner", BannerRole },
+    { "button", ButtonRole },
+    { "checkbox", CheckBoxRole },
+    { "complementary", ComplementaryRole },
+    { "contentinfo", ContentInfoRole },
+    { "dialog", DialogRole },
+    { "directory", DirectoryRole },
+    { "grid", GridRole },
+    { "gridcell", CellRole },
+    { "columnheader", ColumnHeaderRole },
+    { "combobox", ComboBoxRole },
+    { "definition", DefinitionRole },
+    { "document", DocumentRole },
+    { "rowheader", RowHeaderRole },
+    { "form", FormRole },
+    { "group", GroupRole },
+    { "heading", HeadingRole },
+    { "img", ImageRole },
+    { "link", LinkRole },
+    { "list", ListRole },
+    { "listitem", ListItemRole },
+    { "listbox", ListBoxRole },
+    { "log", LogRole },
+    { "main", MainRole },
+    { "marquee", MarqueeRole },
+    { "math", MathRole },
+    { "menu", MenuRole },
+    { "menubar", MenuBarRole },
+    { "menuitem", MenuItemRole },
+    { "menuitemcheckbox", MenuItemCheckBoxRole },
+    { "menuitemradio", MenuItemRadioRole },
+    { "note", NoteRole },
+    { "navigation", NavigationRole },
+    { "none", NoneRole },
+    { "option", ListBoxOptionRole },
+    { "presentation", PresentationalRole },
+    { "progressbar", ProgressIndicatorRole },
+    { "radio", RadioButtonRole },
+    { "radiogroup", RadioGroupRole },
+    { "region", RegionRole },
+    { "row", RowRole },
+    { "scrollbar", ScrollBarRole },
+    { "search", SearchRole },
+    { "separator", SplitterRole },
+    { "slider", SliderRole },
+    { "spinbutton", SpinButtonRole },
+    { "status", StatusRole },
+    { "tab", TabRole },
+    { "tablist", TabListRole },
+    { "tabpanel", TabPanelRole },
+    { "text", StaticTextRole },
+    { "textbox", TextAreaRole },
+    { "timer", TimerRole },
+    { "toolbar", ToolbarRole },
+    { "tooltip", UserInterfaceTooltipRole },
+    { "tree", TreeRole },
+    { "treegrid", TreeGridRole },
+    { "treeitem", TreeItemRole }
 };
 
 static ARIARoleMap* createARIARoleMap()
 {
-    const RoleEntry roles[] = {
-        { "alert", AlertRole },
-        { "alertdialog", AlertDialogRole },
-        { "application", ApplicationRole },
-        { "article", ArticleRole },
-        { "banner", BannerRole },
-        { "button", ButtonRole },
-        { "checkbox", CheckBoxRole },
-        { "complementary", ComplementaryRole },
-        { "contentinfo", ContentInfoRole },
-        { "dialog", DialogRole },
-        { "directory", DirectoryRole },
-        { "grid", GridRole },
-        { "gridcell", CellRole },
-        { "columnheader", ColumnHeaderRole },
-        { "combobox", ComboBoxRole },
-        { "definition", DefinitionRole },
-        { "document", DocumentRole },
-        { "rowheader", RowHeaderRole },
-        { "form", FormRole },
-        { "group", GroupRole },
-        { "heading", HeadingRole },
-        { "img", ImageRole },
-        { "link", LinkRole },
-        { "list", ListRole },
-        { "listitem", ListItemRole },
-        { "listbox", ListBoxRole },
-        { "log", LogRole },
-        // "option" isn't here because it may map to different roles depending on the parent element's role
-        { "main", MainRole },
-        { "marquee", MarqueeRole },
-        { "math", MathRole },
-        { "menu", MenuRole },
-        { "menubar", MenuBarRole },
-        { "menuitem", MenuItemRole },
-        { "menuitemcheckbox", MenuItemCheckBoxRole },
-        { "menuitemradio", MenuItemRadioRole },
-        { "note", NoteRole },
-        { "navigation", NavigationRole },
-        { "none", NoneRole },
-        { "option", ListBoxOptionRole },
-        { "presentation", PresentationalRole },
-        { "progressbar", ProgressIndicatorRole },
-        { "radio", RadioButtonRole },
-        { "radiogroup", RadioGroupRole },
-        { "region", RegionRole },
-        { "row", RowRole },
-        { "scrollbar", ScrollBarRole },
-        { "search", SearchRole },
-        { "separator", SplitterRole },
-        { "slider", SliderRole },
-        { "spinbutton", SpinButtonRole },
-        { "status", StatusRole },
-        { "tab", TabRole },
-        { "tablist", TabListRole },
-        { "tabpanel", TabPanelRole },
-        { "text", StaticTextRole },
-        { "textbox", TextAreaRole },
-        { "timer", TimerRole },
-        { "toolbar", ToolbarRole },
-        { "tooltip", UserInterfaceTooltipRole },
-        { "tree", TreeRole },
-        { "treegrid", TreeGridRole },
-        { "treeitem", TreeItemRole }
-    };
     ARIARoleMap* roleMap = new ARIARoleMap;
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(roles); ++i)
         roleMap->set(roles[i].ariaRole, roles[i].webcoreRole);
     return roleMap;
 }
+
+static Vector<AtomicString>* createRoleNameVector()
+{
+    Vector<AtomicString>* roleNameVector = new Vector<AtomicString>(NumRoles);
+    for (int i = 0; i < NumRoles; i++)
+        (*roleNameVector)[i] = nullAtom;
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(roles); ++i)
+        (*roleNameVector)[roles[i].webcoreRole] = AtomicString(roles[i].ariaRole);
+
+    return roleNameVector;
+}
+
+} // namespace
 
 AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     : m_id(0)
@@ -948,6 +963,13 @@ AccessibilityRole AXObject::buttonRoleType() const
     // type.
 
     return ButtonRole;
+}
+
+const AtomicString& AXObject::roleName(AccessibilityRole role)
+{
+    static const Vector<AtomicString>* roleNameVector = createRoleNameVector();
+
+    return roleNameVector->at(role);
 }
 
 } // namespace blink

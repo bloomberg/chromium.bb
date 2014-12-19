@@ -1423,6 +1423,40 @@ String AXNodeObject::helpText() const
     return String();
 }
 
+String AXNodeObject::computedName() const
+{
+    String title = this->title();
+
+    String titleUIText;
+    if (title.isEmpty()) {
+        AXObject* titleUIElement = this->titleUIElement();
+        if (titleUIElement) {
+            titleUIText = titleUIElement->textUnderElement();
+            if (!titleUIText.isEmpty())
+                return titleUIText;
+        }
+    }
+
+    String description = accessibilityDescription();
+    if (!description.isEmpty())
+        return description;
+
+    if (!title.isEmpty())
+        return title;
+
+    String placeholder;
+    if (isHTMLInputElement(node())) {
+        HTMLInputElement* element = toHTMLInputElement(node());
+        placeholder = element->strippedPlaceholder();
+        if (!placeholder.isEmpty())
+            return placeholder;
+    }
+
+    return String();
+}
+
+
+
 LayoutRect AXNodeObject::elementRect() const
 {
     // First check if it has a custom rect, for example if this element is tied to a canvas path.

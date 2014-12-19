@@ -968,6 +968,20 @@ IntRect Element::screenRect() const
     return document().view()->contentsToScreen(renderer()->absoluteBoundingBoxRectIgnoringTransforms());
 }
 
+const AtomicString& Element::computedRole()
+{
+    document().updateLayoutIgnorePendingStylesheets();
+    ScopedAXObjectCache cache(document());
+    return cache->computedRoleForNode(this);
+}
+
+String Element::computedName()
+{
+    document().updateLayoutIgnorePendingStylesheets();
+    ScopedAXObjectCache cache(document());
+    return cache->computedNameForNode(this);
+}
+
 const AtomicString& Element::getAttribute(const AtomicString& localName) const
 {
     if (!elementData())
