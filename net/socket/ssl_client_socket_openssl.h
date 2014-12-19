@@ -187,8 +187,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   bool transport_send_busy_;
   bool transport_recv_busy_;
 
-  scoped_refptr<DrainableIOBuffer> send_buffer_;
-  scoped_refptr<IOBuffer> recv_buffer_;
+  // Buffers which are shared by BoringSSL and SSLClientSocketOpenSSL.
+  // GrowableIOBuffer is used to keep ownership and setting offset.
+  scoped_refptr<GrowableIOBuffer> send_buffer_;
+  scoped_refptr<GrowableIOBuffer> recv_buffer_;
 
   CompletionCallback user_connect_callback_;
   CompletionCallback user_read_callback_;

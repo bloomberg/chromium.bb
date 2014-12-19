@@ -68,6 +68,9 @@ const int kNoPendingReadResult = 1;
 // the server supports NPN, choosing "http/1.1" is the best answer.
 const char kDefaultSupportedNPNProtocol[] = "http/1.1";
 
+// Default size of the internal BoringSSL buffers.
+const int KDefaultOpenSSLBufferSize = 17 * 1024;
+
 void FreeX509Stack(STACK_OF(X509)* ptr) {
   sk_X509_pop_free(ptr, X509_free);
 }
@@ -728,9 +731,19 @@ int SSLClientSocketOpenSSL::Init() {
   trying_cached_session_ = context->session_cache()->SetSSLSessionWithKey(
       ssl_, GetSessionCacheKey());
 
+  send_buffer_ = new GrowableIOBuffer();
+  send_buffer_->SetCapacity(KDefaultOpenSSLBufferSize);
+  recv_buffer_ = new GrowableIOBuffer();
+  recv_buffer_->SetCapacity(KDefaultOpenSSLBufferSize);
+
   BIO* ssl_bio = NULL;
-  // 0 => use default buffer sizes.
-  if (!BIO_new_bio_pair(&ssl_bio, 0, &transport_bio_, 0))
+
+  // SSLClientSocketOpenSSL retains ownership of the BIO buffers.
+  if (!BIO_new_bio_pair_external_buf(
+          &ssl_bio, send_buffer_->capacity(),
+          reinterpret_cast<uint8_t*>(send_buffer_->data()), &transport_bio_,
+          recv_buffer_->capacity(),
+          reinterpret_cast<uint8_t*>(recv_buffer_->data())))
     return ERR_UNEXPECTED;
   DCHECK(ssl_bio);
   DCHECK(transport_bio_);
@@ -1545,20 +1558,20 @@ int SSLClientSocketOpenSSL::BufferSend(void) {
   if (transport_send_busy_)
     return ERR_IO_PENDING;
 
-  if (!send_buffer_.get()) {
-    // Get a fresh send buffer out of the send BIO.
-    size_t max_read = BIO_pending(transport_bio_);
-    if (!max_read)
-      return 0;  // Nothing pending in the OpenSSL write BIO.
-    send_buffer_ = new DrainableIOBuffer(new IOBuffer(max_read), max_read);
-    int read_bytes = BIO_read(transport_bio_, send_buffer_->data(), max_read);
-    DCHECK_GT(read_bytes, 0);
-    CHECK_EQ(static_cast<int>(max_read), read_bytes);
-  }
+  size_t buffer_read_offset;
+  uint8_t* read_buf;
+  size_t max_read;
+  int status = BIO_zero_copy_get_read_buf(transport_bio_, &read_buf,
+                                          &buffer_read_offset, &max_read);
+  DCHECK_EQ(status, 1);  // Should never fail.
+  if (!max_read)
+    return 0;  // Nothing pending in the OpenSSL write BIO.
+  CHECK_EQ(read_buf, reinterpret_cast<uint8_t*>(send_buffer_->StartOfBuffer()));
+  CHECK_LT(buffer_read_offset, static_cast<size_t>(send_buffer_->capacity()));
+  send_buffer_->set_offset(buffer_read_offset);
 
   int rv = transport_->socket()->Write(
-      send_buffer_.get(),
-      send_buffer_->BytesRemaining(),
+      send_buffer_.get(), max_read,
       base::Bind(&SSLClientSocketOpenSSL::BufferSendComplete,
                  base::Unretained(this)));
   if (rv == ERR_IO_PENDING) {
@@ -1591,11 +1604,21 @@ int SSLClientSocketOpenSSL::BufferRecv(void) {
   // fill |transport_bio_| is issued. As long as an SSL client socket cannot
   // be gracefully shutdown (via SSL close alerts) and re-used for non-SSL
   // traffic, this over-subscribed Read()ing will not cause issues.
-  size_t max_write = BIO_ctrl_get_write_guarantee(transport_bio_);
+
+  size_t buffer_write_offset;
+  uint8_t* write_buf;
+  size_t max_write;
+  int status = BIO_zero_copy_get_write_buf(transport_bio_, &write_buf,
+                                           &buffer_write_offset, &max_write);
+  DCHECK_EQ(status, 1);  // Should never fail.
   if (!max_write)
     return ERR_IO_PENDING;
 
-  recv_buffer_ = new IOBuffer(max_write);
+  CHECK_EQ(write_buf,
+           reinterpret_cast<uint8_t*>(recv_buffer_->StartOfBuffer()));
+  CHECK_LT(buffer_write_offset, static_cast<size_t>(recv_buffer_->capacity()));
+
+  recv_buffer_->set_offset(buffer_write_offset);
   int rv = transport_->socket()->Read(
       recv_buffer_.get(),
       max_write,
@@ -1610,7 +1633,6 @@ int SSLClientSocketOpenSSL::BufferRecv(void) {
 }
 
 void SSLClientSocketOpenSSL::BufferSendComplete(int result) {
-  transport_send_busy_ = false;
   TransportWriteComplete(result);
   OnSendComplete(result);
 }
@@ -1622,18 +1644,18 @@ void SSLClientSocketOpenSSL::BufferRecvComplete(int result) {
 
 void SSLClientSocketOpenSSL::TransportWriteComplete(int result) {
   DCHECK(ERR_IO_PENDING != result);
+  int bytes_written = 0;
   if (result < 0) {
     // Record the error. Save it to be reported in a future read or write on
     // transport_bio_'s peer.
     transport_write_error_ = result;
-    send_buffer_ = NULL;
   } else {
-    DCHECK(send_buffer_.get());
-    send_buffer_->DidConsume(result);
-    DCHECK_GE(send_buffer_->BytesRemaining(), 0);
-    if (send_buffer_->BytesRemaining() <= 0)
-      send_buffer_ = NULL;
+    bytes_written = result;
   }
+  DCHECK_GE(send_buffer_->RemainingCapacity(), bytes_written);
+  int ret = BIO_zero_copy_get_read_buf_done(transport_bio_, bytes_written);
+  DCHECK_EQ(1, ret);
+  transport_send_busy_ = false;
 }
 
 int SSLClientSocketOpenSSL::TransportReadComplete(int result) {
@@ -1642,18 +1664,18 @@ int SSLClientSocketOpenSSL::TransportReadComplete(int result) {
   // does not report success.
   if (result == 0)
     result = ERR_CONNECTION_CLOSED;
+  int bytes_read = 0;
   if (result < 0) {
     DVLOG(1) << "TransportReadComplete result " << result;
     // Received an error. Save it to be reported in a future read on
     // transport_bio_'s peer.
     transport_read_error_ = result;
   } else {
-    DCHECK(recv_buffer_.get());
-    int ret = BIO_write(transport_bio_, recv_buffer_->data(), result);
-    // A write into a memory BIO should always succeed.
-    DCHECK_EQ(result, ret);
+    bytes_read = result;
   }
-  recv_buffer_ = NULL;
+  DCHECK_GE(recv_buffer_->RemainingCapacity(), bytes_read);
+  int ret = BIO_zero_copy_get_write_buf_done(transport_bio_, bytes_read);
+  DCHECK_EQ(1, ret);
   transport_recv_busy_ = false;
   return result;
 }
