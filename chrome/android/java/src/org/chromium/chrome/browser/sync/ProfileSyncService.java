@@ -137,26 +137,6 @@ public class ProfileSyncService {
         syncStateChanged();
     }
 
-    /**
-     * Signs in to sync, using the existing auth token.
-     */
-    @Deprecated
-    public void syncSignIn(String account) {
-        syncSignIn();
-    }
-
-    /**
-     * Signs in to sync.
-     *
-     * @param account   The username of the account that is signing in.
-     * @param authToken Not used. ProfileSyncService switched to OAuth2 tokens.
-     * Deprecated. Use syncSignIn instead.
-     */
-    @Deprecated
-    public void syncSignInWithAuthToken(String account, String authToken) {
-        syncSignIn(account);
-    }
-
     // TODO(maxbogue): Remove once downstream use is removed. See http://crbug.com/259559.
     // Callers should use InvalidationService.requestSyncFromNativeChromeForAllTypes() instead.
     @Deprecated
