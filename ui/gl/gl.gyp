@@ -210,6 +210,8 @@
             'gl_context_glx.h',
             'gl_glx_api_implementation.cc',
             'gl_glx_api_implementation.h',
+            'gl_image_glx.cc',
+            'gl_image_glx.h',
             'gl_surface_glx.cc',
             'gl_surface_glx.h',
             'gl_egl_api_implementation.cc',

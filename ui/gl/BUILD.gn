@@ -163,6 +163,8 @@ component("gl") {
       "gl_context_x11.cc",
       "gl_glx_api_implementation.cc",
       "gl_glx_api_implementation.h",
+      "gl_image_glx.cc",
+      "gl_image_glx.h",
       "gl_implementation_x11.cc",
       "gl_surface_glx.cc",
       "gl_surface_glx.h",
