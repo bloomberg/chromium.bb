@@ -254,7 +254,8 @@ class WallpaperManagerPolicyTest
   }
 
   // Obtain WallpaperInfo for |user_number| from WallpaperManager.
-  void GetUserWallpaperInfo(int user_number, WallpaperInfo* wallpaper_info) {
+  void GetUserWallpaperInfo(int user_number,
+                            wallpaper::WallpaperInfo* wallpaper_info) {
     WallpaperManager::Get()->
         GetUserWallpaperInfo(kTestUsers[user_number], wallpaper_info);
   }
@@ -280,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // user.  Also verifies that after the policy has been cleared, the wallpaper
 // reverts to default.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
-  WallpaperInfo info;
+  wallpaper::WallpaperInfo info;
   LoginUser(kTestUsers[0]);
   base::RunLoop().RunUntilIdle();
 

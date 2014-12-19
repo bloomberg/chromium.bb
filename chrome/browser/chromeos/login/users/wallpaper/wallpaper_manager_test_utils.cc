@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/point.h"
@@ -167,22 +168,24 @@ void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
   const base::FilePath small_file =
       dir.path().Append(FILE_PATH_LITERAL("small.jpg"));
   options.push_back(std::string("--") +
-                    ash::switches::kAshDefaultWallpaperSmall + "=" +
+                    chromeos::switches::kDefaultWallpaperSmall + "=" +
                     small_file.value());
   const base::FilePath large_file =
       dir.path().Append(FILE_PATH_LITERAL("large.jpg"));
   options.push_back(std::string("--") +
-                    ash::switches::kAshDefaultWallpaperLarge + "=" +
+                    chromeos::switches::kDefaultWallpaperLarge + "=" +
                     large_file.value());
 
   const base::FilePath guest_small_file =
       dir.path().Append(FILE_PATH_LITERAL("guest_small.jpg"));
-  options.push_back(std::string("--") + ash::switches::kAshGuestWallpaperSmall +
-                    "=" + guest_small_file.value());
+  options.push_back(std::string("--") +
+                    chromeos::switches::kGuestWallpaperSmall + "=" +
+                    guest_small_file.value());
   const base::FilePath guest_large_file =
       dir.path().Append(FILE_PATH_LITERAL("guest_large.jpg"));
-  options.push_back(std::string("--") + ash::switches::kAshGuestWallpaperLarge +
-                    "=" + guest_large_file.value());
+  options.push_back(std::string("--") +
+                    chromeos::switches::kGuestWallpaperLarge + "=" +
+                    guest_large_file.value());
 
   ASSERT_TRUE(WriteJPEGFile(
       small_file, kWallpaperSize, kWallpaperSize, kSmallDefaultWallpaperColor));

@@ -125,12 +125,11 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir,
-      user_id_hash_,
+      wallpaper::kThumbnailWallpaperSubDir, user_id_hash_,
       params_->details.filename);
 
-  sequence_token_ = BrowserThread::GetBlockingPool()->
-      GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
+  sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
+      wallpaper::kWallpaperSequenceTokenName);
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
@@ -185,7 +184,7 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
-      chromeos::kWallpaperThumbnailWidth, chromeos::kWallpaperThumbnailHeight,
+      wallpaper::kWallpaperThumbnailWidth, wallpaper::kWallpaperThumbnailHeight,
       &data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

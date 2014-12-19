@@ -137,6 +137,7 @@
 
 #if !defined(USE_ATHENA)
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "components/wallpaper/wallpaper_manager_base.h"
 #endif
 
 namespace chromeos {
@@ -429,6 +430,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // TODO(oshima): MagnificationManager/WallpaperManager depends on ash.
   // crbug.com/408733, crbug.com/408734.
   MagnificationManager::Initialize();
+
+  wallpaper::WallpaperManagerBase::SetPathIds(
+      chrome::DIR_USER_DATA,
+      chrome::DIR_CHROMEOS_WALLPAPERS,
+      chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
 
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.

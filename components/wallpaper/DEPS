@@ -10,4 +10,9 @@ specific_include_rules = {
     "+content/public/test",
     "+testing/gtest/include/gtest",
   ],
+  "wallpaper_manager_base\.*": [
+    "+chromeos",
+    "+components/user_manager",
+    "+content/public/browser",
+  ],
 }

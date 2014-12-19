@@ -39,6 +39,7 @@
 #include "ui/gfx/rect.h"
 
 using wallpaper::WallpaperLayout;
+using wallpaper::WallpaperInfo;
 using wallpaper::WALLPAPER_LAYOUT_CENTER;
 using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 using wallpaper::WALLPAPER_LAYOUT_STRETCH;
@@ -49,9 +50,9 @@ namespace chromeos {
 namespace {
 
 int kLargeWallpaperWidth = 256;
-int kLargeWallpaperHeight = chromeos::kLargeWallpaperMaxHeight;
+int kLargeWallpaperHeight = wallpaper::kLargeWallpaperMaxHeight;
 int kSmallWallpaperWidth = 256;
-int kSmallWallpaperHeight = chromeos::kSmallWallpaperMaxHeight;
+int kSmallWallpaperHeight = wallpaper::kSmallWallpaperMaxHeight;
 
 const char kTestUser1[] = "test1@domain.com";
 const char kTestUser1Hash[] = "test1@domain.com-hash";
@@ -159,13 +160,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   LogIn(kTestUser1, kTestUser1Hash);
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      kSmallWallpaperSubDir,
-      kTestUser1Hash,
-      id);
+      wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
-      kLargeWallpaperSubDir,
-      kTestUser1Hash,
-      id);
+      wallpaper::kLargeWallpaperSubDir, kTestUser1Hash, id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
@@ -253,9 +250,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Change wallpaper to a custom wallpaper.
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      kSmallWallpaperSubDir,
-      kTestUser1Hash,
-      id);
+      wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path,
       kSmallWallpaperWidth,
@@ -460,13 +455,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      kSmallWallpaperSubDir,
-      kTestUser1Hash,
-      id);
+      wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
-      kLargeWallpaperSubDir,
-      kTestUser1Hash,
-      id);
+      wallpaper::kLargeWallpaperSubDir, kTestUser1Hash, id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.

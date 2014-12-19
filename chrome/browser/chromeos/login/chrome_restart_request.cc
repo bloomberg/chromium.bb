@@ -171,13 +171,13 @@ std::string DeriveCommandLine(const GURL& start_url,
     app_list::switches::kDisableSyncAppList,
     app_list::switches::kEnableSyncAppList,
 #if !defined(USE_ATHENA)
-    ash::switches::kAshDefaultWallpaperLarge,
-    ash::switches::kAshDefaultWallpaperSmall,
-    ash::switches::kAshGuestWallpaperLarge,
-    ash::switches::kAshGuestWallpaperSmall,
     ash::switches::kAshHostWindowBounds,
     ash::switches::kAshTouchHud,
     ash::switches::kAuraLegacyPowerButton,
+    chromeos::switches::kDefaultWallpaperLarge,
+    chromeos::switches::kDefaultWallpaperSmall,
+    chromeos::switches::kGuestWallpaperLarge,
+    chromeos::switches::kGuestWallpaperSmall,
 #endif
     // Please keep these in alphabetical order. Non-UI Compositor switches
     // here should also be added to

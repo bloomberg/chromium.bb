@@ -1487,6 +1487,7 @@
         '../components/components.gyp:search_engines_test_support',
         '../components/components.gyp:signin_core_browser_test_support',
         '../components/components.gyp:sync_driver_test_support',
+        '../components/components.gyp:wallpaper',
         '../content/content.gyp:content_app_both',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../net/net.gyp:net',

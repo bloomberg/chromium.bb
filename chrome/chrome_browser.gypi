@@ -2935,6 +2935,7 @@
         '../components/components.gyp:translate_core_common',
         '../components/components.gyp:url_fixer',
         '../components/components.gyp:user_prefs',
+        '../components/components.gyp:wallpaper',
         '../components/components_strings.gyp:components_strings',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to

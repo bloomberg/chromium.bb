@@ -4,10 +4,10 @@
 
 component("wallpaper") {
   sources = [
+    "wallpaper_layout.h",
     "wallpaper_resizer.cc",
     "wallpaper_resizer.h",
     "wallpaper_resizer_observer.h",
-    "wallpaper_layout.h",
   ]
 
   defines = [ "WALLPAPER_IMPLEMENTATION" ]
@@ -17,4 +17,15 @@ component("wallpaper") {
     "//skia",
     "//ui/gfx",
   ]
+  if (is_chromeos) {
+    sources += [
+      "wallpaper_manager_base.cc",
+      "wallpaper_manager_base.h",
+    ]
+    deps += [
+      "//chromeos",
+      "//components/user_manager",
+      "//content/public/browser",
+    ]
+  }
 }

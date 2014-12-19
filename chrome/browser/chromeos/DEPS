@@ -3,6 +3,7 @@ include_rules = [
   "+components/onc",
   "+components/ownership",
   "+components/user_manager",
+  "+components/wallpaper",
   "+cros",
   "+dbus",
   "+device/bluetooth",

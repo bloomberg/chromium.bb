@@ -168,7 +168,7 @@ TEST_F(CrashKeysTest, IgnoreBoringFlags) {
   command_line.AppendSwitch("--enable-logging");
   command_line.AppendSwitch("--user-data-dir=/tmp");
   command_line.AppendSwitch("--v=1");
-  command_line.AppendSwitch("--ash-default-wallpaper-small=test.png");
+  command_line.AppendSwitch("--default-wallpaper-small=test.png");
 
   command_line.AppendSwitch("--vv=1");
   command_line.AppendSwitch("--vvv");

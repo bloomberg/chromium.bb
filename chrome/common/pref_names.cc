@@ -1833,9 +1833,6 @@ const char kDeviceLocation[] = "device_status.location";
 // storage for the user.
 const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
 
-// A dictionary that maps usernames to wallpaper properties.
-const char kUsersWallpaperInfo[] = "user_wallpaper_info";
-
 // Copy of owner swap mouse buttons option to use on login screen.
 const char kOwnerPrimaryMouseButtonRight[] = "owner.mouse.primary_right";
 

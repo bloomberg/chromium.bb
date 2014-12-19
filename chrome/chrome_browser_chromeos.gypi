@@ -1084,6 +1084,7 @@
         # be generated before code in this target can start building.
         '../components/components.gyp:variations',
         '../components/components.gyp:variations_http_provider',
+        '../components/components.gyp:wallpaper',
         '../components/components_strings.gyp:components_strings',
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/content.gyp:content_browser',

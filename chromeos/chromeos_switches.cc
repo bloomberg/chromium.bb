@@ -25,6 +25,15 @@ const char kDbusStub[] = "dbus-stub";
 // See chromeos/dbus/dbus_client_bundle.cc for the names of the dbus clients.
 const char kDbusUnstubClients[] = "dbus-unstub-clients";
 
+// Indicates that the wallpaper images specified by
+// kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
+// downloadable from Google).
+const char kDefaultWallpaperIsOem[] = "default-wallpaper-is-oem";
+
+// Default wallpaper to use (as paths to trusted, non-user-writable JPEG files).
+const char kDefaultWallpaperLarge[] = "default-wallpaper-large";
+const char kDefaultWallpaperSmall[] = "default-wallpaper-small";
+
 // Time before a machine at OOBE is considered derelict.
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 
@@ -157,6 +166,11 @@ const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[] = "bwsi";
+
+// Wallpaper to use in guest mode (as paths to trusted, non-user-writable JPEG
+// files).
+const char kGuestWallpaperLarge[] = "guest-wallpaper-large";
+const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 
 // If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
 // Chromeboxes.

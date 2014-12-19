@@ -24,6 +24,18 @@
         'wallpaper/wallpaper_resizer.h',
         'wallpaper/wallpaper_resizer_observer.h',
       ],
+      'conditions': [
+        ['chromeos==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+            '../components/components.gyp:user_manager',
+          ],
+          'sources': [
+            'wallpaper/wallpaper_manager_base.cc',
+            'wallpaper/wallpaper_manager_base.h',
+          ],
+        }],
+      ],
     },
   ],
 }
