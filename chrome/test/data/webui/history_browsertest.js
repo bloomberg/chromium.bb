@@ -921,9 +921,9 @@ TEST_F('HistoryWebUIRealBackendTest', 'menuButtonActivatesOneRow', function() {
   menuButton.dispatchEvent(new MouseEvent('mousedown'));
   expectFalse($('action-menu').hidden);
 
-  // Check that the 'active' item hasn't changed.
-  expectTrue(entries[0].classList.contains('active'));
-  expectFalse(entries[2].classList.contains('active'));
+  // Check that the 'active' item has changed.
+  expectTrue(entries[2].classList.contains('active'));
+  expectFalse(entries[0].classList.contains('active'));
 
   testDone();
 });

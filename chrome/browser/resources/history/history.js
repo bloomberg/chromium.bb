@@ -931,7 +931,21 @@ HistoryFocusGrid.prototype = {
 
   /** @override */
   onMousedown: function(row, e) {
-    return !!findAncestorByClass(e.target, 'menu-button');
+    // TODO(dbeam): Can cr.ui.FocusGrid know about cr.ui.MenuButton? If so, bake
+    // this logic into the base class directly.
+    var menuButton = findAncestorByClass(e.target, 'menu-button');
+    if (menuButton) {
+      // Deactivate any other active row.
+      this.rows.some(function(r) {
+        if (r.activeIndex >= 0 && r != row) {
+          r.activeIndex = -1;
+          return true;
+        }
+      });
+      // Activate only the row with a pressed menu button.
+      row.activeIndex = row.items.indexOf(menuButton);
+    }
+    return !!menuButton;
   },
 };
 
