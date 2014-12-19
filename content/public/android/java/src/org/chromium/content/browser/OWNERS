@@ -19,3 +19,7 @@ jdduke@chromium.org
 per-file BindingManager*.java=ppi@chromium.org
 per-file ChildProcessConnection*.java=ppi@chromium.org
 per-file ChildProcessLauncher.java=ppi@chromium.org
+
+# Mojo related
+per-file ServiceRegistrar.java=ppi@chromium.org
+per-file ServiceRegistry.java=ppi@chromium.org

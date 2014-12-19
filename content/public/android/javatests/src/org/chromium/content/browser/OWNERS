@@ -18,3 +18,6 @@ jdduke@chromium.org
 # Process management related
 per-file BindingManagerImplTest.java=ppi@chromium.org
 per-file ChildProcessLauncherTest.java=ppi@chromium.org
+
+# Mojo related
+per-file ServiceRegistryTest.java=ppi@chromium.org
