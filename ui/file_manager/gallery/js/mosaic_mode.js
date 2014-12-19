@@ -86,9 +86,100 @@ MosaicMode.prototype.onKeyDown = function(event) {
  */
 function Mosaic(document, errorBanner, dataModel, selectionModel,
     volumeManager) {
-  var self = assertInstanceof(document.createElement('div'), HTMLDivElement);
-  Mosaic.decorate(self, errorBanner, dataModel, selectionModel, volumeManager);
-  return self;
+  // This is a hack to make closure compiler recognize definitions of fields
+  // with this decorate pattern. When this constructor is called as "new
+  // Mosaic(...)", "this" should be Mosaic. In that case, this calls this
+  // constructor again with setting this as HTMLDivElement. When this condition
+  // is false, this method decorates the "this" object, and returns it.
+  if (this instanceof Mosaic) {
+    return Mosaic.call(/** @type {Mosaic} */ (document.createElement('div')),
+        document, errorBanner, dataModel, selectionModel, volumeManager);
+  }
+
+  this.__proto__ = Mosaic.prototype;
+  this.className = 'mosaic';
+
+  /**
+   * @type {!cr.ui.ArrayDataModel}
+   * @private
+   */
+  this.dataModel_ = dataModel;
+
+  /**
+   * @type {!cr.ui.ListSelectionModel}
+   * @private
+   */
+  this.selectionModel_ = selectionModel;
+
+  /**
+   * @type {!VolumeManager}
+   * @private
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
+   * @type {!ErrorBanner}
+   * @private
+   */
+  this.errorBanner_ = errorBanner;
+
+  /**
+   * @type {Array.<!Mosaic.Tile>}
+   * @private
+   */
+  this.tiles_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.loadVisibleTilesSuppressed_ = false;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.loadVisibleTilesScheduled_ = false;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.showingTimeoutID_ = 0;
+
+  /**
+   * @type {Mosaic.SelectionController}
+   * @private
+   */
+  this.selectionController_ = null;
+
+  /**
+   * @type {Mosaic.Layout}
+   * @private
+   */
+  this.layoutModel_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.suppressHovering_ = false;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.layoutTimer_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.scrollAnimation_ = 0;
+
+  // Initialization is completed lazily on the first call to |init|.
+
+  return this;
 }
 
 /**
@@ -112,83 +203,6 @@ Mosaic.LAYOUT_DELAY = 200;
 Mosaic.ANIMATED_SCROLL_DURATION = 500;
 
 /**
- * Decorates a Mosaic instance.
- *
- * @param {!HTMLDivElement} self Self pointer.
- * @param {!ErrorBanner} errorBanner Error banner.
- * @param {!cr.ui.ArrayDataModel} dataModel Data model.
- * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {!VolumeManager} volumeManager Volume manager.
- */
-Mosaic.decorate = function(
-    self, errorBanner, dataModel, selectionModel, volumeManager) {
-  self.__proto__ = Mosaic.prototype;
-  self = /** @type {!Mosaic} */ (self);
-  self.className = 'mosaic';
-
-  self.dataModel_ = dataModel;
-  self.selectionModel_ = selectionModel;
-  self.volumeManager_ = volumeManager;
-  self.errorBanner_ = errorBanner;
-
-  /**
-   * @type {Array.<!Mosaic.Tile>}
-   * @private
-   */
-  self.tiles_ = null;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  self.loadVisibleTilesSuppressed_ = false;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  self.loadVisibleTilesScheduled_ = false;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  self.showingTimeoutID_ = 0;
-
-  /**
-   * @type {Mosaic.SelectionController}
-   * @private
-   */
-  self.selectionController_ = null;
-
-  /**
-   * @type {Mosaic.Layout}
-   * @private
-   */
-  self.layoutModel_ = null;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  self.suppressHovering_ = false;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  self.layoutTimer_ = 0;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  self.scrollAnimation_ = 0;
-
-  // Initialization is completed lazily on the first call to |init|.
-};
-
-/**
  * Initializes the mosaic element.
  */
 Mosaic.prototype.init = function() {
@@ -206,7 +220,10 @@ Mosaic.prototype.init = function() {
     var locationInfo =
         this.volumeManager_.getLocationInfo(this.dataModel_.item(i).getEntry());
     this.tiles_.push(
-        new Mosaic.Tile(this, this.dataModel_.item(i), locationInfo));
+        new Mosaic.Tile(
+            this,
+            assertInstanceof(this.dataModel_.item(i), Gallery.Item),
+            locationInfo));
   }
 
   this.selectionModel_.selectedIndexes.forEach(function(index) {
@@ -501,7 +518,8 @@ Mosaic.prototype.onSplice_ = function(event) {
   if (event.added.length) {
     var newTiles = [];
     for (var t = 0; t !== event.added.length; t++)
-      newTiles.push(new Mosaic.Tile(this, this.dataModel_.item(index + t)));
+      newTiles.push(new Mosaic.Tile(this,
+            assertInstanceof(this.dataModel_.item(index + t), Gallery.Item)));
 
     this.tiles_.splice.apply(this.tiles_, [index, 0].concat(newTiles));
     this.initTiles_(newTiles);
@@ -1784,103 +1802,118 @@ Mosaic.Row.prototype.layout = function(left, top, width, height) {
  * @suppress {checkStructDictInheritance}
  */
 Mosaic.Tile = function(container, item, opt_locationInfo) {
-  var self = container.ownerDocument.createElement('div');
-  Mosaic.Tile.decorate(self, container, item, opt_locationInfo);
-  return self;
-};
+  // This is a hack to make closure compiler recognize definitions of fields
+  // with this decorate pattern. When this constructor is called as "new
+  // Mosaic.Tile(...)", "this" should be Mosaic.Tile. In that case, this calls
+  // this constructor again with setting this as HTMLDivElement. When this
+  // condition is false, this method decorates the "this" object, and returns
+  // it.
+  if (this instanceof Mosaic.Tile) {
+    return Mosaic.Tile.call(
+        /** @type {Mosaic.Tile} */ (document.createElement('div')),
+        container, item, opt_locationInfo);
+  }
 
-/**
- * @param {!Element} self Self pointer.
- * @param {!Element} container Container element.
- * @param {!Gallery.Item} item Gallery item associated with this tile.
- * @param {EntryLocation=} opt_locationInfo Location info for the tile image.
- */
-Mosaic.Tile.decorate = function(self, container, item, opt_locationInfo) {
-  self.__proto__ = Mosaic.Tile.prototype;
-  self = /** @type {!Mosaic.Tile} */ (self);
-  self.className = 'mosaic-tile';
+  this.__proto__ = Mosaic.Tile.prototype;
+  this.className = 'mosaic-tile';
 
-  self.container_ = container;
-  self.item_ = item;
-  self.hidpiEmbedded_ = opt_locationInfo && opt_locationInfo.isDriveBased;
+  /**
+   * @type {!Element}
+   * @private
+   */
+  this.container_ = container;
+
+  /**
+   * @type {!Gallery.Item}
+   * @private
+   */
+  this.item_ = item;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.hidpiEmbedded_ = !!opt_locationInfo && opt_locationInfo.isDriveBased;
 
   /**
    * @type {?number}
    * @private
    */
-  self.left_ = null; // Mark as not laid out.
+  this.left_ = null; // Mark as not laid out.
 
   /**
    * @type {number}
    * @private
    */
-  self.top_ = 0;
+  this.top_ = 0;
 
   /**
    * @type {number}
    * @private
    */
-  self.width_ = 0;
+  this.width_ = 0;
 
   /**
    * @type {number}
    * @private
    */
-  self.height_ = 0;
+  this.height_ = 0;
 
   /**
    * @type {number}
    * @private
    */
-  self.maxContentHeight_ = 0;
+  this.maxContentHeight_ = 0;
 
   /**
    * @type {number}
    * @private
    */
-  self.aspectRatio_ = 0;
+  this.aspectRatio_ = 0;
 
   /**
    * @type {ThumbnailLoader}
    * @private
    */
-  self.thumbnailPreloader_ = null;
+  this.thumbnailPreloader_ = null;
 
   /**
    * @type {ThumbnailLoader}
    * @private
    */
-  self.thumbnailLoader_ = null;
+  this.thumbnailLoader_ = null;
 
   /**
    * @type {boolean}
    * @private
    */
-  self.imagePreloaded_ = false;
+  this.imagePreloaded_ = false;
 
   /**
    * @type {boolean}
    * @private
    */
-  self.imageLoaded_ = false;
+  this.imageLoaded_ = false;
 
   /**
    * @type {boolean}
    * @private
    */
-  self.imagePreloading_ = false;
+  this.imagePreloading_ = false;
 
   /**
    * @type {boolean}
    * @private
    */
-  self.imageLoading_ = false;
+  this.imageLoading_ = false;
 
   /**
    * @type {HTMLDivElement}
    * @private
    */
-  self.wrapper_ = null;
+  this.wrapper_ = null;
+
+  return this;
 };
 
 /**
