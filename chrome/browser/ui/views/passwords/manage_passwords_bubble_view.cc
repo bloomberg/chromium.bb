@@ -283,10 +283,10 @@ ManagePasswordsBubbleView::AskUserToSubmitURLView::AskUserToSubmitURLView(
   SetLayoutManager(layout);
 
   send_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SEND_URL_BUTTON));
   send_button_->SetStyle(views::Button::STYLE_BUTTON);
   no_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SEND_URL_BUTTON));
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
   no_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   // Title row.
@@ -311,8 +311,8 @@ ManagePasswordsBubbleView::AskUserToSubmitURLView::AskUserToSubmitURLView(
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
                               views::kRelatedControlVerticalSpacing);
-  layout->AddView(no_button_);
   layout->AddView(send_button_);
+  layout->AddView(no_button_);
 
   // Extra padding for visual awesomeness.
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
