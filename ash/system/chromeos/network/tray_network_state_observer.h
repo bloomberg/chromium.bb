@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/timer/timer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace ash {
@@ -17,9 +16,13 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
  public:
   class Delegate {
    public:
-    // Called when any interesting network changes occur. The frequency of this
-    // event is limited to kUpdateFrequencyMs.
-    virtual void NetworkStateChanged() = 0;
+    // Called when the network state may have changed. If |list_changed| is
+    // true then the list of networks may have changed.
+    virtual void NetworkStateChanged(bool list_changed) = 0;
+
+    // Called when the properties for |network| may have been updated.
+    virtual void NetworkServiceChanged(
+        const chromeos::NetworkState* network) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -27,23 +30,20 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
 
   explicit TrayNetworkStateObserver(Delegate* delegate);
 
-  ~TrayNetworkStateObserver() override;
+  virtual ~TrayNetworkStateObserver();
 
   // NetworkStateHandlerObserver overrides.
-  void NetworkListChanged() override;
-  void DeviceListChanged() override;
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
-  void NetworkConnectionStateChanged(
+  virtual void NetworkListChanged() override;
+  virtual void DeviceListChanged() override;
+  virtual void DefaultNetworkChanged(
       const chromeos::NetworkState* network) override;
-  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
+  virtual void NetworkConnectionStateChanged(
+      const chromeos::NetworkState* network) override;
+  virtual void NetworkPropertiesUpdated(
+      const chromeos::NetworkState* network) override;
 
  private:
   Delegate* delegate_;
-  bool purge_icons_;
-  base::OneShotTimer<TrayNetworkStateObserver> timer_;
-
-  void SignalUpdate();
-  void SendNetworkStateChanged();
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateObserver);
 };

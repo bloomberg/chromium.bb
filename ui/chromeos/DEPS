@@ -1,5 +1,7 @@
 include_rules = [
-  "+chromeos",
+  "+chromeos/dbus",
+  "+chromeos/login",
+  "+chromeos/network",
   "+grit/ui_chromeos_resources.h",
   "+grit/ui_chromeos_strings.h",
   "+third_party/cros_system_api",

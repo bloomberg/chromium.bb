@@ -47,7 +47,8 @@ class NetworkTrayView : public TrayItemView,
                         public ui::network_icon::AnimationObserver {
  public:
   explicit NetworkTrayView(TrayNetwork* network_tray)
-      : TrayItemView(network_tray), network_tray_(network_tray) {
+      : TrayItemView(network_tray),
+        network_tray_(network_tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
@@ -57,11 +58,13 @@ class NetworkTrayView : public TrayItemView,
     UpdateNetworkStateHandlerIcon();
   }
 
-  ~NetworkTrayView() override {
+  virtual ~NetworkTrayView() {
     ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
-  const char* GetClassName() const override { return "NetworkTrayView"; }
+  virtual const char* GetClassName() const override {
+    return "NetworkTrayView";
+  }
 
   void UpdateNetworkStateHandlerIcon() {
     NetworkStateHandler* handler =
@@ -82,29 +85,31 @@ class NetworkTrayView : public TrayItemView,
     const NetworkState* connected_network =
         handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
     if (connected_network) {
-      UpdateConnectionStatus(base::UTF8ToUTF16(connected_network->name()),
-                             true);
+      UpdateConnectionStatus(
+          base::UTF8ToUTF16(connected_network->name()), true);
     } else {
       UpdateConnectionStatus(base::string16(), false);
     }
   }
 
   void UpdateAlignment(ShelfAlignment alignment) {
-    SetLayoutManager(new views::BoxLayout(alignment == SHELF_ALIGNMENT_BOTTOM
-                                              ? views::BoxLayout::kHorizontal
-                                              : views::BoxLayout::kVertical,
-                                          0, 0, 0));
+    SetLayoutManager(new views::BoxLayout(
+        alignment == SHELF_ALIGNMENT_BOTTOM ?
+            views::BoxLayout::kHorizontal : views::BoxLayout::kVertical,
+            0, 0, 0));
     Layout();
   }
 
   // views::View override.
-  void GetAccessibleState(ui::AXViewState* state) override {
+  virtual void GetAccessibleState(ui::AXViewState* state) override {
     state->name = connection_status_string_;
     state->role = ui::AX_ROLE_BUTTON;
   }
 
   // ui::network_icon::AnimationObserver
-  void NetworkIconChanged() override { UpdateNetworkStateHandlerIcon(); }
+  virtual void NetworkIconChanged() override {
+    UpdateNetworkStateHandlerIcon();
+  }
 
  private:
   // Updates connection status and notifies accessibility event when necessary.
@@ -117,7 +122,7 @@ class NetworkTrayView : public TrayItemView,
     }
     if (new_connection_status_string != connection_status_string_) {
       connection_status_string_ = new_connection_status_string;
-      if (!connection_status_string_.empty())
+      if(!connection_status_string_.empty())
         NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
     }
   }
@@ -139,11 +144,12 @@ class NetworkDefaultView : public TrayItemMore,
                            public ui::network_icon::AnimationObserver {
  public:
   NetworkDefaultView(TrayNetwork* network_tray, bool show_more)
-      : TrayItemMore(network_tray, show_more), network_tray_(network_tray) {
+      : TrayItemMore(network_tray, show_more),
+        network_tray_(network_tray) {
     Update();
   }
 
-  ~NetworkDefaultView() override {
+  virtual ~NetworkDefaultView() {
     ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
@@ -164,7 +170,9 @@ class NetworkDefaultView : public TrayItemMore,
   }
 
   // ui::network_icon::AnimationObserver
-  void NetworkIconChanged() override { Update(); }
+  virtual void NetworkIconChanged() override {
+    Update();
+  }
 
  private:
   TrayNetwork* network_tray_;
@@ -177,7 +185,8 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   explicit NetworkWifiDetailedView(SystemTrayItem* owner)
       : NetworkDetailedView(owner) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                          kTrayPopupPaddingHorizontal, 10,
+                                          kTrayPopupPaddingHorizontal,
+                                          10,
                                           kTrayPopupPaddingBetweenItems));
     image_view_ = new views::ImageView;
     AddChildView(image_view_);
@@ -190,44 +199,58 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
     Update();
   }
 
-  ~NetworkWifiDetailedView() override {}
+  virtual ~NetworkWifiDetailedView() {
+  }
 
   // Overridden from NetworkDetailedView:
 
-  void Init() override {}
+  virtual void Init() override {
+  }
 
-  NetworkDetailedView::DetailedViewType GetViewType() const override {
+  virtual NetworkDetailedView::DetailedViewType GetViewType() const override {
     return NetworkDetailedView::WIFI_VIEW;
   }
 
-  void Layout() override {
-    // Center both views vertically.
-    views::View::Layout();
-    image_view_->SetY((height() - image_view_->GetPreferredSize().height()) /
-                      2);
-    label_view_->SetY((height() - label_view_->GetPreferredSize().height()) /
-                      2);
+  virtual void ManagerChanged() override {
+    Update();
   }
 
-  void Update() override {
-    bool wifi_enabled =
-        NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
-            NetworkTypePattern::WiFi());
-    const int image_id = wifi_enabled ? IDR_AURA_UBER_TRAY_WIFI_ENABLED
-                                      : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_view_->SetImage(bundle.GetImageNamed(image_id).ToImageSkia());
+  virtual void NetworkListChanged() override {
+    Update();
+  }
 
-    const int string_id = wifi_enabled
-                              ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED
-                              : IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-    label_view_->SetText(bundle.GetLocalizedString(string_id));
-    label_view_->SizeToFit(
-        kTrayPopupMinWidth - kTrayPopupPaddingHorizontal * 2 -
-        kTrayPopupPaddingBetweenItems - kTrayPopupDetailsIconWidth);
+  virtual void NetworkServiceChanged(
+      const chromeos::NetworkState* network) override {
   }
 
  private:
+  virtual void Layout() override {
+    // Center both views vertically.
+    views::View::Layout();
+    image_view_->SetY(
+        (height() - image_view_->GetPreferredSize().height()) / 2);
+    label_view_->SetY(
+        (height() - label_view_->GetPreferredSize().height()) / 2);
+  }
+
+  void Update() {
+    bool wifi_enabled =
+        NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+            NetworkTypePattern::WiFi());
+    const int image_id = wifi_enabled ?
+        IDR_AURA_UBER_TRAY_WIFI_ENABLED : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    image_view_->SetImage(bundle.GetImageNamed(image_id).ToImageSkia());
+
+    const int string_id = wifi_enabled ?
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
+    label_view_->SetText(bundle.GetLocalizedString(string_id));
+    label_view_->SizeToFit(kTrayPopupMinWidth -
+        kTrayPopupPaddingHorizontal * 2 - kTrayPopupPaddingBetweenItems -
+        kTrayPopupDetailsIconWidth);
+  }
+
   views::ImageView* image_view_;
   views::Label* label_view_;
 
@@ -267,15 +290,15 @@ views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   CHECK(tray_ != NULL);
-  default_ =
-      new tray::NetworkDefaultView(this, status != user::LOGGED_IN_LOCKED);
+  default_ = new tray::NetworkDefaultView(
+      this, status != user::LOGGED_IN_LOCKED);
   return default_;
 }
 
 views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      ash::UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
+    ash::UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   if (request_wifi_view_) {
@@ -321,24 +344,35 @@ void TrayNetwork::RequestToggleWifi() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-      enabled ? ash::UMA_STATUS_AREA_DISABLE_WIFI
-              : ash::UMA_STATUS_AREA_ENABLE_WIFI);
-  handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
+      enabled ?
+      ash::UMA_STATUS_AREA_DISABLE_WIFI :
+      ash::UMA_STATUS_AREA_ENABLE_WIFI);
+  handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(),
+                                !enabled,
                                 chromeos::network_handler::ErrorCallback());
 }
 
 void TrayNetwork::OnCaptivePortalDetected(
     const std::string& /* service_path */) {
-  NetworkStateChanged();
+  NetworkStateChanged(false);
 }
 
-void TrayNetwork::NetworkStateChanged() {
+void TrayNetwork::NetworkStateChanged(bool list_changed) {
   if (tray_)
     tray_->UpdateNetworkStateHandlerIcon();
   if (default_)
     default_->Update();
+  if (detailed_) {
+    if (list_changed)
+      detailed_->NetworkListChanged();
+    else
+      detailed_->ManagerChanged();
+  }
+}
+
+void TrayNetwork::NetworkServiceChanged(const chromeos::NetworkState* network) {
   if (detailed_)
-    detailed_->Update();
+    detailed_->NetworkServiceChanged(network);
 }
 
 }  // namespace ash

@@ -29,10 +29,17 @@ class NetworkDetailedView : public TrayDetailsView {
 
   virtual DetailedViewType GetViewType() const = 0;
 
-  // Called when the contents of the network list have changed or when any
-  // Manager properties (e.g. technology state) have changed.
+  // Called when network manager state has changed.
+  // (Generic update for NetworkTray <> AshSystemTrayDelegate interface).
+  virtual void ManagerChanged() = 0;
+
+  // Called when the contents of the network list have changed.
   // (Called only from TrayNetworkStateObserver).
-  virtual void Update() = 0;
+  virtual void NetworkListChanged() = 0;
+
+  // Called when a network service property has changed.
+  // (Called only from TrayNetworkStateObserver).
+  virtual void NetworkServiceChanged(const chromeos::NetworkState* network) = 0;
 
  protected:
   virtual ~NetworkDetailedView() {}

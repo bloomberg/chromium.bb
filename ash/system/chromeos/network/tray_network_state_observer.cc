@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/location.h"
-#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -16,43 +15,37 @@
 
 using chromeos::NetworkHandler;
 
-namespace {
-
-const int kUpdateFrequencyMs = 1000;
-
-}  // namespace
-
 namespace ash {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
-    : delegate_(delegate), purge_icons_(false) {
+    : delegate_(delegate) {
   if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
-                                                                FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->AddObserver(
+        this, FROM_HERE);
   }
 }
 
 TrayNetworkStateObserver::~TrayNetworkStateObserver() {
   if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                   FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
   }
 }
 
 void TrayNetworkStateObserver::NetworkListChanged() {
-  purge_icons_ = true;
-  SignalUpdate();
+  delegate_->NetworkStateChanged(true);
+  ui::network_icon::PurgeNetworkIconCache();
 }
 
 void TrayNetworkStateObserver::DeviceListChanged() {
-  SignalUpdate();
+  delegate_->NetworkStateChanged(false);
 }
 
 // Any change to the Default (primary connected) network, including Strength
 // changes, should trigger a NetworkStateChanged update.
 void TrayNetworkStateObserver::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
-  SignalUpdate();
+  delegate_->NetworkStateChanged(true);
 }
 
 // Any change to the Connection State should trigger a NetworkStateChanged
@@ -60,7 +53,7 @@ void TrayNetworkStateObserver::DefaultNetworkChanged(
 // connected.
 void TrayNetworkStateObserver::NetworkConnectionStateChanged(
     const chromeos::NetworkState* network) {
-  SignalUpdate();
+  delegate_->NetworkStateChanged(true);
 }
 
 // This tracks Strength and other property changes for all networks. It will
@@ -68,22 +61,13 @@ void TrayNetworkStateObserver::NetworkConnectionStateChanged(
 // changes.
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
-  SignalUpdate();
-}
-
-void TrayNetworkStateObserver::SignalUpdate() {
-  if (timer_.IsRunning())
-    return;
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs),
-               this, &TrayNetworkStateObserver::SendNetworkStateChanged);
-}
-
-void TrayNetworkStateObserver::SendNetworkStateChanged() {
-  delegate_->NetworkStateChanged();
-  if (purge_icons_) {
-    ui::network_icon::PurgeNetworkIconCache();
-    purge_icons_ = false;
+  if (network ==
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork()) {
+    // Trigger NetworkStateChanged in case the Strength property of the
+    // Default network changed.
+    delegate_->NetworkStateChanged(true);
   }
+  delegate_->NetworkServiceChanged(network);
 }
 
 }  // namespace ash

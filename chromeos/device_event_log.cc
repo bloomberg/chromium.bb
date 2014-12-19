@@ -17,9 +17,6 @@ namespace {
 
 const size_t kDefaultMaxEntries = 4000;
 
-const int kSlowMethodThresholdMs = 10;
-const int kVerySlowMethodThresholdMs = 50;
-
 DeviceEventLogImpl* g_device_event_log = NULL;
 
 }  // namespace
@@ -84,23 +81,6 @@ DeviceEventLogInstance::DeviceEventLogInstance(const char* file,
 
 DeviceEventLogInstance::~DeviceEventLogInstance() {
   device_event_log::AddEntry(file_, line_, type_, level_, stream_.str());
-}
-
-ScopedDeviceLogIfSlow::ScopedDeviceLogIfSlow(LogType type,
-                                             const char* file,
-                                             const std::string& name)
-    : file_(file), type_(type), name_(name) {
-}
-
-ScopedDeviceLogIfSlow::~ScopedDeviceLogIfSlow() {
-  if (timer_.Elapsed().InMilliseconds() >= kSlowMethodThresholdMs) {
-    LogLevel level(LOG_LEVEL_DEBUG);
-    if (timer_.Elapsed().InMilliseconds() >= kVerySlowMethodThresholdMs)
-      level = LOG_LEVEL_ERROR;
-    DEVICE_LOG(type_, level) << "@@@ Slow method: " << file_ << ":" << name_
-                             << ": " << timer_.Elapsed().InMilliseconds()
-                             << "ms";
-  }
 }
 
 }  // namespace internal
