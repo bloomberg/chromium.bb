@@ -199,8 +199,43 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeClass()
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute()
 {
-    // FIXME: Implement attribute parsing
-    return nullptr;
+    ASSERT(m_tokenRange.peek().type() == LeftBracketToken);
+    m_tokenRange.consumeIncludingWhitespaceAndComments();
+
+    AtomicString namespacePrefix;
+    AtomicString attributeName;
+    bool hasNamespace;
+    if (!consumeName(attributeName, namespacePrefix, hasNamespace))
+        return nullptr;
+
+    if (m_context.isHTMLDocument())
+        attributeName = attributeName.lower();
+
+    QualifiedName qualifiedName = hasNamespace
+        ? determineNameInNamespace(namespacePrefix, attributeName)
+        : QualifiedName(nullAtom, attributeName, nullAtom);
+
+    OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
+
+    if (m_tokenRange.atEnd() || m_tokenRange.peek().type() == RightBracketToken) {
+        m_tokenRange.consumeIncludingComments();
+        selector->setAttribute(qualifiedName, CSSSelector::CaseSensitive);
+        selector->setMatch(CSSSelector::AttributeSet);
+        return selector.release();
+    }
+
+    selector->setMatch(consumeAttributeMatch());
+
+    const CSSParserToken& attributeValue = m_tokenRange.consumeIncludingWhitespaceAndComments();
+    if (attributeValue.type() != IdentToken && attributeValue.type() != StringToken)
+        return nullptr;
+    selector->setValue(AtomicString(attributeValue.value()));
+    selector->setAttribute(qualifiedName, consumeAttributeFlags());
+
+    if (!m_tokenRange.atEnd() && m_tokenRange.consumeIncludingComments().type() != RightBracketToken)
+        return nullptr;
+
+    return selector.release();
 }
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo()
@@ -242,6 +277,42 @@ CSSSelector::Relation CSSSelectorParser::consumeCombinator()
     if (slash.type() != DelimiterToken || slash.delimiter() != '/')
         m_failedParsing = true;
     return CSSSelector::ShadowDeep;
+}
+
+CSSSelector::Match CSSSelectorParser::consumeAttributeMatch()
+{
+    const CSSParserToken& token = m_tokenRange.consumeIncludingWhitespaceAndComments();
+    switch (token.type()) {
+    case IncludeMatchToken:
+        return CSSSelector::AttributeList;
+    case DashMatchToken:
+        return CSSSelector::AttributeHyphen;
+    case PrefixMatchToken:
+        return CSSSelector::AttributeBegin;
+    case SuffixMatchToken:
+        return CSSSelector::AttributeEnd;
+    case SubstringMatchToken:
+        return CSSSelector::AttributeContain;
+    case DelimiterToken:
+        if (token.delimiter() == '=')
+            return CSSSelector::AttributeExact;
+    default:
+        m_failedParsing = true;
+        return CSSSelector::AttributeExact;
+    }
+}
+
+CSSSelector::AttributeMatchType CSSSelectorParser::consumeAttributeFlags()
+{
+    if (m_tokenRange.peek().type() != IdentToken)
+        return CSSSelector::CaseSensitive;
+    const CSSParserToken& flag = m_tokenRange.consumeIncludingWhitespaceAndComments();
+    if (flag.value() == "i") {
+        if (RuntimeEnabledFeatures::cssAttributeCaseSensitivityEnabled() || isUASheetBehavior(m_context.mode()))
+            return CSSSelector::CaseInsensitive;
+    }
+    m_failedParsing = true;
+    return CSSSelector::CaseSensitive;
 }
 
 QualifiedName CSSSelectorParser::determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName)

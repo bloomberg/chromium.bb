@@ -40,6 +40,8 @@ private:
     PassOwnPtr<CSSParserSelector> consumeAttribute();
 
     CSSSelector::Relation consumeCombinator();
+    CSSSelector::Match consumeAttributeMatch();
+    CSSSelector::AttributeMatchType consumeAttributeFlags();
 
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
     void rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector*);
