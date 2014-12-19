@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import ConfigParser
 import itertools
+import json
 import logging
 import os
 import shutil
@@ -66,6 +67,8 @@ RUN_SUITE_MIN_MSTONE = 30
 # Used to format timestamps on archived paygen.log file names in GS.
 PAYGEN_LOG_TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S-UTC'
 
+# Used to lookup all FSIs for all boards.
+FSI_URI = 'gs://chromeos-build-release-console/fsis.json'
 
 class Error(Exception):
   """Exception base class for this module."""
@@ -288,7 +291,6 @@ class _PaygenBuild(object):
       src_version: The build version the payload needs to be applied to; None
         for a delta payload, as it already encodes the source version.
     """
-
     def __init__(self, payload, src_version=None):
       self.payload = payload
       self.src_version = src_version
@@ -501,17 +503,26 @@ class _PaygenBuild(object):
 
     return images
 
-  def _DiscoverFsiBuilds(self):
+  def _DiscoverActiveFsiBuilds(self):
     """Read fsi_images in release.conf.
 
     fsi_images is a list of chromeos versions. We assume each one is
     from the same build/channel as we are and use it to identify a new
     build. The values in release.conf are only valid for the stable-channel.
 
+    These results only include 'active' FSIs which are still generating a lot
+    of update requests. We normally expect to generate delta payloads for
+    these FSIs.
+
     Returns:
       List of gspaths.Build instances for each build so discovered. The list
       may be empty.
     """
+    # TODO(dgarrett): Switch to JSON mechanism in _DiscoverAllFsiBuilds
+    #   after it's in production, and after we clear the change with the TPMs.
+    #
+    #   At that time, check and ignore FSIs without the is_delta_supported flag.
+
     # FSI versions are only defined for the stable-channel.
     if self._build.channel != 'stable-channel':
       return []
@@ -528,6 +539,31 @@ class _PaygenBuild(object):
                                    board=self._build.board,
                                    channel=self._build.channel,
                                    bucket=self._build.bucket))
+    return results
+
+  def _DiscoverAllFsiBuilds(self):
+    """Pull FSI list from Golden Eye.
+
+    Returns a list of chromeos versions. We assume each one is
+    from the same build/channel as we are and use it to identify a new
+    build. This assumption is currently valid, but not 100% safe.
+
+    Returns a list of all FSI images for a given board, even 'inactive' values.
+
+    Returns:
+      List of gspaths.Build instances for each build so discovered. The list
+      may be empty.
+    """
+    results = []
+    contents = json.loads(gslib.Cat(FSI_URI))
+
+    for fsi in contents.get('fsis', []):
+      fsi_board = fsi['board']['public_codename']
+      fsi_version = fsi['chrome_os_version']
+
+      if fsi_board == self._build.board:
+        results.append(fsi_version)
+
     return results
 
   def _DiscoverNmoBuild(self):
@@ -706,7 +742,7 @@ class _PaygenBuild(object):
 
     # Discover FSI builds we need deltas from, but omit those that were already
     # discovered as previous builds.
-    fsi_builds = [b for b in self._DiscoverFsiBuilds()
+    fsi_builds = [b for b in self._DiscoverActiveFsiBuilds()
                   if b not in previous_builds]
     if fsi_builds:
       _LogList('FSI builds considered', fsi_builds)

@@ -325,8 +325,8 @@ class PaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
         paygen_build_lib.ImageMissing)
 
   @unittest.skipIf(not paygen_build_lib.config, 'Internal crostools required.')
-  def testDiscoverFsiBuilds(self):
-    """Using test release.conf values, test _DiscoverFsiBuilds."""
+  def testDiscoverActiveFsiBuilds(self):
+    """Using test release.conf values, test _DiscoverActiveFsiBuilds."""
 
     test_config = """
 [valid-board]
@@ -343,7 +343,7 @@ fsi_images: 2913.331.0,2465.105.0
         self.work_dir)
 
     self.assertEqual(
-        sorted(paygen._DiscoverFsiBuilds()),
+        sorted(paygen._DiscoverActiveFsiBuilds()),
         [gspaths.Build(board='valid-board',
                        channel='stable-channel',
                        version='2465.105.0'),
@@ -357,7 +357,7 @@ fsi_images: 2913.331.0,2465.105.0
                       version='1.2.3'),
         self.work_dir)
 
-    self.assertEqual(paygen._DiscoverFsiBuilds(), [])
+    self.assertEqual(paygen._DiscoverActiveFsiBuilds(), [])
 
     # Test a board with FSI values on non-stable-channel.
     paygen = paygen_build_lib._PaygenBuild(
@@ -365,9 +365,22 @@ fsi_images: 2913.331.0,2465.105.0
                       version='1.2.3'),
         self.work_dir)
 
-    self.assertEqual(paygen._DiscoverFsiBuilds(), [])
+    self.assertEqual(paygen._DiscoverActiveFsiBuilds(), [])
 
     paygen_build_lib.config.LoadGlobalConfig()
+
+  @cros_test_lib.NetworkTest()
+  @unittest.skipIf(not paygen_build_lib.config, 'Internal crostools required.')
+  def testDiscoverAllFsiBuilds(self):
+    """Using test release.conf values, test _DiscoverActiveFsiBuilds."""
+    paygen = paygen_build_lib._PaygenBuild(
+        gspaths.Build(channel='stable-channel', board='x86-alex-he',
+                      version='1.2.3'),
+        self.work_dir)
+
+    # Search for real FSIs for an older/live board.
+    self.assertEqual(paygen._DiscoverAllFsiBuilds(),
+                     ['0.12.433.257', '0.14.811.132', '1412.205.0'])
 
   @unittest.skipIf(not paygen_build_lib.query, 'Internal crostools required.')
   def testDiscoverNmoBuild(self):
@@ -487,7 +500,7 @@ fsi_images: 2913.331.0,2465.105.0
 
     self.mox.StubOutWithMock(paygen, '_DiscoverImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuilds')
+    self.mox.StubOutWithMock(paygen, '_DiscoverActiveFsiBuilds')
 
     paygen.BUILD_DISCOVER_RETRY_SLEEP = 0
 
@@ -517,7 +530,7 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(paygen, '_DiscoverImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuilds')
+    self.mox.StubOutWithMock(paygen, '_DiscoverActiveFsiBuilds')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
 
     nmo_build = gspaths.Build(bucket='crt',
@@ -544,7 +557,7 @@ fsi_images: 2913.331.0,2465.105.0
     paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
         [self.test_image])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverFsiBuilds().AndReturn([fsi1_build, fsi2_build])
+    paygen._DiscoverActiveFsiBuilds().AndReturn([fsi1_build, fsi2_build])
     paygen._DiscoverImages(nmo_build).AndReturn(nmo_images)
     paygen._DiscoverTestImageArchives(nmo_build).AndReturn([nmo_test_image])
     paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
@@ -633,7 +646,7 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(paygen, '_DiscoverImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuilds')
+    self.mox.StubOutWithMock(paygen, '_DiscoverActiveFsiBuilds')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
 
     nmo_build = gspaths.Build(bucket='crt',
@@ -658,7 +671,7 @@ fsi_images: 2913.331.0,2465.105.0
     paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
         [self.test_image])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverFsiBuilds().AndReturn([fsi1_build, fsi2_build])
+    paygen._DiscoverActiveFsiBuilds().AndReturn([fsi1_build, fsi2_build])
     paygen._DiscoverImages(nmo_build).AndRaise(
         paygen_build_lib.ImageMissing('nmo build is missing some image'))
     # _DiscoverTestImageArchives(nmo_build) should NOT be called.
@@ -734,7 +747,7 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(paygen, '_DiscoverImages')
     self.mox.StubOutWithMock(paygen, '_DiscoverTestImageArchives')
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
-    self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuilds')
+    self.mox.StubOutWithMock(paygen, '_DiscoverActiveFsiBuilds')
     self.mox.StubOutWithMock(paygen_payload_lib, 'DefaultPayloadUri')
 
     nmo_build = gspaths.Build(bucket='crt',
@@ -759,7 +772,7 @@ fsi_images: 2913.331.0,2465.105.0
     paygen._DiscoverTestImageArchives(paygen._build).AndReturn(
         [self.test_image])
     paygen._DiscoverNmoBuild().AndReturn([nmo_build])
-    paygen._DiscoverFsiBuilds().AndReturn([fsi1_build, fsi2_build])
+    paygen._DiscoverActiveFsiBuilds().AndReturn([fsi1_build, fsi2_build])
     paygen._DiscoverImages(nmo_build).AndReturn(nmo_images)
     paygen._DiscoverTestImageArchives(nmo_build).AndReturn([nmo_test_image])
     paygen._DiscoverImages(fsi1_build).AndReturn(fsi1_images)
