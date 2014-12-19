@@ -16,6 +16,7 @@ class FilePath;
 }
 
 namespace safe_browsing {
+class ClientDownloadRequest_Digests;
 class ClientDownloadRequest_ImageHeaders;
 class ClientDownloadRequest_SignatureInfo;
 
@@ -34,6 +35,10 @@ class BinaryFeatureExtractor
   virtual void ExtractImageHeaders(
       const base::FilePath& file_path,
       ClientDownloadRequest_ImageHeaders* image_headers);
+
+  // Populates |digests.sha256| with the SHA256 digest of |file_path|.
+  virtual void ExtractDigest(const base::FilePath& file_path,
+                             ClientDownloadRequest_Digests* digests);
 
  protected:
   friend class base::RefCountedThreadSafe<BinaryFeatureExtractor>;

@@ -2287,6 +2287,7 @@
       'browser/download/download_completion_blocker.h',
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
       'browser/renderer_host/safe_browsing_resource_throttle.h',
+      'browser/safe_browsing/binary_feature_extractor.cc',
       'browser/safe_browsing/binary_feature_extractor.h',
       'browser/safe_browsing/binary_feature_extractor_posix.cc',
       'browser/safe_browsing/binary_feature_extractor_win.cc',

@@ -659,6 +659,7 @@
       'browser/resources/print_preview/print_preview_utils_unittest.gtestjs',
       'browser/resources_util_unittest.cc',
       'browser/rlz/rlz_unittest.cc',
+      'browser/safe_browsing/binary_feature_extractor_unittest.cc',
       'browser/safe_browsing/binary_feature_extractor_win_unittest.cc',
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',
       'browser/safe_browsing/chunk_range_unittest.cc',

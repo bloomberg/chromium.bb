@@ -31063,6 +31063,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBIRS.BLAHashTime" units="milliseconds">
+  <owner>grt@google.com</owner>
+  <summary>
+    The elapsed time to compute the hash of a blacklisted module.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.BLASignatureTime" units="milliseconds">
+  <owner>grt@google.com</owner>
+  <summary>
+    The elapsed time to validate the signature of a blacklisted module.
+  </summary>
+</histogram>
+
 <histogram name="SBIRS.DiscardedIncident" enum="IncidentType">
   <owner>grt@google.com</owner>
   <summary>

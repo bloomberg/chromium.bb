@@ -361,6 +361,8 @@ message ClientIncidentReport {
       optional ClientDownloadRequest.Digests digest = 2;
       optional string version = 3;
       optional bool blacklist_initialized = 4;
+      optional ClientDownloadRequest.SignatureInfo signature = 5;
+      optional ClientDownloadRequest.ImageHeaders image_headers = 6;
     }
     message OmniboxInteractionIncident {
       optional string origin = 1;
