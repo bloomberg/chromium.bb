@@ -153,10 +153,14 @@ remoting.ThirdPartyTokenFetcher.prototype.fetchTokenWindowOpen_ = function() {
   var that = this;
   var fullTokenUrl = this.getFullTokenUrl_();
   // The function below can't be anonymous, since it needs to reference itself.
-  /** @param {string} message Message received from the content script. */
-  function tokenMessageListener(message) {
+  /**
+   * @param {string} message Message received from the content script.
+   * @param {function(*)} sendResponse Function to send response.
+   */
+  function tokenMessageListener(message, sender, sendResponse) {
     that.parseRedirectUrl_(message);
     chrome.extension.onMessage.removeListener(tokenMessageListener);
+    sendResponse(null);
   }
   chrome.extension.onMessage.addListener(tokenMessageListener);
   window.open(fullTokenUrl, '_blank', 'location=yes,toolbar=no,menubar=no');

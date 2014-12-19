@@ -261,8 +261,9 @@ remoting.OAuth2.prototype.getAuthorizationCode = function(onDone) {
    *
    * @param {Object.<string, string>} message Dictionary containing the parsed
    *   OAuth redirect URL parameters.
+   * @param {function(*)} sendResponse Function to send response.
    */
-  function oauth2MessageListener(message) {
+  function oauth2MessageListener(message, sender, sendResponse) {
     if ('code' in message && 'state' in message) {
       if (message['state'] == xsrf_token) {
         onDone(message['code']);
@@ -282,6 +283,7 @@ remoting.OAuth2.prototype.getAuthorizationCode = function(onDone) {
       onDone(null);
     }
     chrome.extension.onMessage.removeListener(oauth2MessageListener);
+    sendResponse(null);
   }
   chrome.extension.onMessage.addListener(oauth2MessageListener);
   window.open(GET_CODE_URL, '_blank', 'location=yes,toolbar=no,menubar=no');

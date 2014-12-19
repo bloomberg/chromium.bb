@@ -21,6 +21,8 @@ if (window.location.pathname == officialPath ||
     queryArgs[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
   }
 
-  chrome.extension.sendMessage(queryArgs);
-  window.close();
+  // Chrome may not deliver the message if window.close() is called after
+  // sendMessage(), see crbug.com/444130 . To ensure the message is delivered
+  // wait for a response before closing the window.
+  chrome.extension.sendMessage(queryArgs, function() { window.close(); });
 }

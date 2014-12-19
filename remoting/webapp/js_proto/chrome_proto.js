@@ -132,8 +132,9 @@ chrome.extension = {};
 
 /**
  * @param {*} message
+ * @param {function(*)=} opt_callback
  */
-chrome.extension.sendMessage = function(message) {}
+chrome.extension.sendMessage = function(message, opt_callback) {};
 
 /** @type {chrome.Event} */
 chrome.extension.onMessage;

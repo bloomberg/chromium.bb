@@ -5,6 +5,9 @@
 var thirdPartyPath = '/talkgadget/oauth/chrome-remote-desktop/thirdpartyauth';
 
 if (window.location.pathname == thirdPartyPath) {
-  chrome.extension.sendMessage(window.location.href);
-  window.close();
+  // Chrome may not deliver the message if window.close() is called after
+  // sendMessage(), see crbug.com/444130 . To ensure the message is delivered
+  // wait for a response before closing the window.
+  chrome.extension.sendMessage(
+      window.location.href, function() { window.close(); });
 }
