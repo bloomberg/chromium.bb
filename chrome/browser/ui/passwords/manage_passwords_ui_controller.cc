@@ -105,6 +105,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
   password_form_map_ = ConstifyMap(form_manager_->best_matches());
   origin_ = PendingPassword().origin;
   state_ = password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE;
+  timer_.reset(new base::ElapsedTimer());
   UpdateBubbleAndIconVisibility();
 }
 
