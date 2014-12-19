@@ -22,29 +22,12 @@ const char kLightBarControlPath[] =
     "lightbar/sequence";
 const char kKonamiCommand[] = "KONAMI";
 
-// TODO(chirantan): These are used by a temporary workaround for lucid sleep and
-// should be removed once the proper implementation is ready (crbug.com/414949).
-const char kDarkResumeAlwaysFile[] = "/sys/power/dark_resume_always";
-const char kEnableDarkResumeAlways[] = "1";
-
 }  // namespace
 
 LightBar::LightBar()
     : control_path_(base::FilePath(kLightBarControlPath)),
       has_light_bar_(base::PathIsWritable(control_path_)) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-
-  // Until the kernel can properly detect the wakeup source, we need to use a
-  // hack to tell the kernel to always enter dark resume.  Chrome can then
-  // detect any user activity and have the power manager transition out of dark
-  // resume into regular resume.  We don't care if the write succeeds or not
-  // because most devices will not have this file.
-  //
-  // TODO(chirantan): Remove this once we can properly detect the wakeup
-  // source (crbug.com/414949).
-  base::WriteFile(base::FilePath(kDarkResumeAlwaysFile),
-                  kEnableDarkResumeAlways,
-                  strlen(kEnableDarkResumeAlways));
 }
 
 LightBar::~LightBar() {
