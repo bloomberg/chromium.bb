@@ -75,7 +75,8 @@ public:
     class EventDelegate : public NoBaseWillBeGarbageCollectedFinalized<EventDelegate> {
     public:
         virtual ~EventDelegate() { }
-        virtual void onEventCondition(const AnimationNode*) = 0;
+        virtual bool requiresIterationEvents(const AnimationNode&) = 0;
+        virtual void onEventCondition(const AnimationNode&) = 0;
         virtual void trace(Visitor*) { }
     };
 
@@ -119,7 +120,7 @@ protected:
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
     void invalidate() const { m_needsUpdate = true; };
-    bool hasEvents() const { return m_eventDelegate; }
+    bool requiresIterationEvents() const { return m_eventDelegate && m_eventDelegate->requiresIterationEvents(*this); }
     void clearEventDelegate() { m_eventDelegate = nullptr; }
 
     virtual void attach(AnimationPlayer* player)

@@ -204,11 +204,10 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
         if (forwards) {
             // Need service to apply fill / fire events.
             const double timeToEnd = end - localTime;
-            if (hasEvents()) {
+            if (requiresIterationEvents()) {
                 return std::min(timeToEnd, timeToNextIteration);
-            } else {
-                return timeToEnd;
             }
+            return timeToEnd;
         }
         return 0;
     case PhaseAfter:

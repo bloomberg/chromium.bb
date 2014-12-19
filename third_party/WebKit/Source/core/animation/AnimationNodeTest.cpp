@@ -40,10 +40,14 @@ namespace {
 
 class TestAnimationNodeEventDelegate : public AnimationNode::EventDelegate {
 public:
-    virtual void onEventCondition(const AnimationNode* animationNode) override
+    virtual void onEventCondition(const AnimationNode& animationNode) override
     {
         m_eventTriggered = true;
 
+    }
+    virtual bool requiresIterationEvents(const AnimationNode& animationNode) override
+    {
+        return true;
     }
     void reset()
     {

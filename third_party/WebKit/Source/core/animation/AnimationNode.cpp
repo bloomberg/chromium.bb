@@ -200,7 +200,7 @@ void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason
     // FIXME: Refactor so that we can ASSERT(m_player) here, this is currently required to be nullable for testing.
     if (reason == TimingUpdateForAnimationFrame && (!m_player || m_player->hasStartTime() || m_player->paused())) {
         if (m_eventDelegate)
-            m_eventDelegate->onEventCondition(this);
+            m_eventDelegate->onEventCondition(*this);
     }
 
     if (needsUpdate)  {

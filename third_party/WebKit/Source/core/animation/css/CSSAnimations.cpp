@@ -632,15 +632,20 @@ void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType
     }
 }
 
-void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode* animationNode)
+bool CSSAnimations::AnimationEventDelegate::requiresIterationEvents(const AnimationNode& animationNode)
 {
-    const AnimationNode::Phase currentPhase = animationNode->phase();
-    const double currentIteration = animationNode->currentIteration();
+    return m_target->document().hasListenerType(Document::ANIMATIONITERATION_LISTENER);
+}
+
+void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode& animationNode)
+{
+    const AnimationNode::Phase currentPhase = animationNode.phase();
+    const double currentIteration = animationNode.currentIteration();
 
     if (m_previousPhase != currentPhase
         && (currentPhase == AnimationNode::PhaseActive || currentPhase == AnimationNode::PhaseAfter)
         && (m_previousPhase == AnimationNode::PhaseNone || m_previousPhase == AnimationNode::PhaseBefore)) {
-        const double startDelay = animationNode->specifiedTiming().startDelay;
+        const double startDelay = animationNode.specifiedTiming().startDelay;
         const double elapsedTime = startDelay < 0 ? -startDelay : 0;
         maybeDispatch(Document::ANIMATIONSTART_LISTENER, EventTypeNames::animationstart, elapsedTime);
     }
@@ -650,13 +655,13 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode
         // between a single pair of samples. See http://crbug.com/275263. For
         // compatibility with the existing implementation, this event uses
         // the elapsedTime for the first iteration in question.
-        ASSERT(!std::isnan(animationNode->specifiedTiming().iterationDuration));
-        const double elapsedTime = animationNode->specifiedTiming().iterationDuration * (m_previousIteration + 1);
+        ASSERT(!std::isnan(animationNode.specifiedTiming().iterationDuration));
+        const double elapsedTime = animationNode.specifiedTiming().iterationDuration * (m_previousIteration + 1);
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
     }
 
     if (currentPhase == AnimationNode::PhaseAfter && m_previousPhase != AnimationNode::PhaseAfter)
-        maybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend, animationNode->activeDurationInternal());
+        maybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend, animationNode.activeDurationInternal());
 
     m_previousPhase = currentPhase;
     m_previousIteration = currentIteration;
@@ -668,12 +673,12 @@ void CSSAnimations::AnimationEventDelegate::trace(Visitor* visitor)
     AnimationNode::EventDelegate::trace(visitor);
 }
 
-void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNode* animationNode)
+void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNode& animationNode)
 {
-    const AnimationNode::Phase currentPhase = animationNode->phase();
+    const AnimationNode::Phase currentPhase = animationNode.phase();
     if (currentPhase == AnimationNode::PhaseAfter && currentPhase != m_previousPhase && m_target->document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
-        const Timing& timing = animationNode->specifiedTiming();
+        const Timing& timing = animationNode.specifiedTiming();
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
         String pseudoElement = PseudoElement::pseudoElementNameForEvents(m_target->pseudoId());

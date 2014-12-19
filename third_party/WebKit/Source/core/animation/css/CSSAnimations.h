@@ -256,7 +256,8 @@ private:
             , m_previousIteration(nullValue())
         {
         }
-        virtual void onEventCondition(const AnimationNode*) override;
+        virtual bool requiresIterationEvents(const AnimationNode&) override;
+        virtual void onEventCondition(const AnimationNode&) override;
         virtual void trace(Visitor*) override;
 
     private:
@@ -275,7 +276,8 @@ private:
             , m_previousPhase(AnimationNode::PhaseNone)
         {
         }
-        virtual void onEventCondition(const AnimationNode*) override;
+        virtual bool requiresIterationEvents(const AnimationNode&) override { return false; }
+        virtual void onEventCondition(const AnimationNode&) override;
         virtual void trace(Visitor*) override;
 
     private:
