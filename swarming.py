@@ -1169,7 +1169,10 @@ def CMDreproduce(parser, args):
   env = None
   if properties['env']:
     env = os.environ.copy()
-    env.update(properties['env'])
+    logging.info('env: %r', properties['env'])
+    env.update(
+        (k.encode('utf-8'), v.encode('utf-8'))
+        for k, v in properties['env'].iteritems())
 
   exit_code = 0
   for cmd in properties['commands']:
