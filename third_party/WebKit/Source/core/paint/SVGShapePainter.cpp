@@ -48,10 +48,6 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
         || m_renderSVGShape.isShapeEmpty())
         return;
 
-    FloatRect boundingBox = m_renderSVGShape.paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(boundingBox, m_renderSVGShape.localTransform(), paintInfo))
-        return;
-
     PaintInfo childPaintInfo(paintInfo);
 
     GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
@@ -104,7 +100,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     }
 
     if (m_renderSVGShape.style()->outlineWidth())
-        ObjectPainter(m_renderSVGShape).paintOutline(childPaintInfo, IntRect(boundingBox));
+        ObjectPainter(m_renderSVGShape).paintOutline(childPaintInfo, IntRect(m_renderSVGShape.paintInvalidationRectInLocalCoordinates()));
 }
 
 void SVGShapePainter::fillShape(GraphicsContext* context)

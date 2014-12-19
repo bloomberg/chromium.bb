@@ -22,6 +22,10 @@ void SVGTextPainter::paint(const PaintInfo& paintInfo)
 
     blockInfo.applyTransform(m_renderSVGText.localToParentTransform(), &stateSaver);
 
+    // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
+    // because it can be used for clipping.
+    m_renderSVGText.updatePaintInfoRect(blockInfo.rect);
+
     BlockPainter(m_renderSVGText).paint(blockInfo, LayoutPoint());
 
     // Paint the outlines, if any

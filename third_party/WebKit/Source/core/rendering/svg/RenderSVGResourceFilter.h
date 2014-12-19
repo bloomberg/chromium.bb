@@ -46,7 +46,6 @@ public:
     RefPtrWillBeMember<SVGFilter> filter;
     RefPtrWillBeMember<SVGFilterBuilder> builder;
     FloatRect boundaries;
-    FloatRect drawingRegion;
     FilterDataState state;
 
 private:
@@ -90,7 +89,6 @@ public:
     static const RenderSVGResourceType s_resourceType = FilterResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
-    FloatRect drawingRegion(RenderObject*) const;
 private:
     typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, OwnPtrWillBeMember<FilterData> > FilterMap;
     FilterMap m_filter;

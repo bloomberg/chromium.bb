@@ -187,11 +187,6 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
     paintInvalidationBoundingBox = strokeBoundingBox;
 }
 
-bool SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(const FloatRect& localPaintInvalidationRect, const AffineTransform& localTransform, const PaintInfo& paintInfo)
-{
-    return localTransform.mapRect(localPaintInvalidationRect).intersects(paintInfo.rect);
-}
-
 const RenderSVGRoot* SVGRenderSupport::findTreeRootObject(const RenderObject* start)
 {
     while (start && !start->isSVGRoot())

@@ -71,8 +71,6 @@ public:
 
     static void computeContainerBoundingBoxes(const RenderObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
 
-    static bool paintInfoIntersectsPaintInvalidationRect(const FloatRect& localPaintInvalidationRect, const AffineTransform& localTransform, const PaintInfo&);
-
     // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
     static LayoutRect clippedOverflowRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
     static const RenderSVGRoot& mapRectToSVGRootForPaintInvalidation(const RenderObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);

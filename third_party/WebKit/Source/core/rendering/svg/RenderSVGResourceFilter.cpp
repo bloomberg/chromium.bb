@@ -194,13 +194,11 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
     if (filterData->boundaries.isEmpty())
         return false;
 
-    filterData->drawingRegion = object->strokeBoundingBox();
-    filterData->drawingRegion.intersect(filterData->boundaries);
-    IntRect intDrawingRegion = enclosingIntRect(filterData->drawingRegion);
-
     // Create the SVGFilter object.
+    FloatRect drawingRegion = object->strokeBoundingBox();
+    drawingRegion.intersect(filterData->boundaries);
     bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    filterData->filter = SVGFilter::create(intDrawingRegion, targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
+    filterData->filter = SVGFilter::create(enclosingIntRect(drawingRegion), targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
 
     // Create all relevant filter primitives.
     filterData->builder = buildPrimitives(filterData->filter.get());
@@ -281,12 +279,6 @@ void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, co
         markClientForInvalidation(it->key, PaintInvalidation);
     }
     markAllClientLayersForInvalidation();
-}
-
-FloatRect RenderSVGResourceFilter::drawingRegion(RenderObject* object) const
-{
-    FilterData* filterData = m_filter.get(object);
-    return filterData ? filterData->drawingRegion : FloatRect();
 }
 
 }

@@ -44,8 +44,6 @@ class RenderLayerModelObject;
 class RenderObject;
 class RenderPart;
 
-typedef HashMap<RenderPart*, IntRect> OverlapTestRequestMap;
-
 struct PaintInfo {
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,
         RenderObject* newPaintingRoot = 0, ListHashSet<RenderInline*>* newOutlineObjects = 0,
@@ -93,14 +91,6 @@ struct PaintInfo {
             stateSaver->saveIfNeeded();
 
         context->concatCTM(localToAncestorTransform);
-
-        if (rect == LayoutRect::infiniteIntRect())
-            return;
-
-        if (localToAncestorTransform.isInvertible())
-            rect = localToAncestorTransform.inverse().mapRect(rect);
-        else
-            rect.setSize(IntSize(0, 0));
     }
 
     DisplayItem::Type displayItemTypeForClipping() const;

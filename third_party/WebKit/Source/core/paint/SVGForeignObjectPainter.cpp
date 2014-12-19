@@ -23,6 +23,10 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
     GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
     childPaintInfo.applyTransform(m_renderSVGForeignObject.localTransform());
 
+    // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
+    // because it can be used for clipping.
+    m_renderSVGForeignObject.updatePaintInfoRect(childPaintInfo.rect);
+
     if (SVGRenderSupport::isOverflowHidden(&m_renderSVGForeignObject))
         childPaintInfo.context->clip(m_renderSVGForeignObject.viewportRect());
 

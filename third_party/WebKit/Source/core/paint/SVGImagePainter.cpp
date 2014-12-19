@@ -29,10 +29,6 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         || !m_renderSVGImage.imageResource()->hasImage())
         return;
 
-    FloatRect invalBox = m_renderSVGImage.paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(invalBox, m_renderSVGImage.localToParentTransform(), paintInfo))
-        return;
-
     PaintInfo childPaintInfo(paintInfo);
     GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
 
@@ -58,7 +54,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     }
 
     if (m_renderSVGImage.style()->outlineWidth())
-        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(invalBox));
+        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(m_renderSVGImage.paintInvalidationRectInLocalCoordinates()));
 }
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)

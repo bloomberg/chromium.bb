@@ -25,10 +25,6 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     if (!m_renderSVGContainer.firstChild() && !m_renderSVGContainer.selfWillPaint())
         return;
 
-    FloatRect paintInvalidationRect = m_renderSVGContainer.paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(paintInvalidationRect, m_renderSVGContainer.localToParentTransform(), paintInfo))
-        return;
-
     // Spec: An empty viewBox on the <svg> element disables rendering.
     ASSERT(m_renderSVGContainer.element());
     if (isSVGSVGElement(*m_renderSVGContainer.element()) && toSVGSVGElement(*m_renderSVGContainer.element()).hasEmptyViewBox())
@@ -63,7 +59,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     // FIXME: This means our focus ring won't share our rotation like it should.
     // We should instead disable our clip during PaintPhaseOutline
     if (paintInfo.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE) {
-        IntRect paintRectInParent = enclosingIntRect(m_renderSVGContainer.localToParentTransform().mapRect(paintInvalidationRect));
+        IntRect paintRectInParent = enclosingIntRect(m_renderSVGContainer.localToParentTransform().mapRect(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates()));
         ObjectPainter(m_renderSVGContainer).paintOutline(paintInfo, paintRectInParent);
     }
 }

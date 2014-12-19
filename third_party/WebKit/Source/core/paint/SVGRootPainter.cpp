@@ -52,6 +52,9 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
     childPaintInfo.applyTransform(AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_renderSVGRoot.localToBorderBoxTransform());
 
+    // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
+    childPaintInfo.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());
+
     SVGRenderingContext renderingContext;
     if (childPaintInfo.phase == PaintPhaseForeground) {
         renderingContext.prepareToRenderSVGContent(&m_renderSVGRoot, childPaintInfo);
