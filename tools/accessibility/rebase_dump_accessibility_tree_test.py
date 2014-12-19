@@ -65,7 +65,7 @@ def ParseFailure(name, url):
     response = urllib.urlopen(url)
     if response.getcode() == 200:
       data = response.read()
-      lines = data.split('\n')
+      lines = data.splitlines()
       break
 
   if not data:
@@ -81,7 +81,7 @@ def ParseFailure(name, url):
     if line[:12] == '[ RUN      ]':
       test_name = line[13:]
     if test_name and line[:8] == 'Testing:':
-      filename = line[line.find('content/test/data/accessibility') + 32:]
+      filename = re.search('content.test.*accessibility.(.*)', line).group(1)
     if test_name and line == 'Actual':
       start = i + 2
     if start and test_name and filename and line[:12] == '[  FAILED  ]':
@@ -108,6 +108,7 @@ def ParseTrybots(data):
   failures = soup.findAll(
       'a',
       { "class" : "build-result build-status-color-failure" })
+  print 'Found %d trybots that failed' % len(failures)
   for f in failures:
     name = f.text.replace('&nbsp;', '')
     url = f['href']
@@ -121,6 +122,7 @@ def Run():
     issue = GitClIssue()
 
   url = 'https://codereview.chromium.org/%s' % issue
+  print 'Fetching issue from %s' % url
   response = urllib.urlopen(url)
   if response.getcode() != 200:
     print 'Error code %d accessing url: %s' % (response.getcode(), url)
@@ -129,4 +131,3 @@ def Run():
 
 if __name__ == '__main__':
   sys.exit(Run())
-
