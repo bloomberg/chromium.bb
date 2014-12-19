@@ -88,6 +88,11 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
     // whether the pref is actually being controlled by the policy setting.
     bool IsManaged() const;
 
+    // Returns true if the Preference is controlled by the custodian of the
+    // supervised user. Since a supervised user is not expected to have an admin
+    // policy, this is the controlling pref if set.
+    bool IsManagedByCustodian() const;
+
     // Returns true if the Preference is recommended, i.e. set by an admin
     // policy but the user is allowed to change it.
     bool IsRecommended() const;
@@ -157,6 +162,10 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // Returns true if the preference for the given preference name is available
   // and is managed.
   bool IsManagedPreference(const std::string& pref_name) const;
+
+  // Returns true if the preference for the given preference name is available
+  // and is controlled by the parent/guardian of the child Account.
+  bool IsPreferenceManagedByCustodian(const std::string& pref_name) const;
 
   // Returns |true| if a preference with the given name is available and its
   // value can be changed by the user.

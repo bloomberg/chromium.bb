@@ -102,6 +102,15 @@ bool IsContentSettingManaged(HostContentSettingsMap* content_settings,
   return provider == HostContentSettingsMap::POLICY_PROVIDER;
 }
 
+bool IsContentSettingUserModifiable(HostContentSettingsMap* content_settings,
+                                    ContentSettingsType content_settings_type) {
+  std::string source;
+  content_settings->GetDefaultContentSetting(content_settings_type, &source);
+  HostContentSettingsMap::ProviderType provider =
+      content_settings->GetProviderTypeFromSource(source);
+  return provider >= HostContentSettingsMap::PREF_PROVIDER;
+}
+
 void OnGotProfilePath(ScopedJavaGlobalRef<jobject>* callback,
                       std::string path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -254,19 +263,42 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env, jobject obj) {
 static jboolean GetProtectedMediaIdentifierEnabled(JNIEnv* env, jobject obj) {
   Profile* profile = GetOriginalProfile();
   EnsureConsistentProtectedMediaIdentifierPreferences(profile);
-  return GetPrefService()->GetBoolean(prefs::kProtectedMediaIdentifierEnabled);
+  HostContentSettingsMap* content_settings =
+      profile->GetHostContentSettingsMap();
+  return GetBooleanForContentSetting(
+             content_settings,
+             CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) &&
+         GetPrefService()->GetBoolean(prefs::kProtectedMediaIdentifierEnabled);
+}
+
+static jboolean GetPushNotificationsEnabled(JNIEnv* env, jobject obj) {
+  HostContentSettingsMap* content_settings =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  return GetBooleanForContentSetting(content_settings,
+                                     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 }
 
 static jboolean GetAllowLocationEnabled(JNIEnv* env, jobject obj) {
   Profile* profile = GetOriginalProfile();
   EnsureConsistentGeolocationPreferences(profile);
-  return GetPrefService()->GetBoolean(prefs::kGeolocationEnabled);
+  HostContentSettingsMap* content_settings =
+      profile->GetHostContentSettingsMap();
+  return GetBooleanForContentSetting(content_settings,
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION) &&
+         GetPrefService()->GetBoolean(prefs::kGeolocationEnabled);
 }
 
-static jboolean GetAllowLocationManaged(JNIEnv* env, jobject obj) {
-  return IsContentSettingManaged(
-      GetOriginalProfile()->GetHostContentSettingsMap(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION);
+static jboolean GetAllowLocationUserModifiable(JNIEnv* env, jobject obj) {
+  return IsContentSettingUserModifiable(
+             GetOriginalProfile()->GetHostContentSettingsMap(),
+             CONTENT_SETTINGS_TYPE_GEOLOCATION) &&
+         GetPrefService()->IsUserModifiablePreference(
+             prefs::kGeolocationEnabled);
+}
+
+static jboolean GetAllowLocationManagedByCustodian(JNIEnv* env, jobject obj) {
+  return GetPrefService()->IsPreferenceManagedByCustodian(
+      prefs::kGeolocationEnabled);
 }
 
 static jboolean GetResolveNavigationErrorEnabled(JNIEnv* env, jobject obj) {
@@ -396,6 +428,24 @@ static void SetAllowLocationEnabled(JNIEnv* env, jobject obj, jboolean allow) {
   GetPrefService()->SetBoolean(prefs::kGeolocationEnabled, allow);
 }
 
+static void SetCameraMicEnabled(JNIEnv* env, jobject obj, jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void SetPushNotificationsEnabled(JNIEnv* env,
+                                        jobject obj,
+                                        jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
 static void SetCrashReporting(JNIEnv* env, jobject obj, jboolean reporting) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kCrashReportingEnabled, reporting);
@@ -484,8 +534,29 @@ static void SetAllowPopupsEnabled(JNIEnv* env, jobject obj, jboolean allow) {
 static jboolean GetCameraMicEnabled(JNIEnv* env, jobject obj) {
   HostContentSettingsMap* content_settings =
       GetOriginalProfile()->GetHostContentSettingsMap();
+  PrefService* prefs = GetPrefService();
   return GetBooleanForContentSetting(content_settings,
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+                                     CONTENT_SETTINGS_TYPE_MEDIASTREAM) &&
+         prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
+         prefs->GetBoolean(prefs::kVideoCaptureAllowed);
+}
+
+static jboolean GetCameraMicUserModifiable(JNIEnv* env, jobject obj) {
+  PrefService* prefs = GetPrefService();
+  return IsContentSettingUserModifiable(
+             GetOriginalProfile()->GetHostContentSettingsMap(),
+             CONTENT_SETTINGS_TYPE_MEDIASTREAM) &&
+         prefs->IsUserModifiablePreference(prefs::kAudioCaptureAllowed) &&
+         prefs->IsUserModifiablePreference(prefs::kVideoCaptureAllowed);
+}
+
+static jboolean GetCameraMicManagedByCustodian(JNIEnv* env, jobject obj) {
+  PrefService* prefs = GetPrefService();
+  if (prefs->IsPreferenceManagedByCustodian(prefs::kVideoCaptureAllowed))
+    return true;
+  if (prefs->IsPreferenceManagedByCustodian(prefs::kAudioCaptureAllowed))
+    return true;
+  return false;
 }
 
 static jboolean GetAutologinEnabled(JNIEnv* env, jobject obj) {

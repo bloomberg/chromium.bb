@@ -240,6 +240,12 @@ bool PrefService::IsManagedPreference(const std::string& pref_name) const {
   return pref && pref->IsManaged();
 }
 
+bool PrefService::IsPreferenceManagedByCustodian(
+    const std::string& pref_name) const {
+  const Preference* pref = FindPreference(pref_name);
+  return pref && pref->IsManagedByCustodian();
+}
+
 bool PrefService::IsUserModifiablePreference(
     const std::string& pref_name) const {
   const Preference* pref = FindPreference(pref_name);
@@ -515,6 +521,10 @@ const base::Value* PrefService::Preference::GetRecommendedValue() const {
 
 bool PrefService::Preference::IsManaged() const {
   return pref_value_store()->PrefValueInManagedStore(name_);
+}
+
+bool PrefService::Preference::IsManagedByCustodian() const {
+  return pref_value_store()->PrefValueInSupervisedStore(name_.c_str());
 }
 
 bool PrefService::Preference::IsRecommended() const {

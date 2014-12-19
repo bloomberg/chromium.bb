@@ -8,7 +8,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.util.ArrayList;
@@ -161,7 +160,6 @@ public final class PrefServiceBridge {
         callback.onGotProfilePath(profilePath);
     }
 
-    @VisibleForTesting
     public boolean isAcceptCookiesEnabled() {
         return nativeGetAcceptCookiesEnabled();
     }
@@ -196,17 +194,32 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether geolocation informatoin can be shared with content
+     * @return whether push notifications are enabled.
+     */
+    public boolean isPushNotificationsEnabled() {
+        return nativeGetPushNotificationsEnabled();
+    }
+
+    /**
+     * @return whether geolocation information can be shared with content
      */
     public boolean isAllowLocationEnabled() {
         return nativeGetAllowLocationEnabled();
     }
 
     /**
-     * @return whether the location preference is configured by policy
+     * @return whether the location preference is modifiable by the user.
      */
-    public boolean isAllowLocationManaged() {
-        return nativeGetAllowLocationManaged();
+    public boolean isAllowLocationUserModifiable() {
+        return nativeGetAllowLocationUserModifiable();
+    }
+
+    /**
+     * @return whether the location preference is
+     * being managed by the custodian of the supervised account.
+     */
+    public boolean isAllowLocationManagedByCustodian() {
+        return nativeGetAllowLocationManagedByCustodian();
     }
 
     /**
@@ -520,6 +533,10 @@ public final class PrefServiceBridge {
         nativeSetRememberPasswordsEnabled(allow);
     }
 
+    public void setPushNotificationsEnabled(boolean allow) {
+        nativeSetPushNotificationsEnabled(allow);
+    }
+
     public void setAllowLocationEnabled(boolean allow) {
         nativeSetAllowLocationEnabled(allow);
     }
@@ -554,9 +571,30 @@ public final class PrefServiceBridge {
     /**
      * @return Whether the camera/microphone permission is enabled.
      */
-    @VisibleForTesting
     public boolean isCameraMicEnabled() {
         return nativeGetCameraMicEnabled();
+    }
+
+    /**
+     * Sets the preferences on whether to enable/disable camera and microphone
+     */
+    public void setCameraMicEnabled(boolean enabled) {
+        nativeSetCameraMicEnabled(enabled);
+    }
+
+    /**
+     * @return Whether the camera/microphone permission is managed
+     * by the custodian of the supervised account.
+     */
+    public boolean isCameraMicManagedByCustodian() {
+        return nativeGetCameraMicManagedByCustodian();
+    }
+
+    /**
+     * @return Whether the camera/microphone permission is editable by the user.
+     */
+    public boolean isCameraMicUserModifiable() {
+        return nativeGetCameraMicUserModifiable();
     }
 
     /**
@@ -685,11 +723,14 @@ public final class PrefServiceBridge {
     private native boolean nativeGetBlockThirdPartyCookiesManaged();
     private native boolean nativeGetRememberPasswordsEnabled();
     private native boolean nativeGetRememberPasswordsManaged();
-    private native boolean nativeGetAllowLocationManaged();
+    private native boolean nativeGetAllowLocationUserModifiable();
+    private native boolean nativeGetAllowLocationManagedByCustodian();
     private native boolean nativeGetDoNotTrackEnabled();
     private native boolean nativeGetPasswordEchoEnabled();
     private native boolean nativeGetFirstRunEulaAccepted();
     private native boolean nativeGetJavaScriptManaged();
+    private native boolean nativeGetCameraMicUserModifiable();
+    private native boolean nativeGetCameraMicManagedByCustodian();
     private native boolean nativeGetTranslateEnabled();
     private native boolean nativeGetTranslateManaged();
     private native boolean nativeGetResolveNavigationErrorEnabled();
@@ -713,7 +754,10 @@ public final class PrefServiceBridge {
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);
     private native boolean nativeGetAllowLocationEnabled();
+    private native boolean nativeGetPushNotificationsEnabled();
     private native void nativeSetAllowLocationEnabled(boolean allow);
+    private native void nativeSetCameraMicEnabled(boolean allow);
+    private native void nativeSetPushNotificationsEnabled(boolean allow);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
     private native boolean nativeGetAllowPopupsEnabled();
     private native boolean nativeGetAllowPopupsManaged();

@@ -95,6 +95,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // indicated pref store, even if that value is currently being overridden by
   // a higher-priority source.
   bool PrefValueInManagedStore(const std::string& name) const;
+  bool PrefValueInSupervisedStore(const std::string& name) const;
   bool PrefValueInExtensionStore(const std::string& name) const;
   bool PrefValueInUserStore(const std::string& name) const;
 

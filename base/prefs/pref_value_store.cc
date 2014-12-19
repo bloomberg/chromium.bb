@@ -138,6 +138,10 @@ bool PrefValueStore::PrefValueInManagedStore(const std::string& name) const {
   return PrefValueInStore(name, MANAGED_STORE);
 }
 
+bool PrefValueStore::PrefValueInSupervisedStore(const std::string& name) const {
+  return PrefValueInStore(name, SUPERVISED_USER_STORE);
+}
+
 bool PrefValueStore::PrefValueInExtensionStore(const std::string& name) const {
   return PrefValueInStore(name, EXTENSION_STORE);
 }
