@@ -81,6 +81,7 @@ void PushMessagingPermissionContext::DecidePermission(
   if (requesting_origin != embedding_origin) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, false /* granted */);
+    return;
   }
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile_);
