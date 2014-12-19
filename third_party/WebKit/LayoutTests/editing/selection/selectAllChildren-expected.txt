@@ -1,7 +1,14 @@
 foobar
-Success: s.anchorNode is [object Text].
-Success: s.anchorOffset is 0.
-Success: s.focusNode is [object Text].
-Success: s.focusOffset is 0.
-Success: window.getSelection() is foo.
-Success: window.getSelection() is foobar.
+PASS s.anchorNode is span1.firstChild
+PASS s.anchorOffset is 0
+PASS s.focusNode is span1.firstChild
+PASS s.focusOffset is 0
+PASS window.getSelection().toString() is "foo"
+PASS window.getSelection().toString() is "foobar"
+PASS s.selectAllChildren(null) did not throw exception.
+PASS s.selectAllChildren(window) did not throw exception.
+PASS s.selectAllChildren("") did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

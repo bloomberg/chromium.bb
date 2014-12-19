@@ -1,4 +1,7 @@
 <html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
 <body>
 <div id="test"><span id="span1">foo</span><span>bar</span></div>
 <div id="console"></div>
@@ -13,19 +16,7 @@ function log(str) {
     document.getElementById("console").appendChild(li);
 }
 
-function shouldBe(expr, expected) {
-    var actual = eval(expr);
-    if (actual != expected)
-        log("Failure: " + expr + " should be " + expected + ", was " + actual + ".");
-    else
-        log("Success: " + expr + " is " + expected + ".");
-}
-
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 var r = document.createRange();
-
 
 // select span1
 r.setStart(test, 0);
@@ -34,19 +25,23 @@ s.addRange(r);
 
 // replace the selection with span1's text node children
 s.selectAllChildren(span1.firstChild);
-shouldBe('s.anchorNode', span1.firstChild);
-shouldBe('s.anchorOffset', 0);
-shouldBe('s.focusNode', span1.firstChild);
-shouldBe('s.focusOffset', 0); // Strange, but matches Firefox
+shouldBe('s.anchorNode', 'span1.firstChild');
+shouldBe('s.anchorOffset', '0');
+shouldBe('s.focusNode', 'span1.firstChild');
+shouldBe('s.focusOffset', '0'); // Strange, but matches Firefox
 
 // replace the selection with span1's children
 s.selectAllChildren(span1);
-shouldBe('window.getSelection()', 'foo');
+shouldBe('window.getSelection().toString()', '"foo"');
 
 // replace the selection with test's children
 s.selectAllChildren(test);
-shouldBe('window.getSelection()', 'foobar');
+shouldBe('window.getSelection().toString()', '"foobar"');
 
+// call with types other than Node
+shouldNotThrow('s.selectAllChildren(null)');
+shouldNotThrow('s.selectAllChildren(window)');
+shouldNotThrow('s.selectAllChildren("")');
 </script>
 </body>
 </html>
