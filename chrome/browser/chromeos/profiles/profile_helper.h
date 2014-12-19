@@ -133,6 +133,7 @@ class ProfileHelper
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
   friend class SessionStateDelegateChromeOSTest;
+  friend class SystemTrayDelegateChromeOSTest;
 
   // BrowsingDataRemover::Observer implementation:
   void OnBrowsingDataRemoverDone() override;

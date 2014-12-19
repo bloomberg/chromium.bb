@@ -135,6 +135,7 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserAddedToSession(const user_manager::User* active_user) override;
+  void ActiveUserChanged(const user_manager::User* active_user) override;
 
   void UserChangedChildStatus(user_manager::User* user) override;
 
@@ -237,6 +238,7 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from ash::SessionStateObserver
   void UserAddedToSession(const std::string& user_id) override;
+  void ActiveUserChanged(const std::string& user_id) override;
 
   // Overridden from chrome::BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;

@@ -216,6 +216,8 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   registrar_->Add(this,
                   chrome::NOTIFICATION_PROFILE_DESTROYED,
                   content::NotificationService::AllSources());
+  registrar_->Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+                  content::NotificationService::AllSources());
 
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   CHECK(accessibility_manager);
@@ -835,6 +837,10 @@ void SystemTrayDelegateChromeOS::UserAddedToSession(
     const user_manager::User* active_user) {
 }
 
+void SystemTrayDelegateChromeOS::ActiveUserChanged(
+    const user_manager::User* /* active_user */) {
+}
+
 void SystemTrayDelegateChromeOS::UserChangedChildStatus(
     user_manager::User* user) {
   Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
@@ -911,7 +917,6 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
       base::Bind(&SystemTrayDelegateChromeOS::UpdatePerformanceTracing,
                  base::Unretained(this)));
 
-  UpdateClockType();
   UpdateShowLogoutButtonInTray();
   UpdateLogoutDialogDuration();
   UpdatePerformanceTracing();
@@ -952,6 +957,16 @@ bool SystemTrayDelegateChromeOS::ShouldUse24HourClock() const {
     return (system_value_found
                 ? system_use_24_hour_clock
                 : (base::GetHourClockType() == base::k24HourClock));
+
+  user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  if (active_user) {
+    Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(active_user);
+    if (user_profile) {
+      user_pref =
+          user_profile->GetPrefs()->FindPreference(prefs::kUse24HourClock);
+    }
+  }
 
   bool use_24_hour_clock = true;
   user_pref->GetValue()->GetAsBoolean(&use_24_hour_clock);
@@ -1095,6 +1110,10 @@ void SystemTrayDelegateChromeOS::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
+      UpdateClockType();
+      break;
+    }
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
       ash::UpdateInfo info;
       GetUpdateInfo(content::Source<UpgradeDetector>(source).ptr(), &info);
@@ -1266,6 +1285,11 @@ void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
 void SystemTrayDelegateChromeOS::UserAddedToSession(
     const std::string& user_id) {
   GetSystemTrayNotifier()->NotifyUserAddedToSession();
+}
+
+void SystemTrayDelegateChromeOS::ActiveUserChanged(
+    const std::string& /* user_id */) {
+  UpdateClockType();
 }
 
 // Overridden from chrome::BrowserListObserver.
