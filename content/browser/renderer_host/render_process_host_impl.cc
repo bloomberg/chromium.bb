@@ -67,6 +67,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
+#include "content/browser/navigator_connect/navigator_connect_context.h"
 #include "content/browser/navigator_connect/navigator_connect_dispatcher_host.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -888,7 +889,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new GeofencingDispatcherHost(
       storage_partition_impl_->GetGeofencingManager()));
   AddFilter(new NavigatorConnectDispatcherHost(
-      storage_partition_impl_->GetServiceWorkerContext()));
+      storage_partition_impl_->GetServiceWorkerContext(),
+      storage_partition_impl_->GetNavigatorConnectContext()));
   if (browser_command_line.HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures))
     AddFilter(new BluetoothDispatcherHost());

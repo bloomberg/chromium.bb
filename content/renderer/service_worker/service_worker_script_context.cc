@@ -10,6 +10,7 @@
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/message_port_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
@@ -34,6 +35,16 @@ void SendPostMessageToDocumentOnMainThread(
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new ServiceWorkerHostMsg_PostMessageToDocument(
       routing_id, client_id, message,
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
+}
+
+void SendCrossOriginMessageToClientOnMainThread(
+    ThreadSafeSender* sender,
+    int message_port_id,
+    const base::string16& message,
+    scoped_ptr<blink::WebMessagePortChannelArray> channels) {
+  sender->Send(new MessagePortHostMsg_PostMessage(
+      message_port_id, message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
 }
 
@@ -86,6 +97,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginConnectEvent,
                         OnCrossOriginConnectEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginMessageToWorker,
+                        OnCrossOriginMessageToWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
                         OnDidGetClientDocuments)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FocusClientResponse,
@@ -198,6 +211,21 @@ void ServiceWorkerScriptContext::PostMessageToDocument(
       base::Bind(&SendPostMessageToDocumentOnMainThread,
                  make_scoped_refptr(embedded_context_->thread_safe_sender()),
                  GetRoutingID(), client_id, message, base::Passed(&channels)));
+}
+
+void ServiceWorkerScriptContext::PostCrossOriginMessageToClient(
+    const blink::WebCrossOriginServiceWorkerClient& client,
+    const base::string16& message,
+    scoped_ptr<blink::WebMessagePortChannelArray> channels) {
+  // This may send channels for MessagePorts, and all internal book-keeping
+  // messages for MessagePort (e.g. QueueMessages) are sent from main thread
+  // (with thread hopping), so we need to do the same thread hopping here not
+  // to overtake those messages.
+  embedded_context_->main_thread_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&SendCrossOriginMessageToClientOnMainThread,
+                 make_scoped_refptr(embedded_context_->thread_safe_sender()),
+                 client.clientID, message, base::Passed(&channels)));
 }
 
 void ServiceWorkerScriptContext::FocusClient(
@@ -344,6 +372,30 @@ void ServiceWorkerScriptContext::OnPostMessage(
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.MessageEventExecutionTime",
       base::TimeTicks::Now() - before);
+}
+
+void ServiceWorkerScriptContext::OnCrossOriginMessageToWorker(
+    const CrossOriginServiceWorkerClient& client,
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids,
+    const std::vector<int>& new_routing_ids) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnCrossOriginMessageToWorker");
+  std::vector<WebMessagePortChannelImpl*> ports;
+  if (!sent_message_port_ids.empty()) {
+    base::MessageLoopProxy* loop_proxy = embedded_context_->main_thread_proxy();
+    ports.resize(sent_message_port_ids.size());
+    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+      ports[i] = new WebMessagePortChannelImpl(
+          new_routing_ids[i], sent_message_port_ids[i], loop_proxy);
+    }
+  }
+
+  blink::WebCrossOriginServiceWorkerClient web_client;
+  web_client.origin = client.origin;
+  web_client.targetURL = client.target_url;
+  web_client.clientID = client.message_port_id;
+  proxy_->dispatchCrossOriginMessageEvent(web_client, message, ports);
 }
 
 void ServiceWorkerScriptContext::OnDidGetClientDocuments(

@@ -376,6 +376,15 @@ void EmbeddedWorkerContextClient::postMessageToClient(
                                          make_scoped_ptr(channels));
 }
 
+void EmbeddedWorkerContextClient::postMessageToCrossOriginClient(
+    const blink::WebCrossOriginServiceWorkerClient& client,
+    const blink::WebString& message,
+    blink::WebMessagePortChannelArray* channels) {
+  DCHECK(script_context_);
+  script_context_->PostCrossOriginMessageToClient(client, message,
+                                                  make_scoped_ptr(channels));
+}
+
 void EmbeddedWorkerContextClient::focus(
     int client_id, blink::WebServiceWorkerClientFocusCallback* callback) {
   DCHECK(script_context_);

@@ -15,7 +15,7 @@
 #include "ipc/ipc_message.h"
 
 namespace content {
-class MessagePortMessageFilter;
+class MessagePortDelegate;
 
 class MessagePortService {
  public:
@@ -27,7 +27,7 @@ class MessagePortService {
 
   // These methods correspond to the message port related IPCs.
   void Create(int route_id,
-              MessagePortMessageFilter* filter,
+              MessagePortDelegate* delegate,
               int* message_port_id);
   void Destroy(int message_port_id);
   void Entangle(int local_message_port_id, int remote_message_port_id);
@@ -41,10 +41,9 @@ class MessagePortService {
 
   // Updates the information needed to reach a message port when it's sent to a
   // (possibly different) process.
-  void UpdateMessagePort(
-      int message_port_id,
-      MessagePortMessageFilter* filter,
-      int routing_id);
+  void UpdateMessagePort(int message_port_id,
+                         MessagePortDelegate* delegate,
+                         int routing_id);
 
   // The message port is being transferred to a new renderer process, but the
   // code doing that isn't able to immediately update the message port with a
@@ -60,7 +59,7 @@ class MessagePortService {
   // Closes and cleans up the message port.
   void ClosePort(int message_port_id);
 
-  void OnMessagePortMessageFilterClosing(MessagePortMessageFilter* filter);
+  void OnMessagePortDelegateClosing(MessagePortDelegate* filter);
 
   // Attempts to send the queued messages for a message port.
   void SendQueuedMessagesIfPossible(int message_port_id);

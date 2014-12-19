@@ -19,7 +19,7 @@ MessagePortMessageFilter::~MessagePortMessageFilter() {
 }
 
 void MessagePortMessageFilter::OnChannelClosing() {
-  MessagePortService::GetInstance()->OnMessagePortMessageFilterClosing(this);
+  MessagePortService::GetInstance()->OnMessagePortDelegateClosing(this);
 }
 
 bool MessagePortMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -57,6 +57,23 @@ void MessagePortMessageFilter::OnDestruct() const {
 
 int MessagePortMessageFilter::GetNextRoutingID() {
   return next_routing_id_.Run();
+}
+
+void MessagePortMessageFilter::SendMessage(
+    int route_id,
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids) {
+  // Generate new routing ids for all ports that were sent around. This avoids
+  // waiting for the created ports to send a sync message back to get routing
+  // ids.
+  std::vector<int> new_routing_ids;
+  UpdateMessagePortsWithNewRoutes(sent_message_port_ids, &new_routing_ids);
+  Send(new MessagePortMsg_Message(route_id, message, sent_message_port_ids,
+                                  new_routing_ids));
+}
+
+void MessagePortMessageFilter::SendMessagesAreQueued(int route_id) {
+  Send(new MessagePortMsg_MessagesQueued(route_id));
 }
 
 void MessagePortMessageFilter::UpdateMessagePortsWithNewRoutes(

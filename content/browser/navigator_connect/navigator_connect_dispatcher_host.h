@@ -13,6 +13,7 @@ class GURL;
 namespace content {
 
 struct CrossOriginServiceWorkerClient;
+class NavigatorConnectContext;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 
@@ -26,8 +27,9 @@ class ServiceWorkerRegistration;
 // if it is still handling a connection attempt).
 class NavigatorConnectDispatcherHost : public BrowserMessageFilter {
  public:
-  explicit NavigatorConnectDispatcherHost(
-      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+  NavigatorConnectDispatcherHost(
+      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+      const scoped_refptr<NavigatorConnectContext>& navigator_connect_context);
 
  private:
   ~NavigatorConnectDispatcherHost() override;
@@ -60,6 +62,7 @@ class NavigatorConnectDispatcherHost : public BrowserMessageFilter {
       bool accept_connection);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<NavigatorConnectContext> navigator_connect_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorConnectDispatcherHost);
 };

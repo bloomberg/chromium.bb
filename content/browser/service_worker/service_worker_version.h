@@ -240,6 +240,20 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const CrossOriginConnectCallback& callback,
       const CrossOriginServiceWorkerClient& client);
 
+  // Sends a cross origin message event to the associated embedded worker and
+  // asynchronously calls |callback| when the message was sent (or failed to
+  // sent).
+  // It is the responsibility of the code calling this method to make sure that
+  // any transferred message ports are put on hold while potentially a process
+  // for the service worker is spun up.
+  //
+  // This must be called when the status() is ACTIVATED.
+  void DispatchCrossOriginMessageEvent(
+      const CrossOriginServiceWorkerClient& client,
+      const base::string16& message,
+      const std::vector<int>& sent_message_port_ids,
+      const StatusCallback& callback);
+
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   // A potential controllee is a host having the version as its .installing
   // or .waiting version.

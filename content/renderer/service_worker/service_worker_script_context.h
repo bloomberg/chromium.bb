@@ -26,6 +26,7 @@
 
 namespace blink {
 struct WebCircularGeofencingRegion;
+struct WebCrossOriginServiceWorkerClient;
 class WebServiceWorkerContextProxy;
 }
 
@@ -72,6 +73,10 @@ class ServiceWorkerScriptContext {
       int client_id,
       const base::string16& message,
       scoped_ptr<blink::WebMessagePortChannelArray> channels);
+  void PostCrossOriginMessageToClient(
+      const blink::WebCrossOriginServiceWorkerClient& client,
+      const base::string16& message,
+      scoped_ptr<blink::WebMessagePortChannelArray> channels);
   void FocusClient(int client_id,
                    blink::WebServiceWorkerClientFocusCallback* callback);
   void SkipWaiting(blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
@@ -113,6 +118,11 @@ class ServiceWorkerScriptContext {
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
+  void OnCrossOriginMessageToWorker(
+      const CrossOriginServiceWorkerClient& client,
+      const base::string16& message,
+      const std::vector<int>& sent_message_port_ids,
+      const std::vector<int>& new_routing_ids);
   void OnDidGetClientDocuments(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnFocusClientResponse(int request_id, bool result);

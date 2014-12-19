@@ -5,6 +5,7 @@
 #include "content/browser/navigator_connect/navigator_connect_dispatcher_host.h"
 
 #include "content/browser/message_port_service.h"
+#include "content/browser/navigator_connect/navigator_connect_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/navigator_connect_messages.h"
 #include "content/common/navigator_connect_types.h"
@@ -12,9 +13,11 @@
 namespace content {
 
 NavigatorConnectDispatcherHost::NavigatorConnectDispatcherHost(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+    const scoped_refptr<NavigatorConnectContext>& navigator_connect_context)
     : BrowserMessageFilter(NavigatorConnectMsgStart),
-      service_worker_context_(service_worker_context) {
+      service_worker_context_(service_worker_context),
+      navigator_connect_context_(navigator_connect_context) {
 }
 
 NavigatorConnectDispatcherHost::~NavigatorConnectDispatcherHost() {
@@ -86,11 +89,12 @@ void NavigatorConnectDispatcherHost::OnConnectResult(
     // Close port since connection failed.
     MessagePortService::GetInstance()->ClosePort(client.message_port_id);
     Send(new NavigatorConnectMsg_ConnectResult(thread_id, request_id, false));
-  } else {
-    // TODO(mek): Update MessagePortService to make communication between client
-    // and service possible.
-    Send(new NavigatorConnectMsg_ConnectResult(thread_id, request_id, true));
+    return;
   }
+
+  // Register connection and post back result.
+  navigator_connect_context_->RegisterConnection(client, registration);
+  Send(new NavigatorConnectMsg_ConnectResult(thread_id, request_id, true));
 }
 
 }  // namespace content

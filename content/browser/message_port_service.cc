@@ -4,16 +4,17 @@
 
 #include "content/browser/message_port_service.h"
 
-#include "content/browser/message_port_message_filter.h"
+#include "content/browser/message_port_delegate.h"
 #include "content/common/message_port_messages.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
 struct MessagePortService::MessagePort {
-  // |filter| and |route_id| are what we need to send messages to the port.
-  // |filter| is just a weak pointer since we get notified when its process has
-  // gone away and remove it.
-  MessagePortMessageFilter* filter;
+  // |delegate| and |route_id| are what we need to send messages to the port.
+  // |delegate| is just a raw pointer since it notifies us by calling
+  // OnMessagePortDelegateClosing before it gets destroyed.
+  MessagePortDelegate* delegate;
   int route_id;
   // A globally unique id for this message port.
   int message_port_id;
@@ -33,7 +34,7 @@ struct MessagePortService::MessagePort {
   // messages are held in the browser process until the destination process is
   // ready to receive messages. This flag is set true when a message port is
   // transferred to a different process but there isn't immediately a
-  // MessagePortMessageFilter available for that new process. Once the
+  // MessagePortDelegate available for that new process. Once the
   // destination process is ready to receive messages it sends
   // MessagePortHostMsg_ReleaseMessages to set this flag to false.
   bool hold_messages_for_destination;
@@ -59,40 +60,39 @@ MessagePortService::MessagePortService()
 MessagePortService::~MessagePortService() {
 }
 
-void MessagePortService::UpdateMessagePort(
-    int message_port_id,
-    MessagePortMessageFilter* filter,
-    int routing_id) {
+void MessagePortService::UpdateMessagePort(int message_port_id,
+                                           MessagePortDelegate* delegate,
+                                           int routing_id) {
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
   }
 
   MessagePort& port = message_ports_[message_port_id];
-  port.filter = filter;
+  port.delegate = delegate;
   port.route_id = routing_id;
 }
 
-void MessagePortService::OnMessagePortMessageFilterClosing(
-    MessagePortMessageFilter* filter) {
+void MessagePortService::OnMessagePortDelegateClosing(
+    MessagePortDelegate* delegate) {
   // Check if the (possibly) crashed process had any message ports.
   for (MessagePorts::iterator iter = message_ports_.begin();
        iter != message_ports_.end();) {
     MessagePorts::iterator cur_item = iter++;
-    if (cur_item->second.filter == filter) {
+    if (cur_item->second.delegate == delegate) {
       Erase(cur_item->first);
     }
   }
 }
 
 void MessagePortService::Create(int route_id,
-                                MessagePortMessageFilter* filter,
+                                MessagePortDelegate* delegate,
                                 int* message_port_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   *message_port_id = ++next_message_port_id_;
 
   MessagePort port;
-  port.filter = filter;
+  port.delegate = delegate;
   port.route_id = route_id;
   port.message_port_id = *message_port_id;
   port.entangled_message_port_id = MSG_ROUTING_NONE;
@@ -183,27 +183,14 @@ void MessagePortService::PostMessageTo(
     return;
   }
 
-  if (!entangled_port.filter) {
+  if (!entangled_port.delegate) {
     NOTREACHED();
     return;
   }
 
-  // If a message port was sent around, the new location will need a routing
-  // id.  Instead of having the created port send us a sync message to get it,
-  // send along with the message.
-  std::vector<int> new_routing_ids(sent_message_port_ids.size());
-  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-    new_routing_ids[i] = entangled_port.filter->GetNextRoutingID();
-    sent_ports[i]->filter = entangled_port.filter;
-
-    // Update the entry for the sent port as it can be in a different process.
-    sent_ports[i]->route_id = new_routing_ids[i];
-  }
-
   // Now send the message to the entangled port.
-  entangled_port.filter->Send(new MessagePortMsg_Message(
-      entangled_port.route_id, message, sent_message_port_ids,
-      new_routing_ids));
+  entangled_port.delegate->SendMessage(entangled_port.route_id, message,
+                                       sent_message_port_ids);
 }
 
 void MessagePortService::QueueMessages(int message_port_id) {
@@ -213,10 +200,10 @@ void MessagePortService::QueueMessages(int message_port_id) {
   }
 
   MessagePort& port = message_ports_[message_port_id];
-  if (port.filter) {
-    port.filter->Send(new MessagePortMsg_MessagesQueued(port.route_id));
+  if (port.delegate) {
+    port.delegate->SendMessagesAreQueued(port.route_id);
     port.queue_for_inflight_messages = true;
-    port.filter = NULL;
+    port.delegate = NULL;
   }
 }
 
@@ -258,7 +245,7 @@ void MessagePortService::SendQueuedMessagesIfPossible(int message_port_id) {
   }
 
   MessagePort& port = message_ports_[message_port_id];
-  if (port.queue_messages() || !port.filter)
+  if (port.queue_messages() || !port.delegate)
     return;
 
   for (QueuedMessages::iterator iter = port.queued_messages.begin();

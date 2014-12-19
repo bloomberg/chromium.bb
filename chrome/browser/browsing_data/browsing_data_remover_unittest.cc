@@ -151,6 +151,9 @@ class TestStoragePartition : public StoragePartition {
     return NULL;
   }
   content::GeofencingManager* GetGeofencingManager() override { return NULL; }
+  content::NavigatorConnectContext* GetNavigatorConnectContext() override {
+    return nullptr;
+  }
 
   content::HostZoomMap* GetHostZoomMap() override { return NULL; }
   content::HostZoomLevelContext* GetHostZoomLevelContext() override {

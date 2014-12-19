@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MESSAGE_PORT_MESSAGE_FILTER_H_
 
 #include "base/callback.h"
+#include "content/browser/message_port_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -13,7 +14,9 @@ namespace content {
 
 // Filter for MessagePort related IPC messages (creating and destroying a
 // MessagePort, sending a message via a MessagePort etc).
-class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
+class CONTENT_EXPORT MessagePortMessageFilter
+    : NON_EXPORTED_BASE(public MessagePortDelegate),
+      public BrowserMessageFilter {
  public:
   typedef base::Callback<int(void)> NextRoutingIDCallback;
 
@@ -27,6 +30,12 @@ class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
   void OnDestruct() const override;
 
   int GetNextRoutingID();
+
+  // MessagePortDelegate implementation.
+  void SendMessage(int route_id,
+                   const base::string16& message,
+                   const std::vector<int>& sent_message_port_ids) override;
+  void SendMessagesAreQueued(int route_id) override;
 
   // Updates message ports registered for |message_port_ids| and returns
   // new routing IDs for the updated ports via |new_routing_ids|.

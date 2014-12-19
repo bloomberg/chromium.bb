@@ -45,6 +45,7 @@ class HostZoomMap;
 class DOMStorageContext;
 class GeofencingManager;
 class IndexedDBContext;
+class NavigatorConnectContext;
 class ServiceWorkerContext;
 class ZoomLevelDelegate;
 
@@ -70,6 +71,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
+  virtual NavigatorConnectContext* GetNavigatorConnectContext() = 0;
 
   static const uint32 REMOVE_DATA_MASK_APPCACHE        = 1 << 0;
   static const uint32 REMOVE_DATA_MASK_COOKIES         = 1 << 1;

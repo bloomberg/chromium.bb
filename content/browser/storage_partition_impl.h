@@ -48,6 +48,7 @@ class StoragePartitionImpl : public StoragePartition {
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
+  NavigatorConnectContext* GetNavigatorConnectContext() override;
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
@@ -123,7 +124,8 @@ class StoragePartitionImpl : public StoragePartition {
       WebRTCIdentityStore* webrtc_identity_store,
       storage::SpecialStoragePolicy* special_storage_policy,
       GeofencingManager* geofencing_manager,
-      HostZoomLevelContext* host_zoom_level_context);
+      HostZoomLevelContext* host_zoom_level_context,
+      NavigatorConnectContext* navigator_connect_context);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
@@ -165,6 +167,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<GeofencingManager> geofencing_manager_;
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
+  scoped_refptr<NavigatorConnectContext> navigator_connect_context_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };
