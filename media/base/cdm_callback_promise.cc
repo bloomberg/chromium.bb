@@ -38,6 +38,5 @@ void CdmCallbackPromise<T...>::reject(MediaKeys::Exception exception_code,
 // Explicit template instantiation for the Promises needed.
 template class MEDIA_EXPORT CdmCallbackPromise<>;
 template class MEDIA_EXPORT CdmCallbackPromise<std::string>;
-template class MEDIA_EXPORT CdmCallbackPromise<KeyIdsVector>;
 
 }  // namespace media

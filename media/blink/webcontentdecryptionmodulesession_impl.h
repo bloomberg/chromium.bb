@@ -50,7 +50,6 @@ class WebContentDecryptionModuleSessionImpl
                       blink::WebContentDecryptionModuleResult result);
   virtual void close(blink::WebContentDecryptionModuleResult result);
   virtual void remove(blink::WebContentDecryptionModuleResult result);
-  virtual void getUsableKeyIds(blink::WebContentDecryptionModuleResult result);
 
   // TODO(jrummell): Remove the next method once blink updated.
   virtual void release(blink::WebContentDecryptionModuleResult result);

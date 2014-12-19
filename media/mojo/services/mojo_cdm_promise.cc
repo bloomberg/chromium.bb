@@ -58,6 +58,5 @@ void MojoCdmPromise<T...>::reject(MediaKeys::Exception exception,
 
 template class MojoCdmPromise<>;
 template class MojoCdmPromise<std::string>;
-template class MojoCdmPromise<std::vector<std::vector<uint8_t>>>;
 
 }  // namespace media

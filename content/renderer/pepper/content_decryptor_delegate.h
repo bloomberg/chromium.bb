@@ -77,8 +77,6 @@ class ContentDecryptorDelegate {
                     scoped_ptr<media::SimpleCdmPromise> promise);
   void RemoveSession(const std::string& web_session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise);
-  void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<media::KeyIdsPromise> promise);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);

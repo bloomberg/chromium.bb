@@ -378,16 +378,8 @@ void ClearKeyCdm::SetServerCertificate(uint32 promise_id,
 void ClearKeyCdm::GetUsableKeyIds(uint32_t promise_id,
                                   const char* web_session_id,
                                   uint32_t web_session_id_length) {
-  std::string web_session_str(web_session_id, web_session_id_length);
-  scoped_ptr<media::KeyIdsPromise> promise(
-      new media::CdmCallbackPromise<KeyIdsVector>(
-          base::Bind(&ClearKeyCdm::OnUsableKeyIdsObtained,
-                     base::Unretained(this),
-                     promise_id),
-          base::Bind(&ClearKeyCdm::OnPromiseFailed,
-                     base::Unretained(this),
-                     promise_id)));
-  decryptor_.GetUsableKeyIds(web_session_str, promise.Pass());
+  // Not used anymore, but required for CDM_6 interface.
+  NOTREACHED() << "GetUsableKeyIds() should not be called";
 }
 
 void ClearKeyCdm::TimerExpired(void* context) {
@@ -759,16 +751,6 @@ void ClearKeyCdm::OnSessionUpdated(uint32 promise_id,
   }
 
   host_->OnResolvePromise(promise_id);
-}
-
-void ClearKeyCdm::OnUsableKeyIdsObtained(uint32 promise_id,
-                                         const KeyIdsVector& key_ids) {
-  scoped_ptr<cdm::BinaryData[]> result(new cdm::BinaryData[key_ids.size()]);
-  for (uint32 i = 0; i < key_ids.size(); ++i) {
-    result[i].data = key_ids[i].data();
-    result[i].length = key_ids[i].size();
-  }
-  host_->OnResolveKeyIdsPromise(promise_id, result.get(), key_ids.size());
 }
 
 void ClearKeyCdm::OnPromiseResolved(uint32 promise_id) {

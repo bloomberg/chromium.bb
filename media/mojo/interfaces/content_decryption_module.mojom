@@ -74,12 +74,6 @@ interface ContentDecryptionModule {
   // |session_id|.
   RemoveSession(string session_id) => (CdmPromiseResult result);
 
-  // Retrieves the key IDs for keys in the session that the CDM knows are
-  // currently usable to decrypt media data. If |result.success| is
-  // false, the |usable_key_ids| will be null.
-  GetUsableKeyIds(string session_id)
-      => (CdmPromiseResult result, array<array<uint8>>? usable_key_ids);
-
   // Assigns the |cdm_id| to the CDM, and retrieves the |decryptor| associated
   // with this CDM instance.
   // A CDM implementation must choose to support either an explicit or implicit

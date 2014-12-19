@@ -44,11 +44,6 @@ class MojoCdmService
   void RemoveSession(
       const mojo::String& session_id,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) final;
-  void GetUsableKeyIds(
-      const mojo::String& session_id,
-      const mojo::Callback<void(mojo::CdmPromiseResultPtr,
-                                mojo::Array<mojo::Array<uint8_t>>)>& callback)
-      final;
   void GetCdmContext(int32_t cdm_id,
                      mojo::InterfaceRequest<mojo::Decryptor> decryptor) final;
 

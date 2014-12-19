@@ -241,14 +241,6 @@ class AesDecryptorTest : public testing::Test {
     EXPECT_EQ(expected_result, RESOLVED) << "Unexpectedly resolved.";
   }
 
-  void OnResolveWithUsableKeyIds(PromiseResult expected_result,
-                                 uint32 expected_count,
-                                 const KeyIdsVector& useable_key_ids) {
-    EXPECT_EQ(expected_result, RESOLVED) << "Unexpectedly resolved.";
-    EXPECT_EQ(expected_count, useable_key_ids.size());
-    useable_key_ids_ = useable_key_ids;
-  }
-
   void OnReject(PromiseResult expected_result,
                 MediaKeys::Exception exception_code,
                 uint32 system_code,
@@ -277,20 +269,6 @@ class AesDecryptorTest : public testing::Test {
             base::Bind(&AesDecryptorTest::OnReject,
                        base::Unretained(this),
                        expected_result)));
-    return promise.Pass();
-  }
-
-  scoped_ptr<KeyIdsPromise> CreateUsableKeyIdsPromise(
-      PromiseResult expected_result,
-      uint32 expected_count) {
-    scoped_ptr<KeyIdsPromise> promise(new CdmCallbackPromise<KeyIdsVector>(
-        base::Bind(&AesDecryptorTest::OnResolveWithUsableKeyIds,
-                   base::Unretained(this),
-                   expected_result,
-                   expected_count),
-        base::Bind(&AesDecryptorTest::OnReject,
-                   base::Unretained(this),
-                   expected_result)));
     return promise.Pass();
   }
 
@@ -342,23 +320,6 @@ class AesDecryptorTest : public testing::Test {
                              reinterpret_cast<const uint8*>(key.c_str()),
                              key.length(),
                              CreatePromise(expected_result));
-  }
-
-  void GetUsableKeyIdsAndExpect(const std::string& session_id,
-                                PromiseResult expected_result,
-                                uint32 expected_count) {
-    decryptor_.GetUsableKeyIds(
-        session_id, CreateUsableKeyIdsPromise(expected_result, expected_count));
-  }
-
-  bool UsableKeyIdsContains(std::vector<uint8> expected) {
-    for (KeyIdsVector::iterator it = useable_key_ids_.begin();
-         it != useable_key_ids_.end();
-         ++it) {
-      if (*it == expected)
-        return true;
-    }
-    return false;
   }
 
   MOCK_METHOD2(BufferDecrypted, void(Decryptor::Status,
@@ -432,10 +393,6 @@ class AesDecryptorTest : public testing::Test {
   AesDecryptor decryptor_;
   AesDecryptor::DecryptCB decrypt_cb_;
   std::string web_session_id_;
-
-  // Copy of the vector from the last successful call to
-  // OnResolveWithUsableKeyIds().
-  KeyIdsVector useable_key_ids_;
 
   // Constants for testing.
   const std::vector<uint8> original_data_;
@@ -877,28 +834,6 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "}";
   UpdateSessionAndExpect(session_id, kJwksWithEmptyKeyId, REJECTED);
   CloseSession(session_id);
-}
-
-TEST_F(AesDecryptorTest, GetKeyIds) {
-  std::vector<uint8> key_id1(kKeyId, kKeyId + arraysize(kKeyId));
-  std::vector<uint8> key_id2(kKeyId2, kKeyId2 + arraysize(kKeyId2));
-
-  std::string session_id = CreateSession(key_id_);
-  GetUsableKeyIdsAndExpect(session_id, RESOLVED, 0);
-  EXPECT_FALSE(UsableKeyIdsContains(key_id1));
-  EXPECT_FALSE(UsableKeyIdsContains(key_id2));
-
-  // Add 1 key, verify ID is returned.
-  UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED);
-  GetUsableKeyIdsAndExpect(session_id, RESOLVED, 1);
-  EXPECT_TRUE(UsableKeyIdsContains(key_id1));
-  EXPECT_FALSE(UsableKeyIdsContains(key_id2));
-
-  // Add second key, verify both IDs returned.
-  UpdateSessionAndExpect(session_id, kKey2AsJWK, RESOLVED);
-  GetUsableKeyIdsAndExpect(session_id, RESOLVED, 2);
-  EXPECT_TRUE(UsableKeyIdsContains(key_id1));
-  EXPECT_TRUE(UsableKeyIdsContains(key_id2));
 }
 
 }  // namespace media

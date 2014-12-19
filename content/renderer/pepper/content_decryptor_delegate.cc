@@ -34,7 +34,6 @@
 
 using media::CdmPromise;
 using media::Decryptor;
-using media::KeyIdsPromise;
 using media::MediaKeys;
 using media::NewSessionCdmPromise;
 using media::SimpleCdmPromise;
@@ -441,20 +440,6 @@ void ContentDecryptorDelegate::RemoveSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
 
-void ContentDecryptorDelegate::GetUsableKeyIds(
-    const std::string& web_session_id,
-    scoped_ptr<media::KeyIdsPromise> promise) {
-  if (web_session_id.length() > media::limits::kMaxWebSessionIdLength) {
-    promise->reject(
-        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
-    return;
-  }
-
-  uint32_t promise_id = SavePromise(promise.Pass());
-  plugin_decryption_interface_->GetUsableKeyIds(
-      pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
-}
-
 // TODO(xhwang): Remove duplication of code in Decrypt(),
 // DecryptAndDecodeAudio() and DecryptAndDecodeVideo().
 bool ContentDecryptorDelegate::Decrypt(
@@ -732,38 +717,9 @@ void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
 void ContentDecryptorDelegate::OnPromiseResolvedWithKeyIds(
     uint32 promise_id,
     PP_Var key_ids_array) {
-  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
-
-  ArrayVar* key_ids = ArrayVar::FromPPVar(key_ids_array);
-  DCHECK(key_ids && key_ids->GetLength() <= media::limits::kMaxKeyIds);
-  media::KeyIdsVector key_ids_vector;
-  if (key_ids && key_ids->GetLength() <= media::limits::kMaxKeyIds) {
-    for (size_t i = 0; i < key_ids->GetLength(); ++i) {
-      ArrayBufferVar* array_buffer = ArrayBufferVar::FromPPVar(key_ids->Get(i));
-
-      if (!array_buffer ||
-          array_buffer->ByteLength() < media::limits::kMinKeyIdLength ||
-          array_buffer->ByteLength() > media::limits::kMaxKeyIdLength) {
-        NOTREACHED();
-        continue;
-      }
-
-      std::vector<uint8> key_id;
-      const uint8* data = static_cast<const uint8*>(array_buffer->Map());
-      key_id.assign(data, data + array_buffer->ByteLength());
-      key_ids_vector.push_back(key_id);
-    }
-  }
-
-  if (!promise ||
-      promise->GetResolveParameterType() !=
-          media::CdmPromise::KEY_IDS_VECTOR_TYPE) {
-    NOTREACHED();
-    return;
-  }
-
-  KeyIdsPromise* key_ids_promise(static_cast<KeyIdsPromise*>(promise.get()));
-  key_ids_promise->resolve(key_ids_vector);
+  // Since there are no calls to GetUsableKeyIds(), this should never be called.
+  // FIXME(jrummell): remove once CDM interface updated.
+  NOTREACHED();
 }
 
 void ContentDecryptorDelegate::OnPromiseRejected(

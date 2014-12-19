@@ -52,8 +52,6 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
                     scoped_ptr<SimpleCdmPromise> promise) final;
   void RemoveSession(const std::string& session_id,
                      scoped_ptr<SimpleCdmPromise> promise) final;
-  void GetUsableKeyIds(const std::string& session_id,
-                       scoped_ptr<KeyIdsPromise> promise) final;
   CdmContext* GetCdmContext() final;
 
  private:

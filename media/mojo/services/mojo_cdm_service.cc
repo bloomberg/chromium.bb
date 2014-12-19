@@ -97,15 +97,6 @@ void MojoCdmService::RemoveSession(
       scoped_ptr<SimpleCdmPromise>(new SimpleMojoCdmPromise(callback)));
 }
 
-void MojoCdmService::GetUsableKeyIds(
-    const mojo::String& session_id,
-    const mojo::Callback<void(mojo::CdmPromiseResultPtr,
-                              mojo::Array<mojo::Array<uint8_t>>)>& callback) {
-  cdm_->GetUsableKeyIds(
-      session_id.To<std::string>(),
-      scoped_ptr<KeyIdsPromise>(new KeyIdsMojoCdmPromise(callback)));
-}
-
 void MojoCdmService::GetCdmContext(
     int32_t cdm_id,
     mojo::InterfaceRequest<mojo::Decryptor> decryptor) {

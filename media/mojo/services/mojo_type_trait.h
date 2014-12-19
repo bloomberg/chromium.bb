@@ -21,12 +21,6 @@ struct MojoTypeTrait<std::string> {
   static MojoType DefaultValue() { return MojoType(); }
 };
 
-template <>
-struct MojoTypeTrait<KeyIdsVector> {
-  typedef mojo::Array<mojo::Array<uint8_t>> MojoType;
-  static MojoType DefaultValue() { return MojoType(); }
-};
-
 }  // namespace media
 
 #endif  // MEDIA_MOJO_SERVICES_MOJO_TYPE_TRAIT_H_

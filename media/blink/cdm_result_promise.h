@@ -65,14 +65,6 @@ inline void CdmResultPromise<>::resolve() {
   web_cdm_result_.complete();
 }
 
-template <>
-inline void CdmResultPromise<media::KeyIdsVector>::resolve(
-    const media::KeyIdsVector& result) {
-  // TODO(jrummell): Update blink::WebContentDecryptionModuleResult to
-  // handle the set of keys.
-  reject(media::MediaKeys::NOT_SUPPORTED_ERROR, 0, "Not implemented.");
-}
-
 template <typename... T>
 void CdmResultPromise<T...>::reject(media::MediaKeys::Exception exception_code,
                                     uint32 system_code,

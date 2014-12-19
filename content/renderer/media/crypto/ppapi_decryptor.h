@@ -67,8 +67,6 @@ class PpapiDecryptor : public media::MediaKeys,
                     scoped_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& web_session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<media::KeyIdsPromise> promise) override;
   CdmContext* GetCdmContext() override;
 
   // media::CdmContext implementation.

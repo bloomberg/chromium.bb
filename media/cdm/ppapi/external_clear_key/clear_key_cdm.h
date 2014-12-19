@@ -101,7 +101,6 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionCreated(uint32 promise_id, const std::string& web_session_id);
   void OnSessionLoaded(uint32 promise_id, const std::string& web_session_id);
   void OnSessionUpdated(uint32 promise_id, const std::string& web_session_id);
-  void OnUsableKeyIdsObtained(uint32 promise_id, const KeyIdsVector& key_ids);
   void OnPromiseResolved(uint32 promise_id);
   void OnPromiseFailed(uint32 promise_id,
                        MediaKeys::Exception exception_code,

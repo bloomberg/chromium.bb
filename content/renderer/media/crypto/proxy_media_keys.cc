@@ -137,11 +137,6 @@ void ProxyMediaKeys::RemoveSession(
   promise->reject(NOT_SUPPORTED_ERROR, 0, "Not yet implemented.");
 }
 
-void ProxyMediaKeys::GetUsableKeyIds(const std::string& web_session_id,
-                                     scoped_ptr<media::KeyIdsPromise> promise) {
-  promise->reject(NOT_SUPPORTED_ERROR, 0, "Not yet implemented.");
-}
-
 media::CdmContext* ProxyMediaKeys::GetCdmContext() {
   return this;
 }

@@ -113,14 +113,6 @@ void MojoCdm::RemoveSession(const std::string& session_id,
                                                     base::Passed(&promise)));
 }
 
-void MojoCdm::GetUsableKeyIds(const std::string& session_id,
-                              scoped_ptr<KeyIdsPromise> promise) {
-  remote_cdm_->GetUsableKeyIds(
-      session_id,
-      base::Bind(&MojoCdm::OnPromiseResult<KeyIdsVector>,
-                 weak_factory_.GetWeakPtr(), base::Passed(&promise)));
-}
-
 CdmContext* MojoCdm::GetCdmContext() {
   NOTIMPLEMENTED();
   return nullptr;

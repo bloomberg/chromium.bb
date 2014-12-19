@@ -83,11 +83,6 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void RemoveSession(const std::string& web_session_id,
                      scoped_ptr<SimpleCdmPromise> promise);
 
-  // Retrieves the key IDs for keys in the session that the CDM knows are
-  // currently usable to decrypt media data.
-  void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<KeyIdsPromise> promise);
-
   // Returns the CdmContext associated with |media_keys_|.
   // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
   // after WebContentDecryptionModule is freed. http://crbug.com/330324

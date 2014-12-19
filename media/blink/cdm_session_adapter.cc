@@ -121,12 +121,6 @@ void CdmSessionAdapter::RemoveSession(
   media_keys_->RemoveSession(web_session_id, promise.Pass());
 }
 
-void CdmSessionAdapter::GetUsableKeyIds(
-    const std::string& web_session_id,
-    scoped_ptr<KeyIdsPromise> promise) {
-  media_keys_->GetUsableKeyIds(web_session_id, promise.Pass());
-}
-
 CdmContext* CdmSessionAdapter::GetCdmContext() {
   return media_keys_->GetCdmContext();
 }

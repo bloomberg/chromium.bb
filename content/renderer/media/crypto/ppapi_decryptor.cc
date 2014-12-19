@@ -183,18 +183,6 @@ void PpapiDecryptor::RemoveSession(
   CdmDelegate()->RemoveSession(web_session_id, promise.Pass());
 }
 
-void PpapiDecryptor::GetUsableKeyIds(const std::string& web_session_id,
-                                     scoped_ptr<media::KeyIdsPromise> promise) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-
-  if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
-    return;
-  }
-
-  CdmDelegate()->GetUsableKeyIds(web_session_id, promise.Pass());
-}
-
 media::CdmContext* PpapiDecryptor::GetCdmContext() {
   return this;
 }

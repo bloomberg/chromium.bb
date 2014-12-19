@@ -57,8 +57,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
                     scoped_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& web_session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<media::KeyIdsPromise> promise) override;
   media::CdmContext* GetCdmContext() override;
 
   // media::CdmContext implementation.

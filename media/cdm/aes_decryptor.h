@@ -54,8 +54,6 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
                     scoped_ptr<SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& web_session_id,
                      scoped_ptr<SimpleCdmPromise> promise) override;
-  void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<KeyIdsPromise> promise) override;
   CdmContext* GetCdmContext() override;
 
   // CdmContext implementation.

@@ -140,15 +140,6 @@ void WebContentDecryptionModuleSessionImpl::remove(
                               new CdmResultPromise<>(result, std::string())));
 }
 
-void WebContentDecryptionModuleSessionImpl::getUsableKeyIds(
-    blink::WebContentDecryptionModuleResult result) {
-  DCHECK(!web_session_id_.empty());
-  adapter_->GetUsableKeyIds(
-      web_session_id_,
-      scoped_ptr<KeyIdsPromise>(
-          new CdmResultPromise<KeyIdsVector>(result, std::string())));
-}
-
 void WebContentDecryptionModuleSessionImpl::release(
     blink::WebContentDecryptionModuleResult result) {
   close(result);
