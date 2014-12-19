@@ -36,17 +36,16 @@
       'SC', 'sc')"/>.
     </para>
 
-    <xsl:if test="/doxygen/compounddef[@kind='class']">
+    <xsl:apply-templates select="/doxygen/compounddef[@kind='class']" />
+
+    <section id="{$which}-Functions">
+      <title>Functions</title>
+      <para />
       <variablelist>
-        <xsl:apply-templates select="/doxygen/compounddef" />
+        <xsl:apply-templates select="/doxygen/compounddef[@kind!='class']/sectiondef/memberdef" />
       </variablelist>
-    </xsl:if>
+    </section>
 
-    <para>Methods for the respective classes.</para>
-
-    <variablelist>
-      <xsl:apply-templates select="/doxygen/compounddef/sectiondef/memberdef" />
-    </variablelist>
   </appendix>
 </xsl:template>
 
@@ -104,6 +103,11 @@
   <programlisting><xsl:apply-templates /></programlisting>
 </xsl:template>
 
+<!-- stops cross-references in the section titles -->
+<xsl:template match="briefdescription">
+  <xsl:value-of select="." />
+</xsl:template>
+
 <!-- this opens a para for each detaileddescription/para. I could not find a
      way to extract the right text for the description from the
      source otherwise. Downside: we can't use para for return value, "see
@@ -143,18 +147,20 @@
 <!-- classes -->
 <xsl:template match="compounddef" >
   <xsl:if test="@kind = 'class'">
-    <varlistentry id="{$which}-{@id}">
-        <term>
+    <section id="{$which}-{@id}">
+        <title>
             <xsl:value-of select="compoundname" />
             <xsl:if test="normalize-space(briefdescription) != ''">
                 - <xsl:apply-templates select="briefdescription" />
             </xsl:if>
-        </term>
+        </title>
 
-        <listitem>
-          <xsl:apply-templates select="detaileddescription" />
-        </listitem>
-    </varlistentry>
+        <xsl:apply-templates select="detaileddescription" />
+
+        <variablelist>
+          <xsl:apply-templates select="sectiondef/memberdef" />
+        </variablelist>
+    </section>
   </xsl:if>
 </xsl:template>
 </xsl:stylesheet>
