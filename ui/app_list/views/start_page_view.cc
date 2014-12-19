@@ -121,6 +121,7 @@ void StartPageView::InitTilesContainer() {
   for (size_t i = 0; i < kNumStartPageTiles; ++i) {
     SearchResultTileItemView* tile_item = new SearchResultTileItemView();
     tiles_container_->AddChildView(tile_item);
+    tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
     search_result_tile_views_.push_back(tile_item);
   }
 
@@ -129,6 +130,7 @@ void StartPageView::InitTilesContainer() {
       app_list_main_view_->contents_view(),
       view_delegate_->GetModel()->top_level_item_list());
   all_apps_button_->UpdateIcon();
+  all_apps_button_->SetParentBackgroundColor(kLabelBackgroundColor);
   tiles_container_->AddChildView(all_apps_button_);
 }
 

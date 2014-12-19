@@ -22,6 +22,7 @@ namespace app_list {
 
 TileItemView::TileItemView()
     : views::CustomButton(this),
+      parent_background_color_(SK_ColorTRANSPARENT),
       icon_(new views::ImageView),
       title_(new views::Label),
       selected_(false) {
@@ -56,6 +57,11 @@ void TileItemView::SetSelected(bool selected) {
   UpdateBackgroundColor();
 }
 
+void TileItemView::SetParentBackgroundColor(SkColor color) {
+  parent_background_color_ = color;
+  UpdateBackgroundColor();
+}
+
 void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
   icon_->SetImage(icon);
 }
@@ -70,10 +76,20 @@ void TileItemView::StateChanged() {
 
 void TileItemView::UpdateBackgroundColor() {
   views::Background* background = nullptr;
-  if (selected_)
-    background = views::Background::CreateSolidBackground(kSelectedColor);
-  else if (state() == STATE_HOVERED || state() == STATE_PRESSED)
-    background = views::Background::CreateSolidBackground(kHighlightedColor);
+  SkColor background_color = parent_background_color_;
+
+  if (selected_) {
+    background_color = kSelectedColor;
+    background = views::Background::CreateSolidBackground(background_color);
+  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+    background_color = kHighlightedColor;
+    background = views::Background::CreateSolidBackground(background_color);
+  }
+
+  // Tell the label what color it will be drawn onto. It will use whether the
+  // background color is opaque or transparent to decide whether to use subpixel
+  // rendering. Does not actually set the label's background color.
+  title_->SetBackgroundColor(background_color);
 
   set_background(background);
   SchedulePaint();

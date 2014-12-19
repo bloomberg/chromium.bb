@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_TILE_ITEM_VIEW_H_
 
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -30,6 +31,11 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   void SetSelected(bool selected);
 
+  // Informs the TileItemView of its parent's background color. The controls
+  // within the TileItemView will adapt to suit the given color.
+  void SetParentBackgroundColor(SkColor color);
+  SkColor parent_background_color() { return parent_background_color_; }
+
   // Overridden from views::CustomButton:
   void StateChanged() override;
 
@@ -43,6 +49,8 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
+
+  SkColor parent_background_color_;
 
   views::ImageView* icon_;  // Owned by views hierarchy.
   views::Label* title_;     // Owned by views hierarchy.
