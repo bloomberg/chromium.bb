@@ -15,18 +15,24 @@
 <body>
   <div id="container">
     <img id="header-image" class="portrait" src="header.svg">
-    <p i18n-content="heading" id="heading"></p>
+    <p id="heading" i18n-content="heading"></p>
     <div>
       <img id="header-image" class="landscape" src="header.svg">
       <p id="description">
         <span i18n-content="description-1"></span>
-        <a class="colored-link" href="#learn-more" i18n-content="feature-name"></a>
+        <a class="colored-link" href="#learn-more"
+            i18n-content="feature-name">
+        </a>
         <span i18n-content="description-2"></span>
       </p>
     </div>
     <div id="button-container">
-      <span id="optout-label" class="label"><a href="#optout" i18n-content="optOut"></a></span>
-      <span id="optin-label" class="label"><a href="#optin" i18n-content="optIn"></a></span>
+      <button id="optout-button">
+        <span class="caption" i18n-content="optOut"></span>
+      </button>
+      <button id="optin-button">
+        <span class="caption" i18n-content="optIn"></span>
+      </button>
     </div>
   </div>
 </body>

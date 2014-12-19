@@ -7,6 +7,14 @@
 <include src="../../../../ui/webui/resources/js/load_time_data.js">
 
 /**
+ * The amount of delay to use in the opt-in action in order to give time for
+ * the fade-out animation to execute, before navigating to the opt-in URL,
+ * in milliseconds.
+ * @const
+ */
+var OPT_IN_DELAY_MS = 65;
+
+/**
  * Once the DOM is loaded, determine if the header image is to be kept and
  * register a handler to add the 'hide' class to the container element in order
  * to hide it.
@@ -15,8 +23,14 @@ document.addEventListener('DOMContentLoaded', function(event) {
   if (config['hideHeader']) {
     $('container').removeChild($('header-image'));
   }
-  $('optin-label').addEventListener('click', function() {
+  $('optin-button').addEventListener('click', function() {
     $('container').classList.add('hide');
+    setTimeout(function() {
+      location.hash = 'optin';
+    }, OPT_IN_DELAY_MS);
+  });
+  $('optout-button').addEventListener('click', function() {
+    location.hash = 'optout';
   });
 });
 
