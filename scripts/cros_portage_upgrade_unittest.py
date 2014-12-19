@@ -1932,7 +1932,7 @@ class RunBoardTest(CpuTestBase):
     mocked_upgrader._RunGit(
         '/tmp/portage', ['remote', 'update'])
     mocked_upgrader._RunGit(
-        '/tmp/portage', ['checkout', 'origin/gentoo'],
+        '/tmp/portage', ['checkout', '-f', 'origin/gentoo'],
         combine_stdout_stderr=True, redirect_stdout=True)
     self.mox.ReplayAll()
 

@@ -1537,7 +1537,7 @@ class Upgrader(object):
         self._RunGit(self._upstream, ['remote', 'set-url', 'origin',
                                       self.PORTAGE_GIT_URL])
         self._RunGit(self._upstream, ['remote', 'update'])
-        self._RunGit(self._upstream, ['checkout', self.ORIGIN_GENTOO],
+        self._RunGit(self._upstream, ['checkout', '-f', self.ORIGIN_GENTOO],
                      redirect_stdout=True, combine_stdout_stderr=True)
     else:
       if self._local_only:
