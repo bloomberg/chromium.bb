@@ -220,16 +220,16 @@ static WillBeHeapVector<RawPtrWillBeMember<ScopedPageLoadDeferrer> >& pageLoadDe
 
 // Ensure that the WebDragOperation enum values stay in sync with the original
 // DragOperation constants.
-#define COMPILE_ASSERT_MATCHING_ENUM(coreName) \
-    COMPILE_ASSERT(int(coreName) == int(Web##coreName), dummy##coreName)
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationNone);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationCopy);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationLink);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationGeneric);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationPrivate);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationMove);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationDelete);
-COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
+#define STATIC_ASSERT_MATCHING_ENUM(coreName) \
+    static_assert(int(coreName) == int(Web##coreName), "DragOperation and WebDragOperation enum mismatch: " #coreName)
+STATIC_ASSERT_MATCHING_ENUM(DragOperationNone);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationCopy);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationLink);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationGeneric);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationPrivate);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationMove);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationDelete);
+STATIC_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 static bool shouldUseExternalPopupMenus = false;
 

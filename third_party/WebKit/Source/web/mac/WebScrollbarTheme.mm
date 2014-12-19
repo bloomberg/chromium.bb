@@ -40,8 +40,8 @@ using namespace blink;
 
 namespace blink {
 
-COMPILE_ASSERT(ScrollerStyleLegacy == NSScrollerStyleLegacy, ScrollerStyle_Legacy_must_be_equal);
-COMPILE_ASSERT(ScrollerStyleOverlay == NSScrollerStyleOverlay, ScrollerStyle_Overlay_must_be_equal);
+static_assert(ScrollerStyleLegacy == NSScrollerStyleLegacy, "ScrollerStyleLegacy must match NSScrollerStyleLegacy");
+static_assert(ScrollerStyleOverlay == NSScrollerStyleOverlay, "ScrollerStyleOverlay must match NSScrollerStyleOverlay");
 
 void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
