@@ -7,7 +7,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::FocusClient*)
 
 namespace aura {

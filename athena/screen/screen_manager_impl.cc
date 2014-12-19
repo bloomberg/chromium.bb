@@ -25,8 +25,7 @@
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/window_util.h"
 
-// This is to avoid creating type definitoin for kAlwaysOnTopKey.
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ATHENA_EXPORT, bool);
+DECLARE_WINDOW_PROPERTY_TYPE(athena::ScreenManager::ContainerParams*);
 
 namespace athena {
 namespace {

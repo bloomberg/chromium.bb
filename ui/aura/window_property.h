@@ -9,8 +9,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 
-// This header should be included by code that defines WindowProperties. It
-// should not be included by code that only gets and sets WindowProperties.
+// This header should be included by code that defines WindowProperties.
 //
 // To define a new WindowProperty:
 //
@@ -78,56 +77,69 @@ struct WindowProperty {
   Window::PropertyDeallocator deallocator;
 };
 
-template<typename T>
-void Window::SetProperty(const WindowProperty<T>* property, T value) {
-  int64 old = SetPropertyInternal(
-      property,
-      property->name,
-      value == property->default_value ? NULL : property->deallocator,
-      WindowPropertyCaster<T>::ToInt64(value),
-      WindowPropertyCaster<T>::ToInt64(property->default_value));
-  if (property->deallocator &&
-      old != WindowPropertyCaster<T>::ToInt64(property->default_value)) {
-    (*property->deallocator)(old);
+namespace subtle {
+
+class AURA_EXPORT PropertyHelper {
+ public:
+  template<typename T>
+  static void Set(Window* window, const WindowProperty<T>* property, T value) {
+    int64 old = window->SetPropertyInternal(
+        property,
+        property->name,
+        value == property->default_value ? nullptr : property->deallocator,
+        WindowPropertyCaster<T>::ToInt64(value),
+        WindowPropertyCaster<T>::ToInt64(property->default_value));
+    if (property->deallocator &&
+        old != WindowPropertyCaster<T>::ToInt64(property->default_value)) {
+      (*property->deallocator)(old);
+    }
   }
-}
+  template<typename T>
+  static T Get(const Window* window, const WindowProperty<T>* property) {
+    return WindowPropertyCaster<T>::FromInt64(window->GetPropertyInternal(
+        property, WindowPropertyCaster<T>::ToInt64(property->default_value)));
+  }
+  template<typename T>
+  static void Clear(Window* window, const WindowProperty<T>* property) {
+    window->SetProperty(property, property->default_value);       \
+  }
+};
 
-template<typename T>
-T Window::GetProperty(const WindowProperty<T>* property) const {
-  return WindowPropertyCaster<T>::FromInt64(GetPropertyInternal(
-      property, WindowPropertyCaster<T>::ToInt64(property->default_value)));
-}
-
-template<typename T>
-void Window::ClearProperty(const WindowProperty<T>* property) {
-  SetProperty(property, property->default_value);
-}
+}  // namespace subtle
 
 }  // namespace aura
 
 // Macros to instantiate the property getter/setter template functions.
 #define DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(EXPORT, T)  \
-    template EXPORT void aura::Window::SetProperty(         \
-        const aura::WindowProperty<T >*, T);                \
-    template EXPORT T aura::Window::GetProperty(            \
-        const aura::WindowProperty<T >*) const;             \
-    template EXPORT void aura::Window::ClearProperty(       \
-        const aura::WindowProperty<T >*);
+    template<> EXPORT void aura::Window::SetProperty(         \
+        const aura::WindowProperty<T >* property, T value) {  \
+      subtle::PropertyHelper::Set<T>(this, property, value);  \
+    }                                                         \
+    template<> EXPORT T aura::Window::GetProperty(            \
+        const aura::WindowProperty<T >* property) const {     \
+      return subtle::PropertyHelper::Get<T>(this, property);  \
+    }                                                         \
+    template<> EXPORT void aura::Window::ClearProperty(       \
+        const aura::WindowProperty<T >* property) {           \
+      subtle::PropertyHelper::Clear<T>(this, property);       \
+    }
 #define DECLARE_WINDOW_PROPERTY_TYPE(T)  \
     DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
 
 #define DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);     \
-  namespace {                                                                 \
-    const aura::WindowProperty<TYPE> NAME ## _Value = {DEFAULT, #NAME, NULL}; \
-  }                                                                           \
+  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);  \
+  namespace {                                                              \
+    const aura::WindowProperty<TYPE> NAME ## _Value =                      \
+        {DEFAULT, #NAME, nullptr};                                         \
+  }                                                                        \
   const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;
 
 #define DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);     \
-  namespace {                                                                 \
-    const aura::WindowProperty<TYPE> NAME ## _Value = {DEFAULT, #NAME, NULL}; \
-    const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;          \
+  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);  \
+  namespace {                                                              \
+    const aura::WindowProperty<TYPE> NAME ## _Value =                      \
+        {DEFAULT, #NAME, nullptr};                                         \
+    const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;       \
   }
 
 #define DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)   \
