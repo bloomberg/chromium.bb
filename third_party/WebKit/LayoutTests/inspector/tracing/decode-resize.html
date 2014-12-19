@@ -87,8 +87,8 @@ function test()
         }
         function compareImageURLs(a, b)
         {
-            var urlA = InspectorTest.formatters.formatAsURL(a.imageURL || "<missing>");
-            var urlB = InspectorTest.formatters.formatAsURL(b.imageURL || "<missing>");
+            var urlA = InspectorTest.formatters.formatAsURL(a.url || "<missing>");
+            var urlB = InspectorTest.formatters.formatAsURL(b.url || "<missing>");
             return urlA.localeCompare(urlB);
         }
         var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
@@ -96,10 +96,10 @@ function test()
         for (var i = 0; i < sortedDecodeEvents.length; ++i) {
             var event = sortedDecodeEvents[i];
             // Skip duplicate events, as long as they have the imageURL
-            if (i && event.imageURL && event.imageURL === sortedDecodeEvents[i - 1].imageURL)
+            if (i && event.url && event.url === sortedDecodeEvents[i - 1].url)
                 continue;
             InspectorTest.addResult("event: " + event.name);
-            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.imageURL));
+            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.url));
             InspectorTest.addResult("backendNodeId: " + (event.backendNodeId > 0 ? "present" : "absent"));
         }
         InspectorTest.completeTest();
