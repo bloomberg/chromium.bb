@@ -39,6 +39,12 @@ count_open_fds(void);
 void
 exec_fd_leak_check(int nr_expected_fds); /* never returns */
 
+int
+get_current_alloc_num(void);
+
+void
+check_leaks(int supposed_allocs, int supposed_fds);
+
 /*
  * set/reset the timeout in seconds. The timeout starts
  * at the point of invoking this function

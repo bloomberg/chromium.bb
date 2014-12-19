@@ -149,14 +149,40 @@ sigalrm_handler(int signum)
 	abort();
 }
 
+int
+get_current_alloc_num(void)
+{
+	return num_alloc;
+}
+
+void
+check_leaks(int supposed_alloc, int supposed_fds)
+{
+	int num_fds;
+
+	if (leak_check_enabled) {
+		if (supposed_alloc != num_alloc) {
+			fprintf(stderr, "Memory leak detected in test. "
+				"Allocated %d blocks, unfreed %d\n", num_alloc,
+				num_alloc - supposed_alloc);
+			abort();
+		}
+
+		num_fds = count_open_fds();
+		if (supposed_fds != num_fds) {
+			fprintf(stderr, "fd leak detected in test. "
+				"Opened %d files, unclosed %d\n", num_fds,
+				num_fds - supposed_fds);
+			abort();
+		}
+	}
+}
+
 static void
 run_test(const struct test *t)
 {
-	int cur_alloc = num_alloc;
-	int cur_fds, num_fds;
+	int cur_alloc, cur_fds;
 	struct sigaction sa;
-
-	cur_fds = count_open_fds();
 
 	if (timeouts_enabled) {
 		sa.sa_handler = sigalrm_handler;
@@ -165,27 +191,17 @@ run_test(const struct test *t)
 		assert(sigaction(SIGALRM, &sa, NULL) == 0);
 	}
 
+	cur_alloc = get_current_alloc_num();
+	cur_fds = count_open_fds();
+
 	t->run();
 
 	/* turn off timeout (if any) after test completition */
 	if (timeouts_enabled)
 		alarm(0);
 
-	if (leak_check_enabled) {
-		if (cur_alloc != num_alloc) {
-			fprintf(stderr, "Memory leak detected in test. "
-				"Allocated %d blocks, unfreed %d\n", num_alloc,
-				num_alloc - cur_alloc);
-			abort();
-		}
-		num_fds = count_open_fds();
-		if (cur_fds != num_fds) {
-			fprintf(stderr, "fd leak detected in test. "
-				"Opened %d files, unclosed %d\n", num_fds,
-				num_fds - cur_fds);
-			abort();
-		}
-	}
+	check_leaks(cur_alloc, cur_fds);
+
 	exit(EXIT_SUCCESS);
 }
 
