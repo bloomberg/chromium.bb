@@ -104,6 +104,9 @@ cr.define('cr.ui', function() {
     } else {
       document.body.classList.remove('oobe-display');
       Oobe.getInstance().prepareForLoginDisplay_();
+      // Ensure header bar is visible when switching to Login UI from oobe.
+      if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
+        login.HeaderBar.animateIn();
     }
 
     Oobe.getInstance().headerHidden = false;
