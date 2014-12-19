@@ -23,5 +23,18 @@
         'browser/net/image_fetcher_unittest.mm',
       ],
     },
+    {
+      'target_name': 'ios_chrome_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
+        'ios_chrome.gyp:ios_chrome_browser',
+      ],
+      'sources': [
+        'test/testing_application_context.cc',
+        'test/testing_application_context.h',
+      ],
+    },
   ],
 }

@@ -29,6 +29,10 @@
         '../web/ios_web.gyp:ios_web',
       ],
       'sources': [
+        'browser/application_context.cc',
+        'browser/application_context.h',
+        'browser/application_context_impl.cc',
+        'browser/application_context_impl.h',
         'browser/browser_state/browser_state_otr_helper.cc',
         'browser/browser_state/browser_state_otr_helper.h',
         'browser/infobars/confirm_infobar_controller.h',
