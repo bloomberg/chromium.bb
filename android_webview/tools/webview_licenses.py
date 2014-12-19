@@ -36,6 +36,8 @@ third_party = \
   imp.load_source('PRESUBMIT', \
                   os.path.join(REPOSITORY_ROOT, 'third_party', 'PRESUBMIT.py'))
 
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'third_party'))
+import jinja2
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
 import licenses
 
@@ -252,6 +254,31 @@ def _Scan():
   return licenses_check if all_licenses_valid else ScanResult.Errors
 
 
+class TemplateEntryGenerator(object):
+  def __init__(self):
+    self.toc_index = 0
+
+  def _ReadFileGuessEncoding(self, name):
+    contents = ''
+    with open(name, 'rb') as input_file:
+      contents = input_file.read()
+    try:
+      return contents.decode('utf8')
+    except UnicodeDecodeError:
+      pass
+    # If it's not UTF-8, it must be CP-1252. Fail otherwise.
+    return contents.decode('cp1252')
+
+  def MetadataToTemplateEntry(self, metadata):
+    self.toc_index += 1
+    return {
+      'name': metadata['Name'],
+      'url': metadata['URL'],
+      'license': self._ReadFileGuessEncoding(metadata['License File']),
+      'toc_href': 'entry' + str(self.toc_index),
+    }
+
+
 def GenerateNoticeFile():
   """Generates the contents of an Android NOTICE file for the third-party code.
   This is used by the snapshot tool.
@@ -259,21 +286,29 @@ def GenerateNoticeFile():
     The contents of the NOTICE file.
   """
 
+  generator = TemplateEntryGenerator()
+  # Start from Chromium's LICENSE file
+  entries = [generator.MetadataToTemplateEntry({
+    'Name': 'The Chromium Project',
+    'URL': 'http://www.chromium.org',
+    'License File': os.path.join(REPOSITORY_ROOT, 'LICENSE') })
+  ]
+
   third_party_dirs = _FindThirdPartyDirs()
-
-  # Don't forget Chromium's LICENSE file
-  content = [_ReadLocalFile('LICENSE')]
-
   # We provide attribution for all third-party directories.
-  # TODO(steveblock): Limit this to only code used by the WebView binary.
+  # TODO(mnaganov): Limit this to only code used by the WebView binary.
   for directory in sorted(third_party_dirs):
     metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
                                  require_license_file=False)
     license_file = metadata['License File']
     if license_file and license_file != licenses.NOT_SHIPPED:
-      content.append(_ReadLocalFile(license_file))
+      entries.append(generator.MetadataToTemplateEntry(metadata))
 
-  return '\n'.join(content)
+  env = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    extensions=['jinja2.ext.autoescape'])
+  template = env.get_template('licenses_notice.tmpl')
+  return template.render({ 'entries': entries }).encode('utf8')
 
 
 def _ProcessIncompatibleResult(incompatible_directories):
