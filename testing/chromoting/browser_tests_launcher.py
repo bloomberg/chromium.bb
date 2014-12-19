@@ -5,6 +5,7 @@
 
 """Utility script to launch browser-tests on the Chromoting bot."""
 import argparse
+import glob
 import hashlib
 import os
 from os.path import expanduser
@@ -18,22 +19,65 @@ HOST_HASH_VALUE = hashlib.md5(socket.gethostname()).hexdigest()
 SUCCESS_INDICATOR = 'SUCCESS: all tests passed.'
 NATIVE_MESSAGING_DIR = 'NativeMessagingHosts'
 CRD_ID = 'chrome-remote-desktop'  # Used in a few file/folder names
+CHROMOTING_HOST_PATH = '/opt/google/chrome-remote-desktop/chrome-remote-desktop'
 
 
-def LaunchCommand(command):
+def LaunchBTCommand(command):
+  results, error = RunCommandInSubProcess(command)
+
+  # Check that the test passed.
+  if SUCCESS_INDICATOR not in results:
+    # Obtain contents of Chromoting host logs.
+    log_contents = ''
+    # There should be only 1 log file, as we delete logs on test completion.
+    # Loop through matching files, just in case there are more.
+    for log_file in glob.glob('/tmp/chrome_remote_desktop_*'):
+      with open(log_file, 'r') as log:
+        log_contents += '\nHOST LOG %s CONTENTS:\n%s' % (log_file, log.read())
+    print log_contents
+    raise Exception(
+        'Test failed. Command:%s\nResults:%s\nError:%s\n' %
+        (command, results, error))
+
+
+def RunCommandInSubProcess(command):
+  """Creates a subprocess with command-line that is passed in.
+
+  Args:
+    command: The text of command to be executed.
+  Returns:
+    results: stdout contents of executing the command.
+    error: stderr contents.
+  """
+
   cmd_line = [command]
   try:
     p = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, shell=True)
-    results, err = p.communicate()
-    # Check that the test passed.
-    if SUCCESS_INDICATOR not in results:
-      raise Exception(
-          'Test failed. Command:%s\nResults:%s\nError:%s\n' %
-          (command, results, err))
+    results, error = p.communicate()
   except subprocess.CalledProcessError, e:
-    raise Exception('Exception %s running command %s' % (e, command))
+    raise Exception('Exception %s running command %s\nError: %s' %
+                    (e, command, error))
   else:
     print results
+  return results, error
+
+
+def TestCleanUp(user_profile_dir):
+  """Cleans up test machine so as not to impact other tests.
+
+  Args:
+    user_profile_dir: the user-profile folder used by Chromoting tests.
+
+  """
+  # Stop the host service.
+  RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --stop')
+
+  # Cleanup any host logs.
+  RunCommandInSubProcess('rm /tmp/chrome_remote_desktop_*')
+
+  # Remove the user-profile dir
+  if os.path.exists(user_profile_dir):
+    shutil.rmtree(user_profile_dir)
 
 
 def InitialiseTestMachineForLinux(cfg_file, manifest_file, user_profile_dir):
@@ -81,14 +125,17 @@ def InitialiseTestMachineForLinux(cfg_file, manifest_file, user_profile_dir):
   # the expected location for native-messating-host to work properly.
   native_messaging_folder = os.path.join(user_profile_dir, NATIVE_MESSAGING_DIR)
 
-  if os.path.exists(native_messaging_folder):
-    shutil.rmtree(native_messaging_folder)
+  if os.path.exists(user_profile_dir):
+    shutil.rmtree(user_profile_dir)
   os.makedirs(native_messaging_folder)
 
   manifest_file_src = os.path.join(os.getcwd(), manifest_file)
   manifest_file_dest = (
       os.path.join(native_messaging_folder, os.path.basename(manifest_file)))
   shutil.copyfile(manifest_file_src, manifest_file_dest)
+
+  # Finally, start chromoting host.
+  RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
 
 
 def main():
@@ -115,7 +162,10 @@ def main():
       # Replace the PROD_DIR value in the command-line with
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
-      LaunchCommand(line)
+      LaunchBTCommand(line)
+
+  # Now, stop host, and cleanup user-profile-dir
+  TestCleanUp(args.user_profile_dir)
 
 if __name__ == '__main__':
   main()
