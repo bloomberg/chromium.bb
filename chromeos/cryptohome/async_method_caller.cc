@@ -338,9 +338,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
     data_callback_map_[async_id] = DataCallbackElement(callback);
   }
 
-  base::WeakPtrFactory<AsyncMethodCallerImpl> weak_ptr_factory_;
   CallbackMap callback_map_;
   DataCallbackMap data_callback_map_;
+  base::WeakPtrFactory<AsyncMethodCallerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncMethodCallerImpl);
 };
