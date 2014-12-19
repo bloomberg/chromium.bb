@@ -40,6 +40,10 @@ static bool timingFunctionRoundTrips(const String& string)
 
 TEST(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction)
 {
+    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("initial"));
+    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("inherit"));
+    EXPECT_EQ(nullptr, AnimationInputHelpers::parseTimingFunction("unset"));
+
     EXPECT_TRUE(timingFunctionRoundTrips("ease"));
     EXPECT_TRUE(timingFunctionRoundTrips("linear"));
     EXPECT_TRUE(timingFunctionRoundTrips("ease-in"));

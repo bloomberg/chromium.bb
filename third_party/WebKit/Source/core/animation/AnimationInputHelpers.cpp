@@ -33,8 +33,10 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
-    if (!value || value->isInitialValue() || value->isInheritedValue())
+    if (!value || !value->isValueList()) {
+        ASSERT(!value || value->isInitialValue() || value->isInheritedValue() || value->isUnsetValue());
         return nullptr;
+    }
     CSSValueList* valueList = toCSSValueList(value.get());
     if (valueList->length() > 1)
         return nullptr;

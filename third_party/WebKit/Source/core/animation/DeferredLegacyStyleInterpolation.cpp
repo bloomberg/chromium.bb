@@ -31,7 +31,7 @@ void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSValue& value)
 {
     // FIXME: should not require resolving styles for initial.
-    if (value.isInitialValue() || value.isInheritedValue())
+    if (value.isInitialValue() || value.isInheritedValue() || value.isUnsetValue())
         return true;
     if (value.isPrimitiveValue())
         return interpolationRequiresStyleResolve(toCSSPrimitiveValue(value));
