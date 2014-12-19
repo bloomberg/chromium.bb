@@ -10,12 +10,10 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_types.h"
@@ -171,7 +169,7 @@ void ShadowController::Impl::OnWindowInitialized(aura::Window* window) {
 void ShadowController::Impl::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
-  if (key == kShadowTypeKey || key == aura::client::kShowStateKey) {
+  if (key == kShadowTypeKey) {
     HandlePossibleShadowVisibilityChange(window);
     return;
   }
@@ -209,13 +207,6 @@ void ShadowController::Impl::OnWindowActivated(aura::Window* gained_active,
 
 bool ShadowController::Impl::ShouldShowShadowForWindow(
     aura::Window* window) const {
-  ui::WindowShowState show_state =
-      window->GetProperty(aura::client::kShowStateKey);
-  if (show_state == ui::SHOW_STATE_FULLSCREEN ||
-      show_state == ui::SHOW_STATE_MAXIMIZED) {
-    return SHADOW_TYPE_NONE;
-  }
-
   const ShadowType type = GetShadowType(window);
   switch (type) {
     case SHADOW_TYPE_NONE:
