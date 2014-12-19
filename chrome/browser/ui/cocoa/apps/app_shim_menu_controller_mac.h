@@ -33,6 +33,9 @@
   base::scoped_nsobject<NSMenuItem> fileMenuItem_;
   base::scoped_nsobject<NSMenuItem> editMenuItem_;
   base::scoped_nsobject<NSMenuItem> windowMenuItem_;
+  // Additional menu items for hosted apps.
+  base::scoped_nsobject<NSMenuItem> viewMenuItem_;
+  base::scoped_nsobject<NSMenuItem> historyMenuItem_;
 }
 
 @end
