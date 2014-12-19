@@ -4,8 +4,8 @@
 
 #include "net/quic/congestion_control/cubic.h"
 
-#include <math.h>
 #include <algorithm>
+#include <cmath>
 
 #include "base/basictypes.h"
 #include "base/logging.h"

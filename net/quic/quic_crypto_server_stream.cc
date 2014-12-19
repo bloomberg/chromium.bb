@@ -11,7 +11,6 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/quic_config.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
@@ -142,10 +141,6 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
   session()->connection()->SetEncrypter(
       ENCRYPTION_FORWARD_SECURE,
       crypto_negotiated_params_.forward_secure_crypters.encrypter.release());
-  if (!FLAGS_enable_quic_delay_forward_security) {
-    session()->connection()->SetDefaultEncryptionLevel(
-        ENCRYPTION_FORWARD_SECURE);
-  }
   session()->connection()->SetAlternativeDecrypter(
       crypto_negotiated_params_.forward_secure_crypters.decrypter.release(),
       ENCRYPTION_FORWARD_SECURE, false /* don't latch */);
@@ -164,6 +159,7 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
 
   CryptoHandshakeMessage server_config_update_message;
   if (!crypto_config_.BuildServerConfigUpdateMessage(
+          previous_source_address_tokens_,
           session()->connection()->self_address(),
           session()->connection()->peer_address(),
           session()->connection()->clock(),
@@ -232,6 +228,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     previous_cached_network_params_.reset(
         new CachedNetworkParameters(result.cached_network_params));
   }
+  previous_source_address_tokens_ = result.info.source_address_tokens;
 
   return crypto_config_.ProcessClientHello(
       result, session()->connection()->connection_id(),

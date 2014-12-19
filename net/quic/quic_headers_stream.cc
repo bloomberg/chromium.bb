@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_headers_stream.h"
 
+#include "base/strings/stringprintf.h"
 #include "net/quic/quic_session.h"
 
 using base::StringPiece;
@@ -81,7 +82,9 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   void OnError(SpdyFramer* framer) override {
-    CloseConnection("SPDY framing error.");
+    CloseConnection(base::StringPrintf(
+        "SPDY framing error: %s",
+        SpdyFramer::ErrorCodeToString(framer->error_code())));
   }
 
   void OnDataFrameHeader(SpdyStreamId stream_id,

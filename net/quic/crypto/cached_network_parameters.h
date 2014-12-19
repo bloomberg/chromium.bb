@@ -68,7 +68,9 @@ class NET_EXPORT_PRIVATE CachedNetworkParameters {
   }
   void set_min_rtt_ms(int32 min_rtt_ms) {
     min_rtt_ms_ = min_rtt_ms;
+    has_min_rtt_ms_ = true;
   }
+  bool has_min_rtt_ms() const { return has_min_rtt_ms_; }
 
   int32 previous_connection_state() const {
     return previous_connection_state_;
@@ -98,6 +100,8 @@ class NET_EXPORT_PRIVATE CachedNetworkParameters {
   // The min RTT seen on a previous connection can be used by the server to
   // inform initial connection parameters for new connections.
   int32 min_rtt_ms_;
+  // Whenever min_rtt_ms_ is updated, it is set to true.
+  bool has_min_rtt_ms_;
   // Encodes the PreviousConnectionState enum.
   int32 previous_connection_state_;
   // UNIX timestamp when this bandwidth estimate was created.

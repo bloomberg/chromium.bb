@@ -165,6 +165,13 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
 
 bool QuicSentPacketManager::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params) {
+  if (cached_network_params.has_min_rtt_ms()) {
+    uint32 initial_rtt_us =
+        kNumMicrosPerMilli * cached_network_params.min_rtt_ms();
+    rtt_stats_.set_initial_rtt_us(
+        max(kMinInitialRoundTripTimeUs,
+            min(kMaxInitialRoundTripTimeUs, initial_rtt_us)));
+  }
   return send_algorithm_->ResumeConnectionState(cached_network_params);
 }
 

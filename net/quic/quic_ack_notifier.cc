@@ -68,8 +68,7 @@ void QuicAckNotifier::UpdateSequenceNumber(
   DCHECK(!ContainsKey(sequence_numbers_, new_sequence_number));
 
   PacketInfo packet_info;
-  hash_map<QuicPacketSequenceNumber, PacketInfo>::iterator it =
-      sequence_numbers_.find(old_sequence_number);
+  auto it = sequence_numbers_.find(old_sequence_number);
   if (it != sequence_numbers_.end()) {
     packet_info = it->second;
     sequence_numbers_.erase(it);

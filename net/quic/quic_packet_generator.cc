@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_fec_group.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -93,6 +94,23 @@ void QuicPacketGenerator::OnCongestionWindowChange(
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback,
                                            bool also_send_stop_waiting) {
+  if (FLAGS_quic_disallow_multiple_pending_ack_frames) {
+    if (pending_ack_frame_ != nullptr) {
+      // Ack already queued, nothing to do.
+      return;
+    }
+
+    if (also_send_feedback && pending_feedback_frame_ != nullptr) {
+      LOG(DFATAL) << "Should only ever be one pending feedback frame.";
+      return;
+    }
+
+    if (also_send_stop_waiting && pending_stop_waiting_frame_ != nullptr) {
+      LOG(DFATAL) << "Should only ever be one pending stop waiting frame.";
+      return;
+    }
+  }
+
   should_send_ack_ = true;
   should_send_feedback_ = also_send_feedback;
   should_send_stop_waiting_ = also_send_stop_waiting;
@@ -347,6 +365,13 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   DCHECK(serialized_packet.packet);
   delegate_->OnSerializedPacket(serialized_packet);
   MaybeSendFecPacketAndCloseGroup(false);
+
+  // The packet has now been serialized, safe to delete pending frames.
+  if (FLAGS_quic_disallow_multiple_pending_ack_frames) {
+    pending_ack_frame_.reset();
+    pending_feedback_frame_.reset();
+    pending_stop_waiting_frame_.reset();
+  }
 }
 
 void QuicPacketGenerator::StopSendingVersion() {

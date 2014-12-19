@@ -11,6 +11,7 @@ CachedNetworkParameters::CachedNetworkParameters()
       max_bandwidth_estimate_bytes_per_second_(0),
       max_bandwidth_timestamp_seconds_(0),
       min_rtt_ms_(0),
+      has_min_rtt_ms_(false),
       previous_connection_state_(0),
       timestamp_(0) {
 }

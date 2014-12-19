@@ -6,9 +6,11 @@
 #define NET_QUIC_CRYPTO_SOURCE_ADDRESS_TOKEN_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/cached_network_parameters.h"
@@ -46,6 +48,9 @@ class NET_EXPORT_PRIVATE SourceAddressToken {
   const CachedNetworkParameters& cached_network_parameters() const {
     return cached_network_parameters_;
   }
+  CachedNetworkParameters* mutable_cached_network_parameters() {
+    return &cached_network_parameters_;
+  }
   void set_cached_network_parameters(
       const CachedNetworkParameters& cached_network_parameters) {
     cached_network_parameters_ = cached_network_parameters;
@@ -69,8 +74,32 @@ class NET_EXPORT_PRIVATE SourceAddressToken {
   // TODO(rtenneti): Delete |has_cached_network_parameters_| after we convert
   // SourceAddressToken to protobuf.
   bool has_cached_network_parameters_;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(SourceAddressToken);
+class NET_EXPORT_PRIVATE SourceAddressTokens {
+ public:
+  SourceAddressTokens();
+  ~SourceAddressTokens();
+
+  std::string SerializeAsString() const;
+
+  bool ParseFromArray(const char* plaintext, size_t plaintext_length);
+
+  size_t tokens_size() const { return tokens_.size(); }
+
+  const SourceAddressToken& tokens(size_t i) const {
+    DCHECK_GT(tokens_.size(), i);
+    return *tokens_[i];
+  }
+
+  SourceAddressToken* add_tokens() {
+    tokens_.push_back(new SourceAddressToken);
+    return tokens_.back();
+  }
+
+  void clear_tokens() { STLDeleteElements(&tokens_); }
+
+  std::vector<SourceAddressToken*> tokens_;
 };
 
 }  // namespace net

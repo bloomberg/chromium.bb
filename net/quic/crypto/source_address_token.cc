@@ -58,4 +58,28 @@ bool SourceAddressToken::ParseFromArray(const char* plaintext,
   return true;
 }
 
+SourceAddressTokens::SourceAddressTokens() {
+}
+
+SourceAddressTokens::~SourceAddressTokens() {
+  STLDeleteElements(&tokens_);
+}
+
+string SourceAddressTokens::SerializeAsString() const {
+  string out;
+
+  for (size_t i = 0; i < tokens_size(); i++) {
+    const SourceAddressToken& source_address_token = tokens(i);
+    out.append(source_address_token.SerializeAsString());
+  }
+  return out;
+}
+
+bool SourceAddressTokens::ParseFromArray(const char* plaintext,
+                                         size_t plaintext_length) {
+  // TODO(rtenneti): Implement parsing of SourceAddressTokens when they are
+  // used.
+  return true;
+}
+
 }  // namespace net

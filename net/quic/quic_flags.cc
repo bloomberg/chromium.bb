@@ -39,14 +39,6 @@ bool FLAGS_quic_allow_bbr = false;
 // If true, truncate QUIC connection IDs if the client requests it.
 bool FLAGS_allow_truncated_connection_ids_for_quic = false;
 
-// If true, close the connection when there are too many outstanding QUIC
-// packets in the sent or received packet managers.
-bool FLAGS_quic_too_many_outstanding_packets = false;
-
-// If true, QUIC connections will delay moving to forward security until the
-// client starts sending foward secure encrypted packets.
-bool FLAGS_enable_quic_delay_forward_security = true;
-
 // Do not flip this flag.  jokulik plans more testing and additional monitoring
 // before the flag can go the auto-flip process.
 //
@@ -68,3 +60,11 @@ bool FLAGS_quic_allow_silent_close = true;
 
 // If true, use std::cbrt instead of custom cube root.
 bool FLAGS_quic_use_std_cbrt = true;
+
+// If true, the QUIC packet generator will not attempt to queue multiple ACK
+// frames.
+bool FLAGS_quic_disallow_multiple_pending_ack_frames = true;
+
+// If true, then the source address tokens generated for QUIC connects will
+// store multiple addresses.
+bool FLAGS_quic_use_multiple_address_in_source_tokens = false;

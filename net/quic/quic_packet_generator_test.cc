@@ -10,6 +10,7 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_packet_generator_peer.h"
@@ -313,6 +314,30 @@ TEST_F(QuicPacketGeneratorTest,
   contents.num_feedback_frames = 1;
   contents.num_stop_waiting_frames = 1;
   CheckPacketContains(contents, packet_);
+}
+
+TEST_F(QuicPacketGeneratorTest, ShouldSendAck_MultipleCalls) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_disallow_multiple_pending_ack_frames,
+                              true);
+
+  // Make sure that calling SetShouldSendAck multiple times does not result in a
+  // crash. Previously this would result in multiple QuicFrames queued in the
+  // packet generator, with all but the last with internal pointers to freed
+  // memory.
+  delegate_.SetCanWriteAnything();
+
+  // Only one AckFrame should be created.
+  EXPECT_CALL(delegate_, CreateAckFrame())
+      .Times(1)
+      .WillOnce(Return(CreateAckFrame()));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .Times(1)
+      .WillOnce(SaveArg<0>(&packet_));
+
+  generator_.StartBatchOperations();
+  generator_.SetShouldSendAck(false, false);
+  generator_.SetShouldSendAck(false, false);
+  generator_.FinishBatchOperations();
 }
 
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritable) {

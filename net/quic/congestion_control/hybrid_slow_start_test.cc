@@ -84,8 +84,8 @@ TEST_F(HybridSlowStartTest, AckTrain) {
 }
 
 TEST_F(HybridSlowStartTest, Delay) {
-  // We expect to detect the increase at +1/16 of the RTT; hence at a typical
-  // RTT of 60ms the detection will happen at 63.75 ms.
+  // We expect to detect the increase at +1/8 of the RTT; hence at a typical
+  // RTT of 60ms the detection will happen at 67.5 ms.
   const int kHybridStartMinSamples = 8;  // Number of acks required to trigger.
 
   QuicPacketSequenceNumber end_sequence_number = 1;
@@ -100,12 +100,12 @@ TEST_F(HybridSlowStartTest, Delay) {
   slow_start_->StartReceiveRound(end_sequence_number++);
   for (int n = 1; n < kHybridStartMinSamples; ++n) {
     EXPECT_FALSE(slow_start_->ShouldExitSlowStart(
-        rtt_.Add(QuicTime::Delta::FromMilliseconds(n + 5)), rtt_, 100));
+        rtt_.Add(QuicTime::Delta::FromMilliseconds(n + 10)), rtt_, 100));
   }
   // Expect to trigger since all packets in this burst was above the long term
   // RTT provided.
   EXPECT_TRUE(slow_start_->ShouldExitSlowStart(
-      rtt_.Add(QuicTime::Delta::FromMilliseconds(5)), rtt_, 100));
+      rtt_.Add(QuicTime::Delta::FromMilliseconds(10)), rtt_, 100));
 }
 
 }  // namespace test

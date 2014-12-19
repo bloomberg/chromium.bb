@@ -19,6 +19,7 @@ class CryptoHandshakeMessage;
 class QuicCryptoServerConfig;
 class QuicCryptoServerStream;
 class QuicSession;
+class SourceAddressTokens;
 
 namespace test {
 class CryptoTestUtils;
@@ -140,6 +141,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // store here, and send back in future STKs if we have no better bandwidth
   // estimate to send.
   scoped_ptr<CachedNetworkParameters> previous_cached_network_params_;
+
+  // Contains any source address tokens which were present in the CHLO.
+  SourceAddressTokens previous_source_address_tokens_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerStream);
 };

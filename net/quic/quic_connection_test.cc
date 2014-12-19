@@ -1346,11 +1346,8 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
 
   // Ack packet 1, which leaves more than the limit outstanding.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  if (FLAGS_quic_too_many_outstanding_packets) {
-    EXPECT_CALL(visitor_,
-                OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
-                                   false));
-  }
+  EXPECT_CALL(visitor_, OnConnectionClosed(
+                            QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS, false));
   // We're receive buffer limited, so the connection won't try to write more.
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
 
@@ -1364,12 +1361,8 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
 
 TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  if (FLAGS_quic_too_many_outstanding_packets) {
-    EXPECT_CALL(visitor_,
-                OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS,
-                                   false));
-  }
+  EXPECT_CALL(visitor_, OnConnectionClosed(
+                            QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, false));
 
   // Miss every other packet for 1000 packets.
   for (QuicPacketSequenceNumber i = 1; i < 1000; ++i) {
@@ -2543,8 +2536,6 @@ TEST_P(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
 }
 
 TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilClientIsReady) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_delay_forward_security, true);
-
   // A TaggingEncrypter puts kTagSize copies of the given byte (0x02 here) at
   // the end of the packet. We can test this to check which encrypter was used.
   use_tagging_decrypter();
@@ -2568,8 +2559,6 @@ TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilClientIsReady) {
 }
 
 TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilManyPacketSent) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_delay_forward_security, true);
-
   // Set a congestion window of 10 packets.
   QuicPacketCount congestion_window = 10;
   EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(

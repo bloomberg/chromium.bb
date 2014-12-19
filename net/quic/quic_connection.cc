@@ -467,10 +467,8 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   last_packet_decrypted_ = true;
   // If this packet was foward-secure encrypted and the forward-secure encrypter
   // is not being used, start using it.
-  if (FLAGS_enable_quic_delay_forward_security &&
-      encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
-      has_forward_secure_encrypter_ &&
-      level == ENCRYPTION_FORWARD_SECURE) {
+  if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+      has_forward_secure_encrypter_ && level == ENCRYPTION_FORWARD_SECURE) {
     SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   }
 }
@@ -942,9 +940,6 @@ void QuicConnection::ClearLastFrames() {
 }
 
 void QuicConnection::MaybeCloseIfTooManyOutstandingPackets() {
-  if (!FLAGS_quic_too_many_outstanding_packets) {
-    return;
-  }
   // This occurs if we don't discard old packets we've sent fast enough.
   // It's possible largest observed is less than least unacked.
   if (sent_packet_manager_.largest_observed() >
@@ -1584,8 +1579,7 @@ void QuicConnection::OnSerializedPacket(
   // If a forward-secure encrypter is available but is not being used and this
   // packet's sequence number is after the first packet which requires
   // forward security, start using the forward-secure encrypter.
-  if (FLAGS_enable_quic_delay_forward_security &&
-      encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+  if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
       has_forward_secure_encrypter_ &&
       serialized_packet.sequence_number >=
           first_required_forward_secure_packet_) {
@@ -1696,8 +1690,7 @@ void QuicConnection::OnRetransmissionTimeout() {
 void QuicConnection::SetEncrypter(EncryptionLevel level,
                                   QuicEncrypter* encrypter) {
   framer_.SetEncrypter(level, encrypter);
-  if (FLAGS_enable_quic_delay_forward_security &&
-      level == ENCRYPTION_FORWARD_SECURE) {
+  if (level == ENCRYPTION_FORWARD_SECURE) {
     has_forward_secure_encrypter_ = true;
     first_required_forward_secure_packet_ =
         sequence_number_of_last_sent_packet_ +

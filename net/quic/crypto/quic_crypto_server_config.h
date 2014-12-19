@@ -20,6 +20,7 @@
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_secret_boxer.h"
+#include "net/quic/crypto/source_address_token.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
@@ -54,6 +55,7 @@ struct ClientHelloInfo {
   base::StringPiece client_nonce;
   base::StringPiece server_nonce;
   base::StringPiece user_agent_id;
+  SourceAddressTokens source_address_tokens;
 
   // Errors from EvaluateClientHello.
   std::vector<uint32> reject_reasons;
@@ -257,6 +259,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //
   // |cached_network_params| is optional, and can be nullptr.
   bool BuildServerConfigUpdateMessage(
+      const SourceAddressTokens& previous_source_address_tokens,
       const IPEndPoint& server_ip,
       const IPEndPoint& client_ip,
       const QuicClock* clock,
@@ -442,22 +445,61 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // IP address. |cached_network_params| is optional, and can be nullptr.
   std::string NewSourceAddressToken(
       const Config& config,
+      const SourceAddressTokens& previous_tokens,
       const IPEndPoint& ip,
       QuicRandom* rand,
       QuicWallTime now,
       const CachedNetworkParameters* cached_network_params) const;
 
-  // ValidateSourceAddressToken returns HANDSHAKE_OK if the source address token
-  // in |token| is a valid and timely token for the IP address |ip| given that
-  // the current time is |now|. Otherwise it returns the reason for failure.
-  // |cached_network_params| is populated if |token| contains a
-  // CachedNetworkParameters proto.
+  // ParseSourceAddressToken parses the source address tokens contained in
+  // the encrypted |token|, and populates |tokens| with the parsed tokens.
+  // Returns HANDSHAKE_OK if |token| could be parsed, or the reason for the
+  // failure.
+  HandshakeFailureReason ParseSourceAddressToken(
+      const Config& config,
+      base::StringPiece token,
+      SourceAddressTokens* tokens) const;
+
+  // ValidateSourceAddressToken returns HANDSHAKE_OK if the source address
+  // tokens in |tokens| contain a valid and timely token for the IP address
+  // |ip| given that the current time is |now|. Otherwise it returns the
+  // reason for failure. |cached_network_params| is populated if the valid
+  // token contains a CachedNetworkParameters proto.
+  // TODO(rch): remove this method when we remove:
+  // FLAGS_quic_use_multiple_address_in_source_tokens.
   HandshakeFailureReason ValidateSourceAddressToken(
       const Config& config,
       base::StringPiece token,
       const IPEndPoint& ip,
       QuicWallTime now,
       CachedNetworkParameters* cached_network_params) const;
+
+  // ValidateSourceAddressTokens returns HANDSHAKE_OK if the source address
+  // tokens in |tokens| contain a valid and timely token for the IP address
+  // |ip| given that the current time is |now|. Otherwise it returns the
+  // reason for failure. |cached_network_params| is populated if the valid
+  // token contains a CachedNetworkParameters proto.
+  HandshakeFailureReason ValidateSourceAddressTokens(
+      const SourceAddressTokens& tokens,
+      const IPEndPoint& ip,
+      QuicWallTime now,
+      CachedNetworkParameters* cached_network_params) const;
+
+  // ValidateSingleSourceAddressToken returns HANDSHAKE_OK if the source
+  // address token in |token| is a timely token for the IP address |ip|
+  // given that the current time is |now|. Otherwise it returns the reason
+  // for failure.
+  HandshakeFailureReason ValidateSingleSourceAddressToken(
+      const SourceAddressToken& token,
+      const IPEndPoint& ip,
+      QuicWallTime now) const;
+
+  // Returns HANDSHAKE_OK if the source address token in |token| is a timely
+  // token given that the current time is |now|. Otherwise it returns the
+  // reason for failure.
+  HandshakeFailureReason ValidateSourceAddressTokenTimestamp(
+      const SourceAddressToken& token,
+      QuicWallTime now) const;
 
   // NewServerNonce generates and encrypts a random nonce.
   std::string NewServerNonce(QuicRandom* rand, QuicWallTime now) const;

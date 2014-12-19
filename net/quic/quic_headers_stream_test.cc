@@ -245,6 +245,15 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
   }
 }
 
+TEST_P(QuicHeadersStreamTest, ProcessBadData) {
+  const char kBadData[] = "blah blah blah";
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(
+                  QUIC_INVALID_HEADERS_STREAM_DATA,
+                  "SPDY framing error: SPDY_INVALID_DATA_FRAME_FLAGS"));
+  headers_stream_->ProcessRawData(kBadData, strlen(kBadData));
+}
+
 TEST_P(QuicHeadersStreamTest, ProcessSpdyDataFrame) {
   SpdyDataIR data(2, "");
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));

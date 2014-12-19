@@ -1465,6 +1465,19 @@ TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
   EXPECT_EQ(initial_rtt_us, manager_.GetRttStats()->initial_rtt_us());
 }
 
+TEST_F(QuicSentPacketManagerTest, ResumeConnectionState) {
+  // The sent packet manager should use the RTT from CachedNetworkParameters if
+  // it is provided.
+  const int kRttMs = 1234;
+  CachedNetworkParameters cached_network_params;
+  cached_network_params.set_min_rtt_ms(kRttMs);
+
+  EXPECT_CALL(*send_algorithm_, ResumeConnectionState(_));
+  manager_.ResumeConnectionState(cached_network_params);
+  EXPECT_EQ(kRttMs * kNumMicrosPerMilli,
+            static_cast<uint64>(manager_.GetRttStats()->initial_rtt_us()));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

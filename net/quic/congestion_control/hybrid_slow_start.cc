@@ -16,7 +16,8 @@ namespace net {
 const int64 kHybridStartLowWindow = 16;
 // Number of delay samples for detecting the increase of delay.
 const uint32 kHybridStartMinSamples = 8;
-const int kHybridStartDelayFactorExp = 4;  // 2^4 = 16
+// Exit slow start if the min rtt has increased by more than 1/8th.
+const int kHybridStartDelayFactorExp = 3;  // 2^3 = 8
 // The original paper specifies 2 and 8ms, but those have changed over time.
 const int64 kHybridStartDelayMinThresholdUs = 4000;
 const int64 kHybridStartDelayMaxThresholdUs = 16000;

@@ -327,9 +327,9 @@ TEST_P(QuicSessionTest, DecompressionError) {
     0x00, 0x00,
     'a',  'b',  'c',  'd'    // invalid compressed data
   };
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                             "SPDY framing error."));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_INVALID_HEADERS_STREAM_DATA,
+                                "SPDY framing error: DECOMPRESS_FAILURE"));
   stream->ProcessRawData(reinterpret_cast<const char*>(data),
                          arraysize(data));
 }
