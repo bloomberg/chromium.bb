@@ -13,7 +13,7 @@ Deriving an AES key with bad length...
 error is: OperationError: AES key length must be 128 or 256 bits
 
 Deriving an AES key with unsupported length...
-error is: NotSupportedError: 192-bit AES keys are not supported
+error is: OperationError: 192-bit AES keys are not supported
 
 Deriving using an ECDH key that has deriveBits but NOT deriveKey... usage
 error is: InvalidAccessError: key.usages does not permit this operation
