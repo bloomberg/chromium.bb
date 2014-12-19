@@ -81,6 +81,19 @@ FAIL_TEST(sanity_malloc_direct)
 	free(NULL);	/* NULL must not be counted */
 }
 
+TEST(disable_leak_checks)
+{
+	volatile void *mem;
+	assert(leak_check_enabled);
+	/* normally this should be on the beginning of the test.
+	 * Here we need to be sure, that the leak checks are
+	 * turned on */
+	DISABLE_LEAK_CHECKS;
+
+	mem = malloc(16);
+	assert(mem);
+}
+
 FAIL_TEST(sanity_malloc_indirect)
 {
 	struct wl_array array;

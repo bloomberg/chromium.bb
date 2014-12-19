@@ -62,4 +62,10 @@ test_usleep(useconds_t);
 void
 test_sleep(unsigned int);
 
+#define DISABLE_LEAK_CHECKS			\
+	do {					\
+		extern int leak_check_enabled;	\
+		leak_check_enabled = 0;		\
+	} while (0);
+
 #endif

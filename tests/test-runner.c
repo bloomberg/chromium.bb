@@ -175,6 +175,8 @@ check_leaks(int supposed_alloc, int supposed_fds)
 				num_fds - supposed_fds);
 			abort();
 		}
+	} else {
+		fprintf(stderr, "Leak checks disabled\n");
 	}
 }
 
