@@ -38,11 +38,17 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
     // This is done in SessionManager::OnProfileCreated during normal login.
     UserSessionManager* user_session_mgr = UserSessionManager::GetInstance();
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+    const user_manager::User* user = user_manager->GetActiveUser();
+    if (!user) {
+      // This is possible if crash occured after profile removal
+      // (see crbug.com/178290 for some more info).
+      LOG(ERROR) << "Could not get active user after crash.";
+      return;
+    }
     user_session_mgr->InitRlz(profile());
     user_session_mgr->InitializeCerts(profile());
-    user_session_mgr->InitializeCRLSetFetcher(user_manager->GetActiveUser());
-    user_session_mgr->InitializeEVCertificatesWhitelistComponent(
-        user_manager->GetActiveUser());
+    user_session_mgr->InitializeCRLSetFetcher(user);
+    user_session_mgr->InitializeEVCertificatesWhitelistComponent(user);
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.
