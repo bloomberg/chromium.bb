@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BROWSER_WINDOW_TESTING_VIEWS_H_
-#define CHROME_BROWSER_UI_BROWSER_WINDOW_TESTING_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_WINDOW_TESTING_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_WINDOW_TESTING_VIEWS_H_
 
 class BookmarkBarView;
 class LocationBarView;
@@ -33,4 +33,4 @@ class BrowserWindowTesting {
   virtual ~BrowserWindowTesting() {}
 };
 
-#endif  // CHROME_BROWSER_UI_BROWSER_WINDOW_TESTING_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_WINDOW_TESTING_VIEWS_H_
