@@ -27,7 +27,6 @@
 #include "ui/gfx/frame_time.h"
 
 namespace cc {
-
 namespace {
 
 static const int kTimeLimitMillis = 2000;
@@ -166,14 +165,6 @@ class TileManagerPerfTest : public testing::Test {
         host_impl_.pending_tree()->LayerById(id_));
   }
 
-  void CreateHighLowResAndSetAllTilesVisible() {
-    // Active layer must get updated first so pending layer can share from it.
-    active_root_layer_->CreateDefaultTilingsAndTiles();
-    active_root_layer_->SetAllTilesVisible();
-    pending_root_layer_->CreateDefaultTilingsAndTiles();
-    pending_root_layer_->SetAllTilesVisible();
-  }
-
   void RunRasterQueueConstructTest(const std::string& test_name,
                                    int layer_count) {
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
@@ -181,11 +172,10 @@ class TileManagerPerfTest : public testing::Test {
                                  NEW_CONTENT_TAKES_PRIORITY};
     int priority_count = 0;
 
-    std::vector<LayerImpl*> layers = CreateLayers(layer_count, 10);
+    std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
     bool resourceless_software_draw = false;
-    for (unsigned i = 0; i < layers.size(); ++i) {
-      layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);
-    }
+    for (const auto& layer : layers)
+      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
 
     timer_.Reset();
     do {
@@ -205,16 +195,15 @@ class TileManagerPerfTest : public testing::Test {
 
   void RunRasterQueueConstructAndIterateTest(const std::string& test_name,
                                              int layer_count,
-                                             unsigned tile_count) {
+                                             int tile_count) {
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
                                  SMOOTHNESS_TAKES_PRIORITY,
                                  NEW_CONTENT_TAKES_PRIORITY};
 
-    std::vector<LayerImpl*> layers = CreateLayers(layer_count, 100);
+    std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 100);
     bool resourceless_software_draw = false;
-    for (unsigned i = 0; i < layers.size(); ++i) {
-      layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);
-    }
+    for (const auto& layer : layers)
+      layer->UpdateTiles(Occlusion(), resourceless_software_draw);
 
     int priority_count = 0;
     timer_.Reset();
@@ -247,15 +236,13 @@ class TileManagerPerfTest : public testing::Test {
                                  NEW_CONTENT_TAKES_PRIORITY};
     int priority_count = 0;
 
-    std::vector<LayerImpl*> layers = CreateLayers(layer_count, 10);
+    std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
     bool resourceless_software_draw = false;
-    for (unsigned i = 0; i < layers.size(); ++i) {
-      FakePictureLayerImpl* layer =
-          static_cast<FakePictureLayerImpl*>(layers[i]);
+    for (const auto& layer : layers) {
       layer->UpdateTiles(Occlusion(), resourceless_software_draw);
-      for (size_t j = 0; j < layer->GetTilings()->num_tilings(); ++j) {
+      for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
-            layer->GetTilings()->tiling_at(j)->AllTilesForTesting());
+            layer->tilings()->tiling_at(i)->AllTilesForTesting());
       }
     }
 
@@ -277,21 +264,20 @@ class TileManagerPerfTest : public testing::Test {
 
   void RunEvictionQueueConstructAndIterateTest(const std::string& test_name,
                                                int layer_count,
-                                               unsigned tile_count) {
+                                               int tile_count) {
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
                                  SMOOTHNESS_TAKES_PRIORITY,
                                  NEW_CONTENT_TAKES_PRIORITY};
     int priority_count = 0;
 
-    std::vector<LayerImpl*> layers = CreateLayers(layer_count, tile_count);
+    std::vector<FakePictureLayerImpl*> layers =
+        CreateLayers(layer_count, tile_count);
     bool resourceless_software_draw = false;
-    for (unsigned i = 0; i < layers.size(); ++i) {
-      FakePictureLayerImpl* layer =
-          static_cast<FakePictureLayerImpl*>(layers[i]);
+    for (const auto& layer : layers) {
       layer->UpdateTiles(Occlusion(), resourceless_software_draw);
-      for (size_t j = 0; j < layer->GetTilings()->num_tilings(); ++j) {
+      for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
-            layer->GetTilings()->tiling_at(j)->AllTilesForTesting());
+            layer->tilings()->tiling_at(i)->AllTilesForTesting());
       }
     }
 
@@ -318,8 +304,8 @@ class TileManagerPerfTest : public testing::Test {
         true);
   }
 
-  std::vector<LayerImpl*> CreateLayers(int layer_count,
-                                       int tiles_per_layer_count) {
+  std::vector<FakePictureLayerImpl*> CreateLayers(int layer_count,
+                                                  int tiles_per_layer_count) {
     // Compute the width/height required for high res to get
     // tiles_per_layer_count tiles.
     float width = std::sqrt(static_cast<float>(tiles_per_layer_count));
@@ -345,10 +331,7 @@ class TileManagerPerfTest : public testing::Test {
     SetupDefaultTreesWithFixedTileSize(layer_bounds,
                                        settings_.default_tile_size);
 
-    active_root_layer_->CreateDefaultTilingsAndTiles();
-    pending_root_layer_->CreateDefaultTilingsAndTiles();
-
-    std::vector<LayerImpl*> layers;
+    std::vector<FakePictureLayerImpl*> layers;
 
     // Pending layer counts as one layer.
     layers.push_back(pending_root_layer_);
@@ -362,16 +345,15 @@ class TileManagerPerfTest : public testing::Test {
           FakePictureLayerImpl::CreateWithRasterSource(
               host_impl_.pending_tree(), next_id, pile);
       layer->SetBounds(layer_bounds);
+      layer->SetDrawsContent(true);
       layers.push_back(layer.get());
       pending_root_layer_->AddChild(layer.Pass());
-
-      FakePictureLayerImpl* fake_layer =
-          static_cast<FakePictureLayerImpl*>(layers.back());
-
-      fake_layer->SetDrawsContent(true);
-      fake_layer->CreateDefaultTilingsAndTiles();
       ++next_id;
     }
+
+    host_impl_.pending_tree()->UpdateDrawProperties();
+    for (FakePictureLayerImpl* layer : layers)
+      layer->CreateAllTiles();
 
     return layers;
   }
@@ -392,7 +374,7 @@ class TileManagerPerfTest : public testing::Test {
   void RunPrepareTilesTest(const std::string& test_name,
                            int layer_count,
                            int approximate_tile_count_per_layer) {
-    std::vector<LayerImpl*> layers =
+    std::vector<FakePictureLayerImpl*> layers =
         CreateLayers(layer_count, approximate_tile_count_per_layer);
     timer_.Reset();
     bool resourceless_software_draw = false;
@@ -400,9 +382,8 @@ class TileManagerPerfTest : public testing::Test {
       BeginFrameArgs args =
           CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
       host_impl_.UpdateCurrentBeginFrameArgs(args);
-      for (unsigned i = 0; i < layers.size(); ++i) {
-        layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);
-      }
+      for (const auto& layer : layers)
+        layer->UpdateTiles(Occlusion(), resourceless_software_draw);
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->PrepareTiles(global_state);
@@ -491,5 +472,4 @@ TEST_F(TileManagerPerfTest, EvictionTileQueueConstructAndIterate) {
 }
 
 }  // namespace
-
 }  // namespace cc

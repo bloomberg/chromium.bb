@@ -119,6 +119,11 @@ void FakePictureLayerImpl::SetRasterSourceOnPending(
   UpdateRasterSource(raster_source, &invalidation_temp, pending_set);
 }
 
+void FakePictureLayerImpl::CreateAllTiles() {
+  for (size_t i = 0; i < num_tilings(); ++i)
+    tilings_->tiling_at(i)->CreateAllTilesForTesting();
+}
+
 void FakePictureLayerImpl::SetAllTilesVisible() {
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
@@ -172,23 +177,6 @@ void FakePictureLayerImpl::SetTileReady(Tile* tile) {
   ManagedTileState& state = tile->managed_state();
   state.draw_info.SetSolidColorForTesting(true);
   DCHECK(tile->IsReadyToDraw());
-}
-
-void FakePictureLayerImpl::CreateDefaultTilingsAndTiles() {
-  layer_tree_impl()->UpdateDrawProperties();
-
-  if (CanHaveTilings()) {
-    DCHECK_EQ(tilings()->num_tilings(),
-              layer_tree_impl()->settings().create_low_res_tiling ? 2u : 1u);
-    DCHECK_EQ(tilings()->tiling_at(0)->resolution(), HIGH_RESOLUTION);
-    HighResTiling()->CreateAllTilesForTesting();
-    if (layer_tree_impl()->settings().create_low_res_tiling) {
-      DCHECK_EQ(tilings()->tiling_at(1)->resolution(), LOW_RESOLUTION);
-      LowResTiling()->CreateAllTilesForTesting();
-    }
-  } else {
-    DCHECK_EQ(tilings()->num_tilings(), 0u);
-  }
 }
 
 void FakePictureLayerImpl::DidBecomeActive() {

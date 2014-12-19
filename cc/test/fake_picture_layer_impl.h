@@ -110,9 +110,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   void set_fixed_tile_size(const gfx::Size& size) { fixed_tile_size_ = size; }
 
-  // TODO(danakj): Remove this darn thing.
-  void CreateDefaultTilingsAndTiles();
-
+  void CreateAllTiles();
   void SetAllTilesVisible();
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);
