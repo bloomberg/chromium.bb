@@ -110,8 +110,6 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const S
     ASSERT(startPosition < endPosition);
     ASSERT(style);
 
-    FontCachePurgePreventer fontCachePurgePreventer;
-
     RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
     FloatWillBeLayoutUnit scalingFactor = textRenderer.scalingFactor();

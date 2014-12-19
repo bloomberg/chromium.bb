@@ -769,7 +769,6 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
     run.setUseComplexCodePath(!canUseSimpleFontCodePath());
     run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
     run.setXPos(xPos);
-    FontCachePurgePreventer fontCachePurgePreventer;
     return f.width(run, fallbackFonts, glyphOverflow);
 }
 

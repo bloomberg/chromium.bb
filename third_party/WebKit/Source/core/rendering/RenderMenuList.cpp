@@ -177,7 +177,6 @@ void RenderMenuList::updateOptionsWidth()
     float maxOptionWidth = 0;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
     int size = listItems.size();
-    FontCachePurgePreventer fontCachePurgePreventer;
 
     for (int i = 0; i < size; ++i) {
         HTMLElement* element = listItems[i];

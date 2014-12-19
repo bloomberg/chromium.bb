@@ -504,7 +504,6 @@ PassRefPtrWillBeRawPtr<DateTimeEditElement> DateTimeEditElement::create(Document
 PassRefPtr<RenderStyle> DateTimeEditElement::customStyleForRenderer()
 {
     // FIXME: This is a kind of layout. We might want to introduce new renderer.
-    FontCachePurgePreventer fontCachePurgePreventer;
     RefPtr<RenderStyle> originalStyle = originalStyleForRenderer();
     RefPtr<RenderStyle> style = RenderStyle::clone(originalStyle.get());
     float width = 0;

@@ -3339,7 +3339,6 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
         return WebSize();
 
     layout();
-    FontCachePurgePreventer fontCachePurgePreventer; // Required by minPreferredLogicalWidth().
     int widthScaled = document->renderView()->minPreferredLogicalWidth(); // Already accounts for zoom.
     int heightScaled = static_cast<int>(document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel()));
     return IntSize(widthScaled, heightScaled);

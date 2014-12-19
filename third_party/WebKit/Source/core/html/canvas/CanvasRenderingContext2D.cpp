@@ -2010,7 +2010,6 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     if (!canvas()->document().frame())
         return metrics.release();
 
-    FontCachePurgePreventer fontCachePurgePreventer;
     canvas()->document().updateRenderTreeIfNeeded();
     const Font& font = accessFont();
 

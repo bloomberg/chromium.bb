@@ -214,6 +214,8 @@ static inline void updateGlyphOverflowFromBounds(const IntRectExtent& glyphBound
 
 float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
+    FontCachePurgePreventer purgePreventer;
+
     CodePath codePathToUse = codePath(TextRunPaintInfo(run));
     if (codePathToUse != ComplexPath) {
         // The simple path can optimize the case where glyph overflow is not observable.
@@ -324,6 +326,8 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
     runInfo.from = from;
     runInfo.to = to;
 
+    FontCachePurgePreventer purgePreventer;
+
     if (codePath(runInfo) != ComplexPath)
         return pixelSnappedSelectionRect(selectionRectForSimpleText(run, point, h, from, to, accountForGlyphBounds));
     return pixelSnappedSelectionRect(selectionRectForComplexText(run, point, h, from, to));
@@ -331,6 +335,8 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 
 int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyphs) const
 {
+    FontCachePurgePreventer purgePreventer;
+
     if (codePath(TextRunPaintInfo(run)) != ComplexPath && !fontDescription().typesettingFeatures())
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
 

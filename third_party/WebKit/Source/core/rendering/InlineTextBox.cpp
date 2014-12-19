@@ -404,8 +404,6 @@ int InlineTextBox::offsetForPosition(FloatWillBeLayoutUnit lineOffset, bool incl
     if (lineOffset - logicalLeft() < 0)
         return isLeftToRightDirection() ? 0 : len();
 
-    FontCachePurgePreventer fontCachePurgePreventer;
-
     RenderText& text = renderer();
     RenderStyle* style = text.style(isFirstLineStyle());
     const Font& font = style->font();
@@ -419,8 +417,6 @@ FloatWillBeLayoutUnit InlineTextBox::positionForOffset(int offset) const
 
     if (isLineBreak())
         return logicalLeft();
-
-    FontCachePurgePreventer fontCachePurgePreventer;
 
     RenderText& text = renderer();
     RenderStyle* styleToUse = text.style(isFirstLineStyle());
