@@ -100,6 +100,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     , m_annotationCount(0)
     , m_layerCount(0)
     , m_disableDestructionChecks(false)
+    , m_inDrawingRecorder(false)
 #endif
     , m_disabledState(disableContextOrPainting)
     , m_deviceScaleFactor(1.0f)
@@ -247,6 +248,15 @@ void GraphicsContext::endAnnotation()
     --m_annotationCount;
 #endif
 }
+
+#if ENABLE(ASSERT)
+void GraphicsContext::setInDrawingRecorder(bool val)
+{
+    // Nested drawing recorers are not allowed.
+    ASSERT(!val || !m_inDrawingRecorder);
+    m_inDrawingRecorder = val;
+}
+#endif
 
 void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
 {

@@ -411,6 +411,10 @@ public:
     // public decl needed for OwnPtr wrapper.
     class RecordingState;
 
+#if ENABLE(ASSERT)
+    void setInDrawingRecorder(bool);
+#endif
+
 private:
     const GraphicsContextState* immutableState() const { return m_paintState; }
 
@@ -506,6 +510,7 @@ private:
     unsigned m_annotationCount;
     unsigned m_layerCount;
     bool m_disableDestructionChecks;
+    bool m_inDrawingRecorder;
 #endif
     // Tracks the region painted opaque via the GraphicsContext.
     RegionTracker m_trackedRegion;

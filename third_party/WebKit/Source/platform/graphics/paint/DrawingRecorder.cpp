@@ -15,10 +15,6 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
-static bool s_inDrawingRecorder = false;
-#endif
-
 DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClient displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
     : m_context(context)
     , m_displayItemClient(displayItemClient)
@@ -30,8 +26,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClie
         return;
 
 #if ENABLE(ASSERT)
-    ASSERT(!s_inDrawingRecorder);
-    s_inDrawingRecorder = true;
+    context->setInDrawingRecorder(true);
 #endif
 
     m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient);
@@ -50,7 +45,7 @@ DrawingRecorder::~DrawingRecorder()
         return;
 
 #if ENABLE(ASSERT)
-    s_inDrawingRecorder = false;
+    m_context->setInDrawingRecorder(false);
 #endif
 
     OwnPtr<DisplayItem> displayItem;
