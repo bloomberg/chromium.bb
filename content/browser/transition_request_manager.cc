@@ -139,18 +139,33 @@ bool TransitionRequestManager::TransitionRequestData::FindEntry(
     TransitionLayerData* transition_data) {
   DCHECK(!allowed_entries_.empty());
   CHECK(transition_data);
-  // TODO(oysteine): Add CSP check to validate the host pattern and the
-  // request_url. Must be done before this feature is moved out from the flag.
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalWebPlatformFeatures) ||
             base::FieldTrialList::FindFullName("NavigationTransitions") ==
                 "Enabled");
 
-  const AllowedEntry& allowed_entry = allowed_entries_[0];
-  transition_data->markup = allowed_entry.markup;
-  transition_data->css_selector = allowed_entry.css_selector;
-  transition_data->elements = allowed_entry.elements;
-  return true;
+  for (const AllowedEntry& allowed_entry : allowed_entries_) {
+    // Note: This is a small subset of the CSP source-list standard; once the
+    // full CSP support is moved from the renderer to the browser, we should
+    // use that instead.
+    bool is_valid = (allowed_entry.allowed_destination_host_pattern == "*");
+    if (!is_valid) {
+      GURL allowed_host(allowed_entry.allowed_destination_host_pattern);
+      if (allowed_host.is_valid() &&
+          (allowed_host.GetOrigin() == request_url.GetOrigin())) {
+        is_valid = true;
+      }
+    }
+
+    if (is_valid) {
+      transition_data->markup = allowed_entry.markup;
+      transition_data->css_selector = allowed_entry.css_selector;
+      transition_data->elements = allowed_entry.elements;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool TransitionRequestManager::GetPendingTransitionRequest(
