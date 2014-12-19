@@ -403,6 +403,8 @@ thread_read_error(void *data)
 static void
 threading_post_err(void)
 {
+	DISABLE_LEAK_CHECKS;
+
 	struct client *c = client_connect();
 	pthread_t thread;
 
@@ -467,6 +469,8 @@ thread_prepare_and_read(void *data)
 static void
 threading_cancel_read(void)
 {
+	DISABLE_LEAK_CHECKS;
+
 	struct client *c = client_connect();
 	pthread_t th1, th2, th3;
 
@@ -504,6 +508,8 @@ TEST(threading_cancel_read_tst)
 static void
 threading_read_eagain(void)
 {
+	DISABLE_LEAK_CHECKS;
+
 	struct client *c = client_connect();
 	pthread_t th1, th2, th3;
 
@@ -560,6 +566,8 @@ thread_prepare_and_read2(void *data)
 static void
 threading_read_after_error(void)
 {
+	DISABLE_LEAK_CHECKS;
+
 	struct client *c = client_connect();
 	pthread_t thread;
 
