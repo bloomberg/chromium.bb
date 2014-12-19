@@ -27,11 +27,17 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MID
 
 MIDIAccessInitializer::~MIDIAccessInitializer()
 {
-    // It is safe to cancel a request which is already finished or canceld.
+#if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void MIDIAccessInitializer::dispose()
+{
+    // It is safe to cancel a request which is already finished or cancelled.
     Document* document = toDocument(executionContext());
     ASSERT(document);
-    MIDIController* controller = MIDIController::from(document->frame());
-    if (controller)
+    if (MIDIController* controller = MIDIController::from(document->frame()))
         controller->cancelSysexPermissionRequest(this);
 }
 
@@ -46,12 +52,11 @@ ScriptPromise MIDIAccessInitializer::start()
     }
     Document* document = toDocument(executionContext());
     ASSERT(document);
-    MIDIController* controller = MIDIController::from(document->frame());
-    if (controller) {
+    if (MIDIController* controller = MIDIController::from(document->frame()))
         controller->requestSysexPermission(this);
-    } else {
+    else
         reject(DOMError::create("SecurityError"));
-    }
+
     return promise;
 }
 
