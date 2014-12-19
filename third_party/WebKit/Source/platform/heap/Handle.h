@@ -32,6 +32,7 @@
 #define Handle_h
 
 #include "platform/heap/Heap.h"
+#include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/Functional.h"

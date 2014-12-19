@@ -35,6 +35,7 @@
 #include "platform/Task.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/CallbackStack.h"
+#include "platform/heap/MarkingVisitorImpl.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
 #include "wtf/AddressSpaceRandomization.h"
@@ -1971,19 +1972,17 @@ void Heap::flushHeapDoesNotContainCache()
     s_heapDoesNotContainCache->flush();
 }
 
-static void markNoTracingCallback(Visitor* visitor, void* object)
-{
-    visitor->markNoTracing(object);
-}
-
 enum MarkingMode {
     GlobalMarking,
     ThreadLocalMarking,
 };
 
-template<MarkingMode Mode>
-class MarkingVisitor final : public Visitor {
+template <MarkingMode Mode>
+class MarkingVisitor final : public Visitor, public MarkingVisitorImpl<MarkingVisitor<Mode>> {
 public:
+    using Impl = MarkingVisitorImpl<MarkingVisitor<Mode>>;
+    friend class MarkingVisitorImpl<MarkingVisitor<Mode>>;
+
 #if ENABLE(GC_PROFILE_MARKING)
     using LiveObjectSet = HashSet<uintptr_t>;
     using LiveObjectMap = HashMap<String, LiveObjectSet>;
@@ -1995,33 +1994,77 @@ public:
     {
     }
 
-    inline void visitHeader(HeapObjectHeader* header, const void* objectPointer, TraceCallback callback)
+    // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to
+    // correctly find the payload.
+    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
-        ASSERT(header);
-        ASSERT(objectPointer);
-        // Check that we are not marking objects that are outside
-        // the heap by calling Heap::contains.  However we cannot
-        // call Heap::contains when outside a GC and we call mark
-        // when doing weakness for ephemerons.  Hence we only check
-        // when called within.
-        ASSERT(!ThreadState::current()->isInGC() || Heap::containedInHeapOrOrphanedPage(header));
+        Impl::visitHeader(header, header->payload(), callback);
+    }
 
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
-            return;
+    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
+    {
+        Impl::visitHeader(header, header->payload(), callback);
+    }
 
-        // If you hit this ASSERT, it means that there is a dangling pointer
-        // from a live thread heap to a dead thread heap.  We must eliminate
-        // the dangling pointer.
-        // Release builds don't have the ASSERT, but it is OK because
-        // release builds will crash in the following header->isMarked()
-        // because all the entries of the orphaned heaps are zapped.
-        ASSERT(!pageFromObject(objectPointer)->orphaned());
+    virtual void mark(const void* objectPointer, TraceCallback callback) override
+    {
+        Impl::mark(objectPointer, callback);
+    }
 
-        if (header->isMarked())
-            return;
-        header->mark();
+    virtual void registerDelayedMarkNoTracing(const void* object) override
+    {
+        Impl::registerDelayedMarkNoTracing(object);
+    }
+
+    virtual void registerWeakMembers(const void* closure, const void* objectPointer, WeakPointerCallback callback) override
+    {
+        Impl::registerWeakMembers(closure, objectPointer, callback);
+    }
+
+    virtual void registerWeakTable(const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
+    {
+        Impl::registerWeakTable(closure, iterationCallback, iterationDoneCallback);
+    }
+
+#if ENABLE(ASSERT)
+    virtual bool weakTableRegistered(const void* closure)
+    {
+        return Impl::weakTableRegistered(closure);
+    }
+#endif
+
+    virtual bool isMarked(const void* objectPointer) override
+    {
+        return Impl::isMarked(objectPointer);
+    }
+
+    virtual bool ensureMarked(const void* objectPointer) override
+    {
+        return Impl::ensureMarked(objectPointer);
+    }
+
+    // This macro defines the necessary visitor methods for typed heaps
+#define DEFINE_VISITOR_METHODS(Type)                                                                            \
+    virtual void mark(const Type* objectPointer, TraceCallback callback) override                               \
+    {                                                                                                           \
+        Impl::mark(objectPointer, callback);                                                                    \
+    }                                                                                                           \
+    virtual bool isMarked(const Type* objectPointer) override                                                   \
+    {                                                                                                           \
+        return Impl::isMarked(objectPointer);                                                                   \
+    }                                                                                                           \
+    virtual bool ensureMarked(const Type* objectPointer) override                                               \
+    {                                                                                                           \
+        static_assert(!NeedsAdjustAndMark<Type>::value, "ensureMarked can only be used on non adjusted types"); \
+        return Impl::ensureMarked(objectPointer);                                                               \
+    }
+
+    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
+#undef DEFINE_VISITOR_METHODS
 
 #if ENABLE(GC_PROFILE_MARKING)
+    virtual void recordObjectGraphEdge(const void* objectPointer) override
+    {
         MutexLocker locker(objectGraphMutex());
         String className(classOf(objectPointer));
         {
@@ -2031,133 +2074,8 @@ public:
         ObjectGraph::AddResult result = objectGraph().add(reinterpret_cast<uintptr_t>(objectPointer), std::make_pair(reinterpret_cast<uintptr_t>(m_hostObject), m_hostName));
         ASSERT(result.isNewEntry);
         // fprintf(stderr, "%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
-#endif
-        if (callback)
-            Heap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
     }
 
-    // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to
-    // correctly find the payload.
-    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
-    {
-        visitHeader(header, header->payload(), callback);
-    }
-
-    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
-    {
-        visitHeader(header, header->payload(), callback);
-    }
-
-    virtual void mark(const void* objectPointer, TraceCallback callback) override
-    {
-        if (!objectPointer)
-            return;
-        GeneralHeapObjectHeader* header = GeneralHeapObjectHeader::fromPayload(objectPointer);
-        visitHeader(header, header->payload(), callback);
-    }
-
-    virtual void registerDelayedMarkNoTracing(const void* object) override
-    {
-        Heap::pushPostMarkingCallback(const_cast<void*>(object), markNoTracingCallback);
-    }
-
-    virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) override
-    {
-        Heap::pushWeakPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
-    }
-
-    virtual void registerWeakTable(const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
-    {
-        Heap::registerWeakTable(const_cast<void*>(closure), iterationCallback, iterationDoneCallback);
-    }
-
-#if ENABLE(ASSERT)
-    virtual bool weakTableRegistered(const void* closure)
-    {
-        return Heap::weakTableRegistered(closure);
-    }
-#endif
-
-    virtual bool isMarked(const void* objectPointer) override
-    {
-        return GeneralHeapObjectHeader::fromPayload(objectPointer)->isMarked();
-    }
-
-    virtual bool ensureMarked(const void* objectPointer) override
-    {
-        if (!objectPointer)
-            return false;
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
-            return false;
-#if ENABLE(ASSERT)
-        if (isMarked(objectPointer))
-            return false;
-
-        markNoTracing(objectPointer);
-#else
-        // Inline what the above markNoTracing() call expands to,
-        // so as to make sure that we do get all the benefits.
-        GeneralHeapObjectHeader* header =
-            GeneralHeapObjectHeader::fromPayload(objectPointer);
-        if (header->isMarked())
-            return false;
-        header->mark();
-#endif
-        return true;
-    }
-
-#if ENABLE(ASSERT)
-#define DEFINE_ENSURE_MARKED_METHOD(Type)                                                       \
-    virtual bool ensureMarked(const Type* objectPointer) override                               \
-    {                                                                                           \
-        if (!objectPointer)                                                                     \
-            return false;                                                                       \
-        static_assert(!NeedsAdjustAndMark<Type>::value,                                         \
-            "ensureMarked can only be used on non adjusted types");                             \
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
-            return false;                                                                       \
-        if (isMarked(objectPointer))                                                            \
-            return false;                                                                       \
-        markNoTracing(objectPointer);                                                           \
-        return true;                                                                            \
-    }
-#else
-#define DEFINE_ENSURE_MARKED_METHOD(Type)                                                       \
-    virtual bool ensureMarked(const Type* objectPointer) override                               \
-    {                                                                                           \
-        if (!objectPointer)                                                                     \
-            return false;                                                                       \
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
-            return false;                                                                       \
-        HeapObjectHeader* header =                                                              \
-            HeapObjectHeader::fromPayload(objectPointer);                                       \
-        if (header->isMarked())                                                                 \
-            return false;                                                                       \
-        header->mark();                                                                         \
-        return true;                                                                            \
-    }
-#endif
-
-    // This macro defines the necessary visitor methods for typed heaps
-#define DEFINE_VISITOR_METHODS(Type)                                              \
-    virtual void mark(const Type* objectPointer, TraceCallback callback) override \
-    {                                                                             \
-        if (!objectPointer)                                                       \
-            return;                                                               \
-        HeapObjectHeader* header =                                                \
-            HeapObjectHeader::fromPayload(objectPointer);                         \
-        visitHeader(header, header->payload(), callback);                         \
-    }                                                                             \
-    virtual bool isMarked(const Type* objectPointer) override                     \
-    {                                                                             \
-        return HeapObjectHeader::fromPayload(objectPointer)->isMarked();          \
-    }                                                                             \
-    DEFINE_ENSURE_MARKED_METHOD(Type)
-
-    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
-#undef DEFINE_VISITOR_METHODS
-
-#if ENABLE(GC_PROFILE_MARKING)
     void reportStats()
     {
         fprintf(stderr, "\n---------- AFTER MARKING -------------------\n");
@@ -2253,20 +2171,23 @@ public:
     }
 #endif
 
-    static inline bool objectInTerminatingThreadHeap(const void* objectPointer)
+protected:
+    virtual void registerWeakCellWithCallback(void** cell, WeakPointerCallback callback) override
     {
+        Impl::registerWeakCellWithCallback(cell, callback);
+    }
+
+    inline bool checkSkipForObjectInTerminatingThreadHeap(const void* objectPointer)
+    {
+        if (Mode != ThreadLocalMarking)
+            return false;
+
         BaseHeapPage* page = pageFromObject(objectPointer);
         ASSERT(!page->orphaned());
         // When doing a thread local GC, the marker checks if
         // the object resides in another thread's heap. The
         // object should not be traced, if it does.
         return page->terminating();
-    }
-
-protected:
-    virtual void registerWeakCellWithCallback(void** cell, WeakPointerCallback callback) override
-    {
-        Heap::pushWeakCellPointerCallback(cell, callback);
     }
 };
 

@@ -37,6 +37,8 @@
       'Handle.h',
       'Heap.cpp',
       'Heap.h',
+      'InlinedGlobalMarkingVisitor.h',
+      'MarkingVisitorImpl.h',
       'ThreadState.cpp',
       'ThreadState.h',
       'Visitor.cpp',

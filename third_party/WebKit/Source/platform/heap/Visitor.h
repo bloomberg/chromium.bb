@@ -431,6 +431,17 @@ public:
     void markHeaderNoTracing(GeneralHeapObjectHeader* header) { toDerived()->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
     template<typename T> void markNoTracing(const T* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
 
+    template<typename T, void (T::*method)(Visitor*)>
+    void registerWeakMembers(const T* obj)
+    {
+        toDerived()->registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
+    }
+
+    void registerWeakMembers(const void* object, WeakPointerCallback callback)
+    {
+        toDerived()->registerWeakMembers(object, object, callback);
+    }
+
     template<typename T> inline bool isAlive(T* obj)
     {
         // Check that we actually know the definition of T when tracing.
@@ -477,6 +488,7 @@ private:
 class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
 public:
     friend class VisitorHelper<Visitor>;
+    friend class InlinedGlobalMarkingVisitor;
 
     enum VisitorType {
         GlobalMarkingVisitorType,
@@ -518,12 +530,6 @@ public:
     // weak processing.
     virtual void registerDelayedMarkNoTracing(const void*) = 0;
 
-    template<typename T, void (T::*method)(Visitor*)>
-    void registerWeakMembers(const T* obj)
-    {
-        registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
-    }
-
     // If the object calls this during the regular trace callback, then the
     // WeakPointerCallback argument may be called later, when the strong roots
     // have all been found. The WeakPointerCallback will normally use isAlive
@@ -542,8 +548,8 @@ public:
     // pointed to belong to the same thread as the object receiving
     // the weak callback. Since other threads have been resumed the
     // mark bits are not valid for objects from other threads.
-    virtual void registerWeakMembers(const void* object, WeakPointerCallback callback) { registerWeakMembers(object, object, callback); }
     virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) = 0;
+    using VisitorHelper<Visitor>::registerWeakMembers;
 
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) = 0;
 #if ENABLE(ASSERT)
@@ -585,6 +591,11 @@ protected:
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
 #if ENABLE(GC_PROFILE_MARKING)
+    virtual void recordObjectGraphEdge(const void*)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
     void* m_hostObject;
     String m_hostName;
 #endif
