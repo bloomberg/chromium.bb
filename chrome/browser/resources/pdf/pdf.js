@@ -21,6 +21,16 @@ function getScrollbarWidth() {
 }
 
 /**
+ * Return the filename component of a URL.
+ * @param {string} url The URL to get the filename from.
+ * @return {string} The filename component.
+ */
+function getFilenameFromURL(url) {
+  var components = url.split(/\/|\\/);
+  return components[components.length - 1];
+}
+
+/**
  * The minimum number of pixels to offset the toolbar by from the bottom and
  * right side of the screen.
  */
@@ -81,6 +91,7 @@ function PDFViewer(streamDetails) {
                           false);
   this.sendScriptingMessage_({type: 'readyToReceive'});
 
+  document.title = getFilenameFromURL(this.streamDetails.originalUrl);
   this.plugin_.setAttribute('src', this.streamDetails.originalUrl);
   this.plugin_.setAttribute('stream-url', this.streamDetails.streamUrl);
   var headers = '';
