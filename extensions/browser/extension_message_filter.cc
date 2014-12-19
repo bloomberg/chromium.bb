@@ -322,10 +322,8 @@ void ExtensionMessageFilter::MimeHandlerViewGuestCreatedCallback(
                        guest_instance_id,
                        attach_params);
 
-  IPC::Message* msg =
-      new ExtensionMsg_CreateMimeHandlerViewGuestACK(element_instance_id);
-  msg->set_routing_id(rfh->GetRoutingID());
-  rfh->Send(msg);
+  rfh->Send(
+      new ExtensionMsg_CreateMimeHandlerViewGuestACK(element_instance_id));
 }
 
 }  // namespace extensions
