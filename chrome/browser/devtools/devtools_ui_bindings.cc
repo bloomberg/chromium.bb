@@ -70,6 +70,8 @@ static const int kDevToolsActionTakenBoundary = 100;
 static const char kDevToolsPanelShownHistogram[] = "DevTools.PanelShown";
 static const int kDevToolsPanelShownBoundary = 20;
 
+// This constant should be in sync with
+// the constant at shell_devtools_frontend.cc.
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 
 typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
@@ -449,9 +451,9 @@ void DevToolsUIBindings::DispatchProtocolMessage(
   DCHECK(agent_host == agent_host_.get());
 
   if (message.length() < kMaxMessageChunkSize) {
-    base::StringValue message_value(message);
-    CallClientFunction("DevToolsAPI.dispatchMessage",
-                       &message_value, NULL, NULL);
+    base::string16 javascript = base::UTF8ToUTF16(
+        "DevToolsAPI.dispatchMessage(" + message + ");");
+    web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
     return;
   }
 
