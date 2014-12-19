@@ -1511,6 +1511,8 @@ crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ I
 
 crbug.com/442285 virtual/slimmingpaint/fast/text/decorations-transformed.html [ ImageOnlyFailure ]
 
+crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Pass Failure ]
+
 # Rebaseline after ES6 classes are in.
 crbug.com/442340 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
 crbug.com/442340 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
