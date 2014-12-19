@@ -80,6 +80,23 @@ TEST(display_destroy_listener)
 	assert(b.done);
 }
 
+/* Fake 'client' which does not use wl_display_connect, and thus leaves the
+ * file descriptor passed through WAYLAND_SOCKET intact. This should not
+ * trigger an assertion in the leak check. */
+static void
+empty_client(void)
+{
+	return;
+}
+
+TEST(tc_leaks_tests)
+{
+	struct display *d = display_create();
+	client_create(d, empty_client);
+	display_run(d);
+	display_destroy(d);
+}
+
 static void
 registry_handle_globals(void *data, struct wl_registry *registry,
 			uint32_t id, const char *intf, uint32_t ver)

@@ -95,6 +95,22 @@ FAIL_TEST(sanity_malloc_indirect)
 	/* not freeing array, must leak */
 }
 
+FAIL_TEST(tc_client_memory_leaks)
+{
+	struct display *d = display_create();
+	client_create(d, sanity_malloc_direct);
+	display_run(d);
+	display_destroy(d);
+}
+
+FAIL_TEST(tc_client_memory_leaks2)
+{
+	struct display *d = display_create();
+	client_create(d, sanity_malloc_indirect);
+	display_run(d);
+	display_destroy(d);
+}
+
 FAIL_TEST(sanity_fd_leak)
 {
 	int fd[2];
@@ -127,6 +143,65 @@ TEST(sanity_fd_exec)
 	assert(pipe(fd) >= 0);
 
 	exec_fd_leak_check(nr_fds + 2);
+}
+
+static void
+sanity_fd_no_leak(void)
+{
+	int fd[2];
+
+	assert(leak_check_enabled);
+
+	/* leak 2 file descriptors */
+	if (pipe(fd) < 0)
+		exit(EXIT_SUCCESS); /* failed to fail */
+
+	close(fd[0]);
+	close(fd[1]);
+}
+
+static void
+sanity_client_no_leak(void)
+{
+	struct wl_display *display = wl_display_connect(NULL);
+	assert(display);
+
+	wl_display_disconnect(display);
+}
+
+TEST(tc_client_no_fd_leaks)
+{
+	struct display *d = display_create();
+
+	/* Client which does not consume the WAYLAND_DISPLAY socket. */
+	client_create(d, sanity_fd_no_leak);
+	display_run(d);
+
+	/* Client which does consume the WAYLAND_DISPLAY socket. */
+	client_create(d, sanity_client_no_leak);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+FAIL_TEST(tc_client_fd_leaks)
+{
+	struct display *d = display_create();
+
+	client_create(d, sanity_fd_leak);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+FAIL_TEST(tc_client_fd_leaks_exec)
+{
+	struct display *d = display_create();
+
+	client_create(d, sanity_fd_leak);
+	display_run(d);
+
+	display_destroy(d);
 }
 
 FAIL_TEST(timeout_tst)
