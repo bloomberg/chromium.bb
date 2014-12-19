@@ -89,13 +89,13 @@ test.util.registerRemoteTestUtils = function() {
     }
     // Prepare arguments.
     var args = request.args.slice();  // shallow copy
-    if (request.file) {
-      if (!appWindowsForTest[request.file]) {
-        console.error('Specified window not found: ' + request.file);
+    if (request.appId) {
+      if (!appWindowsForTest[request.appId]) {
+        console.error('Specified window not found: ' + request.appId);
         sendResponse(false);
         return false;
       }
-      args.unshift(appWindowsForTest[request.file].contentWindow);
+      args.unshift(appWindowsForTest[request.appId].contentWindow);
     }
     // Call the test utility function and respond the result.
     if (test.util.async[request.func]) {
