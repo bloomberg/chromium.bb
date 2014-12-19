@@ -1256,6 +1256,7 @@ _x86_internal_release_boards = frozenset([
   'fox_wtm2',
   'glimmer',
   'gnawty',
+  'jecht',
   'kip',
   'lemmings',
   'leon',
@@ -1404,6 +1405,7 @@ _freon_boards = frozenset([
   'auron_lulu',
   'auron_paine',
   'auron_yuna',
+  'jecht',
   'link_freon',
   'mccloud_freon',
   'monroe_freon',
@@ -2806,6 +2808,11 @@ _AddGroupConfig('veyron-b', 'veyron_speedy', (
     important=False,
 )
 
+# jecht-based boards
+_AddGroupConfig('jecht', 'jecht',
+    important=False,
+)
+
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
 
@@ -2872,6 +2879,7 @@ _firmware_boards = frozenset([
   'falco',
   'glimmer',
   'gnawty',
+  'jecht',
   'kip',
   'leon',
   'link',
@@ -2907,6 +2915,7 @@ _x86_depthcharge_firmware_boards = frozenset([
   'expresso',
   'glimmer',
   'gnawty',
+  'jecht',
   'kip',
   'leon',
   'link',
