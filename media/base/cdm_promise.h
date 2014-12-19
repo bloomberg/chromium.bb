@@ -96,7 +96,7 @@ class MEDIA_EXPORT CdmPromiseTemplate : public CdmPromise {
                       uint32 system_code,
                       const std::string& error_message) = 0;
 
-  virtual ResolveParameterType GetResolveParameterType() const override {
+  ResolveParameterType GetResolveParameterType() const override {
     return CdmPromiseTraits<T...>::kType;
   }
 
