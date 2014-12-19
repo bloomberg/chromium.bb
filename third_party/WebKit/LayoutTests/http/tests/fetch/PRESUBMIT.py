@@ -14,10 +14,11 @@ import re
 
 def missing_files(scripts_path, top_path, worker_path):
     for script in os.listdir(scripts_path):
+        if script.startswith('.') or not script.endswith('.js'):
+            continue
         basename = re.sub(r'\.js$', '.html', os.path.basename(script))
-        window_path = os.path.join(top_path, basename)
-        worker_path = os.path.join(worker_path, basename)
-        for path in [window_path, worker_path]:
+        for path in [os.path.join(top_path, basename),
+                     os.path.join(worker_path, basename)]:
             if not os.path.exists(path):
                 yield path
 

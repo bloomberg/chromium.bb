@@ -8,3 +8,7 @@ corresponding html files must exist in /fetch and /fetch/workers directories.
 
 Other resources such as helper JS files and server side scripts are located on
 /fetch/resources.
+
+Tests should conform to Service Worker Testing style[1].
+
+1: http://www.chromium.org/blink/serviceworker/testing
