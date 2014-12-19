@@ -83,7 +83,7 @@ class SoftwareVideoRenderer::Core {
        scoped_refptr<FrameConsumerProxy> consumer);
   ~Core();
 
-  void Initialize(const protocol::SessionConfig& config);
+  void OnSessionConfig(const protocol::SessionConfig& config);
   void DrawBuffer(webrtc::DesktopFrame* buffer);
   void InvalidateRegion(const webrtc::DesktopRegion& region);
   void RequestReturnBuffers(const base::Closure& done);
@@ -140,7 +140,7 @@ SoftwareVideoRenderer::Core::Core(
 SoftwareVideoRenderer::Core::~Core() {
 }
 
-void SoftwareVideoRenderer::Core::Initialize(const SessionConfig& config) {
+void SoftwareVideoRenderer::Core::OnSessionConfig(const SessionConfig& config) {
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   // Initialize decoder based on the selected codec.
@@ -328,11 +328,11 @@ SoftwareVideoRenderer::~SoftwareVideoRenderer() {
   decode_task_runner_->DeleteSoon(FROM_HERE, core_.release());
 }
 
-void SoftwareVideoRenderer::Initialize(
+void SoftwareVideoRenderer::OnSessionConfig(
     const protocol::SessionConfig& config) {
   DCHECK(CalledOnValidThread());
   decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::Initialize,
+      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::OnSessionConfig,
                             base::Unretained(core_.get()), config));
 }
 

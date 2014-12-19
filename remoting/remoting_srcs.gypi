@@ -262,8 +262,9 @@
       'client/plugin/pepper_port_allocator.h',
       'client/plugin/pepper_util.cc',
       'client/plugin/pepper_util.h',
-      'client/plugin/pepper_view.cc',
-      'client/plugin/pepper_view.h',
+      'client/plugin/pepper_video_renderer.h',
+      'client/plugin/pepper_video_renderer_2d.cc',
+      'client/plugin/pepper_video_renderer_2d.h',
     ],
   }
 }

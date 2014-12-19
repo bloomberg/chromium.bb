@@ -1,21 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class is an implementation of the ChromotingView for Pepper.  It is
-// callable only on the Pepper thread.
-
-#ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
-#define REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
+#ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIDEO_RENDERER_2D_H_
+#define REMOTING_CLIENT_PLUGIN_PEPPER_VIDEO_RENDERER_2D_H_
 
 #include <list>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/cpp/view.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/cpp/view.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/frame_consumer.h"
+#include "remoting/client/plugin/pepper_video_renderer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
@@ -29,21 +30,29 @@ class DesktopFrame;
 
 namespace remoting {
 
-class ChromotingInstance;
-class ClientContext;
-class FrameProducer;
+class FrameConsumerProxy;
+class SoftwareVideoRenderer;
 
-class PepperView : public FrameConsumer {
+// Video renderer that wraps SoftwareVideoRenderer and displays it using Pepper
+// 2D graphics API.
+class PepperVideoRenderer2D : public PepperVideoRenderer,
+                              public FrameConsumer,
+                              public base::NonThreadSafe {
  public:
-  // Constructs a PepperView for the |instance|. The |instance| and |context|
-  // must outlive this class.
-  PepperView(ChromotingInstance* instance, ClientContext* context);
-  ~PepperView() override;
+  PepperVideoRenderer2D();
+  ~PepperVideoRenderer2D() override;
 
-  // Allocates buffers and passes them to the FrameProducer to render into until
-  // the maximum number of buffers are in-flight.
-  void Initialize(FrameProducer* producer);
+  // PepperVideoRenderer interface.
+  bool Initialize(pp::Instance* instance,
+                                const ClientContext& context,
+                                EventHandler* event_handler) override;
+  void OnViewChanged(const pp::View& view) override;
+  void OnSessionConfig(const protocol::SessionConfig& config) override;
+  ChromotingStats* GetStats() override;
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+                          const base::Closure& done) override;
 
+ private:
   // FrameConsumer implementation.
   void ApplyBuffer(const webrtc::DesktopSize& view_size,
                    const webrtc::DesktopRect& clip_area,
@@ -55,19 +64,8 @@ class PepperView : public FrameConsumer {
                      const webrtc::DesktopVector& dpi) override;
   PixelFormat GetPixelFormat() override;
 
-  // Updates the PepperView's size & clipping area, taking into account the
-  // DIP-to-device scale factor.
-  void SetView(const pp::View& view);
-
-  // Returns the dimensions of the most recently displayed frame, in pixels.
-  const webrtc::DesktopSize& get_source_size() const {
-    return source_size_;
-  }
-
- private:
-  // Allocates a new frame buffer to supply to the FrameProducer to render into.
-  // Returns NULL if the maximum number of buffers has already been allocated.
-  webrtc::DesktopFrame* AllocateBuffer();
+  // Helper to allocate buffers for the decoder.
+  void AllocateBuffers();
 
   // Frees a frame buffer previously allocated by AllocateBuffer.
   void FreeBuffer(webrtc::DesktopFrame* buffer);
@@ -86,17 +84,14 @@ class PepperView : public FrameConsumer {
                    const base::Time& paint_start,
                    webrtc::DesktopFrame* buffer);
 
-  // Reference to the creating plugin instance. Needed for interacting with
-  // pepper.  Marking explicitly as const since it must be initialized at
-  // object creation, and never change.
-  ChromotingInstance* const instance_;
-
-  // Context should be constant for the lifetime of the plugin.
-  ClientContext* const context_;
+  // Parameters passed to Initialize().
+  pp::Instance* instance_;
+  EventHandler* event_handler_;
 
   pp::Graphics2D graphics2d_;
 
-  FrameProducer* producer_;
+  scoped_refptr<FrameConsumerProxy> frame_consumer_proxy_;
+  scoped_ptr<SoftwareVideoRenderer> software_video_renderer_;
 
   // List of allocated image buffers.
   std::list<webrtc::DesktopFrame*> buffers_;
@@ -132,17 +127,15 @@ class PepperView : public FrameConsumer {
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;
 
-  // True after Initialize() has been called, until TearDown().
-  bool is_initialized_;
-
   // True after the first call to ApplyBuffer().
   bool frame_received_;
 
-  pp::CompletionCallbackFactory<PepperView> callback_factory_;
+  pp::CompletionCallbackFactory<PepperVideoRenderer2D> callback_factory_;
+  base::WeakPtrFactory<PepperVideoRenderer2D> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperView);
+  DISALLOW_COPY_AND_ASSIGN(PepperVideoRenderer2D);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
+#endif  // REMOTING_CLIENT_PLUGIN_PEPPER_VIDEO_RENDERER_2D_H_

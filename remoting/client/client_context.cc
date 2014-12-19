@@ -28,16 +28,19 @@ void ClientContext::Stop() {
   audio_decode_thread_.Stop();
 }
 
-base::SingleThreadTaskRunner* ClientContext::main_task_runner() {
-  return main_task_runner_.get();
+scoped_refptr<base::SingleThreadTaskRunner> ClientContext::main_task_runner()
+    const {
+  return main_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ClientContext::decode_task_runner() {
-  return decode_thread_.message_loop_proxy().get();
+scoped_refptr<base::SingleThreadTaskRunner> ClientContext::decode_task_runner()
+    const {
+  return decode_thread_.task_runner();
 }
 
-base::SingleThreadTaskRunner* ClientContext::audio_decode_task_runner() {
-  return audio_decode_thread_.message_loop_proxy().get();
+scoped_refptr<base::SingleThreadTaskRunner>
+ClientContext::audio_decode_task_runner() const {
+  return audio_decode_thread_.task_runner();
 }
 
 }  // namespace remoting

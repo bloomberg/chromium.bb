@@ -28,9 +28,9 @@ class ClientContext {
   void Start();
   void Stop();
 
-  base::SingleThreadTaskRunner* main_task_runner();
-  base::SingleThreadTaskRunner* decode_task_runner();
-  base::SingleThreadTaskRunner* audio_decode_task_runner();
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() const;
+  scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner() const;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner() const;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

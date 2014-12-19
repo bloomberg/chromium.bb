@@ -117,7 +117,7 @@ class ProtocolPerfTest
   }
 
   // VideoRenderer interface.
-  void Initialize(const protocol::SessionConfig& config) override {}
+  void OnSessionConfig(const protocol::SessionConfig& config) override {}
   ChromotingStats* GetStats() override { return NULL; }
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override {

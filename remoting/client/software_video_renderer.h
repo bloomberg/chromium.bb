@@ -42,7 +42,7 @@ class SoftwareVideoRenderer : public VideoRenderer,
   ~SoftwareVideoRenderer() override;
 
   // VideoRenderer implementation.
-  void Initialize(const protocol::SessionConfig& config) override;
+  void OnSessionConfig(const protocol::SessionConfig& config) override;
   ChromotingStats* GetStats() override;
   void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                           const base::Closure& done) override;

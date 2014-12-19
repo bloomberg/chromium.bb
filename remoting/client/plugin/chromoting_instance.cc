@@ -37,14 +37,13 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/client/chromoting_client.h"
-#include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/client/plugin/normalizing_input_filter_cros.h"
 #include "remoting/client/plugin/normalizing_input_filter_mac.h"
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_mouse_locker.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
-#include "remoting/client/plugin/pepper_view.h"
+#include "remoting/client/plugin/pepper_video_renderer_2d.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -254,11 +253,8 @@ ChromotingInstance::~ChromotingInstance() {
   // to it. This will stop all logging in all Chromoting instances.
   UnregisterLoggingInstance();
 
-  // PepperView must be destroyed before the client.
-  view_weak_factory_.reset();
-  view_.reset();
-
   client_.reset();
+  video_renderer_.reset();
 
   plugin_task_runner_->Quit();
 
@@ -374,8 +370,8 @@ void ChromotingInstance::DidChangeView(const pp::View& view) {
   mouse_input_filter_.set_input_size(
       webrtc::DesktopSize(view.GetRect().width(), view.GetRect().height()));
 
-  if (view_)
-    view_->SetView(view);
+  if (video_renderer_)
+    video_renderer_->OnViewChanged(view);
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -387,7 +383,12 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   return input_handler_.HandleInputEvent(event);
 }
 
-void ChromotingInstance::SetDesktopSize(const webrtc::DesktopSize& size,
+void ChromotingInstance::OnVideoFirstFrameReceived() {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  PostLegacyJsonMessage("onFirstFrameReceived", data.Pass());
+}
+
+void ChromotingInstance::OnVideoSize(const webrtc::DesktopSize& size,
                                         const webrtc::DesktopVector& dpi) {
   mouse_input_filter_.set_output_size(size);
 
@@ -401,7 +402,7 @@ void ChromotingInstance::SetDesktopSize(const webrtc::DesktopSize& size,
   PostLegacyJsonMessage("onDesktopSize", data.Pass());
 }
 
-void ChromotingInstance::SetDesktopShape(const webrtc::DesktopRegion& shape) {
+void ChromotingInstance::OnVideoShape(const webrtc::DesktopRegion& shape) {
   if (desktop_shape_ && shape.Equals(*desktop_shape_))
     return;
 
@@ -551,11 +552,6 @@ void ChromotingInstance::SetCursorShape(
   PostChromotingMessage("setCursorShape", dictionary);
 }
 
-void ChromotingInstance::OnFirstFrameReceived() {
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  PostLegacyJsonMessage("onFirstFrameReceived", data.Pass());
-}
-
 void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   std::string local_jid;
   std::string host_jid;
@@ -628,24 +624,13 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
-  view_.reset(new PepperView(this, &context_));
-  view_weak_factory_.reset(
-      new base::WeakPtrFactory<FrameConsumer>(view_.get()));
+  video_renderer_.reset(new PepperVideoRenderer2D());
+  bool initialized =
+      video_renderer_->Initialize(this, context_, this);
+  CHECK(initialized);
 
-  // SoftwareVideoRenderer runs on a separate thread so for now we wrap
-  // PepperView with a ref-counted proxy object.
-  scoped_refptr<FrameConsumerProxy> consumer_proxy =
-      new FrameConsumerProxy(plugin_task_runner_,
-                             view_weak_factory_->GetWeakPtr());
-
-  SoftwareVideoRenderer* renderer =
-      new SoftwareVideoRenderer(context_.main_task_runner(),
-                                context_.decode_task_runner(),
-                                consumer_proxy);
-  view_->Initialize(renderer);
   if (!plugin_view_.is_null())
-    view_->SetView(plugin_view_);
-  video_renderer_.reset(renderer);
+    video_renderer_->OnViewChanged(plugin_view_);
 
   scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
   client_.reset(new ChromotingClient(&context_, this, video_renderer_.get(),
@@ -696,15 +681,12 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
-  // PepperView must be destroyed before the client.
-  view_weak_factory_.reset();
-  view_.reset();
-
   VLOG(0) << "Disconnecting from host.";
 
   // Disconnect the input pipeline and teardown the connection.
   mouse_input_filter_.set_input_stub(NULL);
   client_.reset();
+  video_renderer_.reset();
 }
 
 void ChromotingInstance::HandleOnIncomingIq(const base::DictionaryValue& data) {
@@ -940,12 +922,6 @@ void ChromotingInstance::HandleSendMouseInputWhenUnfocused() {
 
 void ChromotingInstance::HandleDelegateLargeCursors() {
   cursor_setter_.set_delegate_stub(this);
-}
-
-ChromotingStats* ChromotingInstance::GetStats() {
-  if (!video_renderer_.get())
-    return NULL;
-  return video_renderer_->GetStats();
 }
 
 void ChromotingInstance::PostChromotingMessage(const std::string& method,

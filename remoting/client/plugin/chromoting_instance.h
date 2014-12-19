@@ -24,6 +24,7 @@
 #include "remoting/client/plugin/pepper_cursor_setter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
+#include "remoting/client/plugin/pepper_video_renderer.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -57,26 +58,17 @@ class DesktopVector;
 namespace remoting {
 
 class ChromotingClient;
-class ChromotingStats;
 class ClientContext;
 class DelegatingSignalStrategy;
-class FrameConsumer;
-class FrameConsumerProxy;
 class PepperAudioPlayer;
 class PepperMouseLocker;
 class TokenFetcherProxy;
-class PepperView;
-class RectangleUpdateDecoder;
-class SignalStrategy;
-class VideoRenderer;
 
-struct ClientConfig;
-
-class ChromotingInstance :
-      public ClientUserInterface,
-      public protocol::ClipboardStub,
-      public protocol::CursorShapeStub,
-      public pp::Instance {
+class ChromotingInstance : public ClientUserInterface,
+                           public PepperVideoRenderer::EventHandler,
+                           public protocol::ClipboardStub,
+                           public protocol::CursorShapeStub,
+                           public pp::Instance {
  public:
   // Plugin API version. This should be incremented whenever the API
   // interface changes.
@@ -133,15 +125,11 @@ class ChromotingInstance :
   // protocol::CursorShapeStub interface.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
-  // Called by PepperView.
-  void SetDesktopSize(const webrtc::DesktopSize& size,
-                      const webrtc::DesktopVector& dpi);
-  void SetDesktopShape(const webrtc::DesktopRegion& shape);
-  void OnFirstFrameReceived();
-
-  // Return statistics record by ChromotingClient.
-  // If no connection is currently active then NULL will be returned.
-  ChromotingStats* GetStats();
+  // PepperVideoRenderer::EventHandler interface.
+  void OnVideoFirstFrameReceived() override;
+  void OnVideoSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi) override;
+  void OnVideoShape(const webrtc::DesktopRegion& shape) override;
 
   // Registers a global log message handler that redirects the log output to
   // our plugin instance.
@@ -246,9 +234,7 @@ class ChromotingInstance :
   scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
   scoped_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
   ClientContext context_;
-  scoped_ptr<VideoRenderer> video_renderer_;
-  scoped_ptr<PepperView> view_;
-  scoped_ptr<base::WeakPtrFactory<FrameConsumer> > view_weak_factory_;
+  scoped_ptr<PepperVideoRenderer> video_renderer_;
   pp::View plugin_view_;
 
   // Contains the most-recently-reported desktop shape, if any.

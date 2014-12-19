@@ -19,8 +19,9 @@ class SessionConfig;
 // stream.
 class VideoRenderer : public protocol::VideoStub {
  public:
-  // Initializes the processor with the information from the protocol config.
-  virtual void Initialize(const protocol::SessionConfig& config) = 0;
+  // Configures the renderer with the supplied |config|. This must be called
+  // exactly once before video data is supplied to the renderer.
+  virtual void OnSessionConfig(const protocol::SessionConfig& config) = 0;
 
   // Return the statistics recorded by this client.
   virtual ChromotingStats* GetStats() = 0;
