@@ -142,10 +142,13 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
   command.execute(
       this.document_,
       this.currentImage_,
-      function(result, opt_delay) {
+      /**
+       * @type {function(HTMLCanvasElement, number=)}
+       */
+      (function(result, opt_delay) {
         this.currentImage_ = result;
         callback(opt_delay);
-      }.bind(this),
+      }.bind(this)),
       uiContext);
 };
 
@@ -286,7 +289,7 @@ Command.prototype.toString = function() {
  *
  * @param {!Document} document Document on which to execute command.
  * @param {!HTMLCanvasElement} srcCanvas Canvas to execute on.
- * @param {function(HTMLCanvasElement, number)} callback Callback to call on
+ * @param {function(HTMLCanvasElement, number=)} callback Callback to call on
  *   completion.
  * @param {!Object} uiContext Context to work in.
  */

@@ -152,7 +152,8 @@ ImageEditor.prototype.recordToolUse = function(name) {
 ImageEditor.prototype.onContentUpdate_ = function() {
   for (var i = 0; i != this.modes_.length; i++) {
     var mode = this.modes_[i];
-    ImageUtil.setAttribute(mode.button_, 'disabled', !mode.isApplicable());
+    ImageUtil.setAttribute(assert(mode.button_), 'disabled',
+        !mode.isApplicable());
   }
 };
 

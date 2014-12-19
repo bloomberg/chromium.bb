@@ -15,6 +15,11 @@ function ImageBuffer() {
 }
 
 /**
+ * @typedef {function(number, number, boolean)}
+ */
+ImageBuffer.DragHandler;
+
+/**
  * Add an overlay to a buffer.
  * @param {!ImageBuffer.Overlay} overlay An overlay added to a buffer.
  */

@@ -3,11 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {function(number, number, boolean)}
- */
-ImageBuffer.DragHandler;
-
-/**
  * BackgroundComponents.
  * @constructor
  * @struct

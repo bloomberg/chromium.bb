@@ -698,7 +698,7 @@ ImageView.prototype.createZoomEffect = function(screenRect) {
  * the new image to visualize the operation.
  *
  * @param {!HTMLCanvasElement} canvas New content canvas.
- * @param {!ImageRect} imageCropRect The crop rectangle in image coordinates.
+ * @param {ImageRect} imageCropRect The crop rectangle in image coordinates.
  *     Null for rotation operations.
  * @param {number} rotate90 Rotation angle in 90 degree increments.
  * @return {number} Animation duration.
@@ -717,7 +717,7 @@ ImageView.prototype.replaceAndAnimate = function(
   var effect = rotate90 ?
       new ImageView.Effect.Rotate(rotate90 > 0) :
       new ImageView.Effect.Zoom(
-          oldImageBounds.width, oldImageBounds.height, imageCropRect);
+          oldImageBounds.width, oldImageBounds.height, assert(imageCropRect));
 
   this.setTransform_(newScreenImage, this.viewport_, effect, 0 /* instant */);
 

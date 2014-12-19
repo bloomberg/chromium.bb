@@ -91,6 +91,7 @@
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '<(CLOSURE_DIR)/externs/metrics_private.js',
+          '../../externs/chrome_test.js',
           '../../externs/exif_entry.js',
           '../../externs/gallery_foreground.js',
         ],
