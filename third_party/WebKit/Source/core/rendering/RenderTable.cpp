@@ -387,6 +387,11 @@ void RenderTable::distributeExtraLogicalHeight(int extraLogicalHeight)
 
 void RenderTable::simplifiedNormalFlowLayout()
 {
+    // FIXME: We should walk through the items in the tree in tree order to do the layout here
+    // instead of walking through individual parts of the tree. crbug.com/442737
+    for (auto& caption : m_captions)
+        caption->layoutIfNeeded();
+
     for (RenderTableSection* section = topSection(); section; section = sectionBelow(section)) {
         section->layoutIfNeeded();
         section->computeOverflowFromCells();
