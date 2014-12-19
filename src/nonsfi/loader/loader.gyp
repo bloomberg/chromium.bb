@@ -44,6 +44,12 @@
               '>(tc_lib_dir_nonsfi_helper32)/libplatform.a',
             ],
           }],
+          ['target_arch=="arm"', {
+            'extra_deps_newlib_arm_nonsfi': [
+              '>(tc_lib_dir_nonsfi_helper_arm)/libgio.a',
+              '>(tc_lib_dir_nonsfi_helper_arm)/libplatform.a',
+            ],
+          }],
         ],
       },
       'sources': [

@@ -599,7 +599,7 @@
                   # Both -Wl,--noirt and -Wt,--noirt are needed here. The
                   # former is to prevent linking to irt. The latter controls
                   # the entry point for Non-SFI NaCl in pnacl-translate.
-                  # "-nodefaultlibs -Wl,--starg-group, ... -Wl,--end-group"
+                  # "-nodefaultlibs -Wl,--start-group, ... -Wl,--end-group"
                   # is the flags to exclude -lpthread, otherwise it causes
                   # library not found error. Note that pthread related code
                   # is contained in libnacl_sys_private.a, which is
@@ -867,8 +867,59 @@
               },
             ],
           }],
-          # PNaCl PPAPI shim for nonsfi build.
-          ['nlib_target!="" and pnacl_native_biased!=0 and enable_arm_nonsfi==1', {
+          # ARM non-SFI helper nexe build.
+          ['nexe_target!="" and build_nonsfi_helper!=0', {
+            'variables': {
+              'tool_name': 'nonsfi_helper',
+              'out_newlib_arm_nonsfi%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm_nonsfi.nexe',
+              'objdir_newlib_arm_nonsfi%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm-nonsfi/>(_target_name)',
+            },
+            'actions': [
+              {
+                'action_name': 'build non-SFI helper ARM nexe',
+                'variables': {
+                  'source_list_newlib_arm_nonsfi%': '^|(<(tool_name)-arm-nonsfi.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                  'stdlibs': ['-lc++', '-lm', '-lnacl', '-lc', '-lpnaclmm'],
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_arm_nonsfi)',
+                'inputs': [
+                  '<@(common_inputs)',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_newlib_arm_nonsfi)',
+                  '^(source_list_newlib_arm_nonsfi)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libnacl_sys_private.a',
+                ],
+                'outputs': ['>(out_newlib_arm_nonsfi)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'arm-nonsfi',
+                  '--build', 'newlib_nexe_pnacl',
+                  '--name', '>(out_newlib_arm_nonsfi)',
+                  '--objdir', '>(objdir_newlib_arm_nonsfi)',
+                  '--include-dirs=>(tc_include_dir_newlib) <(DEPTH)/native_client/src/public/linux_syscalls ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--target=armv7-unknown-nacl-gnueabihf --pnacl-bias=arm-nonsfi ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  # Both -Wl,--noirt and -Wt,--noirt are needed here. The
+                  # former is to prevent linking to irt. The latter controls
+                  # the entry point for Non-SFI NaCl in pnacl-translate.
+                  # "-nodefaultlibs -Wl,--start-group, ... -Wl,--end-group"
+                  # is the flags to exclude -lpthread, otherwise it causes
+                  # library not found error. Note that pthread related code
+                  # is contained in libnacl_sys_private.a, which is
+                  # automatically linked.
+                  '--link_flags=--target=armv7-unknown-nacl-gnueabihf -arch arm-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -B>(tc_lib_dir_nonsfi_helper_arm) ^(link_flags) >(_link_flags) -nodefaultlibs -Wl,--start-group >@(stdlibs) -Wl,--end-group',
+                  '--source-list=^(source_list_newlib_arm_nonsfi)',
+                ],
+              },
+            ],
+          }],
+          # ARM non-SFI helper library and PNaCl PPAPI shim for nonsfi build.
+          ['nlib_target!="" and (build_nonsfi_helper!=0 or (pnacl_native_biased!=0 and enable_arm_nonsfi==1))', {
             'variables': {
               'tool_name': 'nonsfi_helper',
               'out_newlib_arm_nonsfi%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
@@ -899,7 +950,7 @@
                   '--name', '>(out_newlib_arm_nonsfi)',
                   '--objdir', '>(objdir_newlib_arm_nonsfi)',
                   '--include-dirs=>(tc_include_dir_newlib) <(DEPTH)/native_client/src/public/linux_syscalls ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=--target=armv7-unknown-nacl-gnueabi --pnacl-bias=arm-nonsfi --pnacl-allow-translate --pnacl-allow-native -arch arm-nonsfi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--compile_flags=--target=armv7-unknown-nacl-gnueabihf --pnacl-bias=arm-nonsfi --pnacl-allow-translate --pnacl-allow-native -arch arm-nonsfi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_nonsfi_helper_arm) ^(link_flags) >(_link_flags)',
