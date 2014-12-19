@@ -422,4 +422,48 @@ TEST_F(StyledLabelTest, HandleEmptyLayout) {
   EXPECT_EQ(0, styled()->child_count());
 }
 
+TEST_F(StyledLabelTest, CacheSize) {
+  const int preferred_height = 50;
+  const int preferred_width = 100;
+  const std::string text("This is a test block of text.");
+  const base::string16 another_text(base::ASCIIToUTF16(
+      "This is a test block of text. This text is much longer than previous"));
+
+  InitStyledLabel(text);
+
+  // we should be able to calculate height without any problem
+  // no controls should be created
+  int precalculated_height = styled()->GetHeightForWidth(preferred_width);
+  EXPECT_LT(0, precalculated_height);
+  EXPECT_EQ(0, styled()->child_count());
+
+  styled()->SetBounds(0, 0, preferred_width, preferred_height);
+  styled()->Layout();
+
+  // controls should be created after layout
+  // height should be the same as precalculated
+  int real_height = styled()->GetHeightForWidth(styled()->width());
+  View* first_child_after_layout = styled()->has_children() ?
+      styled()->child_at(0) : nullptr;
+  EXPECT_LT(0, styled()->child_count());
+  EXPECT_LT(0, real_height);
+  EXPECT_EQ(real_height, precalculated_height);
+
+  // another call to Layout should not kill and recreate all controls
+  styled()->Layout();
+  View* first_child_after_second_layout = styled()->has_children() ?
+      styled()->child_at(0) : nullptr;
+  EXPECT_EQ(first_child_after_layout, first_child_after_second_layout);
+
+  // if text is changed:
+  // layout should be recalculated
+  // all controls should be recreated
+  styled()->SetText(another_text);
+  int updated_height = styled()->GetHeightForWidth(styled()->width());
+  EXPECT_NE(updated_height, real_height);
+  View* first_child_after_text_update = styled()->has_children() ?
+      styled()->child_at(0) : nullptr;
+  EXPECT_NE(first_child_after_text_update, first_child_after_layout);
+}
+
 }  // namespace views
