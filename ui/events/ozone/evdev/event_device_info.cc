@@ -190,20 +190,11 @@ int32 EventDeviceInfo::GetSlotValue(unsigned int code,
 }
 
 bool EventDeviceInfo::HasAbsXY() const {
-  if (HasAbsEvent(ABS_X) && HasAbsEvent(ABS_Y))
-    return true;
-
-  if (HasAbsEvent(ABS_MT_POSITION_X) && HasAbsEvent(ABS_MT_POSITION_Y))
-    return true;
-
-  return false;
+  return HasAbsEvent(ABS_X) && HasAbsEvent(ABS_Y);
 }
 
 bool EventDeviceInfo::HasMTAbsXY() const {
-  if (HasAbsEvent(ABS_MT_POSITION_X) && HasAbsEvent(ABS_MT_POSITION_Y))
-    return true;
-
-  return false;
+  return HasAbsEvent(ABS_MT_POSITION_X) && HasAbsEvent(ABS_MT_POSITION_Y);
 }
 
 bool EventDeviceInfo::HasRelXY() const {
