@@ -6,27 +6,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/android/resources/resource_manager.h"
+#include "ui/android/resources/resource_manager_impl.h"
+#include "ui/android/resources/system_ui_resource_type.h"
 #include "ui/android/resources/ui_resource_client_android.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace ui {
 
-class TestResourceManager : public ResourceManager {
+class TestResourceManagerImpl : public ResourceManagerImpl {
  public:
-  TestResourceManager(UIResourceProvider* provider)
-      : ResourceManager(provider) {}
+  explicit TestResourceManagerImpl(UIResourceProvider* provider)
+      : ResourceManagerImpl(provider) {}
 
-  virtual ~TestResourceManager() {}
-
-  virtual void PreloadResourceFromJava(AndroidResourceType res_type,
-                                       int res_id) override {}
-
-  virtual void RequestResourceFromJava(AndroidResourceType res_type,
-                                       int res_id) override {
-    SetResourceAsLoaded(res_type, res_id);
-  }
+  virtual ~TestResourceManagerImpl() {}
 
   void SetResourceAsLoaded(AndroidResourceType res_type, int res_id) {
     SkBitmap small_bitmap;
@@ -39,6 +32,15 @@ class TestResourceManager : public ResourceManager {
     OnResourceReady(NULL, NULL, res_type, res_id,
                     gfx::ConvertToJavaBitmap(&small_bitmap).obj(), 0, 0, 0, 0,
                     0, 0, 0, 0);
+  }
+
+ protected:
+  void PreloadResourceFromJava(AndroidResourceType res_type,
+                               int res_id) override {}
+
+  void RequestResourceFromJava(AndroidResourceType res_type,
+                               int res_id) override {
+    SetResourceAsLoaded(res_type, res_id);
   }
 };
 
@@ -84,7 +86,7 @@ class MockUIResourceProvider : public ui::UIResourceProvider {
 
   void LayerTreeHostReturned() { has_layer_tree_host_ = true; }
 
-  TestResourceManager& GetResourceManager() { return resource_manager_; }
+  TestResourceManagerImpl& GetResourceManager() { return resource_manager_; }
 
   cc::UIResourceId next_ui_resource_id() const { return next_ui_resource_id_; }
 
@@ -97,7 +99,7 @@ class MockUIResourceProvider : public ui::UIResourceProvider {
   bool has_layer_tree_host_;
 
   // The UIResourceProvider owns the ResourceManager.
-  TestResourceManager resource_manager_;
+  TestResourceManagerImpl resource_manager_;
 };
 
 }  // namespace

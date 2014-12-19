@@ -7,6 +7,7 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "content/browser/android/animation_utils.h"
 #include "ui/android/resources/resource_manager.h"
+#include "ui/android/resources/system_ui_resource_type.h"
 
 namespace content {
 

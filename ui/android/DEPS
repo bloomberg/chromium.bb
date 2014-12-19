@@ -5,7 +5,6 @@ include_rules = [
   "+jni",
   "+skia/ext",
   "+third_party/skia",
-  "+ui/base/android/system_ui_resource_type.h",
   "+ui/base/resource/resource_bundle.h",
   "+ui/base/ui_base_paths.h",
   "+ui/gfx",

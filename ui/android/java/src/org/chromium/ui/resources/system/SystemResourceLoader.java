@@ -13,9 +13,9 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 
 import org.chromium.ui.R;
-import org.chromium.ui.base.SystemUIResourceType;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.resources.Resource;
+import org.chromium.ui.resources.SystemUIResourceType;
 import org.chromium.ui.resources.async.AsyncPreloadResourceLoader;
 import org.chromium.ui.resources.statics.StaticResource;
 

@@ -67,7 +67,7 @@ $(call intermediates-dir-for,GYP,shared)/enums/base_java_library_load_from_apk_s
 $(call intermediates-dir-for,GYP,shared)/enums/base_java_memory_pressure_level/org/chromium/base/MemoryPressureLevel.java \
 $(call intermediates-dir-for,GYP,shared)/enums/media_android_imageformat/org/chromium/media/AndroidImageFormat.java \
 $(call intermediates-dir-for,GYP,shared)/enums/page_transition_types_java/org/chromium/ui/base/PageTransition.java \
-$(call intermediates-dir-for,GYP,shared)/enums/system_ui_resource_type_java/org/chromium/ui/base/SystemUIResourceType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/system_ui_resource_type_java/org/chromium/ui/resources/SystemUIResourceType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/text_input_type_java/org/chromium/ui/base/ime/TextInputType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/touch_device_types_java/org/chromium/ui/base/HoverType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/touch_device_types_java/org/chromium/ui/base/PointerType.java \

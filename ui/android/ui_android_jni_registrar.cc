@@ -6,12 +6,12 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "ui/android/resources/resource_manager.h"
+#include "ui/android/resources/resource_manager_impl.h"
 
 namespace ui {
 
 static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
-    {"ResourceManager", ui::ResourceManager::RegisterResourceManager},
+    {"ResourceManager", ui::ResourceManagerImpl::RegisterResourceManager},
 };
 
 bool RegisterUIAndroidJni(JNIEnv* env) {

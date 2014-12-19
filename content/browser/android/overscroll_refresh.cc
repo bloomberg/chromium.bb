@@ -9,6 +9,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/animation_utils.h"
 #include "ui/android/resources/resource_manager.h"
+#include "ui/android/resources/system_ui_resource_type.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 using std::abs;

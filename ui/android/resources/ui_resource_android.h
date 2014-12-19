@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/android/resources/ui_resource_android.h"
 #include "ui/android/resources/ui_resource_client_android.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/android/java_bitmap.h"

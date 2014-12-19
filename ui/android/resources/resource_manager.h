@@ -5,14 +5,13 @@
 #ifndef UI_ANDROID_RESOURCES_RESOURCE_MANAGER_H_
 #define UI_ANDROID_RESOURCES_RESOURCE_MANAGER_H_
 
-#include <string>
-
 #include "base/android/jni_android.h"
-#include "base/id_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/resources/ui_resource_client.h"
+#include "ui/android/resources/ui_resource_android.h"
 #include "ui/android/ui_android_export.h"
-#include "ui/base/android/system_ui_resource_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
@@ -32,15 +31,16 @@ enum AndroidResourceType {
   ANDROID_RESOURCE_TYPE_LAST = ANDROID_RESOURCE_TYPE_SYSTEM,
 };
 
-// TODO(jdduke): Make ResourceManager a pure interface, crbug/426939.
+// The ResourceManager serves as a cache for resources obtained through Android
+// APIs and consumed by the compositor.
 class UI_ANDROID_EXPORT ResourceManager {
  public:
   struct Resource {
    public:
     Resource();
     ~Resource();
-    gfx::Rect Border(const gfx::Size& bounds);
-    gfx::Rect Border(const gfx::Size& bounds, const gfx::InsetsF& scale);
+    gfx::Rect Border(const gfx::Size& bounds) const;
+    gfx::Rect Border(const gfx::Size& bounds, const gfx::InsetsF& scale) const;
 
     scoped_ptr<UIResourceAndroid> ui_resource;
     gfx::Size size;
@@ -48,53 +48,28 @@ class UI_ANDROID_EXPORT ResourceManager {
     gfx::Rect aperture;
   };
 
-  static ResourceManager* FromJavaObject(jobject jobj);
+  // Obtain a handle to the Java ResourceManager counterpart.
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
 
-  explicit ResourceManager(ui::UIResourceProvider* ui_resource_provider);
-  virtual ~ResourceManager();
+  // Return a handle to the resource specified by |res_type| and |res_id|.
+  // If the resource has not been loaded, loading will be performed
+  // synchronously, blocking until the load completes.
+  // If load fails, a null handle will be returned and it is up to the caller
+  // to react appropriately.
+  virtual Resource* GetResource(AndroidResourceType res_type, int res_id) = 0;
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
+  // Trigger asynchronous loading of the resource specified by |res_type| and
+  // |res_id|, if it has not yet been loaded.
+  virtual void PreloadResource(AndroidResourceType res_type, int res_id) = 0;
 
-  virtual cc::UIResourceId GetUIResourceId(AndroidResourceType res_type,
-                                           int res_id);
-  ResourceManager::Resource* GetResource(AndroidResourceType res_type,
-                                         int res_id);
-  virtual void PreloadResource(AndroidResourceType res_type, int res_id);
+  // Convenience wrapper method.
+  cc::UIResourceId GetUIResourceId(AndroidResourceType res_type, int res_id) {
+    Resource* resource = GetResource(res_type, res_id);
+    return resource && resource->ui_resource ? resource->ui_resource->id() : 0;
+  }
 
-  // Called from Java ----------------------------------------------------------
-  void OnResourceReady(JNIEnv* env,
-                       jobject jobj,
-                       jint res_type,
-                       jint res_id,
-                       jobject bitmap,
-                       jint padding_left,
-                       jint padding_top,
-                       jint padding_right,
-                       jint padding_bottom,
-                       jint aperture_left,
-                       jint aperture_top,
-                       jint aperture_right,
-                       jint aperture_bottom);
-
-  static bool RegisterResourceManager(JNIEnv* env);
-
- private:
-  friend class TestResourceManager;
-
-  // Start loading the resource. virtual for testing.
-  virtual void PreloadResourceFromJava(AndroidResourceType res_type,
-                                       int res_id);
-  virtual void RequestResourceFromJava(AndroidResourceType res_type,
-                                       int res_id);
-
-  typedef IDMap<Resource, IDMapOwnPointer> ResourceMap;
-
-  ui::UIResourceProvider* ui_resource_provider_;
-  ResourceMap resources_[ANDROID_RESOURCE_TYPE_COUNT];
-
-  base::android::ScopedJavaGlobalRef<jobject> java_obj_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceManager);
+ protected:
+  virtual ~ResourceManager() {}
 };
 
 }  // namespace ui

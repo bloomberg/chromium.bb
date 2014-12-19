@@ -25,6 +25,8 @@
       'sources' : [
         'resources/resource_manager.cc',
         'resources/resource_manager.h',
+        'resources/resource_manager_impl.cc',
+        'resources/resource_manager_impl.h',
         'resources/ui_resource_android.cc',
         'resources/ui_resource_android.h',
         'resources/ui_resource_client_android.h',
@@ -74,7 +76,7 @@
       'target_name': 'system_ui_resource_type_java',
       'type': 'none',
       'variables': {
-        'source_file': '../base/android/system_ui_resource_type.h',
+        'source_file': 'resources/system_ui_resource_type.h',
       },
       'includes': [ '../../build/android/java_cpp_enum.gypi' ],
     },
@@ -165,7 +167,7 @@
         'ui_android',
       ],
       'sources': [
-        'resources/resource_manager_unittest.cc',
+        'resources/resource_manager_impl_unittest.cc',
         'run_all_unittests.cc',
       ],
     },

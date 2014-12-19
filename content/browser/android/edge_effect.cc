@@ -8,10 +8,14 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "content/browser/android/animation_utils.h"
 #include "ui/android/resources/resource_manager.h"
+#include "ui/android/resources/system_ui_resource_type.h"
 
 namespace content {
 
 namespace {
+
+const ui::SystemUIResourceType kEdgeResourceId = ui::OVERSCROLL_EDGE;
+const ui::SystemUIResourceType kGlowResourceId = ui::OVERSCROLL_GLOW;
 
 // Time it will take the effect to fully recede in ms
 const int kRecedeTimeMs = 1000;
@@ -94,8 +98,8 @@ class EdgeEffect::EffectLayer {
 
 EdgeEffect::EdgeEffect(ui::ResourceManager* resource_manager,
                        float device_scale_factor)
-    : edge_(new EffectLayer(ui::OVERSCROLL_EDGE, resource_manager)),
-      glow_(new EffectLayer(ui::OVERSCROLL_GLOW, resource_manager)),
+    : edge_(new EffectLayer(kEdgeResourceId, resource_manager)),
+      glow_(new EffectLayer(kGlowResourceId, resource_manager)),
       base_edge_height_(kEdgeHeightAtMdpi * device_scale_factor),
       base_glow_height_(kGlowHeightAtMdpi * device_scale_factor),
       edge_alpha_(0),
@@ -338,9 +342,9 @@ void EdgeEffect::SetParent(cc::Layer* parent) {
 void EdgeEffect::PreloadResources(ui::ResourceManager* resource_manager) {
   DCHECK(resource_manager);
   resource_manager->PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
-                                    ui::OVERSCROLL_EDGE);
+                                    kEdgeResourceId);
   resource_manager->PreloadResource(ui::ANDROID_RESOURCE_TYPE_SYSTEM,
-                                    ui::OVERSCROLL_GLOW);
+                                    kGlowResourceId);
 }
 
 }  // namespace content

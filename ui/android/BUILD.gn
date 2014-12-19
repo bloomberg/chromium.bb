@@ -7,6 +7,8 @@ component("android") {
   sources = [
     "resources/resource_manager.cc",
     "resources/resource_manager.h",
+    "resources/resource_manager_impl.cc",
+    "resources/resource_manager_impl.h",
     "resources/ui_resource_android.cc",
     "resources/ui_resource_android.h",
     "resources/ui_resource_client_android.h",
@@ -40,20 +42,20 @@ java_cpp_enum("java_enums_srcjar") {
     "../base/page_transition_types.h",
     "../base/touch/touch_device.h",
     "../base/window_open_disposition.h",
-    "../base/android/system_ui_resource_type.h",
     "../base/ime/text_input_type.h",
     "../gfx/android/java_bitmap.h",
     "resources/resource_manager.h",
+    "resources/system_ui_resource_type.h",
   ]
   outputs = [
     "org/chromium/ui/WindowOpenDisposition.java",
     "org/chromium/ui/base/PageTransition.java",
-    "org/chromium/ui/base/SystemUIResourceType.java",
     "org/chromium/ui/base/HoverType.java",
     "org/chromium/ui/base/PointerType.java",
     "org/chromium/ui/base/ime/TextInputType.java",
     "org/chromium/ui/gfx/BitmapFormat.java",
     "org/chromium/ui/resources/AndroidResourceType.java",
+    "org/chromium/ui/resources/SystemUIResourceType.java",
   ]
 }
 
@@ -137,7 +139,7 @@ android_library("ui_javatests") {
 
 test("ui_android_unittests") {
   sources = [
-    "resources/resource_manager_unittest.cc",
+    "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",
   ]
   deps = [

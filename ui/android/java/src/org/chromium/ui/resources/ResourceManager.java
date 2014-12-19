@@ -161,7 +161,7 @@ public class ResourceManager implements ResourceLoaderCallback {
         mResourceLoaders.put(loader.getResourceType(), loader);
     }
 
-    private native void nativeOnResourceReady(long nativeResourceManager, int resType,
+    private native void nativeOnResourceReady(long nativeResourceManagerImpl, int resType,
             int resId, Bitmap bitmap, int paddingLeft, int paddingTop, int paddingRight,
             int paddingBottom, int apertureLeft, int apertureTop, int apertureRight,
             int apertureBottom);
