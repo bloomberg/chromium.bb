@@ -458,6 +458,8 @@
       'browser/media/test_license_server.cc',
       'browser/media/test_license_server.h',
       'browser/media/test_license_server_config.h',
+      'browser/media/webrtc_browsertest_audio.h',
+      'browser/media/webrtc_browsertest_audio.cc',
       'browser/media/webrtc_browsertest_base.cc',
       'browser/media/webrtc_browsertest_base.h',
       'browser/media/webrtc_browsertest_common.cc',

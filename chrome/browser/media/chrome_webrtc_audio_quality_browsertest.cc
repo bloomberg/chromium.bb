@@ -5,11 +5,15 @@
 #include <ctime>
 
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media/webrtc_browsertest_audio.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
@@ -149,15 +154,6 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
     EXPECT_EQ("ok-playing", ExecuteJavascript("playAudioFile()", tab_contents));
   }
 
-  base::FilePath CreateTemporaryWaveFile() {
-    base::FilePath filename;
-    EXPECT_TRUE(base::CreateTemporaryFile(&filename));
-    base::FilePath wav_filename =
-        filename.AddExtension(FILE_PATH_LITERAL(".wav"));
-    EXPECT_TRUE(base::Move(filename, wav_filename));
-    return wav_filename;
-  }
-
   content::WebContents* OpenPageWithoutGetUserMedia(const char* url) {
     chrome::AddTabAt(browser(), GURL(), -1, true);
     ui_test_utils::NavigateToURL(
@@ -171,7 +167,14 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
               ExecuteJavascript("preparePeerConnection()", tab));
     return tab;
   }
+
+ protected:
+  void TestAutoGainControl(const base::FilePath::StringType& reference_filename,
+                           const std::string& constraints,
+                           const std::string& perf_modifier);
 };
+
+namespace {
 
 class AudioRecorder {
  public:
@@ -179,9 +182,13 @@ class AudioRecorder {
   ~AudioRecorder() {}
 
   // Starts the recording program for the specified duration. Returns true
-  // on success.
+  // on success. We record in 44.1 kHz 16-bit format unless |record_cd| is
+  // false, in which case we record in 48 kHz 16-bit format. We record in stereo
+  // unless |mono| is true.
+  // TODO(phoglund): make win and mac also support the record_cd parameter. Or,
+  // even better, make everybody use the CD format rather than DAT.
   bool StartRecording(int duration_sec, const base::FilePath& output_file,
-                      bool mono) {
+                      bool mono, bool record_cd) {
     EXPECT_FALSE(recording_application_.IsValid())
         << "Tried to record, but is already recording.";
 
@@ -238,7 +245,10 @@ class AudioRecorder {
     command_line.AppendArg("-d");
     command_line.AppendArg(base::StringPrintf("%d", duration_sec));
     command_line.AppendArg("-f");
-    command_line.AppendArg("dat");
+    if (record_cd)
+      command_line.AppendArg("cd");
+    else
+      command_line.AppendArg("dat");
     command_line.AppendArg("-c");
     command_line.AppendArg(base::StringPrintf("%d", num_channels));
     command_line.AppendArgPath(output_file);
@@ -304,6 +314,24 @@ bool ForceMicrophoneVolumeTo100Percent() {
   return true;
 }
 
+// Sox is the "Swiss army knife" of audio processing. We mainly use it for
+// silence trimming. See http://sox.sourceforge.net.
+CommandLine MakeSoxCommandLine() {
+#if defined(OS_WIN)
+  base::FilePath sox_path = test::GetReferenceFilesDir().Append(
+      FILE_PATH_LITERAL("tools/sox.exe"));
+  if (!base::PathExists(sox_path)) {
+    LOG(ERROR) << "Missing sox.exe binary in " << sox_path.value()
+               << "; you may have to provide this binary yourself.";
+    return CommandLine(CommandLine::NO_PROGRAM);
+  }
+  CommandLine command_line(sox_path);
+#else
+  CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
+#endif
+  return command_line;
+}
+
 // Removes silence from beginning and end of the |input_audio_file| and writes
 // the result to the |output_audio_file|. Returns true on success.
 bool RemoveSilence(const base::FilePath& input_file,
@@ -317,23 +345,14 @@ bool RemoveSilence(const base::FilePath& input_file,
   //                 silence at beginning of audio.
   // DURATION: the amount of time in seconds that non-silence must be detected
   //           before sox stops trimming audio.
-  // THRESHOLD: value used to indicate what sample value is treates as silence.
+  // THRESHOLD: value used to indicate what sample value is treats as silence.
   const char* kAbovePeriods = "1";
   const char* kDuration = "2";
-  const char* kTreshold = "5%";
+  const char* kTreshold = "3%";
 
-#if defined(OS_WIN)
-  base::FilePath sox_path = test::GetReferenceFilesDir().Append(
-      FILE_PATH_LITERAL("tools/sox.exe"));
-  if (!base::PathExists(sox_path)) {
-    LOG(ERROR) << "Missing sox.exe binary in " << sox_path.value()
-               << "; you may have to provide this binary yourself.";
+  CommandLine command_line = MakeSoxCommandLine();
+  if (command_line.GetProgram().empty())
     return false;
-  }
-  CommandLine command_line(sox_path);
-#else
-  CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
-#endif
   command_line.AppendArgPath(input_file);
   command_line.AppendArgPath(output_file);
   command_line.AppendArg("silence");
@@ -346,6 +365,43 @@ bool RemoveSilence(const base::FilePath& input_file,
   command_line.AppendArg(kDuration);
   command_line.AppendArg(kTreshold);
   command_line.AppendArg("reverse");
+
+  DVLOG(0) << "Running " << command_line.GetCommandLineString();
+  std::string result;
+  bool ok = base::GetAppOutput(command_line, &result);
+  DVLOG(0) << "Output was:\n\n" << result;
+  return ok;
+}
+
+// Looks for 0.3-second silences (under 1% audio power) and splits the input
+// file on those silences. Output files are written according to the output file
+// template (e.g. /tmp/out.wav writes /tmp/out001.wav, /tmp/out002.wav, etc if
+// there are two silence-padded regions in the file). The silences between
+// speech segments must be at least 500 ms for this to be reliable.
+bool SplitFileOnSilence(const base::FilePath& input_file,
+                        const base::FilePath& output_file_template) {
+  CommandLine command_line = MakeSoxCommandLine();
+  if (command_line.GetProgram().empty())
+    return false;
+
+  // These are experimentally determined and work on the files we use.
+  const char* kAbovePeriods = "1";
+  const char* kUnderPeriods = "1";
+  const char* kDuration = "0.3";
+  const char* kTreshold = "1%";
+  command_line.AppendArgPath(input_file);
+  command_line.AppendArgPath(output_file_template);
+  command_line.AppendArg("silence");
+  command_line.AppendArg(kAbovePeriods);
+  command_line.AppendArg(kDuration);
+  command_line.AppendArg(kTreshold);
+  command_line.AppendArg(kUnderPeriods);
+  command_line.AppendArg(kDuration);
+  command_line.AppendArg(kTreshold);
+  command_line.AppendArg(":");
+  command_line.AppendArg("newfile");
+  command_line.AppendArg(":");
+  command_line.AppendArg("restart");
 
   DVLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
@@ -424,6 +480,88 @@ bool RunPesq(const base::FilePath& reference_file,
   return true;
 }
 
+base::FilePath CreateTemporaryWaveFile() {
+  base::FilePath filename;
+  EXPECT_TRUE(base::CreateTemporaryFile(&filename));
+  base::FilePath wav_filename =
+      filename.AddExtension(FILE_PATH_LITERAL(".wav"));
+  EXPECT_TRUE(base::Move(filename, wav_filename));
+  return wav_filename;
+}
+
+std::vector<base::FilePath> ListWavFilesInDir(const base::FilePath& dir) {
+  base::FileEnumerator files(dir, false, base::FileEnumerator::FILES,
+                             FILE_PATH_LITERAL("*.wav"));
+
+  std::vector<base::FilePath> result;
+  for (base::FilePath name = files.Next(); !name.empty(); name = files.Next())
+    result.push_back(name);
+  return result;
+}
+
+// Splits |to_split| into sub-files based on silence. The file you use must have
+// at least 500 ms periods of silence between speech segments for this to be
+// reliable.
+void SplitFileOnSilenceIntoDir(const base::FilePath& to_split,
+                               const base::FilePath& workdir) {
+  // First trim beginning and end since they are tricky for the splitter.
+  base::FilePath trimmed_audio = CreateTemporaryWaveFile();
+
+  ASSERT_TRUE(RemoveSilence(to_split, trimmed_audio));
+  DVLOG(0) << "Trimmed silence: " << trimmed_audio.value() << std::endl;
+
+  ASSERT_TRUE(SplitFileOnSilence(
+      trimmed_audio, workdir.Append(FILE_PATH_LITERAL("output.wav"))));
+  ASSERT_TRUE(base::DeleteFile(trimmed_audio, false));
+}
+
+// Computes the difference between the actual and reference segment. A positive
+// number x means the actual file is x dB stronger than the reference.
+float AnalyzeOneSegment(const base::FilePath& ref_segment,
+                        const base::FilePath& actual_segment,
+                        int segment_number) {
+  media::AudioParameters ref_parameters;
+  media::AudioParameters actual_parameters;
+  float ref_energy =
+      test::ComputeAudioEnergyForWavFile(ref_segment, &ref_parameters);
+  float actual_energy =
+      test::ComputeAudioEnergyForWavFile(actual_segment, &actual_parameters);
+
+  base::TimeDelta difference_in_length = ref_parameters.GetBufferDuration() -
+                                         actual_parameters.GetBufferDuration();
+  EXPECT_LE(difference_in_length, base::TimeDelta::FromMilliseconds(200))
+      << "Segments differ " << difference_in_length.InMilliseconds() << " ms "
+      << "in length for segment " << segment_number << "; we're likely "
+      << "comparing unrelated segments or silence splitting is busted.";
+
+  return actual_energy - ref_energy;
+}
+
+void AnalyzeSegmentsAndPrintResult(
+    const std::vector<base::FilePath>& ref_segments,
+    const std::vector<base::FilePath>& actual_segments,
+    const base::FilePath& reference_file,
+    const std::string& perf_modifier) {
+  ASSERT_GT(ref_segments.size(), 0u)
+      << "Failed to split reference file on silence; sox is likely broken.";
+  ASSERT_EQ(ref_segments.size(), actual_segments.size())
+      << "The recording did not result in the same number of audio segments "
+      << "after on splitting on silence; WebRTC must have deformed the audio "
+      << "too much.";
+
+  for (size_t i = 0; i < ref_segments.size(); i++) {
+    float difference_in_decibel = AnalyzeOneSegment(ref_segments[i],
+                                                    actual_segments[i],
+                                                    i);
+    std::string trace_name = base::StringPrintf(
+        "%s_segment_%zu", reference_file.BaseName().value().c_str(), i);
+    perf_test::PrintResult("agc_energy_diff", perf_modifier, trace_name,
+                           difference_in_decibel, "dB", false);
+  }
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestAudioQuality) {
   if (OnWinXp()) {
@@ -460,7 +598,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   // safety margins on each side.
   AudioRecorder recorder;
   static int kRecordingTimeSeconds = 15;
-  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, true));
+  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording,
+                                      true, false));
 
   PlayAudioFileThroughWebAudio(left_tab);
 
@@ -488,8 +627,40 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestAutoGainControlIncreasesEnergyForLowAudio) {
+/**
+ * The auto gain control test plays a file into the fake microphone. Then it
+ * sets up a one-way WebRTC call with audio only and records Chrome's output on
+ * the receiving side using the audio loopback provided by the quality test
+ * (see the class comments for more details).
+ *
+ * Then both the recording and reference file are split on silence. This creates
+ * a number of segments with speech in them. The reason for this is to provide
+ * a kind of synchronization mechanism so the start of each speech segment is
+ * compared to the start of the corresponding speech segment. This is because we
+ * will experience inevitable clock drift between the system clock (which runs
+ * the fake microphone) and the sound card (which runs play-out). Effectively
+ * re-synchronizing on each segment mitigates this.
+ *
+ * The silence splitting is inherently sensitive to the sound file we run on.
+ * Therefore the reference file must have at least 500 ms of pure silence
+ * between speech segments; the test will fail if the output produces more
+ * segments than the reference.
+ *
+ * The test reports the difference in decibel between the reference and output
+ * file per 10 ms interval in each speech segment. A value of 6 means the
+ * output was 6 dB louder than the reference, presumably because the AGC applied
+ * gain to the signal.
+ *
+ * The test only exercises digital AGC for now.
+ *
+ * We record in CD format here (44.1 kHz) because that's what the fake input
+ * device currently supports, and we want to be able to compare directly. See
+ * http://crbug.com/421054.
+ */
+void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
+    const base::FilePath::StringType& reference_filename,
+    const std::string& constraints,
+    const std::string& perf_modifier) {
   if (OnWinXp()) {
     LOG(ERROR) << "This test is not implemented for Windows XP.";
     return;
@@ -504,40 +675,86 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 
-  ConfigureFakeDeviceToPlayFile(
-      test::GetReferenceFilesDir().Append(kAgcTestReferenceFile));
+  base::FilePath reference_file =
+      test::GetReferenceFilesDir().Append(reference_filename);
+  ConfigureFakeDeviceToPlayFile(reference_file);
 
   // Create a one-way call.
   GURL test_page = embedded_test_server()->GetURL(kWebRtcAudioTestHtmlPage);
   content::WebContents* left_tab =
-      OpenPageAndGetUserMediaInNewTabWithConstraints(test_page,
-                                                     kAudioOnlyCallConstraints);
+      OpenPageAndGetUserMediaInNewTabWithConstraints(test_page, constraints);
   SetupPeerconnectionWithLocalStream(left_tab);
 
   content::WebContents* right_tab =
       OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
 
-  NegotiateCall(left_tab, right_tab);
-
   base::FilePath recording = CreateTemporaryWaveFile();
 
   AudioRecorder recorder;
-  static int kRecordingTimeSeconds = 10;
-  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, true));
+  static int kRecordingTimeSeconds = 25;
+  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, false,
+                                      true));
+
+  NegotiateCall(left_tab, right_tab);
 
   ASSERT_TRUE(recorder.WaitForRecordingToEnd());
   DVLOG(0) << "Done recording to " << recording.value() << std::endl;
 
   HangUp(left_tab);
 
-  base::FilePath trimmed_recording = CreateTemporaryWaveFile();
+  // Call Take() on the scoped temp dirs if you want to look at the files after
+  // the test exits (the default is to delete the files).
+  base::ScopedTempDir split_ref_files;
+  ASSERT_TRUE(split_ref_files.CreateUniqueTempDir());
+  ASSERT_NO_FATAL_FAILURE(
+      SplitFileOnSilenceIntoDir(reference_file, split_ref_files.path()));
+  std::vector<base::FilePath> ref_segments =
+      ListWavFilesInDir(split_ref_files.path());
 
-  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
-  DVLOG(0) << "Trimmed silence: " << trimmed_recording.value() << std::endl;
+  base::ScopedTempDir split_actual_files;
+  ASSERT_TRUE(split_actual_files.CreateUniqueTempDir());
+  ASSERT_NO_FATAL_FAILURE(
+      SplitFileOnSilenceIntoDir(recording, split_actual_files.path()));
+  std::vector<base::FilePath> actual_segments =
+      ListWavFilesInDir(split_actual_files.path());
 
-  // TODO(phoglund): invoke bjornv's audio energy analysis tool on the trimmed
-  // recording and log the result.
+  AnalyzeSegmentsAndPrintResult(ref_segments, actual_segments, reference_file,
+                                perf_modifier);
 
   EXPECT_TRUE(base::DeleteFile(recording, false));
-  EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
 }
+
+// Only implemented for Linux for now.
+#if defined(OS_LINUX)
+#define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
+        MANUAL_TestAutoGainControlOnLowAudio
+#else
+#define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
+        DISABLED_MANUAL_TestAutoGainControlOnLowAudio
+#endif
+
+// The AGC should apply non-zero gain here.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MAYBE_MANUAL_TestAutoGainControlOnLowAudio) {
+  ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
+      kAgcTestReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
+}
+
+// Only implemented for Linux for now.
+#if defined(OS_LINUX)
+#define MAYBE_MANUAL_TestComputeGainWithAudioProcessingOff \
+        MANUAL_TestComputeGainWithAudioProcessingOff
+#else
+#define MAYBE_MANUAL_TestComputeGainWithAudioProcessingOff \
+        DISABLED_MANUAL_TestComputeGainWithAudioProcessingOff
+#endif
+
+// Since the AGC is off here there should be no gain at all.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MAYBE_MANUAL_TestComputeGainWithAudioProcessingOff) {
+  const char* kAudioCallWithoutAudioProcessing =
+      "{audio: { mandatory: { echoCancellation: false } } }";
+  ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
+      kAgcTestReferenceFile, kAudioCallWithoutAudioProcessing, "_no_agc"));
+}
+

@@ -65,7 +65,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   // Returns true if the device is playing from a file; false if we're beeping.
   bool PlayingFromFile();
 
-  void PlayFileLooping();
+  void PlayFile();
   void PlayBeep();
 
   AudioManagerBase* audio_manager_;
