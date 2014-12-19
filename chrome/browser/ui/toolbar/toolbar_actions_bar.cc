@@ -202,6 +202,7 @@ ToolbarActionsBar::TabOrderHelper::TabOrderHelper(
     Browser* browser,
     extensions::ExtensionToolbarModel* model)
     : toolbar_(toolbar),
+      overflow_bar_(nullptr),
       model_(model),
       tab_strip_observer_(this) {
   tab_strip_observer_.Add(browser->tab_strip_model());
