@@ -218,7 +218,7 @@ Status Status::ErrorInvalidAesKwDataLength() {
 }
 
 Status Status::ErrorGenerateKeyPublicExponent() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The \"publicExponent\" must be either 3 or 65537");
 }
 
