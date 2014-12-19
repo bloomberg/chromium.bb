@@ -27,6 +27,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
 
   // DriSurfaceFactory:
   intptr_t GetNativeDisplay() override;
+  int GetDrmFd() override;
   const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,

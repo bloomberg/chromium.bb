@@ -69,12 +69,14 @@ GbmPixmap::GbmPixmap(scoped_refptr<GbmBuffer> buffer)
 }
 
 bool GbmPixmap::Initialize(DriWrapper* dri) {
-  if (drmPrimeHandleToFD(dri->get_fd(), buffer_->GetHandle(), DRM_CLOEXEC,
-                         &dma_buf_)) {
+  // We want to use the GBM API because it's going to call into libdrm
+  // which might do some optimizations on buffer allocation,
+  // especially when sharing buffers via DMABUF.
+  dma_buf_ = gbm_bo_get_fd(buffer_->bo());
+  if (dma_buf_ < 0) {
     LOG(ERROR) << "Failed to export buffer to dma_buf";
     return false;
   }
-
   return true;
 }
 

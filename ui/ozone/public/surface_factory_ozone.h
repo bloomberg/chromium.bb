@@ -88,6 +88,10 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // display connection for the native display.
   virtual intptr_t GetNativeDisplay();
 
+  // Returns Drm file descriptor. This is used to obtain access to the
+  // driver interface by other API than GL.
+  virtual int GetDrmFd();
+
   // Create SurfaceOzoneEGL for the specified gfx::AcceleratedWidget.
   //
   // Note: When used from content, this is called in the GPU process. The
