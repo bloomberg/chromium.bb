@@ -85,6 +85,7 @@ views::Label* CreateShortcutLabel(
     shortcut_label->set_background(
         views::Background::CreateSolidBackground(transparent_blakish));
   }
+  shortcut_label->SetElideBehavior(gfx::NO_ELIDE);
 
   return shortcut_label;
 }
@@ -107,6 +108,7 @@ views::Label* CreateCandidateLabel(
   candidate_label->SetFontList(
       candidate_label->font_list().DeriveWithSizeDelta(kFontSizeDelta));
   candidate_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  candidate_label->SetElideBehavior(gfx::NO_ELIDE);
 
   return candidate_label;
 }
@@ -125,6 +127,7 @@ views::Label* CreateAnnotationLabel(
   annotation_label->SetEnabledColor(theme.GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor));
   annotation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  annotation_label->SetElideBehavior(gfx::NO_ELIDE);
 
   return annotation_label;
 }
