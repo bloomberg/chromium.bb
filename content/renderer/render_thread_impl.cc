@@ -615,6 +615,14 @@ void RenderThreadImpl::Init() {
     DCHECK(parsed_num_raster_threads) << string_value;
     DCHECK_GT(num_raster_threads, 0);
     cc::TileTaskWorkerPool::SetNumWorkerThreads(num_raster_threads);
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    if (!command_line.HasSwitch(
+            switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
+      cc::TileTaskWorkerPool::SetWorkerThreadPriority(
+          base::kThreadPriority_Background);
+    }
+#endif
   }
 
   base::DiscardableMemoryShmemAllocator::SetInstance(

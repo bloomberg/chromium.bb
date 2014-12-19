@@ -830,6 +830,11 @@ const char kUseImageTextureTarget[] = "use-image-texture-target";
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
+// Use normal priority for tile task worker threads.  Otherwise they may
+// be run at background priority on some platforms.
+const char kUseNormalPriorityForTileTaskWorkerThreads[] =
+    "use-normal-priority-for-tile-task-worker-threads";
+
 // Use the new surfaces system to handle compositor delegation.
 const char kUseSurfaces[] = "use-surfaces";
 

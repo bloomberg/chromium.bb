@@ -19,6 +19,8 @@
 namespace cc {
 namespace {
 
+base::ThreadPriority g_worker_thread_priority = base::kThreadPriority_Normal;
+
 class TileTaskGraphRunner : public TaskGraphRunner,
                             public base::DelegateSimpleThread::Delegate {
  public:
@@ -31,9 +33,7 @@ class TileTaskGraphRunner : public TaskGraphRunner,
                         "CompositorTileWorker%u",
                         static_cast<unsigned>(workers_.size() + 1)).c_str()));
       worker->Start();
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-      worker->SetThreadPriority(base::kThreadPriority_Background);
-#endif
+      worker->SetThreadPriority(g_worker_thread_priority);
       workers_.push_back(worker.Pass());
     }
   }
@@ -117,6 +117,12 @@ int TileTaskWorkerPool::GetNumWorkerThreads() {
     g_num_worker_threads = kDefaultNumWorkerThreads;
 
   return g_num_worker_threads;
+}
+
+// static
+void TileTaskWorkerPool::SetWorkerThreadPriority(
+    base::ThreadPriority priority) {
+  g_worker_thread_priority = priority;
 }
 
 // static

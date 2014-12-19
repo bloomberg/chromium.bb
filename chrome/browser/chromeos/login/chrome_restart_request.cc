@@ -150,6 +150,7 @@ std::string DeriveCommandLine(const GURL& start_url,
 #endif
     ::switches::kUseDiscardableMemory,
     ::switches::kUseGL,
+    ::switches::kUseNormalPriorityForTileTaskWorkerThreads,
     ::switches::kUserDataDir,
     ::switches::kV,
     ::switches::kVModule,

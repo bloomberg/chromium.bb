@@ -64,6 +64,9 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // glPostSubBufferCHROMIUM (crbug.com/429200)
   { cc::switches::kUIDisablePartialSwap, ""},
 #endif
+  // Needed to fix a bug where the raster thread doesn't get scheduled for a
+  // substantial time (~5 seconds).  See https://crbug.com/441895.
+  { switches::kUseNormalPriorityForTileTaskWorkerThreads, "" },
   { NULL, NULL },  // Termination
 };
 

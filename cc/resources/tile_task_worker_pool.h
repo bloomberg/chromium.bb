@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_TILE_TASK_WORKER_POOL_H_
 #define CC_RESOURCES_TILE_TASK_WORKER_POOL_H_
 
+#include "base/threading/platform_thread.h"
 #include "cc/resources/tile_task_runner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -33,6 +34,9 @@ class CC_EXPORT TileTaskWorkerPool {
 
   // Returns the number of threads used for the global TaskGraphRunner instance.
   static int GetNumWorkerThreads();
+
+  // Set the priority of worker threads.
+  static void SetWorkerThreadPriority(base::ThreadPriority priority);
 
   // Returns a pointer to the global TaskGraphRunner instance.
   static TaskGraphRunner* GetTaskGraphRunner();
