@@ -3652,6 +3652,7 @@
             'rendering/RenderPartTest.cpp',
             'rendering/RenderTableCellTest.cpp',
             'rendering/RenderTableRowTest.cpp',
+            'rendering/RenderThemeTest.cpp',
             'rendering/RenderingTestHelper.cpp',
             'rendering/RenderingTestHelper.h',
             'rendering/shapes/BoxShapeTest.cpp',

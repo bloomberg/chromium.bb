@@ -5740,6 +5740,14 @@ void Document::invalidateNodeListCaches(const QualifiedName* attrName)
         list->invalidateCacheForAttribute(attrName);
 }
 
+void Document::platformColorsChanged()
+{
+    if (!isActive())
+        return;
+
+    styleEngine()->platformColorsChanged();
+}
+
 void Document::clearWeakMembers(Visitor* visitor)
 {
     if (m_axObjectCache)

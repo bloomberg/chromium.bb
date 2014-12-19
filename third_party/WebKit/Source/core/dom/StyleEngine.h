@@ -170,6 +170,8 @@ public:
     bool onlyDocumentHasStyles() const { return m_activeTreeScopes.isEmpty(); }
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
 
+    void platformColorsChanged();
+
     virtual void trace(Visitor*) override;
 
 private:

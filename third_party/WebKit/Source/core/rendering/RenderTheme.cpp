@@ -937,7 +937,7 @@ void RenderTheme::adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*
 
 void RenderTheme::platformColorsDidChange()
 {
-    Page::scheduleForcedStyleRecalcForAllPages();
+    Page::platformColorsChanged();
 }
 
 static FontDescription& getCachedFontDescription(CSSValueID systemFontID)

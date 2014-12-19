@@ -1054,6 +1054,8 @@ public:
 
     AtomicString convertLocalName(const AtomicString&);
 
+    void platformColorsChanged();
+
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;
 

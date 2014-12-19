@@ -229,12 +229,12 @@ void Page::setOpenedByDOM()
     m_openedByDOM = true;
 }
 
-void Page::scheduleForcedStyleRecalcForAllPages()
+void Page::platformColorsChanged()
 {
     for (const Page* page : allPages())
         for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
-                toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
+                toLocalFrame(frame)->document()->platformColorsChanged();
         }
 }
 

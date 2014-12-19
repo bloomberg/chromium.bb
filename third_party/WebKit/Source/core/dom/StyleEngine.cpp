@@ -673,6 +673,13 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Fonts));
 }
 
+void StyleEngine::platformColorsChanged()
+{
+    if (m_resolver)
+        m_resolver->invalidateMatchedPropertiesCache();
+    document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
+}
+
 void StyleEngine::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
