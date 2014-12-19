@@ -186,7 +186,12 @@ public:
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
 
-    void updateNeedsCompositedScrolling();
+    enum LCDTextMode {
+        ConsiderLCDText,
+        IgnoreLCDText
+    };
+
+    void updateNeedsCompositedScrolling(LCDTextMode = ConsiderLCDText);
     bool needsCompositedScrolling() const { return m_needsCompositedScrolling; }
 
     // These are used during compositing updates to determine if the overflow

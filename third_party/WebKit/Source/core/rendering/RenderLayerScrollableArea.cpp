@@ -1343,18 +1343,20 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
     return layer()->hasCompositedLayerMapping() && layer()->compositedLayerMapping()->scrollingLayer();
 }
 
-static bool layerNeedsCompositedScrolling(const RenderLayer* layer)
+static bool layerNeedsCompositedScrolling(RenderLayerScrollableArea::LCDTextMode mode, const RenderLayer* layer)
 {
+    if (mode == RenderLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())
+        return false;
+
     return layer->scrollsOverflow()
-        && layer->compositor()->preferCompositingToLCDTextEnabled()
         && !layer->hasDescendantWithClipPath()
         && !layer->hasAncestorWithClipPath()
         && !layer->renderer()->style()->hasBorderRadius();
 }
 
-void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
+void RenderLayerScrollableArea::updateNeedsCompositedScrolling(LCDTextMode mode)
 {
-    const bool needsCompositedScrolling = layerNeedsCompositedScrolling(layer());
+    const bool needsCompositedScrolling = layerNeedsCompositedScrolling(mode, layer());
     if (static_cast<bool>(m_needsCompositedScrolling) != needsCompositedScrolling) {
         m_needsCompositedScrolling = needsCompositedScrolling;
         layer()->didUpdateNeedsCompositedScrolling();

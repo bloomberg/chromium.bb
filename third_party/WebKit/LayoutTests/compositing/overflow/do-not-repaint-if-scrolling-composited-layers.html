@@ -36,6 +36,9 @@
     function testRepaint() {
         var result = "";
         for (var testIteration = 0; testIteration < 3; ++testIteration) {
+            // In all but the marquee case, we should opt into composited scrolling
+            // and should not repaint.
+            var expected_results = [false, true, false];
             var container = document.getElementById("container");
             var marquee = document.getElementById("marquee");
             var span = document.getElementById("span");
@@ -66,7 +69,7 @@
             toScroll.scrollTop = 100;
 
             if (window.internals) {
-                if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)))
+                if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)) == expected_results[testIteration])
                     result += "PASS repainted when expected\n";
                 else
                     result += "FAIL did not repaint when expected\n";
