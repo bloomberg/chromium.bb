@@ -21,7 +21,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   ~FakePictureLayerTilingClient() override;
 
   // PictureLayerTilingClient implementation.
-  scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
+  scoped_refptr<Tile> CreateTile(float contents_scale,
                                  const gfx::Rect& rect) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
@@ -49,7 +49,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
     recycled_twin_tiling_ = tiling;
   }
   void set_text_rect(const gfx::Rect& rect) { text_rect_ = rect; }
-  void set_allow_create_tile(bool allow) { allow_create_tile_ = allow; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
   void set_max_tile_priority_bin(TilePriority::PriorityBin bin) {
     max_tile_priority_bin_ = bin;
@@ -71,7 +70,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   PictureLayerTiling* twin_tiling_;
   PictureLayerTiling* recycled_twin_tiling_;
   gfx::Rect text_rect_;
-  bool allow_create_tile_;
   Region invalidation_;
   TilePriority::PriorityBin max_tile_priority_bin_;
   WhichTree tree_;

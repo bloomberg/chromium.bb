@@ -599,7 +599,7 @@ void PictureLayerImpl::UpdateRasterSource(
   // tilings that are going to disappear on the pending tree (if scale changed).
   // But that would also be more complicated, so we just do it here for now.
   tilings_->UpdateTilingsToCurrentRasterSource(
-      raster_source_.get(), pending_set, invalidation_, MinimumContentsScale(),
+      raster_source_, pending_set, invalidation_, MinimumContentsScale(),
       MaximumContentsScale());
 }
 
@@ -638,12 +638,9 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
   return raster_source_->GetFlattenedPicture();
 }
 
-scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
-                                               const gfx::Rect& content_rect) {
-  DCHECK(!raster_source_->IsSolidColor());
-  if (!raster_source_->CoversRect(content_rect, tiling->contents_scale()))
-    return scoped_refptr<Tile>();
-
+scoped_refptr<Tile> PictureLayerImpl::CreateTile(
+    float contents_scale,
+    const gfx::Rect& content_rect) {
   int flags = 0;
 
   // We don't handle solid color masks, so we shouldn't bother analyzing those.
@@ -652,9 +649,8 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      raster_source_.get(), content_rect.size(), content_rect,
-      tiling->contents_scale(), id(), layer_tree_impl()->source_frame_number(),
-      flags);
+      raster_source_.get(), content_rect.size(), content_rect, contents_scale,
+      id(), layer_tree_impl()->source_frame_number(), flags);
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {
@@ -818,7 +814,7 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   DCHECK_GE(contents_scale, MinimumContentsScale());
   DCHECK_LE(contents_scale, MaximumContentsScale());
   DCHECK(raster_source_->HasRecordings());
-  return tilings_->AddTiling(contents_scale, raster_source_->GetSize());
+  return tilings_->AddTiling(contents_scale, raster_source_);
 }
 
 void PictureLayerImpl::RemoveAllTilings() {

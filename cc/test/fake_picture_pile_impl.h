@@ -17,6 +17,14 @@ namespace cc {
 
 class FakePicturePileImpl : public PicturePileImpl {
  public:
+  static scoped_refptr<FakePicturePileImpl> CreateFilledPileWithDefaultTileSize(
+      const gfx::Size& layer_bounds) {
+    return CreateFilledPile(gfx::Size(512, 512), layer_bounds);
+  }
+  static scoped_refptr<FakePicturePileImpl> CreateEmptyPileWithDefaultTileSize(
+      const gfx::Size& layer_bounds) {
+    return CreateEmptyPile(gfx::Size(512, 512), layer_bounds);
+  }
   static scoped_refptr<FakePicturePileImpl> CreateFilledPile(
       const gfx::Size& tile_size,
       const gfx::Size& layer_bounds);

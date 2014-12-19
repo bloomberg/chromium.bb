@@ -17,7 +17,6 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       recycled_twin_tiling_(nullptr),
-      allow_create_tile_(true),
       max_tile_priority_bin_(TilePriority::NOW) {
 }
 
@@ -31,7 +30,6 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       recycled_twin_tiling_(nullptr),
-      allow_create_tile_(true),
       max_tile_priority_bin_(TilePriority::NOW) {
 }
 
@@ -39,10 +37,8 @@ FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
 
 scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
-    PictureLayerTiling*,
+    float content_scale,
     const gfx::Rect& rect) {
-  if (!allow_create_tile_)
-    return scoped_refptr<Tile>();
   return tile_manager_->CreateTile(pile_.get(), tile_size_, rect, 1, 0, 0, 0);
 }
 

@@ -54,15 +54,13 @@ PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
 
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
-    RasterSource* raster_source,
+    scoped_refptr<RasterSource> raster_source,
     const PictureLayerTilingSet* twin_set,
     const Region& layer_invalidation,
     float minimum_contents_scale,
     float maximum_contents_scale) {
   RemoveTilingsBelowScale(minimum_contents_scale);
   RemoveTilingsAboveScale(maximum_contents_scale);
-
-  gfx::Size layer_bounds = raster_source->GetSize();
 
   // Copy over tilings that are shared with the |twin_set| tiling set (if it
   // exists).
@@ -75,8 +73,8 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
       PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
       if (!this_tiling) {
         scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
-            contents_scale, layer_bounds, client_, max_tiles_for_interest_area_,
-            skewport_target_time_in_seconds_,
+            contents_scale, raster_source, client_,
+            max_tiles_for_interest_area_, skewport_target_time_in_seconds_,
             skewport_extrapolation_limit_in_content_pixels_);
         tilings_.push_back(new_tiling.Pass());
         this_tiling = tilings_.back();
@@ -91,9 +89,9 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     if (twin_set && twin_set->FindTilingWithScale(tiling->contents_scale()))
       continue;
 
-    tiling->Resize(layer_bounds);
+    tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
-    tiling->SetRasterSource(raster_source);
+    tiling->SetRasterSourceOnTiles();
     // This is needed for cases where the live tiles rect didn't change but
     // recordings exist in the raster source that did not exist on the last
     // raster source.
@@ -199,12 +197,14 @@ void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(
     float contents_scale,
-    const gfx::Size& layer_bounds) {
-  for (size_t i = 0; i < tilings_.size(); ++i)
+    scoped_refptr<RasterSource> raster_source) {
+  for (size_t i = 0; i < tilings_.size(); ++i) {
     DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);
+    DCHECK_EQ(tilings_[i]->raster_source(), raster_source.get());
+  }
 
   tilings_.push_back(PictureLayerTiling::Create(
-      contents_scale, layer_bounds, client_, max_tiles_for_interest_area_,
+      contents_scale, raster_source, client_, max_tiles_for_interest_area_,
       skewport_target_time_in_seconds_,
       skewport_extrapolation_limit_in_content_pixels_));
   PictureLayerTiling* appended = tilings_.back();

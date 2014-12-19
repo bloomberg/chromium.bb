@@ -9,6 +9,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 
@@ -47,8 +48,11 @@ class PictureLayerTilingPerfTest : public testing::Test {
     LayerTreeSettings defaults;
     picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
     picture_layer_tiling_client_.set_tree(PENDING_TREE);
+    scoped_refptr<FakePicturePileImpl> pile =
+        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
+            gfx::Size(256 * 50, 256 * 50));
     picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, gfx::Size(256 * 50, 256 * 50), &picture_layer_tiling_client_,
+        1, pile, &picture_layer_tiling_client_,
         defaults.max_tiles_for_interest_area,
         defaults.skewport_target_time_in_seconds,
         defaults.skewport_extrapolation_limit_in_content_pixels);
@@ -126,10 +130,12 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
   void RunRasterIteratorConstructTest(const std::string& test_name,
                                       const gfx::Rect& viewport) {
-    gfx::Size bounds(viewport.size());
     LayerTreeSettings defaults;
+    scoped_refptr<FakePicturePileImpl> pile =
+        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
+            viewport.size());
     picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, bounds, &picture_layer_tiling_client_,
+        1, pile, &picture_layer_tiling_client_,
         defaults.max_tiles_for_interest_area,
         defaults.skewport_target_time_in_seconds,
         defaults.skewport_extrapolation_limit_in_content_pixels);
@@ -157,8 +163,10 @@ class PictureLayerTilingPerfTest : public testing::Test {
                                                 const gfx::Rect& viewport) {
     gfx::Size bounds(10000, 10000);
     LayerTreeSettings defaults;
+    scoped_refptr<FakePicturePileImpl> pile =
+        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(bounds);
     picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, bounds, &picture_layer_tiling_client_,
+        1, pile, &picture_layer_tiling_client_,
         defaults.max_tiles_for_interest_area,
         defaults.skewport_target_time_in_seconds,
         defaults.skewport_extrapolation_limit_in_content_pixels);

@@ -55,14 +55,15 @@ class CC_EXPORT PictureLayerTilingSet {
                       PictureLayerTilingSet* recycled_twin_set);
   void RemoveNonIdealTilings();
 
-  void UpdateTilingsToCurrentRasterSource(RasterSource* raster_source,
-                                          const PictureLayerTilingSet* twin_set,
-                                          const Region& layer_invalidation,
-                                          float minimum_contents_scale,
-                                          float maximum_contents_scale);
+  void UpdateTilingsToCurrentRasterSource(
+      scoped_refptr<RasterSource> raster_source,
+      const PictureLayerTilingSet* twin_set,
+      const Region& layer_invalidation,
+      float minimum_contents_scale,
+      float maximum_contents_scale);
 
   PictureLayerTiling* AddTiling(float contents_scale,
-                                const gfx::Size& layer_bounds);
+                                scoped_refptr<RasterSource> raster_source);
   size_t num_tilings() const { return tilings_.size(); }
   int NumHighResTilings() const;
   PictureLayerTiling* tiling_at(size_t idx) { return tilings_[idx]; }

@@ -39,7 +39,8 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
   pile.SetRecordedViewport(gfx::Rect(layer_bounds));
   pile.SetHasAnyRecordings(true);
 
-  auto pile_impl = make_scoped_refptr(new FakePicturePileImpl(&pile, nullptr));
+  scoped_refptr<FakePicturePileImpl> pile_impl(
+      new FakePicturePileImpl(&pile, nullptr));
   for (int x = 0; x < pile_impl->tiling().num_tiles_x(); ++x) {
     for (int y = 0; y < pile_impl->tiling().num_tiles_y(); ++y)
       pile_impl->AddRecordingAt(x, y);
@@ -84,7 +85,8 @@ FakePicturePileImpl::CreateInfiniteFilledPile() {
   pile.SetRecordedViewport(gfx::Rect(size));
   pile.SetHasAnyRecordings(true);
 
-  auto pile_impl = make_scoped_refptr(new FakePicturePileImpl(&pile, nullptr));
+  scoped_refptr<FakePicturePileImpl> pile_impl(
+      new FakePicturePileImpl(&pile, nullptr));
   pile_impl->AddRecordingAt(0, 0);
   return pile_impl;
 }

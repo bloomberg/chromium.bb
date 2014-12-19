@@ -29,20 +29,20 @@ const float kSoonBorderDistanceInScreenPixels = 312.f;
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
-    const gfx::Size& layer_bounds,
+    scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
     size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
   return make_scoped_ptr(new PictureLayerTiling(
-      contents_scale, layer_bounds, client, max_tiles_for_interest_area,
+      contents_scale, raster_source, client, max_tiles_for_interest_area,
       skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));
 }
 
 PictureLayerTiling::PictureLayerTiling(
     float contents_scale,
-    const gfx::Size& layer_bounds,
+    scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
     size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
@@ -53,7 +53,7 @@ PictureLayerTiling::PictureLayerTiling(
           skewport_extrapolation_limit_in_content_pixels),
       contents_scale_(contents_scale),
       client_(client),
-      layer_bounds_(layer_bounds),
+      raster_source_(raster_source),
       resolution_(NON_IDEAL_RESOLUTION),
       tiling_data_(gfx::Size(), gfx::Size(), kBorderTexels),
       last_impl_frame_time_in_seconds_(0.0),
@@ -63,15 +63,16 @@ PictureLayerTiling::PictureLayerTiling(
       has_skewport_rect_tiles_(false),
       has_soon_border_rect_tiles_(false),
       has_eventually_rect_tiles_(false) {
-  gfx::Size content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
+  DCHECK(!raster_source->IsSolidColor());
+  gfx::Size content_bounds = gfx::ToCeiledSize(
+      gfx::ScaleSize(raster_source_->GetSize(), contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
 
-  DCHECK(!gfx::ToFlooredSize(
-      gfx::ScaleSize(layer_bounds, contents_scale)).IsEmpty()) <<
-      "Tiling created with scale too small as contents become empty." <<
-      " Layer bounds: " << layer_bounds.ToString() <<
-      " Contents scale: " << contents_scale;
+  DCHECK(!gfx::ToFlooredSize(gfx::ScaleSize(raster_source_->GetSize(),
+                                            contents_scale)).IsEmpty())
+      << "Tiling created with scale too small as contents become empty."
+      << " Layer bounds: " << raster_source_->GetSize().ToString()
+      << " Contents scale: " << contents_scale;
 
   tiling_data_.SetTilingSize(content_bounds);
   tiling_data_.SetMaxTextureSize(tile_size);
@@ -115,19 +116,20 @@ Tile* PictureLayerTiling::CreateTile(int i,
     }
   }
 
-  // Create a new tile because our twin didn't have a valid one.
-  scoped_refptr<Tile> tile = client_->CreateTile(this, tile_rect);
-  if (tile.get()) {
-    DCHECK(!tile->is_shared());
-    tile->set_tiling_index(i, j);
-    tiles_[key] = tile;
+  if (!raster_source_->CoversRect(tile_rect, contents_scale_))
+    return nullptr;
 
-    if (recycled_twin) {
-      DCHECK(recycled_twin->tiles_.find(key) == recycled_twin->tiles_.end());
-      // Do what recycled_twin->CreateTile() would do.
-      tile->set_shared(true);
-      recycled_twin->tiles_[key] = tile;
-    }
+  // Create a new tile because our twin didn't have a valid one.
+  scoped_refptr<Tile> tile = client_->CreateTile(contents_scale_, tile_rect);
+  DCHECK(!tile->is_shared());
+  tile->set_tiling_index(i, j);
+  tiles_[key] = tile;
+
+  if (recycled_twin) {
+    DCHECK(recycled_twin->tiles_.find(key) == recycled_twin->tiles_.end());
+    // Do what recycled_twin->CreateTile() would do.
+    tile->set_shared(true);
+    recycled_twin->tiles_[key] = tile;
   }
   return tile.get();
 }
@@ -158,9 +160,9 @@ void PictureLayerTiling::CloneTilesAndPropertiesFrom(
     const PictureLayerTiling& twin_tiling) {
   DCHECK_EQ(&twin_tiling, client_->GetPendingOrActiveTwinTiling(this));
 
-  Resize(twin_tiling.layer_bounds_);
+  SetRasterSourceAndResize(twin_tiling.raster_source_);
   DCHECK_EQ(twin_tiling.contents_scale_, contents_scale_);
-  DCHECK_EQ(twin_tiling.layer_bounds().ToString(), layer_bounds().ToString());
+  DCHECK_EQ(twin_tiling.raster_source_, raster_source_);
   DCHECK_EQ(twin_tiling.tile_size().ToString(), tile_size().ToString());
 
   resolution_ = twin_tiling.resolution_;
@@ -207,18 +209,15 @@ void PictureLayerTiling::CloneTilesAndPropertiesFrom(
                           twin_tiling.current_occlusion_in_layer_space_);
 }
 
-void PictureLayerTiling::Resize(const gfx::Size& new_layer_bounds) {
-  gfx::Size layer_bounds = new_layer_bounds;
+void PictureLayerTiling::SetRasterSourceAndResize(
+    scoped_refptr<RasterSource> raster_source) {
+  DCHECK(!raster_source->IsSolidColor());
+  gfx::Size old_layer_bounds = raster_source_->GetSize();
+  raster_source_.swap(raster_source);
+  gfx::Size new_layer_bounds = raster_source_->GetSize();
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(new_layer_bounds, contents_scale_));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
-
-  // The layer bounds are only allowed to be empty when the tile size is empty.
-  // Otherwise we should not have such a tiling in the first place.
-  DCHECK_IMPLIES(!tile_size.IsEmpty(), !layer_bounds_.IsEmpty());
-
-  bool resized = layer_bounds != layer_bounds_;
-  layer_bounds_ = layer_bounds;
 
   if (tile_size != tiling_data_.max_texture_size()) {
     tiling_data_.SetTilingSize(content_bounds);
@@ -230,7 +229,7 @@ void PictureLayerTiling::Resize(const gfx::Size& new_layer_bounds) {
     return;
   }
 
-  if (!resized)
+  if (old_layer_bounds == new_layer_bounds)
     return;
 
   // The SetLiveTilesRect() method would drop tiles outside the new bounds,
@@ -341,13 +340,12 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
   }
 }
 
-void PictureLayerTiling::SetRasterSource(
-    scoped_refptr<RasterSource> raster_source) {
+void PictureLayerTiling::SetRasterSourceOnTiles() {
   // Shared (ie. non-invalidated) tiles on the pending tree are updated to use
   // the new raster source. When this raster source is activated, the raster
   // source will remain valid for shared tiles in the active tree.
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    it->second->set_raster_source(raster_source);
+    it->second->set_raster_source(raster_source_);
   VerifyLiveTilesRect(false);
 }
 
@@ -771,7 +769,7 @@ bool PictureLayerTiling::IsTileRequiredForActivationIfVisible(
   if (!twin_tiling)
     return true;
 
-  if (twin_tiling->layer_bounds() != layer_bounds())
+  if (twin_tiling->raster_source()->GetSize() != raster_source()->GetSize())
     return true;
 
   if (twin_tiling->current_visible_rect_ != current_visible_rect_)

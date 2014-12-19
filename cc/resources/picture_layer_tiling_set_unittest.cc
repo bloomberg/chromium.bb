@@ -31,12 +31,15 @@ scoped_ptr<PictureLayerTilingSet> CreateTilingSet(
 TEST(PictureLayerTilingSetTest, NoResources) {
   FakePictureLayerTilingClient client;
   gfx::Size layer_bounds(1000, 800);
-  auto set = CreateTilingSet(&client);
+  scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
   client.SetTileSize(gfx::Size(256, 256));
 
-  set->AddTiling(1.0, layer_bounds);
-  set->AddTiling(1.5, layer_bounds);
-  set->AddTiling(2.0, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateEmptyPileWithDefaultTileSize(layer_bounds);
+
+  set->AddTiling(1.0, pile);
+  set->AddTiling(1.5, pile);
+  set->AddTiling(2.0, pile);
 
   float contents_scale = 2.0;
   gfx::Size content_bounds(
@@ -69,14 +72,17 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   PictureLayerTiling* high_res_tiling;
   PictureLayerTiling* low_res_tiling;
 
-  auto set = CreateTilingSet(&client);
-  set->AddTiling(2.0, layer_bounds);
-  high_res_tiling = set->AddTiling(1.0, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+
+  scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
+  set->AddTiling(2.0, pile);
+  high_res_tiling = set->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  set->AddTiling(0.5, layer_bounds);
-  low_res_tiling = set->AddTiling(0.25, layer_bounds);
+  set->AddTiling(0.5, pile);
+  low_res_tiling = set->AddTiling(0.25, pile);
   low_res_tiling->set_resolution(LOW_RESOLUTION);
-  set->AddTiling(0.125, layer_bounds);
+  set->AddTiling(0.125, pile);
 
   higher_than_high_res_range =
       set->GetTilingRange(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
@@ -102,11 +108,11 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   EXPECT_EQ(5u, lower_than_low_res_range.end);
 
   auto set_without_low_res = CreateTilingSet(&client);
-  set_without_low_res->AddTiling(2.0, layer_bounds);
-  high_res_tiling = set_without_low_res->AddTiling(1.0, layer_bounds);
+  set_without_low_res->AddTiling(2.0, pile);
+  high_res_tiling = set_without_low_res->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  set_without_low_res->AddTiling(0.5, layer_bounds);
-  set_without_low_res->AddTiling(0.25, layer_bounds);
+  set_without_low_res->AddTiling(0.5, pile);
+  set_without_low_res->AddTiling(0.25, pile);
 
   higher_than_high_res_range = set_without_low_res->GetTilingRange(
       PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
@@ -132,10 +138,9 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
   auto set_with_only_high_and_low_res = CreateTilingSet(&client);
-  high_res_tiling =
-      set_with_only_high_and_low_res->AddTiling(1.0, layer_bounds);
+  high_res_tiling = set_with_only_high_and_low_res->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  low_res_tiling = set_with_only_high_and_low_res->AddTiling(0.5, layer_bounds);
+  low_res_tiling = set_with_only_high_and_low_res->AddTiling(0.5, pile);
   low_res_tiling->set_resolution(LOW_RESOLUTION);
 
   higher_than_high_res_range = set_with_only_high_and_low_res->GetTilingRange(
@@ -164,7 +169,7 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
   auto set_with_only_high_res = CreateTilingSet(&client);
-  high_res_tiling = set_with_only_high_res->AddTiling(1.0, layer_bounds);
+  high_res_tiling = set_with_only_high_res->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
 
   higher_than_high_res_range = set_with_only_high_res->GetTilingRange(
@@ -219,11 +224,13 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     client.SetTileSize(gfx::Size(256, 256));
     client.set_tree(PENDING_TREE);
     gfx::Size layer_bounds(1000, 800);
-    auto set = CreateTilingSet(&client);
+    scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
+    scoped_refptr<FakePicturePileImpl> pile =
+        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
-      PictureLayerTiling* tiling = set->AddTiling(scale, layer_bounds);
+      PictureLayerTiling* tiling = set->AddTiling(scale, pile);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       client.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
@@ -297,15 +304,15 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
       PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 100);
-  auto pile =
-      FakePicturePileImpl::CreateEmptyPile(gfx::Size(77, 77), layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
 
   gfx::Size tile_size1(10, 10);
   gfx::Size tile_size2(30, 30);
   gfx::Size tile_size3(20, 20);
 
   pending_client.SetTileSize(tile_size1);
-  pending_set->AddTiling(1.f, layer_bounds);
+  pending_set->AddTiling(1.f, pile);
   // New tilings get the correct tile size.
   EXPECT_EQ(tile_size1, pending_set->tiling_at(0)->tile_size());
 
@@ -398,13 +405,13 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
       PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 105);
-  auto pile =
-      FakePicturePileImpl::CreateEmptyPile(gfx::Size(77, 77), layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateEmptyPileWithDefaultTileSize(layer_bounds);
 
   // Tilings can be added of any scale, the tiling client can controls this.
-  pending_set->AddTiling(1.f, layer_bounds);
-  pending_set->AddTiling(2.f, layer_bounds);
-  pending_set->AddTiling(3.f, layer_bounds);
+  pending_set->AddTiling(1.f, pile);
+  pending_set->AddTiling(2.f, pile);
+  pending_set->AddTiling(3.f, pile);
 
   // Set some expected things for the tiling set to function.
   pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
