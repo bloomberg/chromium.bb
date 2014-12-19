@@ -28,6 +28,8 @@
         '../web/ios_web.gyp:ios_web',
       ],
       'sources': [
+        'browser/browser_state/browser_state_otr_helper.cc',
+        'browser/browser_state/browser_state_otr_helper.h',
         'browser/infobars/confirm_infobar_controller.h',
         'browser/infobars/confirm_infobar_controller.mm',
         'browser/infobars/confirm_infobar_delegate.mm',
