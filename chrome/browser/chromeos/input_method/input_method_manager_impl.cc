@@ -391,12 +391,6 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
     return;
 
   bool notify_menu = false;
-  // For 3rd party IME, when the user just logged in, SetEnabledExtensionImes
-  // happens after activating the 3rd party IME.
-  // So here to record the 3rd party IME to be activated, and activate it
-  // when SetEnabledExtensionImes happens later.
-  if (MethodAwaitsExtensionLoad(input_method_id))
-    pending_input_method_id = input_method_id;
 
   // Always lookup input method, even if it is the same as
   // |current_input_method| because If it is no longer in
@@ -404,6 +398,16 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
   // |active_input_method_ids|.
   const InputMethodDescriptor* descriptor =
       manager_->LookupInputMethod(input_method_id, this);
+  if (!descriptor)
+    return;
+
+  // For 3rd party IME, when the user just logged in, SetEnabledExtensionImes
+  // happens after activating the 3rd party IME.
+  // So here to record the 3rd party IME to be activated, and activate it
+  // when SetEnabledExtensionImes happens later.
+  if (MethodAwaitsExtensionLoad(input_method_id))
+    pending_input_method_id = input_method_id;
+
   if (descriptor->id() != current_input_method.id()) {
     previous_input_method = current_input_method;
     current_input_method = *descriptor;
