@@ -2000,7 +2000,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     if use_source_file:
       input_api1.AffectedSourceFiles(None).AndReturn(files1)
     else:
-      input_api1.AffectedFiles(include_deleted=False).AndReturn(files1)
+      input_api1.AffectedFiles(include_deletes=False).AndReturn(files1)
     presubmit.scm.SVN.GetFileProperty(
         presubmit.normpath('foo/bar.cc'), property_name, self.fake_root_dir
         ).AndReturn(value1)
@@ -2017,7 +2017,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     if use_source_file:
       input_api2.AffectedSourceFiles(None).AndReturn(files2)
     else:
-      input_api2.AffectedFiles(include_deleted=False).AndReturn(files2)
+      input_api2.AffectedFiles(include_deletes=False).AndReturn(files2)
 
     presubmit.scm.SVN.GetFileProperty(
         presubmit.normpath('foo/bar.cc'), property_name, self.fake_root_dir
@@ -2175,7 +2175,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     affected_files = (affected_file1, affected_file2,
                       affected_file3, affected_file4)
 
-    def test(file_filter, include_deletes):
+    def test(include_dirs=False, include_deletes=True, file_filter=None):
       self.assertFalse(include_deletes)
       for x in affected_files:
         if file_filter(x):
