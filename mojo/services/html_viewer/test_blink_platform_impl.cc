@@ -4,7 +4,7 @@
 
 #include "mojo/services/html_viewer/test_blink_platform_impl.h"
 
-namespace mojo {
+namespace html_viewer {
 
 TestBlinkPlatformImpl::TestBlinkPlatformImpl() {
 }
@@ -20,4 +20,4 @@ blink::WebClipboard* BlinkPlatformImpl::clipboard() {
   return clipboard_.get();
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

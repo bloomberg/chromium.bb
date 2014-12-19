@@ -7,7 +7,7 @@
 
 #include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
@@ -27,6 +27,6 @@ class WebThemeEngineImpl : public blink::WebThemeEngine {
                                     const blink::WebRect& rect);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBTHEMEENGINE_IMPL_H_

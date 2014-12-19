@@ -13,26 +13,27 @@ class WebAXObject;
 class WebView;
 }  // namespace blink
 
-namespace mojo {
+namespace html_viewer {
 
 // Caller must ensure that |web_view| outlives AxProviderImpl.
-class AxProviderImpl : public InterfaceImpl<AxProvider> {
+class AxProviderImpl : public mojo::InterfaceImpl<mojo::AxProvider> {
  public:
   explicit AxProviderImpl(blink::WebView* web_view);
-  void GetTree(const Callback<void(Array<AxNodePtr> nodes)>& callback) override;
+  void GetTree(const mojo::Callback<void(mojo::Array<mojo::AxNodePtr> nodes)>&
+                   callback) override;
 
  private:
   int Populate(const blink::WebAXObject& ax_object,
                int parent_id,
                int next_sibling_id,
-               Array<AxNodePtr>* result);
-  AxNodePtr ConvertAxNode(const blink::WebAXObject& ax_object,
-                          int parent_id,
-                          int next_sibling_id);
+               mojo::Array<mojo::AxNodePtr>* result);
+  mojo::AxNodePtr ConvertAxNode(const blink::WebAXObject& ax_object,
+                                int parent_id,
+                                int next_sibling_id);
 
   blink::WebView* web_view_;
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_AX_PROVIDER_IMPL_H_

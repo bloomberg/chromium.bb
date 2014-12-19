@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class WebMimeRegistryImpl : public blink::WebMimeRegistry {
  public:
@@ -45,6 +45,6 @@ class WebMimeRegistryImpl : public blink::WebMimeRegistry {
       const blink::WebString& path);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_

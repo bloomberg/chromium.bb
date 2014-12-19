@@ -23,7 +23,9 @@
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
 
-namespace mojo {
+using mojo::ServiceProviderPtr;
+
+namespace html_viewer {
 
 #if !defined(OS_ANDROID)
 namespace {
@@ -35,7 +37,8 @@ class RendererServiceProvider
       : service_provider_ptr_(service_provider_ptr.Pass()) {}
   ~RendererServiceProvider() final {}
 
-  void ConnectToService(InterfacePtr<MediaRenderer>* media_renderer_ptr) final {
+  void ConnectToService(
+      mojo::InterfacePtr<mojo::MediaRenderer>* media_renderer_ptr) final {
     mojo::ConnectToService(service_provider_ptr_.get(), media_renderer_ptr);
   }
 
@@ -74,7 +77,7 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
-    Shell* shell) {
+    mojo::Shell* shell) {
 #if defined(OS_ANDROID)
   return nullptr;
 #else
@@ -125,4 +128,4 @@ WebMediaPlayerFactory::GetMediaThreadTaskRunner() {
   return media_thread_.message_loop_proxy();
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

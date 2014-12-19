@@ -7,15 +7,19 @@
 #include "base/bind.h"
 #include "mojo/services/html_viewer/blink_basic_type_converters.h"
 
-namespace mojo {
+using mojo::Array;
+using mojo::Clipboard;
+using mojo::Map;
+using mojo::String;
+
+namespace html_viewer {
 namespace {
 
 void CopyUint64(uint64_t* output, uint64_t input) {
   *output = input;
 }
 
-void CopyWebString(blink::WebString* output,
-                   const mojo::Array<uint8_t>& input) {
+void CopyWebString(blink::WebString* output, const Array<uint8_t>& input) {
   // blink does not differentiate between the requested data type not existing
   // and the empty string.
   if (input.is_null()) {
@@ -27,8 +31,7 @@ void CopyWebString(blink::WebString* output,
   }
 }
 
-void CopyURL(blink::WebURL* pageURL,
-             const mojo::Array<uint8_t>& input) {
+void CopyURL(blink::WebURL* pageURL, const Array<uint8_t>& input) {
   if (input.is_null()) {
     *pageURL = blink::WebURL();
   } else {
@@ -51,7 +54,7 @@ const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 
 }  // namespace
 
-WebClipboardImpl::WebClipboardImpl(ClipboardPtr clipboard)
+WebClipboardImpl::WebClipboardImpl(mojo::ClipboardPtr clipboard)
     : clipboard_(clipboard.Pass()) {
 }
 
@@ -71,7 +74,7 @@ uint64_t WebClipboardImpl::sequenceNumber(Buffer buffer) {
 }
 
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
-  mojo::Clipboard::Type clipboard_type = ConvertBufferType(buffer);
+  Clipboard::Type clipboard_type = ConvertBufferType(buffer);
 
   std::vector<std::string> types;
   clipboard_->GetAvailableMimeTypes(
@@ -82,9 +85,9 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 
   switch (format) {
     case FormatPlainText:
-      return Contains(types, mojo::Clipboard::MIME_TYPE_TEXT);
+      return Contains(types, Clipboard::MIME_TYPE_TEXT);
     case FormatHTML:
-      return Contains(types, mojo::Clipboard::MIME_TYPE_HTML);
+      return Contains(types, Clipboard::MIME_TYPE_HTML);
     case FormatSmartPaste:
       return Contains(types, kMimeTypeWebkitSmartPaste);
     case FormatBookmark:
@@ -98,7 +101,7 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 blink::WebVector<blink::WebString> WebClipboardImpl::readAvailableTypes(
     Buffer buffer,
     bool* containsFilenames) {
-  mojo::Clipboard::Type clipboard_type = ConvertBufferType(buffer);
+  Clipboard::Type clipboard_type = ConvertBufferType(buffer);
 
   std::vector<std::string> types;
   clipboard_->GetAvailableMimeTypes(
@@ -119,11 +122,11 @@ blink::WebVector<blink::WebString> WebClipboardImpl::readAvailableTypes(
 }
 
 blink::WebString WebClipboardImpl::readPlainText(Buffer buffer) {
-  mojo::Clipboard::Type type = ConvertBufferType(buffer);
+  Clipboard::Type type = ConvertBufferType(buffer);
 
   blink::WebString text;
-  clipboard_->ReadMimeType(
-      type, mojo::Clipboard::MIME_TYPE_TEXT, base::Bind(&CopyWebString, &text));
+  clipboard_->ReadMimeType(type, Clipboard::MIME_TYPE_TEXT,
+                           base::Bind(&CopyWebString, &text));
 
   // Force this to be synchronous.
   clipboard_.WaitForIncomingMethodCall();
@@ -135,18 +138,18 @@ blink::WebString WebClipboardImpl::readHTML(Buffer buffer,
                                             blink::WebURL* pageURL,
                                             unsigned* fragmentStart,
                                             unsigned* fragmentEnd) {
-  mojo::Clipboard::Type type = ConvertBufferType(buffer);
+  Clipboard::Type type = ConvertBufferType(buffer);
 
   blink::WebString html;
-  clipboard_->ReadMimeType(
-      type, mojo::Clipboard::MIME_TYPE_HTML, base::Bind(&CopyWebString, &html));
+  clipboard_->ReadMimeType(type, Clipboard::MIME_TYPE_HTML,
+                           base::Bind(&CopyWebString, &html));
   clipboard_.WaitForIncomingMethodCall();
 
   *fragmentStart = 0;
   *fragmentEnd = static_cast<unsigned>(html.length());
 
-  clipboard_->ReadMimeType(
-      type, mojo::Clipboard::MIME_TYPE_URL, base::Bind(&CopyURL, pageURL));
+  clipboard_->ReadMimeType(type, Clipboard::MIME_TYPE_URL,
+                           base::Bind(&CopyURL, pageURL));
   clipboard_.WaitForIncomingMethodCall();
 
   return html;
@@ -155,7 +158,7 @@ blink::WebString WebClipboardImpl::readHTML(Buffer buffer,
 blink::WebString WebClipboardImpl::readCustomData(
     Buffer buffer,
     const blink::WebString& mime_type) {
-  mojo::Clipboard::Type clipboard_type = ConvertBufferType(buffer);
+  Clipboard::Type clipboard_type = ConvertBufferType(buffer);
 
   blink::WebString data;
   clipboard_->ReadMimeType(
@@ -169,9 +172,9 @@ blink::WebString WebClipboardImpl::readCustomData(
 
 void WebClipboardImpl::writePlainText(const blink::WebString& text) {
   Map<String, Array<uint8_t>> data;
-  data[mojo::Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(text);
+  data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(text);
 
-  clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE, data.Pass());
+  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, data.Pass());
 }
 
 void WebClipboardImpl::writeHTML(const blink::WebString& htmlText,
@@ -179,26 +182,26 @@ void WebClipboardImpl::writeHTML(const blink::WebString& htmlText,
                                  const blink::WebString& plainText,
                                  bool writeSmartPaste) {
   Map<String, Array<uint8_t>> data;
-  data[mojo::Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plainText);
-  data[mojo::Clipboard::MIME_TYPE_HTML] = Array<uint8_t>::From(htmlText);
-  data[mojo::Clipboard::MIME_TYPE_URL] = Array<uint8_t>::From(url.string());
+  data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plainText);
+  data[Clipboard::MIME_TYPE_HTML] = Array<uint8_t>::From(htmlText);
+  data[Clipboard::MIME_TYPE_URL] = Array<uint8_t>::From(url.string());
 
   if (writeSmartPaste)
     data[kMimeTypeWebkitSmartPaste] = Array<uint8_t>::From(blink::WebString());
 
-  clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE, data.Pass());
+  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, data.Pass());
 }
 
-mojo::Clipboard::Type WebClipboardImpl::ConvertBufferType(Buffer buffer) {
+Clipboard::Type WebClipboardImpl::ConvertBufferType(Buffer buffer) {
   switch (buffer) {
     case BufferStandard:
-      return mojo::Clipboard::TYPE_COPY_PASTE;
+      return Clipboard::TYPE_COPY_PASTE;
     case BufferSelection:
-      return mojo::Clipboard::TYPE_SELECTION;
+      return Clipboard::TYPE_SELECTION;
   }
 
   NOTREACHED();
-  return mojo::Clipboard::TYPE_COPY_PASTE;
+  return Clipboard::TYPE_COPY_PASTE;
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

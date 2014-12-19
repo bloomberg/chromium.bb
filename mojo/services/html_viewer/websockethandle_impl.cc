@@ -26,6 +26,11 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
 
+using mojo::ConvertTo;
+using mojo::String;
+using mojo::WebSocket;
+using mojo::WebSocketReadQueue;
+
 namespace mojo {
 
 template<>
@@ -61,9 +66,13 @@ struct TypeConverter<WebSocketHandle::MessageType, WebSocket::MessageType> {
   }
 };
 
+}  // namespace mojo
+
+namespace html_viewer {
+
 // This class forms a bridge from the mojo WebSocketClient interface and the
 // Blink WebSocketHandleClient interface.
-class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
+class WebSocketClientImpl : public mojo::InterfaceImpl<mojo::WebSocketClient> {
  public:
   explicit WebSocketClientImpl(WebSocketHandleImpl* handle,
                                blink::WebSocketHandleClient* client)
@@ -75,7 +84,7 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
   void DidConnect(bool fail,
                   const String& selected_subprotocol,
                   const String& extensions,
-                  ScopedDataPipeConsumerHandle receive_stream) override {
+                  mojo::ScopedDataPipeConsumerHandle receive_stream) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     receive_stream_ = receive_stream.Pass();
@@ -134,13 +143,13 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
   // |handle_| owns this object, so it is guaranteed to outlive us.
   WebSocketHandleImpl* handle_;
   blink::WebSocketHandleClient* client_;
-  ScopedDataPipeConsumerHandle receive_stream_;
+  mojo::ScopedDataPipeConsumerHandle receive_stream_;
   scoped_ptr<WebSocketReadQueue> read_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketClientImpl);
 };
 
-WebSocketHandleImpl::WebSocketHandleImpl(NetworkService* network_service)
+WebSocketHandleImpl::WebSocketHandleImpl(mojo::NetworkService* network_service)
     : did_close_(false) {
   network_service->CreateWebSocket(GetProxy(&web_socket_));
 }
@@ -158,18 +167,17 @@ void WebSocketHandleImpl::connect(const WebURL& url,
                                   const WebSerializedOrigin& origin,
                                   WebSocketHandleClient* client) {
   client_.reset(new WebSocketClientImpl(this, client));
-  WebSocketClientPtr client_ptr;
+  mojo::WebSocketClientPtr client_ptr;
   // TODO(mpcomplete): Is this the right ownership model? Or should mojo own
   // |client_|?
   WeakBindToProxy(client_.get(), &client_ptr);
 
-  DataPipe data_pipe;
+  mojo::DataPipe data_pipe;
   send_stream_ = data_pipe.producer_handle.Pass();
-  write_queue_.reset(new WebSocketWriteQueue(send_stream_.get()));
+  write_queue_.reset(new mojo::WebSocketWriteQueue(send_stream_.get()));
   web_socket_->Connect(url.string().utf8(),
-                       Array<String>::From(protocols),
-                       origin.string().utf8(),
-                       data_pipe.consumer_handle.Pass(),
+                       mojo::Array<String>::From(protocols),
+                       origin.string().utf8(), data_pipe.consumer_handle.Pass(),
                        client_ptr.Pass());
 }
 
@@ -212,4 +220,4 @@ void WebSocketHandleImpl::Disconnect() {
   client_.reset();
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

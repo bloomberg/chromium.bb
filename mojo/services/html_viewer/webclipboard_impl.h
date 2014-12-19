@@ -8,11 +8,11 @@
 #include "mojo/services/clipboard/public/interfaces/clipboard.mojom.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class WebClipboardImpl : public blink::WebClipboard {
  public:
-  WebClipboardImpl(ClipboardPtr clipboard);
+  WebClipboardImpl(mojo::ClipboardPtr clipboard);
   virtual ~WebClipboardImpl();
 
   // blink::WebClipboard methods:
@@ -38,11 +38,11 @@ class WebClipboardImpl : public blink::WebClipboard {
   // Changes webkit buffers to mojo Clipboard::Types.
   mojo::Clipboard::Type ConvertBufferType(Buffer buffer);
 
-  ClipboardPtr clipboard_;
+  mojo::ClipboardPtr clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(WebClipboardImpl);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBCLIPBOARD_IMPL_H_

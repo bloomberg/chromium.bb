@@ -30,19 +30,22 @@ class LayerTreeHost;
 
 namespace mojo {
 class View;
+}
+
+namespace html_viewer {
 
 class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
                              public cc::LayerTreeHostClient,
-                             public OutputSurfaceMojoClient {
+                             public mojo::OutputSurfaceMojoClient {
  public:
   WebLayerTreeViewImpl(
       scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
-      SurfacesServicePtr surfaces_service,
-      GpuPtr gpu_service);
+      mojo::SurfacesServicePtr surfaces_service,
+      mojo::GpuPtr gpu_service);
   virtual ~WebLayerTreeViewImpl();
 
   void set_widget(blink::WebWidget* widget) { widget_ = widget; }
-  void set_view(View* view) { view_ = view; }
+  void set_view(mojo::View* view) { view_ = view; }
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame(int frame_id) override;
@@ -113,16 +116,17 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void DidCreateSurface(cc::SurfaceId id) override;
 
  private:
-  void OnSurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
+  void OnSurfaceConnectionCreated(mojo::SurfacePtr surface,
+                                  uint32_t id_namespace);
   void DidCreateSurfaceOnMainThread(cc::SurfaceId id);
 
   // widget_ and view_ will outlive us.
   blink::WebWidget* widget_;
-  View* view_;
+  mojo::View* view_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
-  SurfacesServicePtr surfaces_service_;
+  mojo::SurfacesServicePtr surfaces_service_;
   scoped_ptr<cc::OutputSurface> output_surface_;
-  GpuPtr gpu_service_;
+  mojo::GpuPtr gpu_service_;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
   base::WeakPtr<WebLayerTreeViewImpl> main_thread_bound_weak_ptr_;
@@ -131,6 +135,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   DISALLOW_COPY_AND_ASSIGN(WebLayerTreeViewImpl);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBLAYERTREEVIEW_IMPL_H_

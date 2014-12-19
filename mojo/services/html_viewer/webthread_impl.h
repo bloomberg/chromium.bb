@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class WebThreadBase : public blink::WebThread {
  public:
@@ -73,6 +73,6 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   blink::PlatformThreadId thread_id_;
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_

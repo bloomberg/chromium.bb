@@ -16,12 +16,12 @@
 #include "mojo/services/view_manager/public/cpp/view.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-namespace mojo {
+namespace html_viewer {
 
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
-    SurfacesServicePtr surfaces_service,
-    GpuPtr gpu_service)
+    mojo::SurfacesServicePtr surfaces_service,
+    mojo::GpuPtr gpu_service)
     : widget_(NULL),
       view_(NULL),
       surfaces_service_(surfaces_service.Pass()),
@@ -232,13 +232,13 @@ void WebLayerTreeViewImpl::finishAllRendering() {
   layer_tree_host_->FinishAllRendering();
 }
 
-void WebLayerTreeViewImpl::OnSurfaceConnectionCreated(SurfacePtr surface,
+void WebLayerTreeViewImpl::OnSurfaceConnectionCreated(mojo::SurfacePtr surface,
                                                       uint32_t id_namespace) {
-  CommandBufferPtr cb;
+  mojo::CommandBufferPtr cb;
   gpu_service_->CreateOffscreenGLES2Context(GetProxy(&cb));
   scoped_refptr<cc::ContextProvider> context_provider(
-      new ContextProviderMojo(cb.PassMessagePipe()));
-  output_surface_.reset(new OutputSurfaceMojo(
+      new mojo::ContextProviderMojo(cb.PassMessagePipe()));
+  output_surface_.reset(new mojo::OutputSurfaceMojo(
       this, context_provider, surface.Pass(), id_namespace));
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
@@ -252,7 +252,7 @@ void WebLayerTreeViewImpl::DidCreateSurface(cc::SurfaceId id) {
 }
 
 void WebLayerTreeViewImpl::DidCreateSurfaceOnMainThread(cc::SurfaceId id) {
-  view_->SetSurfaceId(SurfaceId::From(id));
+  view_->SetSurfaceId(mojo::SurfaceId::From(id));
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

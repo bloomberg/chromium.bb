@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class TestBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
@@ -26,6 +26,6 @@ class TestBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebCookieJar cookie_jar_;
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_TEST_BLINK_PLATFORM_IMPL_H_

@@ -13,7 +13,7 @@
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 
-namespace mojo {
+namespace html_viewer {
 
 WebThreadBase::WebThreadBase() {}
 WebThreadBase::~WebThreadBase() {}
@@ -136,4 +136,4 @@ blink::PlatformThreadId WebThreadImplForMessageLoop::threadId() const {
 
 WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {}
 
-}  // namespace mojo
+}  // namespace html_viewer

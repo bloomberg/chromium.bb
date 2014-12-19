@@ -26,7 +26,9 @@ using blink::WebURL;
 using blink::WebView;
 using blink::WebViewClient;
 
-namespace mojo {
+using mojo::Array;
+using mojo::AxNode;
+using mojo::AxNodePtr;
 
 namespace {
 
@@ -48,7 +50,7 @@ class AxProviderImplTest : public testing::Test {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::IsolateHolder::LoadV8Snapshot();
 #endif
-    blink::initialize(new BlinkPlatformImpl());
+    blink::initialize(new html_viewer::BlinkPlatformImpl());
   }
 
   virtual ~AxProviderImplTest() override { blink::shutdown(); }
@@ -65,7 +67,7 @@ struct NodeCatcher {
 AxNodePtr CreateNode(int id,
                      int parent_id,
                      int next_sibling_id,
-                     const RectPtr& bounds,
+                     const mojo::RectPtr& bounds,
                      const std::string& url,
                      const std::string& text) {
   AxNodePtr node(AxNode::New());
@@ -75,11 +77,11 @@ AxNodePtr CreateNode(int id,
   node->bounds = bounds.Clone();
 
   if (!url.empty()) {
-    node->link = AxLink::New();
+    node->link = mojo::AxLink::New();
     node->link->url = url;
   }
   if (!text.empty()) {
-    node->text = AxText::New();
+    node->text = mojo::AxText::New();
     node->text->content = text;
   }
   return node.Pass();
@@ -99,7 +101,7 @@ TEST_F(AxProviderImplTest, Basic) {
       WebURL(GURL("http://someplace.net")));
   base::MessageLoop::current()->Run();
 
-  AxProviderImpl ax_provider_impl(view);
+  html_viewer::AxProviderImpl ax_provider_impl(view);
   NodeCatcher catcher;
   ax_provider_impl.GetTree(
       base::Bind(&NodeCatcher::OnNodes, base::Unretained(&catcher)));
@@ -175,5 +177,3 @@ TEST_F(AxProviderImplTest, Basic) {
 
   view->close();
 }
-
-}  // namespace mojo

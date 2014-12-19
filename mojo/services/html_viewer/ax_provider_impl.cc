@@ -14,13 +14,17 @@ using blink::WebAXObject;
 using blink::WebURL;
 using blink::WebView;
 
-namespace mojo {
+using mojo::Array;
+using mojo::AxNodePtr;
+using mojo::String;
+
+namespace html_viewer {
 
 AxProviderImpl::AxProviderImpl(WebView* web_view) : web_view_(web_view) {
 }
 
 void AxProviderImpl::GetTree(
-    const Callback<void(Array<AxNodePtr> nodes)>& callback) {
+    const mojo::Callback<void(Array<AxNodePtr> nodes)>& callback) {
   web_view_->settings()->setAccessibilityEnabled(true);
   web_view_->settings()->setInlineTextBoxAccessibilityEnabled(true);
 
@@ -61,22 +65,22 @@ AxNodePtr AxProviderImpl::ConvertAxNode(const WebAXObject& ax_object,
   if (!const_cast<WebAXObject&>(ax_object).updateLayoutAndCheckValidity())
     return result.Pass();
 
-  result = AxNode::New();
+  result = mojo::AxNode::New();
   result->id = static_cast<int>(ax_object.axID());
   result->parent_id = parent_id;
   result->next_sibling_id = next_sibling_id;
-  result->bounds = Rect::From(ax_object.boundingBoxRect());
+  result->bounds = mojo::Rect::From(ax_object.boundingBoxRect());
 
   if (ax_object.isAnchor()) {
-    result->link = AxLink::New();
+    result->link = mojo::AxLink::New();
     result->link->url = String::From(ax_object.url().string());
   } else if (ax_object.childCount() == 0 &&
              !ax_object.stringValue().isEmpty()) {
-    result->text = AxText::New();
+    result->text = mojo::AxText::New();
     result->text->content = String::From(ax_object.stringValue());
   }
 
   return result.Pass();
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

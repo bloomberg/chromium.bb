@@ -12,7 +12,7 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-namespace mojo {
+namespace html_viewer {
 namespace {
 
 std::string ToASCIIOrEmpty(const blink::WebString& string) {
@@ -134,4 +134,4 @@ blink::WebString WebMimeRegistryImpl::mimeTypeFromFile(
   return blink::WebString();
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

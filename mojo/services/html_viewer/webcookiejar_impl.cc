@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-namespace mojo {
+using mojo::String;
+
+namespace html_viewer {
 namespace {
 
 void CopyBool(bool* output, bool input) {
@@ -20,7 +22,7 @@ void CopyString(String* output, const String& input) {
 
 }  // namespace
 
-WebCookieJarImpl::WebCookieJarImpl(CookieStorePtr store)
+WebCookieJarImpl::WebCookieJarImpl(mojo::CookieStorePtr store)
     : store_(store.Pass()) {
 }
 
@@ -66,4 +68,4 @@ blink::WebString WebCookieJarImpl::cookieRequestHeaderFieldValue(
   return cookies(url, first_party_for_cookies);
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

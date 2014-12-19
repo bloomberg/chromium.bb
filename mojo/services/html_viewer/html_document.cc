@@ -38,7 +38,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-namespace mojo {
+using mojo::AxProvider;
+using mojo::Rect;
+using mojo::ServiceProviderPtr;
+using mojo::URLResponsePtr;
+using mojo::View;
+using mojo::ViewManager;
+
+namespace html_viewer {
 namespace {
 
 void ConfigureSettings(blink::WebSettings* settings) {
@@ -49,18 +56,18 @@ void ConfigureSettings(blink::WebSettings* settings) {
   settings->setJavaScriptEnabled(true);
 }
 
-Target WebNavigationPolicyToNavigationTarget(
+mojo::Target WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyCurrentTab:
-      return TARGET_SOURCE_NODE;
+      return mojo::TARGET_SOURCE_NODE;
     case blink::WebNavigationPolicyNewBackgroundTab:
     case blink::WebNavigationPolicyNewForegroundTab:
     case blink::WebNavigationPolicyNewWindow:
     case blink::WebNavigationPolicyNewPopup:
-      return TARGET_NEW_NODE;
+      return mojo::TARGET_NEW_NODE;
     default:
-      return TARGET_DEFAULT;
+      return mojo::TARGET_DEFAULT;
   }
 }
 
@@ -88,7 +95,7 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 HTMLDocument::HTMLDocument(
     mojo::ServiceProviderPtr provider,
     URLResponsePtr response,
-    Shell* shell,
+    mojo::Shell* shell,
     scoped_refptr<base::MessageLoopProxy> compositor_thread,
     WebMediaPlayerFactory* web_media_player_factory)
     : response_(response.Pass()),
@@ -116,8 +123,8 @@ HTMLDocument::~HTMLDocument() {
 void HTMLDocument::OnEmbed(
     ViewManager* view_manager,
     View* root,
-    ServiceProviderImpl* embedee_service_provider_impl,
-    scoped_ptr<ServiceProvider> embedder_service_provider) {
+    mojo::ServiceProviderImpl* embedee_service_provider_impl,
+    scoped_ptr<mojo::ServiceProvider> embedder_service_provider) {
   root_ = root;
   embedder_service_provider_ = embedder_service_provider.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
@@ -129,8 +136,8 @@ void HTMLDocument::OnEmbed(
   root_->AddObserver(this);
 }
 
-void HTMLDocument::Create(ApplicationConnection* connection,
-                          InterfaceRequest<AxProvider> request) {
+void HTMLDocument::Create(mojo::ApplicationConnection* connection,
+                          mojo::InterfaceRequest<AxProvider> request) {
   if (!web_view_)
     return;
   ax_provider_impls_.insert(
@@ -168,14 +175,14 @@ void HTMLDocument::initializeLayerTreeView() {
   ServiceProviderPtr surfaces_service_provider;
   shell_->ConnectToApplication("mojo:surfaces_service",
                                GetProxy(&surfaces_service_provider));
-  SurfacesServicePtr surfaces_service;
+  mojo::SurfacesServicePtr surfaces_service;
   ConnectToService(surfaces_service_provider.get(), &surfaces_service);
 
   ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
   shell_->ConnectToApplication("mojo:native_viewport_service",
                                GetProxy(&gpu_service_provider));
-  GpuPtr gpu_service;
+  mojo::GpuPtr gpu_service;
   ConnectToService(gpu_service_provider.get(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
       compositor_thread_, surfaces_service.Pass(), gpu_service.Pass()));
@@ -235,7 +242,7 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
 
   navigator_host_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(default_policy),
-      URLRequest::From(request).Pass());
+      mojo::URLRequest::From(request).Pass());
 
   return blink::WebNavigationPolicyIgnore;
 }
@@ -267,11 +274,11 @@ void HTMLDocument::OnViewDestroyed(View* view) {
   root_ = nullptr;
 }
 
-void HTMLDocument::OnViewInputEvent(View* view, const EventPtr& event) {
+void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
   scoped_ptr<blink::WebInputEvent> web_event =
       event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

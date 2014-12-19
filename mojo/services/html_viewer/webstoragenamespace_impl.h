@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
  public:
@@ -25,6 +25,6 @@ class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
   DISALLOW_COPY_AND_ASSIGN(WebStorageNamespaceImpl);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBSTORAGENAMESPACE_IMPL_H_

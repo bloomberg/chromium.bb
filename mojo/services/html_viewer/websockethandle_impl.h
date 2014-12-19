@@ -13,13 +13,17 @@
 
 namespace mojo {
 class NetworkService;
-class WebSocketClientImpl;
 class WebSocketWriteQueue;
+}
+
+namespace html_viewer {
+
+class WebSocketClientImpl;
 
 // Implements WebSocketHandle by talking to the mojo WebSocket interface.
 class WebSocketHandleImpl : public blink::WebSocketHandle {
  public:
-  explicit WebSocketHandleImpl(NetworkService* network_service);
+  explicit WebSocketHandleImpl(mojo::NetworkService* network_service);
 
  private:
   friend class WebSocketClientImpl;
@@ -48,16 +52,16 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
   // Called when the socket is closed.
   void Disconnect();
 
-  WebSocketPtr web_socket_;
+  mojo::WebSocketPtr web_socket_;
   scoped_ptr<WebSocketClientImpl> client_;
-  ScopedDataPipeProducerHandle send_stream_;
-  scoped_ptr<WebSocketWriteQueue> write_queue_;
+  mojo::ScopedDataPipeProducerHandle send_stream_;
+  scoped_ptr<mojo::WebSocketWriteQueue> write_queue_;
   // True if close() was called.
   bool did_close_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandleImpl);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_WEBSOCKETHANDLE_IMPL_H_

@@ -8,7 +8,7 @@
 
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 
-namespace mojo {
+namespace html_viewer {
 namespace {
 
 class DummyWebStorageAreaImpl : public blink::WebStorageArea {
@@ -42,4 +42,4 @@ bool WebStorageNamespaceImpl::isSameNamespace(
   return false;
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

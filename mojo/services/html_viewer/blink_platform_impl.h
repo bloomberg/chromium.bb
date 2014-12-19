@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
-namespace mojo {
+namespace html_viewer {
 
 class BlinkPlatformImpl : public blink::Platform {
  public:
@@ -79,6 +79,6 @@ class BlinkPlatformImpl : public blink::Platform {
   DISALLOW_COPY_AND_ASSIGN(BlinkPlatformImpl);
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_

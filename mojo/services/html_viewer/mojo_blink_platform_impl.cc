@@ -10,16 +10,16 @@
 #include "mojo/services/html_viewer/websockethandle_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
 
-namespace mojo {
+namespace html_viewer {
 
-MojoBlinkPlatformImpl::MojoBlinkPlatformImpl(ApplicationImpl* app) {
+MojoBlinkPlatformImpl::MojoBlinkPlatformImpl(mojo::ApplicationImpl* app) {
   app->ConnectToService("mojo:network_service", &network_service_);
 
-  CookieStorePtr cookie_store;
+  mojo::CookieStorePtr cookie_store;
   network_service_->GetCookieStore(GetProxy(&cookie_store));
   cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
-  ClipboardPtr clipboard;
+  mojo::ClipboardPtr clipboard;
   app->ConnectToService("mojo:clipboard", &clipboard);
   clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
 }
@@ -35,4 +35,4 @@ blink::WebSocketHandle* MojoBlinkPlatformImpl::createWebSocketHandle() {
   return new WebSocketHandleImpl(network_service_.get());
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

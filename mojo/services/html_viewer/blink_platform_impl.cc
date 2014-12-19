@@ -17,7 +17,7 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 
-namespace mojo {
+namespace html_viewer {
 namespace {
 
 // TODO(darin): Figure out what our UA should really be.
@@ -226,4 +226,4 @@ void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
   delete impl;
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

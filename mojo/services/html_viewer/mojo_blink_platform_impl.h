@@ -10,14 +10,17 @@
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 
 namespace mojo {
-
 class ApplicationImpl;
+}
+
+namespace html_viewer {
+
 class WebClipboardImpl;
 class WebCookieJarImpl;
 
 class MojoBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  MojoBlinkPlatformImpl(ApplicationImpl* app);
+  MojoBlinkPlatformImpl(mojo::ApplicationImpl* app);
   virtual ~MojoBlinkPlatformImpl();
 
  private:
@@ -25,11 +28,11 @@ class MojoBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual blink::WebURLLoader* createURLLoader() override;
   virtual blink::WebSocketHandle* createWebSocketHandle() override;
 
-  NetworkServicePtr network_service_;
+  mojo::NetworkServicePtr network_service_;
   scoped_ptr<WebCookieJarImpl> cookie_jar_;
   scoped_ptr<WebClipboardImpl> clipboard_;
 };
 
-}  // namespace mojo
+}  // namespace html_viewer
 
 #endif  // MOJO_SERVICES_HTML_VIEWER_MOJO_BLINK_PLATFORM_IMPL_H_

@@ -17,11 +17,13 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
-namespace mojo {
+using mojo::URLResponsePtr;
+
+namespace html_viewer {
 namespace {
 
-static blink::WebURLResponse::HTTPVersion StatusLineToHTTPVersion(
-    const String& status_line) {
+blink::WebURLResponse::HTTPVersion StatusLineToHTTPVersion(
+    const mojo::String& status_line) {
   if (status_line.is_null())
     return blink::WebURLResponse::HTTP_0_9;
 
@@ -75,9 +77,8 @@ WebURLRequestExtraData::WebURLRequestExtraData() {
 WebURLRequestExtraData::~WebURLRequestExtraData() {
 }
 
-WebURLLoaderImpl::WebURLLoaderImpl(NetworkService* network_service)
-    : client_(NULL),
-      weak_factory_(this) {
+WebURLLoaderImpl::WebURLLoaderImpl(mojo::NetworkService* network_service)
+    : client_(NULL), weak_factory_(this) {
   network_service->CreateURLLoader(GetProxy(&url_loader_));
 }
 
@@ -97,7 +98,7 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
   client_ = client;
   url_ = request.url();
 
-  URLRequestPtr url_request = URLRequest::From(request);
+  mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
   url_request->auto_follow_redirects = false;
 
   if (request.extraData()) {
@@ -119,9 +120,9 @@ void WebURLLoaderImpl::cancel() {
   url_loader_.reset();
   response_body_stream_.reset();
 
-  URLResponsePtr failed_response(URLResponse::New());
-  failed_response->url = String::From(url_);
-  failed_response->error = NetworkError::New();
+  URLResponsePtr failed_response(mojo::URLResponse::New());
+  failed_response->url = mojo::String::From(url_);
+  failed_response->error = mojo::NetworkError::New();
   failed_response->error->code = net::ERR_ABORTED;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -221,4 +222,4 @@ void WebURLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
   ReadMore();
 }
 
-}  // namespace mojo
+}  // namespace html_viewer

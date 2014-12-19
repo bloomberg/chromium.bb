@@ -14,10 +14,10 @@ using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
-namespace mojo {
+namespace html_viewer {
+namespace {
 
-static ui::NativeTheme::Part NativeThemePart(
-    WebThemeEngine::Part part) {
+ui::NativeTheme::Part NativeThemePart(WebThemeEngine::Part part) {
   switch (part) {
     case WebThemeEngine::PartScrollbarDownArrow:
       return ui::NativeTheme::kScrollbarDownArrow;
@@ -60,8 +60,7 @@ static ui::NativeTheme::Part NativeThemePart(
   }
 }
 
-static ui::NativeTheme::State NativeThemeState(
-    WebThemeEngine::State state) {
+ui::NativeTheme::State NativeThemeState(WebThemeEngine::State state) {
   switch (state) {
     case WebThemeEngine::StateDisabled:
       return ui::NativeTheme::kDisabled;
@@ -76,7 +75,7 @@ static ui::NativeTheme::State NativeThemeState(
   }
 }
 
-static void GetNativeThemeExtraParams(
+void GetNativeThemeExtraParams(
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
     const WebThemeEngine::ExtraParams* extra_params,
@@ -160,6 +159,8 @@ static void GetNativeThemeExtraParams(
   }
 }
 
+}  // namespace
+
 blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
   return ui::NativeTheme::instance()->GetPartSize(NativeThemePart(part),
@@ -199,4 +200,4 @@ void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
       gfx::Rect(rect));
 }
 
-}  // namespace mojo
+}  // namespace html_viewer
