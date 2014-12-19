@@ -5,6 +5,8 @@
 #include "components/autofill/core/browser/suggestion.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace autofill {
 
@@ -26,10 +28,21 @@ bool SuggestionBackendID::operator<(const SuggestionBackendID& other) const {
   return guid < other.guid;
 }
 
+Suggestion::Suggestion()
+    : frontend_id(0) {
+}
+
+Suggestion::Suggestion(const Suggestion& other)
+    : backend_id(other.backend_id),
+      frontend_id(other.frontend_id),
+      value(other.value),
+      label(other.label),
+      icon(other.icon) {
+}
+
 Suggestion::Suggestion(const base::string16& v)
     : frontend_id(0),
-      value(v),
-      is_masked(false) {
+      value(v) {
 }
 
 Suggestion::Suggestion(const std::string& v,
@@ -39,13 +52,7 @@ Suggestion::Suggestion(const std::string& v,
     : frontend_id(fid),
       value(base::UTF8ToUTF16(v)),
       label(base::UTF8ToUTF16(l)),
-      icon(base::UTF8ToUTF16(i)),
-      is_masked(false) {
-}
-
-Suggestion::Suggestion()
-    : frontend_id(0),
-      is_masked(false) {
+      icon(base::UTF8ToUTF16(i)) {
 }
 
 Suggestion::~Suggestion() {

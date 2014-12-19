@@ -263,8 +263,11 @@ class AutofillTable : public WebDatabaseTable {
   // Retrieves a profile with guid |guid|.  The caller owns |profile|.
   bool GetAutofillProfile(const std::string& guid, AutofillProfile** profile);
 
-  // Retrieves all profiles in the database.  Caller owns the returned profiles.
+  // Retrieves local/server profiles in the database. Caller owns the returned
+  // profiles.
   virtual bool GetAutofillProfiles(std::vector<AutofillProfile*>* profiles);
+  virtual bool GetAutofillServerProfiles(
+      std::vector<AutofillProfile*>* profiles);
 
   // Records a single credit card in the credit_cards table.
   bool AddCreditCard(const CreditCard& credit_card);
@@ -280,18 +283,14 @@ class AutofillTable : public WebDatabaseTable {
   // |credit_card_id|.
   bool GetCreditCard(const std::string& guid, CreditCard** credit_card);
 
-  // Retrieves all local credit cards in the database. Caller owns the returned
-  // credit cards.
+  // Retrieves the local/server credit cards in the database. Caller owns the
+  // returned credit cards.
   virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
+  virtual bool GetServerCreditCards(std::vector<CreditCard*>* credit_cards);
 
-  // Returns the wallet cards synced from the server. These might be of type
-  // MASKED_WALLET_CARD and will need an extra round-trip to unmask, or they
-  // might be FULL_WALLET_CARD.
-  bool GetWalletCreditCards(std::vector<CreditCard*>* credit_cards);
-
-  // Cards synced from Wallet may be "masked" (only last 4 digits available)
-  // or "unmasked" (everything is available). These functions set that
-  // state.
+  // Cards synced from the server may be "masked" (only last 4 digits
+  // available) or "unmasked" (everything is available). These functions set
+  // that state.
   void UnmaskWalletCreditCard(const std::string& id,
                               const base::string16& full_number);
   void MaskWalletCreditCard(const std::string& id);

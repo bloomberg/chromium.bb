@@ -134,14 +134,12 @@ class PersonalDataManager : public KeyedService,
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field
   // has already been autofilled. |other_field_types| represents the rest of
-  // form. |filter| is run on each potential suggestion. If |filter| returns
-  // true, the profile added to the last four outparams (else it's omitted).
+  // form.
   std::vector<Suggestion> GetProfileSuggestions(
       const AutofillType& type,
       const base::string16& field_contents,
       bool field_is_autofilled,
-      const std::vector<ServerFieldType>& other_field_types,
-      const base::Callback<bool(const AutofillProfile&)>& filter);
+      const std::vector<ServerFieldType>& other_field_types);
 
   // Gets credit cards that can suggest data for |type|. See
   // GetProfileSuggestions for argument descriptions. The variant in each
@@ -254,16 +252,6 @@ class PersonalDataManager : public KeyedService,
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
 
-  // Receives the loaded profiles from the web data service and stores them in
-  // |credit_cards_|.
-  void ReceiveLoadedProfiles(WebDataServiceBase::Handle h,
-                             const WDTypedResult* result);
-
-  // Receives the loaded credit cards from the web data service and stores them
-  // in |credit_cards_|.
-  void ReceiveLoadedCreditCards(WebDataServiceBase::Handle h,
-                                const WDTypedResult* result);
-
   // Cancels a pending query to the web database.  |handle| is a pointer to the
   // query handle.
   void CancelPendingQuery(WebDataServiceBase::Handle* handle);
@@ -295,25 +283,37 @@ class PersonalDataManager : public KeyedService,
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;
 
-  // The loaded web profiles.
+  // The loaded web profiles. These are constructed from entries on web pages
+  // and from manually editing in the settings.
   ScopedVector<AutofillProfile> web_profiles_;
 
-  // Auxiliary profiles.
+  // Auxiliary profiles. On some systems, these are loaded from the system
+  // address book.
   mutable ScopedVector<AutofillProfile> auxiliary_profiles_;
+
+  // Profiles read from the user's account stored on the server.
+  mutable ScopedVector<AutofillProfile> server_profiles_;
 
   // Storage for combined web and auxiliary profiles.  Contents are weak
   // references.  Lifetime managed by |web_profiles_| and |auxiliary_profiles_|.
   mutable std::vector<AutofillProfile*> profiles_;
 
-  // The loaded credit cards.
-  ScopedVector<CreditCard> credit_cards_;
+  // Cached versions of the local and server credit cards.
+  ScopedVector<CreditCard> local_credit_cards_;
+  ScopedVector<CreditCard> server_credit_cards_;
+
+  // A combination of local and server credit cards. The pointers are owned
+  // by the local/sverver_credit_cards_ vectors.
+  mutable std::vector<CreditCard*> credit_cards_;
 
   // When the manager makes a request from WebDataServiceBase, the database
   // is queried on another thread, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
   // so they can be loaded at the same time.
   WebDataServiceBase::Handle pending_profiles_query_;
+  WebDataServiceBase::Handle pending_server_profiles_query_;
   WebDataServiceBase::Handle pending_creditcards_query_;
+  WebDataServiceBase::Handle pending_server_creditcards_query_;
 
   // The observers.
   ObserverList<PersonalDataManagerObserver> observers_;

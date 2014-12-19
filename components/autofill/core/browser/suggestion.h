@@ -7,9 +7,13 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
+
+class AutofillProfile;
+class CreditCard;
 
 // Represents a single FormGroup and a specific data variant. This is assigned
 // by the storage layer to uniquely identify the profile this came from.
@@ -26,7 +30,12 @@ struct SuggestionBackendID {
 };
 
 struct Suggestion {
+ public:
   Suggestion();
+
+  // Copy constructor for STL containers.
+  Suggestion(const Suggestion& other);
+
   explicit Suggestion(const base::string16& value);
 
   // Constructor for unit tests. It will convert the strings from UTF-8 to
@@ -51,8 +60,6 @@ struct Suggestion {
   base::string16 value;
   base::string16 label;
   base::string16 icon;
-
-  bool is_masked;
 };
 
 }  // namespace autofill

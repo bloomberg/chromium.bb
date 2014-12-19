@@ -108,8 +108,9 @@ class AutofillWebDataBackendImpl
   WebDatabase::State RemoveAutofillProfile(const std::string& guid,
                                            WebDatabase* db);
 
-  // Returns all Autofill profiles from the web database.
+  // Returns the local/server Autofill profiles from the web database.
   scoped_ptr<WDTypedResult> GetAutofillProfiles(WebDatabase* db);
+  scoped_ptr<WDTypedResult> GetAutofillServerProfiles(WebDatabase* db);
 
   // Updates Autofill entries in the web database.
   WebDatabase::State UpdateAutofillEntries(
@@ -128,8 +129,9 @@ class AutofillWebDataBackendImpl
   WebDatabase::State RemoveCreditCard(const std::string& guid,
                                       WebDatabase* db);
 
-  // Returns a vector of all credit cards from the web database.
+  // Returns a vector of local/server credit cards from the web database.
   scoped_ptr<WDTypedResult> GetCreditCards(WebDatabase* db);
+  scoped_ptr<WDTypedResult> GetServerCreditCards(WebDatabase* db);
 
   // Removes Autofill records from the database.
   WebDatabase::State RemoveAutofillDataModifiedBetween(

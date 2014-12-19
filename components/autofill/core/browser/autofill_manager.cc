@@ -1104,8 +1104,7 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
   }
 
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      autofill_field.Type(), field.value, field.is_autofilled, field_types,
-      base::Callback<bool(const AutofillProfile&)>());
+      autofill_field.Type(), field.value, field.is_autofilled, field_types);
 
   // Adjust phone number to display in prefix/suffix case.
   if (autofill_field.Type().GetStorableType() == PHONE_HOME_NUMBER) {

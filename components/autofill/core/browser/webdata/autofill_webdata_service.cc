@@ -129,6 +129,14 @@ WebDataServiceBase::Handle AutofillWebDataService::GetAutofillProfiles(
       consumer);
 }
 
+WebDataServiceBase::Handle AutofillWebDataService::GetAutofillServerProfiles(
+    WebDataServiceConsumer* consumer) {
+  return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::GetAutofillServerProfiles,
+           autofill_backend_),
+      consumer);
+}
+
 void AutofillWebDataService::UpdateAutofillEntries(
     const std::vector<autofill::AutofillEntry>& autofill_entries) {
   wdbs_->ScheduleDBTask(FROM_HERE,
@@ -163,6 +171,14 @@ WebDataServiceBase::Handle AutofillWebDataService::GetCreditCards(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&AutofillWebDataBackendImpl::GetCreditCards, autofill_backend_),
+      consumer);
+}
+
+WebDataServiceBase::Handle AutofillWebDataService::GetServerCreditCards(
+    WebDataServiceConsumer* consumer) {
+  return wdbs_->ScheduleDBTaskWithResult(FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::GetServerCreditCards,
+           autofill_backend_),
       consumer);
 }
 

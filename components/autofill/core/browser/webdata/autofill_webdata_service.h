@@ -63,18 +63,32 @@ class AutofillWebDataService : public AutofillWebData,
                                       const base::Time& delete_end) override;
   void RemoveFormValueForElementName(const base::string16& name,
                                      const base::string16& value) override;
+
+  // Profiles.
   void AddAutofillProfile(const AutofillProfile& profile) override;
   void UpdateAutofillProfile(const AutofillProfile& profile) override;
   void RemoveAutofillProfile(const std::string& guid) override;
   WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) override;
+
+  // Server profiles.
+  WebDataServiceBase::Handle GetAutofillServerProfiles(
+      WebDataServiceConsumer* consumer) override;
+
   void UpdateAutofillEntries(
       const std::vector<AutofillEntry>& autofill_entries) override;
+
+  // Credit cards.
   void AddCreditCard(const CreditCard& credit_card) override;
   void UpdateCreditCard(const CreditCard& credit_card) override;
   void RemoveCreditCard(const std::string& guid) override;
   WebDataServiceBase::Handle GetCreditCards(
       WebDataServiceConsumer* consumer) override;
+
+  // Server cards.
+  WebDataServiceBase::Handle GetServerCreditCards(
+      WebDataServiceConsumer* consumer) override;
+
   void RemoveAutofillDataModifiedBetween(const base::Time& delete_begin,
                                          const base::Time& delete_end) override;
   void RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,

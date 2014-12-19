@@ -2136,9 +2136,18 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
         AutofillType(type),
         field_contents,
         false,
-        RequestedTypesForSection(section),
-        base::Bind(&AutofillDialogControllerImpl::ShouldSuggestProfile,
-                   base::Unretained(this), section));
+        RequestedTypesForSection(section));
+    // Filter out ones we don't want.
+    for (int i = 0; i < static_cast<int>(popup_suggestions.size()); i++) {
+      const autofill::AutofillProfile* profile =
+          GetManager()->GetProfileByGUID(popup_suggestions[i].backend_id.guid);
+      if (!profile || !ShouldSuggestProfile(section, *profile)) {
+        popup_suggestions.erase(popup_suggestions.begin() + i);
+        i--;
+      }
+    }
+
+    // Save the IDs.
     for (const auto& suggestion : popup_suggestions)
       popup_suggestion_ids_.push_back(suggestion.backend_id);
 

@@ -1380,4 +1380,20 @@ TEST(AutofillProfileTest, OverwriteOrAppendNames) {
   }
 }
 
+TEST(AutofillProfileTest, CanonicalizeProfileString) {
+  // NOP.
+  EXPECT_EQ(base::string16(),
+            AutofillProfile::CanonicalizeProfileString(base::string16()));
+
+  // Simple punctuation removed.
+  EXPECT_EQ(ASCIIToUTF16("1600 amphitheatre pkwy"),
+            AutofillProfile::CanonicalizeProfileString(ASCIIToUTF16(
+                "1600 Amphitheatre, Pkwy.")));
+
+  // Unicode punctuation (hyphen and space), multiple spaces collapsed.
+  EXPECT_EQ(ASCIIToUTF16("mid island plaza"),
+            AutofillProfile::CanonicalizeProfileString(base::WideToUTF16(
+                L"Mid\x2013Island\x2003 Plaza")));
+}
+
 }  // namespace autofill

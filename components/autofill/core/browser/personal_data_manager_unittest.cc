@@ -35,8 +35,6 @@ namespace {
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
-bool ReturnTrue(const AutofillProfile&) { return true; }
-
 ACTION(QuitMainMessageLoop) { base::MessageLoop::current()->Quit(); }
 
 class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
@@ -2611,8 +2609,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
       AutofillType(ADDRESS_HOME_STREET_ADDRESS),
       base::UTF8ToUTF16("123"),
       false,
-      std::vector<ServerFieldType>(),
-      base::Bind(ReturnTrue));
+      std::vector<ServerFieldType>());
   ASSERT_FALSE(suggestions.empty());
   EXPECT_EQ(suggestions[0].value,
       base::UTF8ToUTF16("123 Zoo St., Second Line, Third line, unit 5"));

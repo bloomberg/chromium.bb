@@ -12,8 +12,11 @@
 
 #include "base/basictypes.h"
 #include "base/guid.h"
+#include "base/i18n/case_conversion.h"
+#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/address_i18n.h"
@@ -26,6 +29,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -252,6 +256,7 @@ struct CaseInsensitiveStringEquals {
 AutofillProfile::AutofillProfile(const std::string& guid,
                                  const std::string& origin)
     : AutofillDataModel(guid, origin),
+      record_type_(LOCAL_PROFILE),
       name_(1),
       email_(1),
       phone_number_(1, PhoneNumber(this)) {
@@ -259,6 +264,7 @@ AutofillProfile::AutofillProfile(const std::string& guid,
 
 AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
+      record_type_(LOCAL_PROFILE),
       name_(1),
       email_(1),
       phone_number_(1, PhoneNumber(this)) {
@@ -278,6 +284,8 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
 
   set_guid(profile.guid());
   set_origin(profile.origin());
+
+  record_type_ = profile.record_type_;
 
   name_ = profile.name_;
   email_ = profile.email_;
@@ -770,6 +778,72 @@ void AutofillProfile::CreateInferredLabels(
                                  minimal_fields_shown, app_locale, labels);
     }
   }
+}
+
+// static
+base::string16 AutofillProfile::CanonicalizeProfileString(
+    const base::string16& str) {
+  base::string16 ret;
+  ret.reserve(str.size());
+
+  bool previous_was_whitespace = false;
+
+  // This algorithm isn't designed to be perfect, we could get arbitrarily
+  // fancy here trying to canonicalize address lines. Instead, this is designed
+  // to handle common cases for all types of data (addresses and names)
+  // without the need of domain-specific logic.
+  base::i18n::UTF16CharIterator iter(&str);
+  while (!iter.end()) {
+    switch (u_charType(iter.get())) {
+      case U_DASH_PUNCTUATION:
+      case U_START_PUNCTUATION:
+      case U_END_PUNCTUATION:
+      case U_CONNECTOR_PUNCTUATION:
+      case U_OTHER_PUNCTUATION:
+        // Convert punctuation to spaces. This will convert "Mid-Island Plz."
+        // -> "Mid Island Plz" (the trailing space will be trimmed off at the
+        // end of the loop).
+        if (!previous_was_whitespace) {
+          ret.push_back(' ');
+          previous_was_whitespace = true;
+        }
+        break;
+
+      case U_SPACE_SEPARATOR:
+      case U_LINE_SEPARATOR:
+      case U_PARAGRAPH_SEPARATOR:
+        // Convert sequences of spaces to single spaces.
+        if (!previous_was_whitespace) {
+          ret.push_back(' ');
+          previous_was_whitespace = true;
+        }
+        break;
+
+      case U_UPPERCASE_LETTER:
+      case U_TITLECASE_LETTER:
+        previous_was_whitespace = false;
+        base::WriteUnicodeCharacter(u_tolower(iter.get()), &ret);
+        break;
+
+      default:
+        previous_was_whitespace = false;
+        base::WriteUnicodeCharacter(iter.get(), &ret);
+        break;
+    }
+    iter.Advance();
+  }
+
+  // Trim off trailing whitespace if we left one.
+  if (previous_was_whitespace)
+    ret.resize(ret.size() - 1);
+
+  return ret;
+}
+
+// static
+bool AutofillProfile::AreProfileStringsSimilar(const base::string16& a,
+                                               const base::string16& b) {
+  return CanonicalizeProfileString(a) == CanonicalizeProfileString(b);
 }
 
 void AutofillProfile::GetSupportedTypes(

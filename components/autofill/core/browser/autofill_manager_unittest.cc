@@ -55,7 +55,7 @@ class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() : PersonalDataManager("en-US") {
     CreateTestAutofillProfiles(&web_profiles_);
-    CreateTestCreditCards(&credit_cards_);
+    CreateTestCreditCards(&local_credit_cards_);
   }
 
   using PersonalDataManager::set_database;
@@ -64,19 +64,17 @@ class TestPersonalDataManager : public PersonalDataManager {
   MOCK_METHOD1(SaveImportedProfile, std::string(const AutofillProfile&));
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
-    for (std::vector<AutofillProfile *>::iterator it = web_profiles_.begin();
-         it != web_profiles_.end(); ++it) {
-      if (!(*it)->guid().compare(guid))
-        return *it;
+    for (AutofillProfile* profile : GetProfiles()) {
+      if (!profile->guid().compare(guid))
+        return profile;
     }
     return NULL;
   }
 
   CreditCard* GetCreditCardWithGUID(const char* guid) {
-    for (std::vector<CreditCard *>::iterator it = credit_cards_.begin();
-         it != credit_cards_.end(); ++it){
-      if (!(*it)->guid().compare(guid))
-        return *it;
+    for (CreditCard* card : GetCreditCards()) {
+      if (!card->guid().compare(guid))
+        return card;
     }
     return NULL;
   }
@@ -86,14 +84,15 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   void AddCreditCard(CreditCard* credit_card) {
-    credit_cards_.push_back(credit_card);
+    local_credit_cards_.push_back(credit_card);
   }
 
   virtual void RemoveByGUID(const std::string& guid) override {
     CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
     if (credit_card) {
-      credit_cards_.erase(
-          std::find(credit_cards_.begin(), credit_cards_.end(), credit_card));
+      local_credit_cards_.erase(
+          std::find(local_credit_cards_.begin(), local_credit_cards_.end(),
+                    credit_card));
     }
 
     AutofillProfile* profile = GetProfileWithGUID(guid.c_str());
@@ -112,7 +111,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   void ClearCreditCards() {
-    credit_cards_.clear();
+    local_credit_cards_.clear();
   }
 
   void CreateTestAuxiliaryProfiles() {
@@ -126,7 +125,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                             "4234567890654321", // Visa
                             month, year);
     credit_card->set_guid("00000000-0000-0000-0000-000000000007");
-    credit_cards_.push_back(credit_card);
+    local_credit_cards_.push_back(credit_card);
   }
 
  private:

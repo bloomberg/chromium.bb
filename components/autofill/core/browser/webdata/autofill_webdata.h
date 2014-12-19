@@ -69,11 +69,13 @@ class AutofillWebData {
   // |guid| is the identifer of the profile to remove.
   virtual void RemoveAutofillProfile(const std::string& guid) = 0;
 
-  // Initiates the request for all Autofill profiles.  The method
+  // Initiates the request for local/server Autofill profiles.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the profiles included in the argument |result|.  The
   // consumer owns the profiles.
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
+      WebDataServiceConsumer* consumer) = 0;
+  virtual WebDataServiceBase::Handle GetAutofillServerProfiles(
       WebDataServiceConsumer* consumer) = 0;
 
   // Schedules a task to update autofill entries in the web database.
@@ -90,11 +92,13 @@ class AutofillWebData {
   // |guid| is identifer of the credit card to remove.
   virtual void RemoveCreditCard(const std::string& guid) = 0;
 
-  // Initiates the request for all credit cards.  The method
+  // Initiates the request for local/server credit cards.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the credit cards included in the argument |result|.  The
   // consumer owns the credit cards.
   virtual WebDataServiceBase::Handle GetCreditCards(
+      WebDataServiceConsumer* consumer) = 0;
+  virtual WebDataServiceBase::Handle GetServerCreditCards(
       WebDataServiceConsumer* consumer) = 0;
 
   // Removes Autofill records from the database.

@@ -15,7 +15,7 @@
 // UTF16 strings.  Example usage:
 //
 //   UTF8CharIterator iter(&str);
-//   while (!iter.End()) {
+//   while (!iter.end()) {
 //     VLOG(1) << iter.get();
 //     iter.Advance();
 //   }

@@ -952,6 +952,12 @@ bool AutofillTable::GetAutofillProfiles(
   return s.Succeeded();
 }
 
+bool AutofillTable::GetAutofillServerProfiles(
+    std::vector<AutofillProfile*>* profiles) {
+  // TODO(brettw) write this.
+  return true;
+}
+
 bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
   DCHECK(base::IsValidGUID(profile.guid()));
 
@@ -1058,7 +1064,7 @@ bool AutofillTable::GetCreditCard(const std::string& guid,
   DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
-      "       card_number_encrypted, date_modified, origin "
+             "card_number_encrypted, date_modified, origin "
       "FROM credit_cards "
       "WHERE guid = ?"));
   s.BindString(0, guid);
@@ -1091,7 +1097,7 @@ bool AutofillTable::GetCreditCards(
   return s.Succeeded();
 }
 
-bool AutofillTable::GetWalletCreditCards(
+bool AutofillTable::GetServerCreditCards(
     std::vector<CreditCard*>* credit_cards) {
   credit_cards->clear();
 

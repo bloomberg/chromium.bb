@@ -50,7 +50,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     web_profiles_.release(&profiles);
     WDResult<std::vector<AutofillProfile*> > result(AUTOFILL_PROFILES_RESULT,
                                                     profiles);
-    ReceiveLoadedProfiles(0, &result);
+    pending_profiles_query_ = 123;
+    OnWebDataServiceRequestDone(pending_profiles_query_, &result);
   }
 
   // Overridden to avoid a trip to the database.

@@ -28,6 +28,14 @@ namespace autofill {
 // to the requested form group type.
 class AutofillProfile : public AutofillDataModel {
  public:
+  enum RecordType {
+    // A profile stored and editable locally.
+    LOCAL_PROFILE,
+
+    // A profile synced down from the server. These are read-only locally.
+    WALLET_PROFILE,
+  };
+
   AutofillProfile(const std::string& guid, const std::string& origin);
 
   // For use in STL containers.
@@ -54,6 +62,10 @@ class AutofillProfile : public AutofillDataModel {
       const AutofillType& type,
       size_t variant,
       const std::string& app_locale) const override;
+
+  // How this card is stored.
+  RecordType record_type() const { return record_type_; }
+  void set_record_type(RecordType rt) { record_type_ = rt; }
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetRawMultiInfo(ServerFieldType type,
@@ -145,6 +157,20 @@ class AutofillProfile : public AutofillDataModel {
     language_code_ = language_code;
   }
 
+  // Returns a standardized representation of the given string for comparison
+  // purposes. The resulting string will be lower-cased with all punctuation
+  // substituted by spaces. Whitespace will be converted to ASCII space, and
+  // multiple whitespace characters will be collapsed.
+  //
+  // This string is designed for comparison purposes only and isn't suitable
+  // for storing or displaying to the user.
+  static base::string16 CanonicalizeProfileString(const base::string16& str);
+
+  // Returns true if the given two profile strings are similar enough that
+  // they probably refer to the same thing.
+  static bool AreProfileStringsSimilar(const base::string16& a,
+                                       const base::string16& b);
+
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 
@@ -191,6 +217,8 @@ class AutofillProfile : public AutofillDataModel {
   // is not reconstructible via a heuristic parse of the full name string).
   void OverwriteOrAppendNames(const std::vector<NameInfo>& names,
                               const std::string& app_locale);
+
+  RecordType record_type_;
 
   // Personal information for this profile.
   std::vector<NameInfo> name_;
