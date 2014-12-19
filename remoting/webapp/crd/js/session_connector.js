@@ -44,6 +44,14 @@ remoting.SessionConnector.prototype.connectMe2Me =
              clientPairingId, clientPairedSecret) {};
 
 /**
+ * Retry connecting to a Me2Me host after a connection failure.
+ *
+ * @param {remoting.Host} host The Me2Me host to refresh.
+ * @return {void} Nothing.
+ */
+remoting.SessionConnector.prototype.retryConnectMe2Me = function(host) {};
+
+/**
  * Update the pairing info so that the reconnect function will work correctly.
  *
  * @param {string} clientId The paired client id.
@@ -101,6 +109,8 @@ remoting.SessionConnectorFactory = function() {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {function(string):void} onConnectionFailed Callback for when the
+ *     connection fails.
  * @param {Array.<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings to use
@@ -112,7 +122,7 @@ remoting.SessionConnectorFactory.prototype.createConnector =
     // needed to pass to the ClientSession. Investigate why ClientSession
     // needs this.
     function(clientContainer, onConnected, onError, onExtensionMessage,
-             requiredCapabilities, defaultRemapKeys) {};
+             onConnectionFailed, requiredCapabilities, defaultRemapKeys) {};
 
 /**
  * @type {remoting.SessionConnectorFactory}

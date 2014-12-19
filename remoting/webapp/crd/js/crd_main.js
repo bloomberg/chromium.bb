@@ -99,6 +99,23 @@ remoting.initHostlist_ = function() {
 }
 
 /**
+ * Returns whether Host mode is supported on this platform for It2me.
+ * TODO(kelvinp): Remove this function once It2me is enabled on Chrome OS (See
+ * crbug.com/429860).
+ *
+ * @return {Promise} Resolves to true if Host mode is supported.
+ */
+function isHostModeSupported_() {
+  if (!remoting.platformIsChromeOS()) {
+    return Promise.resolve(true);
+  }
+  // Sharing on Chrome OS is currently behind a flag.
+  // isInstalled() will return false if the flag is disabled.
+  var hostInstaller = new remoting.HostInstaller();
+  return hostInstaller.isInstalled();
+}
+
+/**
  * initHomeScreenUi is called if the app is not starting up in session mode,
  * and also if the user cancels pin entry or the connection in session mode.
  */
@@ -186,22 +203,22 @@ remoting.updateLocalHostState = function() {
  * possible to use the app even if the previous assumption fails to
  * hold in some corner cases.
  */
-remoting.initDesktopRemotingForTesting = function() {
+remoting.startDesktopRemotingForTesting = function() {
   var urlParams = getUrlParameters_();
   if (urlParams['source'] === 'test') {
     document.getElementById('browser-test-continue-init').addEventListener(
-        'click', remoting.initDesktopRemoting, false);
+        'click', remoting.startDesktopRemoting, false);
     document.getElementById('browser-test-deferred-init').hidden = false;
   } else {
-    remoting.initDesktopRemoting();
+    remoting.startDesktopRemoting();
   }
 }
 
 
-remoting.initDesktopRemoting = function() {
+remoting.startDesktopRemoting = function() {
   remoting.app = new remoting.Application();
   var desktop_remoting = new remoting.DesktopRemoting(remoting.app);
-  remoting.app.init();
+  remoting.app.start();
 };
 
-window.addEventListener('load', remoting.initDesktopRemotingForTesting, false);
+window.addEventListener('load', remoting.startDesktopRemotingForTesting, false);

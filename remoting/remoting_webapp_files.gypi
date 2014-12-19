@@ -70,12 +70,27 @@
       'webapp/crd/js/xhr.js',
     ],
     # Host JavaScript files.
-    # Includes both it2me and me2me files.
     'remoting_webapp_js_host_files': [
+      'webapp/crd/js/host.js',
+      'webapp/crd/js/host_settings.js',
+    ],
+    # Files for controlling the local machine as a host.
+    # Includes both it2me and me2me files.
+    'remoting_webapp_js_host_control_files': [
       'webapp/crd/js/host_controller.js',
       'webapp/crd/js/host_daemon_facade.js',
-      'webapp/crd/js/it2me_host_facade.js',
+      'webapp/crd/js/host_screen.js',
       'webapp/crd/js/host_session.js',
+      'webapp/crd/js/host_setup_dialog.js',
+      'webapp/crd/js/host_install_dialog.js',
+      'webapp/crd/js/host_installer.js',
+      'webapp/crd/js/it2me_host_facade.js',
+      'webapp/crd/js/paired_client_manager.js',
+    ],
+    # Files for displaying (in the client) info about available hosts.
+    'remoting_webapp_js_host_display_files': [
+      'webapp/crd/js/host_list.js',
+      'webapp/crd/js/host_table_entry.js',
     ],
     # Logging and stats JavaScript files.
     'remoting_webapp_js_logging_files': [
@@ -99,21 +114,6 @@
       'webapp/crd/js/ui_mode.js',
       'webapp/crd/js/toolbar.js',
       'webapp/crd/js/window_frame.js',
-    ],
-    # UI files for controlling the local machine as a host.
-    'remoting_webapp_js_ui_host_control_files': [
-      'webapp/crd/js/host_screen.js',
-      'webapp/crd/js/host_setup_dialog.js',
-      'webapp/crd/js/host_install_dialog.js',
-      'webapp/crd/js/host_installer.js',
-      'webapp/crd/js/paired_client_manager.js',
-    ],
-    # UI files for displaying (in the client) info about available hosts.
-    'remoting_webapp_js_ui_host_display_files': [
-      'webapp/crd/js/host.js',
-      'webapp/crd/js/host_list.js',
-      'webapp/crd/js/host_settings.js',
-      'webapp/crd/js/host_table_entry.js',
     ],
     # Remoting signaling files.
     'remoting_webapp_js_signaling_files': [
@@ -188,10 +188,10 @@
       '<@(remoting_webapp_js_gnubby_auth_files)',
       '<@(remoting_webapp_js_cast_extension_files)',
       '<@(remoting_webapp_js_host_files)',
+      '<@(remoting_webapp_js_host_control_files)',
+      '<@(remoting_webapp_js_host_display_files)',
       '<@(remoting_webapp_js_logging_files)',
       '<@(remoting_webapp_js_ui_files)',
-      '<@(remoting_webapp_js_ui_host_control_files)',
-      '<@(remoting_webapp_js_ui_host_display_files)',
       '<@(remoting_webapp_js_signaling_files)',
       # Uncomment this line to include browser test files in the web app
       # to expedite debugging or local development.
@@ -200,6 +200,8 @@
 
     # The CRD-specific JavaScript files required by main.html.
     'remoting_webapp_crd_main_html_js_files': [
+      'webapp/crd/js/crd_connect.js',
+      'webapp/crd/js/crd_event_handlers.js',
       'webapp/crd/js/crd_main.js',
       'webapp/crd/js/desktop_remoting.js',
     ],

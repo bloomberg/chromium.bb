@@ -20,6 +20,8 @@ var remoting = remoting || {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {function(string):void} onConnectionFailed Callback for when the
+ *     connection fails.
  * @param {Array.<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings for the
@@ -29,6 +31,7 @@ var remoting = remoting || {};
  */
 remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
                                          onExtensionMessage,
+                                         onConnectionFailed,
                                          requiredCapabilities,
                                          defaultRemapKeys) {
   /**
@@ -54,6 +57,12 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
    * @private
    */
   this.onExtensionMessage_ = onExtensionMessage;
+
+  /**
+   * @type {function(string):void}
+   * @private
+   */
+  this.onConnectionFailed_ = onConnectionFailed;
 
   /**
    * @type {Array.<string>}
@@ -158,7 +167,7 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
    * @type {boolean}
    * @private
    */
-  this.refreshHostJidIfOffline_ = false;
+  this.logHostOfflineErrors_ = false;
 
   /**
    * @type {remoting.ClientSession}
@@ -201,6 +210,9 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
 /**
  * Initiate a Me2Me connection.
  *
+ * This doesn't report host-offline errors because the connection will
+ * be retried and retryConnectMe2Me is responsible for reporting these errors.
+ *
  * @param {remoting.Host} host The Me2Me host to which to connect.
  * @param {function(boolean, function(string):void):void} fetchPin Function to
  *     interactively obtain the PIN from the user.
@@ -217,10 +229,30 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
 remoting.SessionConnectorImpl.prototype.connectMe2Me =
     function(host, fetchPin, fetchThirdPartyToken,
              clientPairingId, clientPairedSecret) {
+  this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+  this.logHostOfflineErrors_ = false;
   this.connectMe2MeInternal_(
       host.hostId, host.jabberId, host.publicKey, host.hostName,
       fetchPin, fetchThirdPartyToken,
-      clientPairingId, clientPairedSecret, true);
+      clientPairingId, clientPairedSecret);
+};
+
+/**
+ * Retry connecting to a Me2Me host after a connection failure.
+ *
+ * This is the same as connectMe2Me except that is will log errors if the
+ * host is offline.
+ *
+ * @param {remoting.Host} host The Me2Me host to refresh.
+ * @return {void} Nothing.
+ */
+remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
+  this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+  this.logHostOfflineErrors_ = true;
+  this.connectMe2MeInternal_(
+      host.hostId, host.jabberId, host.publicKey, host.hostName,
+      this.fetchPin_, this.fetchThirdPartyToken_,
+      this.clientPairingId_, this.clientPairedSecret_);
 };
 
 /**
@@ -252,16 +284,13 @@ remoting.SessionConnectorImpl.prototype.updatePairingInfo =
  *     this device was paired, if it is already paired.
  * @param {string} clientPairedSecret The shared secret issued by the host when
  *     this device was paired, if it is already paired.
- * @param {boolean} refreshHostJidIfOffline Whether to refresh the JID and retry
- *     the connection if the current JID is offline.
  * @return {void} Nothing.
  * @private
  */
 remoting.SessionConnectorImpl.prototype.connectMe2MeInternal_ =
     function(hostId, hostJid, hostPublicKey, hostDisplayName,
              fetchPin, fetchThirdPartyToken,
-             clientPairingId, clientPairedSecret,
-             refreshHostJidIfOffline) {
+             clientPairingId, clientPairedSecret) {
   // Cancel any existing connect operation.
   this.cancel();
 
@@ -271,8 +300,6 @@ remoting.SessionConnectorImpl.prototype.connectMe2MeInternal_ =
   this.fetchPin_ = fetchPin;
   this.fetchThirdPartyToken_ = fetchThirdPartyToken;
   this.hostDisplayName_ = hostDisplayName;
-  this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
-  this.refreshHostJidIfOffline_ = refreshHostJidIfOffline;
   this.updatePairingInfo(clientPairingId, clientPairedSecret);
 
   this.connectSignaling_();
@@ -315,10 +342,11 @@ remoting.SessionConnectorImpl.prototype.reconnect = function() {
     console.error('reconnect not supported for IT2Me.');
     return;
   }
+  this.logHostOfflineErrors_ = false;
   this.connectMe2MeInternal_(
       this.hostId_, this.hostJid_, this.hostPublicKey_, this.hostDisplayName_,
       this.fetchPin_, this.fetchThirdPartyToken_,
-      this.clientPairingId_, this.clientPairedSecret_, true);
+      this.clientPairingId_, this.clientPairedSecret_);
 };
 
 /**
@@ -474,7 +502,7 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
       authenticationMethods, this.hostId_, this.hostJid_, this.hostPublicKey_,
       this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_,
       this.defaultRemapKeys_);
-  this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
+  this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,
       this.bound_.onStateChange);
@@ -540,13 +568,7 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       if (error == null) {
         error = remoting.Error.UNEXPECTED;
       }
-      if (error == remoting.Error.HOST_IS_OFFLINE &&
-          this.refreshHostJidIfOffline_) {
-        // The plugin will be re-created when the host finished refreshing
-        remoting.hostList.refresh(this.onHostListRefresh_.bind(this));
-      } else {
-        this.onError_(error);
-      }
+      this.onConnectionFailed_(error);
       break;
 
     default:
@@ -555,25 +577,6 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       // sync, and even then the version check should ensure compatibility.
       this.onError_(remoting.Error.MISSING_PLUGIN);
   }
-};
-
-/**
- * @param {boolean} success True if the host list was successfully refreshed;
- *     false if an error occurred.
- * @private
- */
-remoting.SessionConnectorImpl.prototype.onHostListRefresh_ = function(success) {
-  if (success) {
-    var host = remoting.hostList.getHostForId(this.hostId_);
-    if (host) {
-      this.connectMe2MeInternal_(
-          host.hostId, host.jabberId, host.publicKey, host.hostName,
-          this.fetchPin_, this.fetchThirdPartyToken_,
-          this.clientPairingId_, this.clientPairedSecret_, false);
-      return;
-    }
-  }
-  this.onError_(remoting.Error.HOST_IS_OFFLINE);
 };
 
 /**
@@ -622,16 +625,20 @@ remoting.DefaultSessionConnectorFactory = function() {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {function(string):void} onConnectionFailed Callback for when the
+ *     connection fails.
  * @param {Array.<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings to use
  *     in the client session.
+ * @return {remoting.SessionConnector}
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
     function(clientContainer, onConnected, onError, onExtensionMessage,
-             requiredCapabilities, defaultRemapKeys) {
+             onConnectionFailed, requiredCapabilities, defaultRemapKeys) {
   return new remoting.SessionConnectorImpl(clientContainer, onConnected,
                                            onError, onExtensionMessage,
+                                           onConnectionFailed,
                                            requiredCapabilities,
                                            defaultRemapKeys);
 };

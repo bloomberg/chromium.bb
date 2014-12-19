@@ -5,6 +5,10 @@
 /**
  * @fileoverview
  * A class of server log entries.
+ *
+ * Any changes to the values here need to be coordinated with the host and
+ * server/log proto code.
+ * See remoting/signaling/server_log_entry.{cc|h}
  */
 
 'use strict';

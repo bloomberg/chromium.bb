@@ -43,7 +43,7 @@ remoting.Application.prototype.setDelegate = function(appDelegate) {
  *
  * @return {void} Nothing.
  */
-remoting.Application.prototype.init = function() {
+remoting.Application.prototype.start = function() {
   this.delegate_.init();
 };
 
@@ -65,7 +65,7 @@ remoting.Application.prototype.onConnected = function(clientSession) {
       remoting.ClientSession.State.CONNECTED
   );
 
-  this.delegate_.onConnected(clientSession);
+  this.delegate_.handleConnected(clientSession);
 };
 
 /**
@@ -74,7 +74,17 @@ remoting.Application.prototype.onConnected = function(clientSession) {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.onDisconnected = function() {
-  this.delegate_.onDisconnected();
+  this.delegate_.handleDisconnected();
+};
+
+/**
+ * Called when the current session's connection has failed.
+ *
+ * @param {remoting.Error} error
+ * @return {void} Nothing.
+ */
+remoting.Application.prototype.onConnectionFailed = function(error) {
+  this.delegate_.handleConnectionFailed(this.session_connector_, error);
 };
 
 /**
@@ -84,7 +94,7 @@ remoting.Application.prototype.onDisconnected = function() {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.onVideoStreamingStarted = function() {
-  this.delegate_.onVideoStreamingStarted();
+  this.delegate_.handleVideoStreamingStarted();
 };
 
 /**
@@ -96,7 +106,7 @@ remoting.Application.prototype.onVideoStreamingStarted = function() {
  */
 remoting.Application.prototype.onExtensionMessage = function(type, data) {
   // Give the delegate a chance to handle this extension message first.
-  if (this.delegate_.onExtensionMessage(type, data)) {
+  if (this.delegate_.handleExtensionMessage(type, data)) {
     return true;
   }
 
@@ -113,7 +123,7 @@ remoting.Application.prototype.onExtensionMessage = function(type, data) {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.onError = function(errorTag) {
-  this.delegate_.onError(errorTag);
+  this.delegate_.handleError(errorTag);
 };
 
 /**
@@ -128,6 +138,7 @@ remoting.Application.prototype.getSessionConnector = function() {
         this.onConnected.bind(this),
         this.onError.bind(this),
         this.onExtensionMessage.bind(this),
+        this.onConnectionFailed.bind(this),
         this.delegate_.getRequiredCapabilities(),
         this.delegate_.getDefaultRemapKeys());
   }
@@ -165,15 +176,25 @@ remoting.Application.Delegate.prototype.getRequiredCapabilities = function() {};
  * @param {remoting.ClientSession} clientSession
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.onConnected = function(clientSession) {
-};
+remoting.Application.Delegate.prototype.handleConnected = function(
+    clientSession) {};
 
 /**
  * Called when the current session has been disconnected.
  *
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.onDisconnected = function() {};
+remoting.Application.Delegate.prototype.handleDisconnected = function() {};
+
+/**
+ * Called when the current session's connection has failed.
+ *
+ * @param {remoting.SessionConnector} connector
+ * @param {remoting.Error} error
+ * @return {void} Nothing.
+ */
+remoting.Application.Delegate.prototype.handleConnectionFailed = function(
+    connector, error) {};
 
 /**
  * Called when the current session has reached the point where the host has
@@ -181,7 +202,8 @@ remoting.Application.Delegate.prototype.onDisconnected = function() {};
  *
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.onVideoStreamingStarted = function() {};
+remoting.Application.Delegate.prototype.handleVideoStreamingStarted = function(
+    ) {};
 
 /**
  * Called when an extension message needs to be handled.
@@ -190,7 +212,7 @@ remoting.Application.Delegate.prototype.onVideoStreamingStarted = function() {};
  * @param {string} data The payload of the extension message.
  * @return {boolean} Return true if the extension message was recognized.
  */
-remoting.Application.Delegate.prototype.onExtensionMessage = function(
+remoting.Application.Delegate.prototype.handleExtensionMessage = function(
     type, data) {};
 
 /**
@@ -199,7 +221,7 @@ remoting.Application.Delegate.prototype.onExtensionMessage = function(
  * @param {remoting.Error} errorTag The error to be localized and displayed.
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.onError = function(errorTag) {};
+remoting.Application.Delegate.prototype.handleError = function(errorTag) {};
 
 
 /** @type {remoting.Application} */

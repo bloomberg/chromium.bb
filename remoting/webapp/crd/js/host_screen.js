@@ -12,6 +12,9 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/** @type {remoting.HostSession} */
+remoting.hostSession = null;
+
 /**
  * @type {boolean} Whether or not the last share was cancelled by the user.
  *     This controls what screen is shown when the host signals completion.

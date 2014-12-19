@@ -7,8 +7,6 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-/** @type {remoting.HostSession} */ remoting.hostSession = null;
-
 /**
  * @type {base.EventSource} An event source object for handling global events.
  *    This is an interim hack.  Eventually, we should move functionalities
@@ -159,23 +157,6 @@ function pluginGotCopy_(eventUncast) {
       event.preventDefault();
     }
   }
-}
-
-/**
- * Returns whether Host mode is supported on this platform for It2me.
- * TODO(kelvinp): Remove this function once It2me is enabled on Chrome OS (See
- * crbug.com/429860).
- *
- * @return {Promise} Resolves to true if Host mode is supported.
- */
-function isHostModeSupported_() {
-  if (!remoting.platformIsChromeOS()) {
-    return Promise.resolve(true);
-  }
-  // Sharing on Chrome OS is currently behind a flag.
-  // isInstalled() will return false if the flag is disabled.
-  var hostInstaller = new remoting.HostInstaller();
-  return hostInstaller.isInstalled();
 }
 
 /**

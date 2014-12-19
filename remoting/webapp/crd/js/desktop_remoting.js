@@ -29,8 +29,23 @@ remoting.DesktopRemoting = function(app) {
    */
   this.app_ = app;
   app.setDelegate(this);
+
+  /**
+   * Whether to refresh the JID and retry the connection if the current JID
+   * is offline.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.refreshHostJidIfOffline_ = true;
 };
 
+/**
+ * Initialize the application and register all event handlers. After this
+ * is called, the app is running and waiting for user events.
+ *
+ * @return {void} Nothing.
+ */
 remoting.DesktopRemoting.prototype.init = function() {
   remoting.initGlobalObjects();
   remoting.initIdentity();
@@ -115,9 +130,12 @@ remoting.DesktopRemoting.prototype.getRequiredCapabilities = function() {
 };
 
 /**
+ * Called when a new session has been connected.
+ *
  * @param {remoting.ClientSession} clientSession
+ * @return {void} Nothing.
  */
-remoting.DesktopRemoting.prototype.onConnected = function(clientSession) {
+remoting.DesktopRemoting.prototype.handleConnected = function(clientSession) {
   // Set the text on the buttons shown under the error message so that they are
   // easy to understand in the case where a successful connection failed, as
   // opposed to the case where a connection never succeeded.
@@ -129,6 +147,9 @@ remoting.DesktopRemoting.prototype.onConnected = function(clientSession) {
   var button2 = document.getElementById('client-finished-me2me-button');
   l10n.localizeElementFromTag(button2, /*i18n-content*/'OK');
   button2.setAttribute('autofocus', 'autofocus');
+
+  // Reset the refresh flag so that the next connection will retry if needed.
+  this.refreshHostJidIfOffline_ = true;
 
   document.getElementById('access-code-entry').value = '';
   remoting.setMode(remoting.AppMode.IN_SESSION);
@@ -173,10 +194,55 @@ remoting.DesktopRemoting.prototype.onConnected = function(clientSession) {
   }
 };
 
-remoting.DesktopRemoting.prototype.onDisconnected = function() {
+/**
+ * Called when the current session has been disconnected.
+ *
+ * @return {void} Nothing.
+ */
+remoting.DesktopRemoting.prototype.handleDisconnected = function() {
 };
 
-remoting.DesktopRemoting.prototype.onVideoStreamingStarted = function() {
+/**
+ * Called when the current session's connection has failed.
+ *
+ * @param {remoting.SessionConnector} connector
+ * @param {remoting.Error} error
+ * @return {void} Nothing.
+ */
+remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
+    connector, error) {
+  /** @type {remoting.DesktopRemoting} */
+  var that = this;
+
+  /** @param {boolean} success */
+  var onHostListRefresh = function(success) {
+    if (success) {
+      var host = remoting.hostList.getHostForId(connector.getHostId());
+      if (host) {
+        connector.retryConnectMe2Me(host);
+        return;
+      }
+    }
+    that.handleError(error);
+  };
+
+  if (error == remoting.Error.HOST_IS_OFFLINE &&
+      that.refreshHostJidIfOffline_) {
+    that.refreshHostJidIfOffline_ = false;
+    // The plugin will be re-created when the host finished refreshing
+    remoting.hostList.refresh(onHostListRefresh);
+  } else {
+    this.handleError(error);
+  }
+};
+
+/**
+ * Called when the current session has reached the point where the host has
+ * started streaming video frames to the client.
+ *
+ * @return {void} Nothing.
+ */
+remoting.DesktopRemoting.prototype.handleVideoStreamingStarted = function() {
 };
 
 /**
@@ -184,19 +250,23 @@ remoting.DesktopRemoting.prototype.onVideoStreamingStarted = function() {
  * @param {string} data The payload of the extension message.
  * @return {boolean} Return true if the extension message was recognized.
  */
-remoting.DesktopRemoting.prototype.onExtensionMessage = function(type, data) {
+remoting.DesktopRemoting.prototype.handleExtensionMessage = function(
+    type, data) {
   return false;
 };
 
 /**
- * Show a client-side error message.
+ * Called when an error needs to be displayed to the user.
  *
  * @param {remoting.Error} errorTag The error to be localized and displayed.
  * @return {void} Nothing.
  */
-remoting.DesktopRemoting.prototype.onError = function(errorTag) {
+remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
   console.error('Connection failed: ' + errorTag);
   remoting.accessCode = '';
+
+  // Reset the refresh flag so that the next connection will retry if needed.
+  this.refreshHostJidIfOffline_ = true;
 
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
