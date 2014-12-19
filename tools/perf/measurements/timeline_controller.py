@@ -30,8 +30,7 @@ class TimelineController(object):
     # Resets these member variables incase this object is reused.
     self._model = None
     self._renderer_process = None
-    if not tab.browser.platform.tracing_controller.IsChromeTracingSupported(
-      tab.browser):
+    if not tab.browser.platform.tracing_controller.IsChromeTracingSupported():
       raise Exception('Not supported')
     category_filter = tracing_category_filter.TracingCategoryFilter(
         filter_string=self.trace_categories)
