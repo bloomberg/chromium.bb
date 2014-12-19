@@ -24,3 +24,6 @@ To initialize gsutil's credentials:
 
   Copy the code back to the command line util. Ignore the project ID (it's OK
   to just leave blank when prompted).
+
+Instructions for how to upload the .sha1 digests of the GN binaries
+can be found at https://code.google.com/p/chromium/wiki/UpdateGNBinaries .
