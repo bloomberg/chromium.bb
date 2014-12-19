@@ -612,10 +612,6 @@ crbug.com/338883 [ Linux ] crypto/ecdh-deriveKey-aes.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/ecdh-deriveKey-failures.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/ecdh-deriveKey-hmac.html [ Failure Pass ]
 
-# Temporary failure until the chromium-side change lands.
-crbug.com/441877 [ Win Mac Android ] crypto/ecdh-deriveKey-failures.html [ Failure Pass ]
-crbug.com/441877 crypto/rsa-ssa-generateKey-parseAlgorithm-failures.html [ Failure Pass ]
-
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
 # This test needs to be updated to use a non-svg font.
