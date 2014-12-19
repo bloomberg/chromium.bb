@@ -4,13 +4,10 @@
 
 #include "components/autofill/core/browser/autofill_regexes.h"
 
-#include <map>
-#include <utility>
-
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
@@ -30,7 +27,7 @@ class AutofillRegexes {
   friend struct DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
-  std::map<base::string16, icu::RegexMatcher*> matchers_;
+  base::ScopedPtrHashMap<base::string16, icu::RegexMatcher> matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
 };
@@ -44,24 +41,23 @@ AutofillRegexes::AutofillRegexes() {
 }
 
 AutofillRegexes::~AutofillRegexes() {
-  STLDeleteContainerPairSecondPointers(matchers_.begin(),
-                                       matchers_.end());
 }
 
 icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
-  if (!matchers_.count(pattern)) {
+  auto it = matchers_.find(pattern);
+  if (it == matchers_.end()) {
     const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
 
     UErrorCode status = U_ZERO_ERROR;
-    icu::RegexMatcher* matcher = new icu::RegexMatcher(icu_pattern,
-                                                       UREGEX_CASE_INSENSITIVE,
-                                                       status);
+    scoped_ptr<icu::RegexMatcher> matcher(
+        new icu::RegexMatcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status));
     DCHECK(U_SUCCESS(status));
 
-    matchers_.insert(std::make_pair(pattern, matcher));
+    auto result = matchers_.add(pattern, matcher.Pass());
+    DCHECK(result.second);
+    it = result.first;
   }
-
-  return matchers_[pattern];
+  return it->second;
 }
 
 }  // namespace
@@ -78,7 +74,7 @@ bool MatchesPattern(const base::string16& input,
   UErrorCode status = U_ZERO_ERROR;
   UBool match = matcher->find(0, status);
   DCHECK(U_SUCCESS(status));
-  return !!match;
+  return match == TRUE;
 }
 
 }  // namespace autofill
