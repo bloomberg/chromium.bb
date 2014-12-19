@@ -943,6 +943,13 @@ crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
 
+crbug.com/381919 virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/antialiasedtext/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/antialiasedtext/fast/text/international/rtl-white-space-pre-wrap.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/antialiasedtext/fast/text/drawBidiText.html [ NeedsRebaseline ]
+crbug.com/381919 virtual/antialiasedtext/fast/text/complex-text-opacity.html [ NeedsRebaseline ]
+
 crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
 crbug.com/429069 http/tests/xmlhttprequest/xmlhttprequest-responseXML-nopartial.html [ Pass Timeout ]
 
