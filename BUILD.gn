@@ -95,6 +95,7 @@ group("root") {
     "//third_party/libpng",
     "//third_party/libsrtp",
     "//third_party/libusb",
+    "//third_party/libwebm",
     "//third_party/libwebp",
     "//third_party/libxslt",
     "//third_party/libvpx",

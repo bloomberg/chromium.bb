@@ -42,6 +42,7 @@
         'remoting_protocol',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+        '../third_party/libwebm/libwebm.gyp:libwebm',
       ],
       'sources': [
         '<@(remoting_client_sources)',
