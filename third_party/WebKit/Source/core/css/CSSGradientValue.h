@@ -94,6 +94,8 @@ public:
 
     unsigned stopCount() const { return m_stops.size(); }
 
+    void appendCSSTextForDeprecatedColorStops(StringBuilder&) const;
+
     void sortStopsIfNeeded();
 
     bool isRepeating() const { return m_repeating; }

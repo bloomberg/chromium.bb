@@ -578,26 +578,7 @@ String CSSLinearGradientValue::customCSSText() const
         result.append(m_secondX->cssText());
         result.append(' ');
         result.append(m_secondY->cssText());
-
-        for (unsigned i = 0; i < m_stops.size(); i++) {
-            const CSSGradientColorStop& stop = m_stops[i];
-            result.appendLiteral(", ");
-            if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 0) {
-                result.appendLiteral("from(");
-                result.append(stop.m_color->cssText());
-                result.append(')');
-            } else if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 1) {
-                result.appendLiteral("to(");
-                result.append(stop.m_color->cssText());
-                result.append(')');
-            } else {
-                result.appendLiteral("color-stop(");
-                result.appendNumber(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER));
-                result.appendLiteral(", ");
-                result.append(stop.m_color->cssText());
-                result.append(')');
-            }
-        }
+        appendCSSTextForDeprecatedColorStops(result);
     } else if (m_gradientType == CSSPrefixedLinearGradient) {
         if (m_repeating)
             result.appendLiteral("-webkit-repeating-linear-gradient(");
@@ -846,6 +827,29 @@ void CSSLinearGradientValue::traceAfterDispatch(Visitor* visitor)
     CSSGradientValue::traceAfterDispatch(visitor);
 }
 
+inline void CSSGradientValue::appendCSSTextForDeprecatedColorStops(StringBuilder& result) const
+{
+    for (unsigned i = 0; i < m_stops.size(); i++) {
+        const CSSGradientColorStop& stop = m_stops[i];
+        result.appendLiteral(", ");
+        if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 0) {
+            result.appendLiteral("from(");
+            result.append(stop.m_color->cssText());
+            result.append(')');
+        } else if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 1) {
+            result.appendLiteral("to(");
+            result.append(stop.m_color->cssText());
+            result.append(')');
+        } else {
+            result.appendLiteral("color-stop(");
+            result.appendNumber(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER));
+            result.appendLiteral(", ");
+            result.append(stop.m_color->cssText());
+            result.append(')');
+        }
+    }
+}
+
 String CSSRadialGradientValue::customCSSText() const
 {
     StringBuilder result;
@@ -863,27 +867,7 @@ String CSSRadialGradientValue::customCSSText() const
         result.append(m_secondY->cssText());
         result.appendLiteral(", ");
         result.append(m_secondRadius->cssText());
-
-        // FIXME: share?
-        for (unsigned i = 0; i < m_stops.size(); i++) {
-            const CSSGradientColorStop& stop = m_stops[i];
-            result.appendLiteral(", ");
-            if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 0) {
-                result.appendLiteral("from(");
-                result.append(stop.m_color->cssText());
-                result.append(')');
-            } else if (stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER) == 1) {
-                result.appendLiteral("to(");
-                result.append(stop.m_color->cssText());
-                result.append(')');
-            } else {
-                result.appendLiteral("color-stop(");
-                result.appendNumber(stop.m_position->getDoubleValue(CSSPrimitiveValue::CSS_NUMBER));
-                result.appendLiteral(", ");
-                result.append(stop.m_color->cssText());
-                result.append(')');
-            }
-        }
+        appendCSSTextForDeprecatedColorStops(result);
     } else if (m_gradientType == CSSPrefixedRadialGradient) {
         if (m_repeating)
             result.appendLiteral("-webkit-repeating-radial-gradient(");
