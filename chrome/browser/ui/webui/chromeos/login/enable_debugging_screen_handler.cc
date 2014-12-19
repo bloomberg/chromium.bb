@@ -263,7 +263,9 @@ void EnableDebuggingScreenHandler::OnQueryDebuggingFeatures(bool success,
 
 void EnableDebuggingScreenHandler::UpdateUIState(
     EnableDebuggingScreenHandler::UIState state) {
-  if (state == UI_STATE_ERROR || state == UI_STATE_DONE) {
+  if (state == UI_STATE_SETUP ||
+      state == UI_STATE_ERROR ||
+      state == UI_STATE_DONE) {
     PrefService* prefs = g_browser_process->local_state();
     prefs->ClearPref(prefs::kDebuggingFeaturesRequested);
     prefs->CommitPendingWrite();

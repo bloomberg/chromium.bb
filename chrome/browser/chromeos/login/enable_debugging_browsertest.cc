@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "base/json/json_file_value_serializer.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -12,6 +14,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -33,42 +37,16 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
         num_remove_protection_(0) {
   }
 
-  virtual ~TestDebugDaemonClient() {
+  ~TestDebugDaemonClient() override {
   }
 
-  void ResetWait() {
-    got_reply_ = false;
-    num_query_debugging_features_ = 0;
-    num_enable_debugging_features_ = 0;
-    num_remove_protection_ = 0;
-  }
-
-  int num_query_debugging_features() {
-    return num_query_debugging_features_;
-  }
-
-  int num_enable_debugging_features() {
-    return num_enable_debugging_features_;
-  }
-
-  int num_remove_protection() {
-    return num_remove_protection_;
-  }
-
-  virtual void SetDebuggingFeaturesStatus(int featues_mask) override {
+  // FakeDebugDaemonClient overrides:
+  void SetDebuggingFeaturesStatus(int featues_mask) override {
     ResetWait();
     FakeDebugDaemonClient::SetDebuggingFeaturesStatus(featues_mask);
   }
 
-  void WaitUntilCalled() {
-    if (got_reply_)
-      return;
-
-    runner_ = new content::MessageLoopRunner;
-    runner_->Run();
-  }
-
-  virtual void EnableDebuggingFeatures(
+  void EnableDebuggingFeatures(
       const std::string& password,
       const EnableDebuggingCallback& callback) override {
     FakeDebugDaemonClient::EnableDebuggingFeatures(
@@ -78,7 +56,7 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
                    callback));
   }
 
-  virtual void RemoveRootfsVerification(
+  void RemoveRootfsVerification(
       const DebugDaemonClient::EnableDebuggingCallback& callback) override {
     FakeDebugDaemonClient::RemoveRootfsVerification(
         base::Bind(&TestDebugDaemonClient::OnRemoveRootfsVerification,
@@ -86,7 +64,7 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
                    callback));
   }
 
-  virtual void QueryDebuggingFeatures(
+  void QueryDebuggingFeatures(
       const DebugDaemonClient::QueryDevFeaturesCallback& callback) override {
       LOG(WARNING) << "QueryDebuggingFeatures";
     FakeDebugDaemonClient::QueryDebuggingFeatures(
@@ -143,6 +121,33 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
     num_enable_debugging_features_++;
   }
 
+  void ResetWait() {
+    got_reply_ = false;
+    num_query_debugging_features_ = 0;
+    num_enable_debugging_features_ = 0;
+    num_remove_protection_ = 0;
+  }
+
+  int num_query_debugging_features() const {
+    return num_query_debugging_features_;
+  }
+
+  int num_enable_debugging_features() const {
+    return num_enable_debugging_features_;
+  }
+
+  int num_remove_protection() const {
+    return num_remove_protection_;
+  }
+
+  void WaitUntilCalled() {
+    if (got_reply_)
+      return;
+
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+  }
+
  private:
   scoped_refptr<content::MessageLoopRunner> runner_;
   bool got_reply_;
@@ -157,15 +162,18 @@ class EnableDebuggingTest : public LoginManagerTest {
       debug_daemon_client_(NULL),
       power_manager_client_(NULL) {
   }
-  virtual ~EnableDebuggingTest() {}
+  ~EnableDebuggingTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
+    // Disable HID detection because it takes precedence and could block
+    // enable-debugging UI.
+    command_line->AppendSwitch(chromeos::switches::kDisableHIDDetectionOnOOBE);
   }
 
   // LoginManagerTest overrides:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     power_manager_client_ = new FakePowerManagerClient;
@@ -338,13 +346,13 @@ class EnableDebuggingNonDevTest : public EnableDebuggingTest {
   EnableDebuggingNonDevTest() {
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Skip EnableDebuggingTest::SetUpCommandLine().
     LoginManagerTest::SetUpCommandLine(command_line);
   }
 
   // LoginManagerTest overrides:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetDebugDaemonClient(
@@ -364,6 +372,45 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingNonDevTest, NoShowInNonDevMode) {
   JSExpect("!document.querySelector('#debugging.setup-view')");
   JSExpect("!document.querySelector('#debugging.done-view')");
   JSExpect("!document.querySelector('#debugging.wait-view')");
+}
+
+class EnableDebuggingRequestedTest : public EnableDebuggingTest {
+ public:
+  EnableDebuggingRequestedTest() {
+  }
+
+  // EnableDebuggingTest overrides:
+  bool SetUpUserDataDirectory() override {
+    base::DictionaryValue local_state_dict;
+    local_state_dict.SetBoolean(prefs::kDebuggingFeaturesRequested, true);
+
+    base::FilePath user_data_dir;
+    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    base::FilePath local_state_path =
+        user_data_dir.Append(chrome::kLocalStateFilename);
+    CHECK(
+        JSONFileValueSerializer(local_state_path).Serialize(local_state_dict));
+
+    return EnableDebuggingTest::SetUpUserDataDirectory();
+  }
+  void SetUpInProcessBrowserTestFixture() override {
+    EnableDebuggingTest::SetUpInProcessBrowserTestFixture();
+
+    debug_daemon_client_->SetDebuggingFeaturesStatus(
+        DebugDaemonClient::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED);
+  }
+};
+
+// Setup screen is automatically shown when the feature is requested.
+IN_PROC_BROWSER_TEST_F(EnableDebuggingRequestedTest, AutoShowSetup) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+}
+
+// Canceling auto shown setup screen should close it.
+IN_PROC_BROWSER_TEST_F(EnableDebuggingRequestedTest, CancelAutoShowSetup) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+  CloseEnableDebuggingScreen();
+  JSExpect("!!document.querySelector('#debugging.hidden')");
 }
 
 }  // namespace chromeos
