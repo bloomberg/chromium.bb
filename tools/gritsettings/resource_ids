@@ -107,7 +107,7 @@
     "messages": [12500],
   },
   "content/app/strings/content_strings.grd": {
-    "messages": [18500],
+    "messages": [19000],
   },
   "components/policy/resources/policy_templates.grd": {
     "structures": [20500],

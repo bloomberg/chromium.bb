@@ -101,6 +101,7 @@ void CopresenceStateImpl::UpdateReceivedToken(const ReceivedToken& token) {
 
   // TODO(ckehoe): Have CopresenceManagerImpl::AudioCheck() use this to check
   // if we can hear our token, and delete the logic from the AudioManager.
+  // TODO(ckehoe): Test that this actually works.
   if (transmitted_tokens_.count(token.id) > 0) {
     transmitted_tokens_[token.id].broadcast_confirmed = true;
     FOR_EACH_OBSERVER(CopresenceObserver,

@@ -140,6 +140,10 @@ const char kChromeUITabModalConfirmDialogURL[] =
     "chrome://tab-modal-confirm-dialog/";
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+const char kChromeUICopresenceURL[] = "chrome://copresence/";
+#endif
+
 #if defined(ENABLE_WEBRTC)
 const char kChromeUIWebRtcLogsURL[] = "chrome://webrtc-logs/";
 #endif
@@ -313,6 +317,10 @@ const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+const char kChromeUICopresenceHost[] = "copresence";
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -622,6 +630,8 @@ const char* const kChromeHostURLs[] = {
 #endif
 #if defined(OS_ANDROID) || defined(OS_IOS)
   kChromeUINetExportHost,
+#else  // non-mobile
+  kChromeUICopresenceHost,
 #endif
 #if defined(OS_CHROMEOS)
   kChromeUICertificateManagerHost,

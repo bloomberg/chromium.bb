@@ -114,6 +114,11 @@
         <include name="IDR_CONTEXTUAL_SEARCH_PROMO_JS" file="resources\contextual_search\promo.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_CONTEXTUAL_SEARCH_PROMO_HEADER_SVG" file="resources\contextual_search\header.svg" type="BINDATA" />
       </if>
+      <if expr="not is_android and not is_ios">
+        <include name="IDR_COPRESENCE_CSS" file="resources\copresence.css" type="BINDATA" />
+        <include name="IDR_COPRESENCE_HTML" file="resources\copresence.html" type="BINDATA" />
+        <include name="IDR_COPRESENCE_JS" file="resources\copresence.js" type="BINDATA" />
+      </if>
       <if expr="enable_printing">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
       </if>

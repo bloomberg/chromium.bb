@@ -15002,6 +15002,45 @@ Do you accept?
           push notifications
       </message>
 
+      <!-- Copresence settings/debug strings -->
+      <if expr="not is_android and not is_ios">
+        <message name="IDS_COPRESENCE_TITLE" desc="Title for the chrome://copresence page">
+          Google Copresence Info
+        </message>
+
+        <message name="IDS_COPRESENCE_DIRECTIVES_TITLE" desc="Title for the table of currently active copresence directives (transmit this, receive that).">
+          Active Directives
+        </message>
+        <message name="IDS_COPRESENCE_DIRECTIVE_TYPE" desc="Title for the column in the directives table indicating whether the directive is 'transmit' or 'receive'.">
+          Type
+        </message>
+        <message name="IDS_COPRESENCE_TOKEN_MEDIUM" desc="Title for the column in the directives and tokens tables indicating how tokens are being transmitted. Currently one of 'ultrasound' or 'sound'.">
+          Medium
+        </message>
+        <message name="IDS_COPRESENCE_DURATION" desc="Title for the column in the directives table indicating how long the directive is active, e.g. '10 minutes'.">
+          Duration
+        </message>
+
+        <message name="IDS_COPRESENCE_TRANSMITTED_TOKENS_TITLE" desc="Title for the table of copresence tokens recently transmitted.">
+          Tokens Transmitted
+        </message>
+        <message name="IDS_COPRESENCE_RECEIVED_TOKENS_TITLE" desc="Title for the table of copresence tokens recently received.">
+          Tokens Received
+        </message>
+        <message name="IDS_COPRESENCE_TOKEN_ID" desc="Title for the column in a tokens table listing the token id (base64 encoded)">
+          Token ID
+        </message>
+        <message name="IDS_COPRESENCE_TOKEN_STATUS" desc="Title for the column in a tokens table indicating the status of a token: e.g. 'transmitted', 'received', 'expired', etc.">
+          Status
+        </message>
+        <message name="IDS_COPRESENCE_TOKEN_TRANSMIT_TIME" desc="Title for the column in the transmitted tokens table indicating when the token was first transmitted, e.g. '12:34 PM'">
+          Time First Transmitted
+        </message>
+        <message name="IDS_COPRESENCE_TOKEN_RECEIVE_TIME" desc="Title for the column in the received tokens table indicating when the token was last received, e.g. '12:34 AM'">
+          Time Last Received
+        </message>
+      </if>
+
       <!-- Easy Unlock strings -->
       <!-- Strings for the Easy Unlock promo notification -->
       <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">

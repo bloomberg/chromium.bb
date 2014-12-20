@@ -132,6 +132,11 @@ extern const char kChromeUISalsaHost[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+extern const char kChromeUICopresenceURL[];
+extern const char kChromeUICopresenceHost[];
+#endif
+
 #if defined(ENABLE_WEBRTC)
 extern const char kChromeUIWebRtcLogsURL[];
 #endif

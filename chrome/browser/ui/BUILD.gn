@@ -142,7 +142,10 @@ static_library("ui") {
         rebase_path(gypi_values.chrome_browser_ui_omnibox_non_mobile_sources,
                     ".",
                     "//chrome")
-    deps += [ "//device/bluetooth" ]
+    deps += [
+      "//device/bluetooth",
+      "//components/copresence",
+    ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
