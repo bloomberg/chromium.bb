@@ -1456,8 +1456,6 @@ crbug.com/438888 virtual/slimmingpaint/fast/block/positioning/055.html [ NeedsMa
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
-crbug.com/381919 scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ NeedsRebaseline ]
-
 crbug.com/432790 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html  [ Failure ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
