@@ -421,8 +421,6 @@ crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failur
 crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 
-crbug.com/443042 [ Mac ] ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
-
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
