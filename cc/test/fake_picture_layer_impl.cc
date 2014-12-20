@@ -174,8 +174,8 @@ void FakePictureLayerImpl::SetAllTilesReadyInTiling(
 }
 
 void FakePictureLayerImpl::SetTileReady(Tile* tile) {
-  ManagedTileState& state = tile->managed_state();
-  state.draw_info.SetSolidColorForTesting(true);
+  TileDrawInfo& draw_info = tile->draw_info();
+  draw_info.SetSolidColorForTesting(true);
   DCHECK(tile->IsReadyToDraw());
 }
 

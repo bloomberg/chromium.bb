@@ -255,11 +255,11 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       SkColor color;
       float width;
       if (*iter && iter->IsReadyToDraw()) {
-        ManagedTileState::DrawInfo::Mode mode = iter->draw_info().mode();
-        if (mode == ManagedTileState::DrawInfo::SOLID_COLOR_MODE) {
+        TileDrawInfo::Mode mode = iter->draw_info().mode();
+        if (mode == TileDrawInfo::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
-        } else if (mode == ManagedTileState::DrawInfo::PICTURE_PILE_MODE) {
+        } else if (mode == TileDrawInfo::PICTURE_PILE_MODE) {
           color = DebugColors::PictureTileBorderColor();
           width = DebugColors::PictureTileBorderWidth(layer_tree_impl());
         } else if (iter.resolution() == HIGH_RESOLUTION) {
@@ -323,9 +323,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
     bool has_draw_quad = false;
     if (*iter && iter->IsReadyToDraw()) {
-      const ManagedTileState::DrawInfo& draw_info = iter->draw_info();
+      const TileDrawInfo& draw_info = iter->draw_info();
       switch (draw_info.mode()) {
-        case ManagedTileState::DrawInfo::RESOURCE_MODE: {
+        case TileDrawInfo::RESOURCE_MODE: {
           gfx::RectF texture_rect = iter.texture_rect();
 
           // The raster_contents_scale_ is the best scale that the layer is
@@ -354,7 +354,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           has_draw_quad = true;
           break;
         }
-        case ManagedTileState::DrawInfo::PICTURE_PILE_MODE: {
+        case TileDrawInfo::PICTURE_PILE_MODE: {
           if (!layer_tree_impl()
                    ->GetRendererCapabilities()
                    .allow_rasterize_on_demand) {
@@ -377,7 +377,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           has_draw_quad = true;
           break;
         }
-        case ManagedTileState::DrawInfo::SOLID_COLOR_MODE: {
+        case TileDrawInfo::SOLID_COLOR_MODE: {
           SolidColorDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
           quad->SetNew(shared_quad_state,
@@ -790,9 +790,9 @@ void PictureLayerImpl::GetContentsResourceId(
       << "iter rect " << iter.geometry_rect().ToString() << " content rect "
       << content_rect.ToString();
 
-  const ManagedTileState::DrawInfo& draw_info = iter->draw_info();
+  const TileDrawInfo& draw_info = iter->draw_info();
   if (!draw_info.IsReadyToDraw() ||
-      draw_info.mode() != ManagedTileState::DrawInfo::RESOURCE_MODE) {
+      draw_info.mode() != TileDrawInfo::RESOURCE_MODE) {
     *resource_id = 0;
     return;
   }

@@ -1145,7 +1145,7 @@ TEST(PictureLayerTilingTest, TilingRasterTileIteratorStaticViewport) {
 
     // On the second iteration, mark everything as ready to draw (solid color).
     if (i == 1) {
-      ManagedTileState::DrawInfo& draw_info = last_tile->draw_info();
+      TileDrawInfo& draw_info = last_tile->draw_info();
       draw_info.SetSolidColorForTesting(SK_ColorRED);
     }
     ++it;
@@ -1181,7 +1181,7 @@ TEST(PictureLayerTilingTest, TilingRasterTileIteratorStaticViewport) {
       // On the second iteration, mark everything as ready to draw (solid
       // color).
       if (i == 1) {
-        ManagedTileState::DrawInfo& draw_info = last_tile->draw_info();
+        TileDrawInfo& draw_info = last_tile->draw_info();
         draw_info.SetSolidColorForTesting(SK_ColorRED);
       }
     }

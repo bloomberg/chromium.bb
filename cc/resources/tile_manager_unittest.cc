@@ -414,7 +414,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     EXPECT_TRUE(tile);
     EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
     EXPECT_EQ(TilePriority::NOW, tile->priority(PENDING_TREE).priority_bin);
-    EXPECT_TRUE(tile->HasResources());
+    EXPECT_TRUE(tile->HasResource());
     smoothness_tiles.insert(tile);
     queue.Pop();
   }
@@ -480,7 +480,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   while (!queue.IsEmpty()) {
     Tile* tile = queue.Top();
     EXPECT_TRUE(tile);
-    EXPECT_TRUE(tile->HasResources());
+    EXPECT_TRUE(tile->HasResource());
 
     if (!last_tile)
       last_tile = tile;

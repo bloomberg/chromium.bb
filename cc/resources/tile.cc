@@ -37,7 +37,8 @@ Tile::Tile(TileManager* tile_manager,
       tiling_j_index_(-1),
       required_for_activation_(false),
       required_for_draw_(false),
-      id_(s_next_id_++) {
+      id_(s_next_id_++),
+      scheduled_priority_(0) {
   set_raster_source(raster_source);
   for (int i = 0; i < NUM_TREES; i++)
     is_occluded_[i] = false;
@@ -69,9 +70,16 @@ void Tile::AsValueInto(base::debug::TracedValue* res) const {
   priority_[PENDING_TREE].AsValueInto(res);
   res->EndDictionary();
 
-  res->BeginDictionary("managed_state");
-  managed_state_.AsValueInto(res);
+  res->BeginDictionary("draw_info");
+  draw_info_.AsValueInto(res);
   res->EndDictionary();
+
+  res->SetBoolean("has_resource", HasResource());
+  res->SetBoolean("is_using_gpu_memory", HasResource() || HasRasterTask());
+  res->SetString("resolution",
+                 TileResolutionToString(combined_priority().resolution));
+
+  res->SetInteger("scheduled_priority", scheduled_priority_);
 
   res->SetBoolean("use_picture_analysis", use_picture_analysis());
 
@@ -79,13 +87,9 @@ void Tile::AsValueInto(base::debug::TracedValue* res) const {
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {
-  if (managed_state_.draw_info.resource_)
-    return managed_state_.draw_info.resource_->bytes();
+  if (draw_info_.resource_)
+    return draw_info_.resource_->bytes();
   return 0;
-}
-
-bool Tile::HasRasterTask() const {
-  return !!managed_state_.raster_task.get();
 }
 
 }  // namespace cc

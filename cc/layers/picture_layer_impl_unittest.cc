@@ -1691,7 +1691,7 @@ TEST_F(NoLowResPictureLayerImplTest,
     if (viewport_for_tile_priority.Intersects(iter.geometry_rect())) {
       num_inside++;
       // Mark everything in viewport for tile priority as ready to draw.
-      ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+      TileDrawInfo& draw_info = tile->draw_info();
       draw_info.SetSolidColorForTesting(SK_ColorRED);
     } else {
       num_outside++;
@@ -2836,7 +2836,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
        tile_it != high_res_tiles.end();
        ++tile_it) {
     Tile* tile = *tile_it;
-    ManagedTileState::DrawInfo& draw_info = tile->draw_info();
+    TileDrawInfo& draw_info = tile->draw_info();
     draw_info.SetSolidColorForTesting(SK_ColorRED);
   }
 

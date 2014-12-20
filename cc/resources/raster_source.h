@@ -12,6 +12,9 @@
 #include "cc/debug/traced_value.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 class SkCanvas;
 class SkPicture;

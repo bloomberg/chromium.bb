@@ -17,12 +17,12 @@
 #include "cc/base/ref_counted_managed.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
-#include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_draw_info.h"
 #include "cc/resources/tile_task_runner.h"
 
 namespace base {
@@ -130,10 +130,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
 
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
-      ManagedTileState& mts = tiles[i]->managed_state();
-
-      mts.draw_info.resource_ =
-          resource_pool_->AcquireResource(tiles[i]->size());
+      TileDrawInfo& draw_info = tiles[i]->draw_info();
+      draw_info.resource_ = resource_pool_->AcquireResource(tiles[i]->size());
     }
   }
 

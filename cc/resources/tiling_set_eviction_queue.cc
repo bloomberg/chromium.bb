@@ -90,7 +90,7 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
       std::pair<int, int> next_index = spiral_iterator_.index();
       Tile* tile = current_tiling_->TileAt(next_index.first, next_index.second);
       ++spiral_iterator_;
-      if (!tile || !tile->HasResources())
+      if (!tile || !tile->HasResource())
         continue;
       if (skip_all_shared_tiles_ && tile->is_shared())
         continue;
@@ -123,7 +123,7 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
     std::pair<int, int> next_index = visible_iterator_.index();
     Tile* tile = current_tiling_->TileAt(next_index.first, next_index.second);
     ++visible_iterator_;
-    if (!tile || !tile->HasResources())
+    if (!tile || !tile->HasResource())
       continue;
     if (skip_all_shared_tiles_ && tile->is_shared())
       continue;
@@ -162,7 +162,7 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
     Tile* tile = unoccluded_now_tiles_.back();
     unoccluded_now_tiles_.pop_back();
     DCHECK(tile);
-    if (!tile->HasResources())
+    if (!tile->HasResource())
       continue;
     current_tiling_->UpdateTileAndTwinPriority(tile);
     if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tile))

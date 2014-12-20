@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/base/ref_counted_managed.h"
-#include "cc/resources/managed_tile_state.h"
 #include "cc/resources/raster_source.h"
+#include "cc/resources/tile_draw_info.h"
 #include "cc/resources/tile_priority.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -96,24 +96,19 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return !!(flags_ & USE_PICTURE_ANALYSIS);
   }
 
-  bool HasResources() const { return managed_state_.draw_info.has_resource(); }
+  bool HasResource() const { return draw_info_.has_resource(); }
   bool NeedsRaster() const {
-    return managed_state_.draw_info.mode() ==
-               ManagedTileState::DrawInfo::PICTURE_PILE_MODE ||
-           !managed_state_.draw_info.IsReadyToDraw();
+    return draw_info_.mode() == TileDrawInfo::PICTURE_PILE_MODE ||
+           !draw_info_.IsReadyToDraw();
   }
 
   void AsValueInto(base::debug::TracedValue* dict) const;
 
-  inline bool IsReadyToDraw() const {
-    return managed_state_.draw_info.IsReadyToDraw();
-  }
+  inline bool IsReadyToDraw() const { return draw_info_.IsReadyToDraw(); }
 
-  const ManagedTileState::DrawInfo& draw_info() const {
-    return managed_state_.draw_info;
-  }
+  const TileDrawInfo& draw_info() const { return draw_info_; }
 
-  ManagedTileState::DrawInfo& draw_info() { return managed_state_.draw_info; }
+  TileDrawInfo& draw_info() { return draw_info_; }
 
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }
@@ -159,10 +154,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
        int flags);
   ~Tile();
 
-  ManagedTileState& managed_state() { return managed_state_; }
-  const ManagedTileState& managed_state() const { return managed_state_; }
-
-  bool HasRasterTask() const;
+  bool HasRasterTask() const { return !!raster_task_.get(); }
 
   TileManager* tile_manager_;
   scoped_refptr<RasterSource> raster_source_;
@@ -172,7 +164,8 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   bool is_occluded_[NUM_TREES];
 
   TilePriority priority_[NUM_TREES];
-  ManagedTileState managed_state_;
+  TileDrawInfo draw_info_;
+
   int layer_id_;
   int source_frame_number_;
   int flags_;
@@ -184,6 +177,10 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   Id id_;
   static Id s_next_id_;
+
+  unsigned scheduled_priority_;
+
+  scoped_refptr<RasterTask> raster_task_;
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };

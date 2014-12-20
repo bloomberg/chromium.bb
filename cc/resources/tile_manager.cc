@@ -281,7 +281,7 @@ void TileManager::CleanUpReleasedTiles() {
       continue;
     }
 
-    DCHECK(!tile->HasResources());
+    DCHECK(!tile->HasResource());
     DCHECK(tiles_.find(tile->id()) != tiles_.end());
     tiles_.erase(tile->id());
 
@@ -353,16 +353,16 @@ void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
       bool ready_to_activate = true;
       while (!raster_priority_queue_.IsEmpty()) {
         Tile* tile = raster_priority_queue_.Top();
-        ManagedTileState& mts = tile->managed_state();
+        TileDrawInfo& draw_info = tile->draw_info();
 
-        if (tile->required_for_activation() && !mts.draw_info.IsReadyToDraw()) {
+        if (tile->required_for_activation() && !draw_info.IsReadyToDraw()) {
           // If we can't raster on demand, give up early (and don't activate).
           if (!allow_rasterize_on_demand) {
             ready_to_activate = false;
             break;
           }
 
-          mts.draw_info.set_rasterize_on_demand();
+          draw_info.set_rasterize_on_demand();
           client_->NotifyTileStateChanged(tile);
         }
         raster_priority_queue_.Pop();
@@ -566,19 +566,17 @@ void TileManager::AssignGpuMemoryToTiles(
       break;
     }
 
-    ManagedTileState& mts = tile->managed_state();
-    mts.scheduled_priority = schedule_priority++;
-    mts.resolution = priority.resolution;
+    TileDrawInfo& draw_info = tile->draw_info();
+    tile->scheduled_priority_ = schedule_priority++;
 
-    DCHECK(mts.draw_info.mode() ==
-               ManagedTileState::DrawInfo::PICTURE_PILE_MODE ||
-           !mts.draw_info.IsReadyToDraw());
+    DCHECK(draw_info.mode() == TileDrawInfo::PICTURE_PILE_MODE ||
+           !draw_info.IsReadyToDraw());
 
     // If the tile already has a raster_task, then the memory used by it is
     // already accounted for in memory_usage. Otherwise, we'll have to acquire
     // more memory to create a raster task.
     MemoryUsage memory_required_by_tile_to_be_scheduled;
-    if (!mts.raster_task.get()) {
+    if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
           tile->size(), resource_pool_->resource_format());
     }
@@ -637,9 +635,9 @@ void TileManager::AssignGpuMemoryToTiles(
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
-  ManagedTileState& mts = tile->managed_state();
-  if (mts.draw_info.resource_)
-    resource_pool_->ReleaseResource(mts.draw_info.resource_.Pass());
+  TileDrawInfo& draw_info = tile->draw_info();
+  if (draw_info.resource_)
+    resource_pool_->ReleaseResource(draw_info.resource_.Pass());
 }
 
 void TileManager::FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(
@@ -667,13 +665,13 @@ void TileManager::ScheduleTasks(
        it != tiles_that_need_to_be_rasterized.end();
        ++it) {
     Tile* tile = *it;
-    ManagedTileState& mts = tile->managed_state();
+    TileDrawInfo& draw_info = tile->draw_info();
 
-    DCHECK(mts.draw_info.requires_resource());
-    DCHECK(!mts.draw_info.resource_);
+    DCHECK(draw_info.requires_resource());
+    DCHECK(!draw_info.resource_);
 
-    if (!mts.raster_task.get())
-      mts.raster_task = CreateRasterTask(tile);
+    if (!tile->raster_task_.get())
+      tile->raster_task_ = CreateRasterTask(tile);
 
     TaskSetCollection task_sets;
     if (tile->required_for_activation())
@@ -682,7 +680,7 @@ void TileManager::ScheduleTasks(
       task_sets.set(REQUIRED_FOR_DRAW);
     task_sets.set(ALL);
     raster_queue_.items.push_back(
-        TileTaskQueue::Item(mts.raster_task.get(), task_sets));
+        TileTaskQueue::Item(tile->raster_task_.get(), task_sets));
   }
 
   // We must reduce the amount of unused resoruces before calling
@@ -715,8 +713,6 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
 }
 
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
-  ManagedTileState& mts = tile->managed_state();
-
   scoped_ptr<ScopedResource> resource =
       resource_pool_->AcquireResource(tile->size());
   const ScopedResource* const_resource = resource.get();
@@ -744,21 +740,14 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
     existing_pixel_refs[id] = decode_task;
   }
 
-  return make_scoped_refptr(
-      new RasterTaskImpl(const_resource,
-                         tile->raster_source(),
-                         tile->content_rect(),
-                         tile->contents_scale(),
-                         mts.resolution,
-                         tile->layer_id(),
-                         static_cast<const void*>(tile),
-                         tile->source_frame_number(),
-                         tile->use_picture_analysis(),
-                         base::Bind(&TileManager::OnRasterTaskCompleted,
-                                    base::Unretained(this),
-                                    tile->id(),
-                                    base::Passed(&resource)),
-                         &decode_tasks));
+  return make_scoped_refptr(new RasterTaskImpl(
+      const_resource, tile->raster_source(), tile->content_rect(),
+      tile->contents_scale(), tile->combined_priority().resolution,
+      tile->layer_id(), static_cast<const void*>(tile),
+      tile->source_frame_number(), tile->use_picture_analysis(),
+      base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
+                 tile->id(), base::Passed(&resource)),
+      &decode_tasks));
 }
 
 void TileManager::OnImageDecodeTaskCompleted(int layer_id,
@@ -789,10 +778,10 @@ void TileManager::OnRasterTaskCompleted(
   DCHECK(tiles_.find(tile_id) != tiles_.end());
 
   Tile* tile = tiles_[tile_id];
-  ManagedTileState& mts = tile->managed_state();
-  DCHECK(mts.raster_task.get());
-  orphan_raster_tasks_.push_back(mts.raster_task);
-  mts.raster_task = NULL;
+  TileDrawInfo& draw_info = tile->draw_info();
+  DCHECK(tile->raster_task_.get());
+  orphan_raster_tasks_.push_back(tile->raster_task_);
+  tile->raster_task_ = NULL;
 
   if (was_canceled) {
     ++update_visible_tiles_stats_.canceled_count;
@@ -803,11 +792,11 @@ void TileManager::OnRasterTaskCompleted(
   ++update_visible_tiles_stats_.completed_count;
 
   if (analysis.is_solid_color) {
-    mts.draw_info.set_solid_color(analysis.solid_color);
+    draw_info.set_solid_color(analysis.solid_color);
     resource_pool_->ReleaseResource(resource.Pass());
   } else {
-    mts.draw_info.set_use_resource();
-    mts.draw_info.resource_ = resource.Pass();
+    draw_info.set_use_resource();
+    draw_info.resource_ = resource.Pass();
   }
 
   client_->NotifyTileStateChanged(tile);
@@ -910,10 +899,9 @@ TileManager::MemoryUsage TileManager::MemoryUsage::FromConfig(
 
 // static
 TileManager::MemoryUsage TileManager::MemoryUsage::FromTile(const Tile* tile) {
-  const ManagedTileState& mts = tile->managed_state();
-  if (mts.draw_info.resource_) {
-    return MemoryUsage::FromConfig(tile->size(),
-                                   mts.draw_info.resource_->format());
+  const TileDrawInfo& draw_info = tile->draw_info();
+  if (draw_info.resource_) {
+    return MemoryUsage::FromConfig(tile->size(), draw_info.resource_->format());
   }
   return MemoryUsage();
 }
