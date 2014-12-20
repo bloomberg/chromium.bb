@@ -18,11 +18,14 @@ DesktopDragDropClientWin::DesktopDragDropClientWin(
     aura::Window* root_window,
     HWND window)
     : drag_drop_in_progress_(false),
-      drag_operation_(0) {
+      drag_operation_(0),
+      weak_factory_(this) {
   drop_target_ = new DesktopDropTargetWin(root_window, window);
 }
 
 DesktopDragDropClientWin::~DesktopDragDropClientWin() {
+  if (drag_drop_in_progress_)
+    DragCancel();
 }
 
 int DesktopDragDropClientWin::StartDragAndDrop(
@@ -35,7 +38,11 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   drag_drop_in_progress_ = true;
   drag_operation_ = operation;
 
+  base::WeakPtr<DesktopDragDropClientWin> alive(weak_factory_.GetWeakPtr());
+
   drag_source_ = new ui::DragSourceWin;
+  scoped_refptr<ui::DragSourceWin> drag_source_copy = drag_source_;
+
   DWORD effect;
 
   // Use task stopwatch to exclude the drag-drop time current task, if any.
@@ -46,7 +53,8 @@ int DesktopDragDropClientWin::StartDragAndDrop(
       ui::DragDropTypes::DragOperationToDropEffect(operation), &effect);
   stopwatch.Stop();
 
-  drag_drop_in_progress_ = false;
+  if (alive)
+    drag_drop_in_progress_ = false;
 
   if (result != DRAGDROP_S_DROP)
     effect = DROPEFFECT_NONE;

@@ -788,7 +788,14 @@ void Widget::RunShellDrag(View* view,
                           ui::DragDropTypes::DragEventSource source) {
   dragged_view_ = view;
   OnDragWillStart();
+
+  WidgetDeletionObserver widget_deletion_observer(this);
   native_widget_->RunShellDrag(view, data, location, operation, source);
+
+  // The widget may be destroyed during the drag operation.
+  if (!widget_deletion_observer.IsWidgetAlive())
+    return;
+
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
   if (view && dragged_view_ == view) {
