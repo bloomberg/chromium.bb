@@ -191,7 +191,7 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Korean script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        AppleGothic
+        Apple SD Gothic Neo
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -203,7 +203,7 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Korean script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        AppleGothic
+        Apple SD Gothic Neo
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
