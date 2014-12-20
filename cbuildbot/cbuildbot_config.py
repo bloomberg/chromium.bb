@@ -1308,8 +1308,6 @@ _arm_external_boards = frozenset([
 
 _x86_internal_release_boards = frozenset([
   'auron',
-  'auron_cid',
-  'auron_lulu',
   'auron_paine',
   'auron_yuna',
   'bayleybay',
@@ -1317,6 +1315,7 @@ _x86_internal_release_boards = frozenset([
   'bobcat',
   'butterfly',
   'candy',
+  'cid',
   'cranky',
   'clapper',
   'duck',
@@ -1333,6 +1332,7 @@ _x86_internal_release_boards = frozenset([
   'leon',
   'link',
   'link_freon',
+  'lulu',
   'lumpy',
   'mccloud',
   'mccloud_freon',
@@ -1471,12 +1471,12 @@ _moblab_boards = frozenset([
 
 _freon_boards = frozenset([
   'auron',
-  'auron_cid',
-  'auron_lulu',
   'auron_paine',
   'auron_yuna',
+  'cid',
   'jecht',
   'link_freon',
+  'lulu',
   'mccloud_freon',
   'monroe_freon',
   'panther_freon',
@@ -2828,8 +2828,8 @@ _AddGroupConfig('auron', 'auron', (
     'auron_paine',
 ))
 
-_AddGroupConfig('auron-b', 'auron_lulu', (
-    'auron_cid',
+_AddGroupConfig('auron-b', 'lulu', (
+    'cid',
     ),
     important=False
 )
