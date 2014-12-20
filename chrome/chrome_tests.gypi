@@ -3219,6 +3219,21 @@
                 },
               ],
             }],
+            ['OS=="win"', {
+              'targets': [
+                {
+                  'target_name': 'angle_end2end_tests_run',
+                  'type': 'none',
+                  'dependencies': [
+                    '../gpu/gpu.gyp:angle_end2end_tests',
+                    'gpu_tests_base',
+                  ],
+                  'sources': [
+                    'angle_end2end_tests.isolate',
+                  ],
+                },
+              ],
+            }],
           ],
         }],
       ],

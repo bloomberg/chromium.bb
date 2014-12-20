@@ -124,31 +124,23 @@
     },
     {
       # GN version: //gpu:angle_unittests
+      # TODO(kbr): port this refactoring to the GN build.
       'target_name': 'angle_unittests',
       'type': '<(gtest_target_type)',
+      'includes': [
+        '../third_party/angle/build/common_defines.gypi',
+        '../third_party/angle/tests/angle_unittests.gypi',
+      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '<(angle_path)/src/angle.gyp:translator_static',
-      ],
-      'variables': {
-        'ANGLE_DIR': '<(angle_path)',
-      },
-      'includes': [
-        '../third_party/angle/tests/preprocessor_tests/preprocessor_tests.gypi',
-        '../third_party/angle/tests/compiler_tests/compiler_tests.gypi',
       ],
       'include_dirs': [
         '..',
-        '<(angle_path)/include',
-        '<(angle_path)/src',
-        '<(angle_path)/src/compiler/preprocessor',
-        '<(angle_path)/tests',
+        '../third_party/angle/include',
       ],
-      'sources': [
+      'sources':
+      [
         'angle_unittest_main.cc',
       ],
     },
@@ -656,6 +648,28 @@
             'test_suite_name': 'gpu_unittests',
           },
           'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
+    ['OS == "win"', {
+      'targets': [
+        {
+          # TODO(kbr): port this target to the GN build.
+          'target_name': 'angle_end2end_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+          ],
+          'includes':
+          [
+            '../third_party/angle/build/common_defines.gypi',
+            '../third_party/angle/tests/angle_end2end_tests.gypi',
+          ],
+          'sources':
+          [
+            'angle_end2end_tests_main.cc',
+          ],
         },
       ],
     }],
