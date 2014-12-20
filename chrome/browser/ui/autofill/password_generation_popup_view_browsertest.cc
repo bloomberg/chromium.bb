@@ -40,13 +40,12 @@ class TestPasswordGenerationPopupController :
 
 class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
  public:
-  void SetUpOnMainThread() override {
-    gfx::NativeView native_view =
-        browser()->tab_strip_model()->GetActiveWebContents()->GetNativeView();
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
 
-    controller_ =
-        new TestPasswordGenerationPopupController(
-            browser()->tab_strip_model()->GetActiveWebContents(), native_view);
+  gfx::NativeView GetNativeView() {
+    return GetWebContents()->GetNativeView();
   }
 
   scoped_ptr<PasswordGenerationPopupViewTester> GetViewTester() {
@@ -63,6 +62,8 @@ class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
 // editing dialog doesn't crash.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        MouseMovementInEditingPopup) {
+  controller_ = new autofill::TestPasswordGenerationPopupController(
+      GetWebContents(), GetNativeView());
   controller_->Show(false /* display_password */);
 
   gfx::Point center_point =
@@ -72,6 +73,15 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
 
   // Deletes |controller_|.
   controller_->HideAndDestroy();
+}
+
+// Verify that we calling Show() with an invalid container does not crash.
+// Regression test for crbug.com/439618.
+IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
+                       InvalidContainerView) {
+  controller_ = new autofill::TestPasswordGenerationPopupController(
+      GetWebContents(), NULL);
+  controller_->Show(true /* display password */);
 }
 #endif
 
