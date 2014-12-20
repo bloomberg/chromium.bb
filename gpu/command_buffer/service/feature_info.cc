@@ -579,11 +579,11 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (may_enable_chromium_color_buffer_float) {
-    COMPILE_ASSERT(GL_RGBA32F_ARB == GL_RGBA32F &&
-                   GL_RGBA32F_EXT == GL_RGBA32F &&
-                   GL_RGB32F_ARB == GL_RGB32F &&
-                   GL_RGB32F_EXT == GL_RGB32F,
-                   sized_float_internal_format_variations_must_match);
+    static_assert(GL_RGBA32F_ARB == GL_RGBA32F &&
+                  GL_RGBA32F_EXT == GL_RGBA32F &&
+                  GL_RGB32F_ARB == GL_RGB32F &&
+                  GL_RGB32F_EXT == GL_RGB32F,
+                  "sized float internal format variations must match");
     // We don't check extension support beyond ARB_texture_float on desktop GL,
     // and format support varies between GL configurations. For example, spec
     // prior to OpenGL 3.0 mandates framebuffer support only for one
@@ -861,8 +861,8 @@ void FeatureInfo::InitializeFeatures() {
          ++i) {
       validators_.attachment.AddValue(i);
     }
-    COMPILE_ASSERT(GL_COLOR_ATTACHMENT0_EXT == GL_COLOR_ATTACHMENT0,
-                   color_attachment0_variation_must_match);
+    static_assert(GL_COLOR_ATTACHMENT0_EXT == GL_COLOR_ATTACHMENT0,
+                  "GL_COLOR_ATTACHMENT0_EXT should equal GL_COLOR_ATTACHMENT0");
 
     validators_.g_l_state.AddValue(GL_MAX_COLOR_ATTACHMENTS_EXT);
     validators_.g_l_state.AddValue(GL_MAX_DRAW_BUFFERS_ARB);
@@ -881,8 +881,8 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_EXT_blend_minmax");
     validators_.equation.AddValue(GL_MIN_EXT);
     validators_.equation.AddValue(GL_MAX_EXT);
-    COMPILE_ASSERT(GL_MIN_EXT == GL_MIN && GL_MAX_EXT == GL_MAX,
-                   min_max_variations_must_match);
+    static_assert(GL_MIN_EXT == GL_MIN && GL_MAX_EXT == GL_MAX,
+                  "min & max variations must match");
   }
 
   // TODO(dshwang): GLES3 supports gl_FragDepth, not gl_FragDepthEXT.

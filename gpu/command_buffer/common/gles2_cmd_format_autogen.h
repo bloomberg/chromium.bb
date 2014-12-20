@@ -37,11 +37,11 @@ struct ActiveTexture {
   uint32_t texture;
 };
 
-COMPILE_ASSERT(sizeof(ActiveTexture) == 8, Sizeof_ActiveTexture_is_not_8);
-COMPILE_ASSERT(offsetof(ActiveTexture, header) == 0,
-               OffsetOf_ActiveTexture_header_not_0);
-COMPILE_ASSERT(offsetof(ActiveTexture, texture) == 4,
-               OffsetOf_ActiveTexture_texture_not_4);
+static_assert(sizeof(ActiveTexture) == 8, "size of ActiveTexture should be 8");
+static_assert(offsetof(ActiveTexture, header) == 0,
+              "offset of ActiveTexture header should be 0");
+static_assert(offsetof(ActiveTexture, texture) == 4,
+              "offset of ActiveTexture texture should be 4");
 
 struct AttachShader {
   typedef AttachShader ValueType;
@@ -71,13 +71,13 @@ struct AttachShader {
   uint32_t shader;
 };
 
-COMPILE_ASSERT(sizeof(AttachShader) == 12, Sizeof_AttachShader_is_not_12);
-COMPILE_ASSERT(offsetof(AttachShader, header) == 0,
-               OffsetOf_AttachShader_header_not_0);
-COMPILE_ASSERT(offsetof(AttachShader, program) == 4,
-               OffsetOf_AttachShader_program_not_4);
-COMPILE_ASSERT(offsetof(AttachShader, shader) == 8,
-               OffsetOf_AttachShader_shader_not_8);
+static_assert(sizeof(AttachShader) == 12, "size of AttachShader should be 12");
+static_assert(offsetof(AttachShader, header) == 0,
+              "offset of AttachShader header should be 0");
+static_assert(offsetof(AttachShader, program) == 4,
+              "offset of AttachShader program should be 4");
+static_assert(offsetof(AttachShader, shader) == 8,
+              "offset of AttachShader shader should be 8");
 
 struct BindAttribLocationBucket {
   typedef BindAttribLocationBucket ValueType;
@@ -112,16 +112,16 @@ struct BindAttribLocationBucket {
   uint32_t name_bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(BindAttribLocationBucket) == 16,
-               Sizeof_BindAttribLocationBucket_is_not_16);
-COMPILE_ASSERT(offsetof(BindAttribLocationBucket, header) == 0,
-               OffsetOf_BindAttribLocationBucket_header_not_0);
-COMPILE_ASSERT(offsetof(BindAttribLocationBucket, program) == 4,
-               OffsetOf_BindAttribLocationBucket_program_not_4);
-COMPILE_ASSERT(offsetof(BindAttribLocationBucket, index) == 8,
-               OffsetOf_BindAttribLocationBucket_index_not_8);
-COMPILE_ASSERT(offsetof(BindAttribLocationBucket, name_bucket_id) == 12,
-               OffsetOf_BindAttribLocationBucket_name_bucket_id_not_12);
+static_assert(sizeof(BindAttribLocationBucket) == 16,
+              "size of BindAttribLocationBucket should be 16");
+static_assert(offsetof(BindAttribLocationBucket, header) == 0,
+              "offset of BindAttribLocationBucket header should be 0");
+static_assert(offsetof(BindAttribLocationBucket, program) == 4,
+              "offset of BindAttribLocationBucket program should be 4");
+static_assert(offsetof(BindAttribLocationBucket, index) == 8,
+              "offset of BindAttribLocationBucket index should be 8");
+static_assert(offsetof(BindAttribLocationBucket, name_bucket_id) == 12,
+              "offset of BindAttribLocationBucket name_bucket_id should be 12");
 
 struct BindBuffer {
   typedef BindBuffer ValueType;
@@ -151,13 +151,13 @@ struct BindBuffer {
   uint32_t buffer;
 };
 
-COMPILE_ASSERT(sizeof(BindBuffer) == 12, Sizeof_BindBuffer_is_not_12);
-COMPILE_ASSERT(offsetof(BindBuffer, header) == 0,
-               OffsetOf_BindBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(BindBuffer, target) == 4,
-               OffsetOf_BindBuffer_target_not_4);
-COMPILE_ASSERT(offsetof(BindBuffer, buffer) == 8,
-               OffsetOf_BindBuffer_buffer_not_8);
+static_assert(sizeof(BindBuffer) == 12, "size of BindBuffer should be 12");
+static_assert(offsetof(BindBuffer, header) == 0,
+              "offset of BindBuffer header should be 0");
+static_assert(offsetof(BindBuffer, target) == 4,
+              "offset of BindBuffer target should be 4");
+static_assert(offsetof(BindBuffer, buffer) == 8,
+              "offset of BindBuffer buffer should be 8");
 
 struct BindFramebuffer {
   typedef BindFramebuffer ValueType;
@@ -187,13 +187,14 @@ struct BindFramebuffer {
   uint32_t framebuffer;
 };
 
-COMPILE_ASSERT(sizeof(BindFramebuffer) == 12, Sizeof_BindFramebuffer_is_not_12);
-COMPILE_ASSERT(offsetof(BindFramebuffer, header) == 0,
-               OffsetOf_BindFramebuffer_header_not_0);
-COMPILE_ASSERT(offsetof(BindFramebuffer, target) == 4,
-               OffsetOf_BindFramebuffer_target_not_4);
-COMPILE_ASSERT(offsetof(BindFramebuffer, framebuffer) == 8,
-               OffsetOf_BindFramebuffer_framebuffer_not_8);
+static_assert(sizeof(BindFramebuffer) == 12,
+              "size of BindFramebuffer should be 12");
+static_assert(offsetof(BindFramebuffer, header) == 0,
+              "offset of BindFramebuffer header should be 0");
+static_assert(offsetof(BindFramebuffer, target) == 4,
+              "offset of BindFramebuffer target should be 4");
+static_assert(offsetof(BindFramebuffer, framebuffer) == 8,
+              "offset of BindFramebuffer framebuffer should be 8");
 
 struct BindRenderbuffer {
   typedef BindRenderbuffer ValueType;
@@ -223,14 +224,14 @@ struct BindRenderbuffer {
   uint32_t renderbuffer;
 };
 
-COMPILE_ASSERT(sizeof(BindRenderbuffer) == 12,
-               Sizeof_BindRenderbuffer_is_not_12);
-COMPILE_ASSERT(offsetof(BindRenderbuffer, header) == 0,
-               OffsetOf_BindRenderbuffer_header_not_0);
-COMPILE_ASSERT(offsetof(BindRenderbuffer, target) == 4,
-               OffsetOf_BindRenderbuffer_target_not_4);
-COMPILE_ASSERT(offsetof(BindRenderbuffer, renderbuffer) == 8,
-               OffsetOf_BindRenderbuffer_renderbuffer_not_8);
+static_assert(sizeof(BindRenderbuffer) == 12,
+              "size of BindRenderbuffer should be 12");
+static_assert(offsetof(BindRenderbuffer, header) == 0,
+              "offset of BindRenderbuffer header should be 0");
+static_assert(offsetof(BindRenderbuffer, target) == 4,
+              "offset of BindRenderbuffer target should be 4");
+static_assert(offsetof(BindRenderbuffer, renderbuffer) == 8,
+              "offset of BindRenderbuffer renderbuffer should be 8");
 
 struct BindSampler {
   typedef BindSampler ValueType;
@@ -260,13 +261,13 @@ struct BindSampler {
   uint32_t sampler;
 };
 
-COMPILE_ASSERT(sizeof(BindSampler) == 12, Sizeof_BindSampler_is_not_12);
-COMPILE_ASSERT(offsetof(BindSampler, header) == 0,
-               OffsetOf_BindSampler_header_not_0);
-COMPILE_ASSERT(offsetof(BindSampler, unit) == 4,
-               OffsetOf_BindSampler_unit_not_4);
-COMPILE_ASSERT(offsetof(BindSampler, sampler) == 8,
-               OffsetOf_BindSampler_sampler_not_8);
+static_assert(sizeof(BindSampler) == 12, "size of BindSampler should be 12");
+static_assert(offsetof(BindSampler, header) == 0,
+              "offset of BindSampler header should be 0");
+static_assert(offsetof(BindSampler, unit) == 4,
+              "offset of BindSampler unit should be 4");
+static_assert(offsetof(BindSampler, sampler) == 8,
+              "offset of BindSampler sampler should be 8");
 
 struct BindTexture {
   typedef BindTexture ValueType;
@@ -296,13 +297,13 @@ struct BindTexture {
   uint32_t texture;
 };
 
-COMPILE_ASSERT(sizeof(BindTexture) == 12, Sizeof_BindTexture_is_not_12);
-COMPILE_ASSERT(offsetof(BindTexture, header) == 0,
-               OffsetOf_BindTexture_header_not_0);
-COMPILE_ASSERT(offsetof(BindTexture, target) == 4,
-               OffsetOf_BindTexture_target_not_4);
-COMPILE_ASSERT(offsetof(BindTexture, texture) == 8,
-               OffsetOf_BindTexture_texture_not_8);
+static_assert(sizeof(BindTexture) == 12, "size of BindTexture should be 12");
+static_assert(offsetof(BindTexture, header) == 0,
+              "offset of BindTexture header should be 0");
+static_assert(offsetof(BindTexture, target) == 4,
+              "offset of BindTexture target should be 4");
+static_assert(offsetof(BindTexture, texture) == 8,
+              "offset of BindTexture texture should be 8");
 
 struct BindTransformFeedback {
   typedef BindTransformFeedback ValueType;
@@ -332,14 +333,14 @@ struct BindTransformFeedback {
   uint32_t transformfeedback;
 };
 
-COMPILE_ASSERT(sizeof(BindTransformFeedback) == 12,
-               Sizeof_BindTransformFeedback_is_not_12);
-COMPILE_ASSERT(offsetof(BindTransformFeedback, header) == 0,
-               OffsetOf_BindTransformFeedback_header_not_0);
-COMPILE_ASSERT(offsetof(BindTransformFeedback, target) == 4,
-               OffsetOf_BindTransformFeedback_target_not_4);
-COMPILE_ASSERT(offsetof(BindTransformFeedback, transformfeedback) == 8,
-               OffsetOf_BindTransformFeedback_transformfeedback_not_8);
+static_assert(sizeof(BindTransformFeedback) == 12,
+              "size of BindTransformFeedback should be 12");
+static_assert(offsetof(BindTransformFeedback, header) == 0,
+              "offset of BindTransformFeedback header should be 0");
+static_assert(offsetof(BindTransformFeedback, target) == 4,
+              "offset of BindTransformFeedback target should be 4");
+static_assert(offsetof(BindTransformFeedback, transformfeedback) == 8,
+              "offset of BindTransformFeedback transformfeedback should be 8");
 
 struct BlendColor {
   typedef BlendColor ValueType;
@@ -377,16 +378,17 @@ struct BlendColor {
   float alpha;
 };
 
-COMPILE_ASSERT(sizeof(BlendColor) == 20, Sizeof_BlendColor_is_not_20);
-COMPILE_ASSERT(offsetof(BlendColor, header) == 0,
-               OffsetOf_BlendColor_header_not_0);
-COMPILE_ASSERT(offsetof(BlendColor, red) == 4, OffsetOf_BlendColor_red_not_4);
-COMPILE_ASSERT(offsetof(BlendColor, green) == 8,
-               OffsetOf_BlendColor_green_not_8);
-COMPILE_ASSERT(offsetof(BlendColor, blue) == 12,
-               OffsetOf_BlendColor_blue_not_12);
-COMPILE_ASSERT(offsetof(BlendColor, alpha) == 16,
-               OffsetOf_BlendColor_alpha_not_16);
+static_assert(sizeof(BlendColor) == 20, "size of BlendColor should be 20");
+static_assert(offsetof(BlendColor, header) == 0,
+              "offset of BlendColor header should be 0");
+static_assert(offsetof(BlendColor, red) == 4,
+              "offset of BlendColor red should be 4");
+static_assert(offsetof(BlendColor, green) == 8,
+              "offset of BlendColor green should be 8");
+static_assert(offsetof(BlendColor, blue) == 12,
+              "offset of BlendColor blue should be 12");
+static_assert(offsetof(BlendColor, alpha) == 16,
+              "offset of BlendColor alpha should be 16");
 
 struct BlendEquation {
   typedef BlendEquation ValueType;
@@ -414,11 +416,11 @@ struct BlendEquation {
   uint32_t mode;
 };
 
-COMPILE_ASSERT(sizeof(BlendEquation) == 8, Sizeof_BlendEquation_is_not_8);
-COMPILE_ASSERT(offsetof(BlendEquation, header) == 0,
-               OffsetOf_BlendEquation_header_not_0);
-COMPILE_ASSERT(offsetof(BlendEquation, mode) == 4,
-               OffsetOf_BlendEquation_mode_not_4);
+static_assert(sizeof(BlendEquation) == 8, "size of BlendEquation should be 8");
+static_assert(offsetof(BlendEquation, header) == 0,
+              "offset of BlendEquation header should be 0");
+static_assert(offsetof(BlendEquation, mode) == 4,
+              "offset of BlendEquation mode should be 4");
 
 struct BlendEquationSeparate {
   typedef BlendEquationSeparate ValueType;
@@ -448,14 +450,14 @@ struct BlendEquationSeparate {
   uint32_t modeAlpha;
 };
 
-COMPILE_ASSERT(sizeof(BlendEquationSeparate) == 12,
-               Sizeof_BlendEquationSeparate_is_not_12);
-COMPILE_ASSERT(offsetof(BlendEquationSeparate, header) == 0,
-               OffsetOf_BlendEquationSeparate_header_not_0);
-COMPILE_ASSERT(offsetof(BlendEquationSeparate, modeRGB) == 4,
-               OffsetOf_BlendEquationSeparate_modeRGB_not_4);
-COMPILE_ASSERT(offsetof(BlendEquationSeparate, modeAlpha) == 8,
-               OffsetOf_BlendEquationSeparate_modeAlpha_not_8);
+static_assert(sizeof(BlendEquationSeparate) == 12,
+              "size of BlendEquationSeparate should be 12");
+static_assert(offsetof(BlendEquationSeparate, header) == 0,
+              "offset of BlendEquationSeparate header should be 0");
+static_assert(offsetof(BlendEquationSeparate, modeRGB) == 4,
+              "offset of BlendEquationSeparate modeRGB should be 4");
+static_assert(offsetof(BlendEquationSeparate, modeAlpha) == 8,
+              "offset of BlendEquationSeparate modeAlpha should be 8");
 
 struct BlendFunc {
   typedef BlendFunc ValueType;
@@ -485,13 +487,13 @@ struct BlendFunc {
   uint32_t dfactor;
 };
 
-COMPILE_ASSERT(sizeof(BlendFunc) == 12, Sizeof_BlendFunc_is_not_12);
-COMPILE_ASSERT(offsetof(BlendFunc, header) == 0,
-               OffsetOf_BlendFunc_header_not_0);
-COMPILE_ASSERT(offsetof(BlendFunc, sfactor) == 4,
-               OffsetOf_BlendFunc_sfactor_not_4);
-COMPILE_ASSERT(offsetof(BlendFunc, dfactor) == 8,
-               OffsetOf_BlendFunc_dfactor_not_8);
+static_assert(sizeof(BlendFunc) == 12, "size of BlendFunc should be 12");
+static_assert(offsetof(BlendFunc, header) == 0,
+              "offset of BlendFunc header should be 0");
+static_assert(offsetof(BlendFunc, sfactor) == 4,
+              "offset of BlendFunc sfactor should be 4");
+static_assert(offsetof(BlendFunc, dfactor) == 8,
+              "offset of BlendFunc dfactor should be 8");
 
 struct BlendFuncSeparate {
   typedef BlendFuncSeparate ValueType;
@@ -532,18 +534,18 @@ struct BlendFuncSeparate {
   uint32_t dstAlpha;
 };
 
-COMPILE_ASSERT(sizeof(BlendFuncSeparate) == 20,
-               Sizeof_BlendFuncSeparate_is_not_20);
-COMPILE_ASSERT(offsetof(BlendFuncSeparate, header) == 0,
-               OffsetOf_BlendFuncSeparate_header_not_0);
-COMPILE_ASSERT(offsetof(BlendFuncSeparate, srcRGB) == 4,
-               OffsetOf_BlendFuncSeparate_srcRGB_not_4);
-COMPILE_ASSERT(offsetof(BlendFuncSeparate, dstRGB) == 8,
-               OffsetOf_BlendFuncSeparate_dstRGB_not_8);
-COMPILE_ASSERT(offsetof(BlendFuncSeparate, srcAlpha) == 12,
-               OffsetOf_BlendFuncSeparate_srcAlpha_not_12);
-COMPILE_ASSERT(offsetof(BlendFuncSeparate, dstAlpha) == 16,
-               OffsetOf_BlendFuncSeparate_dstAlpha_not_16);
+static_assert(sizeof(BlendFuncSeparate) == 20,
+              "size of BlendFuncSeparate should be 20");
+static_assert(offsetof(BlendFuncSeparate, header) == 0,
+              "offset of BlendFuncSeparate header should be 0");
+static_assert(offsetof(BlendFuncSeparate, srcRGB) == 4,
+              "offset of BlendFuncSeparate srcRGB should be 4");
+static_assert(offsetof(BlendFuncSeparate, dstRGB) == 8,
+              "offset of BlendFuncSeparate dstRGB should be 8");
+static_assert(offsetof(BlendFuncSeparate, srcAlpha) == 12,
+              "offset of BlendFuncSeparate srcAlpha should be 12");
+static_assert(offsetof(BlendFuncSeparate, dstAlpha) == 16,
+              "offset of BlendFuncSeparate dstAlpha should be 16");
 
 struct BufferData {
   typedef BufferData ValueType;
@@ -589,18 +591,19 @@ struct BufferData {
   uint32_t usage;
 };
 
-COMPILE_ASSERT(sizeof(BufferData) == 24, Sizeof_BufferData_is_not_24);
-COMPILE_ASSERT(offsetof(BufferData, header) == 0,
-               OffsetOf_BufferData_header_not_0);
-COMPILE_ASSERT(offsetof(BufferData, target) == 4,
-               OffsetOf_BufferData_target_not_4);
-COMPILE_ASSERT(offsetof(BufferData, size) == 8, OffsetOf_BufferData_size_not_8);
-COMPILE_ASSERT(offsetof(BufferData, data_shm_id) == 12,
-               OffsetOf_BufferData_data_shm_id_not_12);
-COMPILE_ASSERT(offsetof(BufferData, data_shm_offset) == 16,
-               OffsetOf_BufferData_data_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(BufferData, usage) == 20,
-               OffsetOf_BufferData_usage_not_20);
+static_assert(sizeof(BufferData) == 24, "size of BufferData should be 24");
+static_assert(offsetof(BufferData, header) == 0,
+              "offset of BufferData header should be 0");
+static_assert(offsetof(BufferData, target) == 4,
+              "offset of BufferData target should be 4");
+static_assert(offsetof(BufferData, size) == 8,
+              "offset of BufferData size should be 8");
+static_assert(offsetof(BufferData, data_shm_id) == 12,
+              "offset of BufferData data_shm_id should be 12");
+static_assert(offsetof(BufferData, data_shm_offset) == 16,
+              "offset of BufferData data_shm_offset should be 16");
+static_assert(offsetof(BufferData, usage) == 20,
+              "offset of BufferData usage should be 20");
 
 struct BufferSubData {
   typedef BufferSubData ValueType;
@@ -646,19 +649,20 @@ struct BufferSubData {
   uint32_t data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(BufferSubData) == 24, Sizeof_BufferSubData_is_not_24);
-COMPILE_ASSERT(offsetof(BufferSubData, header) == 0,
-               OffsetOf_BufferSubData_header_not_0);
-COMPILE_ASSERT(offsetof(BufferSubData, target) == 4,
-               OffsetOf_BufferSubData_target_not_4);
-COMPILE_ASSERT(offsetof(BufferSubData, offset) == 8,
-               OffsetOf_BufferSubData_offset_not_8);
-COMPILE_ASSERT(offsetof(BufferSubData, size) == 12,
-               OffsetOf_BufferSubData_size_not_12);
-COMPILE_ASSERT(offsetof(BufferSubData, data_shm_id) == 16,
-               OffsetOf_BufferSubData_data_shm_id_not_16);
-COMPILE_ASSERT(offsetof(BufferSubData, data_shm_offset) == 20,
-               OffsetOf_BufferSubData_data_shm_offset_not_20);
+static_assert(sizeof(BufferSubData) == 24,
+              "size of BufferSubData should be 24");
+static_assert(offsetof(BufferSubData, header) == 0,
+              "offset of BufferSubData header should be 0");
+static_assert(offsetof(BufferSubData, target) == 4,
+              "offset of BufferSubData target should be 4");
+static_assert(offsetof(BufferSubData, offset) == 8,
+              "offset of BufferSubData offset should be 8");
+static_assert(offsetof(BufferSubData, size) == 12,
+              "offset of BufferSubData size should be 12");
+static_assert(offsetof(BufferSubData, data_shm_id) == 16,
+              "offset of BufferSubData data_shm_id should be 16");
+static_assert(offsetof(BufferSubData, data_shm_offset) == 20,
+              "offset of BufferSubData data_shm_offset should be 20");
 
 struct CheckFramebufferStatus {
   typedef CheckFramebufferStatus ValueType;
@@ -698,16 +702,17 @@ struct CheckFramebufferStatus {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(CheckFramebufferStatus) == 16,
-               Sizeof_CheckFramebufferStatus_is_not_16);
-COMPILE_ASSERT(offsetof(CheckFramebufferStatus, header) == 0,
-               OffsetOf_CheckFramebufferStatus_header_not_0);
-COMPILE_ASSERT(offsetof(CheckFramebufferStatus, target) == 4,
-               OffsetOf_CheckFramebufferStatus_target_not_4);
-COMPILE_ASSERT(offsetof(CheckFramebufferStatus, result_shm_id) == 8,
-               OffsetOf_CheckFramebufferStatus_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(CheckFramebufferStatus, result_shm_offset) == 12,
-               OffsetOf_CheckFramebufferStatus_result_shm_offset_not_12);
+static_assert(sizeof(CheckFramebufferStatus) == 16,
+              "size of CheckFramebufferStatus should be 16");
+static_assert(offsetof(CheckFramebufferStatus, header) == 0,
+              "offset of CheckFramebufferStatus header should be 0");
+static_assert(offsetof(CheckFramebufferStatus, target) == 4,
+              "offset of CheckFramebufferStatus target should be 4");
+static_assert(offsetof(CheckFramebufferStatus, result_shm_id) == 8,
+              "offset of CheckFramebufferStatus result_shm_id should be 8");
+static_assert(
+    offsetof(CheckFramebufferStatus, result_shm_offset) == 12,
+    "offset of CheckFramebufferStatus result_shm_offset should be 12");
 
 struct Clear {
   typedef Clear ValueType;
@@ -735,9 +740,10 @@ struct Clear {
   uint32_t mask;
 };
 
-COMPILE_ASSERT(sizeof(Clear) == 8, Sizeof_Clear_is_not_8);
-COMPILE_ASSERT(offsetof(Clear, header) == 0, OffsetOf_Clear_header_not_0);
-COMPILE_ASSERT(offsetof(Clear, mask) == 4, OffsetOf_Clear_mask_not_4);
+static_assert(sizeof(Clear) == 8, "size of Clear should be 8");
+static_assert(offsetof(Clear, header) == 0,
+              "offset of Clear header should be 0");
+static_assert(offsetof(Clear, mask) == 4, "offset of Clear mask should be 4");
 
 struct ClearColor {
   typedef ClearColor ValueType;
@@ -775,16 +781,17 @@ struct ClearColor {
   float alpha;
 };
 
-COMPILE_ASSERT(sizeof(ClearColor) == 20, Sizeof_ClearColor_is_not_20);
-COMPILE_ASSERT(offsetof(ClearColor, header) == 0,
-               OffsetOf_ClearColor_header_not_0);
-COMPILE_ASSERT(offsetof(ClearColor, red) == 4, OffsetOf_ClearColor_red_not_4);
-COMPILE_ASSERT(offsetof(ClearColor, green) == 8,
-               OffsetOf_ClearColor_green_not_8);
-COMPILE_ASSERT(offsetof(ClearColor, blue) == 12,
-               OffsetOf_ClearColor_blue_not_12);
-COMPILE_ASSERT(offsetof(ClearColor, alpha) == 16,
-               OffsetOf_ClearColor_alpha_not_16);
+static_assert(sizeof(ClearColor) == 20, "size of ClearColor should be 20");
+static_assert(offsetof(ClearColor, header) == 0,
+              "offset of ClearColor header should be 0");
+static_assert(offsetof(ClearColor, red) == 4,
+              "offset of ClearColor red should be 4");
+static_assert(offsetof(ClearColor, green) == 8,
+              "offset of ClearColor green should be 8");
+static_assert(offsetof(ClearColor, blue) == 12,
+              "offset of ClearColor blue should be 12");
+static_assert(offsetof(ClearColor, alpha) == 16,
+              "offset of ClearColor alpha should be 16");
 
 struct ClearDepthf {
   typedef ClearDepthf ValueType;
@@ -812,11 +819,11 @@ struct ClearDepthf {
   float depth;
 };
 
-COMPILE_ASSERT(sizeof(ClearDepthf) == 8, Sizeof_ClearDepthf_is_not_8);
-COMPILE_ASSERT(offsetof(ClearDepthf, header) == 0,
-               OffsetOf_ClearDepthf_header_not_0);
-COMPILE_ASSERT(offsetof(ClearDepthf, depth) == 4,
-               OffsetOf_ClearDepthf_depth_not_4);
+static_assert(sizeof(ClearDepthf) == 8, "size of ClearDepthf should be 8");
+static_assert(offsetof(ClearDepthf, header) == 0,
+              "offset of ClearDepthf header should be 0");
+static_assert(offsetof(ClearDepthf, depth) == 4,
+              "offset of ClearDepthf depth should be 4");
 
 struct ClearStencil {
   typedef ClearStencil ValueType;
@@ -844,10 +851,11 @@ struct ClearStencil {
   int32_t s;
 };
 
-COMPILE_ASSERT(sizeof(ClearStencil) == 8, Sizeof_ClearStencil_is_not_8);
-COMPILE_ASSERT(offsetof(ClearStencil, header) == 0,
-               OffsetOf_ClearStencil_header_not_0);
-COMPILE_ASSERT(offsetof(ClearStencil, s) == 4, OffsetOf_ClearStencil_s_not_4);
+static_assert(sizeof(ClearStencil) == 8, "size of ClearStencil should be 8");
+static_assert(offsetof(ClearStencil, header) == 0,
+              "offset of ClearStencil header should be 0");
+static_assert(offsetof(ClearStencil, s) == 4,
+              "offset of ClearStencil s should be 4");
 
 struct ColorMask {
   typedef ColorMask ValueType;
@@ -888,14 +896,17 @@ struct ColorMask {
   uint32_t alpha;
 };
 
-COMPILE_ASSERT(sizeof(ColorMask) == 20, Sizeof_ColorMask_is_not_20);
-COMPILE_ASSERT(offsetof(ColorMask, header) == 0,
-               OffsetOf_ColorMask_header_not_0);
-COMPILE_ASSERT(offsetof(ColorMask, red) == 4, OffsetOf_ColorMask_red_not_4);
-COMPILE_ASSERT(offsetof(ColorMask, green) == 8, OffsetOf_ColorMask_green_not_8);
-COMPILE_ASSERT(offsetof(ColorMask, blue) == 12, OffsetOf_ColorMask_blue_not_12);
-COMPILE_ASSERT(offsetof(ColorMask, alpha) == 16,
-               OffsetOf_ColorMask_alpha_not_16);
+static_assert(sizeof(ColorMask) == 20, "size of ColorMask should be 20");
+static_assert(offsetof(ColorMask, header) == 0,
+              "offset of ColorMask header should be 0");
+static_assert(offsetof(ColorMask, red) == 4,
+              "offset of ColorMask red should be 4");
+static_assert(offsetof(ColorMask, green) == 8,
+              "offset of ColorMask green should be 8");
+static_assert(offsetof(ColorMask, blue) == 12,
+              "offset of ColorMask blue should be 12");
+static_assert(offsetof(ColorMask, alpha) == 16,
+              "offset of ColorMask alpha should be 16");
 
 struct CompileShader {
   typedef CompileShader ValueType;
@@ -923,11 +934,11 @@ struct CompileShader {
   uint32_t shader;
 };
 
-COMPILE_ASSERT(sizeof(CompileShader) == 8, Sizeof_CompileShader_is_not_8);
-COMPILE_ASSERT(offsetof(CompileShader, header) == 0,
-               OffsetOf_CompileShader_header_not_0);
-COMPILE_ASSERT(offsetof(CompileShader, shader) == 4,
-               OffsetOf_CompileShader_shader_not_4);
+static_assert(sizeof(CompileShader) == 8, "size of CompileShader should be 8");
+static_assert(offsetof(CompileShader, header) == 0,
+              "offset of CompileShader header should be 0");
+static_assert(offsetof(CompileShader, shader) == 4,
+              "offset of CompileShader shader should be 4");
 
 struct CompressedTexImage2DBucket {
   typedef CompressedTexImage2DBucket ValueType;
@@ -978,22 +989,23 @@ struct CompressedTexImage2DBucket {
   static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexImage2DBucket) == 28,
-               Sizeof_CompressedTexImage2DBucket_is_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, header) == 0,
-               OffsetOf_CompressedTexImage2DBucket_header_not_0);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, target) == 4,
-               OffsetOf_CompressedTexImage2DBucket_target_not_4);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, level) == 8,
-               OffsetOf_CompressedTexImage2DBucket_level_not_8);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, internalformat) == 12,
-               OffsetOf_CompressedTexImage2DBucket_internalformat_not_12);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, width) == 16,
-               OffsetOf_CompressedTexImage2DBucket_width_not_16);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, height) == 20,
-               OffsetOf_CompressedTexImage2DBucket_height_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, bucket_id) == 24,
-               OffsetOf_CompressedTexImage2DBucket_bucket_id_not_24);
+static_assert(sizeof(CompressedTexImage2DBucket) == 28,
+              "size of CompressedTexImage2DBucket should be 28");
+static_assert(offsetof(CompressedTexImage2DBucket, header) == 0,
+              "offset of CompressedTexImage2DBucket header should be 0");
+static_assert(offsetof(CompressedTexImage2DBucket, target) == 4,
+              "offset of CompressedTexImage2DBucket target should be 4");
+static_assert(offsetof(CompressedTexImage2DBucket, level) == 8,
+              "offset of CompressedTexImage2DBucket level should be 8");
+static_assert(
+    offsetof(CompressedTexImage2DBucket, internalformat) == 12,
+    "offset of CompressedTexImage2DBucket internalformat should be 12");
+static_assert(offsetof(CompressedTexImage2DBucket, width) == 16,
+              "offset of CompressedTexImage2DBucket width should be 16");
+static_assert(offsetof(CompressedTexImage2DBucket, height) == 20,
+              "offset of CompressedTexImage2DBucket height should be 20");
+static_assert(offsetof(CompressedTexImage2DBucket, bucket_id) == 24,
+              "offset of CompressedTexImage2DBucket bucket_id should be 24");
 
 struct CompressedTexImage2D {
   typedef CompressedTexImage2D ValueType;
@@ -1053,26 +1065,26 @@ struct CompressedTexImage2D {
   static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexImage2D) == 36,
-               Sizeof_CompressedTexImage2D_is_not_36);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, header) == 0,
-               OffsetOf_CompressedTexImage2D_header_not_0);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, target) == 4,
-               OffsetOf_CompressedTexImage2D_target_not_4);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, level) == 8,
-               OffsetOf_CompressedTexImage2D_level_not_8);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, internalformat) == 12,
-               OffsetOf_CompressedTexImage2D_internalformat_not_12);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, width) == 16,
-               OffsetOf_CompressedTexImage2D_width_not_16);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, height) == 20,
-               OffsetOf_CompressedTexImage2D_height_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, imageSize) == 24,
-               OffsetOf_CompressedTexImage2D_imageSize_not_24);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_id) == 28,
-               OffsetOf_CompressedTexImage2D_data_shm_id_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_offset) == 32,
-               OffsetOf_CompressedTexImage2D_data_shm_offset_not_32);
+static_assert(sizeof(CompressedTexImage2D) == 36,
+              "size of CompressedTexImage2D should be 36");
+static_assert(offsetof(CompressedTexImage2D, header) == 0,
+              "offset of CompressedTexImage2D header should be 0");
+static_assert(offsetof(CompressedTexImage2D, target) == 4,
+              "offset of CompressedTexImage2D target should be 4");
+static_assert(offsetof(CompressedTexImage2D, level) == 8,
+              "offset of CompressedTexImage2D level should be 8");
+static_assert(offsetof(CompressedTexImage2D, internalformat) == 12,
+              "offset of CompressedTexImage2D internalformat should be 12");
+static_assert(offsetof(CompressedTexImage2D, width) == 16,
+              "offset of CompressedTexImage2D width should be 16");
+static_assert(offsetof(CompressedTexImage2D, height) == 20,
+              "offset of CompressedTexImage2D height should be 20");
+static_assert(offsetof(CompressedTexImage2D, imageSize) == 24,
+              "offset of CompressedTexImage2D imageSize should be 24");
+static_assert(offsetof(CompressedTexImage2D, data_shm_id) == 28,
+              "offset of CompressedTexImage2D data_shm_id should be 28");
+static_assert(offsetof(CompressedTexImage2D, data_shm_offset) == 32,
+              "offset of CompressedTexImage2D data_shm_offset should be 32");
 
 struct CompressedTexSubImage2DBucket {
   typedef CompressedTexSubImage2DBucket ValueType;
@@ -1130,26 +1142,26 @@ struct CompressedTexSubImage2DBucket {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexSubImage2DBucket) == 36,
-               Sizeof_CompressedTexSubImage2DBucket_is_not_36);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, header) == 0,
-               OffsetOf_CompressedTexSubImage2DBucket_header_not_0);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, target) == 4,
-               OffsetOf_CompressedTexSubImage2DBucket_target_not_4);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, level) == 8,
-               OffsetOf_CompressedTexSubImage2DBucket_level_not_8);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, xoffset) == 12,
-               OffsetOf_CompressedTexSubImage2DBucket_xoffset_not_12);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, yoffset) == 16,
-               OffsetOf_CompressedTexSubImage2DBucket_yoffset_not_16);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, width) == 20,
-               OffsetOf_CompressedTexSubImage2DBucket_width_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, height) == 24,
-               OffsetOf_CompressedTexSubImage2DBucket_height_not_24);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, format) == 28,
-               OffsetOf_CompressedTexSubImage2DBucket_format_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, bucket_id) == 32,
-               OffsetOf_CompressedTexSubImage2DBucket_bucket_id_not_32);
+static_assert(sizeof(CompressedTexSubImage2DBucket) == 36,
+              "size of CompressedTexSubImage2DBucket should be 36");
+static_assert(offsetof(CompressedTexSubImage2DBucket, header) == 0,
+              "offset of CompressedTexSubImage2DBucket header should be 0");
+static_assert(offsetof(CompressedTexSubImage2DBucket, target) == 4,
+              "offset of CompressedTexSubImage2DBucket target should be 4");
+static_assert(offsetof(CompressedTexSubImage2DBucket, level) == 8,
+              "offset of CompressedTexSubImage2DBucket level should be 8");
+static_assert(offsetof(CompressedTexSubImage2DBucket, xoffset) == 12,
+              "offset of CompressedTexSubImage2DBucket xoffset should be 12");
+static_assert(offsetof(CompressedTexSubImage2DBucket, yoffset) == 16,
+              "offset of CompressedTexSubImage2DBucket yoffset should be 16");
+static_assert(offsetof(CompressedTexSubImage2DBucket, width) == 20,
+              "offset of CompressedTexSubImage2DBucket width should be 20");
+static_assert(offsetof(CompressedTexSubImage2DBucket, height) == 24,
+              "offset of CompressedTexSubImage2DBucket height should be 24");
+static_assert(offsetof(CompressedTexSubImage2DBucket, format) == 28,
+              "offset of CompressedTexSubImage2DBucket format should be 28");
+static_assert(offsetof(CompressedTexSubImage2DBucket, bucket_id) == 32,
+              "offset of CompressedTexSubImage2DBucket bucket_id should be 32");
 
 struct CompressedTexSubImage2D {
   typedef CompressedTexSubImage2D ValueType;
@@ -1216,30 +1228,30 @@ struct CompressedTexSubImage2D {
   uint32_t data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexSubImage2D) == 44,
-               Sizeof_CompressedTexSubImage2D_is_not_44);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, header) == 0,
-               OffsetOf_CompressedTexSubImage2D_header_not_0);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, target) == 4,
-               OffsetOf_CompressedTexSubImage2D_target_not_4);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, level) == 8,
-               OffsetOf_CompressedTexSubImage2D_level_not_8);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, xoffset) == 12,
-               OffsetOf_CompressedTexSubImage2D_xoffset_not_12);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, yoffset) == 16,
-               OffsetOf_CompressedTexSubImage2D_yoffset_not_16);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, width) == 20,
-               OffsetOf_CompressedTexSubImage2D_width_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, height) == 24,
-               OffsetOf_CompressedTexSubImage2D_height_not_24);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, format) == 28,
-               OffsetOf_CompressedTexSubImage2D_format_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, imageSize) == 32,
-               OffsetOf_CompressedTexSubImage2D_imageSize_not_32);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, data_shm_id) == 36,
-               OffsetOf_CompressedTexSubImage2D_data_shm_id_not_36);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, data_shm_offset) == 40,
-               OffsetOf_CompressedTexSubImage2D_data_shm_offset_not_40);
+static_assert(sizeof(CompressedTexSubImage2D) == 44,
+              "size of CompressedTexSubImage2D should be 44");
+static_assert(offsetof(CompressedTexSubImage2D, header) == 0,
+              "offset of CompressedTexSubImage2D header should be 0");
+static_assert(offsetof(CompressedTexSubImage2D, target) == 4,
+              "offset of CompressedTexSubImage2D target should be 4");
+static_assert(offsetof(CompressedTexSubImage2D, level) == 8,
+              "offset of CompressedTexSubImage2D level should be 8");
+static_assert(offsetof(CompressedTexSubImage2D, xoffset) == 12,
+              "offset of CompressedTexSubImage2D xoffset should be 12");
+static_assert(offsetof(CompressedTexSubImage2D, yoffset) == 16,
+              "offset of CompressedTexSubImage2D yoffset should be 16");
+static_assert(offsetof(CompressedTexSubImage2D, width) == 20,
+              "offset of CompressedTexSubImage2D width should be 20");
+static_assert(offsetof(CompressedTexSubImage2D, height) == 24,
+              "offset of CompressedTexSubImage2D height should be 24");
+static_assert(offsetof(CompressedTexSubImage2D, format) == 28,
+              "offset of CompressedTexSubImage2D format should be 28");
+static_assert(offsetof(CompressedTexSubImage2D, imageSize) == 32,
+              "offset of CompressedTexSubImage2D imageSize should be 32");
+static_assert(offsetof(CompressedTexSubImage2D, data_shm_id) == 36,
+              "offset of CompressedTexSubImage2D data_shm_id should be 36");
+static_assert(offsetof(CompressedTexSubImage2D, data_shm_offset) == 40,
+              "offset of CompressedTexSubImage2D data_shm_offset should be 40");
 
 struct CopyBufferSubData {
   typedef CopyBufferSubData ValueType;
@@ -1285,20 +1297,20 @@ struct CopyBufferSubData {
   int32_t size;
 };
 
-COMPILE_ASSERT(sizeof(CopyBufferSubData) == 24,
-               Sizeof_CopyBufferSubData_is_not_24);
-COMPILE_ASSERT(offsetof(CopyBufferSubData, header) == 0,
-               OffsetOf_CopyBufferSubData_header_not_0);
-COMPILE_ASSERT(offsetof(CopyBufferSubData, readtarget) == 4,
-               OffsetOf_CopyBufferSubData_readtarget_not_4);
-COMPILE_ASSERT(offsetof(CopyBufferSubData, writetarget) == 8,
-               OffsetOf_CopyBufferSubData_writetarget_not_8);
-COMPILE_ASSERT(offsetof(CopyBufferSubData, readoffset) == 12,
-               OffsetOf_CopyBufferSubData_readoffset_not_12);
-COMPILE_ASSERT(offsetof(CopyBufferSubData, writeoffset) == 16,
-               OffsetOf_CopyBufferSubData_writeoffset_not_16);
-COMPILE_ASSERT(offsetof(CopyBufferSubData, size) == 20,
-               OffsetOf_CopyBufferSubData_size_not_20);
+static_assert(sizeof(CopyBufferSubData) == 24,
+              "size of CopyBufferSubData should be 24");
+static_assert(offsetof(CopyBufferSubData, header) == 0,
+              "offset of CopyBufferSubData header should be 0");
+static_assert(offsetof(CopyBufferSubData, readtarget) == 4,
+              "offset of CopyBufferSubData readtarget should be 4");
+static_assert(offsetof(CopyBufferSubData, writetarget) == 8,
+              "offset of CopyBufferSubData writetarget should be 8");
+static_assert(offsetof(CopyBufferSubData, readoffset) == 12,
+              "offset of CopyBufferSubData readoffset should be 12");
+static_assert(offsetof(CopyBufferSubData, writeoffset) == 16,
+              "offset of CopyBufferSubData writeoffset should be 16");
+static_assert(offsetof(CopyBufferSubData, size) == 20,
+              "offset of CopyBufferSubData size should be 20");
 
 struct CopyTexImage2D {
   typedef CopyTexImage2D ValueType;
@@ -1353,23 +1365,24 @@ struct CopyTexImage2D {
   static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CopyTexImage2D) == 32, Sizeof_CopyTexImage2D_is_not_32);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, header) == 0,
-               OffsetOf_CopyTexImage2D_header_not_0);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, target) == 4,
-               OffsetOf_CopyTexImage2D_target_not_4);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, level) == 8,
-               OffsetOf_CopyTexImage2D_level_not_8);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, internalformat) == 12,
-               OffsetOf_CopyTexImage2D_internalformat_not_12);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, x) == 16,
-               OffsetOf_CopyTexImage2D_x_not_16);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, y) == 20,
-               OffsetOf_CopyTexImage2D_y_not_20);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, width) == 24,
-               OffsetOf_CopyTexImage2D_width_not_24);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, height) == 28,
-               OffsetOf_CopyTexImage2D_height_not_28);
+static_assert(sizeof(CopyTexImage2D) == 32,
+              "size of CopyTexImage2D should be 32");
+static_assert(offsetof(CopyTexImage2D, header) == 0,
+              "offset of CopyTexImage2D header should be 0");
+static_assert(offsetof(CopyTexImage2D, target) == 4,
+              "offset of CopyTexImage2D target should be 4");
+static_assert(offsetof(CopyTexImage2D, level) == 8,
+              "offset of CopyTexImage2D level should be 8");
+static_assert(offsetof(CopyTexImage2D, internalformat) == 12,
+              "offset of CopyTexImage2D internalformat should be 12");
+static_assert(offsetof(CopyTexImage2D, x) == 16,
+              "offset of CopyTexImage2D x should be 16");
+static_assert(offsetof(CopyTexImage2D, y) == 20,
+              "offset of CopyTexImage2D y should be 20");
+static_assert(offsetof(CopyTexImage2D, width) == 24,
+              "offset of CopyTexImage2D width should be 24");
+static_assert(offsetof(CopyTexImage2D, height) == 28,
+              "offset of CopyTexImage2D height should be 28");
 
 struct CopyTexSubImage2D {
   typedef CopyTexSubImage2D ValueType;
@@ -1427,26 +1440,26 @@ struct CopyTexSubImage2D {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(CopyTexSubImage2D) == 36,
-               Sizeof_CopyTexSubImage2D_is_not_36);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, header) == 0,
-               OffsetOf_CopyTexSubImage2D_header_not_0);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, target) == 4,
-               OffsetOf_CopyTexSubImage2D_target_not_4);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, level) == 8,
-               OffsetOf_CopyTexSubImage2D_level_not_8);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, xoffset) == 12,
-               OffsetOf_CopyTexSubImage2D_xoffset_not_12);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, yoffset) == 16,
-               OffsetOf_CopyTexSubImage2D_yoffset_not_16);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, x) == 20,
-               OffsetOf_CopyTexSubImage2D_x_not_20);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, y) == 24,
-               OffsetOf_CopyTexSubImage2D_y_not_24);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, width) == 28,
-               OffsetOf_CopyTexSubImage2D_width_not_28);
-COMPILE_ASSERT(offsetof(CopyTexSubImage2D, height) == 32,
-               OffsetOf_CopyTexSubImage2D_height_not_32);
+static_assert(sizeof(CopyTexSubImage2D) == 36,
+              "size of CopyTexSubImage2D should be 36");
+static_assert(offsetof(CopyTexSubImage2D, header) == 0,
+              "offset of CopyTexSubImage2D header should be 0");
+static_assert(offsetof(CopyTexSubImage2D, target) == 4,
+              "offset of CopyTexSubImage2D target should be 4");
+static_assert(offsetof(CopyTexSubImage2D, level) == 8,
+              "offset of CopyTexSubImage2D level should be 8");
+static_assert(offsetof(CopyTexSubImage2D, xoffset) == 12,
+              "offset of CopyTexSubImage2D xoffset should be 12");
+static_assert(offsetof(CopyTexSubImage2D, yoffset) == 16,
+              "offset of CopyTexSubImage2D yoffset should be 16");
+static_assert(offsetof(CopyTexSubImage2D, x) == 20,
+              "offset of CopyTexSubImage2D x should be 20");
+static_assert(offsetof(CopyTexSubImage2D, y) == 24,
+              "offset of CopyTexSubImage2D y should be 24");
+static_assert(offsetof(CopyTexSubImage2D, width) == 28,
+              "offset of CopyTexSubImage2D width should be 28");
+static_assert(offsetof(CopyTexSubImage2D, height) == 32,
+              "offset of CopyTexSubImage2D height should be 32");
 
 struct CreateProgram {
   typedef CreateProgram ValueType;
@@ -1474,11 +1487,11 @@ struct CreateProgram {
   uint32_t client_id;
 };
 
-COMPILE_ASSERT(sizeof(CreateProgram) == 8, Sizeof_CreateProgram_is_not_8);
-COMPILE_ASSERT(offsetof(CreateProgram, header) == 0,
-               OffsetOf_CreateProgram_header_not_0);
-COMPILE_ASSERT(offsetof(CreateProgram, client_id) == 4,
-               OffsetOf_CreateProgram_client_id_not_4);
+static_assert(sizeof(CreateProgram) == 8, "size of CreateProgram should be 8");
+static_assert(offsetof(CreateProgram, header) == 0,
+              "offset of CreateProgram header should be 0");
+static_assert(offsetof(CreateProgram, client_id) == 4,
+              "offset of CreateProgram client_id should be 4");
 
 struct CreateShader {
   typedef CreateShader ValueType;
@@ -1508,13 +1521,13 @@ struct CreateShader {
   uint32_t client_id;
 };
 
-COMPILE_ASSERT(sizeof(CreateShader) == 12, Sizeof_CreateShader_is_not_12);
-COMPILE_ASSERT(offsetof(CreateShader, header) == 0,
-               OffsetOf_CreateShader_header_not_0);
-COMPILE_ASSERT(offsetof(CreateShader, type) == 4,
-               OffsetOf_CreateShader_type_not_4);
-COMPILE_ASSERT(offsetof(CreateShader, client_id) == 8,
-               OffsetOf_CreateShader_client_id_not_8);
+static_assert(sizeof(CreateShader) == 12, "size of CreateShader should be 12");
+static_assert(offsetof(CreateShader, header) == 0,
+              "offset of CreateShader header should be 0");
+static_assert(offsetof(CreateShader, type) == 4,
+              "offset of CreateShader type should be 4");
+static_assert(offsetof(CreateShader, client_id) == 8,
+              "offset of CreateShader client_id should be 8");
 
 struct CullFace {
   typedef CullFace ValueType;
@@ -1542,9 +1555,11 @@ struct CullFace {
   uint32_t mode;
 };
 
-COMPILE_ASSERT(sizeof(CullFace) == 8, Sizeof_CullFace_is_not_8);
-COMPILE_ASSERT(offsetof(CullFace, header) == 0, OffsetOf_CullFace_header_not_0);
-COMPILE_ASSERT(offsetof(CullFace, mode) == 4, OffsetOf_CullFace_mode_not_4);
+static_assert(sizeof(CullFace) == 8, "size of CullFace should be 8");
+static_assert(offsetof(CullFace, header) == 0,
+              "offset of CullFace header should be 0");
+static_assert(offsetof(CullFace, mode) == 4,
+              "offset of CullFace mode should be 4");
 
 struct DeleteBuffersImmediate {
   typedef DeleteBuffersImmediate ValueType;
@@ -1581,12 +1596,12 @@ struct DeleteBuffersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteBuffersImmediate) == 8,
-               Sizeof_DeleteBuffersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteBuffersImmediate, header) == 0,
-               OffsetOf_DeleteBuffersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteBuffersImmediate, n) == 4,
-               OffsetOf_DeleteBuffersImmediate_n_not_4);
+static_assert(sizeof(DeleteBuffersImmediate) == 8,
+              "size of DeleteBuffersImmediate should be 8");
+static_assert(offsetof(DeleteBuffersImmediate, header) == 0,
+              "offset of DeleteBuffersImmediate header should be 0");
+static_assert(offsetof(DeleteBuffersImmediate, n) == 4,
+              "offset of DeleteBuffersImmediate n should be 4");
 
 struct DeleteFramebuffersImmediate {
   typedef DeleteFramebuffersImmediate ValueType;
@@ -1623,12 +1638,12 @@ struct DeleteFramebuffersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteFramebuffersImmediate) == 8,
-               Sizeof_DeleteFramebuffersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteFramebuffersImmediate, header) == 0,
-               OffsetOf_DeleteFramebuffersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteFramebuffersImmediate, n) == 4,
-               OffsetOf_DeleteFramebuffersImmediate_n_not_4);
+static_assert(sizeof(DeleteFramebuffersImmediate) == 8,
+              "size of DeleteFramebuffersImmediate should be 8");
+static_assert(offsetof(DeleteFramebuffersImmediate, header) == 0,
+              "offset of DeleteFramebuffersImmediate header should be 0");
+static_assert(offsetof(DeleteFramebuffersImmediate, n) == 4,
+              "offset of DeleteFramebuffersImmediate n should be 4");
 
 struct DeleteProgram {
   typedef DeleteProgram ValueType;
@@ -1656,11 +1671,11 @@ struct DeleteProgram {
   uint32_t program;
 };
 
-COMPILE_ASSERT(sizeof(DeleteProgram) == 8, Sizeof_DeleteProgram_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteProgram, header) == 0,
-               OffsetOf_DeleteProgram_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteProgram, program) == 4,
-               OffsetOf_DeleteProgram_program_not_4);
+static_assert(sizeof(DeleteProgram) == 8, "size of DeleteProgram should be 8");
+static_assert(offsetof(DeleteProgram, header) == 0,
+              "offset of DeleteProgram header should be 0");
+static_assert(offsetof(DeleteProgram, program) == 4,
+              "offset of DeleteProgram program should be 4");
 
 struct DeleteRenderbuffersImmediate {
   typedef DeleteRenderbuffersImmediate ValueType;
@@ -1697,12 +1712,12 @@ struct DeleteRenderbuffersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteRenderbuffersImmediate) == 8,
-               Sizeof_DeleteRenderbuffersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteRenderbuffersImmediate, header) == 0,
-               OffsetOf_DeleteRenderbuffersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteRenderbuffersImmediate, n) == 4,
-               OffsetOf_DeleteRenderbuffersImmediate_n_not_4);
+static_assert(sizeof(DeleteRenderbuffersImmediate) == 8,
+              "size of DeleteRenderbuffersImmediate should be 8");
+static_assert(offsetof(DeleteRenderbuffersImmediate, header) == 0,
+              "offset of DeleteRenderbuffersImmediate header should be 0");
+static_assert(offsetof(DeleteRenderbuffersImmediate, n) == 4,
+              "offset of DeleteRenderbuffersImmediate n should be 4");
 
 struct DeleteSamplersImmediate {
   typedef DeleteSamplersImmediate ValueType;
@@ -1739,12 +1754,12 @@ struct DeleteSamplersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteSamplersImmediate) == 8,
-               Sizeof_DeleteSamplersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteSamplersImmediate, header) == 0,
-               OffsetOf_DeleteSamplersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteSamplersImmediate, n) == 4,
-               OffsetOf_DeleteSamplersImmediate_n_not_4);
+static_assert(sizeof(DeleteSamplersImmediate) == 8,
+              "size of DeleteSamplersImmediate should be 8");
+static_assert(offsetof(DeleteSamplersImmediate, header) == 0,
+              "offset of DeleteSamplersImmediate header should be 0");
+static_assert(offsetof(DeleteSamplersImmediate, n) == 4,
+              "offset of DeleteSamplersImmediate n should be 4");
 
 struct DeleteShader {
   typedef DeleteShader ValueType;
@@ -1772,11 +1787,11 @@ struct DeleteShader {
   uint32_t shader;
 };
 
-COMPILE_ASSERT(sizeof(DeleteShader) == 8, Sizeof_DeleteShader_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteShader, header) == 0,
-               OffsetOf_DeleteShader_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteShader, shader) == 4,
-               OffsetOf_DeleteShader_shader_not_4);
+static_assert(sizeof(DeleteShader) == 8, "size of DeleteShader should be 8");
+static_assert(offsetof(DeleteShader, header) == 0,
+              "offset of DeleteShader header should be 0");
+static_assert(offsetof(DeleteShader, shader) == 4,
+              "offset of DeleteShader shader should be 4");
 
 struct DeleteTexturesImmediate {
   typedef DeleteTexturesImmediate ValueType;
@@ -1813,12 +1828,12 @@ struct DeleteTexturesImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteTexturesImmediate) == 8,
-               Sizeof_DeleteTexturesImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteTexturesImmediate, header) == 0,
-               OffsetOf_DeleteTexturesImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteTexturesImmediate, n) == 4,
-               OffsetOf_DeleteTexturesImmediate_n_not_4);
+static_assert(sizeof(DeleteTexturesImmediate) == 8,
+              "size of DeleteTexturesImmediate should be 8");
+static_assert(offsetof(DeleteTexturesImmediate, header) == 0,
+              "offset of DeleteTexturesImmediate header should be 0");
+static_assert(offsetof(DeleteTexturesImmediate, n) == 4,
+              "offset of DeleteTexturesImmediate n should be 4");
 
 struct DeleteTransformFeedbacksImmediate {
   typedef DeleteTransformFeedbacksImmediate ValueType;
@@ -1855,12 +1870,12 @@ struct DeleteTransformFeedbacksImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteTransformFeedbacksImmediate) == 8,
-               Sizeof_DeleteTransformFeedbacksImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteTransformFeedbacksImmediate, header) == 0,
-               OffsetOf_DeleteTransformFeedbacksImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteTransformFeedbacksImmediate, n) == 4,
-               OffsetOf_DeleteTransformFeedbacksImmediate_n_not_4);
+static_assert(sizeof(DeleteTransformFeedbacksImmediate) == 8,
+              "size of DeleteTransformFeedbacksImmediate should be 8");
+static_assert(offsetof(DeleteTransformFeedbacksImmediate, header) == 0,
+              "offset of DeleteTransformFeedbacksImmediate header should be 0");
+static_assert(offsetof(DeleteTransformFeedbacksImmediate, n) == 4,
+              "offset of DeleteTransformFeedbacksImmediate n should be 4");
 
 struct DepthFunc {
   typedef DepthFunc ValueType;
@@ -1888,10 +1903,11 @@ struct DepthFunc {
   uint32_t func;
 };
 
-COMPILE_ASSERT(sizeof(DepthFunc) == 8, Sizeof_DepthFunc_is_not_8);
-COMPILE_ASSERT(offsetof(DepthFunc, header) == 0,
-               OffsetOf_DepthFunc_header_not_0);
-COMPILE_ASSERT(offsetof(DepthFunc, func) == 4, OffsetOf_DepthFunc_func_not_4);
+static_assert(sizeof(DepthFunc) == 8, "size of DepthFunc should be 8");
+static_assert(offsetof(DepthFunc, header) == 0,
+              "offset of DepthFunc header should be 0");
+static_assert(offsetof(DepthFunc, func) == 4,
+              "offset of DepthFunc func should be 4");
 
 struct DepthMask {
   typedef DepthMask ValueType;
@@ -1919,10 +1935,11 @@ struct DepthMask {
   uint32_t flag;
 };
 
-COMPILE_ASSERT(sizeof(DepthMask) == 8, Sizeof_DepthMask_is_not_8);
-COMPILE_ASSERT(offsetof(DepthMask, header) == 0,
-               OffsetOf_DepthMask_header_not_0);
-COMPILE_ASSERT(offsetof(DepthMask, flag) == 4, OffsetOf_DepthMask_flag_not_4);
+static_assert(sizeof(DepthMask) == 8, "size of DepthMask should be 8");
+static_assert(offsetof(DepthMask, header) == 0,
+              "offset of DepthMask header should be 0");
+static_assert(offsetof(DepthMask, flag) == 4,
+              "offset of DepthMask flag should be 4");
 
 struct DepthRangef {
   typedef DepthRangef ValueType;
@@ -1952,13 +1969,13 @@ struct DepthRangef {
   float zFar;
 };
 
-COMPILE_ASSERT(sizeof(DepthRangef) == 12, Sizeof_DepthRangef_is_not_12);
-COMPILE_ASSERT(offsetof(DepthRangef, header) == 0,
-               OffsetOf_DepthRangef_header_not_0);
-COMPILE_ASSERT(offsetof(DepthRangef, zNear) == 4,
-               OffsetOf_DepthRangef_zNear_not_4);
-COMPILE_ASSERT(offsetof(DepthRangef, zFar) == 8,
-               OffsetOf_DepthRangef_zFar_not_8);
+static_assert(sizeof(DepthRangef) == 12, "size of DepthRangef should be 12");
+static_assert(offsetof(DepthRangef, header) == 0,
+              "offset of DepthRangef header should be 0");
+static_assert(offsetof(DepthRangef, zNear) == 4,
+              "offset of DepthRangef zNear should be 4");
+static_assert(offsetof(DepthRangef, zFar) == 8,
+              "offset of DepthRangef zFar should be 8");
 
 struct DetachShader {
   typedef DetachShader ValueType;
@@ -1988,13 +2005,13 @@ struct DetachShader {
   uint32_t shader;
 };
 
-COMPILE_ASSERT(sizeof(DetachShader) == 12, Sizeof_DetachShader_is_not_12);
-COMPILE_ASSERT(offsetof(DetachShader, header) == 0,
-               OffsetOf_DetachShader_header_not_0);
-COMPILE_ASSERT(offsetof(DetachShader, program) == 4,
-               OffsetOf_DetachShader_program_not_4);
-COMPILE_ASSERT(offsetof(DetachShader, shader) == 8,
-               OffsetOf_DetachShader_shader_not_8);
+static_assert(sizeof(DetachShader) == 12, "size of DetachShader should be 12");
+static_assert(offsetof(DetachShader, header) == 0,
+              "offset of DetachShader header should be 0");
+static_assert(offsetof(DetachShader, program) == 4,
+              "offset of DetachShader program should be 4");
+static_assert(offsetof(DetachShader, shader) == 8,
+              "offset of DetachShader shader should be 8");
 
 struct Disable {
   typedef Disable ValueType;
@@ -2022,9 +2039,10 @@ struct Disable {
   uint32_t cap;
 };
 
-COMPILE_ASSERT(sizeof(Disable) == 8, Sizeof_Disable_is_not_8);
-COMPILE_ASSERT(offsetof(Disable, header) == 0, OffsetOf_Disable_header_not_0);
-COMPILE_ASSERT(offsetof(Disable, cap) == 4, OffsetOf_Disable_cap_not_4);
+static_assert(sizeof(Disable) == 8, "size of Disable should be 8");
+static_assert(offsetof(Disable, header) == 0,
+              "offset of Disable header should be 0");
+static_assert(offsetof(Disable, cap) == 4, "offset of Disable cap should be 4");
 
 struct DisableVertexAttribArray {
   typedef DisableVertexAttribArray ValueType;
@@ -2052,12 +2070,12 @@ struct DisableVertexAttribArray {
   uint32_t index;
 };
 
-COMPILE_ASSERT(sizeof(DisableVertexAttribArray) == 8,
-               Sizeof_DisableVertexAttribArray_is_not_8);
-COMPILE_ASSERT(offsetof(DisableVertexAttribArray, header) == 0,
-               OffsetOf_DisableVertexAttribArray_header_not_0);
-COMPILE_ASSERT(offsetof(DisableVertexAttribArray, index) == 4,
-               OffsetOf_DisableVertexAttribArray_index_not_4);
+static_assert(sizeof(DisableVertexAttribArray) == 8,
+              "size of DisableVertexAttribArray should be 8");
+static_assert(offsetof(DisableVertexAttribArray, header) == 0,
+              "offset of DisableVertexAttribArray header should be 0");
+static_assert(offsetof(DisableVertexAttribArray, index) == 4,
+              "offset of DisableVertexAttribArray index should be 4");
 
 struct DrawArrays {
   typedef DrawArrays ValueType;
@@ -2089,14 +2107,15 @@ struct DrawArrays {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(DrawArrays) == 16, Sizeof_DrawArrays_is_not_16);
-COMPILE_ASSERT(offsetof(DrawArrays, header) == 0,
-               OffsetOf_DrawArrays_header_not_0);
-COMPILE_ASSERT(offsetof(DrawArrays, mode) == 4, OffsetOf_DrawArrays_mode_not_4);
-COMPILE_ASSERT(offsetof(DrawArrays, first) == 8,
-               OffsetOf_DrawArrays_first_not_8);
-COMPILE_ASSERT(offsetof(DrawArrays, count) == 12,
-               OffsetOf_DrawArrays_count_not_12);
+static_assert(sizeof(DrawArrays) == 16, "size of DrawArrays should be 16");
+static_assert(offsetof(DrawArrays, header) == 0,
+              "offset of DrawArrays header should be 0");
+static_assert(offsetof(DrawArrays, mode) == 4,
+              "offset of DrawArrays mode should be 4");
+static_assert(offsetof(DrawArrays, first) == 8,
+              "offset of DrawArrays first should be 8");
+static_assert(offsetof(DrawArrays, count) == 12,
+              "offset of DrawArrays count should be 12");
 
 struct DrawElements {
   typedef DrawElements ValueType;
@@ -2134,17 +2153,17 @@ struct DrawElements {
   uint32_t index_offset;
 };
 
-COMPILE_ASSERT(sizeof(DrawElements) == 20, Sizeof_DrawElements_is_not_20);
-COMPILE_ASSERT(offsetof(DrawElements, header) == 0,
-               OffsetOf_DrawElements_header_not_0);
-COMPILE_ASSERT(offsetof(DrawElements, mode) == 4,
-               OffsetOf_DrawElements_mode_not_4);
-COMPILE_ASSERT(offsetof(DrawElements, count) == 8,
-               OffsetOf_DrawElements_count_not_8);
-COMPILE_ASSERT(offsetof(DrawElements, type) == 12,
-               OffsetOf_DrawElements_type_not_12);
-COMPILE_ASSERT(offsetof(DrawElements, index_offset) == 16,
-               OffsetOf_DrawElements_index_offset_not_16);
+static_assert(sizeof(DrawElements) == 20, "size of DrawElements should be 20");
+static_assert(offsetof(DrawElements, header) == 0,
+              "offset of DrawElements header should be 0");
+static_assert(offsetof(DrawElements, mode) == 4,
+              "offset of DrawElements mode should be 4");
+static_assert(offsetof(DrawElements, count) == 8,
+              "offset of DrawElements count should be 8");
+static_assert(offsetof(DrawElements, type) == 12,
+              "offset of DrawElements type should be 12");
+static_assert(offsetof(DrawElements, index_offset) == 16,
+              "offset of DrawElements index_offset should be 16");
 
 struct Enable {
   typedef Enable ValueType;
@@ -2172,9 +2191,10 @@ struct Enable {
   uint32_t cap;
 };
 
-COMPILE_ASSERT(sizeof(Enable) == 8, Sizeof_Enable_is_not_8);
-COMPILE_ASSERT(offsetof(Enable, header) == 0, OffsetOf_Enable_header_not_0);
-COMPILE_ASSERT(offsetof(Enable, cap) == 4, OffsetOf_Enable_cap_not_4);
+static_assert(sizeof(Enable) == 8, "size of Enable should be 8");
+static_assert(offsetof(Enable, header) == 0,
+              "offset of Enable header should be 0");
+static_assert(offsetof(Enable, cap) == 4, "offset of Enable cap should be 4");
 
 struct EnableVertexAttribArray {
   typedef EnableVertexAttribArray ValueType;
@@ -2202,12 +2222,12 @@ struct EnableVertexAttribArray {
   uint32_t index;
 };
 
-COMPILE_ASSERT(sizeof(EnableVertexAttribArray) == 8,
-               Sizeof_EnableVertexAttribArray_is_not_8);
-COMPILE_ASSERT(offsetof(EnableVertexAttribArray, header) == 0,
-               OffsetOf_EnableVertexAttribArray_header_not_0);
-COMPILE_ASSERT(offsetof(EnableVertexAttribArray, index) == 4,
-               OffsetOf_EnableVertexAttribArray_index_not_4);
+static_assert(sizeof(EnableVertexAttribArray) == 8,
+              "size of EnableVertexAttribArray should be 8");
+static_assert(offsetof(EnableVertexAttribArray, header) == 0,
+              "offset of EnableVertexAttribArray header should be 0");
+static_assert(offsetof(EnableVertexAttribArray, index) == 4,
+              "offset of EnableVertexAttribArray index should be 4");
 
 struct Finish {
   typedef Finish ValueType;
@@ -2231,8 +2251,9 @@ struct Finish {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(Finish) == 4, Sizeof_Finish_is_not_4);
-COMPILE_ASSERT(offsetof(Finish, header) == 0, OffsetOf_Finish_header_not_0);
+static_assert(sizeof(Finish) == 4, "size of Finish should be 4");
+static_assert(offsetof(Finish, header) == 0,
+              "offset of Finish header should be 0");
 
 struct Flush {
   typedef Flush ValueType;
@@ -2256,8 +2277,9 @@ struct Flush {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(Flush) == 4, Sizeof_Flush_is_not_4);
-COMPILE_ASSERT(offsetof(Flush, header) == 0, OffsetOf_Flush_header_not_0);
+static_assert(sizeof(Flush) == 4, "size of Flush should be 4");
+static_assert(offsetof(Flush, header) == 0,
+              "offset of Flush header should be 0");
 
 struct FramebufferRenderbuffer {
   typedef FramebufferRenderbuffer ValueType;
@@ -2299,18 +2321,19 @@ struct FramebufferRenderbuffer {
   uint32_t renderbuffer;
 };
 
-COMPILE_ASSERT(sizeof(FramebufferRenderbuffer) == 20,
-               Sizeof_FramebufferRenderbuffer_is_not_20);
-COMPILE_ASSERT(offsetof(FramebufferRenderbuffer, header) == 0,
-               OffsetOf_FramebufferRenderbuffer_header_not_0);
-COMPILE_ASSERT(offsetof(FramebufferRenderbuffer, target) == 4,
-               OffsetOf_FramebufferRenderbuffer_target_not_4);
-COMPILE_ASSERT(offsetof(FramebufferRenderbuffer, attachment) == 8,
-               OffsetOf_FramebufferRenderbuffer_attachment_not_8);
-COMPILE_ASSERT(offsetof(FramebufferRenderbuffer, renderbuffertarget) == 12,
-               OffsetOf_FramebufferRenderbuffer_renderbuffertarget_not_12);
-COMPILE_ASSERT(offsetof(FramebufferRenderbuffer, renderbuffer) == 16,
-               OffsetOf_FramebufferRenderbuffer_renderbuffer_not_16);
+static_assert(sizeof(FramebufferRenderbuffer) == 20,
+              "size of FramebufferRenderbuffer should be 20");
+static_assert(offsetof(FramebufferRenderbuffer, header) == 0,
+              "offset of FramebufferRenderbuffer header should be 0");
+static_assert(offsetof(FramebufferRenderbuffer, target) == 4,
+              "offset of FramebufferRenderbuffer target should be 4");
+static_assert(offsetof(FramebufferRenderbuffer, attachment) == 8,
+              "offset of FramebufferRenderbuffer attachment should be 8");
+static_assert(
+    offsetof(FramebufferRenderbuffer, renderbuffertarget) == 12,
+    "offset of FramebufferRenderbuffer renderbuffertarget should be 12");
+static_assert(offsetof(FramebufferRenderbuffer, renderbuffer) == 16,
+              "offset of FramebufferRenderbuffer renderbuffer should be 16");
 
 struct FramebufferTexture2D {
   typedef FramebufferTexture2D ValueType;
@@ -2353,18 +2376,18 @@ struct FramebufferTexture2D {
   static const int32_t level = 0;
 };
 
-COMPILE_ASSERT(sizeof(FramebufferTexture2D) == 20,
-               Sizeof_FramebufferTexture2D_is_not_20);
-COMPILE_ASSERT(offsetof(FramebufferTexture2D, header) == 0,
-               OffsetOf_FramebufferTexture2D_header_not_0);
-COMPILE_ASSERT(offsetof(FramebufferTexture2D, target) == 4,
-               OffsetOf_FramebufferTexture2D_target_not_4);
-COMPILE_ASSERT(offsetof(FramebufferTexture2D, attachment) == 8,
-               OffsetOf_FramebufferTexture2D_attachment_not_8);
-COMPILE_ASSERT(offsetof(FramebufferTexture2D, textarget) == 12,
-               OffsetOf_FramebufferTexture2D_textarget_not_12);
-COMPILE_ASSERT(offsetof(FramebufferTexture2D, texture) == 16,
-               OffsetOf_FramebufferTexture2D_texture_not_16);
+static_assert(sizeof(FramebufferTexture2D) == 20,
+              "size of FramebufferTexture2D should be 20");
+static_assert(offsetof(FramebufferTexture2D, header) == 0,
+              "offset of FramebufferTexture2D header should be 0");
+static_assert(offsetof(FramebufferTexture2D, target) == 4,
+              "offset of FramebufferTexture2D target should be 4");
+static_assert(offsetof(FramebufferTexture2D, attachment) == 8,
+              "offset of FramebufferTexture2D attachment should be 8");
+static_assert(offsetof(FramebufferTexture2D, textarget) == 12,
+              "offset of FramebufferTexture2D textarget should be 12");
+static_assert(offsetof(FramebufferTexture2D, texture) == 16,
+              "offset of FramebufferTexture2D texture should be 16");
 
 struct FramebufferTextureLayer {
   typedef FramebufferTextureLayer ValueType;
@@ -2410,20 +2433,20 @@ struct FramebufferTextureLayer {
   int32_t layer;
 };
 
-COMPILE_ASSERT(sizeof(FramebufferTextureLayer) == 24,
-               Sizeof_FramebufferTextureLayer_is_not_24);
-COMPILE_ASSERT(offsetof(FramebufferTextureLayer, header) == 0,
-               OffsetOf_FramebufferTextureLayer_header_not_0);
-COMPILE_ASSERT(offsetof(FramebufferTextureLayer, target) == 4,
-               OffsetOf_FramebufferTextureLayer_target_not_4);
-COMPILE_ASSERT(offsetof(FramebufferTextureLayer, attachment) == 8,
-               OffsetOf_FramebufferTextureLayer_attachment_not_8);
-COMPILE_ASSERT(offsetof(FramebufferTextureLayer, texture) == 12,
-               OffsetOf_FramebufferTextureLayer_texture_not_12);
-COMPILE_ASSERT(offsetof(FramebufferTextureLayer, level) == 16,
-               OffsetOf_FramebufferTextureLayer_level_not_16);
-COMPILE_ASSERT(offsetof(FramebufferTextureLayer, layer) == 20,
-               OffsetOf_FramebufferTextureLayer_layer_not_20);
+static_assert(sizeof(FramebufferTextureLayer) == 24,
+              "size of FramebufferTextureLayer should be 24");
+static_assert(offsetof(FramebufferTextureLayer, header) == 0,
+              "offset of FramebufferTextureLayer header should be 0");
+static_assert(offsetof(FramebufferTextureLayer, target) == 4,
+              "offset of FramebufferTextureLayer target should be 4");
+static_assert(offsetof(FramebufferTextureLayer, attachment) == 8,
+              "offset of FramebufferTextureLayer attachment should be 8");
+static_assert(offsetof(FramebufferTextureLayer, texture) == 12,
+              "offset of FramebufferTextureLayer texture should be 12");
+static_assert(offsetof(FramebufferTextureLayer, level) == 16,
+              "offset of FramebufferTextureLayer level should be 16");
+static_assert(offsetof(FramebufferTextureLayer, layer) == 20,
+              "offset of FramebufferTextureLayer layer should be 20");
 
 struct FrontFace {
   typedef FrontFace ValueType;
@@ -2451,10 +2474,11 @@ struct FrontFace {
   uint32_t mode;
 };
 
-COMPILE_ASSERT(sizeof(FrontFace) == 8, Sizeof_FrontFace_is_not_8);
-COMPILE_ASSERT(offsetof(FrontFace, header) == 0,
-               OffsetOf_FrontFace_header_not_0);
-COMPILE_ASSERT(offsetof(FrontFace, mode) == 4, OffsetOf_FrontFace_mode_not_4);
+static_assert(sizeof(FrontFace) == 8, "size of FrontFace should be 8");
+static_assert(offsetof(FrontFace, header) == 0,
+              "offset of FrontFace header should be 0");
+static_assert(offsetof(FrontFace, mode) == 4,
+              "offset of FrontFace mode should be 4");
 
 struct GenBuffersImmediate {
   typedef GenBuffersImmediate ValueType;
@@ -2491,12 +2515,12 @@ struct GenBuffersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenBuffersImmediate) == 8,
-               Sizeof_GenBuffersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenBuffersImmediate, header) == 0,
-               OffsetOf_GenBuffersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenBuffersImmediate, n) == 4,
-               OffsetOf_GenBuffersImmediate_n_not_4);
+static_assert(sizeof(GenBuffersImmediate) == 8,
+              "size of GenBuffersImmediate should be 8");
+static_assert(offsetof(GenBuffersImmediate, header) == 0,
+              "offset of GenBuffersImmediate header should be 0");
+static_assert(offsetof(GenBuffersImmediate, n) == 4,
+              "offset of GenBuffersImmediate n should be 4");
 
 struct GenerateMipmap {
   typedef GenerateMipmap ValueType;
@@ -2524,11 +2548,12 @@ struct GenerateMipmap {
   uint32_t target;
 };
 
-COMPILE_ASSERT(sizeof(GenerateMipmap) == 8, Sizeof_GenerateMipmap_is_not_8);
-COMPILE_ASSERT(offsetof(GenerateMipmap, header) == 0,
-               OffsetOf_GenerateMipmap_header_not_0);
-COMPILE_ASSERT(offsetof(GenerateMipmap, target) == 4,
-               OffsetOf_GenerateMipmap_target_not_4);
+static_assert(sizeof(GenerateMipmap) == 8,
+              "size of GenerateMipmap should be 8");
+static_assert(offsetof(GenerateMipmap, header) == 0,
+              "offset of GenerateMipmap header should be 0");
+static_assert(offsetof(GenerateMipmap, target) == 4,
+              "offset of GenerateMipmap target should be 4");
 
 struct GenFramebuffersImmediate {
   typedef GenFramebuffersImmediate ValueType;
@@ -2565,12 +2590,12 @@ struct GenFramebuffersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenFramebuffersImmediate) == 8,
-               Sizeof_GenFramebuffersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenFramebuffersImmediate, header) == 0,
-               OffsetOf_GenFramebuffersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenFramebuffersImmediate, n) == 4,
-               OffsetOf_GenFramebuffersImmediate_n_not_4);
+static_assert(sizeof(GenFramebuffersImmediate) == 8,
+              "size of GenFramebuffersImmediate should be 8");
+static_assert(offsetof(GenFramebuffersImmediate, header) == 0,
+              "offset of GenFramebuffersImmediate header should be 0");
+static_assert(offsetof(GenFramebuffersImmediate, n) == 4,
+              "offset of GenFramebuffersImmediate n should be 4");
 
 struct GenRenderbuffersImmediate {
   typedef GenRenderbuffersImmediate ValueType;
@@ -2607,12 +2632,12 @@ struct GenRenderbuffersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenRenderbuffersImmediate) == 8,
-               Sizeof_GenRenderbuffersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenRenderbuffersImmediate, header) == 0,
-               OffsetOf_GenRenderbuffersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenRenderbuffersImmediate, n) == 4,
-               OffsetOf_GenRenderbuffersImmediate_n_not_4);
+static_assert(sizeof(GenRenderbuffersImmediate) == 8,
+              "size of GenRenderbuffersImmediate should be 8");
+static_assert(offsetof(GenRenderbuffersImmediate, header) == 0,
+              "offset of GenRenderbuffersImmediate header should be 0");
+static_assert(offsetof(GenRenderbuffersImmediate, n) == 4,
+              "offset of GenRenderbuffersImmediate n should be 4");
 
 struct GenSamplersImmediate {
   typedef GenSamplersImmediate ValueType;
@@ -2649,12 +2674,12 @@ struct GenSamplersImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenSamplersImmediate) == 8,
-               Sizeof_GenSamplersImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenSamplersImmediate, header) == 0,
-               OffsetOf_GenSamplersImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenSamplersImmediate, n) == 4,
-               OffsetOf_GenSamplersImmediate_n_not_4);
+static_assert(sizeof(GenSamplersImmediate) == 8,
+              "size of GenSamplersImmediate should be 8");
+static_assert(offsetof(GenSamplersImmediate, header) == 0,
+              "offset of GenSamplersImmediate header should be 0");
+static_assert(offsetof(GenSamplersImmediate, n) == 4,
+              "offset of GenSamplersImmediate n should be 4");
 
 struct GenTexturesImmediate {
   typedef GenTexturesImmediate ValueType;
@@ -2691,12 +2716,12 @@ struct GenTexturesImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenTexturesImmediate) == 8,
-               Sizeof_GenTexturesImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenTexturesImmediate, header) == 0,
-               OffsetOf_GenTexturesImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenTexturesImmediate, n) == 4,
-               OffsetOf_GenTexturesImmediate_n_not_4);
+static_assert(sizeof(GenTexturesImmediate) == 8,
+              "size of GenTexturesImmediate should be 8");
+static_assert(offsetof(GenTexturesImmediate, header) == 0,
+              "offset of GenTexturesImmediate header should be 0");
+static_assert(offsetof(GenTexturesImmediate, n) == 4,
+              "offset of GenTexturesImmediate n should be 4");
 
 struct GenTransformFeedbacksImmediate {
   typedef GenTransformFeedbacksImmediate ValueType;
@@ -2733,12 +2758,12 @@ struct GenTransformFeedbacksImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenTransformFeedbacksImmediate) == 8,
-               Sizeof_GenTransformFeedbacksImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenTransformFeedbacksImmediate, header) == 0,
-               OffsetOf_GenTransformFeedbacksImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenTransformFeedbacksImmediate, n) == 4,
-               OffsetOf_GenTransformFeedbacksImmediate_n_not_4);
+static_assert(sizeof(GenTransformFeedbacksImmediate) == 8,
+              "size of GenTransformFeedbacksImmediate should be 8");
+static_assert(offsetof(GenTransformFeedbacksImmediate, header) == 0,
+              "offset of GenTransformFeedbacksImmediate header should be 0");
+static_assert(offsetof(GenTransformFeedbacksImmediate, n) == 4,
+              "offset of GenTransformFeedbacksImmediate n should be 4");
 
 struct GetActiveAttrib {
   typedef GetActiveAttrib ValueType;
@@ -2790,25 +2815,26 @@ struct GetActiveAttrib {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetActiveAttrib) == 24, Sizeof_GetActiveAttrib_is_not_24);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, header) == 0,
-               OffsetOf_GetActiveAttrib_header_not_0);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, program) == 4,
-               OffsetOf_GetActiveAttrib_program_not_4);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, index) == 8,
-               OffsetOf_GetActiveAttrib_index_not_8);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, name_bucket_id) == 12,
-               OffsetOf_GetActiveAttrib_name_bucket_id_not_12);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, result_shm_id) == 16,
-               OffsetOf_GetActiveAttrib_result_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, result_shm_offset) == 20,
-               OffsetOf_GetActiveAttrib_result_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetActiveAttrib::Result, success) == 0,
-               OffsetOf_GetActiveAttrib_Result_success_not_0);
-COMPILE_ASSERT(offsetof(GetActiveAttrib::Result, size) == 4,
-               OffsetOf_GetActiveAttrib_Result_size_not_4);
-COMPILE_ASSERT(offsetof(GetActiveAttrib::Result, type) == 8,
-               OffsetOf_GetActiveAttrib_Result_type_not_8);
+static_assert(sizeof(GetActiveAttrib) == 24,
+              "size of GetActiveAttrib should be 24");
+static_assert(offsetof(GetActiveAttrib, header) == 0,
+              "offset of GetActiveAttrib header should be 0");
+static_assert(offsetof(GetActiveAttrib, program) == 4,
+              "offset of GetActiveAttrib program should be 4");
+static_assert(offsetof(GetActiveAttrib, index) == 8,
+              "offset of GetActiveAttrib index should be 8");
+static_assert(offsetof(GetActiveAttrib, name_bucket_id) == 12,
+              "offset of GetActiveAttrib name_bucket_id should be 12");
+static_assert(offsetof(GetActiveAttrib, result_shm_id) == 16,
+              "offset of GetActiveAttrib result_shm_id should be 16");
+static_assert(offsetof(GetActiveAttrib, result_shm_offset) == 20,
+              "offset of GetActiveAttrib result_shm_offset should be 20");
+static_assert(offsetof(GetActiveAttrib::Result, success) == 0,
+              "offset of GetActiveAttrib Result success should be 0");
+static_assert(offsetof(GetActiveAttrib::Result, size) == 4,
+              "offset of GetActiveAttrib Result size should be 4");
+static_assert(offsetof(GetActiveAttrib::Result, type) == 8,
+              "offset of GetActiveAttrib Result type should be 8");
 
 struct GetActiveUniform {
   typedef GetActiveUniform ValueType;
@@ -2860,26 +2886,26 @@ struct GetActiveUniform {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetActiveUniform) == 24,
-               Sizeof_GetActiveUniform_is_not_24);
-COMPILE_ASSERT(offsetof(GetActiveUniform, header) == 0,
-               OffsetOf_GetActiveUniform_header_not_0);
-COMPILE_ASSERT(offsetof(GetActiveUniform, program) == 4,
-               OffsetOf_GetActiveUniform_program_not_4);
-COMPILE_ASSERT(offsetof(GetActiveUniform, index) == 8,
-               OffsetOf_GetActiveUniform_index_not_8);
-COMPILE_ASSERT(offsetof(GetActiveUniform, name_bucket_id) == 12,
-               OffsetOf_GetActiveUniform_name_bucket_id_not_12);
-COMPILE_ASSERT(offsetof(GetActiveUniform, result_shm_id) == 16,
-               OffsetOf_GetActiveUniform_result_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetActiveUniform, result_shm_offset) == 20,
-               OffsetOf_GetActiveUniform_result_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetActiveUniform::Result, success) == 0,
-               OffsetOf_GetActiveUniform_Result_success_not_0);
-COMPILE_ASSERT(offsetof(GetActiveUniform::Result, size) == 4,
-               OffsetOf_GetActiveUniform_Result_size_not_4);
-COMPILE_ASSERT(offsetof(GetActiveUniform::Result, type) == 8,
-               OffsetOf_GetActiveUniform_Result_type_not_8);
+static_assert(sizeof(GetActiveUniform) == 24,
+              "size of GetActiveUniform should be 24");
+static_assert(offsetof(GetActiveUniform, header) == 0,
+              "offset of GetActiveUniform header should be 0");
+static_assert(offsetof(GetActiveUniform, program) == 4,
+              "offset of GetActiveUniform program should be 4");
+static_assert(offsetof(GetActiveUniform, index) == 8,
+              "offset of GetActiveUniform index should be 8");
+static_assert(offsetof(GetActiveUniform, name_bucket_id) == 12,
+              "offset of GetActiveUniform name_bucket_id should be 12");
+static_assert(offsetof(GetActiveUniform, result_shm_id) == 16,
+              "offset of GetActiveUniform result_shm_id should be 16");
+static_assert(offsetof(GetActiveUniform, result_shm_offset) == 20,
+              "offset of GetActiveUniform result_shm_offset should be 20");
+static_assert(offsetof(GetActiveUniform::Result, success) == 0,
+              "offset of GetActiveUniform Result success should be 0");
+static_assert(offsetof(GetActiveUniform::Result, size) == 4,
+              "offset of GetActiveUniform Result size should be 4");
+static_assert(offsetof(GetActiveUniform::Result, type) == 8,
+              "offset of GetActiveUniform Result type should be 8");
 
 struct GetAttachedShaders {
   typedef GetAttachedShaders ValueType;
@@ -2923,18 +2949,18 @@ struct GetAttachedShaders {
   uint32_t result_size;
 };
 
-COMPILE_ASSERT(sizeof(GetAttachedShaders) == 20,
-               Sizeof_GetAttachedShaders_is_not_20);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, header) == 0,
-               OffsetOf_GetAttachedShaders_header_not_0);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, program) == 4,
-               OffsetOf_GetAttachedShaders_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, result_shm_id) == 8,
-               OffsetOf_GetAttachedShaders_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, result_shm_offset) == 12,
-               OffsetOf_GetAttachedShaders_result_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, result_size) == 16,
-               OffsetOf_GetAttachedShaders_result_size_not_16);
+static_assert(sizeof(GetAttachedShaders) == 20,
+              "size of GetAttachedShaders should be 20");
+static_assert(offsetof(GetAttachedShaders, header) == 0,
+              "offset of GetAttachedShaders header should be 0");
+static_assert(offsetof(GetAttachedShaders, program) == 4,
+              "offset of GetAttachedShaders program should be 4");
+static_assert(offsetof(GetAttachedShaders, result_shm_id) == 8,
+              "offset of GetAttachedShaders result_shm_id should be 8");
+static_assert(offsetof(GetAttachedShaders, result_shm_offset) == 12,
+              "offset of GetAttachedShaders result_shm_offset should be 12");
+static_assert(offsetof(GetAttachedShaders, result_size) == 16,
+              "offset of GetAttachedShaders result_size should be 16");
 
 struct GetAttribLocation {
   typedef GetAttribLocation ValueType;
@@ -2978,18 +3004,18 @@ struct GetAttribLocation {
   uint32_t location_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetAttribLocation) == 20,
-               Sizeof_GetAttribLocation_is_not_20);
-COMPILE_ASSERT(offsetof(GetAttribLocation, header) == 0,
-               OffsetOf_GetAttribLocation_header_not_0);
-COMPILE_ASSERT(offsetof(GetAttribLocation, program) == 4,
-               OffsetOf_GetAttribLocation_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttribLocation, name_bucket_id) == 8,
-               OffsetOf_GetAttribLocation_name_bucket_id_not_8);
-COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_id) == 12,
-               OffsetOf_GetAttribLocation_location_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_offset) == 16,
-               OffsetOf_GetAttribLocation_location_shm_offset_not_16);
+static_assert(sizeof(GetAttribLocation) == 20,
+              "size of GetAttribLocation should be 20");
+static_assert(offsetof(GetAttribLocation, header) == 0,
+              "offset of GetAttribLocation header should be 0");
+static_assert(offsetof(GetAttribLocation, program) == 4,
+              "offset of GetAttribLocation program should be 4");
+static_assert(offsetof(GetAttribLocation, name_bucket_id) == 8,
+              "offset of GetAttribLocation name_bucket_id should be 8");
+static_assert(offsetof(GetAttribLocation, location_shm_id) == 12,
+              "offset of GetAttribLocation location_shm_id should be 12");
+static_assert(offsetof(GetAttribLocation, location_shm_offset) == 16,
+              "offset of GetAttribLocation location_shm_offset should be 16");
 
 struct GetBooleanv {
   typedef GetBooleanv ValueType;
@@ -3029,15 +3055,15 @@ struct GetBooleanv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetBooleanv) == 16, Sizeof_GetBooleanv_is_not_16);
-COMPILE_ASSERT(offsetof(GetBooleanv, header) == 0,
-               OffsetOf_GetBooleanv_header_not_0);
-COMPILE_ASSERT(offsetof(GetBooleanv, pname) == 4,
-               OffsetOf_GetBooleanv_pname_not_4);
-COMPILE_ASSERT(offsetof(GetBooleanv, params_shm_id) == 8,
-               OffsetOf_GetBooleanv_params_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetBooleanv, params_shm_offset) == 12,
-               OffsetOf_GetBooleanv_params_shm_offset_not_12);
+static_assert(sizeof(GetBooleanv) == 16, "size of GetBooleanv should be 16");
+static_assert(offsetof(GetBooleanv, header) == 0,
+              "offset of GetBooleanv header should be 0");
+static_assert(offsetof(GetBooleanv, pname) == 4,
+              "offset of GetBooleanv pname should be 4");
+static_assert(offsetof(GetBooleanv, params_shm_id) == 8,
+              "offset of GetBooleanv params_shm_id should be 8");
+static_assert(offsetof(GetBooleanv, params_shm_offset) == 12,
+              "offset of GetBooleanv params_shm_offset should be 12");
 
 struct GetBufferParameteriv {
   typedef GetBufferParameteriv ValueType;
@@ -3081,18 +3107,18 @@ struct GetBufferParameteriv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetBufferParameteriv) == 20,
-               Sizeof_GetBufferParameteriv_is_not_20);
-COMPILE_ASSERT(offsetof(GetBufferParameteriv, header) == 0,
-               OffsetOf_GetBufferParameteriv_header_not_0);
-COMPILE_ASSERT(offsetof(GetBufferParameteriv, target) == 4,
-               OffsetOf_GetBufferParameteriv_target_not_4);
-COMPILE_ASSERT(offsetof(GetBufferParameteriv, pname) == 8,
-               OffsetOf_GetBufferParameteriv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetBufferParameteriv, params_shm_id) == 12,
-               OffsetOf_GetBufferParameteriv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetBufferParameteriv, params_shm_offset) == 16,
-               OffsetOf_GetBufferParameteriv_params_shm_offset_not_16);
+static_assert(sizeof(GetBufferParameteriv) == 20,
+              "size of GetBufferParameteriv should be 20");
+static_assert(offsetof(GetBufferParameteriv, header) == 0,
+              "offset of GetBufferParameteriv header should be 0");
+static_assert(offsetof(GetBufferParameteriv, target) == 4,
+              "offset of GetBufferParameteriv target should be 4");
+static_assert(offsetof(GetBufferParameteriv, pname) == 8,
+              "offset of GetBufferParameteriv pname should be 8");
+static_assert(offsetof(GetBufferParameteriv, params_shm_id) == 12,
+              "offset of GetBufferParameteriv params_shm_id should be 12");
+static_assert(offsetof(GetBufferParameteriv, params_shm_offset) == 16,
+              "offset of GetBufferParameteriv params_shm_offset should be 16");
 
 struct GetError {
   typedef GetError ValueType;
@@ -3124,12 +3150,13 @@ struct GetError {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetError) == 12, Sizeof_GetError_is_not_12);
-COMPILE_ASSERT(offsetof(GetError, header) == 0, OffsetOf_GetError_header_not_0);
-COMPILE_ASSERT(offsetof(GetError, result_shm_id) == 4,
-               OffsetOf_GetError_result_shm_id_not_4);
-COMPILE_ASSERT(offsetof(GetError, result_shm_offset) == 8,
-               OffsetOf_GetError_result_shm_offset_not_8);
+static_assert(sizeof(GetError) == 12, "size of GetError should be 12");
+static_assert(offsetof(GetError, header) == 0,
+              "offset of GetError header should be 0");
+static_assert(offsetof(GetError, result_shm_id) == 4,
+              "offset of GetError result_shm_id should be 4");
+static_assert(offsetof(GetError, result_shm_offset) == 8,
+              "offset of GetError result_shm_offset should be 8");
 
 struct GetFloatv {
   typedef GetFloatv ValueType;
@@ -3169,14 +3196,15 @@ struct GetFloatv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetFloatv) == 16, Sizeof_GetFloatv_is_not_16);
-COMPILE_ASSERT(offsetof(GetFloatv, header) == 0,
-               OffsetOf_GetFloatv_header_not_0);
-COMPILE_ASSERT(offsetof(GetFloatv, pname) == 4, OffsetOf_GetFloatv_pname_not_4);
-COMPILE_ASSERT(offsetof(GetFloatv, params_shm_id) == 8,
-               OffsetOf_GetFloatv_params_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetFloatv, params_shm_offset) == 12,
-               OffsetOf_GetFloatv_params_shm_offset_not_12);
+static_assert(sizeof(GetFloatv) == 16, "size of GetFloatv should be 16");
+static_assert(offsetof(GetFloatv, header) == 0,
+              "offset of GetFloatv header should be 0");
+static_assert(offsetof(GetFloatv, pname) == 4,
+              "offset of GetFloatv pname should be 4");
+static_assert(offsetof(GetFloatv, params_shm_id) == 8,
+              "offset of GetFloatv params_shm_id should be 8");
+static_assert(offsetof(GetFloatv, params_shm_offset) == 12,
+              "offset of GetFloatv params_shm_offset should be 12");
 
 struct GetFramebufferAttachmentParameteriv {
   typedef GetFramebufferAttachmentParameteriv ValueType;
@@ -3224,22 +3252,27 @@ struct GetFramebufferAttachmentParameteriv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetFramebufferAttachmentParameteriv) == 24,
-               Sizeof_GetFramebufferAttachmentParameteriv_is_not_24);
-COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, header) == 0,
-               OffsetOf_GetFramebufferAttachmentParameteriv_header_not_0);
-COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, target) == 4,
-               OffsetOf_GetFramebufferAttachmentParameteriv_target_not_4);
-COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, attachment) == 8,
-               OffsetOf_GetFramebufferAttachmentParameteriv_attachment_not_8);
-COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, pname) == 12,
-               OffsetOf_GetFramebufferAttachmentParameteriv_pname_not_12);
-COMPILE_ASSERT(
+static_assert(sizeof(GetFramebufferAttachmentParameteriv) == 24,
+              "size of GetFramebufferAttachmentParameteriv should be 24");
+static_assert(
+    offsetof(GetFramebufferAttachmentParameteriv, header) == 0,
+    "offset of GetFramebufferAttachmentParameteriv header should be 0");
+static_assert(
+    offsetof(GetFramebufferAttachmentParameteriv, target) == 4,
+    "offset of GetFramebufferAttachmentParameteriv target should be 4");
+static_assert(
+    offsetof(GetFramebufferAttachmentParameteriv, attachment) == 8,
+    "offset of GetFramebufferAttachmentParameteriv attachment should be 8");
+static_assert(
+    offsetof(GetFramebufferAttachmentParameteriv, pname) == 12,
+    "offset of GetFramebufferAttachmentParameteriv pname should be 12");
+static_assert(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_id) == 16,
-    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);
-COMPILE_ASSERT(
-    offsetof(GetFramebufferAttachmentParameteriv, params_shm_offset) == 20,
-    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);
+    "offset of GetFramebufferAttachmentParameteriv params_shm_id should be 16");
+static_assert(offsetof(GetFramebufferAttachmentParameteriv,
+                       params_shm_offset) == 20,
+              "offset of GetFramebufferAttachmentParameteriv params_shm_offset "
+              "should be 20");
 
 struct GetIntegerv {
   typedef GetIntegerv ValueType;
@@ -3279,15 +3312,15 @@ struct GetIntegerv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetIntegerv) == 16, Sizeof_GetIntegerv_is_not_16);
-COMPILE_ASSERT(offsetof(GetIntegerv, header) == 0,
-               OffsetOf_GetIntegerv_header_not_0);
-COMPILE_ASSERT(offsetof(GetIntegerv, pname) == 4,
-               OffsetOf_GetIntegerv_pname_not_4);
-COMPILE_ASSERT(offsetof(GetIntegerv, params_shm_id) == 8,
-               OffsetOf_GetIntegerv_params_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetIntegerv, params_shm_offset) == 12,
-               OffsetOf_GetIntegerv_params_shm_offset_not_12);
+static_assert(sizeof(GetIntegerv) == 16, "size of GetIntegerv should be 16");
+static_assert(offsetof(GetIntegerv, header) == 0,
+              "offset of GetIntegerv header should be 0");
+static_assert(offsetof(GetIntegerv, pname) == 4,
+              "offset of GetIntegerv pname should be 4");
+static_assert(offsetof(GetIntegerv, params_shm_id) == 8,
+              "offset of GetIntegerv params_shm_id should be 8");
+static_assert(offsetof(GetIntegerv, params_shm_offset) == 12,
+              "offset of GetIntegerv params_shm_offset should be 12");
 
 struct GetInternalformativ {
   typedef GetInternalformativ ValueType;
@@ -3339,22 +3372,22 @@ struct GetInternalformativ {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetInternalformativ) == 28,
-               Sizeof_GetInternalformativ_is_not_28);
-COMPILE_ASSERT(offsetof(GetInternalformativ, header) == 0,
-               OffsetOf_GetInternalformativ_header_not_0);
-COMPILE_ASSERT(offsetof(GetInternalformativ, target) == 4,
-               OffsetOf_GetInternalformativ_target_not_4);
-COMPILE_ASSERT(offsetof(GetInternalformativ, format) == 8,
-               OffsetOf_GetInternalformativ_format_not_8);
-COMPILE_ASSERT(offsetof(GetInternalformativ, pname) == 12,
-               OffsetOf_GetInternalformativ_pname_not_12);
-COMPILE_ASSERT(offsetof(GetInternalformativ, bufSize) == 16,
-               OffsetOf_GetInternalformativ_bufSize_not_16);
-COMPILE_ASSERT(offsetof(GetInternalformativ, params_shm_id) == 20,
-               OffsetOf_GetInternalformativ_params_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetInternalformativ, params_shm_offset) == 24,
-               OffsetOf_GetInternalformativ_params_shm_offset_not_24);
+static_assert(sizeof(GetInternalformativ) == 28,
+              "size of GetInternalformativ should be 28");
+static_assert(offsetof(GetInternalformativ, header) == 0,
+              "offset of GetInternalformativ header should be 0");
+static_assert(offsetof(GetInternalformativ, target) == 4,
+              "offset of GetInternalformativ target should be 4");
+static_assert(offsetof(GetInternalformativ, format) == 8,
+              "offset of GetInternalformativ format should be 8");
+static_assert(offsetof(GetInternalformativ, pname) == 12,
+              "offset of GetInternalformativ pname should be 12");
+static_assert(offsetof(GetInternalformativ, bufSize) == 16,
+              "offset of GetInternalformativ bufSize should be 16");
+static_assert(offsetof(GetInternalformativ, params_shm_id) == 20,
+              "offset of GetInternalformativ params_shm_id should be 20");
+static_assert(offsetof(GetInternalformativ, params_shm_offset) == 24,
+              "offset of GetInternalformativ params_shm_offset should be 24");
 
 struct GetProgramiv {
   typedef GetProgramiv ValueType;
@@ -3398,17 +3431,17 @@ struct GetProgramiv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetProgramiv) == 20, Sizeof_GetProgramiv_is_not_20);
-COMPILE_ASSERT(offsetof(GetProgramiv, header) == 0,
-               OffsetOf_GetProgramiv_header_not_0);
-COMPILE_ASSERT(offsetof(GetProgramiv, program) == 4,
-               OffsetOf_GetProgramiv_program_not_4);
-COMPILE_ASSERT(offsetof(GetProgramiv, pname) == 8,
-               OffsetOf_GetProgramiv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetProgramiv, params_shm_id) == 12,
-               OffsetOf_GetProgramiv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetProgramiv, params_shm_offset) == 16,
-               OffsetOf_GetProgramiv_params_shm_offset_not_16);
+static_assert(sizeof(GetProgramiv) == 20, "size of GetProgramiv should be 20");
+static_assert(offsetof(GetProgramiv, header) == 0,
+              "offset of GetProgramiv header should be 0");
+static_assert(offsetof(GetProgramiv, program) == 4,
+              "offset of GetProgramiv program should be 4");
+static_assert(offsetof(GetProgramiv, pname) == 8,
+              "offset of GetProgramiv pname should be 8");
+static_assert(offsetof(GetProgramiv, params_shm_id) == 12,
+              "offset of GetProgramiv params_shm_id should be 12");
+static_assert(offsetof(GetProgramiv, params_shm_offset) == 16,
+              "offset of GetProgramiv params_shm_offset should be 16");
 
 struct GetProgramInfoLog {
   typedef GetProgramInfoLog ValueType;
@@ -3438,14 +3471,14 @@ struct GetProgramInfoLog {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetProgramInfoLog) == 12,
-               Sizeof_GetProgramInfoLog_is_not_12);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, header) == 0,
-               OffsetOf_GetProgramInfoLog_header_not_0);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, program) == 4,
-               OffsetOf_GetProgramInfoLog_program_not_4);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, bucket_id) == 8,
-               OffsetOf_GetProgramInfoLog_bucket_id_not_8);
+static_assert(sizeof(GetProgramInfoLog) == 12,
+              "size of GetProgramInfoLog should be 12");
+static_assert(offsetof(GetProgramInfoLog, header) == 0,
+              "offset of GetProgramInfoLog header should be 0");
+static_assert(offsetof(GetProgramInfoLog, program) == 4,
+              "offset of GetProgramInfoLog program should be 4");
+static_assert(offsetof(GetProgramInfoLog, bucket_id) == 8,
+              "offset of GetProgramInfoLog bucket_id should be 8");
 
 struct GetRenderbufferParameteriv {
   typedef GetRenderbufferParameteriv ValueType;
@@ -3489,18 +3522,20 @@ struct GetRenderbufferParameteriv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetRenderbufferParameteriv) == 20,
-               Sizeof_GetRenderbufferParameteriv_is_not_20);
-COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, header) == 0,
-               OffsetOf_GetRenderbufferParameteriv_header_not_0);
-COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, target) == 4,
-               OffsetOf_GetRenderbufferParameteriv_target_not_4);
-COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, pname) == 8,
-               OffsetOf_GetRenderbufferParameteriv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, params_shm_id) == 12,
-               OffsetOf_GetRenderbufferParameteriv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetRenderbufferParameteriv, params_shm_offset) == 16,
-               OffsetOf_GetRenderbufferParameteriv_params_shm_offset_not_16);
+static_assert(sizeof(GetRenderbufferParameteriv) == 20,
+              "size of GetRenderbufferParameteriv should be 20");
+static_assert(offsetof(GetRenderbufferParameteriv, header) == 0,
+              "offset of GetRenderbufferParameteriv header should be 0");
+static_assert(offsetof(GetRenderbufferParameteriv, target) == 4,
+              "offset of GetRenderbufferParameteriv target should be 4");
+static_assert(offsetof(GetRenderbufferParameteriv, pname) == 8,
+              "offset of GetRenderbufferParameteriv pname should be 8");
+static_assert(
+    offsetof(GetRenderbufferParameteriv, params_shm_id) == 12,
+    "offset of GetRenderbufferParameteriv params_shm_id should be 12");
+static_assert(
+    offsetof(GetRenderbufferParameteriv, params_shm_offset) == 16,
+    "offset of GetRenderbufferParameteriv params_shm_offset should be 16");
 
 struct GetSamplerParameterfv {
   typedef GetSamplerParameterfv ValueType;
@@ -3544,18 +3579,18 @@ struct GetSamplerParameterfv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetSamplerParameterfv) == 20,
-               Sizeof_GetSamplerParameterfv_is_not_20);
-COMPILE_ASSERT(offsetof(GetSamplerParameterfv, header) == 0,
-               OffsetOf_GetSamplerParameterfv_header_not_0);
-COMPILE_ASSERT(offsetof(GetSamplerParameterfv, sampler) == 4,
-               OffsetOf_GetSamplerParameterfv_sampler_not_4);
-COMPILE_ASSERT(offsetof(GetSamplerParameterfv, pname) == 8,
-               OffsetOf_GetSamplerParameterfv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetSamplerParameterfv, params_shm_id) == 12,
-               OffsetOf_GetSamplerParameterfv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetSamplerParameterfv, params_shm_offset) == 16,
-               OffsetOf_GetSamplerParameterfv_params_shm_offset_not_16);
+static_assert(sizeof(GetSamplerParameterfv) == 20,
+              "size of GetSamplerParameterfv should be 20");
+static_assert(offsetof(GetSamplerParameterfv, header) == 0,
+              "offset of GetSamplerParameterfv header should be 0");
+static_assert(offsetof(GetSamplerParameterfv, sampler) == 4,
+              "offset of GetSamplerParameterfv sampler should be 4");
+static_assert(offsetof(GetSamplerParameterfv, pname) == 8,
+              "offset of GetSamplerParameterfv pname should be 8");
+static_assert(offsetof(GetSamplerParameterfv, params_shm_id) == 12,
+              "offset of GetSamplerParameterfv params_shm_id should be 12");
+static_assert(offsetof(GetSamplerParameterfv, params_shm_offset) == 16,
+              "offset of GetSamplerParameterfv params_shm_offset should be 16");
 
 struct GetSamplerParameteriv {
   typedef GetSamplerParameteriv ValueType;
@@ -3599,18 +3634,18 @@ struct GetSamplerParameteriv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetSamplerParameteriv) == 20,
-               Sizeof_GetSamplerParameteriv_is_not_20);
-COMPILE_ASSERT(offsetof(GetSamplerParameteriv, header) == 0,
-               OffsetOf_GetSamplerParameteriv_header_not_0);
-COMPILE_ASSERT(offsetof(GetSamplerParameteriv, sampler) == 4,
-               OffsetOf_GetSamplerParameteriv_sampler_not_4);
-COMPILE_ASSERT(offsetof(GetSamplerParameteriv, pname) == 8,
-               OffsetOf_GetSamplerParameteriv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetSamplerParameteriv, params_shm_id) == 12,
-               OffsetOf_GetSamplerParameteriv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetSamplerParameteriv, params_shm_offset) == 16,
-               OffsetOf_GetSamplerParameteriv_params_shm_offset_not_16);
+static_assert(sizeof(GetSamplerParameteriv) == 20,
+              "size of GetSamplerParameteriv should be 20");
+static_assert(offsetof(GetSamplerParameteriv, header) == 0,
+              "offset of GetSamplerParameteriv header should be 0");
+static_assert(offsetof(GetSamplerParameteriv, sampler) == 4,
+              "offset of GetSamplerParameteriv sampler should be 4");
+static_assert(offsetof(GetSamplerParameteriv, pname) == 8,
+              "offset of GetSamplerParameteriv pname should be 8");
+static_assert(offsetof(GetSamplerParameteriv, params_shm_id) == 12,
+              "offset of GetSamplerParameteriv params_shm_id should be 12");
+static_assert(offsetof(GetSamplerParameteriv, params_shm_offset) == 16,
+              "offset of GetSamplerParameteriv params_shm_offset should be 16");
 
 struct GetShaderiv {
   typedef GetShaderiv ValueType;
@@ -3654,17 +3689,17 @@ struct GetShaderiv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderiv) == 20, Sizeof_GetShaderiv_is_not_20);
-COMPILE_ASSERT(offsetof(GetShaderiv, header) == 0,
-               OffsetOf_GetShaderiv_header_not_0);
-COMPILE_ASSERT(offsetof(GetShaderiv, shader) == 4,
-               OffsetOf_GetShaderiv_shader_not_4);
-COMPILE_ASSERT(offsetof(GetShaderiv, pname) == 8,
-               OffsetOf_GetShaderiv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetShaderiv, params_shm_id) == 12,
-               OffsetOf_GetShaderiv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetShaderiv, params_shm_offset) == 16,
-               OffsetOf_GetShaderiv_params_shm_offset_not_16);
+static_assert(sizeof(GetShaderiv) == 20, "size of GetShaderiv should be 20");
+static_assert(offsetof(GetShaderiv, header) == 0,
+              "offset of GetShaderiv header should be 0");
+static_assert(offsetof(GetShaderiv, shader) == 4,
+              "offset of GetShaderiv shader should be 4");
+static_assert(offsetof(GetShaderiv, pname) == 8,
+              "offset of GetShaderiv pname should be 8");
+static_assert(offsetof(GetShaderiv, params_shm_id) == 12,
+              "offset of GetShaderiv params_shm_id should be 12");
+static_assert(offsetof(GetShaderiv, params_shm_offset) == 16,
+              "offset of GetShaderiv params_shm_offset should be 16");
 
 struct GetShaderInfoLog {
   typedef GetShaderInfoLog ValueType;
@@ -3694,14 +3729,14 @@ struct GetShaderInfoLog {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderInfoLog) == 12,
-               Sizeof_GetShaderInfoLog_is_not_12);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, header) == 0,
-               OffsetOf_GetShaderInfoLog_header_not_0);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, shader) == 4,
-               OffsetOf_GetShaderInfoLog_shader_not_4);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, bucket_id) == 8,
-               OffsetOf_GetShaderInfoLog_bucket_id_not_8);
+static_assert(sizeof(GetShaderInfoLog) == 12,
+              "size of GetShaderInfoLog should be 12");
+static_assert(offsetof(GetShaderInfoLog, header) == 0,
+              "offset of GetShaderInfoLog header should be 0");
+static_assert(offsetof(GetShaderInfoLog, shader) == 4,
+              "offset of GetShaderInfoLog shader should be 4");
+static_assert(offsetof(GetShaderInfoLog, bucket_id) == 8,
+              "offset of GetShaderInfoLog bucket_id should be 8");
 
 struct GetShaderPrecisionFormat {
   typedef GetShaderPrecisionFormat ValueType;
@@ -3750,26 +3785,30 @@ struct GetShaderPrecisionFormat {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderPrecisionFormat) == 20,
-               Sizeof_GetShaderPrecisionFormat_is_not_20);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, header) == 0,
-               OffsetOf_GetShaderPrecisionFormat_header_not_0);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, shadertype) == 4,
-               OffsetOf_GetShaderPrecisionFormat_shadertype_not_4);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, precisiontype) == 8,
-               OffsetOf_GetShaderPrecisionFormat_precisiontype_not_8);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, result_shm_id) == 12,
-               OffsetOf_GetShaderPrecisionFormat_result_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, result_shm_offset) == 16,
-               OffsetOf_GetShaderPrecisionFormat_result_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, success) == 0,
-               OffsetOf_GetShaderPrecisionFormat_Result_success_not_0);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, min_range) == 4,
-               OffsetOf_GetShaderPrecisionFormat_Result_min_range_not_4);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, max_range) == 8,
-               OffsetOf_GetShaderPrecisionFormat_Result_max_range_not_8);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, precision) == 12,
-               OffsetOf_GetShaderPrecisionFormat_Result_precision_not_12);
+static_assert(sizeof(GetShaderPrecisionFormat) == 20,
+              "size of GetShaderPrecisionFormat should be 20");
+static_assert(offsetof(GetShaderPrecisionFormat, header) == 0,
+              "offset of GetShaderPrecisionFormat header should be 0");
+static_assert(offsetof(GetShaderPrecisionFormat, shadertype) == 4,
+              "offset of GetShaderPrecisionFormat shadertype should be 4");
+static_assert(offsetof(GetShaderPrecisionFormat, precisiontype) == 8,
+              "offset of GetShaderPrecisionFormat precisiontype should be 8");
+static_assert(offsetof(GetShaderPrecisionFormat, result_shm_id) == 12,
+              "offset of GetShaderPrecisionFormat result_shm_id should be 12");
+static_assert(
+    offsetof(GetShaderPrecisionFormat, result_shm_offset) == 16,
+    "offset of GetShaderPrecisionFormat result_shm_offset should be 16");
+static_assert(offsetof(GetShaderPrecisionFormat::Result, success) == 0,
+              "offset of GetShaderPrecisionFormat Result success should be 0");
+static_assert(
+    offsetof(GetShaderPrecisionFormat::Result, min_range) == 4,
+    "offset of GetShaderPrecisionFormat Result min_range should be 4");
+static_assert(
+    offsetof(GetShaderPrecisionFormat::Result, max_range) == 8,
+    "offset of GetShaderPrecisionFormat Result max_range should be 8");
+static_assert(
+    offsetof(GetShaderPrecisionFormat::Result, precision) == 12,
+    "offset of GetShaderPrecisionFormat Result precision should be 12");
 
 struct GetShaderSource {
   typedef GetShaderSource ValueType;
@@ -3799,13 +3838,14 @@ struct GetShaderSource {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderSource) == 12, Sizeof_GetShaderSource_is_not_12);
-COMPILE_ASSERT(offsetof(GetShaderSource, header) == 0,
-               OffsetOf_GetShaderSource_header_not_0);
-COMPILE_ASSERT(offsetof(GetShaderSource, shader) == 4,
-               OffsetOf_GetShaderSource_shader_not_4);
-COMPILE_ASSERT(offsetof(GetShaderSource, bucket_id) == 8,
-               OffsetOf_GetShaderSource_bucket_id_not_8);
+static_assert(sizeof(GetShaderSource) == 12,
+              "size of GetShaderSource should be 12");
+static_assert(offsetof(GetShaderSource, header) == 0,
+              "offset of GetShaderSource header should be 0");
+static_assert(offsetof(GetShaderSource, shader) == 4,
+              "offset of GetShaderSource shader should be 4");
+static_assert(offsetof(GetShaderSource, bucket_id) == 8,
+              "offset of GetShaderSource bucket_id should be 8");
 
 struct GetString {
   typedef GetString ValueType;
@@ -3835,12 +3875,13 @@ struct GetString {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetString) == 12, Sizeof_GetString_is_not_12);
-COMPILE_ASSERT(offsetof(GetString, header) == 0,
-               OffsetOf_GetString_header_not_0);
-COMPILE_ASSERT(offsetof(GetString, name) == 4, OffsetOf_GetString_name_not_4);
-COMPILE_ASSERT(offsetof(GetString, bucket_id) == 8,
-               OffsetOf_GetString_bucket_id_not_8);
+static_assert(sizeof(GetString) == 12, "size of GetString should be 12");
+static_assert(offsetof(GetString, header) == 0,
+              "offset of GetString header should be 0");
+static_assert(offsetof(GetString, name) == 4,
+              "offset of GetString name should be 4");
+static_assert(offsetof(GetString, bucket_id) == 8,
+              "offset of GetString bucket_id should be 8");
 
 struct GetTexParameterfv {
   typedef GetTexParameterfv ValueType;
@@ -3884,18 +3925,18 @@ struct GetTexParameterfv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetTexParameterfv) == 20,
-               Sizeof_GetTexParameterfv_is_not_20);
-COMPILE_ASSERT(offsetof(GetTexParameterfv, header) == 0,
-               OffsetOf_GetTexParameterfv_header_not_0);
-COMPILE_ASSERT(offsetof(GetTexParameterfv, target) == 4,
-               OffsetOf_GetTexParameterfv_target_not_4);
-COMPILE_ASSERT(offsetof(GetTexParameterfv, pname) == 8,
-               OffsetOf_GetTexParameterfv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetTexParameterfv, params_shm_id) == 12,
-               OffsetOf_GetTexParameterfv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetTexParameterfv, params_shm_offset) == 16,
-               OffsetOf_GetTexParameterfv_params_shm_offset_not_16);
+static_assert(sizeof(GetTexParameterfv) == 20,
+              "size of GetTexParameterfv should be 20");
+static_assert(offsetof(GetTexParameterfv, header) == 0,
+              "offset of GetTexParameterfv header should be 0");
+static_assert(offsetof(GetTexParameterfv, target) == 4,
+              "offset of GetTexParameterfv target should be 4");
+static_assert(offsetof(GetTexParameterfv, pname) == 8,
+              "offset of GetTexParameterfv pname should be 8");
+static_assert(offsetof(GetTexParameterfv, params_shm_id) == 12,
+              "offset of GetTexParameterfv params_shm_id should be 12");
+static_assert(offsetof(GetTexParameterfv, params_shm_offset) == 16,
+              "offset of GetTexParameterfv params_shm_offset should be 16");
 
 struct GetTexParameteriv {
   typedef GetTexParameteriv ValueType;
@@ -3939,18 +3980,18 @@ struct GetTexParameteriv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetTexParameteriv) == 20,
-               Sizeof_GetTexParameteriv_is_not_20);
-COMPILE_ASSERT(offsetof(GetTexParameteriv, header) == 0,
-               OffsetOf_GetTexParameteriv_header_not_0);
-COMPILE_ASSERT(offsetof(GetTexParameteriv, target) == 4,
-               OffsetOf_GetTexParameteriv_target_not_4);
-COMPILE_ASSERT(offsetof(GetTexParameteriv, pname) == 8,
-               OffsetOf_GetTexParameteriv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetTexParameteriv, params_shm_id) == 12,
-               OffsetOf_GetTexParameteriv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetTexParameteriv, params_shm_offset) == 16,
-               OffsetOf_GetTexParameteriv_params_shm_offset_not_16);
+static_assert(sizeof(GetTexParameteriv) == 20,
+              "size of GetTexParameteriv should be 20");
+static_assert(offsetof(GetTexParameteriv, header) == 0,
+              "offset of GetTexParameteriv header should be 0");
+static_assert(offsetof(GetTexParameteriv, target) == 4,
+              "offset of GetTexParameteriv target should be 4");
+static_assert(offsetof(GetTexParameteriv, pname) == 8,
+              "offset of GetTexParameteriv pname should be 8");
+static_assert(offsetof(GetTexParameteriv, params_shm_id) == 12,
+              "offset of GetTexParameteriv params_shm_id should be 12");
+static_assert(offsetof(GetTexParameteriv, params_shm_offset) == 16,
+              "offset of GetTexParameteriv params_shm_offset should be 16");
 
 struct GetUniformfv {
   typedef GetUniformfv ValueType;
@@ -3994,17 +4035,17 @@ struct GetUniformfv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetUniformfv) == 20, Sizeof_GetUniformfv_is_not_20);
-COMPILE_ASSERT(offsetof(GetUniformfv, header) == 0,
-               OffsetOf_GetUniformfv_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformfv, program) == 4,
-               OffsetOf_GetUniformfv_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformfv, location) == 8,
-               OffsetOf_GetUniformfv_location_not_8);
-COMPILE_ASSERT(offsetof(GetUniformfv, params_shm_id) == 12,
-               OffsetOf_GetUniformfv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetUniformfv, params_shm_offset) == 16,
-               OffsetOf_GetUniformfv_params_shm_offset_not_16);
+static_assert(sizeof(GetUniformfv) == 20, "size of GetUniformfv should be 20");
+static_assert(offsetof(GetUniformfv, header) == 0,
+              "offset of GetUniformfv header should be 0");
+static_assert(offsetof(GetUniformfv, program) == 4,
+              "offset of GetUniformfv program should be 4");
+static_assert(offsetof(GetUniformfv, location) == 8,
+              "offset of GetUniformfv location should be 8");
+static_assert(offsetof(GetUniformfv, params_shm_id) == 12,
+              "offset of GetUniformfv params_shm_id should be 12");
+static_assert(offsetof(GetUniformfv, params_shm_offset) == 16,
+              "offset of GetUniformfv params_shm_offset should be 16");
 
 struct GetUniformiv {
   typedef GetUniformiv ValueType;
@@ -4048,17 +4089,17 @@ struct GetUniformiv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetUniformiv) == 20, Sizeof_GetUniformiv_is_not_20);
-COMPILE_ASSERT(offsetof(GetUniformiv, header) == 0,
-               OffsetOf_GetUniformiv_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformiv, program) == 4,
-               OffsetOf_GetUniformiv_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformiv, location) == 8,
-               OffsetOf_GetUniformiv_location_not_8);
-COMPILE_ASSERT(offsetof(GetUniformiv, params_shm_id) == 12,
-               OffsetOf_GetUniformiv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetUniformiv, params_shm_offset) == 16,
-               OffsetOf_GetUniformiv_params_shm_offset_not_16);
+static_assert(sizeof(GetUniformiv) == 20, "size of GetUniformiv should be 20");
+static_assert(offsetof(GetUniformiv, header) == 0,
+              "offset of GetUniformiv header should be 0");
+static_assert(offsetof(GetUniformiv, program) == 4,
+              "offset of GetUniformiv program should be 4");
+static_assert(offsetof(GetUniformiv, location) == 8,
+              "offset of GetUniformiv location should be 8");
+static_assert(offsetof(GetUniformiv, params_shm_id) == 12,
+              "offset of GetUniformiv params_shm_id should be 12");
+static_assert(offsetof(GetUniformiv, params_shm_offset) == 16,
+              "offset of GetUniformiv params_shm_offset should be 16");
 
 struct GetUniformLocation {
   typedef GetUniformLocation ValueType;
@@ -4102,18 +4143,18 @@ struct GetUniformLocation {
   uint32_t location_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetUniformLocation) == 20,
-               Sizeof_GetUniformLocation_is_not_20);
-COMPILE_ASSERT(offsetof(GetUniformLocation, header) == 0,
-               OffsetOf_GetUniformLocation_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformLocation, program) == 4,
-               OffsetOf_GetUniformLocation_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformLocation, name_bucket_id) == 8,
-               OffsetOf_GetUniformLocation_name_bucket_id_not_8);
-COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_id) == 12,
-               OffsetOf_GetUniformLocation_location_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_offset) == 16,
-               OffsetOf_GetUniformLocation_location_shm_offset_not_16);
+static_assert(sizeof(GetUniformLocation) == 20,
+              "size of GetUniformLocation should be 20");
+static_assert(offsetof(GetUniformLocation, header) == 0,
+              "offset of GetUniformLocation header should be 0");
+static_assert(offsetof(GetUniformLocation, program) == 4,
+              "offset of GetUniformLocation program should be 4");
+static_assert(offsetof(GetUniformLocation, name_bucket_id) == 8,
+              "offset of GetUniformLocation name_bucket_id should be 8");
+static_assert(offsetof(GetUniformLocation, location_shm_id) == 12,
+              "offset of GetUniformLocation location_shm_id should be 12");
+static_assert(offsetof(GetUniformLocation, location_shm_offset) == 16,
+              "offset of GetUniformLocation location_shm_offset should be 16");
 
 struct GetVertexAttribfv {
   typedef GetVertexAttribfv ValueType;
@@ -4157,18 +4198,18 @@ struct GetVertexAttribfv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetVertexAttribfv) == 20,
-               Sizeof_GetVertexAttribfv_is_not_20);
-COMPILE_ASSERT(offsetof(GetVertexAttribfv, header) == 0,
-               OffsetOf_GetVertexAttribfv_header_not_0);
-COMPILE_ASSERT(offsetof(GetVertexAttribfv, index) == 4,
-               OffsetOf_GetVertexAttribfv_index_not_4);
-COMPILE_ASSERT(offsetof(GetVertexAttribfv, pname) == 8,
-               OffsetOf_GetVertexAttribfv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetVertexAttribfv, params_shm_id) == 12,
-               OffsetOf_GetVertexAttribfv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetVertexAttribfv, params_shm_offset) == 16,
-               OffsetOf_GetVertexAttribfv_params_shm_offset_not_16);
+static_assert(sizeof(GetVertexAttribfv) == 20,
+              "size of GetVertexAttribfv should be 20");
+static_assert(offsetof(GetVertexAttribfv, header) == 0,
+              "offset of GetVertexAttribfv header should be 0");
+static_assert(offsetof(GetVertexAttribfv, index) == 4,
+              "offset of GetVertexAttribfv index should be 4");
+static_assert(offsetof(GetVertexAttribfv, pname) == 8,
+              "offset of GetVertexAttribfv pname should be 8");
+static_assert(offsetof(GetVertexAttribfv, params_shm_id) == 12,
+              "offset of GetVertexAttribfv params_shm_id should be 12");
+static_assert(offsetof(GetVertexAttribfv, params_shm_offset) == 16,
+              "offset of GetVertexAttribfv params_shm_offset should be 16");
 
 struct GetVertexAttribiv {
   typedef GetVertexAttribiv ValueType;
@@ -4212,18 +4253,18 @@ struct GetVertexAttribiv {
   uint32_t params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetVertexAttribiv) == 20,
-               Sizeof_GetVertexAttribiv_is_not_20);
-COMPILE_ASSERT(offsetof(GetVertexAttribiv, header) == 0,
-               OffsetOf_GetVertexAttribiv_header_not_0);
-COMPILE_ASSERT(offsetof(GetVertexAttribiv, index) == 4,
-               OffsetOf_GetVertexAttribiv_index_not_4);
-COMPILE_ASSERT(offsetof(GetVertexAttribiv, pname) == 8,
-               OffsetOf_GetVertexAttribiv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetVertexAttribiv, params_shm_id) == 12,
-               OffsetOf_GetVertexAttribiv_params_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetVertexAttribiv, params_shm_offset) == 16,
-               OffsetOf_GetVertexAttribiv_params_shm_offset_not_16);
+static_assert(sizeof(GetVertexAttribiv) == 20,
+              "size of GetVertexAttribiv should be 20");
+static_assert(offsetof(GetVertexAttribiv, header) == 0,
+              "offset of GetVertexAttribiv header should be 0");
+static_assert(offsetof(GetVertexAttribiv, index) == 4,
+              "offset of GetVertexAttribiv index should be 4");
+static_assert(offsetof(GetVertexAttribiv, pname) == 8,
+              "offset of GetVertexAttribiv pname should be 8");
+static_assert(offsetof(GetVertexAttribiv, params_shm_id) == 12,
+              "offset of GetVertexAttribiv params_shm_id should be 12");
+static_assert(offsetof(GetVertexAttribiv, params_shm_offset) == 16,
+              "offset of GetVertexAttribiv params_shm_offset should be 16");
 
 struct GetVertexAttribPointerv {
   typedef GetVertexAttribPointerv ValueType;
@@ -4267,18 +4308,19 @@ struct GetVertexAttribPointerv {
   uint32_t pointer_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetVertexAttribPointerv) == 20,
-               Sizeof_GetVertexAttribPointerv_is_not_20);
-COMPILE_ASSERT(offsetof(GetVertexAttribPointerv, header) == 0,
-               OffsetOf_GetVertexAttribPointerv_header_not_0);
-COMPILE_ASSERT(offsetof(GetVertexAttribPointerv, index) == 4,
-               OffsetOf_GetVertexAttribPointerv_index_not_4);
-COMPILE_ASSERT(offsetof(GetVertexAttribPointerv, pname) == 8,
-               OffsetOf_GetVertexAttribPointerv_pname_not_8);
-COMPILE_ASSERT(offsetof(GetVertexAttribPointerv, pointer_shm_id) == 12,
-               OffsetOf_GetVertexAttribPointerv_pointer_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetVertexAttribPointerv, pointer_shm_offset) == 16,
-               OffsetOf_GetVertexAttribPointerv_pointer_shm_offset_not_16);
+static_assert(sizeof(GetVertexAttribPointerv) == 20,
+              "size of GetVertexAttribPointerv should be 20");
+static_assert(offsetof(GetVertexAttribPointerv, header) == 0,
+              "offset of GetVertexAttribPointerv header should be 0");
+static_assert(offsetof(GetVertexAttribPointerv, index) == 4,
+              "offset of GetVertexAttribPointerv index should be 4");
+static_assert(offsetof(GetVertexAttribPointerv, pname) == 8,
+              "offset of GetVertexAttribPointerv pname should be 8");
+static_assert(offsetof(GetVertexAttribPointerv, pointer_shm_id) == 12,
+              "offset of GetVertexAttribPointerv pointer_shm_id should be 12");
+static_assert(
+    offsetof(GetVertexAttribPointerv, pointer_shm_offset) == 16,
+    "offset of GetVertexAttribPointerv pointer_shm_offset should be 16");
 
 struct Hint {
   typedef Hint ValueType;
@@ -4308,10 +4350,10 @@ struct Hint {
   uint32_t mode;
 };
 
-COMPILE_ASSERT(sizeof(Hint) == 12, Sizeof_Hint_is_not_12);
-COMPILE_ASSERT(offsetof(Hint, header) == 0, OffsetOf_Hint_header_not_0);
-COMPILE_ASSERT(offsetof(Hint, target) == 4, OffsetOf_Hint_target_not_4);
-COMPILE_ASSERT(offsetof(Hint, mode) == 8, OffsetOf_Hint_mode_not_8);
+static_assert(sizeof(Hint) == 12, "size of Hint should be 12");
+static_assert(offsetof(Hint, header) == 0, "offset of Hint header should be 0");
+static_assert(offsetof(Hint, target) == 4, "offset of Hint target should be 4");
+static_assert(offsetof(Hint, mode) == 8, "offset of Hint mode should be 8");
 
 struct InvalidateFramebufferImmediate {
   typedef InvalidateFramebufferImmediate ValueType;
@@ -4353,14 +4395,14 @@ struct InvalidateFramebufferImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(InvalidateFramebufferImmediate) == 12,
-               Sizeof_InvalidateFramebufferImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(InvalidateFramebufferImmediate, header) == 0,
-               OffsetOf_InvalidateFramebufferImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(InvalidateFramebufferImmediate, target) == 4,
-               OffsetOf_InvalidateFramebufferImmediate_target_not_4);
-COMPILE_ASSERT(offsetof(InvalidateFramebufferImmediate, count) == 8,
-               OffsetOf_InvalidateFramebufferImmediate_count_not_8);
+static_assert(sizeof(InvalidateFramebufferImmediate) == 12,
+              "size of InvalidateFramebufferImmediate should be 12");
+static_assert(offsetof(InvalidateFramebufferImmediate, header) == 0,
+              "offset of InvalidateFramebufferImmediate header should be 0");
+static_assert(offsetof(InvalidateFramebufferImmediate, target) == 4,
+              "offset of InvalidateFramebufferImmediate target should be 4");
+static_assert(offsetof(InvalidateFramebufferImmediate, count) == 8,
+              "offset of InvalidateFramebufferImmediate count should be 8");
 
 struct InvalidateSubFramebufferImmediate {
   typedef InvalidateSubFramebufferImmediate ValueType;
@@ -4421,22 +4463,23 @@ struct InvalidateSubFramebufferImmediate {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(InvalidateSubFramebufferImmediate) == 28,
-               Sizeof_InvalidateSubFramebufferImmediate_is_not_28);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, header) == 0,
-               OffsetOf_InvalidateSubFramebufferImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, target) == 4,
-               OffsetOf_InvalidateSubFramebufferImmediate_target_not_4);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, count) == 8,
-               OffsetOf_InvalidateSubFramebufferImmediate_count_not_8);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, x) == 12,
-               OffsetOf_InvalidateSubFramebufferImmediate_x_not_12);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, y) == 16,
-               OffsetOf_InvalidateSubFramebufferImmediate_y_not_16);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, width) == 20,
-               OffsetOf_InvalidateSubFramebufferImmediate_width_not_20);
-COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, height) == 24,
-               OffsetOf_InvalidateSubFramebufferImmediate_height_not_24);
+static_assert(sizeof(InvalidateSubFramebufferImmediate) == 28,
+              "size of InvalidateSubFramebufferImmediate should be 28");
+static_assert(offsetof(InvalidateSubFramebufferImmediate, header) == 0,
+              "offset of InvalidateSubFramebufferImmediate header should be 0");
+static_assert(offsetof(InvalidateSubFramebufferImmediate, target) == 4,
+              "offset of InvalidateSubFramebufferImmediate target should be 4");
+static_assert(offsetof(InvalidateSubFramebufferImmediate, count) == 8,
+              "offset of InvalidateSubFramebufferImmediate count should be 8");
+static_assert(offsetof(InvalidateSubFramebufferImmediate, x) == 12,
+              "offset of InvalidateSubFramebufferImmediate x should be 12");
+static_assert(offsetof(InvalidateSubFramebufferImmediate, y) == 16,
+              "offset of InvalidateSubFramebufferImmediate y should be 16");
+static_assert(offsetof(InvalidateSubFramebufferImmediate, width) == 20,
+              "offset of InvalidateSubFramebufferImmediate width should be 20");
+static_assert(
+    offsetof(InvalidateSubFramebufferImmediate, height) == 24,
+    "offset of InvalidateSubFramebufferImmediate height should be 24");
 
 struct IsBuffer {
   typedef IsBuffer ValueType;
@@ -4476,13 +4519,15 @@ struct IsBuffer {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsBuffer) == 16, Sizeof_IsBuffer_is_not_16);
-COMPILE_ASSERT(offsetof(IsBuffer, header) == 0, OffsetOf_IsBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(IsBuffer, buffer) == 4, OffsetOf_IsBuffer_buffer_not_4);
-COMPILE_ASSERT(offsetof(IsBuffer, result_shm_id) == 8,
-               OffsetOf_IsBuffer_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsBuffer, result_shm_offset) == 12,
-               OffsetOf_IsBuffer_result_shm_offset_not_12);
+static_assert(sizeof(IsBuffer) == 16, "size of IsBuffer should be 16");
+static_assert(offsetof(IsBuffer, header) == 0,
+              "offset of IsBuffer header should be 0");
+static_assert(offsetof(IsBuffer, buffer) == 4,
+              "offset of IsBuffer buffer should be 4");
+static_assert(offsetof(IsBuffer, result_shm_id) == 8,
+              "offset of IsBuffer result_shm_id should be 8");
+static_assert(offsetof(IsBuffer, result_shm_offset) == 12,
+              "offset of IsBuffer result_shm_offset should be 12");
 
 struct IsEnabled {
   typedef IsEnabled ValueType;
@@ -4520,14 +4565,15 @@ struct IsEnabled {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsEnabled) == 16, Sizeof_IsEnabled_is_not_16);
-COMPILE_ASSERT(offsetof(IsEnabled, header) == 0,
-               OffsetOf_IsEnabled_header_not_0);
-COMPILE_ASSERT(offsetof(IsEnabled, cap) == 4, OffsetOf_IsEnabled_cap_not_4);
-COMPILE_ASSERT(offsetof(IsEnabled, result_shm_id) == 8,
-               OffsetOf_IsEnabled_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsEnabled, result_shm_offset) == 12,
-               OffsetOf_IsEnabled_result_shm_offset_not_12);
+static_assert(sizeof(IsEnabled) == 16, "size of IsEnabled should be 16");
+static_assert(offsetof(IsEnabled, header) == 0,
+              "offset of IsEnabled header should be 0");
+static_assert(offsetof(IsEnabled, cap) == 4,
+              "offset of IsEnabled cap should be 4");
+static_assert(offsetof(IsEnabled, result_shm_id) == 8,
+              "offset of IsEnabled result_shm_id should be 8");
+static_assert(offsetof(IsEnabled, result_shm_offset) == 12,
+              "offset of IsEnabled result_shm_offset should be 12");
 
 struct IsFramebuffer {
   typedef IsFramebuffer ValueType;
@@ -4567,15 +4613,16 @@ struct IsFramebuffer {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsFramebuffer) == 16, Sizeof_IsFramebuffer_is_not_16);
-COMPILE_ASSERT(offsetof(IsFramebuffer, header) == 0,
-               OffsetOf_IsFramebuffer_header_not_0);
-COMPILE_ASSERT(offsetof(IsFramebuffer, framebuffer) == 4,
-               OffsetOf_IsFramebuffer_framebuffer_not_4);
-COMPILE_ASSERT(offsetof(IsFramebuffer, result_shm_id) == 8,
-               OffsetOf_IsFramebuffer_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsFramebuffer, result_shm_offset) == 12,
-               OffsetOf_IsFramebuffer_result_shm_offset_not_12);
+static_assert(sizeof(IsFramebuffer) == 16,
+              "size of IsFramebuffer should be 16");
+static_assert(offsetof(IsFramebuffer, header) == 0,
+              "offset of IsFramebuffer header should be 0");
+static_assert(offsetof(IsFramebuffer, framebuffer) == 4,
+              "offset of IsFramebuffer framebuffer should be 4");
+static_assert(offsetof(IsFramebuffer, result_shm_id) == 8,
+              "offset of IsFramebuffer result_shm_id should be 8");
+static_assert(offsetof(IsFramebuffer, result_shm_offset) == 12,
+              "offset of IsFramebuffer result_shm_offset should be 12");
 
 struct IsProgram {
   typedef IsProgram ValueType;
@@ -4615,15 +4662,15 @@ struct IsProgram {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsProgram) == 16, Sizeof_IsProgram_is_not_16);
-COMPILE_ASSERT(offsetof(IsProgram, header) == 0,
-               OffsetOf_IsProgram_header_not_0);
-COMPILE_ASSERT(offsetof(IsProgram, program) == 4,
-               OffsetOf_IsProgram_program_not_4);
-COMPILE_ASSERT(offsetof(IsProgram, result_shm_id) == 8,
-               OffsetOf_IsProgram_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsProgram, result_shm_offset) == 12,
-               OffsetOf_IsProgram_result_shm_offset_not_12);
+static_assert(sizeof(IsProgram) == 16, "size of IsProgram should be 16");
+static_assert(offsetof(IsProgram, header) == 0,
+              "offset of IsProgram header should be 0");
+static_assert(offsetof(IsProgram, program) == 4,
+              "offset of IsProgram program should be 4");
+static_assert(offsetof(IsProgram, result_shm_id) == 8,
+              "offset of IsProgram result_shm_id should be 8");
+static_assert(offsetof(IsProgram, result_shm_offset) == 12,
+              "offset of IsProgram result_shm_offset should be 12");
 
 struct IsRenderbuffer {
   typedef IsRenderbuffer ValueType;
@@ -4663,15 +4710,16 @@ struct IsRenderbuffer {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsRenderbuffer) == 16, Sizeof_IsRenderbuffer_is_not_16);
-COMPILE_ASSERT(offsetof(IsRenderbuffer, header) == 0,
-               OffsetOf_IsRenderbuffer_header_not_0);
-COMPILE_ASSERT(offsetof(IsRenderbuffer, renderbuffer) == 4,
-               OffsetOf_IsRenderbuffer_renderbuffer_not_4);
-COMPILE_ASSERT(offsetof(IsRenderbuffer, result_shm_id) == 8,
-               OffsetOf_IsRenderbuffer_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsRenderbuffer, result_shm_offset) == 12,
-               OffsetOf_IsRenderbuffer_result_shm_offset_not_12);
+static_assert(sizeof(IsRenderbuffer) == 16,
+              "size of IsRenderbuffer should be 16");
+static_assert(offsetof(IsRenderbuffer, header) == 0,
+              "offset of IsRenderbuffer header should be 0");
+static_assert(offsetof(IsRenderbuffer, renderbuffer) == 4,
+              "offset of IsRenderbuffer renderbuffer should be 4");
+static_assert(offsetof(IsRenderbuffer, result_shm_id) == 8,
+              "offset of IsRenderbuffer result_shm_id should be 8");
+static_assert(offsetof(IsRenderbuffer, result_shm_offset) == 12,
+              "offset of IsRenderbuffer result_shm_offset should be 12");
 
 struct IsSampler {
   typedef IsSampler ValueType;
@@ -4711,15 +4759,15 @@ struct IsSampler {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsSampler) == 16, Sizeof_IsSampler_is_not_16);
-COMPILE_ASSERT(offsetof(IsSampler, header) == 0,
-               OffsetOf_IsSampler_header_not_0);
-COMPILE_ASSERT(offsetof(IsSampler, sampler) == 4,
-               OffsetOf_IsSampler_sampler_not_4);
-COMPILE_ASSERT(offsetof(IsSampler, result_shm_id) == 8,
-               OffsetOf_IsSampler_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsSampler, result_shm_offset) == 12,
-               OffsetOf_IsSampler_result_shm_offset_not_12);
+static_assert(sizeof(IsSampler) == 16, "size of IsSampler should be 16");
+static_assert(offsetof(IsSampler, header) == 0,
+              "offset of IsSampler header should be 0");
+static_assert(offsetof(IsSampler, sampler) == 4,
+              "offset of IsSampler sampler should be 4");
+static_assert(offsetof(IsSampler, result_shm_id) == 8,
+              "offset of IsSampler result_shm_id should be 8");
+static_assert(offsetof(IsSampler, result_shm_offset) == 12,
+              "offset of IsSampler result_shm_offset should be 12");
 
 struct IsShader {
   typedef IsShader ValueType;
@@ -4759,13 +4807,15 @@ struct IsShader {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsShader) == 16, Sizeof_IsShader_is_not_16);
-COMPILE_ASSERT(offsetof(IsShader, header) == 0, OffsetOf_IsShader_header_not_0);
-COMPILE_ASSERT(offsetof(IsShader, shader) == 4, OffsetOf_IsShader_shader_not_4);
-COMPILE_ASSERT(offsetof(IsShader, result_shm_id) == 8,
-               OffsetOf_IsShader_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsShader, result_shm_offset) == 12,
-               OffsetOf_IsShader_result_shm_offset_not_12);
+static_assert(sizeof(IsShader) == 16, "size of IsShader should be 16");
+static_assert(offsetof(IsShader, header) == 0,
+              "offset of IsShader header should be 0");
+static_assert(offsetof(IsShader, shader) == 4,
+              "offset of IsShader shader should be 4");
+static_assert(offsetof(IsShader, result_shm_id) == 8,
+              "offset of IsShader result_shm_id should be 8");
+static_assert(offsetof(IsShader, result_shm_offset) == 12,
+              "offset of IsShader result_shm_offset should be 12");
 
 struct IsTexture {
   typedef IsTexture ValueType;
@@ -4805,15 +4855,15 @@ struct IsTexture {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsTexture) == 16, Sizeof_IsTexture_is_not_16);
-COMPILE_ASSERT(offsetof(IsTexture, header) == 0,
-               OffsetOf_IsTexture_header_not_0);
-COMPILE_ASSERT(offsetof(IsTexture, texture) == 4,
-               OffsetOf_IsTexture_texture_not_4);
-COMPILE_ASSERT(offsetof(IsTexture, result_shm_id) == 8,
-               OffsetOf_IsTexture_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsTexture, result_shm_offset) == 12,
-               OffsetOf_IsTexture_result_shm_offset_not_12);
+static_assert(sizeof(IsTexture) == 16, "size of IsTexture should be 16");
+static_assert(offsetof(IsTexture, header) == 0,
+              "offset of IsTexture header should be 0");
+static_assert(offsetof(IsTexture, texture) == 4,
+              "offset of IsTexture texture should be 4");
+static_assert(offsetof(IsTexture, result_shm_id) == 8,
+              "offset of IsTexture result_shm_id should be 8");
+static_assert(offsetof(IsTexture, result_shm_offset) == 12,
+              "offset of IsTexture result_shm_offset should be 12");
 
 struct IsTransformFeedback {
   typedef IsTransformFeedback ValueType;
@@ -4853,16 +4903,16 @@ struct IsTransformFeedback {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsTransformFeedback) == 16,
-               Sizeof_IsTransformFeedback_is_not_16);
-COMPILE_ASSERT(offsetof(IsTransformFeedback, header) == 0,
-               OffsetOf_IsTransformFeedback_header_not_0);
-COMPILE_ASSERT(offsetof(IsTransformFeedback, transformfeedback) == 4,
-               OffsetOf_IsTransformFeedback_transformfeedback_not_4);
-COMPILE_ASSERT(offsetof(IsTransformFeedback, result_shm_id) == 8,
-               OffsetOf_IsTransformFeedback_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsTransformFeedback, result_shm_offset) == 12,
-               OffsetOf_IsTransformFeedback_result_shm_offset_not_12);
+static_assert(sizeof(IsTransformFeedback) == 16,
+              "size of IsTransformFeedback should be 16");
+static_assert(offsetof(IsTransformFeedback, header) == 0,
+              "offset of IsTransformFeedback header should be 0");
+static_assert(offsetof(IsTransformFeedback, transformfeedback) == 4,
+              "offset of IsTransformFeedback transformfeedback should be 4");
+static_assert(offsetof(IsTransformFeedback, result_shm_id) == 8,
+              "offset of IsTransformFeedback result_shm_id should be 8");
+static_assert(offsetof(IsTransformFeedback, result_shm_offset) == 12,
+              "offset of IsTransformFeedback result_shm_offset should be 12");
 
 struct LineWidth {
   typedef LineWidth ValueType;
@@ -4890,10 +4940,11 @@ struct LineWidth {
   float width;
 };
 
-COMPILE_ASSERT(sizeof(LineWidth) == 8, Sizeof_LineWidth_is_not_8);
-COMPILE_ASSERT(offsetof(LineWidth, header) == 0,
-               OffsetOf_LineWidth_header_not_0);
-COMPILE_ASSERT(offsetof(LineWidth, width) == 4, OffsetOf_LineWidth_width_not_4);
+static_assert(sizeof(LineWidth) == 8, "size of LineWidth should be 8");
+static_assert(offsetof(LineWidth, header) == 0,
+              "offset of LineWidth header should be 0");
+static_assert(offsetof(LineWidth, width) == 4,
+              "offset of LineWidth width should be 4");
 
 struct LinkProgram {
   typedef LinkProgram ValueType;
@@ -4921,11 +4972,11 @@ struct LinkProgram {
   uint32_t program;
 };
 
-COMPILE_ASSERT(sizeof(LinkProgram) == 8, Sizeof_LinkProgram_is_not_8);
-COMPILE_ASSERT(offsetof(LinkProgram, header) == 0,
-               OffsetOf_LinkProgram_header_not_0);
-COMPILE_ASSERT(offsetof(LinkProgram, program) == 4,
-               OffsetOf_LinkProgram_program_not_4);
+static_assert(sizeof(LinkProgram) == 8, "size of LinkProgram should be 8");
+static_assert(offsetof(LinkProgram, header) == 0,
+              "offset of LinkProgram header should be 0");
+static_assert(offsetof(LinkProgram, program) == 4,
+              "offset of LinkProgram program should be 4");
 
 struct PauseTransformFeedback {
   typedef PauseTransformFeedback ValueType;
@@ -4949,10 +5000,10 @@ struct PauseTransformFeedback {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(PauseTransformFeedback) == 4,
-               Sizeof_PauseTransformFeedback_is_not_4);
-COMPILE_ASSERT(offsetof(PauseTransformFeedback, header) == 0,
-               OffsetOf_PauseTransformFeedback_header_not_0);
+static_assert(sizeof(PauseTransformFeedback) == 4,
+              "size of PauseTransformFeedback should be 4");
+static_assert(offsetof(PauseTransformFeedback, header) == 0,
+              "offset of PauseTransformFeedback header should be 0");
 
 struct PixelStorei {
   typedef PixelStorei ValueType;
@@ -4982,13 +5033,13 @@ struct PixelStorei {
   int32_t param;
 };
 
-COMPILE_ASSERT(sizeof(PixelStorei) == 12, Sizeof_PixelStorei_is_not_12);
-COMPILE_ASSERT(offsetof(PixelStorei, header) == 0,
-               OffsetOf_PixelStorei_header_not_0);
-COMPILE_ASSERT(offsetof(PixelStorei, pname) == 4,
-               OffsetOf_PixelStorei_pname_not_4);
-COMPILE_ASSERT(offsetof(PixelStorei, param) == 8,
-               OffsetOf_PixelStorei_param_not_8);
+static_assert(sizeof(PixelStorei) == 12, "size of PixelStorei should be 12");
+static_assert(offsetof(PixelStorei, header) == 0,
+              "offset of PixelStorei header should be 0");
+static_assert(offsetof(PixelStorei, pname) == 4,
+              "offset of PixelStorei pname should be 4");
+static_assert(offsetof(PixelStorei, param) == 8,
+              "offset of PixelStorei param should be 8");
 
 struct PolygonOffset {
   typedef PolygonOffset ValueType;
@@ -5018,13 +5069,14 @@ struct PolygonOffset {
   float units;
 };
 
-COMPILE_ASSERT(sizeof(PolygonOffset) == 12, Sizeof_PolygonOffset_is_not_12);
-COMPILE_ASSERT(offsetof(PolygonOffset, header) == 0,
-               OffsetOf_PolygonOffset_header_not_0);
-COMPILE_ASSERT(offsetof(PolygonOffset, factor) == 4,
-               OffsetOf_PolygonOffset_factor_not_4);
-COMPILE_ASSERT(offsetof(PolygonOffset, units) == 8,
-               OffsetOf_PolygonOffset_units_not_8);
+static_assert(sizeof(PolygonOffset) == 12,
+              "size of PolygonOffset should be 12");
+static_assert(offsetof(PolygonOffset, header) == 0,
+              "offset of PolygonOffset header should be 0");
+static_assert(offsetof(PolygonOffset, factor) == 4,
+              "offset of PolygonOffset factor should be 4");
+static_assert(offsetof(PolygonOffset, units) == 8,
+              "offset of PolygonOffset units should be 8");
 
 struct ReadBuffer {
   typedef ReadBuffer ValueType;
@@ -5052,10 +5104,11 @@ struct ReadBuffer {
   uint32_t src;
 };
 
-COMPILE_ASSERT(sizeof(ReadBuffer) == 8, Sizeof_ReadBuffer_is_not_8);
-COMPILE_ASSERT(offsetof(ReadBuffer, header) == 0,
-               OffsetOf_ReadBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(ReadBuffer, src) == 4, OffsetOf_ReadBuffer_src_not_4);
+static_assert(sizeof(ReadBuffer) == 8, "size of ReadBuffer should be 8");
+static_assert(offsetof(ReadBuffer, header) == 0,
+              "offset of ReadBuffer header should be 0");
+static_assert(offsetof(ReadBuffer, src) == 4,
+              "offset of ReadBuffer src should be 4");
 
 // ReadPixels has the result separated from the pixel buffer so that
 // it is easier to specify the result going to some specific place
@@ -5131,29 +5184,31 @@ struct ReadPixels {
   uint32_t async;
 };
 
-COMPILE_ASSERT(sizeof(ReadPixels) == 48, Sizeof_ReadPixels_is_not_48);
-COMPILE_ASSERT(offsetof(ReadPixels, header) == 0,
-               OffsetOf_ReadPixels_header_not_0);
-COMPILE_ASSERT(offsetof(ReadPixels, x) == 4, OffsetOf_ReadPixels_x_not_4);
-COMPILE_ASSERT(offsetof(ReadPixels, y) == 8, OffsetOf_ReadPixels_y_not_8);
-COMPILE_ASSERT(offsetof(ReadPixels, width) == 12,
-               OffsetOf_ReadPixels_width_not_12);
-COMPILE_ASSERT(offsetof(ReadPixels, height) == 16,
-               OffsetOf_ReadPixels_height_not_16);
-COMPILE_ASSERT(offsetof(ReadPixels, format) == 20,
-               OffsetOf_ReadPixels_format_not_20);
-COMPILE_ASSERT(offsetof(ReadPixels, type) == 24,
-               OffsetOf_ReadPixels_type_not_24);
-COMPILE_ASSERT(offsetof(ReadPixels, pixels_shm_id) == 28,
-               OffsetOf_ReadPixels_pixels_shm_id_not_28);
-COMPILE_ASSERT(offsetof(ReadPixels, pixels_shm_offset) == 32,
-               OffsetOf_ReadPixels_pixels_shm_offset_not_32);
-COMPILE_ASSERT(offsetof(ReadPixels, result_shm_id) == 36,
-               OffsetOf_ReadPixels_result_shm_id_not_36);
-COMPILE_ASSERT(offsetof(ReadPixels, result_shm_offset) == 40,
-               OffsetOf_ReadPixels_result_shm_offset_not_40);
-COMPILE_ASSERT(offsetof(ReadPixels, async) == 44,
-               OffsetOf_ReadPixels_async_not_44);
+static_assert(sizeof(ReadPixels) == 48, "size of ReadPixels should be 48");
+static_assert(offsetof(ReadPixels, header) == 0,
+              "offset of ReadPixels header should be 0");
+static_assert(offsetof(ReadPixels, x) == 4,
+              "offset of ReadPixels x should be 4");
+static_assert(offsetof(ReadPixels, y) == 8,
+              "offset of ReadPixels y should be 8");
+static_assert(offsetof(ReadPixels, width) == 12,
+              "offset of ReadPixels width should be 12");
+static_assert(offsetof(ReadPixels, height) == 16,
+              "offset of ReadPixels height should be 16");
+static_assert(offsetof(ReadPixels, format) == 20,
+              "offset of ReadPixels format should be 20");
+static_assert(offsetof(ReadPixels, type) == 24,
+              "offset of ReadPixels type should be 24");
+static_assert(offsetof(ReadPixels, pixels_shm_id) == 28,
+              "offset of ReadPixels pixels_shm_id should be 28");
+static_assert(offsetof(ReadPixels, pixels_shm_offset) == 32,
+              "offset of ReadPixels pixels_shm_offset should be 32");
+static_assert(offsetof(ReadPixels, result_shm_id) == 36,
+              "offset of ReadPixels result_shm_id should be 36");
+static_assert(offsetof(ReadPixels, result_shm_offset) == 40,
+              "offset of ReadPixels result_shm_offset should be 40");
+static_assert(offsetof(ReadPixels, async) == 44,
+              "offset of ReadPixels async should be 44");
 
 struct ReleaseShaderCompiler {
   typedef ReleaseShaderCompiler ValueType;
@@ -5177,10 +5232,10 @@ struct ReleaseShaderCompiler {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(ReleaseShaderCompiler) == 4,
-               Sizeof_ReleaseShaderCompiler_is_not_4);
-COMPILE_ASSERT(offsetof(ReleaseShaderCompiler, header) == 0,
-               OffsetOf_ReleaseShaderCompiler_header_not_0);
+static_assert(sizeof(ReleaseShaderCompiler) == 4,
+              "size of ReleaseShaderCompiler should be 4");
+static_assert(offsetof(ReleaseShaderCompiler, header) == 0,
+              "offset of ReleaseShaderCompiler header should be 0");
 
 struct RenderbufferStorage {
   typedef RenderbufferStorage ValueType;
@@ -5222,18 +5277,18 @@ struct RenderbufferStorage {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(RenderbufferStorage) == 20,
-               Sizeof_RenderbufferStorage_is_not_20);
-COMPILE_ASSERT(offsetof(RenderbufferStorage, header) == 0,
-               OffsetOf_RenderbufferStorage_header_not_0);
-COMPILE_ASSERT(offsetof(RenderbufferStorage, target) == 4,
-               OffsetOf_RenderbufferStorage_target_not_4);
-COMPILE_ASSERT(offsetof(RenderbufferStorage, internalformat) == 8,
-               OffsetOf_RenderbufferStorage_internalformat_not_8);
-COMPILE_ASSERT(offsetof(RenderbufferStorage, width) == 12,
-               OffsetOf_RenderbufferStorage_width_not_12);
-COMPILE_ASSERT(offsetof(RenderbufferStorage, height) == 16,
-               OffsetOf_RenderbufferStorage_height_not_16);
+static_assert(sizeof(RenderbufferStorage) == 20,
+              "size of RenderbufferStorage should be 20");
+static_assert(offsetof(RenderbufferStorage, header) == 0,
+              "offset of RenderbufferStorage header should be 0");
+static_assert(offsetof(RenderbufferStorage, target) == 4,
+              "offset of RenderbufferStorage target should be 4");
+static_assert(offsetof(RenderbufferStorage, internalformat) == 8,
+              "offset of RenderbufferStorage internalformat should be 8");
+static_assert(offsetof(RenderbufferStorage, width) == 12,
+              "offset of RenderbufferStorage width should be 12");
+static_assert(offsetof(RenderbufferStorage, height) == 16,
+              "offset of RenderbufferStorage height should be 16");
 
 struct ResumeTransformFeedback {
   typedef ResumeTransformFeedback ValueType;
@@ -5257,10 +5312,10 @@ struct ResumeTransformFeedback {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(ResumeTransformFeedback) == 4,
-               Sizeof_ResumeTransformFeedback_is_not_4);
-COMPILE_ASSERT(offsetof(ResumeTransformFeedback, header) == 0,
-               OffsetOf_ResumeTransformFeedback_header_not_0);
+static_assert(sizeof(ResumeTransformFeedback) == 4,
+              "size of ResumeTransformFeedback should be 4");
+static_assert(offsetof(ResumeTransformFeedback, header) == 0,
+              "offset of ResumeTransformFeedback header should be 0");
 
 struct SampleCoverage {
   typedef SampleCoverage ValueType;
@@ -5290,13 +5345,14 @@ struct SampleCoverage {
   uint32_t invert;
 };
 
-COMPILE_ASSERT(sizeof(SampleCoverage) == 12, Sizeof_SampleCoverage_is_not_12);
-COMPILE_ASSERT(offsetof(SampleCoverage, header) == 0,
-               OffsetOf_SampleCoverage_header_not_0);
-COMPILE_ASSERT(offsetof(SampleCoverage, value) == 4,
-               OffsetOf_SampleCoverage_value_not_4);
-COMPILE_ASSERT(offsetof(SampleCoverage, invert) == 8,
-               OffsetOf_SampleCoverage_invert_not_8);
+static_assert(sizeof(SampleCoverage) == 12,
+              "size of SampleCoverage should be 12");
+static_assert(offsetof(SampleCoverage, header) == 0,
+              "offset of SampleCoverage header should be 0");
+static_assert(offsetof(SampleCoverage, value) == 4,
+              "offset of SampleCoverage value should be 4");
+static_assert(offsetof(SampleCoverage, invert) == 8,
+              "offset of SampleCoverage invert should be 8");
 
 struct SamplerParameterf {
   typedef SamplerParameterf ValueType;
@@ -5328,16 +5384,16 @@ struct SamplerParameterf {
   float param;
 };
 
-COMPILE_ASSERT(sizeof(SamplerParameterf) == 16,
-               Sizeof_SamplerParameterf_is_not_16);
-COMPILE_ASSERT(offsetof(SamplerParameterf, header) == 0,
-               OffsetOf_SamplerParameterf_header_not_0);
-COMPILE_ASSERT(offsetof(SamplerParameterf, sampler) == 4,
-               OffsetOf_SamplerParameterf_sampler_not_4);
-COMPILE_ASSERT(offsetof(SamplerParameterf, pname) == 8,
-               OffsetOf_SamplerParameterf_pname_not_8);
-COMPILE_ASSERT(offsetof(SamplerParameterf, param) == 12,
-               OffsetOf_SamplerParameterf_param_not_12);
+static_assert(sizeof(SamplerParameterf) == 16,
+              "size of SamplerParameterf should be 16");
+static_assert(offsetof(SamplerParameterf, header) == 0,
+              "offset of SamplerParameterf header should be 0");
+static_assert(offsetof(SamplerParameterf, sampler) == 4,
+              "offset of SamplerParameterf sampler should be 4");
+static_assert(offsetof(SamplerParameterf, pname) == 8,
+              "offset of SamplerParameterf pname should be 8");
+static_assert(offsetof(SamplerParameterf, param) == 12,
+              "offset of SamplerParameterf param should be 12");
 
 struct SamplerParameterfvImmediate {
   typedef SamplerParameterfvImmediate ValueType;
@@ -5374,14 +5430,14 @@ struct SamplerParameterfvImmediate {
   uint32_t pname;
 };
 
-COMPILE_ASSERT(sizeof(SamplerParameterfvImmediate) == 12,
-               Sizeof_SamplerParameterfvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(SamplerParameterfvImmediate, header) == 0,
-               OffsetOf_SamplerParameterfvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(SamplerParameterfvImmediate, sampler) == 4,
-               OffsetOf_SamplerParameterfvImmediate_sampler_not_4);
-COMPILE_ASSERT(offsetof(SamplerParameterfvImmediate, pname) == 8,
-               OffsetOf_SamplerParameterfvImmediate_pname_not_8);
+static_assert(sizeof(SamplerParameterfvImmediate) == 12,
+              "size of SamplerParameterfvImmediate should be 12");
+static_assert(offsetof(SamplerParameterfvImmediate, header) == 0,
+              "offset of SamplerParameterfvImmediate header should be 0");
+static_assert(offsetof(SamplerParameterfvImmediate, sampler) == 4,
+              "offset of SamplerParameterfvImmediate sampler should be 4");
+static_assert(offsetof(SamplerParameterfvImmediate, pname) == 8,
+              "offset of SamplerParameterfvImmediate pname should be 8");
 
 struct SamplerParameteri {
   typedef SamplerParameteri ValueType;
@@ -5413,16 +5469,16 @@ struct SamplerParameteri {
   int32_t param;
 };
 
-COMPILE_ASSERT(sizeof(SamplerParameteri) == 16,
-               Sizeof_SamplerParameteri_is_not_16);
-COMPILE_ASSERT(offsetof(SamplerParameteri, header) == 0,
-               OffsetOf_SamplerParameteri_header_not_0);
-COMPILE_ASSERT(offsetof(SamplerParameteri, sampler) == 4,
-               OffsetOf_SamplerParameteri_sampler_not_4);
-COMPILE_ASSERT(offsetof(SamplerParameteri, pname) == 8,
-               OffsetOf_SamplerParameteri_pname_not_8);
-COMPILE_ASSERT(offsetof(SamplerParameteri, param) == 12,
-               OffsetOf_SamplerParameteri_param_not_12);
+static_assert(sizeof(SamplerParameteri) == 16,
+              "size of SamplerParameteri should be 16");
+static_assert(offsetof(SamplerParameteri, header) == 0,
+              "offset of SamplerParameteri header should be 0");
+static_assert(offsetof(SamplerParameteri, sampler) == 4,
+              "offset of SamplerParameteri sampler should be 4");
+static_assert(offsetof(SamplerParameteri, pname) == 8,
+              "offset of SamplerParameteri pname should be 8");
+static_assert(offsetof(SamplerParameteri, param) == 12,
+              "offset of SamplerParameteri param should be 12");
 
 struct SamplerParameterivImmediate {
   typedef SamplerParameterivImmediate ValueType;
@@ -5459,14 +5515,14 @@ struct SamplerParameterivImmediate {
   uint32_t pname;
 };
 
-COMPILE_ASSERT(sizeof(SamplerParameterivImmediate) == 12,
-               Sizeof_SamplerParameterivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(SamplerParameterivImmediate, header) == 0,
-               OffsetOf_SamplerParameterivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(SamplerParameterivImmediate, sampler) == 4,
-               OffsetOf_SamplerParameterivImmediate_sampler_not_4);
-COMPILE_ASSERT(offsetof(SamplerParameterivImmediate, pname) == 8,
-               OffsetOf_SamplerParameterivImmediate_pname_not_8);
+static_assert(sizeof(SamplerParameterivImmediate) == 12,
+              "size of SamplerParameterivImmediate should be 12");
+static_assert(offsetof(SamplerParameterivImmediate, header) == 0,
+              "offset of SamplerParameterivImmediate header should be 0");
+static_assert(offsetof(SamplerParameterivImmediate, sampler) == 4,
+              "offset of SamplerParameterivImmediate sampler should be 4");
+static_assert(offsetof(SamplerParameterivImmediate, pname) == 8,
+              "offset of SamplerParameterivImmediate pname should be 8");
 
 struct Scissor {
   typedef Scissor ValueType;
@@ -5500,12 +5556,15 @@ struct Scissor {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(Scissor) == 20, Sizeof_Scissor_is_not_20);
-COMPILE_ASSERT(offsetof(Scissor, header) == 0, OffsetOf_Scissor_header_not_0);
-COMPILE_ASSERT(offsetof(Scissor, x) == 4, OffsetOf_Scissor_x_not_4);
-COMPILE_ASSERT(offsetof(Scissor, y) == 8, OffsetOf_Scissor_y_not_8);
-COMPILE_ASSERT(offsetof(Scissor, width) == 12, OffsetOf_Scissor_width_not_12);
-COMPILE_ASSERT(offsetof(Scissor, height) == 16, OffsetOf_Scissor_height_not_16);
+static_assert(sizeof(Scissor) == 20, "size of Scissor should be 20");
+static_assert(offsetof(Scissor, header) == 0,
+              "offset of Scissor header should be 0");
+static_assert(offsetof(Scissor, x) == 4, "offset of Scissor x should be 4");
+static_assert(offsetof(Scissor, y) == 8, "offset of Scissor y should be 8");
+static_assert(offsetof(Scissor, width) == 12,
+              "offset of Scissor width should be 12");
+static_assert(offsetof(Scissor, height) == 16,
+              "offset of Scissor height should be 16");
 
 struct ShaderBinary {
   typedef ShaderBinary ValueType;
@@ -5560,22 +5619,23 @@ struct ShaderBinary {
   int32_t length;
 };
 
-COMPILE_ASSERT(sizeof(ShaderBinary) == 32, Sizeof_ShaderBinary_is_not_32);
-COMPILE_ASSERT(offsetof(ShaderBinary, header) == 0,
-               OffsetOf_ShaderBinary_header_not_0);
-COMPILE_ASSERT(offsetof(ShaderBinary, n) == 4, OffsetOf_ShaderBinary_n_not_4);
-COMPILE_ASSERT(offsetof(ShaderBinary, shaders_shm_id) == 8,
-               OffsetOf_ShaderBinary_shaders_shm_id_not_8);
-COMPILE_ASSERT(offsetof(ShaderBinary, shaders_shm_offset) == 12,
-               OffsetOf_ShaderBinary_shaders_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(ShaderBinary, binaryformat) == 16,
-               OffsetOf_ShaderBinary_binaryformat_not_16);
-COMPILE_ASSERT(offsetof(ShaderBinary, binary_shm_id) == 20,
-               OffsetOf_ShaderBinary_binary_shm_id_not_20);
-COMPILE_ASSERT(offsetof(ShaderBinary, binary_shm_offset) == 24,
-               OffsetOf_ShaderBinary_binary_shm_offset_not_24);
-COMPILE_ASSERT(offsetof(ShaderBinary, length) == 28,
-               OffsetOf_ShaderBinary_length_not_28);
+static_assert(sizeof(ShaderBinary) == 32, "size of ShaderBinary should be 32");
+static_assert(offsetof(ShaderBinary, header) == 0,
+              "offset of ShaderBinary header should be 0");
+static_assert(offsetof(ShaderBinary, n) == 4,
+              "offset of ShaderBinary n should be 4");
+static_assert(offsetof(ShaderBinary, shaders_shm_id) == 8,
+              "offset of ShaderBinary shaders_shm_id should be 8");
+static_assert(offsetof(ShaderBinary, shaders_shm_offset) == 12,
+              "offset of ShaderBinary shaders_shm_offset should be 12");
+static_assert(offsetof(ShaderBinary, binaryformat) == 16,
+              "offset of ShaderBinary binaryformat should be 16");
+static_assert(offsetof(ShaderBinary, binary_shm_id) == 20,
+              "offset of ShaderBinary binary_shm_id should be 20");
+static_assert(offsetof(ShaderBinary, binary_shm_offset) == 24,
+              "offset of ShaderBinary binary_shm_offset should be 24");
+static_assert(offsetof(ShaderBinary, length) == 28,
+              "offset of ShaderBinary length should be 28");
 
 struct ShaderSourceBucket {
   typedef ShaderSourceBucket ValueType;
@@ -5605,14 +5665,14 @@ struct ShaderSourceBucket {
   uint32_t data_bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(ShaderSourceBucket) == 12,
-               Sizeof_ShaderSourceBucket_is_not_12);
-COMPILE_ASSERT(offsetof(ShaderSourceBucket, header) == 0,
-               OffsetOf_ShaderSourceBucket_header_not_0);
-COMPILE_ASSERT(offsetof(ShaderSourceBucket, shader) == 4,
-               OffsetOf_ShaderSourceBucket_shader_not_4);
-COMPILE_ASSERT(offsetof(ShaderSourceBucket, data_bucket_id) == 8,
-               OffsetOf_ShaderSourceBucket_data_bucket_id_not_8);
+static_assert(sizeof(ShaderSourceBucket) == 12,
+              "size of ShaderSourceBucket should be 12");
+static_assert(offsetof(ShaderSourceBucket, header) == 0,
+              "offset of ShaderSourceBucket header should be 0");
+static_assert(offsetof(ShaderSourceBucket, shader) == 4,
+              "offset of ShaderSourceBucket shader should be 4");
+static_assert(offsetof(ShaderSourceBucket, data_bucket_id) == 8,
+              "offset of ShaderSourceBucket data_bucket_id should be 8");
 
 struct StencilFunc {
   typedef StencilFunc ValueType;
@@ -5644,14 +5704,15 @@ struct StencilFunc {
   uint32_t mask;
 };
 
-COMPILE_ASSERT(sizeof(StencilFunc) == 16, Sizeof_StencilFunc_is_not_16);
-COMPILE_ASSERT(offsetof(StencilFunc, header) == 0,
-               OffsetOf_StencilFunc_header_not_0);
-COMPILE_ASSERT(offsetof(StencilFunc, func) == 4,
-               OffsetOf_StencilFunc_func_not_4);
-COMPILE_ASSERT(offsetof(StencilFunc, ref) == 8, OffsetOf_StencilFunc_ref_not_8);
-COMPILE_ASSERT(offsetof(StencilFunc, mask) == 12,
-               OffsetOf_StencilFunc_mask_not_12);
+static_assert(sizeof(StencilFunc) == 16, "size of StencilFunc should be 16");
+static_assert(offsetof(StencilFunc, header) == 0,
+              "offset of StencilFunc header should be 0");
+static_assert(offsetof(StencilFunc, func) == 4,
+              "offset of StencilFunc func should be 4");
+static_assert(offsetof(StencilFunc, ref) == 8,
+              "offset of StencilFunc ref should be 8");
+static_assert(offsetof(StencilFunc, mask) == 12,
+              "offset of StencilFunc mask should be 12");
 
 struct StencilFuncSeparate {
   typedef StencilFuncSeparate ValueType;
@@ -5685,18 +5746,18 @@ struct StencilFuncSeparate {
   uint32_t mask;
 };
 
-COMPILE_ASSERT(sizeof(StencilFuncSeparate) == 20,
-               Sizeof_StencilFuncSeparate_is_not_20);
-COMPILE_ASSERT(offsetof(StencilFuncSeparate, header) == 0,
-               OffsetOf_StencilFuncSeparate_header_not_0);
-COMPILE_ASSERT(offsetof(StencilFuncSeparate, face) == 4,
-               OffsetOf_StencilFuncSeparate_face_not_4);
-COMPILE_ASSERT(offsetof(StencilFuncSeparate, func) == 8,
-               OffsetOf_StencilFuncSeparate_func_not_8);
-COMPILE_ASSERT(offsetof(StencilFuncSeparate, ref) == 12,
-               OffsetOf_StencilFuncSeparate_ref_not_12);
-COMPILE_ASSERT(offsetof(StencilFuncSeparate, mask) == 16,
-               OffsetOf_StencilFuncSeparate_mask_not_16);
+static_assert(sizeof(StencilFuncSeparate) == 20,
+              "size of StencilFuncSeparate should be 20");
+static_assert(offsetof(StencilFuncSeparate, header) == 0,
+              "offset of StencilFuncSeparate header should be 0");
+static_assert(offsetof(StencilFuncSeparate, face) == 4,
+              "offset of StencilFuncSeparate face should be 4");
+static_assert(offsetof(StencilFuncSeparate, func) == 8,
+              "offset of StencilFuncSeparate func should be 8");
+static_assert(offsetof(StencilFuncSeparate, ref) == 12,
+              "offset of StencilFuncSeparate ref should be 12");
+static_assert(offsetof(StencilFuncSeparate, mask) == 16,
+              "offset of StencilFuncSeparate mask should be 16");
 
 struct StencilMask {
   typedef StencilMask ValueType;
@@ -5724,11 +5785,11 @@ struct StencilMask {
   uint32_t mask;
 };
 
-COMPILE_ASSERT(sizeof(StencilMask) == 8, Sizeof_StencilMask_is_not_8);
-COMPILE_ASSERT(offsetof(StencilMask, header) == 0,
-               OffsetOf_StencilMask_header_not_0);
-COMPILE_ASSERT(offsetof(StencilMask, mask) == 4,
-               OffsetOf_StencilMask_mask_not_4);
+static_assert(sizeof(StencilMask) == 8, "size of StencilMask should be 8");
+static_assert(offsetof(StencilMask, header) == 0,
+              "offset of StencilMask header should be 0");
+static_assert(offsetof(StencilMask, mask) == 4,
+              "offset of StencilMask mask should be 4");
 
 struct StencilMaskSeparate {
   typedef StencilMaskSeparate ValueType;
@@ -5758,14 +5819,14 @@ struct StencilMaskSeparate {
   uint32_t mask;
 };
 
-COMPILE_ASSERT(sizeof(StencilMaskSeparate) == 12,
-               Sizeof_StencilMaskSeparate_is_not_12);
-COMPILE_ASSERT(offsetof(StencilMaskSeparate, header) == 0,
-               OffsetOf_StencilMaskSeparate_header_not_0);
-COMPILE_ASSERT(offsetof(StencilMaskSeparate, face) == 4,
-               OffsetOf_StencilMaskSeparate_face_not_4);
-COMPILE_ASSERT(offsetof(StencilMaskSeparate, mask) == 8,
-               OffsetOf_StencilMaskSeparate_mask_not_8);
+static_assert(sizeof(StencilMaskSeparate) == 12,
+              "size of StencilMaskSeparate should be 12");
+static_assert(offsetof(StencilMaskSeparate, header) == 0,
+              "offset of StencilMaskSeparate header should be 0");
+static_assert(offsetof(StencilMaskSeparate, face) == 4,
+              "offset of StencilMaskSeparate face should be 4");
+static_assert(offsetof(StencilMaskSeparate, mask) == 8,
+              "offset of StencilMaskSeparate mask should be 8");
 
 struct StencilOp {
   typedef StencilOp ValueType;
@@ -5797,13 +5858,15 @@ struct StencilOp {
   uint32_t zpass;
 };
 
-COMPILE_ASSERT(sizeof(StencilOp) == 16, Sizeof_StencilOp_is_not_16);
-COMPILE_ASSERT(offsetof(StencilOp, header) == 0,
-               OffsetOf_StencilOp_header_not_0);
-COMPILE_ASSERT(offsetof(StencilOp, fail) == 4, OffsetOf_StencilOp_fail_not_4);
-COMPILE_ASSERT(offsetof(StencilOp, zfail) == 8, OffsetOf_StencilOp_zfail_not_8);
-COMPILE_ASSERT(offsetof(StencilOp, zpass) == 12,
-               OffsetOf_StencilOp_zpass_not_12);
+static_assert(sizeof(StencilOp) == 16, "size of StencilOp should be 16");
+static_assert(offsetof(StencilOp, header) == 0,
+              "offset of StencilOp header should be 0");
+static_assert(offsetof(StencilOp, fail) == 4,
+              "offset of StencilOp fail should be 4");
+static_assert(offsetof(StencilOp, zfail) == 8,
+              "offset of StencilOp zfail should be 8");
+static_assert(offsetof(StencilOp, zpass) == 12,
+              "offset of StencilOp zpass should be 12");
 
 struct StencilOpSeparate {
   typedef StencilOpSeparate ValueType;
@@ -5841,18 +5904,18 @@ struct StencilOpSeparate {
   uint32_t zpass;
 };
 
-COMPILE_ASSERT(sizeof(StencilOpSeparate) == 20,
-               Sizeof_StencilOpSeparate_is_not_20);
-COMPILE_ASSERT(offsetof(StencilOpSeparate, header) == 0,
-               OffsetOf_StencilOpSeparate_header_not_0);
-COMPILE_ASSERT(offsetof(StencilOpSeparate, face) == 4,
-               OffsetOf_StencilOpSeparate_face_not_4);
-COMPILE_ASSERT(offsetof(StencilOpSeparate, fail) == 8,
-               OffsetOf_StencilOpSeparate_fail_not_8);
-COMPILE_ASSERT(offsetof(StencilOpSeparate, zfail) == 12,
-               OffsetOf_StencilOpSeparate_zfail_not_12);
-COMPILE_ASSERT(offsetof(StencilOpSeparate, zpass) == 16,
-               OffsetOf_StencilOpSeparate_zpass_not_16);
+static_assert(sizeof(StencilOpSeparate) == 20,
+              "size of StencilOpSeparate should be 20");
+static_assert(offsetof(StencilOpSeparate, header) == 0,
+              "offset of StencilOpSeparate header should be 0");
+static_assert(offsetof(StencilOpSeparate, face) == 4,
+              "offset of StencilOpSeparate face should be 4");
+static_assert(offsetof(StencilOpSeparate, fail) == 8,
+              "offset of StencilOpSeparate fail should be 8");
+static_assert(offsetof(StencilOpSeparate, zfail) == 12,
+              "offset of StencilOpSeparate zfail should be 12");
+static_assert(offsetof(StencilOpSeparate, zpass) == 16,
+              "offset of StencilOpSeparate zpass should be 16");
 
 struct TexImage2D {
   typedef TexImage2D ValueType;
@@ -5916,27 +5979,27 @@ struct TexImage2D {
   static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(TexImage2D) == 40, Sizeof_TexImage2D_is_not_40);
-COMPILE_ASSERT(offsetof(TexImage2D, header) == 0,
-               OffsetOf_TexImage2D_header_not_0);
-COMPILE_ASSERT(offsetof(TexImage2D, target) == 4,
-               OffsetOf_TexImage2D_target_not_4);
-COMPILE_ASSERT(offsetof(TexImage2D, level) == 8,
-               OffsetOf_TexImage2D_level_not_8);
-COMPILE_ASSERT(offsetof(TexImage2D, internalformat) == 12,
-               OffsetOf_TexImage2D_internalformat_not_12);
-COMPILE_ASSERT(offsetof(TexImage2D, width) == 16,
-               OffsetOf_TexImage2D_width_not_16);
-COMPILE_ASSERT(offsetof(TexImage2D, height) == 20,
-               OffsetOf_TexImage2D_height_not_20);
-COMPILE_ASSERT(offsetof(TexImage2D, format) == 24,
-               OffsetOf_TexImage2D_format_not_24);
-COMPILE_ASSERT(offsetof(TexImage2D, type) == 28,
-               OffsetOf_TexImage2D_type_not_28);
-COMPILE_ASSERT(offsetof(TexImage2D, pixels_shm_id) == 32,
-               OffsetOf_TexImage2D_pixels_shm_id_not_32);
-COMPILE_ASSERT(offsetof(TexImage2D, pixels_shm_offset) == 36,
-               OffsetOf_TexImage2D_pixels_shm_offset_not_36);
+static_assert(sizeof(TexImage2D) == 40, "size of TexImage2D should be 40");
+static_assert(offsetof(TexImage2D, header) == 0,
+              "offset of TexImage2D header should be 0");
+static_assert(offsetof(TexImage2D, target) == 4,
+              "offset of TexImage2D target should be 4");
+static_assert(offsetof(TexImage2D, level) == 8,
+              "offset of TexImage2D level should be 8");
+static_assert(offsetof(TexImage2D, internalformat) == 12,
+              "offset of TexImage2D internalformat should be 12");
+static_assert(offsetof(TexImage2D, width) == 16,
+              "offset of TexImage2D width should be 16");
+static_assert(offsetof(TexImage2D, height) == 20,
+              "offset of TexImage2D height should be 20");
+static_assert(offsetof(TexImage2D, format) == 24,
+              "offset of TexImage2D format should be 24");
+static_assert(offsetof(TexImage2D, type) == 28,
+              "offset of TexImage2D type should be 28");
+static_assert(offsetof(TexImage2D, pixels_shm_id) == 32,
+              "offset of TexImage2D pixels_shm_id should be 32");
+static_assert(offsetof(TexImage2D, pixels_shm_offset) == 36,
+              "offset of TexImage2D pixels_shm_offset should be 36");
 
 struct TexParameterf {
   typedef TexParameterf ValueType;
@@ -5968,15 +6031,16 @@ struct TexParameterf {
   float param;
 };
 
-COMPILE_ASSERT(sizeof(TexParameterf) == 16, Sizeof_TexParameterf_is_not_16);
-COMPILE_ASSERT(offsetof(TexParameterf, header) == 0,
-               OffsetOf_TexParameterf_header_not_0);
-COMPILE_ASSERT(offsetof(TexParameterf, target) == 4,
-               OffsetOf_TexParameterf_target_not_4);
-COMPILE_ASSERT(offsetof(TexParameterf, pname) == 8,
-               OffsetOf_TexParameterf_pname_not_8);
-COMPILE_ASSERT(offsetof(TexParameterf, param) == 12,
-               OffsetOf_TexParameterf_param_not_12);
+static_assert(sizeof(TexParameterf) == 16,
+              "size of TexParameterf should be 16");
+static_assert(offsetof(TexParameterf, header) == 0,
+              "offset of TexParameterf header should be 0");
+static_assert(offsetof(TexParameterf, target) == 4,
+              "offset of TexParameterf target should be 4");
+static_assert(offsetof(TexParameterf, pname) == 8,
+              "offset of TexParameterf pname should be 8");
+static_assert(offsetof(TexParameterf, param) == 12,
+              "offset of TexParameterf param should be 12");
 
 struct TexParameterfvImmediate {
   typedef TexParameterfvImmediate ValueType;
@@ -6013,14 +6077,14 @@ struct TexParameterfvImmediate {
   uint32_t pname;
 };
 
-COMPILE_ASSERT(sizeof(TexParameterfvImmediate) == 12,
-               Sizeof_TexParameterfvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(TexParameterfvImmediate, header) == 0,
-               OffsetOf_TexParameterfvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(TexParameterfvImmediate, target) == 4,
-               OffsetOf_TexParameterfvImmediate_target_not_4);
-COMPILE_ASSERT(offsetof(TexParameterfvImmediate, pname) == 8,
-               OffsetOf_TexParameterfvImmediate_pname_not_8);
+static_assert(sizeof(TexParameterfvImmediate) == 12,
+              "size of TexParameterfvImmediate should be 12");
+static_assert(offsetof(TexParameterfvImmediate, header) == 0,
+              "offset of TexParameterfvImmediate header should be 0");
+static_assert(offsetof(TexParameterfvImmediate, target) == 4,
+              "offset of TexParameterfvImmediate target should be 4");
+static_assert(offsetof(TexParameterfvImmediate, pname) == 8,
+              "offset of TexParameterfvImmediate pname should be 8");
 
 struct TexParameteri {
   typedef TexParameteri ValueType;
@@ -6052,15 +6116,16 @@ struct TexParameteri {
   int32_t param;
 };
 
-COMPILE_ASSERT(sizeof(TexParameteri) == 16, Sizeof_TexParameteri_is_not_16);
-COMPILE_ASSERT(offsetof(TexParameteri, header) == 0,
-               OffsetOf_TexParameteri_header_not_0);
-COMPILE_ASSERT(offsetof(TexParameteri, target) == 4,
-               OffsetOf_TexParameteri_target_not_4);
-COMPILE_ASSERT(offsetof(TexParameteri, pname) == 8,
-               OffsetOf_TexParameteri_pname_not_8);
-COMPILE_ASSERT(offsetof(TexParameteri, param) == 12,
-               OffsetOf_TexParameteri_param_not_12);
+static_assert(sizeof(TexParameteri) == 16,
+              "size of TexParameteri should be 16");
+static_assert(offsetof(TexParameteri, header) == 0,
+              "offset of TexParameteri header should be 0");
+static_assert(offsetof(TexParameteri, target) == 4,
+              "offset of TexParameteri target should be 4");
+static_assert(offsetof(TexParameteri, pname) == 8,
+              "offset of TexParameteri pname should be 8");
+static_assert(offsetof(TexParameteri, param) == 12,
+              "offset of TexParameteri param should be 12");
 
 struct TexParameterivImmediate {
   typedef TexParameterivImmediate ValueType;
@@ -6097,14 +6162,14 @@ struct TexParameterivImmediate {
   uint32_t pname;
 };
 
-COMPILE_ASSERT(sizeof(TexParameterivImmediate) == 12,
-               Sizeof_TexParameterivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(TexParameterivImmediate, header) == 0,
-               OffsetOf_TexParameterivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(TexParameterivImmediate, target) == 4,
-               OffsetOf_TexParameterivImmediate_target_not_4);
-COMPILE_ASSERT(offsetof(TexParameterivImmediate, pname) == 8,
-               OffsetOf_TexParameterivImmediate_pname_not_8);
+static_assert(sizeof(TexParameterivImmediate) == 12,
+              "size of TexParameterivImmediate should be 12");
+static_assert(offsetof(TexParameterivImmediate, header) == 0,
+              "offset of TexParameterivImmediate header should be 0");
+static_assert(offsetof(TexParameterivImmediate, target) == 4,
+              "offset of TexParameterivImmediate target should be 4");
+static_assert(offsetof(TexParameterivImmediate, pname) == 8,
+              "offset of TexParameterivImmediate pname should be 8");
 
 struct TexStorage3D {
   typedef TexStorage3D ValueType;
@@ -6154,21 +6219,21 @@ struct TexStorage3D {
   int32_t depth;
 };
 
-COMPILE_ASSERT(sizeof(TexStorage3D) == 28, Sizeof_TexStorage3D_is_not_28);
-COMPILE_ASSERT(offsetof(TexStorage3D, header) == 0,
-               OffsetOf_TexStorage3D_header_not_0);
-COMPILE_ASSERT(offsetof(TexStorage3D, target) == 4,
-               OffsetOf_TexStorage3D_target_not_4);
-COMPILE_ASSERT(offsetof(TexStorage3D, levels) == 8,
-               OffsetOf_TexStorage3D_levels_not_8);
-COMPILE_ASSERT(offsetof(TexStorage3D, internalFormat) == 12,
-               OffsetOf_TexStorage3D_internalFormat_not_12);
-COMPILE_ASSERT(offsetof(TexStorage3D, width) == 16,
-               OffsetOf_TexStorage3D_width_not_16);
-COMPILE_ASSERT(offsetof(TexStorage3D, height) == 20,
-               OffsetOf_TexStorage3D_height_not_20);
-COMPILE_ASSERT(offsetof(TexStorage3D, depth) == 24,
-               OffsetOf_TexStorage3D_depth_not_24);
+static_assert(sizeof(TexStorage3D) == 28, "size of TexStorage3D should be 28");
+static_assert(offsetof(TexStorage3D, header) == 0,
+              "offset of TexStorage3D header should be 0");
+static_assert(offsetof(TexStorage3D, target) == 4,
+              "offset of TexStorage3D target should be 4");
+static_assert(offsetof(TexStorage3D, levels) == 8,
+              "offset of TexStorage3D levels should be 8");
+static_assert(offsetof(TexStorage3D, internalFormat) == 12,
+              "offset of TexStorage3D internalFormat should be 12");
+static_assert(offsetof(TexStorage3D, width) == 16,
+              "offset of TexStorage3D width should be 16");
+static_assert(offsetof(TexStorage3D, height) == 20,
+              "offset of TexStorage3D height should be 20");
+static_assert(offsetof(TexStorage3D, depth) == 24,
+              "offset of TexStorage3D depth should be 24");
 
 struct TexSubImage2D {
   typedef TexSubImage2D ValueType;
@@ -6239,31 +6304,32 @@ struct TexSubImage2D {
   uint32_t internal;
 };
 
-COMPILE_ASSERT(sizeof(TexSubImage2D) == 48, Sizeof_TexSubImage2D_is_not_48);
-COMPILE_ASSERT(offsetof(TexSubImage2D, header) == 0,
-               OffsetOf_TexSubImage2D_header_not_0);
-COMPILE_ASSERT(offsetof(TexSubImage2D, target) == 4,
-               OffsetOf_TexSubImage2D_target_not_4);
-COMPILE_ASSERT(offsetof(TexSubImage2D, level) == 8,
-               OffsetOf_TexSubImage2D_level_not_8);
-COMPILE_ASSERT(offsetof(TexSubImage2D, xoffset) == 12,
-               OffsetOf_TexSubImage2D_xoffset_not_12);
-COMPILE_ASSERT(offsetof(TexSubImage2D, yoffset) == 16,
-               OffsetOf_TexSubImage2D_yoffset_not_16);
-COMPILE_ASSERT(offsetof(TexSubImage2D, width) == 20,
-               OffsetOf_TexSubImage2D_width_not_20);
-COMPILE_ASSERT(offsetof(TexSubImage2D, height) == 24,
-               OffsetOf_TexSubImage2D_height_not_24);
-COMPILE_ASSERT(offsetof(TexSubImage2D, format) == 28,
-               OffsetOf_TexSubImage2D_format_not_28);
-COMPILE_ASSERT(offsetof(TexSubImage2D, type) == 32,
-               OffsetOf_TexSubImage2D_type_not_32);
-COMPILE_ASSERT(offsetof(TexSubImage2D, pixels_shm_id) == 36,
-               OffsetOf_TexSubImage2D_pixels_shm_id_not_36);
-COMPILE_ASSERT(offsetof(TexSubImage2D, pixels_shm_offset) == 40,
-               OffsetOf_TexSubImage2D_pixels_shm_offset_not_40);
-COMPILE_ASSERT(offsetof(TexSubImage2D, internal) == 44,
-               OffsetOf_TexSubImage2D_internal_not_44);
+static_assert(sizeof(TexSubImage2D) == 48,
+              "size of TexSubImage2D should be 48");
+static_assert(offsetof(TexSubImage2D, header) == 0,
+              "offset of TexSubImage2D header should be 0");
+static_assert(offsetof(TexSubImage2D, target) == 4,
+              "offset of TexSubImage2D target should be 4");
+static_assert(offsetof(TexSubImage2D, level) == 8,
+              "offset of TexSubImage2D level should be 8");
+static_assert(offsetof(TexSubImage2D, xoffset) == 12,
+              "offset of TexSubImage2D xoffset should be 12");
+static_assert(offsetof(TexSubImage2D, yoffset) == 16,
+              "offset of TexSubImage2D yoffset should be 16");
+static_assert(offsetof(TexSubImage2D, width) == 20,
+              "offset of TexSubImage2D width should be 20");
+static_assert(offsetof(TexSubImage2D, height) == 24,
+              "offset of TexSubImage2D height should be 24");
+static_assert(offsetof(TexSubImage2D, format) == 28,
+              "offset of TexSubImage2D format should be 28");
+static_assert(offsetof(TexSubImage2D, type) == 32,
+              "offset of TexSubImage2D type should be 32");
+static_assert(offsetof(TexSubImage2D, pixels_shm_id) == 36,
+              "offset of TexSubImage2D pixels_shm_id should be 36");
+static_assert(offsetof(TexSubImage2D, pixels_shm_offset) == 40,
+              "offset of TexSubImage2D pixels_shm_offset should be 40");
+static_assert(offsetof(TexSubImage2D, internal) == 44,
+              "offset of TexSubImage2D internal should be 44");
 
 struct Uniform1f {
   typedef Uniform1f ValueType;
@@ -6293,12 +6359,12 @@ struct Uniform1f {
   float x;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1f) == 12, Sizeof_Uniform1f_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform1f, header) == 0,
-               OffsetOf_Uniform1f_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform1f, location) == 4,
-               OffsetOf_Uniform1f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1f, x) == 8, OffsetOf_Uniform1f_x_not_8);
+static_assert(sizeof(Uniform1f) == 12, "size of Uniform1f should be 12");
+static_assert(offsetof(Uniform1f, header) == 0,
+              "offset of Uniform1f header should be 0");
+static_assert(offsetof(Uniform1f, location) == 4,
+              "offset of Uniform1f location should be 4");
+static_assert(offsetof(Uniform1f, x) == 8, "offset of Uniform1f x should be 8");
 
 struct Uniform1fvImmediate {
   typedef Uniform1fvImmediate ValueType;
@@ -6337,14 +6403,14 @@ struct Uniform1fvImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1fvImmediate) == 12,
-               Sizeof_Uniform1fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform1fvImmediate, header) == 0,
-               OffsetOf_Uniform1fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform1fvImmediate, location) == 4,
-               OffsetOf_Uniform1fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1fvImmediate, count) == 8,
-               OffsetOf_Uniform1fvImmediate_count_not_8);
+static_assert(sizeof(Uniform1fvImmediate) == 12,
+              "size of Uniform1fvImmediate should be 12");
+static_assert(offsetof(Uniform1fvImmediate, header) == 0,
+              "offset of Uniform1fvImmediate header should be 0");
+static_assert(offsetof(Uniform1fvImmediate, location) == 4,
+              "offset of Uniform1fvImmediate location should be 4");
+static_assert(offsetof(Uniform1fvImmediate, count) == 8,
+              "offset of Uniform1fvImmediate count should be 8");
 
 struct Uniform1i {
   typedef Uniform1i ValueType;
@@ -6374,12 +6440,12 @@ struct Uniform1i {
   int32_t x;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1i) == 12, Sizeof_Uniform1i_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform1i, header) == 0,
-               OffsetOf_Uniform1i_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform1i, location) == 4,
-               OffsetOf_Uniform1i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1i, x) == 8, OffsetOf_Uniform1i_x_not_8);
+static_assert(sizeof(Uniform1i) == 12, "size of Uniform1i should be 12");
+static_assert(offsetof(Uniform1i, header) == 0,
+              "offset of Uniform1i header should be 0");
+static_assert(offsetof(Uniform1i, location) == 4,
+              "offset of Uniform1i location should be 4");
+static_assert(offsetof(Uniform1i, x) == 8, "offset of Uniform1i x should be 8");
 
 struct Uniform1ivImmediate {
   typedef Uniform1ivImmediate ValueType;
@@ -6418,14 +6484,14 @@ struct Uniform1ivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1ivImmediate) == 12,
-               Sizeof_Uniform1ivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform1ivImmediate, header) == 0,
-               OffsetOf_Uniform1ivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform1ivImmediate, location) == 4,
-               OffsetOf_Uniform1ivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1ivImmediate, count) == 8,
-               OffsetOf_Uniform1ivImmediate_count_not_8);
+static_assert(sizeof(Uniform1ivImmediate) == 12,
+              "size of Uniform1ivImmediate should be 12");
+static_assert(offsetof(Uniform1ivImmediate, header) == 0,
+              "offset of Uniform1ivImmediate header should be 0");
+static_assert(offsetof(Uniform1ivImmediate, location) == 4,
+              "offset of Uniform1ivImmediate location should be 4");
+static_assert(offsetof(Uniform1ivImmediate, count) == 8,
+              "offset of Uniform1ivImmediate count should be 8");
 
 struct Uniform1ui {
   typedef Uniform1ui ValueType;
@@ -6455,12 +6521,13 @@ struct Uniform1ui {
   uint32_t x;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1ui) == 12, Sizeof_Uniform1ui_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform1ui, header) == 0,
-               OffsetOf_Uniform1ui_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform1ui, location) == 4,
-               OffsetOf_Uniform1ui_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1ui, x) == 8, OffsetOf_Uniform1ui_x_not_8);
+static_assert(sizeof(Uniform1ui) == 12, "size of Uniform1ui should be 12");
+static_assert(offsetof(Uniform1ui, header) == 0,
+              "offset of Uniform1ui header should be 0");
+static_assert(offsetof(Uniform1ui, location) == 4,
+              "offset of Uniform1ui location should be 4");
+static_assert(offsetof(Uniform1ui, x) == 8,
+              "offset of Uniform1ui x should be 8");
 
 struct Uniform1uivImmediate {
   typedef Uniform1uivImmediate ValueType;
@@ -6499,14 +6566,14 @@ struct Uniform1uivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1uivImmediate) == 12,
-               Sizeof_Uniform1uivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform1uivImmediate, header) == 0,
-               OffsetOf_Uniform1uivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform1uivImmediate, location) == 4,
-               OffsetOf_Uniform1uivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1uivImmediate, count) == 8,
-               OffsetOf_Uniform1uivImmediate_count_not_8);
+static_assert(sizeof(Uniform1uivImmediate) == 12,
+              "size of Uniform1uivImmediate should be 12");
+static_assert(offsetof(Uniform1uivImmediate, header) == 0,
+              "offset of Uniform1uivImmediate header should be 0");
+static_assert(offsetof(Uniform1uivImmediate, location) == 4,
+              "offset of Uniform1uivImmediate location should be 4");
+static_assert(offsetof(Uniform1uivImmediate, count) == 8,
+              "offset of Uniform1uivImmediate count should be 8");
 
 struct Uniform2f {
   typedef Uniform2f ValueType;
@@ -6538,13 +6605,14 @@ struct Uniform2f {
   float y;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2f) == 16, Sizeof_Uniform2f_is_not_16);
-COMPILE_ASSERT(offsetof(Uniform2f, header) == 0,
-               OffsetOf_Uniform2f_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform2f, location) == 4,
-               OffsetOf_Uniform2f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2f, x) == 8, OffsetOf_Uniform2f_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform2f, y) == 12, OffsetOf_Uniform2f_y_not_12);
+static_assert(sizeof(Uniform2f) == 16, "size of Uniform2f should be 16");
+static_assert(offsetof(Uniform2f, header) == 0,
+              "offset of Uniform2f header should be 0");
+static_assert(offsetof(Uniform2f, location) == 4,
+              "offset of Uniform2f location should be 4");
+static_assert(offsetof(Uniform2f, x) == 8, "offset of Uniform2f x should be 8");
+static_assert(offsetof(Uniform2f, y) == 12,
+              "offset of Uniform2f y should be 12");
 
 struct Uniform2fvImmediate {
   typedef Uniform2fvImmediate ValueType;
@@ -6583,14 +6651,14 @@ struct Uniform2fvImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2fvImmediate) == 12,
-               Sizeof_Uniform2fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform2fvImmediate, header) == 0,
-               OffsetOf_Uniform2fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform2fvImmediate, location) == 4,
-               OffsetOf_Uniform2fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2fvImmediate, count) == 8,
-               OffsetOf_Uniform2fvImmediate_count_not_8);
+static_assert(sizeof(Uniform2fvImmediate) == 12,
+              "size of Uniform2fvImmediate should be 12");
+static_assert(offsetof(Uniform2fvImmediate, header) == 0,
+              "offset of Uniform2fvImmediate header should be 0");
+static_assert(offsetof(Uniform2fvImmediate, location) == 4,
+              "offset of Uniform2fvImmediate location should be 4");
+static_assert(offsetof(Uniform2fvImmediate, count) == 8,
+              "offset of Uniform2fvImmediate count should be 8");
 
 struct Uniform2i {
   typedef Uniform2i ValueType;
@@ -6622,13 +6690,14 @@ struct Uniform2i {
   int32_t y;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2i) == 16, Sizeof_Uniform2i_is_not_16);
-COMPILE_ASSERT(offsetof(Uniform2i, header) == 0,
-               OffsetOf_Uniform2i_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform2i, location) == 4,
-               OffsetOf_Uniform2i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2i, x) == 8, OffsetOf_Uniform2i_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform2i, y) == 12, OffsetOf_Uniform2i_y_not_12);
+static_assert(sizeof(Uniform2i) == 16, "size of Uniform2i should be 16");
+static_assert(offsetof(Uniform2i, header) == 0,
+              "offset of Uniform2i header should be 0");
+static_assert(offsetof(Uniform2i, location) == 4,
+              "offset of Uniform2i location should be 4");
+static_assert(offsetof(Uniform2i, x) == 8, "offset of Uniform2i x should be 8");
+static_assert(offsetof(Uniform2i, y) == 12,
+              "offset of Uniform2i y should be 12");
 
 struct Uniform2ivImmediate {
   typedef Uniform2ivImmediate ValueType;
@@ -6667,14 +6736,14 @@ struct Uniform2ivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2ivImmediate) == 12,
-               Sizeof_Uniform2ivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform2ivImmediate, header) == 0,
-               OffsetOf_Uniform2ivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform2ivImmediate, location) == 4,
-               OffsetOf_Uniform2ivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2ivImmediate, count) == 8,
-               OffsetOf_Uniform2ivImmediate_count_not_8);
+static_assert(sizeof(Uniform2ivImmediate) == 12,
+              "size of Uniform2ivImmediate should be 12");
+static_assert(offsetof(Uniform2ivImmediate, header) == 0,
+              "offset of Uniform2ivImmediate header should be 0");
+static_assert(offsetof(Uniform2ivImmediate, location) == 4,
+              "offset of Uniform2ivImmediate location should be 4");
+static_assert(offsetof(Uniform2ivImmediate, count) == 8,
+              "offset of Uniform2ivImmediate count should be 8");
 
 struct Uniform2ui {
   typedef Uniform2ui ValueType;
@@ -6706,13 +6775,15 @@ struct Uniform2ui {
   uint32_t y;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2ui) == 16, Sizeof_Uniform2ui_is_not_16);
-COMPILE_ASSERT(offsetof(Uniform2ui, header) == 0,
-               OffsetOf_Uniform2ui_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform2ui, location) == 4,
-               OffsetOf_Uniform2ui_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2ui, x) == 8, OffsetOf_Uniform2ui_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform2ui, y) == 12, OffsetOf_Uniform2ui_y_not_12);
+static_assert(sizeof(Uniform2ui) == 16, "size of Uniform2ui should be 16");
+static_assert(offsetof(Uniform2ui, header) == 0,
+              "offset of Uniform2ui header should be 0");
+static_assert(offsetof(Uniform2ui, location) == 4,
+              "offset of Uniform2ui location should be 4");
+static_assert(offsetof(Uniform2ui, x) == 8,
+              "offset of Uniform2ui x should be 8");
+static_assert(offsetof(Uniform2ui, y) == 12,
+              "offset of Uniform2ui y should be 12");
 
 struct Uniform2uivImmediate {
   typedef Uniform2uivImmediate ValueType;
@@ -6751,14 +6822,14 @@ struct Uniform2uivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2uivImmediate) == 12,
-               Sizeof_Uniform2uivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform2uivImmediate, header) == 0,
-               OffsetOf_Uniform2uivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform2uivImmediate, location) == 4,
-               OffsetOf_Uniform2uivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2uivImmediate, count) == 8,
-               OffsetOf_Uniform2uivImmediate_count_not_8);
+static_assert(sizeof(Uniform2uivImmediate) == 12,
+              "size of Uniform2uivImmediate should be 12");
+static_assert(offsetof(Uniform2uivImmediate, header) == 0,
+              "offset of Uniform2uivImmediate header should be 0");
+static_assert(offsetof(Uniform2uivImmediate, location) == 4,
+              "offset of Uniform2uivImmediate location should be 4");
+static_assert(offsetof(Uniform2uivImmediate, count) == 8,
+              "offset of Uniform2uivImmediate count should be 8");
 
 struct Uniform3f {
   typedef Uniform3f ValueType;
@@ -6792,14 +6863,16 @@ struct Uniform3f {
   float z;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3f) == 20, Sizeof_Uniform3f_is_not_20);
-COMPILE_ASSERT(offsetof(Uniform3f, header) == 0,
-               OffsetOf_Uniform3f_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform3f, location) == 4,
-               OffsetOf_Uniform3f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3f, x) == 8, OffsetOf_Uniform3f_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform3f, y) == 12, OffsetOf_Uniform3f_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform3f, z) == 16, OffsetOf_Uniform3f_z_not_16);
+static_assert(sizeof(Uniform3f) == 20, "size of Uniform3f should be 20");
+static_assert(offsetof(Uniform3f, header) == 0,
+              "offset of Uniform3f header should be 0");
+static_assert(offsetof(Uniform3f, location) == 4,
+              "offset of Uniform3f location should be 4");
+static_assert(offsetof(Uniform3f, x) == 8, "offset of Uniform3f x should be 8");
+static_assert(offsetof(Uniform3f, y) == 12,
+              "offset of Uniform3f y should be 12");
+static_assert(offsetof(Uniform3f, z) == 16,
+              "offset of Uniform3f z should be 16");
 
 struct Uniform3fvImmediate {
   typedef Uniform3fvImmediate ValueType;
@@ -6838,14 +6911,14 @@ struct Uniform3fvImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3fvImmediate) == 12,
-               Sizeof_Uniform3fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform3fvImmediate, header) == 0,
-               OffsetOf_Uniform3fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform3fvImmediate, location) == 4,
-               OffsetOf_Uniform3fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3fvImmediate, count) == 8,
-               OffsetOf_Uniform3fvImmediate_count_not_8);
+static_assert(sizeof(Uniform3fvImmediate) == 12,
+              "size of Uniform3fvImmediate should be 12");
+static_assert(offsetof(Uniform3fvImmediate, header) == 0,
+              "offset of Uniform3fvImmediate header should be 0");
+static_assert(offsetof(Uniform3fvImmediate, location) == 4,
+              "offset of Uniform3fvImmediate location should be 4");
+static_assert(offsetof(Uniform3fvImmediate, count) == 8,
+              "offset of Uniform3fvImmediate count should be 8");
 
 struct Uniform3i {
   typedef Uniform3i ValueType;
@@ -6879,14 +6952,16 @@ struct Uniform3i {
   int32_t z;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3i) == 20, Sizeof_Uniform3i_is_not_20);
-COMPILE_ASSERT(offsetof(Uniform3i, header) == 0,
-               OffsetOf_Uniform3i_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform3i, location) == 4,
-               OffsetOf_Uniform3i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3i, x) == 8, OffsetOf_Uniform3i_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform3i, y) == 12, OffsetOf_Uniform3i_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform3i, z) == 16, OffsetOf_Uniform3i_z_not_16);
+static_assert(sizeof(Uniform3i) == 20, "size of Uniform3i should be 20");
+static_assert(offsetof(Uniform3i, header) == 0,
+              "offset of Uniform3i header should be 0");
+static_assert(offsetof(Uniform3i, location) == 4,
+              "offset of Uniform3i location should be 4");
+static_assert(offsetof(Uniform3i, x) == 8, "offset of Uniform3i x should be 8");
+static_assert(offsetof(Uniform3i, y) == 12,
+              "offset of Uniform3i y should be 12");
+static_assert(offsetof(Uniform3i, z) == 16,
+              "offset of Uniform3i z should be 16");
 
 struct Uniform3ivImmediate {
   typedef Uniform3ivImmediate ValueType;
@@ -6925,14 +7000,14 @@ struct Uniform3ivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3ivImmediate) == 12,
-               Sizeof_Uniform3ivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform3ivImmediate, header) == 0,
-               OffsetOf_Uniform3ivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform3ivImmediate, location) == 4,
-               OffsetOf_Uniform3ivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3ivImmediate, count) == 8,
-               OffsetOf_Uniform3ivImmediate_count_not_8);
+static_assert(sizeof(Uniform3ivImmediate) == 12,
+              "size of Uniform3ivImmediate should be 12");
+static_assert(offsetof(Uniform3ivImmediate, header) == 0,
+              "offset of Uniform3ivImmediate header should be 0");
+static_assert(offsetof(Uniform3ivImmediate, location) == 4,
+              "offset of Uniform3ivImmediate location should be 4");
+static_assert(offsetof(Uniform3ivImmediate, count) == 8,
+              "offset of Uniform3ivImmediate count should be 8");
 
 struct Uniform3ui {
   typedef Uniform3ui ValueType;
@@ -6966,14 +7041,17 @@ struct Uniform3ui {
   uint32_t z;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3ui) == 20, Sizeof_Uniform3ui_is_not_20);
-COMPILE_ASSERT(offsetof(Uniform3ui, header) == 0,
-               OffsetOf_Uniform3ui_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform3ui, location) == 4,
-               OffsetOf_Uniform3ui_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3ui, x) == 8, OffsetOf_Uniform3ui_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform3ui, y) == 12, OffsetOf_Uniform3ui_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform3ui, z) == 16, OffsetOf_Uniform3ui_z_not_16);
+static_assert(sizeof(Uniform3ui) == 20, "size of Uniform3ui should be 20");
+static_assert(offsetof(Uniform3ui, header) == 0,
+              "offset of Uniform3ui header should be 0");
+static_assert(offsetof(Uniform3ui, location) == 4,
+              "offset of Uniform3ui location should be 4");
+static_assert(offsetof(Uniform3ui, x) == 8,
+              "offset of Uniform3ui x should be 8");
+static_assert(offsetof(Uniform3ui, y) == 12,
+              "offset of Uniform3ui y should be 12");
+static_assert(offsetof(Uniform3ui, z) == 16,
+              "offset of Uniform3ui z should be 16");
 
 struct Uniform3uivImmediate {
   typedef Uniform3uivImmediate ValueType;
@@ -7012,14 +7090,14 @@ struct Uniform3uivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3uivImmediate) == 12,
-               Sizeof_Uniform3uivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform3uivImmediate, header) == 0,
-               OffsetOf_Uniform3uivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform3uivImmediate, location) == 4,
-               OffsetOf_Uniform3uivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3uivImmediate, count) == 8,
-               OffsetOf_Uniform3uivImmediate_count_not_8);
+static_assert(sizeof(Uniform3uivImmediate) == 12,
+              "size of Uniform3uivImmediate should be 12");
+static_assert(offsetof(Uniform3uivImmediate, header) == 0,
+              "offset of Uniform3uivImmediate header should be 0");
+static_assert(offsetof(Uniform3uivImmediate, location) == 4,
+              "offset of Uniform3uivImmediate location should be 4");
+static_assert(offsetof(Uniform3uivImmediate, count) == 8,
+              "offset of Uniform3uivImmediate count should be 8");
 
 struct Uniform4f {
   typedef Uniform4f ValueType;
@@ -7060,15 +7138,18 @@ struct Uniform4f {
   float w;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4f) == 24, Sizeof_Uniform4f_is_not_24);
-COMPILE_ASSERT(offsetof(Uniform4f, header) == 0,
-               OffsetOf_Uniform4f_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform4f, location) == 4,
-               OffsetOf_Uniform4f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4f, x) == 8, OffsetOf_Uniform4f_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform4f, y) == 12, OffsetOf_Uniform4f_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform4f, z) == 16, OffsetOf_Uniform4f_z_not_16);
-COMPILE_ASSERT(offsetof(Uniform4f, w) == 20, OffsetOf_Uniform4f_w_not_20);
+static_assert(sizeof(Uniform4f) == 24, "size of Uniform4f should be 24");
+static_assert(offsetof(Uniform4f, header) == 0,
+              "offset of Uniform4f header should be 0");
+static_assert(offsetof(Uniform4f, location) == 4,
+              "offset of Uniform4f location should be 4");
+static_assert(offsetof(Uniform4f, x) == 8, "offset of Uniform4f x should be 8");
+static_assert(offsetof(Uniform4f, y) == 12,
+              "offset of Uniform4f y should be 12");
+static_assert(offsetof(Uniform4f, z) == 16,
+              "offset of Uniform4f z should be 16");
+static_assert(offsetof(Uniform4f, w) == 20,
+              "offset of Uniform4f w should be 20");
 
 struct Uniform4fvImmediate {
   typedef Uniform4fvImmediate ValueType;
@@ -7107,14 +7188,14 @@ struct Uniform4fvImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4fvImmediate) == 12,
-               Sizeof_Uniform4fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform4fvImmediate, header) == 0,
-               OffsetOf_Uniform4fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform4fvImmediate, location) == 4,
-               OffsetOf_Uniform4fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4fvImmediate, count) == 8,
-               OffsetOf_Uniform4fvImmediate_count_not_8);
+static_assert(sizeof(Uniform4fvImmediate) == 12,
+              "size of Uniform4fvImmediate should be 12");
+static_assert(offsetof(Uniform4fvImmediate, header) == 0,
+              "offset of Uniform4fvImmediate header should be 0");
+static_assert(offsetof(Uniform4fvImmediate, location) == 4,
+              "offset of Uniform4fvImmediate location should be 4");
+static_assert(offsetof(Uniform4fvImmediate, count) == 8,
+              "offset of Uniform4fvImmediate count should be 8");
 
 struct Uniform4i {
   typedef Uniform4i ValueType;
@@ -7155,15 +7236,18 @@ struct Uniform4i {
   int32_t w;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4i) == 24, Sizeof_Uniform4i_is_not_24);
-COMPILE_ASSERT(offsetof(Uniform4i, header) == 0,
-               OffsetOf_Uniform4i_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform4i, location) == 4,
-               OffsetOf_Uniform4i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4i, x) == 8, OffsetOf_Uniform4i_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform4i, y) == 12, OffsetOf_Uniform4i_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform4i, z) == 16, OffsetOf_Uniform4i_z_not_16);
-COMPILE_ASSERT(offsetof(Uniform4i, w) == 20, OffsetOf_Uniform4i_w_not_20);
+static_assert(sizeof(Uniform4i) == 24, "size of Uniform4i should be 24");
+static_assert(offsetof(Uniform4i, header) == 0,
+              "offset of Uniform4i header should be 0");
+static_assert(offsetof(Uniform4i, location) == 4,
+              "offset of Uniform4i location should be 4");
+static_assert(offsetof(Uniform4i, x) == 8, "offset of Uniform4i x should be 8");
+static_assert(offsetof(Uniform4i, y) == 12,
+              "offset of Uniform4i y should be 12");
+static_assert(offsetof(Uniform4i, z) == 16,
+              "offset of Uniform4i z should be 16");
+static_assert(offsetof(Uniform4i, w) == 20,
+              "offset of Uniform4i w should be 20");
 
 struct Uniform4ivImmediate {
   typedef Uniform4ivImmediate ValueType;
@@ -7202,14 +7286,14 @@ struct Uniform4ivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4ivImmediate) == 12,
-               Sizeof_Uniform4ivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform4ivImmediate, header) == 0,
-               OffsetOf_Uniform4ivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform4ivImmediate, location) == 4,
-               OffsetOf_Uniform4ivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4ivImmediate, count) == 8,
-               OffsetOf_Uniform4ivImmediate_count_not_8);
+static_assert(sizeof(Uniform4ivImmediate) == 12,
+              "size of Uniform4ivImmediate should be 12");
+static_assert(offsetof(Uniform4ivImmediate, header) == 0,
+              "offset of Uniform4ivImmediate header should be 0");
+static_assert(offsetof(Uniform4ivImmediate, location) == 4,
+              "offset of Uniform4ivImmediate location should be 4");
+static_assert(offsetof(Uniform4ivImmediate, count) == 8,
+              "offset of Uniform4ivImmediate count should be 8");
 
 struct Uniform4ui {
   typedef Uniform4ui ValueType;
@@ -7250,15 +7334,19 @@ struct Uniform4ui {
   uint32_t w;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4ui) == 24, Sizeof_Uniform4ui_is_not_24);
-COMPILE_ASSERT(offsetof(Uniform4ui, header) == 0,
-               OffsetOf_Uniform4ui_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform4ui, location) == 4,
-               OffsetOf_Uniform4ui_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4ui, x) == 8, OffsetOf_Uniform4ui_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform4ui, y) == 12, OffsetOf_Uniform4ui_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform4ui, z) == 16, OffsetOf_Uniform4ui_z_not_16);
-COMPILE_ASSERT(offsetof(Uniform4ui, w) == 20, OffsetOf_Uniform4ui_w_not_20);
+static_assert(sizeof(Uniform4ui) == 24, "size of Uniform4ui should be 24");
+static_assert(offsetof(Uniform4ui, header) == 0,
+              "offset of Uniform4ui header should be 0");
+static_assert(offsetof(Uniform4ui, location) == 4,
+              "offset of Uniform4ui location should be 4");
+static_assert(offsetof(Uniform4ui, x) == 8,
+              "offset of Uniform4ui x should be 8");
+static_assert(offsetof(Uniform4ui, y) == 12,
+              "offset of Uniform4ui y should be 12");
+static_assert(offsetof(Uniform4ui, z) == 16,
+              "offset of Uniform4ui z should be 16");
+static_assert(offsetof(Uniform4ui, w) == 20,
+              "offset of Uniform4ui w should be 20");
 
 struct Uniform4uivImmediate {
   typedef Uniform4uivImmediate ValueType;
@@ -7297,14 +7385,14 @@ struct Uniform4uivImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4uivImmediate) == 12,
-               Sizeof_Uniform4uivImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(Uniform4uivImmediate, header) == 0,
-               OffsetOf_Uniform4uivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(Uniform4uivImmediate, location) == 4,
-               OffsetOf_Uniform4uivImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4uivImmediate, count) == 8,
-               OffsetOf_Uniform4uivImmediate_count_not_8);
+static_assert(sizeof(Uniform4uivImmediate) == 12,
+              "size of Uniform4uivImmediate should be 12");
+static_assert(offsetof(Uniform4uivImmediate, header) == 0,
+              "offset of Uniform4uivImmediate header should be 0");
+static_assert(offsetof(Uniform4uivImmediate, location) == 4,
+              "offset of Uniform4uivImmediate location should be 4");
+static_assert(offsetof(Uniform4uivImmediate, count) == 8,
+              "offset of Uniform4uivImmediate count should be 8");
 
 struct UniformMatrix2fvImmediate {
   typedef UniformMatrix2fvImmediate ValueType;
@@ -7344,14 +7432,14 @@ struct UniformMatrix2fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix2fvImmediate) == 12,
-               Sizeof_UniformMatrix2fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix2fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix2fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix2fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix2fvImmediate) == 12,
+              "size of UniformMatrix2fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix2fvImmediate, header) == 0,
+              "offset of UniformMatrix2fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix2fvImmediate, location) == 4,
+              "offset of UniformMatrix2fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix2fvImmediate, count) == 8,
+              "offset of UniformMatrix2fvImmediate count should be 8");
 
 struct UniformMatrix2x3fvImmediate {
   typedef UniformMatrix2x3fvImmediate ValueType;
@@ -7391,14 +7479,14 @@ struct UniformMatrix2x3fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix2x3fvImmediate) == 12,
-               Sizeof_UniformMatrix2x3fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix2x3fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix2x3fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix2x3fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix2x3fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix2x3fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix2x3fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix2x3fvImmediate) == 12,
+              "size of UniformMatrix2x3fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix2x3fvImmediate, header) == 0,
+              "offset of UniformMatrix2x3fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix2x3fvImmediate, location) == 4,
+              "offset of UniformMatrix2x3fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix2x3fvImmediate, count) == 8,
+              "offset of UniformMatrix2x3fvImmediate count should be 8");
 
 struct UniformMatrix2x4fvImmediate {
   typedef UniformMatrix2x4fvImmediate ValueType;
@@ -7438,14 +7526,14 @@ struct UniformMatrix2x4fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix2x4fvImmediate) == 12,
-               Sizeof_UniformMatrix2x4fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix2x4fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix2x4fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix2x4fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix2x4fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix2x4fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix2x4fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix2x4fvImmediate) == 12,
+              "size of UniformMatrix2x4fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix2x4fvImmediate, header) == 0,
+              "offset of UniformMatrix2x4fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix2x4fvImmediate, location) == 4,
+              "offset of UniformMatrix2x4fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix2x4fvImmediate, count) == 8,
+              "offset of UniformMatrix2x4fvImmediate count should be 8");
 
 struct UniformMatrix3fvImmediate {
   typedef UniformMatrix3fvImmediate ValueType;
@@ -7485,14 +7573,14 @@ struct UniformMatrix3fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix3fvImmediate) == 12,
-               Sizeof_UniformMatrix3fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix3fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix3fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix3fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix3fvImmediate) == 12,
+              "size of UniformMatrix3fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix3fvImmediate, header) == 0,
+              "offset of UniformMatrix3fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix3fvImmediate, location) == 4,
+              "offset of UniformMatrix3fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix3fvImmediate, count) == 8,
+              "offset of UniformMatrix3fvImmediate count should be 8");
 
 struct UniformMatrix3x2fvImmediate {
   typedef UniformMatrix3x2fvImmediate ValueType;
@@ -7532,14 +7620,14 @@ struct UniformMatrix3x2fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix3x2fvImmediate) == 12,
-               Sizeof_UniformMatrix3x2fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix3x2fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix3x2fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix3x2fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix3x2fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix3x2fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix3x2fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix3x2fvImmediate) == 12,
+              "size of UniformMatrix3x2fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix3x2fvImmediate, header) == 0,
+              "offset of UniformMatrix3x2fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix3x2fvImmediate, location) == 4,
+              "offset of UniformMatrix3x2fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix3x2fvImmediate, count) == 8,
+              "offset of UniformMatrix3x2fvImmediate count should be 8");
 
 struct UniformMatrix3x4fvImmediate {
   typedef UniformMatrix3x4fvImmediate ValueType;
@@ -7579,14 +7667,14 @@ struct UniformMatrix3x4fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix3x4fvImmediate) == 12,
-               Sizeof_UniformMatrix3x4fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix3x4fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix3x4fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix3x4fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix3x4fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix3x4fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix3x4fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix3x4fvImmediate) == 12,
+              "size of UniformMatrix3x4fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix3x4fvImmediate, header) == 0,
+              "offset of UniformMatrix3x4fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix3x4fvImmediate, location) == 4,
+              "offset of UniformMatrix3x4fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix3x4fvImmediate, count) == 8,
+              "offset of UniformMatrix3x4fvImmediate count should be 8");
 
 struct UniformMatrix4fvImmediate {
   typedef UniformMatrix4fvImmediate ValueType;
@@ -7626,14 +7714,14 @@ struct UniformMatrix4fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix4fvImmediate) == 12,
-               Sizeof_UniformMatrix4fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix4fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix4fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix4fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix4fvImmediate) == 12,
+              "size of UniformMatrix4fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix4fvImmediate, header) == 0,
+              "offset of UniformMatrix4fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix4fvImmediate, location) == 4,
+              "offset of UniformMatrix4fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix4fvImmediate, count) == 8,
+              "offset of UniformMatrix4fvImmediate count should be 8");
 
 struct UniformMatrix4x2fvImmediate {
   typedef UniformMatrix4x2fvImmediate ValueType;
@@ -7673,14 +7761,14 @@ struct UniformMatrix4x2fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix4x2fvImmediate) == 12,
-               Sizeof_UniformMatrix4x2fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix4x2fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix4x2fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix4x2fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix4x2fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix4x2fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix4x2fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix4x2fvImmediate) == 12,
+              "size of UniformMatrix4x2fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix4x2fvImmediate, header) == 0,
+              "offset of UniformMatrix4x2fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix4x2fvImmediate, location) == 4,
+              "offset of UniformMatrix4x2fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix4x2fvImmediate, count) == 8,
+              "offset of UniformMatrix4x2fvImmediate count should be 8");
 
 struct UniformMatrix4x3fvImmediate {
   typedef UniformMatrix4x3fvImmediate ValueType;
@@ -7720,14 +7808,14 @@ struct UniformMatrix4x3fvImmediate {
   static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix4x3fvImmediate) == 12,
-               Sizeof_UniformMatrix4x3fvImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix4x3fvImmediate, header) == 0,
-               OffsetOf_UniformMatrix4x3fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(UniformMatrix4x3fvImmediate, location) == 4,
-               OffsetOf_UniformMatrix4x3fvImmediate_location_not_4);
-COMPILE_ASSERT(offsetof(UniformMatrix4x3fvImmediate, count) == 8,
-               OffsetOf_UniformMatrix4x3fvImmediate_count_not_8);
+static_assert(sizeof(UniformMatrix4x3fvImmediate) == 12,
+              "size of UniformMatrix4x3fvImmediate should be 12");
+static_assert(offsetof(UniformMatrix4x3fvImmediate, header) == 0,
+              "offset of UniformMatrix4x3fvImmediate header should be 0");
+static_assert(offsetof(UniformMatrix4x3fvImmediate, location) == 4,
+              "offset of UniformMatrix4x3fvImmediate location should be 4");
+static_assert(offsetof(UniformMatrix4x3fvImmediate, count) == 8,
+              "offset of UniformMatrix4x3fvImmediate count should be 8");
 
 struct UseProgram {
   typedef UseProgram ValueType;
@@ -7755,11 +7843,11 @@ struct UseProgram {
   uint32_t program;
 };
 
-COMPILE_ASSERT(sizeof(UseProgram) == 8, Sizeof_UseProgram_is_not_8);
-COMPILE_ASSERT(offsetof(UseProgram, header) == 0,
-               OffsetOf_UseProgram_header_not_0);
-COMPILE_ASSERT(offsetof(UseProgram, program) == 4,
-               OffsetOf_UseProgram_program_not_4);
+static_assert(sizeof(UseProgram) == 8, "size of UseProgram should be 8");
+static_assert(offsetof(UseProgram, header) == 0,
+              "offset of UseProgram header should be 0");
+static_assert(offsetof(UseProgram, program) == 4,
+              "offset of UseProgram program should be 4");
 
 struct ValidateProgram {
   typedef ValidateProgram ValueType;
@@ -7787,11 +7875,12 @@ struct ValidateProgram {
   uint32_t program;
 };
 
-COMPILE_ASSERT(sizeof(ValidateProgram) == 8, Sizeof_ValidateProgram_is_not_8);
-COMPILE_ASSERT(offsetof(ValidateProgram, header) == 0,
-               OffsetOf_ValidateProgram_header_not_0);
-COMPILE_ASSERT(offsetof(ValidateProgram, program) == 4,
-               OffsetOf_ValidateProgram_program_not_4);
+static_assert(sizeof(ValidateProgram) == 8,
+              "size of ValidateProgram should be 8");
+static_assert(offsetof(ValidateProgram, header) == 0,
+              "offset of ValidateProgram header should be 0");
+static_assert(offsetof(ValidateProgram, program) == 4,
+              "offset of ValidateProgram program should be 4");
 
 struct VertexAttrib1f {
   typedef VertexAttrib1f ValueType;
@@ -7821,13 +7910,14 @@ struct VertexAttrib1f {
   float x;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib1f) == 12, Sizeof_VertexAttrib1f_is_not_12);
-COMPILE_ASSERT(offsetof(VertexAttrib1f, header) == 0,
-               OffsetOf_VertexAttrib1f_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib1f, indx) == 4,
-               OffsetOf_VertexAttrib1f_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttrib1f, x) == 8,
-               OffsetOf_VertexAttrib1f_x_not_8);
+static_assert(sizeof(VertexAttrib1f) == 12,
+              "size of VertexAttrib1f should be 12");
+static_assert(offsetof(VertexAttrib1f, header) == 0,
+              "offset of VertexAttrib1f header should be 0");
+static_assert(offsetof(VertexAttrib1f, indx) == 4,
+              "offset of VertexAttrib1f indx should be 4");
+static_assert(offsetof(VertexAttrib1f, x) == 8,
+              "offset of VertexAttrib1f x should be 8");
 
 struct VertexAttrib1fvImmediate {
   typedef VertexAttrib1fvImmediate ValueType;
@@ -7862,12 +7952,12 @@ struct VertexAttrib1fvImmediate {
   uint32_t indx;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib1fvImmediate) == 8,
-               Sizeof_VertexAttrib1fvImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib1fvImmediate, header) == 0,
-               OffsetOf_VertexAttrib1fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib1fvImmediate, indx) == 4,
-               OffsetOf_VertexAttrib1fvImmediate_indx_not_4);
+static_assert(sizeof(VertexAttrib1fvImmediate) == 8,
+              "size of VertexAttrib1fvImmediate should be 8");
+static_assert(offsetof(VertexAttrib1fvImmediate, header) == 0,
+              "offset of VertexAttrib1fvImmediate header should be 0");
+static_assert(offsetof(VertexAttrib1fvImmediate, indx) == 4,
+              "offset of VertexAttrib1fvImmediate indx should be 4");
 
 struct VertexAttrib2f {
   typedef VertexAttrib2f ValueType;
@@ -7899,15 +7989,16 @@ struct VertexAttrib2f {
   float y;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib2f) == 16, Sizeof_VertexAttrib2f_is_not_16);
-COMPILE_ASSERT(offsetof(VertexAttrib2f, header) == 0,
-               OffsetOf_VertexAttrib2f_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib2f, indx) == 4,
-               OffsetOf_VertexAttrib2f_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttrib2f, x) == 8,
-               OffsetOf_VertexAttrib2f_x_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib2f, y) == 12,
-               OffsetOf_VertexAttrib2f_y_not_12);
+static_assert(sizeof(VertexAttrib2f) == 16,
+              "size of VertexAttrib2f should be 16");
+static_assert(offsetof(VertexAttrib2f, header) == 0,
+              "offset of VertexAttrib2f header should be 0");
+static_assert(offsetof(VertexAttrib2f, indx) == 4,
+              "offset of VertexAttrib2f indx should be 4");
+static_assert(offsetof(VertexAttrib2f, x) == 8,
+              "offset of VertexAttrib2f x should be 8");
+static_assert(offsetof(VertexAttrib2f, y) == 12,
+              "offset of VertexAttrib2f y should be 12");
 
 struct VertexAttrib2fvImmediate {
   typedef VertexAttrib2fvImmediate ValueType;
@@ -7942,12 +8033,12 @@ struct VertexAttrib2fvImmediate {
   uint32_t indx;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib2fvImmediate) == 8,
-               Sizeof_VertexAttrib2fvImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib2fvImmediate, header) == 0,
-               OffsetOf_VertexAttrib2fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib2fvImmediate, indx) == 4,
-               OffsetOf_VertexAttrib2fvImmediate_indx_not_4);
+static_assert(sizeof(VertexAttrib2fvImmediate) == 8,
+              "size of VertexAttrib2fvImmediate should be 8");
+static_assert(offsetof(VertexAttrib2fvImmediate, header) == 0,
+              "offset of VertexAttrib2fvImmediate header should be 0");
+static_assert(offsetof(VertexAttrib2fvImmediate, indx) == 4,
+              "offset of VertexAttrib2fvImmediate indx should be 4");
 
 struct VertexAttrib3f {
   typedef VertexAttrib3f ValueType;
@@ -7981,17 +8072,18 @@ struct VertexAttrib3f {
   float z;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib3f) == 20, Sizeof_VertexAttrib3f_is_not_20);
-COMPILE_ASSERT(offsetof(VertexAttrib3f, header) == 0,
-               OffsetOf_VertexAttrib3f_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib3f, indx) == 4,
-               OffsetOf_VertexAttrib3f_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttrib3f, x) == 8,
-               OffsetOf_VertexAttrib3f_x_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib3f, y) == 12,
-               OffsetOf_VertexAttrib3f_y_not_12);
-COMPILE_ASSERT(offsetof(VertexAttrib3f, z) == 16,
-               OffsetOf_VertexAttrib3f_z_not_16);
+static_assert(sizeof(VertexAttrib3f) == 20,
+              "size of VertexAttrib3f should be 20");
+static_assert(offsetof(VertexAttrib3f, header) == 0,
+              "offset of VertexAttrib3f header should be 0");
+static_assert(offsetof(VertexAttrib3f, indx) == 4,
+              "offset of VertexAttrib3f indx should be 4");
+static_assert(offsetof(VertexAttrib3f, x) == 8,
+              "offset of VertexAttrib3f x should be 8");
+static_assert(offsetof(VertexAttrib3f, y) == 12,
+              "offset of VertexAttrib3f y should be 12");
+static_assert(offsetof(VertexAttrib3f, z) == 16,
+              "offset of VertexAttrib3f z should be 16");
 
 struct VertexAttrib3fvImmediate {
   typedef VertexAttrib3fvImmediate ValueType;
@@ -8026,12 +8118,12 @@ struct VertexAttrib3fvImmediate {
   uint32_t indx;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib3fvImmediate) == 8,
-               Sizeof_VertexAttrib3fvImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib3fvImmediate, header) == 0,
-               OffsetOf_VertexAttrib3fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib3fvImmediate, indx) == 4,
-               OffsetOf_VertexAttrib3fvImmediate_indx_not_4);
+static_assert(sizeof(VertexAttrib3fvImmediate) == 8,
+              "size of VertexAttrib3fvImmediate should be 8");
+static_assert(offsetof(VertexAttrib3fvImmediate, header) == 0,
+              "offset of VertexAttrib3fvImmediate header should be 0");
+static_assert(offsetof(VertexAttrib3fvImmediate, indx) == 4,
+              "offset of VertexAttrib3fvImmediate indx should be 4");
 
 struct VertexAttrib4f {
   typedef VertexAttrib4f ValueType;
@@ -8072,19 +8164,20 @@ struct VertexAttrib4f {
   float w;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib4f) == 24, Sizeof_VertexAttrib4f_is_not_24);
-COMPILE_ASSERT(offsetof(VertexAttrib4f, header) == 0,
-               OffsetOf_VertexAttrib4f_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib4f, indx) == 4,
-               OffsetOf_VertexAttrib4f_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttrib4f, x) == 8,
-               OffsetOf_VertexAttrib4f_x_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib4f, y) == 12,
-               OffsetOf_VertexAttrib4f_y_not_12);
-COMPILE_ASSERT(offsetof(VertexAttrib4f, z) == 16,
-               OffsetOf_VertexAttrib4f_z_not_16);
-COMPILE_ASSERT(offsetof(VertexAttrib4f, w) == 20,
-               OffsetOf_VertexAttrib4f_w_not_20);
+static_assert(sizeof(VertexAttrib4f) == 24,
+              "size of VertexAttrib4f should be 24");
+static_assert(offsetof(VertexAttrib4f, header) == 0,
+              "offset of VertexAttrib4f header should be 0");
+static_assert(offsetof(VertexAttrib4f, indx) == 4,
+              "offset of VertexAttrib4f indx should be 4");
+static_assert(offsetof(VertexAttrib4f, x) == 8,
+              "offset of VertexAttrib4f x should be 8");
+static_assert(offsetof(VertexAttrib4f, y) == 12,
+              "offset of VertexAttrib4f y should be 12");
+static_assert(offsetof(VertexAttrib4f, z) == 16,
+              "offset of VertexAttrib4f z should be 16");
+static_assert(offsetof(VertexAttrib4f, w) == 20,
+              "offset of VertexAttrib4f w should be 20");
 
 struct VertexAttrib4fvImmediate {
   typedef VertexAttrib4fvImmediate ValueType;
@@ -8119,12 +8212,12 @@ struct VertexAttrib4fvImmediate {
   uint32_t indx;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib4fvImmediate) == 8,
-               Sizeof_VertexAttrib4fvImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(VertexAttrib4fvImmediate, header) == 0,
-               OffsetOf_VertexAttrib4fvImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttrib4fvImmediate, indx) == 4,
-               OffsetOf_VertexAttrib4fvImmediate_indx_not_4);
+static_assert(sizeof(VertexAttrib4fvImmediate) == 8,
+              "size of VertexAttrib4fvImmediate should be 8");
+static_assert(offsetof(VertexAttrib4fvImmediate, header) == 0,
+              "offset of VertexAttrib4fvImmediate header should be 0");
+static_assert(offsetof(VertexAttrib4fvImmediate, indx) == 4,
+              "offset of VertexAttrib4fvImmediate indx should be 4");
 
 struct VertexAttribI4i {
   typedef VertexAttribI4i ValueType;
@@ -8160,19 +8253,20 @@ struct VertexAttribI4i {
   int32_t w;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribI4i) == 24, Sizeof_VertexAttribI4i_is_not_24);
-COMPILE_ASSERT(offsetof(VertexAttribI4i, header) == 0,
-               OffsetOf_VertexAttribI4i_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribI4i, indx) == 4,
-               OffsetOf_VertexAttribI4i_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttribI4i, x) == 8,
-               OffsetOf_VertexAttribI4i_x_not_8);
-COMPILE_ASSERT(offsetof(VertexAttribI4i, y) == 12,
-               OffsetOf_VertexAttribI4i_y_not_12);
-COMPILE_ASSERT(offsetof(VertexAttribI4i, z) == 16,
-               OffsetOf_VertexAttribI4i_z_not_16);
-COMPILE_ASSERT(offsetof(VertexAttribI4i, w) == 20,
-               OffsetOf_VertexAttribI4i_w_not_20);
+static_assert(sizeof(VertexAttribI4i) == 24,
+              "size of VertexAttribI4i should be 24");
+static_assert(offsetof(VertexAttribI4i, header) == 0,
+              "offset of VertexAttribI4i header should be 0");
+static_assert(offsetof(VertexAttribI4i, indx) == 4,
+              "offset of VertexAttribI4i indx should be 4");
+static_assert(offsetof(VertexAttribI4i, x) == 8,
+              "offset of VertexAttribI4i x should be 8");
+static_assert(offsetof(VertexAttribI4i, y) == 12,
+              "offset of VertexAttribI4i y should be 12");
+static_assert(offsetof(VertexAttribI4i, z) == 16,
+              "offset of VertexAttribI4i z should be 16");
+static_assert(offsetof(VertexAttribI4i, w) == 20,
+              "offset of VertexAttribI4i w should be 20");
 
 struct VertexAttribI4ivImmediate {
   typedef VertexAttribI4ivImmediate ValueType;
@@ -8207,12 +8301,12 @@ struct VertexAttribI4ivImmediate {
   uint32_t indx;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribI4ivImmediate) == 8,
-               Sizeof_VertexAttribI4ivImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(VertexAttribI4ivImmediate, header) == 0,
-               OffsetOf_VertexAttribI4ivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribI4ivImmediate, indx) == 4,
-               OffsetOf_VertexAttribI4ivImmediate_indx_not_4);
+static_assert(sizeof(VertexAttribI4ivImmediate) == 8,
+              "size of VertexAttribI4ivImmediate should be 8");
+static_assert(offsetof(VertexAttribI4ivImmediate, header) == 0,
+              "offset of VertexAttribI4ivImmediate header should be 0");
+static_assert(offsetof(VertexAttribI4ivImmediate, indx) == 4,
+              "offset of VertexAttribI4ivImmediate indx should be 4");
 
 struct VertexAttribI4ui {
   typedef VertexAttribI4ui ValueType;
@@ -8253,20 +8347,20 @@ struct VertexAttribI4ui {
   uint32_t w;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribI4ui) == 24,
-               Sizeof_VertexAttribI4ui_is_not_24);
-COMPILE_ASSERT(offsetof(VertexAttribI4ui, header) == 0,
-               OffsetOf_VertexAttribI4ui_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribI4ui, indx) == 4,
-               OffsetOf_VertexAttribI4ui_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttribI4ui, x) == 8,
-               OffsetOf_VertexAttribI4ui_x_not_8);
-COMPILE_ASSERT(offsetof(VertexAttribI4ui, y) == 12,
-               OffsetOf_VertexAttribI4ui_y_not_12);
-COMPILE_ASSERT(offsetof(VertexAttribI4ui, z) == 16,
-               OffsetOf_VertexAttribI4ui_z_not_16);
-COMPILE_ASSERT(offsetof(VertexAttribI4ui, w) == 20,
-               OffsetOf_VertexAttribI4ui_w_not_20);
+static_assert(sizeof(VertexAttribI4ui) == 24,
+              "size of VertexAttribI4ui should be 24");
+static_assert(offsetof(VertexAttribI4ui, header) == 0,
+              "offset of VertexAttribI4ui header should be 0");
+static_assert(offsetof(VertexAttribI4ui, indx) == 4,
+              "offset of VertexAttribI4ui indx should be 4");
+static_assert(offsetof(VertexAttribI4ui, x) == 8,
+              "offset of VertexAttribI4ui x should be 8");
+static_assert(offsetof(VertexAttribI4ui, y) == 12,
+              "offset of VertexAttribI4ui y should be 12");
+static_assert(offsetof(VertexAttribI4ui, z) == 16,
+              "offset of VertexAttribI4ui z should be 16");
+static_assert(offsetof(VertexAttribI4ui, w) == 20,
+              "offset of VertexAttribI4ui w should be 20");
 
 struct VertexAttribI4uivImmediate {
   typedef VertexAttribI4uivImmediate ValueType;
@@ -8301,12 +8395,12 @@ struct VertexAttribI4uivImmediate {
   uint32_t indx;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribI4uivImmediate) == 8,
-               Sizeof_VertexAttribI4uivImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(VertexAttribI4uivImmediate, header) == 0,
-               OffsetOf_VertexAttribI4uivImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribI4uivImmediate, indx) == 4,
-               OffsetOf_VertexAttribI4uivImmediate_indx_not_4);
+static_assert(sizeof(VertexAttribI4uivImmediate) == 8,
+              "size of VertexAttribI4uivImmediate should be 8");
+static_assert(offsetof(VertexAttribI4uivImmediate, header) == 0,
+              "offset of VertexAttribI4uivImmediate header should be 0");
+static_assert(offsetof(VertexAttribI4uivImmediate, indx) == 4,
+              "offset of VertexAttribI4uivImmediate indx should be 4");
 
 struct VertexAttribIPointer {
   typedef VertexAttribIPointer ValueType;
@@ -8351,20 +8445,20 @@ struct VertexAttribIPointer {
   uint32_t offset;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribIPointer) == 24,
-               Sizeof_VertexAttribIPointer_is_not_24);
-COMPILE_ASSERT(offsetof(VertexAttribIPointer, header) == 0,
-               OffsetOf_VertexAttribIPointer_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribIPointer, indx) == 4,
-               OffsetOf_VertexAttribIPointer_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttribIPointer, size) == 8,
-               OffsetOf_VertexAttribIPointer_size_not_8);
-COMPILE_ASSERT(offsetof(VertexAttribIPointer, type) == 12,
-               OffsetOf_VertexAttribIPointer_type_not_12);
-COMPILE_ASSERT(offsetof(VertexAttribIPointer, stride) == 16,
-               OffsetOf_VertexAttribIPointer_stride_not_16);
-COMPILE_ASSERT(offsetof(VertexAttribIPointer, offset) == 20,
-               OffsetOf_VertexAttribIPointer_offset_not_20);
+static_assert(sizeof(VertexAttribIPointer) == 24,
+              "size of VertexAttribIPointer should be 24");
+static_assert(offsetof(VertexAttribIPointer, header) == 0,
+              "offset of VertexAttribIPointer header should be 0");
+static_assert(offsetof(VertexAttribIPointer, indx) == 4,
+              "offset of VertexAttribIPointer indx should be 4");
+static_assert(offsetof(VertexAttribIPointer, size) == 8,
+              "offset of VertexAttribIPointer size should be 8");
+static_assert(offsetof(VertexAttribIPointer, type) == 12,
+              "offset of VertexAttribIPointer type should be 12");
+static_assert(offsetof(VertexAttribIPointer, stride) == 16,
+              "offset of VertexAttribIPointer stride should be 16");
+static_assert(offsetof(VertexAttribIPointer, offset) == 20,
+              "offset of VertexAttribIPointer offset should be 20");
 
 struct VertexAttribPointer {
   typedef VertexAttribPointer ValueType;
@@ -8414,22 +8508,22 @@ struct VertexAttribPointer {
   uint32_t offset;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribPointer) == 28,
-               Sizeof_VertexAttribPointer_is_not_28);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, header) == 0,
-               OffsetOf_VertexAttribPointer_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, indx) == 4,
-               OffsetOf_VertexAttribPointer_indx_not_4);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, size) == 8,
-               OffsetOf_VertexAttribPointer_size_not_8);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, type) == 12,
-               OffsetOf_VertexAttribPointer_type_not_12);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, normalized) == 16,
-               OffsetOf_VertexAttribPointer_normalized_not_16);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, stride) == 20,
-               OffsetOf_VertexAttribPointer_stride_not_20);
-COMPILE_ASSERT(offsetof(VertexAttribPointer, offset) == 24,
-               OffsetOf_VertexAttribPointer_offset_not_24);
+static_assert(sizeof(VertexAttribPointer) == 28,
+              "size of VertexAttribPointer should be 28");
+static_assert(offsetof(VertexAttribPointer, header) == 0,
+              "offset of VertexAttribPointer header should be 0");
+static_assert(offsetof(VertexAttribPointer, indx) == 4,
+              "offset of VertexAttribPointer indx should be 4");
+static_assert(offsetof(VertexAttribPointer, size) == 8,
+              "offset of VertexAttribPointer size should be 8");
+static_assert(offsetof(VertexAttribPointer, type) == 12,
+              "offset of VertexAttribPointer type should be 12");
+static_assert(offsetof(VertexAttribPointer, normalized) == 16,
+              "offset of VertexAttribPointer normalized should be 16");
+static_assert(offsetof(VertexAttribPointer, stride) == 20,
+              "offset of VertexAttribPointer stride should be 20");
+static_assert(offsetof(VertexAttribPointer, offset) == 24,
+              "offset of VertexAttribPointer offset should be 24");
 
 struct Viewport {
   typedef Viewport ValueType;
@@ -8463,13 +8557,15 @@ struct Viewport {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(Viewport) == 20, Sizeof_Viewport_is_not_20);
-COMPILE_ASSERT(offsetof(Viewport, header) == 0, OffsetOf_Viewport_header_not_0);
-COMPILE_ASSERT(offsetof(Viewport, x) == 4, OffsetOf_Viewport_x_not_4);
-COMPILE_ASSERT(offsetof(Viewport, y) == 8, OffsetOf_Viewport_y_not_8);
-COMPILE_ASSERT(offsetof(Viewport, width) == 12, OffsetOf_Viewport_width_not_12);
-COMPILE_ASSERT(offsetof(Viewport, height) == 16,
-               OffsetOf_Viewport_height_not_16);
+static_assert(sizeof(Viewport) == 20, "size of Viewport should be 20");
+static_assert(offsetof(Viewport, header) == 0,
+              "offset of Viewport header should be 0");
+static_assert(offsetof(Viewport, x) == 4, "offset of Viewport x should be 4");
+static_assert(offsetof(Viewport, y) == 8, "offset of Viewport y should be 8");
+static_assert(offsetof(Viewport, width) == 12,
+              "offset of Viewport width should be 12");
+static_assert(offsetof(Viewport, height) == 16,
+              "offset of Viewport height should be 16");
 
 struct BlitFramebufferCHROMIUM {
   typedef BlitFramebufferCHROMIUM ValueType;
@@ -8535,30 +8631,30 @@ struct BlitFramebufferCHROMIUM {
   uint32_t filter;
 };
 
-COMPILE_ASSERT(sizeof(BlitFramebufferCHROMIUM) == 44,
-               Sizeof_BlitFramebufferCHROMIUM_is_not_44);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, header) == 0,
-               OffsetOf_BlitFramebufferCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcX0) == 4,
-               OffsetOf_BlitFramebufferCHROMIUM_srcX0_not_4);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcY0) == 8,
-               OffsetOf_BlitFramebufferCHROMIUM_srcY0_not_8);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcX1) == 12,
-               OffsetOf_BlitFramebufferCHROMIUM_srcX1_not_12);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcY1) == 16,
-               OffsetOf_BlitFramebufferCHROMIUM_srcY1_not_16);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstX0) == 20,
-               OffsetOf_BlitFramebufferCHROMIUM_dstX0_not_20);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstY0) == 24,
-               OffsetOf_BlitFramebufferCHROMIUM_dstY0_not_24);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstX1) == 28,
-               OffsetOf_BlitFramebufferCHROMIUM_dstX1_not_28);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstY1) == 32,
-               OffsetOf_BlitFramebufferCHROMIUM_dstY1_not_32);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, mask) == 36,
-               OffsetOf_BlitFramebufferCHROMIUM_mask_not_36);
-COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, filter) == 40,
-               OffsetOf_BlitFramebufferCHROMIUM_filter_not_40);
+static_assert(sizeof(BlitFramebufferCHROMIUM) == 44,
+              "size of BlitFramebufferCHROMIUM should be 44");
+static_assert(offsetof(BlitFramebufferCHROMIUM, header) == 0,
+              "offset of BlitFramebufferCHROMIUM header should be 0");
+static_assert(offsetof(BlitFramebufferCHROMIUM, srcX0) == 4,
+              "offset of BlitFramebufferCHROMIUM srcX0 should be 4");
+static_assert(offsetof(BlitFramebufferCHROMIUM, srcY0) == 8,
+              "offset of BlitFramebufferCHROMIUM srcY0 should be 8");
+static_assert(offsetof(BlitFramebufferCHROMIUM, srcX1) == 12,
+              "offset of BlitFramebufferCHROMIUM srcX1 should be 12");
+static_assert(offsetof(BlitFramebufferCHROMIUM, srcY1) == 16,
+              "offset of BlitFramebufferCHROMIUM srcY1 should be 16");
+static_assert(offsetof(BlitFramebufferCHROMIUM, dstX0) == 20,
+              "offset of BlitFramebufferCHROMIUM dstX0 should be 20");
+static_assert(offsetof(BlitFramebufferCHROMIUM, dstY0) == 24,
+              "offset of BlitFramebufferCHROMIUM dstY0 should be 24");
+static_assert(offsetof(BlitFramebufferCHROMIUM, dstX1) == 28,
+              "offset of BlitFramebufferCHROMIUM dstX1 should be 28");
+static_assert(offsetof(BlitFramebufferCHROMIUM, dstY1) == 32,
+              "offset of BlitFramebufferCHROMIUM dstY1 should be 32");
+static_assert(offsetof(BlitFramebufferCHROMIUM, mask) == 36,
+              "offset of BlitFramebufferCHROMIUM mask should be 36");
+static_assert(offsetof(BlitFramebufferCHROMIUM, filter) == 40,
+              "offset of BlitFramebufferCHROMIUM filter should be 40");
 
 // GL_CHROMIUM_framebuffer_multisample
 struct RenderbufferStorageMultisampleCHROMIUM {
@@ -8605,21 +8701,27 @@ struct RenderbufferStorageMultisampleCHROMIUM {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(RenderbufferStorageMultisampleCHROMIUM) == 24,
-               Sizeof_RenderbufferStorageMultisampleCHROMIUM_is_not_24);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, header) == 0,
-               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, target) == 4,
-               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, samples) == 8,
-               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_samples_not_8);
-COMPILE_ASSERT(
-    offsetof(RenderbufferStorageMultisampleCHROMIUM, internalformat) == 12,
-    OffsetOf_RenderbufferStorageMultisampleCHROMIUM_internalformat_not_12);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, width) == 16,
-               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_width_not_16);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, height) == 20,
-               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_height_not_20);
+static_assert(sizeof(RenderbufferStorageMultisampleCHROMIUM) == 24,
+              "size of RenderbufferStorageMultisampleCHROMIUM should be 24");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleCHROMIUM, header) == 0,
+    "offset of RenderbufferStorageMultisampleCHROMIUM header should be 0");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleCHROMIUM, target) == 4,
+    "offset of RenderbufferStorageMultisampleCHROMIUM target should be 4");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleCHROMIUM, samples) == 8,
+    "offset of RenderbufferStorageMultisampleCHROMIUM samples should be 8");
+static_assert(offsetof(RenderbufferStorageMultisampleCHROMIUM,
+                       internalformat) == 12,
+              "offset of RenderbufferStorageMultisampleCHROMIUM internalformat "
+              "should be 12");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleCHROMIUM, width) == 16,
+    "offset of RenderbufferStorageMultisampleCHROMIUM width should be 16");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleCHROMIUM, height) == 20,
+    "offset of RenderbufferStorageMultisampleCHROMIUM height should be 20");
 
 // GL_EXT_multisampled_render_to_texture
 struct RenderbufferStorageMultisampleEXT {
@@ -8666,21 +8768,23 @@ struct RenderbufferStorageMultisampleEXT {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(RenderbufferStorageMultisampleEXT) == 24,
-               Sizeof_RenderbufferStorageMultisampleEXT_is_not_24);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, header) == 0,
-               OffsetOf_RenderbufferStorageMultisampleEXT_header_not_0);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, target) == 4,
-               OffsetOf_RenderbufferStorageMultisampleEXT_target_not_4);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, samples) == 8,
-               OffsetOf_RenderbufferStorageMultisampleEXT_samples_not_8);
-COMPILE_ASSERT(
+static_assert(sizeof(RenderbufferStorageMultisampleEXT) == 24,
+              "size of RenderbufferStorageMultisampleEXT should be 24");
+static_assert(offsetof(RenderbufferStorageMultisampleEXT, header) == 0,
+              "offset of RenderbufferStorageMultisampleEXT header should be 0");
+static_assert(offsetof(RenderbufferStorageMultisampleEXT, target) == 4,
+              "offset of RenderbufferStorageMultisampleEXT target should be 4");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleEXT, samples) == 8,
+    "offset of RenderbufferStorageMultisampleEXT samples should be 8");
+static_assert(
     offsetof(RenderbufferStorageMultisampleEXT, internalformat) == 12,
-    OffsetOf_RenderbufferStorageMultisampleEXT_internalformat_not_12);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
-               OffsetOf_RenderbufferStorageMultisampleEXT_width_not_16);
-COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
-               OffsetOf_RenderbufferStorageMultisampleEXT_height_not_20);
+    "offset of RenderbufferStorageMultisampleEXT internalformat should be 12");
+static_assert(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
+              "offset of RenderbufferStorageMultisampleEXT width should be 16");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
+    "offset of RenderbufferStorageMultisampleEXT height should be 20");
 
 struct FramebufferTexture2DMultisampleEXT {
   typedef FramebufferTexture2DMultisampleEXT ValueType;
@@ -8727,20 +8831,26 @@ struct FramebufferTexture2DMultisampleEXT {
   static const int32_t level = 0;
 };
 
-COMPILE_ASSERT(sizeof(FramebufferTexture2DMultisampleEXT) == 24,
-               Sizeof_FramebufferTexture2DMultisampleEXT_is_not_24);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, header) == 0,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_header_not_0);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, target) == 4,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_target_not_4);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, attachment) == 8,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_attachment_not_8);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, textarget) == 12,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_textarget_not_12);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, texture) == 16,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_texture_not_16);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, samples) == 20,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_samples_not_20);
+static_assert(sizeof(FramebufferTexture2DMultisampleEXT) == 24,
+              "size of FramebufferTexture2DMultisampleEXT should be 24");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, header) == 0,
+    "offset of FramebufferTexture2DMultisampleEXT header should be 0");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, target) == 4,
+    "offset of FramebufferTexture2DMultisampleEXT target should be 4");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, attachment) == 8,
+    "offset of FramebufferTexture2DMultisampleEXT attachment should be 8");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, textarget) == 12,
+    "offset of FramebufferTexture2DMultisampleEXT textarget should be 12");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, texture) == 16,
+    "offset of FramebufferTexture2DMultisampleEXT texture should be 16");
+static_assert(
+    offsetof(FramebufferTexture2DMultisampleEXT, samples) == 20,
+    "offset of FramebufferTexture2DMultisampleEXT samples should be 20");
 
 struct TexStorage2DEXT {
   typedef TexStorage2DEXT ValueType;
@@ -8786,19 +8896,20 @@ struct TexStorage2DEXT {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(TexStorage2DEXT) == 24, Sizeof_TexStorage2DEXT_is_not_24);
-COMPILE_ASSERT(offsetof(TexStorage2DEXT, header) == 0,
-               OffsetOf_TexStorage2DEXT_header_not_0);
-COMPILE_ASSERT(offsetof(TexStorage2DEXT, target) == 4,
-               OffsetOf_TexStorage2DEXT_target_not_4);
-COMPILE_ASSERT(offsetof(TexStorage2DEXT, levels) == 8,
-               OffsetOf_TexStorage2DEXT_levels_not_8);
-COMPILE_ASSERT(offsetof(TexStorage2DEXT, internalFormat) == 12,
-               OffsetOf_TexStorage2DEXT_internalFormat_not_12);
-COMPILE_ASSERT(offsetof(TexStorage2DEXT, width) == 16,
-               OffsetOf_TexStorage2DEXT_width_not_16);
-COMPILE_ASSERT(offsetof(TexStorage2DEXT, height) == 20,
-               OffsetOf_TexStorage2DEXT_height_not_20);
+static_assert(sizeof(TexStorage2DEXT) == 24,
+              "size of TexStorage2DEXT should be 24");
+static_assert(offsetof(TexStorage2DEXT, header) == 0,
+              "offset of TexStorage2DEXT header should be 0");
+static_assert(offsetof(TexStorage2DEXT, target) == 4,
+              "offset of TexStorage2DEXT target should be 4");
+static_assert(offsetof(TexStorage2DEXT, levels) == 8,
+              "offset of TexStorage2DEXT levels should be 8");
+static_assert(offsetof(TexStorage2DEXT, internalFormat) == 12,
+              "offset of TexStorage2DEXT internalFormat should be 12");
+static_assert(offsetof(TexStorage2DEXT, width) == 16,
+              "offset of TexStorage2DEXT width should be 16");
+static_assert(offsetof(TexStorage2DEXT, height) == 20,
+              "offset of TexStorage2DEXT height should be 20");
 
 struct GenQueriesEXTImmediate {
   typedef GenQueriesEXTImmediate ValueType;
@@ -8835,12 +8946,12 @@ struct GenQueriesEXTImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenQueriesEXTImmediate) == 8,
-               Sizeof_GenQueriesEXTImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenQueriesEXTImmediate, header) == 0,
-               OffsetOf_GenQueriesEXTImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenQueriesEXTImmediate, n) == 4,
-               OffsetOf_GenQueriesEXTImmediate_n_not_4);
+static_assert(sizeof(GenQueriesEXTImmediate) == 8,
+              "size of GenQueriesEXTImmediate should be 8");
+static_assert(offsetof(GenQueriesEXTImmediate, header) == 0,
+              "offset of GenQueriesEXTImmediate header should be 0");
+static_assert(offsetof(GenQueriesEXTImmediate, n) == 4,
+              "offset of GenQueriesEXTImmediate n should be 4");
 
 struct DeleteQueriesEXTImmediate {
   typedef DeleteQueriesEXTImmediate ValueType;
@@ -8877,12 +8988,12 @@ struct DeleteQueriesEXTImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteQueriesEXTImmediate) == 8,
-               Sizeof_DeleteQueriesEXTImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteQueriesEXTImmediate, header) == 0,
-               OffsetOf_DeleteQueriesEXTImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteQueriesEXTImmediate, n) == 4,
-               OffsetOf_DeleteQueriesEXTImmediate_n_not_4);
+static_assert(sizeof(DeleteQueriesEXTImmediate) == 8,
+              "size of DeleteQueriesEXTImmediate should be 8");
+static_assert(offsetof(DeleteQueriesEXTImmediate, header) == 0,
+              "offset of DeleteQueriesEXTImmediate header should be 0");
+static_assert(offsetof(DeleteQueriesEXTImmediate, n) == 4,
+              "offset of DeleteQueriesEXTImmediate n should be 4");
 
 struct BeginQueryEXT {
   typedef BeginQueryEXT ValueType;
@@ -8924,17 +9035,18 @@ struct BeginQueryEXT {
   uint32_t sync_data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(BeginQueryEXT) == 20, Sizeof_BeginQueryEXT_is_not_20);
-COMPILE_ASSERT(offsetof(BeginQueryEXT, header) == 0,
-               OffsetOf_BeginQueryEXT_header_not_0);
-COMPILE_ASSERT(offsetof(BeginQueryEXT, target) == 4,
-               OffsetOf_BeginQueryEXT_target_not_4);
-COMPILE_ASSERT(offsetof(BeginQueryEXT, id) == 8,
-               OffsetOf_BeginQueryEXT_id_not_8);
-COMPILE_ASSERT(offsetof(BeginQueryEXT, sync_data_shm_id) == 12,
-               OffsetOf_BeginQueryEXT_sync_data_shm_id_not_12);
-COMPILE_ASSERT(offsetof(BeginQueryEXT, sync_data_shm_offset) == 16,
-               OffsetOf_BeginQueryEXT_sync_data_shm_offset_not_16);
+static_assert(sizeof(BeginQueryEXT) == 20,
+              "size of BeginQueryEXT should be 20");
+static_assert(offsetof(BeginQueryEXT, header) == 0,
+              "offset of BeginQueryEXT header should be 0");
+static_assert(offsetof(BeginQueryEXT, target) == 4,
+              "offset of BeginQueryEXT target should be 4");
+static_assert(offsetof(BeginQueryEXT, id) == 8,
+              "offset of BeginQueryEXT id should be 8");
+static_assert(offsetof(BeginQueryEXT, sync_data_shm_id) == 12,
+              "offset of BeginQueryEXT sync_data_shm_id should be 12");
+static_assert(offsetof(BeginQueryEXT, sync_data_shm_offset) == 16,
+              "offset of BeginQueryEXT sync_data_shm_offset should be 16");
 
 struct BeginTransformFeedback {
   typedef BeginTransformFeedback ValueType;
@@ -8962,12 +9074,12 @@ struct BeginTransformFeedback {
   uint32_t primitivemode;
 };
 
-COMPILE_ASSERT(sizeof(BeginTransformFeedback) == 8,
-               Sizeof_BeginTransformFeedback_is_not_8);
-COMPILE_ASSERT(offsetof(BeginTransformFeedback, header) == 0,
-               OffsetOf_BeginTransformFeedback_header_not_0);
-COMPILE_ASSERT(offsetof(BeginTransformFeedback, primitivemode) == 4,
-               OffsetOf_BeginTransformFeedback_primitivemode_not_4);
+static_assert(sizeof(BeginTransformFeedback) == 8,
+              "size of BeginTransformFeedback should be 8");
+static_assert(offsetof(BeginTransformFeedback, header) == 0,
+              "offset of BeginTransformFeedback header should be 0");
+static_assert(offsetof(BeginTransformFeedback, primitivemode) == 4,
+              "offset of BeginTransformFeedback primitivemode should be 4");
 
 struct EndQueryEXT {
   typedef EndQueryEXT ValueType;
@@ -8997,13 +9109,13 @@ struct EndQueryEXT {
   uint32_t submit_count;
 };
 
-COMPILE_ASSERT(sizeof(EndQueryEXT) == 12, Sizeof_EndQueryEXT_is_not_12);
-COMPILE_ASSERT(offsetof(EndQueryEXT, header) == 0,
-               OffsetOf_EndQueryEXT_header_not_0);
-COMPILE_ASSERT(offsetof(EndQueryEXT, target) == 4,
-               OffsetOf_EndQueryEXT_target_not_4);
-COMPILE_ASSERT(offsetof(EndQueryEXT, submit_count) == 8,
-               OffsetOf_EndQueryEXT_submit_count_not_8);
+static_assert(sizeof(EndQueryEXT) == 12, "size of EndQueryEXT should be 12");
+static_assert(offsetof(EndQueryEXT, header) == 0,
+              "offset of EndQueryEXT header should be 0");
+static_assert(offsetof(EndQueryEXT, target) == 4,
+              "offset of EndQueryEXT target should be 4");
+static_assert(offsetof(EndQueryEXT, submit_count) == 8,
+              "offset of EndQueryEXT submit_count should be 8");
 
 struct EndTransformFeedback {
   typedef EndTransformFeedback ValueType;
@@ -9027,10 +9139,10 @@ struct EndTransformFeedback {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(EndTransformFeedback) == 4,
-               Sizeof_EndTransformFeedback_is_not_4);
-COMPILE_ASSERT(offsetof(EndTransformFeedback, header) == 0,
-               OffsetOf_EndTransformFeedback_header_not_0);
+static_assert(sizeof(EndTransformFeedback) == 4,
+              "size of EndTransformFeedback should be 4");
+static_assert(offsetof(EndTransformFeedback, header) == 0,
+              "offset of EndTransformFeedback header should be 0");
 
 struct InsertEventMarkerEXT {
   typedef InsertEventMarkerEXT ValueType;
@@ -9058,12 +9170,12 @@ struct InsertEventMarkerEXT {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(InsertEventMarkerEXT) == 8,
-               Sizeof_InsertEventMarkerEXT_is_not_8);
-COMPILE_ASSERT(offsetof(InsertEventMarkerEXT, header) == 0,
-               OffsetOf_InsertEventMarkerEXT_header_not_0);
-COMPILE_ASSERT(offsetof(InsertEventMarkerEXT, bucket_id) == 4,
-               OffsetOf_InsertEventMarkerEXT_bucket_id_not_4);
+static_assert(sizeof(InsertEventMarkerEXT) == 8,
+              "size of InsertEventMarkerEXT should be 8");
+static_assert(offsetof(InsertEventMarkerEXT, header) == 0,
+              "offset of InsertEventMarkerEXT header should be 0");
+static_assert(offsetof(InsertEventMarkerEXT, bucket_id) == 4,
+              "offset of InsertEventMarkerEXT bucket_id should be 4");
 
 struct PushGroupMarkerEXT {
   typedef PushGroupMarkerEXT ValueType;
@@ -9091,12 +9203,12 @@ struct PushGroupMarkerEXT {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(PushGroupMarkerEXT) == 8,
-               Sizeof_PushGroupMarkerEXT_is_not_8);
-COMPILE_ASSERT(offsetof(PushGroupMarkerEXT, header) == 0,
-               OffsetOf_PushGroupMarkerEXT_header_not_0);
-COMPILE_ASSERT(offsetof(PushGroupMarkerEXT, bucket_id) == 4,
-               OffsetOf_PushGroupMarkerEXT_bucket_id_not_4);
+static_assert(sizeof(PushGroupMarkerEXT) == 8,
+              "size of PushGroupMarkerEXT should be 8");
+static_assert(offsetof(PushGroupMarkerEXT, header) == 0,
+              "offset of PushGroupMarkerEXT header should be 0");
+static_assert(offsetof(PushGroupMarkerEXT, bucket_id) == 4,
+              "offset of PushGroupMarkerEXT bucket_id should be 4");
 
 struct PopGroupMarkerEXT {
   typedef PopGroupMarkerEXT ValueType;
@@ -9120,10 +9232,10 @@ struct PopGroupMarkerEXT {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(PopGroupMarkerEXT) == 4,
-               Sizeof_PopGroupMarkerEXT_is_not_4);
-COMPILE_ASSERT(offsetof(PopGroupMarkerEXT, header) == 0,
-               OffsetOf_PopGroupMarkerEXT_header_not_0);
+static_assert(sizeof(PopGroupMarkerEXT) == 4,
+              "size of PopGroupMarkerEXT should be 4");
+static_assert(offsetof(PopGroupMarkerEXT, header) == 0,
+              "offset of PopGroupMarkerEXT header should be 0");
 
 struct GenVertexArraysOESImmediate {
   typedef GenVertexArraysOESImmediate ValueType;
@@ -9160,12 +9272,12 @@ struct GenVertexArraysOESImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenVertexArraysOESImmediate) == 8,
-               Sizeof_GenVertexArraysOESImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenVertexArraysOESImmediate, header) == 0,
-               OffsetOf_GenVertexArraysOESImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenVertexArraysOESImmediate, n) == 4,
-               OffsetOf_GenVertexArraysOESImmediate_n_not_4);
+static_assert(sizeof(GenVertexArraysOESImmediate) == 8,
+              "size of GenVertexArraysOESImmediate should be 8");
+static_assert(offsetof(GenVertexArraysOESImmediate, header) == 0,
+              "offset of GenVertexArraysOESImmediate header should be 0");
+static_assert(offsetof(GenVertexArraysOESImmediate, n) == 4,
+              "offset of GenVertexArraysOESImmediate n should be 4");
 
 struct DeleteVertexArraysOESImmediate {
   typedef DeleteVertexArraysOESImmediate ValueType;
@@ -9202,12 +9314,12 @@ struct DeleteVertexArraysOESImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteVertexArraysOESImmediate) == 8,
-               Sizeof_DeleteVertexArraysOESImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteVertexArraysOESImmediate, header) == 0,
-               OffsetOf_DeleteVertexArraysOESImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteVertexArraysOESImmediate, n) == 4,
-               OffsetOf_DeleteVertexArraysOESImmediate_n_not_4);
+static_assert(sizeof(DeleteVertexArraysOESImmediate) == 8,
+              "size of DeleteVertexArraysOESImmediate should be 8");
+static_assert(offsetof(DeleteVertexArraysOESImmediate, header) == 0,
+              "offset of DeleteVertexArraysOESImmediate header should be 0");
+static_assert(offsetof(DeleteVertexArraysOESImmediate, n) == 4,
+              "offset of DeleteVertexArraysOESImmediate n should be 4");
 
 struct IsVertexArrayOES {
   typedef IsVertexArrayOES ValueType;
@@ -9247,16 +9359,16 @@ struct IsVertexArrayOES {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsVertexArrayOES) == 16,
-               Sizeof_IsVertexArrayOES_is_not_16);
-COMPILE_ASSERT(offsetof(IsVertexArrayOES, header) == 0,
-               OffsetOf_IsVertexArrayOES_header_not_0);
-COMPILE_ASSERT(offsetof(IsVertexArrayOES, array) == 4,
-               OffsetOf_IsVertexArrayOES_array_not_4);
-COMPILE_ASSERT(offsetof(IsVertexArrayOES, result_shm_id) == 8,
-               OffsetOf_IsVertexArrayOES_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsVertexArrayOES, result_shm_offset) == 12,
-               OffsetOf_IsVertexArrayOES_result_shm_offset_not_12);
+static_assert(sizeof(IsVertexArrayOES) == 16,
+              "size of IsVertexArrayOES should be 16");
+static_assert(offsetof(IsVertexArrayOES, header) == 0,
+              "offset of IsVertexArrayOES header should be 0");
+static_assert(offsetof(IsVertexArrayOES, array) == 4,
+              "offset of IsVertexArrayOES array should be 4");
+static_assert(offsetof(IsVertexArrayOES, result_shm_id) == 8,
+              "offset of IsVertexArrayOES result_shm_id should be 8");
+static_assert(offsetof(IsVertexArrayOES, result_shm_offset) == 12,
+              "offset of IsVertexArrayOES result_shm_offset should be 12");
 
 struct BindVertexArrayOES {
   typedef BindVertexArrayOES ValueType;
@@ -9284,12 +9396,12 @@ struct BindVertexArrayOES {
   uint32_t array;
 };
 
-COMPILE_ASSERT(sizeof(BindVertexArrayOES) == 8,
-               Sizeof_BindVertexArrayOES_is_not_8);
-COMPILE_ASSERT(offsetof(BindVertexArrayOES, header) == 0,
-               OffsetOf_BindVertexArrayOES_header_not_0);
-COMPILE_ASSERT(offsetof(BindVertexArrayOES, array) == 4,
-               OffsetOf_BindVertexArrayOES_array_not_4);
+static_assert(sizeof(BindVertexArrayOES) == 8,
+              "size of BindVertexArrayOES should be 8");
+static_assert(offsetof(BindVertexArrayOES, header) == 0,
+              "offset of BindVertexArrayOES header should be 0");
+static_assert(offsetof(BindVertexArrayOES, array) == 4,
+              "offset of BindVertexArrayOES array should be 4");
 
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
@@ -9313,9 +9425,9 @@ struct SwapBuffers {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(SwapBuffers) == 4, Sizeof_SwapBuffers_is_not_4);
-COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
-               OffsetOf_SwapBuffers_header_not_0);
+static_assert(sizeof(SwapBuffers) == 4, "size of SwapBuffers should be 4");
+static_assert(offsetof(SwapBuffers, header) == 0,
+              "offset of SwapBuffers header should be 0");
 
 struct GetMaxValueInBufferCHROMIUM {
   typedef GetMaxValueInBufferCHROMIUM ValueType;
@@ -9367,22 +9479,24 @@ struct GetMaxValueInBufferCHROMIUM {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetMaxValueInBufferCHROMIUM) == 28,
-               Sizeof_GetMaxValueInBufferCHROMIUM_is_not_28);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, header) == 0,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, buffer_id) == 4,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_buffer_id_not_4);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, count) == 8,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_count_not_8);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, type) == 12,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_type_not_12);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, offset) == 16,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_offset_not_16);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, result_shm_id) == 20,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_result_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, result_shm_offset) == 24,
-               OffsetOf_GetMaxValueInBufferCHROMIUM_result_shm_offset_not_24);
+static_assert(sizeof(GetMaxValueInBufferCHROMIUM) == 28,
+              "size of GetMaxValueInBufferCHROMIUM should be 28");
+static_assert(offsetof(GetMaxValueInBufferCHROMIUM, header) == 0,
+              "offset of GetMaxValueInBufferCHROMIUM header should be 0");
+static_assert(offsetof(GetMaxValueInBufferCHROMIUM, buffer_id) == 4,
+              "offset of GetMaxValueInBufferCHROMIUM buffer_id should be 4");
+static_assert(offsetof(GetMaxValueInBufferCHROMIUM, count) == 8,
+              "offset of GetMaxValueInBufferCHROMIUM count should be 8");
+static_assert(offsetof(GetMaxValueInBufferCHROMIUM, type) == 12,
+              "offset of GetMaxValueInBufferCHROMIUM type should be 12");
+static_assert(offsetof(GetMaxValueInBufferCHROMIUM, offset) == 16,
+              "offset of GetMaxValueInBufferCHROMIUM offset should be 16");
+static_assert(
+    offsetof(GetMaxValueInBufferCHROMIUM, result_shm_id) == 20,
+    "offset of GetMaxValueInBufferCHROMIUM result_shm_id should be 20");
+static_assert(
+    offsetof(GetMaxValueInBufferCHROMIUM, result_shm_offset) == 24,
+    "offset of GetMaxValueInBufferCHROMIUM result_shm_offset should be 24");
 
 struct EnableFeatureCHROMIUM {
   typedef EnableFeatureCHROMIUM ValueType;
@@ -9422,16 +9536,16 @@ struct EnableFeatureCHROMIUM {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(EnableFeatureCHROMIUM) == 16,
-               Sizeof_EnableFeatureCHROMIUM_is_not_16);
-COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, header) == 0,
-               OffsetOf_EnableFeatureCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, bucket_id) == 4,
-               OffsetOf_EnableFeatureCHROMIUM_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, result_shm_id) == 8,
-               OffsetOf_EnableFeatureCHROMIUM_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, result_shm_offset) == 12,
-               OffsetOf_EnableFeatureCHROMIUM_result_shm_offset_not_12);
+static_assert(sizeof(EnableFeatureCHROMIUM) == 16,
+              "size of EnableFeatureCHROMIUM should be 16");
+static_assert(offsetof(EnableFeatureCHROMIUM, header) == 0,
+              "offset of EnableFeatureCHROMIUM header should be 0");
+static_assert(offsetof(EnableFeatureCHROMIUM, bucket_id) == 4,
+              "offset of EnableFeatureCHROMIUM bucket_id should be 4");
+static_assert(offsetof(EnableFeatureCHROMIUM, result_shm_id) == 8,
+              "offset of EnableFeatureCHROMIUM result_shm_id should be 8");
+static_assert(offsetof(EnableFeatureCHROMIUM, result_shm_offset) == 12,
+              "offset of EnableFeatureCHROMIUM result_shm_offset should be 12");
 
 struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;
@@ -9463,15 +9577,16 @@ struct ResizeCHROMIUM {
   float scale_factor;
 };
 
-COMPILE_ASSERT(sizeof(ResizeCHROMIUM) == 16, Sizeof_ResizeCHROMIUM_is_not_16);
-COMPILE_ASSERT(offsetof(ResizeCHROMIUM, header) == 0,
-               OffsetOf_ResizeCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(ResizeCHROMIUM, width) == 4,
-               OffsetOf_ResizeCHROMIUM_width_not_4);
-COMPILE_ASSERT(offsetof(ResizeCHROMIUM, height) == 8,
-               OffsetOf_ResizeCHROMIUM_height_not_8);
-COMPILE_ASSERT(offsetof(ResizeCHROMIUM, scale_factor) == 12,
-               OffsetOf_ResizeCHROMIUM_scale_factor_not_12);
+static_assert(sizeof(ResizeCHROMIUM) == 16,
+              "size of ResizeCHROMIUM should be 16");
+static_assert(offsetof(ResizeCHROMIUM, header) == 0,
+              "offset of ResizeCHROMIUM header should be 0");
+static_assert(offsetof(ResizeCHROMIUM, width) == 4,
+              "offset of ResizeCHROMIUM width should be 4");
+static_assert(offsetof(ResizeCHROMIUM, height) == 8,
+              "offset of ResizeCHROMIUM height should be 8");
+static_assert(offsetof(ResizeCHROMIUM, scale_factor) == 12,
+              "offset of ResizeCHROMIUM scale_factor should be 12");
 
 struct GetRequestableExtensionsCHROMIUM {
   typedef GetRequestableExtensionsCHROMIUM ValueType;
@@ -9499,12 +9614,13 @@ struct GetRequestableExtensionsCHROMIUM {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetRequestableExtensionsCHROMIUM) == 8,
-               Sizeof_GetRequestableExtensionsCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(GetRequestableExtensionsCHROMIUM, header) == 0,
-               OffsetOf_GetRequestableExtensionsCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(GetRequestableExtensionsCHROMIUM, bucket_id) == 4,
-               OffsetOf_GetRequestableExtensionsCHROMIUM_bucket_id_not_4);
+static_assert(sizeof(GetRequestableExtensionsCHROMIUM) == 8,
+              "size of GetRequestableExtensionsCHROMIUM should be 8");
+static_assert(offsetof(GetRequestableExtensionsCHROMIUM, header) == 0,
+              "offset of GetRequestableExtensionsCHROMIUM header should be 0");
+static_assert(
+    offsetof(GetRequestableExtensionsCHROMIUM, bucket_id) == 4,
+    "offset of GetRequestableExtensionsCHROMIUM bucket_id should be 4");
 
 struct RequestExtensionCHROMIUM {
   typedef RequestExtensionCHROMIUM ValueType;
@@ -9532,12 +9648,12 @@ struct RequestExtensionCHROMIUM {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(RequestExtensionCHROMIUM) == 8,
-               Sizeof_RequestExtensionCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, header) == 0,
-               OffsetOf_RequestExtensionCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, bucket_id) == 4,
-               OffsetOf_RequestExtensionCHROMIUM_bucket_id_not_4);
+static_assert(sizeof(RequestExtensionCHROMIUM) == 8,
+              "size of RequestExtensionCHROMIUM should be 8");
+static_assert(offsetof(RequestExtensionCHROMIUM, header) == 0,
+              "offset of RequestExtensionCHROMIUM header should be 0");
+static_assert(offsetof(RequestExtensionCHROMIUM, bucket_id) == 4,
+              "offset of RequestExtensionCHROMIUM bucket_id should be 4");
 
 struct GetProgramInfoCHROMIUM {
   typedef GetProgramInfoCHROMIUM ValueType;
@@ -9573,20 +9689,23 @@ struct GetProgramInfoCHROMIUM {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetProgramInfoCHROMIUM) == 12,
-               Sizeof_GetProgramInfoCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM, header) == 0,
-               OffsetOf_GetProgramInfoCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM, program) == 4,
-               OffsetOf_GetProgramInfoCHROMIUM_program_not_4);
-COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM, bucket_id) == 8,
-               OffsetOf_GetProgramInfoCHROMIUM_bucket_id_not_8);
-COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, link_status) == 0,
-               OffsetOf_GetProgramInfoCHROMIUM_Result_link_status_not_0);
-COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
-               OffsetOf_GetProgramInfoCHROMIUM_Result_num_attribs_not_4);
-COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
-               OffsetOf_GetProgramInfoCHROMIUM_Result_num_uniforms_not_8);
+static_assert(sizeof(GetProgramInfoCHROMIUM) == 12,
+              "size of GetProgramInfoCHROMIUM should be 12");
+static_assert(offsetof(GetProgramInfoCHROMIUM, header) == 0,
+              "offset of GetProgramInfoCHROMIUM header should be 0");
+static_assert(offsetof(GetProgramInfoCHROMIUM, program) == 4,
+              "offset of GetProgramInfoCHROMIUM program should be 4");
+static_assert(offsetof(GetProgramInfoCHROMIUM, bucket_id) == 8,
+              "offset of GetProgramInfoCHROMIUM bucket_id should be 8");
+static_assert(
+    offsetof(GetProgramInfoCHROMIUM::Result, link_status) == 0,
+    "offset of GetProgramInfoCHROMIUM Result link_status should be 0");
+static_assert(
+    offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
+    "offset of GetProgramInfoCHROMIUM Result num_attribs should be 4");
+static_assert(
+    offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
+    "offset of GetProgramInfoCHROMIUM Result num_uniforms should be 8");
 
 struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;
@@ -9616,14 +9735,14 @@ struct GetTranslatedShaderSourceANGLE {
   uint32_t bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetTranslatedShaderSourceANGLE) == 12,
-               Sizeof_GetTranslatedShaderSourceANGLE_is_not_12);
-COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, header) == 0,
-               OffsetOf_GetTranslatedShaderSourceANGLE_header_not_0);
-COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, shader) == 4,
-               OffsetOf_GetTranslatedShaderSourceANGLE_shader_not_4);
-COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, bucket_id) == 8,
-               OffsetOf_GetTranslatedShaderSourceANGLE_bucket_id_not_8);
+static_assert(sizeof(GetTranslatedShaderSourceANGLE) == 12,
+              "size of GetTranslatedShaderSourceANGLE should be 12");
+static_assert(offsetof(GetTranslatedShaderSourceANGLE, header) == 0,
+              "offset of GetTranslatedShaderSourceANGLE header should be 0");
+static_assert(offsetof(GetTranslatedShaderSourceANGLE, shader) == 4,
+              "offset of GetTranslatedShaderSourceANGLE shader should be 4");
+static_assert(offsetof(GetTranslatedShaderSourceANGLE, bucket_id) == 8,
+              "offset of GetTranslatedShaderSourceANGLE bucket_id should be 8");
 
 struct PostSubBufferCHROMIUM {
   typedef PostSubBufferCHROMIUM ValueType;
@@ -9657,18 +9776,18 @@ struct PostSubBufferCHROMIUM {
   int32_t height;
 };
 
-COMPILE_ASSERT(sizeof(PostSubBufferCHROMIUM) == 20,
-               Sizeof_PostSubBufferCHROMIUM_is_not_20);
-COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, header) == 0,
-               OffsetOf_PostSubBufferCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, x) == 4,
-               OffsetOf_PostSubBufferCHROMIUM_x_not_4);
-COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, y) == 8,
-               OffsetOf_PostSubBufferCHROMIUM_y_not_8);
-COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, width) == 12,
-               OffsetOf_PostSubBufferCHROMIUM_width_not_12);
-COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, height) == 16,
-               OffsetOf_PostSubBufferCHROMIUM_height_not_16);
+static_assert(sizeof(PostSubBufferCHROMIUM) == 20,
+              "size of PostSubBufferCHROMIUM should be 20");
+static_assert(offsetof(PostSubBufferCHROMIUM, header) == 0,
+              "offset of PostSubBufferCHROMIUM header should be 0");
+static_assert(offsetof(PostSubBufferCHROMIUM, x) == 4,
+              "offset of PostSubBufferCHROMIUM x should be 4");
+static_assert(offsetof(PostSubBufferCHROMIUM, y) == 8,
+              "offset of PostSubBufferCHROMIUM y should be 8");
+static_assert(offsetof(PostSubBufferCHROMIUM, width) == 12,
+              "offset of PostSubBufferCHROMIUM width should be 12");
+static_assert(offsetof(PostSubBufferCHROMIUM, height) == 16,
+              "offset of PostSubBufferCHROMIUM height should be 16");
 
 struct TexImageIOSurface2DCHROMIUM {
   typedef TexImageIOSurface2DCHROMIUM ValueType;
@@ -9714,20 +9833,20 @@ struct TexImageIOSurface2DCHROMIUM {
   uint32_t plane;
 };
 
-COMPILE_ASSERT(sizeof(TexImageIOSurface2DCHROMIUM) == 24,
-               Sizeof_TexImageIOSurface2DCHROMIUM_is_not_24);
-COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, header) == 0,
-               OffsetOf_TexImageIOSurface2DCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, target) == 4,
-               OffsetOf_TexImageIOSurface2DCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, width) == 8,
-               OffsetOf_TexImageIOSurface2DCHROMIUM_width_not_8);
-COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, height) == 12,
-               OffsetOf_TexImageIOSurface2DCHROMIUM_height_not_12);
-COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, ioSurfaceId) == 16,
-               OffsetOf_TexImageIOSurface2DCHROMIUM_ioSurfaceId_not_16);
-COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, plane) == 20,
-               OffsetOf_TexImageIOSurface2DCHROMIUM_plane_not_20);
+static_assert(sizeof(TexImageIOSurface2DCHROMIUM) == 24,
+              "size of TexImageIOSurface2DCHROMIUM should be 24");
+static_assert(offsetof(TexImageIOSurface2DCHROMIUM, header) == 0,
+              "offset of TexImageIOSurface2DCHROMIUM header should be 0");
+static_assert(offsetof(TexImageIOSurface2DCHROMIUM, target) == 4,
+              "offset of TexImageIOSurface2DCHROMIUM target should be 4");
+static_assert(offsetof(TexImageIOSurface2DCHROMIUM, width) == 8,
+              "offset of TexImageIOSurface2DCHROMIUM width should be 8");
+static_assert(offsetof(TexImageIOSurface2DCHROMIUM, height) == 12,
+              "offset of TexImageIOSurface2DCHROMIUM height should be 12");
+static_assert(offsetof(TexImageIOSurface2DCHROMIUM, ioSurfaceId) == 16,
+              "offset of TexImageIOSurface2DCHROMIUM ioSurfaceId should be 16");
+static_assert(offsetof(TexImageIOSurface2DCHROMIUM, plane) == 20,
+              "offset of TexImageIOSurface2DCHROMIUM plane should be 20");
 
 struct CopyTextureCHROMIUM {
   typedef CopyTextureCHROMIUM ValueType;
@@ -9777,22 +9896,22 @@ struct CopyTextureCHROMIUM {
   uint32_t dest_type;
 };
 
-COMPILE_ASSERT(sizeof(CopyTextureCHROMIUM) == 28,
-               Sizeof_CopyTextureCHROMIUM_is_not_28);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, header) == 0,
-               OffsetOf_CopyTextureCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, target) == 4,
-               OffsetOf_CopyTextureCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, source_id) == 8,
-               OffsetOf_CopyTextureCHROMIUM_source_id_not_8);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, dest_id) == 12,
-               OffsetOf_CopyTextureCHROMIUM_dest_id_not_12);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, level) == 16,
-               OffsetOf_CopyTextureCHROMIUM_level_not_16);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, internalformat) == 20,
-               OffsetOf_CopyTextureCHROMIUM_internalformat_not_20);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, dest_type) == 24,
-               OffsetOf_CopyTextureCHROMIUM_dest_type_not_24);
+static_assert(sizeof(CopyTextureCHROMIUM) == 28,
+              "size of CopyTextureCHROMIUM should be 28");
+static_assert(offsetof(CopyTextureCHROMIUM, header) == 0,
+              "offset of CopyTextureCHROMIUM header should be 0");
+static_assert(offsetof(CopyTextureCHROMIUM, target) == 4,
+              "offset of CopyTextureCHROMIUM target should be 4");
+static_assert(offsetof(CopyTextureCHROMIUM, source_id) == 8,
+              "offset of CopyTextureCHROMIUM source_id should be 8");
+static_assert(offsetof(CopyTextureCHROMIUM, dest_id) == 12,
+              "offset of CopyTextureCHROMIUM dest_id should be 12");
+static_assert(offsetof(CopyTextureCHROMIUM, level) == 16,
+              "offset of CopyTextureCHROMIUM level should be 16");
+static_assert(offsetof(CopyTextureCHROMIUM, internalformat) == 20,
+              "offset of CopyTextureCHROMIUM internalformat should be 20");
+static_assert(offsetof(CopyTextureCHROMIUM, dest_type) == 24,
+              "offset of CopyTextureCHROMIUM dest_type should be 24");
 
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;
@@ -9830,18 +9949,18 @@ struct DrawArraysInstancedANGLE {
   int32_t primcount;
 };
 
-COMPILE_ASSERT(sizeof(DrawArraysInstancedANGLE) == 20,
-               Sizeof_DrawArraysInstancedANGLE_is_not_20);
-COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, header) == 0,
-               OffsetOf_DrawArraysInstancedANGLE_header_not_0);
-COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, mode) == 4,
-               OffsetOf_DrawArraysInstancedANGLE_mode_not_4);
-COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, first) == 8,
-               OffsetOf_DrawArraysInstancedANGLE_first_not_8);
-COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, count) == 12,
-               OffsetOf_DrawArraysInstancedANGLE_count_not_12);
-COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, primcount) == 16,
-               OffsetOf_DrawArraysInstancedANGLE_primcount_not_16);
+static_assert(sizeof(DrawArraysInstancedANGLE) == 20,
+              "size of DrawArraysInstancedANGLE should be 20");
+static_assert(offsetof(DrawArraysInstancedANGLE, header) == 0,
+              "offset of DrawArraysInstancedANGLE header should be 0");
+static_assert(offsetof(DrawArraysInstancedANGLE, mode) == 4,
+              "offset of DrawArraysInstancedANGLE mode should be 4");
+static_assert(offsetof(DrawArraysInstancedANGLE, first) == 8,
+              "offset of DrawArraysInstancedANGLE first should be 8");
+static_assert(offsetof(DrawArraysInstancedANGLE, count) == 12,
+              "offset of DrawArraysInstancedANGLE count should be 12");
+static_assert(offsetof(DrawArraysInstancedANGLE, primcount) == 16,
+              "offset of DrawArraysInstancedANGLE primcount should be 16");
 
 struct DrawElementsInstancedANGLE {
   typedef DrawElementsInstancedANGLE ValueType;
@@ -9887,20 +10006,20 @@ struct DrawElementsInstancedANGLE {
   int32_t primcount;
 };
 
-COMPILE_ASSERT(sizeof(DrawElementsInstancedANGLE) == 24,
-               Sizeof_DrawElementsInstancedANGLE_is_not_24);
-COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, header) == 0,
-               OffsetOf_DrawElementsInstancedANGLE_header_not_0);
-COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, mode) == 4,
-               OffsetOf_DrawElementsInstancedANGLE_mode_not_4);
-COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, count) == 8,
-               OffsetOf_DrawElementsInstancedANGLE_count_not_8);
-COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, type) == 12,
-               OffsetOf_DrawElementsInstancedANGLE_type_not_12);
-COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, index_offset) == 16,
-               OffsetOf_DrawElementsInstancedANGLE_index_offset_not_16);
-COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, primcount) == 20,
-               OffsetOf_DrawElementsInstancedANGLE_primcount_not_20);
+static_assert(sizeof(DrawElementsInstancedANGLE) == 24,
+              "size of DrawElementsInstancedANGLE should be 24");
+static_assert(offsetof(DrawElementsInstancedANGLE, header) == 0,
+              "offset of DrawElementsInstancedANGLE header should be 0");
+static_assert(offsetof(DrawElementsInstancedANGLE, mode) == 4,
+              "offset of DrawElementsInstancedANGLE mode should be 4");
+static_assert(offsetof(DrawElementsInstancedANGLE, count) == 8,
+              "offset of DrawElementsInstancedANGLE count should be 8");
+static_assert(offsetof(DrawElementsInstancedANGLE, type) == 12,
+              "offset of DrawElementsInstancedANGLE type should be 12");
+static_assert(offsetof(DrawElementsInstancedANGLE, index_offset) == 16,
+              "offset of DrawElementsInstancedANGLE index_offset should be 16");
+static_assert(offsetof(DrawElementsInstancedANGLE, primcount) == 20,
+              "offset of DrawElementsInstancedANGLE primcount should be 20");
 
 struct VertexAttribDivisorANGLE {
   typedef VertexAttribDivisorANGLE ValueType;
@@ -9930,14 +10049,14 @@ struct VertexAttribDivisorANGLE {
   uint32_t divisor;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttribDivisorANGLE) == 12,
-               Sizeof_VertexAttribDivisorANGLE_is_not_12);
-COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, header) == 0,
-               OffsetOf_VertexAttribDivisorANGLE_header_not_0);
-COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, index) == 4,
-               OffsetOf_VertexAttribDivisorANGLE_index_not_4);
-COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, divisor) == 8,
-               OffsetOf_VertexAttribDivisorANGLE_divisor_not_8);
+static_assert(sizeof(VertexAttribDivisorANGLE) == 12,
+              "size of VertexAttribDivisorANGLE should be 12");
+static_assert(offsetof(VertexAttribDivisorANGLE, header) == 0,
+              "offset of VertexAttribDivisorANGLE header should be 0");
+static_assert(offsetof(VertexAttribDivisorANGLE, index) == 4,
+              "offset of VertexAttribDivisorANGLE index should be 4");
+static_assert(offsetof(VertexAttribDivisorANGLE, divisor) == 8,
+              "offset of VertexAttribDivisorANGLE divisor should be 8");
 
 struct ProduceTextureCHROMIUMImmediate {
   typedef ProduceTextureCHROMIUMImmediate ValueType;
@@ -9972,12 +10091,12 @@ struct ProduceTextureCHROMIUMImmediate {
   uint32_t target;
 };
 
-COMPILE_ASSERT(sizeof(ProduceTextureCHROMIUMImmediate) == 8,
-               Sizeof_ProduceTextureCHROMIUMImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(ProduceTextureCHROMIUMImmediate, header) == 0,
-               OffsetOf_ProduceTextureCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(ProduceTextureCHROMIUMImmediate, target) == 4,
-               OffsetOf_ProduceTextureCHROMIUMImmediate_target_not_4);
+static_assert(sizeof(ProduceTextureCHROMIUMImmediate) == 8,
+              "size of ProduceTextureCHROMIUMImmediate should be 8");
+static_assert(offsetof(ProduceTextureCHROMIUMImmediate, header) == 0,
+              "offset of ProduceTextureCHROMIUMImmediate header should be 0");
+static_assert(offsetof(ProduceTextureCHROMIUMImmediate, target) == 4,
+              "offset of ProduceTextureCHROMIUMImmediate target should be 4");
 
 struct ProduceTextureDirectCHROMIUMImmediate {
   typedef ProduceTextureDirectCHROMIUMImmediate ValueType;
@@ -10017,14 +10136,17 @@ struct ProduceTextureDirectCHROMIUMImmediate {
   uint32_t target;
 };
 
-COMPILE_ASSERT(sizeof(ProduceTextureDirectCHROMIUMImmediate) == 12,
-               Sizeof_ProduceTextureDirectCHROMIUMImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(ProduceTextureDirectCHROMIUMImmediate, header) == 0,
-               OffsetOf_ProduceTextureDirectCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(ProduceTextureDirectCHROMIUMImmediate, texture) == 4,
-               OffsetOf_ProduceTextureDirectCHROMIUMImmediate_texture_not_4);
-COMPILE_ASSERT(offsetof(ProduceTextureDirectCHROMIUMImmediate, target) == 8,
-               OffsetOf_ProduceTextureDirectCHROMIUMImmediate_target_not_8);
+static_assert(sizeof(ProduceTextureDirectCHROMIUMImmediate) == 12,
+              "size of ProduceTextureDirectCHROMIUMImmediate should be 12");
+static_assert(
+    offsetof(ProduceTextureDirectCHROMIUMImmediate, header) == 0,
+    "offset of ProduceTextureDirectCHROMIUMImmediate header should be 0");
+static_assert(
+    offsetof(ProduceTextureDirectCHROMIUMImmediate, texture) == 4,
+    "offset of ProduceTextureDirectCHROMIUMImmediate texture should be 4");
+static_assert(
+    offsetof(ProduceTextureDirectCHROMIUMImmediate, target) == 8,
+    "offset of ProduceTextureDirectCHROMIUMImmediate target should be 8");
 
 struct ConsumeTextureCHROMIUMImmediate {
   typedef ConsumeTextureCHROMIUMImmediate ValueType;
@@ -10059,12 +10181,12 @@ struct ConsumeTextureCHROMIUMImmediate {
   uint32_t target;
 };
 
-COMPILE_ASSERT(sizeof(ConsumeTextureCHROMIUMImmediate) == 8,
-               Sizeof_ConsumeTextureCHROMIUMImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(ConsumeTextureCHROMIUMImmediate, header) == 0,
-               OffsetOf_ConsumeTextureCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(ConsumeTextureCHROMIUMImmediate, target) == 4,
-               OffsetOf_ConsumeTextureCHROMIUMImmediate_target_not_4);
+static_assert(sizeof(ConsumeTextureCHROMIUMImmediate) == 8,
+              "size of ConsumeTextureCHROMIUMImmediate should be 8");
+static_assert(offsetof(ConsumeTextureCHROMIUMImmediate, header) == 0,
+              "offset of ConsumeTextureCHROMIUMImmediate header should be 0");
+static_assert(offsetof(ConsumeTextureCHROMIUMImmediate, target) == 4,
+              "offset of ConsumeTextureCHROMIUMImmediate target should be 4");
 
 struct BindUniformLocationCHROMIUMBucket {
   typedef BindUniformLocationCHROMIUMBucket ValueType;
@@ -10099,17 +10221,19 @@ struct BindUniformLocationCHROMIUMBucket {
   uint32_t name_bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(BindUniformLocationCHROMIUMBucket) == 16,
-               Sizeof_BindUniformLocationCHROMIUMBucket_is_not_16);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUMBucket, header) == 0,
-               OffsetOf_BindUniformLocationCHROMIUMBucket_header_not_0);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUMBucket, program) == 4,
-               OffsetOf_BindUniformLocationCHROMIUMBucket_program_not_4);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUMBucket, location) == 8,
-               OffsetOf_BindUniformLocationCHROMIUMBucket_location_not_8);
-COMPILE_ASSERT(
+static_assert(sizeof(BindUniformLocationCHROMIUMBucket) == 16,
+              "size of BindUniformLocationCHROMIUMBucket should be 16");
+static_assert(offsetof(BindUniformLocationCHROMIUMBucket, header) == 0,
+              "offset of BindUniformLocationCHROMIUMBucket header should be 0");
+static_assert(
+    offsetof(BindUniformLocationCHROMIUMBucket, program) == 4,
+    "offset of BindUniformLocationCHROMIUMBucket program should be 4");
+static_assert(
+    offsetof(BindUniformLocationCHROMIUMBucket, location) == 8,
+    "offset of BindUniformLocationCHROMIUMBucket location should be 8");
+static_assert(
     offsetof(BindUniformLocationCHROMIUMBucket, name_bucket_id) == 12,
-    OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);
+    "offset of BindUniformLocationCHROMIUMBucket name_bucket_id should be 12");
 
 struct GenValuebuffersCHROMIUMImmediate {
   typedef GenValuebuffersCHROMIUMImmediate ValueType;
@@ -10146,12 +10270,12 @@ struct GenValuebuffersCHROMIUMImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(GenValuebuffersCHROMIUMImmediate) == 8,
-               Sizeof_GenValuebuffersCHROMIUMImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(GenValuebuffersCHROMIUMImmediate, header) == 0,
-               OffsetOf_GenValuebuffersCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GenValuebuffersCHROMIUMImmediate, n) == 4,
-               OffsetOf_GenValuebuffersCHROMIUMImmediate_n_not_4);
+static_assert(sizeof(GenValuebuffersCHROMIUMImmediate) == 8,
+              "size of GenValuebuffersCHROMIUMImmediate should be 8");
+static_assert(offsetof(GenValuebuffersCHROMIUMImmediate, header) == 0,
+              "offset of GenValuebuffersCHROMIUMImmediate header should be 0");
+static_assert(offsetof(GenValuebuffersCHROMIUMImmediate, n) == 4,
+              "offset of GenValuebuffersCHROMIUMImmediate n should be 4");
 
 struct DeleteValuebuffersCHROMIUMImmediate {
   typedef DeleteValuebuffersCHROMIUMImmediate ValueType;
@@ -10188,12 +10312,13 @@ struct DeleteValuebuffersCHROMIUMImmediate {
   int32_t n;
 };
 
-COMPILE_ASSERT(sizeof(DeleteValuebuffersCHROMIUMImmediate) == 8,
-               Sizeof_DeleteValuebuffersCHROMIUMImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DeleteValuebuffersCHROMIUMImmediate, header) == 0,
-               OffsetOf_DeleteValuebuffersCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteValuebuffersCHROMIUMImmediate, n) == 4,
-               OffsetOf_DeleteValuebuffersCHROMIUMImmediate_n_not_4);
+static_assert(sizeof(DeleteValuebuffersCHROMIUMImmediate) == 8,
+              "size of DeleteValuebuffersCHROMIUMImmediate should be 8");
+static_assert(
+    offsetof(DeleteValuebuffersCHROMIUMImmediate, header) == 0,
+    "offset of DeleteValuebuffersCHROMIUMImmediate header should be 0");
+static_assert(offsetof(DeleteValuebuffersCHROMIUMImmediate, n) == 4,
+              "offset of DeleteValuebuffersCHROMIUMImmediate n should be 4");
 
 struct IsValuebufferCHROMIUM {
   typedef IsValuebufferCHROMIUM ValueType;
@@ -10233,16 +10358,16 @@ struct IsValuebufferCHROMIUM {
   uint32_t result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsValuebufferCHROMIUM) == 16,
-               Sizeof_IsValuebufferCHROMIUM_is_not_16);
-COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, header) == 0,
-               OffsetOf_IsValuebufferCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, valuebuffer) == 4,
-               OffsetOf_IsValuebufferCHROMIUM_valuebuffer_not_4);
-COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, result_shm_id) == 8,
-               OffsetOf_IsValuebufferCHROMIUM_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, result_shm_offset) == 12,
-               OffsetOf_IsValuebufferCHROMIUM_result_shm_offset_not_12);
+static_assert(sizeof(IsValuebufferCHROMIUM) == 16,
+              "size of IsValuebufferCHROMIUM should be 16");
+static_assert(offsetof(IsValuebufferCHROMIUM, header) == 0,
+              "offset of IsValuebufferCHROMIUM header should be 0");
+static_assert(offsetof(IsValuebufferCHROMIUM, valuebuffer) == 4,
+              "offset of IsValuebufferCHROMIUM valuebuffer should be 4");
+static_assert(offsetof(IsValuebufferCHROMIUM, result_shm_id) == 8,
+              "offset of IsValuebufferCHROMIUM result_shm_id should be 8");
+static_assert(offsetof(IsValuebufferCHROMIUM, result_shm_offset) == 12,
+              "offset of IsValuebufferCHROMIUM result_shm_offset should be 12");
 
 struct BindValuebufferCHROMIUM {
   typedef BindValuebufferCHROMIUM ValueType;
@@ -10272,14 +10397,14 @@ struct BindValuebufferCHROMIUM {
   uint32_t valuebuffer;
 };
 
-COMPILE_ASSERT(sizeof(BindValuebufferCHROMIUM) == 12,
-               Sizeof_BindValuebufferCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(BindValuebufferCHROMIUM, header) == 0,
-               OffsetOf_BindValuebufferCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(BindValuebufferCHROMIUM, target) == 4,
-               OffsetOf_BindValuebufferCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(BindValuebufferCHROMIUM, valuebuffer) == 8,
-               OffsetOf_BindValuebufferCHROMIUM_valuebuffer_not_8);
+static_assert(sizeof(BindValuebufferCHROMIUM) == 12,
+              "size of BindValuebufferCHROMIUM should be 12");
+static_assert(offsetof(BindValuebufferCHROMIUM, header) == 0,
+              "offset of BindValuebufferCHROMIUM header should be 0");
+static_assert(offsetof(BindValuebufferCHROMIUM, target) == 4,
+              "offset of BindValuebufferCHROMIUM target should be 4");
+static_assert(offsetof(BindValuebufferCHROMIUM, valuebuffer) == 8,
+              "offset of BindValuebufferCHROMIUM valuebuffer should be 8");
 
 struct SubscribeValueCHROMIUM {
   typedef SubscribeValueCHROMIUM ValueType;
@@ -10309,14 +10434,14 @@ struct SubscribeValueCHROMIUM {
   uint32_t subscription;
 };
 
-COMPILE_ASSERT(sizeof(SubscribeValueCHROMIUM) == 12,
-               Sizeof_SubscribeValueCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(SubscribeValueCHROMIUM, header) == 0,
-               OffsetOf_SubscribeValueCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(SubscribeValueCHROMIUM, target) == 4,
-               OffsetOf_SubscribeValueCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(SubscribeValueCHROMIUM, subscription) == 8,
-               OffsetOf_SubscribeValueCHROMIUM_subscription_not_8);
+static_assert(sizeof(SubscribeValueCHROMIUM) == 12,
+              "size of SubscribeValueCHROMIUM should be 12");
+static_assert(offsetof(SubscribeValueCHROMIUM, header) == 0,
+              "offset of SubscribeValueCHROMIUM header should be 0");
+static_assert(offsetof(SubscribeValueCHROMIUM, target) == 4,
+              "offset of SubscribeValueCHROMIUM target should be 4");
+static_assert(offsetof(SubscribeValueCHROMIUM, subscription) == 8,
+              "offset of SubscribeValueCHROMIUM subscription should be 8");
 
 struct PopulateSubscribedValuesCHROMIUM {
   typedef PopulateSubscribedValuesCHROMIUM ValueType;
@@ -10344,12 +10469,12 @@ struct PopulateSubscribedValuesCHROMIUM {
   uint32_t target;
 };
 
-COMPILE_ASSERT(sizeof(PopulateSubscribedValuesCHROMIUM) == 8,
-               Sizeof_PopulateSubscribedValuesCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(PopulateSubscribedValuesCHROMIUM, header) == 0,
-               OffsetOf_PopulateSubscribedValuesCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(PopulateSubscribedValuesCHROMIUM, target) == 4,
-               OffsetOf_PopulateSubscribedValuesCHROMIUM_target_not_4);
+static_assert(sizeof(PopulateSubscribedValuesCHROMIUM) == 8,
+              "size of PopulateSubscribedValuesCHROMIUM should be 8");
+static_assert(offsetof(PopulateSubscribedValuesCHROMIUM, header) == 0,
+              "offset of PopulateSubscribedValuesCHROMIUM header should be 0");
+static_assert(offsetof(PopulateSubscribedValuesCHROMIUM, target) == 4,
+              "offset of PopulateSubscribedValuesCHROMIUM target should be 4");
 
 struct UniformValuebufferCHROMIUM {
   typedef UniformValuebufferCHROMIUM ValueType;
@@ -10381,16 +10506,16 @@ struct UniformValuebufferCHROMIUM {
   uint32_t subscription;
 };
 
-COMPILE_ASSERT(sizeof(UniformValuebufferCHROMIUM) == 16,
-               Sizeof_UniformValuebufferCHROMIUM_is_not_16);
-COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, header) == 0,
-               OffsetOf_UniformValuebufferCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, location) == 4,
-               OffsetOf_UniformValuebufferCHROMIUM_location_not_4);
-COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, target) == 8,
-               OffsetOf_UniformValuebufferCHROMIUM_target_not_8);
-COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, subscription) == 12,
-               OffsetOf_UniformValuebufferCHROMIUM_subscription_not_12);
+static_assert(sizeof(UniformValuebufferCHROMIUM) == 16,
+              "size of UniformValuebufferCHROMIUM should be 16");
+static_assert(offsetof(UniformValuebufferCHROMIUM, header) == 0,
+              "offset of UniformValuebufferCHROMIUM header should be 0");
+static_assert(offsetof(UniformValuebufferCHROMIUM, location) == 4,
+              "offset of UniformValuebufferCHROMIUM location should be 4");
+static_assert(offsetof(UniformValuebufferCHROMIUM, target) == 8,
+              "offset of UniformValuebufferCHROMIUM target should be 8");
+static_assert(offsetof(UniformValuebufferCHROMIUM, subscription) == 12,
+              "offset of UniformValuebufferCHROMIUM subscription should be 12");
 
 struct BindTexImage2DCHROMIUM {
   typedef BindTexImage2DCHROMIUM ValueType;
@@ -10420,14 +10545,14 @@ struct BindTexImage2DCHROMIUM {
   int32_t imageId;
 };
 
-COMPILE_ASSERT(sizeof(BindTexImage2DCHROMIUM) == 12,
-               Sizeof_BindTexImage2DCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(BindTexImage2DCHROMIUM, header) == 0,
-               OffsetOf_BindTexImage2DCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(BindTexImage2DCHROMIUM, target) == 4,
-               OffsetOf_BindTexImage2DCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(BindTexImage2DCHROMIUM, imageId) == 8,
-               OffsetOf_BindTexImage2DCHROMIUM_imageId_not_8);
+static_assert(sizeof(BindTexImage2DCHROMIUM) == 12,
+              "size of BindTexImage2DCHROMIUM should be 12");
+static_assert(offsetof(BindTexImage2DCHROMIUM, header) == 0,
+              "offset of BindTexImage2DCHROMIUM header should be 0");
+static_assert(offsetof(BindTexImage2DCHROMIUM, target) == 4,
+              "offset of BindTexImage2DCHROMIUM target should be 4");
+static_assert(offsetof(BindTexImage2DCHROMIUM, imageId) == 8,
+              "offset of BindTexImage2DCHROMIUM imageId should be 8");
 
 struct ReleaseTexImage2DCHROMIUM {
   typedef ReleaseTexImage2DCHROMIUM ValueType;
@@ -10457,14 +10582,14 @@ struct ReleaseTexImage2DCHROMIUM {
   int32_t imageId;
 };
 
-COMPILE_ASSERT(sizeof(ReleaseTexImage2DCHROMIUM) == 12,
-               Sizeof_ReleaseTexImage2DCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, header) == 0,
-               OffsetOf_ReleaseTexImage2DCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, target) == 4,
-               OffsetOf_ReleaseTexImage2DCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, imageId) == 8,
-               OffsetOf_ReleaseTexImage2DCHROMIUM_imageId_not_8);
+static_assert(sizeof(ReleaseTexImage2DCHROMIUM) == 12,
+              "size of ReleaseTexImage2DCHROMIUM should be 12");
+static_assert(offsetof(ReleaseTexImage2DCHROMIUM, header) == 0,
+              "offset of ReleaseTexImage2DCHROMIUM header should be 0");
+static_assert(offsetof(ReleaseTexImage2DCHROMIUM, target) == 4,
+              "offset of ReleaseTexImage2DCHROMIUM target should be 4");
+static_assert(offsetof(ReleaseTexImage2DCHROMIUM, imageId) == 8,
+              "offset of ReleaseTexImage2DCHROMIUM imageId should be 8");
 
 struct TraceBeginCHROMIUM {
   typedef TraceBeginCHROMIUM ValueType;
@@ -10494,14 +10619,14 @@ struct TraceBeginCHROMIUM {
   uint32_t name_bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(TraceBeginCHROMIUM) == 12,
-               Sizeof_TraceBeginCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, header) == 0,
-               OffsetOf_TraceBeginCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, category_bucket_id) == 4,
-               OffsetOf_TraceBeginCHROMIUM_category_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, name_bucket_id) == 8,
-               OffsetOf_TraceBeginCHROMIUM_name_bucket_id_not_8);
+static_assert(sizeof(TraceBeginCHROMIUM) == 12,
+              "size of TraceBeginCHROMIUM should be 12");
+static_assert(offsetof(TraceBeginCHROMIUM, header) == 0,
+              "offset of TraceBeginCHROMIUM header should be 0");
+static_assert(offsetof(TraceBeginCHROMIUM, category_bucket_id) == 4,
+              "offset of TraceBeginCHROMIUM category_bucket_id should be 4");
+static_assert(offsetof(TraceBeginCHROMIUM, name_bucket_id) == 8,
+              "offset of TraceBeginCHROMIUM name_bucket_id should be 8");
 
 struct TraceEndCHROMIUM {
   typedef TraceEndCHROMIUM ValueType;
@@ -10525,9 +10650,10 @@ struct TraceEndCHROMIUM {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(TraceEndCHROMIUM) == 4, Sizeof_TraceEndCHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(TraceEndCHROMIUM, header) == 0,
-               OffsetOf_TraceEndCHROMIUM_header_not_0);
+static_assert(sizeof(TraceEndCHROMIUM) == 4,
+              "size of TraceEndCHROMIUM should be 4");
+static_assert(offsetof(TraceEndCHROMIUM, header) == 0,
+              "offset of TraceEndCHROMIUM header should be 0");
 
 struct AsyncTexSubImage2DCHROMIUM {
   typedef AsyncTexSubImage2DCHROMIUM ValueType;
@@ -10607,36 +10733,40 @@ struct AsyncTexSubImage2DCHROMIUM {
   uint32_t sync_data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(AsyncTexSubImage2DCHROMIUM) == 56,
-               Sizeof_AsyncTexSubImage2DCHROMIUM_is_not_56);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, header) == 0,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, target) == 4,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, level) == 8,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_level_not_8);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, xoffset) == 12,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_xoffset_not_12);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, yoffset) == 16,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_yoffset_not_16);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, width) == 20,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_width_not_20);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, height) == 24,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_height_not_24);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, format) == 28,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_format_not_28);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, type) == 32,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_type_not_32);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_id) == 36,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_data_shm_id_not_36);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_offset) == 40,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_data_shm_offset_not_40);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, async_upload_token) == 44,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_async_upload_token_not_44);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, sync_data_shm_id) == 48,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_sync_data_shm_id_not_48);
-COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, sync_data_shm_offset) == 52,
-               OffsetOf_AsyncTexSubImage2DCHROMIUM_sync_data_shm_offset_not_52);
+static_assert(sizeof(AsyncTexSubImage2DCHROMIUM) == 56,
+              "size of AsyncTexSubImage2DCHROMIUM should be 56");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, header) == 0,
+              "offset of AsyncTexSubImage2DCHROMIUM header should be 0");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, target) == 4,
+              "offset of AsyncTexSubImage2DCHROMIUM target should be 4");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, level) == 8,
+              "offset of AsyncTexSubImage2DCHROMIUM level should be 8");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, xoffset) == 12,
+              "offset of AsyncTexSubImage2DCHROMIUM xoffset should be 12");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, yoffset) == 16,
+              "offset of AsyncTexSubImage2DCHROMIUM yoffset should be 16");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, width) == 20,
+              "offset of AsyncTexSubImage2DCHROMIUM width should be 20");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, height) == 24,
+              "offset of AsyncTexSubImage2DCHROMIUM height should be 24");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, format) == 28,
+              "offset of AsyncTexSubImage2DCHROMIUM format should be 28");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, type) == 32,
+              "offset of AsyncTexSubImage2DCHROMIUM type should be 32");
+static_assert(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_id) == 36,
+              "offset of AsyncTexSubImage2DCHROMIUM data_shm_id should be 36");
+static_assert(
+    offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_offset) == 40,
+    "offset of AsyncTexSubImage2DCHROMIUM data_shm_offset should be 40");
+static_assert(
+    offsetof(AsyncTexSubImage2DCHROMIUM, async_upload_token) == 44,
+    "offset of AsyncTexSubImage2DCHROMIUM async_upload_token should be 44");
+static_assert(
+    offsetof(AsyncTexSubImage2DCHROMIUM, sync_data_shm_id) == 48,
+    "offset of AsyncTexSubImage2DCHROMIUM sync_data_shm_id should be 48");
+static_assert(
+    offsetof(AsyncTexSubImage2DCHROMIUM, sync_data_shm_offset) == 52,
+    "offset of AsyncTexSubImage2DCHROMIUM sync_data_shm_offset should be 52");
 
 struct AsyncTexImage2DCHROMIUM {
   typedef AsyncTexImage2DCHROMIUM ValueType;
@@ -10713,34 +10843,38 @@ struct AsyncTexImage2DCHROMIUM {
   static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(AsyncTexImage2DCHROMIUM) == 52,
-               Sizeof_AsyncTexImage2DCHROMIUM_is_not_52);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, header) == 0,
-               OffsetOf_AsyncTexImage2DCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, target) == 4,
-               OffsetOf_AsyncTexImage2DCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, level) == 8,
-               OffsetOf_AsyncTexImage2DCHROMIUM_level_not_8);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, internalformat) == 12,
-               OffsetOf_AsyncTexImage2DCHROMIUM_internalformat_not_12);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, width) == 16,
-               OffsetOf_AsyncTexImage2DCHROMIUM_width_not_16);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, height) == 20,
-               OffsetOf_AsyncTexImage2DCHROMIUM_height_not_20);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, format) == 24,
-               OffsetOf_AsyncTexImage2DCHROMIUM_format_not_24);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, type) == 28,
-               OffsetOf_AsyncTexImage2DCHROMIUM_type_not_28);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 32,
-               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_id_not_32);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 36,
-               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_offset_not_36);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, async_upload_token) == 40,
-               OffsetOf_AsyncTexImage2DCHROMIUM_async_upload_token_not_40);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_id) == 44,
-               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_id_not_44);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_offset) == 48,
-               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_offset_not_48);
+static_assert(sizeof(AsyncTexImage2DCHROMIUM) == 52,
+              "size of AsyncTexImage2DCHROMIUM should be 52");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, header) == 0,
+              "offset of AsyncTexImage2DCHROMIUM header should be 0");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, target) == 4,
+              "offset of AsyncTexImage2DCHROMIUM target should be 4");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, level) == 8,
+              "offset of AsyncTexImage2DCHROMIUM level should be 8");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, internalformat) == 12,
+              "offset of AsyncTexImage2DCHROMIUM internalformat should be 12");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, width) == 16,
+              "offset of AsyncTexImage2DCHROMIUM width should be 16");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, height) == 20,
+              "offset of AsyncTexImage2DCHROMIUM height should be 20");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, format) == 24,
+              "offset of AsyncTexImage2DCHROMIUM format should be 24");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, type) == 28,
+              "offset of AsyncTexImage2DCHROMIUM type should be 28");
+static_assert(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 32,
+              "offset of AsyncTexImage2DCHROMIUM pixels_shm_id should be 32");
+static_assert(
+    offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 36,
+    "offset of AsyncTexImage2DCHROMIUM pixels_shm_offset should be 36");
+static_assert(
+    offsetof(AsyncTexImage2DCHROMIUM, async_upload_token) == 40,
+    "offset of AsyncTexImage2DCHROMIUM async_upload_token should be 40");
+static_assert(
+    offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_id) == 44,
+    "offset of AsyncTexImage2DCHROMIUM sync_data_shm_id should be 44");
+static_assert(
+    offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_offset) == 48,
+    "offset of AsyncTexImage2DCHROMIUM sync_data_shm_offset should be 48");
 
 struct WaitAsyncTexImage2DCHROMIUM {
   typedef WaitAsyncTexImage2DCHROMIUM ValueType;
@@ -10768,12 +10902,12 @@ struct WaitAsyncTexImage2DCHROMIUM {
   uint32_t target;
 };
 
-COMPILE_ASSERT(sizeof(WaitAsyncTexImage2DCHROMIUM) == 8,
-               Sizeof_WaitAsyncTexImage2DCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(WaitAsyncTexImage2DCHROMIUM, header) == 0,
-               OffsetOf_WaitAsyncTexImage2DCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(WaitAsyncTexImage2DCHROMIUM, target) == 4,
-               OffsetOf_WaitAsyncTexImage2DCHROMIUM_target_not_4);
+static_assert(sizeof(WaitAsyncTexImage2DCHROMIUM) == 8,
+              "size of WaitAsyncTexImage2DCHROMIUM should be 8");
+static_assert(offsetof(WaitAsyncTexImage2DCHROMIUM, header) == 0,
+              "offset of WaitAsyncTexImage2DCHROMIUM header should be 0");
+static_assert(offsetof(WaitAsyncTexImage2DCHROMIUM, target) == 4,
+              "offset of WaitAsyncTexImage2DCHROMIUM target should be 4");
 
 struct WaitAllAsyncTexImage2DCHROMIUM {
   typedef WaitAllAsyncTexImage2DCHROMIUM ValueType;
@@ -10797,10 +10931,10 @@ struct WaitAllAsyncTexImage2DCHROMIUM {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(WaitAllAsyncTexImage2DCHROMIUM) == 4,
-               Sizeof_WaitAllAsyncTexImage2DCHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(WaitAllAsyncTexImage2DCHROMIUM, header) == 0,
-               OffsetOf_WaitAllAsyncTexImage2DCHROMIUM_header_not_0);
+static_assert(sizeof(WaitAllAsyncTexImage2DCHROMIUM) == 4,
+              "size of WaitAllAsyncTexImage2DCHROMIUM should be 4");
+static_assert(offsetof(WaitAllAsyncTexImage2DCHROMIUM, header) == 0,
+              "offset of WaitAllAsyncTexImage2DCHROMIUM header should be 0");
 
 struct DiscardFramebufferEXTImmediate {
   typedef DiscardFramebufferEXTImmediate ValueType;
@@ -10842,14 +10976,14 @@ struct DiscardFramebufferEXTImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(DiscardFramebufferEXTImmediate) == 12,
-               Sizeof_DiscardFramebufferEXTImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, header) == 0,
-               OffsetOf_DiscardFramebufferEXTImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, target) == 4,
-               OffsetOf_DiscardFramebufferEXTImmediate_target_not_4);
-COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, count) == 8,
-               OffsetOf_DiscardFramebufferEXTImmediate_count_not_8);
+static_assert(sizeof(DiscardFramebufferEXTImmediate) == 12,
+              "size of DiscardFramebufferEXTImmediate should be 12");
+static_assert(offsetof(DiscardFramebufferEXTImmediate, header) == 0,
+              "offset of DiscardFramebufferEXTImmediate header should be 0");
+static_assert(offsetof(DiscardFramebufferEXTImmediate, target) == 4,
+              "offset of DiscardFramebufferEXTImmediate target should be 4");
+static_assert(offsetof(DiscardFramebufferEXTImmediate, count) == 8,
+              "offset of DiscardFramebufferEXTImmediate count should be 8");
 
 struct LoseContextCHROMIUM {
   typedef LoseContextCHROMIUM ValueType;
@@ -10879,14 +11013,14 @@ struct LoseContextCHROMIUM {
   uint32_t other;
 };
 
-COMPILE_ASSERT(sizeof(LoseContextCHROMIUM) == 12,
-               Sizeof_LoseContextCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(LoseContextCHROMIUM, header) == 0,
-               OffsetOf_LoseContextCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(LoseContextCHROMIUM, current) == 4,
-               OffsetOf_LoseContextCHROMIUM_current_not_4);
-COMPILE_ASSERT(offsetof(LoseContextCHROMIUM, other) == 8,
-               OffsetOf_LoseContextCHROMIUM_other_not_8);
+static_assert(sizeof(LoseContextCHROMIUM) == 12,
+              "size of LoseContextCHROMIUM should be 12");
+static_assert(offsetof(LoseContextCHROMIUM, header) == 0,
+              "offset of LoseContextCHROMIUM header should be 0");
+static_assert(offsetof(LoseContextCHROMIUM, current) == 4,
+              "offset of LoseContextCHROMIUM current should be 4");
+static_assert(offsetof(LoseContextCHROMIUM, other) == 8,
+              "offset of LoseContextCHROMIUM other should be 8");
 
 struct WaitSyncPointCHROMIUM {
   typedef WaitSyncPointCHROMIUM ValueType;
@@ -10914,12 +11048,12 @@ struct WaitSyncPointCHROMIUM {
   uint32_t sync_point;
 };
 
-COMPILE_ASSERT(sizeof(WaitSyncPointCHROMIUM) == 8,
-               Sizeof_WaitSyncPointCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(WaitSyncPointCHROMIUM, header) == 0,
-               OffsetOf_WaitSyncPointCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(WaitSyncPointCHROMIUM, sync_point) == 4,
-               OffsetOf_WaitSyncPointCHROMIUM_sync_point_not_4);
+static_assert(sizeof(WaitSyncPointCHROMIUM) == 8,
+              "size of WaitSyncPointCHROMIUM should be 8");
+static_assert(offsetof(WaitSyncPointCHROMIUM, header) == 0,
+              "offset of WaitSyncPointCHROMIUM header should be 0");
+static_assert(offsetof(WaitSyncPointCHROMIUM, sync_point) == 4,
+              "offset of WaitSyncPointCHROMIUM sync_point should be 4");
 
 struct DrawBuffersEXTImmediate {
   typedef DrawBuffersEXTImmediate ValueType;
@@ -10956,12 +11090,12 @@ struct DrawBuffersEXTImmediate {
   int32_t count;
 };
 
-COMPILE_ASSERT(sizeof(DrawBuffersEXTImmediate) == 8,
-               Sizeof_DrawBuffersEXTImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(DrawBuffersEXTImmediate, header) == 0,
-               OffsetOf_DrawBuffersEXTImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(DrawBuffersEXTImmediate, count) == 4,
-               OffsetOf_DrawBuffersEXTImmediate_count_not_4);
+static_assert(sizeof(DrawBuffersEXTImmediate) == 8,
+              "size of DrawBuffersEXTImmediate should be 8");
+static_assert(offsetof(DrawBuffersEXTImmediate, header) == 0,
+              "offset of DrawBuffersEXTImmediate header should be 0");
+static_assert(offsetof(DrawBuffersEXTImmediate, count) == 4,
+              "offset of DrawBuffersEXTImmediate count should be 4");
 
 struct DiscardBackbufferCHROMIUM {
   typedef DiscardBackbufferCHROMIUM ValueType;
@@ -10985,10 +11119,10 @@ struct DiscardBackbufferCHROMIUM {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(DiscardBackbufferCHROMIUM) == 4,
-               Sizeof_DiscardBackbufferCHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(DiscardBackbufferCHROMIUM, header) == 0,
-               OffsetOf_DiscardBackbufferCHROMIUM_header_not_0);
+static_assert(sizeof(DiscardBackbufferCHROMIUM) == 4,
+              "size of DiscardBackbufferCHROMIUM should be 4");
+static_assert(offsetof(DiscardBackbufferCHROMIUM, header) == 0,
+              "offset of DiscardBackbufferCHROMIUM header should be 0");
 
 struct ScheduleOverlayPlaneCHROMIUM {
   typedef ScheduleOverlayPlaneCHROMIUM ValueType;
@@ -11060,32 +11194,37 @@ struct ScheduleOverlayPlaneCHROMIUM {
   float uv_height;
 };
 
-COMPILE_ASSERT(sizeof(ScheduleOverlayPlaneCHROMIUM) == 48,
-               Sizeof_ScheduleOverlayPlaneCHROMIUM_is_not_48);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, header) == 0,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, plane_z_order) == 4,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_plane_z_order_not_4);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, plane_transform) == 8,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_plane_transform_not_8);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, overlay_texture_id) == 12,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_overlay_texture_id_not_12);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_x) == 16,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_x_not_16);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_y) == 20,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_y_not_20);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_width) == 24,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_width_not_24);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_height) == 28,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_height_not_28);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_x) == 32,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_x_not_32);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_y) == 36,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_y_not_36);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_width) == 40,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_width_not_40);
-COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
-               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_height_not_44);
+static_assert(sizeof(ScheduleOverlayPlaneCHROMIUM) == 48,
+              "size of ScheduleOverlayPlaneCHROMIUM should be 48");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, header) == 0,
+              "offset of ScheduleOverlayPlaneCHROMIUM header should be 0");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, plane_z_order) == 4,
+    "offset of ScheduleOverlayPlaneCHROMIUM plane_z_order should be 4");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, plane_transform) == 8,
+    "offset of ScheduleOverlayPlaneCHROMIUM plane_transform should be 8");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, overlay_texture_id) == 12,
+    "offset of ScheduleOverlayPlaneCHROMIUM overlay_texture_id should be 12");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_x) == 16,
+              "offset of ScheduleOverlayPlaneCHROMIUM bounds_x should be 16");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_y) == 20,
+              "offset of ScheduleOverlayPlaneCHROMIUM bounds_y should be 20");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_width) == 24,
+    "offset of ScheduleOverlayPlaneCHROMIUM bounds_width should be 24");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_height) == 28,
+    "offset of ScheduleOverlayPlaneCHROMIUM bounds_height should be 28");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_x) == 32,
+              "offset of ScheduleOverlayPlaneCHROMIUM uv_x should be 32");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_y) == 36,
+              "offset of ScheduleOverlayPlaneCHROMIUM uv_y should be 36");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_width) == 40,
+              "offset of ScheduleOverlayPlaneCHROMIUM uv_width should be 40");
+static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
+              "offset of ScheduleOverlayPlaneCHROMIUM uv_height should be 44");
 
 struct SwapInterval {
   typedef SwapInterval ValueType;
@@ -11113,11 +11252,11 @@ struct SwapInterval {
   int32_t interval;
 };
 
-COMPILE_ASSERT(sizeof(SwapInterval) == 8, Sizeof_SwapInterval_is_not_8);
-COMPILE_ASSERT(offsetof(SwapInterval, header) == 0,
-               OffsetOf_SwapInterval_header_not_0);
-COMPILE_ASSERT(offsetof(SwapInterval, interval) == 4,
-               OffsetOf_SwapInterval_interval_not_4);
+static_assert(sizeof(SwapInterval) == 8, "size of SwapInterval should be 8");
+static_assert(offsetof(SwapInterval, header) == 0,
+              "offset of SwapInterval header should be 0");
+static_assert(offsetof(SwapInterval, interval) == 4,
+              "offset of SwapInterval interval should be 4");
 
 struct MatrixLoadfCHROMIUMImmediate {
   typedef MatrixLoadfCHROMIUMImmediate ValueType;
@@ -11152,12 +11291,12 @@ struct MatrixLoadfCHROMIUMImmediate {
   uint32_t matrixMode;
 };
 
-COMPILE_ASSERT(sizeof(MatrixLoadfCHROMIUMImmediate) == 8,
-               Sizeof_MatrixLoadfCHROMIUMImmediate_is_not_8);
-COMPILE_ASSERT(offsetof(MatrixLoadfCHROMIUMImmediate, header) == 0,
-               OffsetOf_MatrixLoadfCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(MatrixLoadfCHROMIUMImmediate, matrixMode) == 4,
-               OffsetOf_MatrixLoadfCHROMIUMImmediate_matrixMode_not_4);
+static_assert(sizeof(MatrixLoadfCHROMIUMImmediate) == 8,
+              "size of MatrixLoadfCHROMIUMImmediate should be 8");
+static_assert(offsetof(MatrixLoadfCHROMIUMImmediate, header) == 0,
+              "offset of MatrixLoadfCHROMIUMImmediate header should be 0");
+static_assert(offsetof(MatrixLoadfCHROMIUMImmediate, matrixMode) == 4,
+              "offset of MatrixLoadfCHROMIUMImmediate matrixMode should be 4");
 
 struct MatrixLoadIdentityCHROMIUM {
   typedef MatrixLoadIdentityCHROMIUM ValueType;
@@ -11185,12 +11324,12 @@ struct MatrixLoadIdentityCHROMIUM {
   uint32_t matrixMode;
 };
 
-COMPILE_ASSERT(sizeof(MatrixLoadIdentityCHROMIUM) == 8,
-               Sizeof_MatrixLoadIdentityCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(MatrixLoadIdentityCHROMIUM, header) == 0,
-               OffsetOf_MatrixLoadIdentityCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(MatrixLoadIdentityCHROMIUM, matrixMode) == 4,
-               OffsetOf_MatrixLoadIdentityCHROMIUM_matrixMode_not_4);
+static_assert(sizeof(MatrixLoadIdentityCHROMIUM) == 8,
+              "size of MatrixLoadIdentityCHROMIUM should be 8");
+static_assert(offsetof(MatrixLoadIdentityCHROMIUM, header) == 0,
+              "offset of MatrixLoadIdentityCHROMIUM header should be 0");
+static_assert(offsetof(MatrixLoadIdentityCHROMIUM, matrixMode) == 4,
+              "offset of MatrixLoadIdentityCHROMIUM matrixMode should be 4");
 
 struct BlendBarrierKHR {
   typedef BlendBarrierKHR ValueType;
@@ -11214,8 +11353,9 @@ struct BlendBarrierKHR {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(BlendBarrierKHR) == 4, Sizeof_BlendBarrierKHR_is_not_4);
-COMPILE_ASSERT(offsetof(BlendBarrierKHR, header) == 0,
-               OffsetOf_BlendBarrierKHR_header_not_0);
+static_assert(sizeof(BlendBarrierKHR) == 4,
+              "size of BlendBarrierKHR should be 4");
+static_assert(offsetof(BlendBarrierKHR, header) == 0,
+              "offset of BlendBarrierKHR header should be 0");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

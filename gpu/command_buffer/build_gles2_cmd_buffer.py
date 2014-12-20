@@ -3174,15 +3174,17 @@ class TypeHandler(object):
     file.Write("\n")
 
     size = len(args) * _SIZE_OF_UINT32 + _SIZE_OF_COMMAND_HEADER
-    file.Write("COMPILE_ASSERT(sizeof(%s) == %d,\n" % (func.name, size))
-    file.Write("               Sizeof_%s_is_not_%d);\n" % (func.name, size))
-    file.Write("COMPILE_ASSERT(offsetof(%s, header) == 0,\n" % func.name)
-    file.Write("               OffsetOf_%s_header_not_0);\n" % func.name)
+    file.Write("static_assert(sizeof(%s) == %d,\n" % (func.name, size))
+    file.Write("              \"size of %s should be %d\");\n" %
+               (func.name, size))
+    file.Write("static_assert(offsetof(%s, header) == 0,\n" % func.name)
+    file.Write("              \"offset of %s header should be 0\");\n" %
+               func.name)
     offset = _SIZE_OF_COMMAND_HEADER
     for arg in args:
-      file.Write("COMPILE_ASSERT(offsetof(%s, %s) == %d,\n" %
+      file.Write("static_assert(offsetof(%s, %s) == %d,\n" %
                  (func.name, arg.name, offset))
-      file.Write("               OffsetOf_%s_%s_not_%d);\n" %
+      file.Write("              \"offset of %s %s should be %d\");\n" %
                  (func.name, arg.name, offset))
       offset += _SIZE_OF_UINT32
     if not result == None and len(result) > 1:
@@ -3191,8 +3193,9 @@ class TypeHandler(object):
         parts = line.split()
         name = parts[-1]
         check = """
-COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
-               OffsetOf_%(cmd_name)s_Result_%(field_name)s_not_%(offset)d);
+static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
+              "offset of %(cmd_name)s Result %(field_name)s should be "
+              "%(offset)d");
 """
         file.Write((check.strip() + "\n") % {
               'cmd_name': func.name,

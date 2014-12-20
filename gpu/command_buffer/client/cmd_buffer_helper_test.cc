@@ -471,8 +471,8 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
 TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
   // Add num_commands * commands of size 3 through the helper to make sure we
   // do wrap.  kTotalNumCommandEntries must not be a multiple of 3.
-  COMPILE_ASSERT(kTotalNumCommandEntries % 3 != 0,
-                 Is_multiple_of_num_command_entries);
+  static_assert(kTotalNumCommandEntries % 3 != 0,
+                "kTotalNumCommandEntries must not be a multiple of 3");
   const int kNumCommands = (kTotalNumCommandEntries / 3) * 2;
   CommandBufferEntry args1[2];
   args1[0].value_uint32 = 5;
@@ -495,8 +495,8 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
 TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
   const int32 kCommandSize = kTotalNumCommandEntries / 2;
   const size_t kNumArgs = kCommandSize - 1;
-  COMPILE_ASSERT(kTotalNumCommandEntries % kCommandSize == 0,
-                 Not_multiple_of_num_command_entries);
+  static_assert(kTotalNumCommandEntries % kCommandSize == 0,
+                "kTotalNumCommandEntries should be a multiple of kCommandSize");
   CommandBufferEntry args1[kNumArgs];
   for (size_t ii = 0; ii < kNumArgs; ++ii) {
     args1[ii].value_uint32 = ii + 1;

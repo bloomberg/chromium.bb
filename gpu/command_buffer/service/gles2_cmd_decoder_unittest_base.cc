@@ -1576,7 +1576,8 @@ void GLES2DecoderTestBase::SetupIndexBuffer() {
                client_element_buffer_id_,
                kServiceElementBufferId);
   static const GLshort indices[] = {100, 1, 2, 3, 4, 5, 6, 7, 100, 9};
-  COMPILE_ASSERT(arraysize(indices) == kNumIndices, Indices_is_not_10);
+  static_assert(arraysize(indices) == kNumIndices,
+                "indices should have kNumIndices elements");
   DoBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices));
   DoBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, 2, indices);
   DoBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 2, sizeof(indices) - 2, &indices[1]);

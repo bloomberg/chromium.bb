@@ -68,9 +68,9 @@ ClearFramebufferResourceManager::~ClearFramebufferResourceManager() {
 
 void ClearFramebufferResourceManager::Initialize(
     const gles2::GLES2Decoder* decoder) {
-  COMPILE_ASSERT(
+  static_assert(
       kVertexPositionAttrib == 0u,
-      Position_attribs_must_be_0);
+      "kVertexPositionAttrib must be 0");
   DCHECK(!buffer_id_);
 
   glGenBuffersARB(1, &buffer_id_);

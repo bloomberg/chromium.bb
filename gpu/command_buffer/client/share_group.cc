@@ -19,8 +19,8 @@ namespace gles2 {
 ShareGroupContextData::IdHandlerData::IdHandlerData() : flush_generation_(0) {}
 ShareGroupContextData::IdHandlerData::~IdHandlerData() {}
 
-COMPILE_ASSERT(gpu::kInvalidResource == 0,
-               INVALID_RESOURCE_NOT_0_AS_GL_EXPECTS);
+static_assert(gpu::kInvalidResource == 0,
+              "GL expects kInvalidResource to be 0");
 
 // The standard id handler.
 class IdHandler : public IdHandlerInterface {

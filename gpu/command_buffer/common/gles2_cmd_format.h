@@ -66,11 +66,11 @@ enum IdNamespaces {
 };
 
 // These numbers must not change
-COMPILE_ASSERT(kBuffers == 0, kBuffers_is_not_0);
-COMPILE_ASSERT(kFramebuffers == 1, kFramebuffers_is_not_1);
-COMPILE_ASSERT(kProgramsAndShaders == 2, kProgramsAndShaders_is_not_2);
-COMPILE_ASSERT(kRenderbuffers == 3, kRenderbuffers_is_not_3);
-COMPILE_ASSERT(kTextures == 4, kTextures_is_not_4);
+static_assert(kBuffers == 0, "kBuffers should equal 0");
+static_assert(kFramebuffers == 1, "kFramebuffers should equal 1");
+static_assert(kProgramsAndShaders == 2, "kProgramsAndShaders should equal 2");
+static_assert(kRenderbuffers == 3, "kRenderbuffers should equal 3");
+static_assert(kTextures == 4, "kTextures should equal 4");
 
 }  // namespace id_namespaces
 
@@ -122,11 +122,12 @@ struct SizedResult {
   int32_t data;  // this is just here to get an offset.
 };
 
-COMPILE_ASSERT(sizeof(SizedResult<int8_t>) == 8, SizedResult_size_not_8);
-COMPILE_ASSERT(offsetof(SizedResult<int8_t>, size) == 0,
-               OffsetOf_SizedResult_size_not_0);
-COMPILE_ASSERT(offsetof(SizedResult<int8_t>, data) == 4,
-               OffsetOf_SizedResult_data_not_4);
+static_assert(sizeof(SizedResult<int8_t>) == 8,
+              "size of SizedResult<int8_t> should be 8");
+static_assert(offsetof(SizedResult<int8_t>, size) == 0,
+              "offset of SizedResult<int8_t>.size should be 0");
+static_assert(offsetof(SizedResult<int8_t>, data) == 4,
+              "offset of SizedResult<int8_t>.data should be 4");
 
 // The data for one attrib or uniform from GetProgramInfoCHROMIUM.
 struct ProgramInput {
@@ -176,25 +177,26 @@ struct AsyncUploadSync {
   base::subtle::Atomic32 async_upload_token;
 };
 
-COMPILE_ASSERT(sizeof(ProgramInput) == 20, ProgramInput_size_not_20);
-COMPILE_ASSERT(offsetof(ProgramInput, type) == 0,
-               OffsetOf_ProgramInput_type_not_0);
-COMPILE_ASSERT(offsetof(ProgramInput, size) == 4,
-               OffsetOf_ProgramInput_size_not_4);
-COMPILE_ASSERT(offsetof(ProgramInput, location_offset) == 8,
-               OffsetOf_ProgramInput_location_offset_not_8);
-COMPILE_ASSERT(offsetof(ProgramInput, name_offset) == 12,
-               OffsetOf_ProgramInput_name_offset_not_12);
-COMPILE_ASSERT(offsetof(ProgramInput, name_length) == 16,
-               OffsetOf_ProgramInput_name_length_not_16);
+static_assert(sizeof(ProgramInput) == 20, "size of ProgramInput should be 20");
+static_assert(offsetof(ProgramInput, type) == 0,
+              "offset of ProgramInput.type should be 0");
+static_assert(offsetof(ProgramInput, size) == 4,
+              "offset of ProgramInput.size should be 4");
+static_assert(offsetof(ProgramInput, location_offset) == 8,
+              "offset of ProgramInput.location_offset should be 8");
+static_assert(offsetof(ProgramInput, name_offset) == 12,
+              "offset of ProgramInput.name_offset should be 12");
+static_assert(offsetof(ProgramInput, name_length) == 16,
+              "offset of ProgramInput.name_length should be 16");
 
-COMPILE_ASSERT(sizeof(ProgramInfoHeader) == 12, ProgramInfoHeader_size_not_12);
-COMPILE_ASSERT(offsetof(ProgramInfoHeader, link_status) == 0,
-               OffsetOf_ProgramInfoHeader_link_status_not_0);
-COMPILE_ASSERT(offsetof(ProgramInfoHeader, num_attribs) == 4,
-               OffsetOf_ProgramInfoHeader_num_attribs_not_4);
-COMPILE_ASSERT(offsetof(ProgramInfoHeader, num_uniforms) == 8,
-               OffsetOf_ProgramInfoHeader_num_uniforms_not_8);
+static_assert(sizeof(ProgramInfoHeader) == 12,
+              "size of ProgramInfoHeader should be 12");
+static_assert(offsetof(ProgramInfoHeader, link_status) == 0,
+              "offset of ProgramInfoHeader.link_status should be 0");
+static_assert(offsetof(ProgramInfoHeader, num_attribs) == 4,
+              "offset of ProgramInfoHeader.num_attribs should be 4");
+static_assert(offsetof(ProgramInfoHeader, num_uniforms) == 8,
+              "offset of ProgramInfoHeader.num_uniforms should be 8");
 
 namespace cmds {
 
@@ -259,15 +261,17 @@ struct CreateAndConsumeTextureCHROMIUMImmediate {
   uint32_t client_id;
 };
 
-COMPILE_ASSERT(sizeof(CreateAndConsumeTextureCHROMIUMImmediate) == 12,
-               Sizeof_CreateAndConsumeTextureCHROMIUMImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(CreateAndConsumeTextureCHROMIUMImmediate, header) == 0,
-               OffsetOf_CreateAndConsumeTextureCHROMIUMImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(CreateAndConsumeTextureCHROMIUMImmediate, target) == 4,
-               OffsetOf_CreateAndConsumeTextureCHROMIUMImmediate_target_not_4);
-COMPILE_ASSERT(
+static_assert(sizeof(CreateAndConsumeTextureCHROMIUMImmediate) == 12,
+              "size of CreateAndConsumeTextureCHROMIUMImmediate should be 12");
+static_assert(offsetof(CreateAndConsumeTextureCHROMIUMImmediate, header) == 0,
+              "offset of CreateAndConsumeTextureCHROMIUMImmediate.header "
+              "should be 0");
+static_assert(offsetof(CreateAndConsumeTextureCHROMIUMImmediate, target) == 4,
+              "offset of CreateAndConsumeTextureCHROMIUMImmediate.target "
+              "should be 4");
+static_assert(
     offsetof(CreateAndConsumeTextureCHROMIUMImmediate, client_id) == 8,
-    OffsetOf_CreateAndConsumeTextureCHROMIUMImmediate_client_id_not_8);
+    "offset of CreateAndConsumeTextureCHROMIUMImmediate.client_id should be 8");
 
 
 #pragma pack(pop)

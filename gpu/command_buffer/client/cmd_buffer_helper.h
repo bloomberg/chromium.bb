@@ -152,7 +152,8 @@ class GPU_EXPORT CommandBufferHelper {
   // a reference to it.
   template <typename T>
   T* GetCmdSpace() {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
+    static_assert(T::kArgFlags == cmd::kFixed,
+                  "T::kArgFlags should equal cmd::kFixed");
     int32 space_needed = ComputeNumEntries(sizeof(T));
     T* data = static_cast<T*>(GetSpace(space_needed));
     ForceNullCheck(data);
@@ -162,7 +163,8 @@ class GPU_EXPORT CommandBufferHelper {
   // Typed version of GetSpace for immediate commands.
   template <typename T>
   T* GetImmediateCmdSpace(size_t data_space) {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    static_assert(T::kArgFlags == cmd::kAtLeastN,
+                  "T::kArgFlags should equal cmd::kAtLeastN");
     int32 space_needed = ComputeNumEntries(sizeof(T) + data_space);
     T* data = static_cast<T*>(GetSpace(space_needed));
     ForceNullCheck(data);
@@ -172,7 +174,8 @@ class GPU_EXPORT CommandBufferHelper {
   // Typed version of GetSpace for immediate commands.
   template <typename T>
   T* GetImmediateCmdSpaceTotalSize(size_t total_space) {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    static_assert(T::kArgFlags == cmd::kAtLeastN,
+                  "T::kArgFlags should equal cmd::kAtLeastN");
     int32 space_needed = ComputeNumEntries(total_space);
     T* data = static_cast<T*>(GetSpace(space_needed));
     ForceNullCheck(data);

@@ -198,12 +198,12 @@ class GLES2DecoderImpl;
 // a few others) are 32bits. If they are not 32bits the code will have to change
 // to call those GL functions with service side memory and then copy the results
 // to shared memory, converting the sizes.
-COMPILE_ASSERT(sizeof(GLint) == sizeof(uint32),  // NOLINT
-               GLint_not_same_size_as_uint32);
-COMPILE_ASSERT(sizeof(GLsizei) == sizeof(uint32),  // NOLINT
-               GLint_not_same_size_as_uint32);
-COMPILE_ASSERT(sizeof(GLfloat) == sizeof(float),  // NOLINT
-               GLfloat_not_same_size_as_float);
+static_assert(sizeof(GLint) == sizeof(uint32),  // NOLINT
+              "GLint should be the same size as uint32");
+static_assert(sizeof(GLsizei) == sizeof(uint32),  // NOLINT
+              "GLsizei should be the same size as uint32");
+static_assert(sizeof(GLfloat) == sizeof(float),  // NOLINT
+              "GLfloat should be the same size as float");
 
 // TODO(kbr): the use of this anonymous namespace core dumps the
 // linker on Mac OS X 10.6 when the symbol ordering file is used

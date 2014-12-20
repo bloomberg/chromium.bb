@@ -57,14 +57,16 @@ struct CommandHeader {
   // variable sized commands like immediate commands or Noop.
   template <typename T>
   void SetCmd() {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
+    static_assert(T::kArgFlags == cmd::kFixed,
+                  "T::kArgFlags should equal cmd::kFixed");
     Init(T::kCmdId, ComputeNumEntries(sizeof(T)));  // NOLINT
   }
 
   // Sets the header by a size in bytes of the immediate data after the command.
   template <typename T>
   void SetCmdBySize(uint32_t size_of_data_in_bytes) {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    static_assert(T::kArgFlags == cmd::kAtLeastN,
+                  "T::kArgFlags should equal cmd::kAtLeastN");
     Init(T::kCmdId,
          ComputeNumEntries(sizeof(T) + size_of_data_in_bytes));  // NOLINT
   }
@@ -72,13 +74,15 @@ struct CommandHeader {
   // Sets the header by a size in bytes.
   template <typename T>
   void SetCmdByTotalSize(uint32_t size_in_bytes) {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    static_assert(T::kArgFlags == cmd::kAtLeastN,
+                  "T::kArgFlags should equal cmd::kAtLeastN");
     DCHECK_GE(size_in_bytes, sizeof(T));  // NOLINT
     Init(T::kCmdId, ComputeNumEntries(size_in_bytes));
   }
 };
 
-COMPILE_ASSERT(sizeof(CommandHeader) == 4, Sizeof_CommandHeader_is_not_4);
+static_assert(sizeof(CommandHeader) == 4,
+              "size of CommandHeader should equal 4");
 
 // Union that defines possible command buffer entries.
 union CommandBufferEntry {
@@ -91,8 +95,9 @@ union CommandBufferEntry {
 #define GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT 4
 const size_t kCommandBufferEntrySize = GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT;
 
-COMPILE_ASSERT(sizeof(CommandBufferEntry) == kCommandBufferEntrySize,
-               Sizeof_CommandBufferEntry_is_not_4);
+static_assert(sizeof(CommandBufferEntry) == kCommandBufferEntrySize,
+              "size of CommandBufferEntry should equal "
+              "kCommandBufferEntrySize");
 
 // Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
 #pragma pack(push, GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT)
@@ -104,7 +109,8 @@ COMPILE_ASSERT(sizeof(CommandBufferEntry) == kCommandBufferEntrySize,
 //   cmd: Address of command.
 template <typename T>
 void* ImmediateDataAddress(T* cmd) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+  static_assert(T::kArgFlags == cmd::kAtLeastN,
+                "T::kArgFlags should equal cmd::kAtLeastN");
   return reinterpret_cast<char*>(cmd) + sizeof(*cmd);
 }
 
@@ -114,7 +120,8 @@ template <typename T>
 // Parameters:
 //   cmd: Address of command.
 void* NextCmdAddress(void* cmd) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
+  static_assert(T::kArgFlags == cmd::kFixed,
+                "T::kArgFlags should equal cmd::kFixed");
   return reinterpret_cast<char*>(cmd) + sizeof(T);
 }
 
@@ -125,7 +132,8 @@ void* NextCmdAddress(void* cmd) {
 //   size_of_data_in_bytes: Size of the data for the command.
 template <typename T>
 void* NextImmediateCmdAddress(void* cmd, uint32_t size_of_data_in_bytes) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+  static_assert(T::kArgFlags == cmd::kAtLeastN,
+                "T::kArgFlags should equal cmd::kAtLeastN");
   return reinterpret_cast<char*>(cmd) + sizeof(T) +   // NOLINT
       RoundSizeToMultipleOfEntries(size_of_data_in_bytes);
 }
@@ -138,7 +146,8 @@ void* NextImmediateCmdAddress(void* cmd, uint32_t size_of_data_in_bytes) {
 template <typename T>
 void* NextImmediateCmdAddressTotalSize(void* cmd,
                                        uint32_t total_size_in_bytes) {
-  COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+  static_assert(T::kArgFlags == cmd::kAtLeastN,
+                "T::kArgFlags should equal cmd::kAtLeastN");
   DCHECK_GE(total_size_in_bytes, sizeof(T));  // NOLINT
   return reinterpret_cast<char*>(cmd) +
       RoundSizeToMultipleOfEntries(total_size_in_bytes);
@@ -174,7 +183,7 @@ enum CommandId {
   kLastCommonId = 255  // reserve 256 spaces for common commands.
 };
 
-COMPILE_ASSERT(kNumCommands - 1 <= kLastCommonId, Too_many_common_commands);
+static_assert(kNumCommands - 1 <= kLastCommonId, "too many commands");
 
 const char* GetCommandName(CommandId id);
 
@@ -203,8 +212,9 @@ struct Noop {
   CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(Noop) == 4, Sizeof_Noop_is_not_4);
-COMPILE_ASSERT(offsetof(Noop, header) == 0, Offsetof_Noop_header_not_0);
+static_assert(sizeof(Noop) == 4, "size of Noop should equal 4");
+static_assert(offsetof(Noop, header) == 0,
+              "offset of Noop.header should equal 0");
 
 // The SetToken command puts a token in the command stream that you can
 // use to check if that token has been passed in the command stream.
@@ -231,11 +241,11 @@ struct SetToken {
   uint32_t token;
 };
 
-COMPILE_ASSERT(sizeof(SetToken) == 8, Sizeof_SetToken_is_not_8);
-COMPILE_ASSERT(offsetof(SetToken, header) == 0,
-               Offsetof_SetToken_header_not_0);
-COMPILE_ASSERT(offsetof(SetToken, token) == 4,
-               Offsetof_SetToken_token_not_4);
+static_assert(sizeof(SetToken) == 8, "size of SetToken should equal 8");
+static_assert(offsetof(SetToken, header) == 0,
+              "offset of SetToken.header should equal 0");
+static_assert(offsetof(SetToken, token) == 4,
+              "offset of SetToken.token should equal 4");
 
 // Sets the size of a bucket for collecting data on the service side.
 // This is a utility for gathering data on the service side so it can be used
@@ -274,13 +284,14 @@ struct SetBucketSize {
   uint32_t size;
 };
 
-COMPILE_ASSERT(sizeof(SetBucketSize) == 12, Sizeof_SetBucketSize_is_not_8);
-COMPILE_ASSERT(offsetof(SetBucketSize, header) == 0,
-               Offsetof_SetBucketSize_header_not_0);
-COMPILE_ASSERT(offsetof(SetBucketSize, bucket_id) == 4,
-               Offsetof_SetBucketSize_bucket_id_4);
-COMPILE_ASSERT(offsetof(SetBucketSize, size) == 8,
-               Offsetof_SetBucketSize_size_8);
+static_assert(sizeof(SetBucketSize) == 12,
+              "size of SetBucketSize should equal 12");
+static_assert(offsetof(SetBucketSize, header) == 0,
+              "offset of SetBucketSize.header should equal 0");
+static_assert(offsetof(SetBucketSize, bucket_id) == 4,
+              "offset of SetBucketSize.bucket_id should equal 4");
+static_assert(offsetof(SetBucketSize, size) == 8,
+              "offset of SetBucketSize.size should equal 8");
 
 // Sets the contents of a portion of a bucket on the service side from data in
 // shared memory.
@@ -330,19 +341,20 @@ struct SetBucketData {
   uint32_t shared_memory_offset;
 };
 
-COMPILE_ASSERT(sizeof(SetBucketData) == 24, Sizeof_SetBucketData_is_not_24);
-COMPILE_ASSERT(offsetof(SetBucketData, header) == 0,
-               Offsetof_SetBucketData_header_not_0);
-COMPILE_ASSERT(offsetof(SetBucketData, bucket_id) == 4,
-               Offsetof_SetBucketData_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(SetBucketData, offset) == 8,
-               Offsetof_SetBucketData_offset_not_8);
-COMPILE_ASSERT(offsetof(SetBucketData, size) == 12,
-               Offsetof_SetBucketData_size_not_12);
-COMPILE_ASSERT(offsetof(SetBucketData, shared_memory_id) == 16,
-               Offsetof_SetBucketData_shared_memory_id_not_16);
-COMPILE_ASSERT(offsetof(SetBucketData, shared_memory_offset) == 20,
-               Offsetof_SetBucketData_shared_memory_offset_not_20);
+static_assert(sizeof(SetBucketData) == 24,
+              "size of SetBucketData should be 24");
+static_assert(offsetof(SetBucketData, header) == 0,
+              "offset of SetBucketData.header should be 0");
+static_assert(offsetof(SetBucketData, bucket_id) == 4,
+              "offset of SetBucketData.bucket_id should be 4");
+static_assert(offsetof(SetBucketData, offset) == 8,
+              "offset of SetBucketData.offset should be 8");
+static_assert(offsetof(SetBucketData, size) == 12,
+              "offset of SetBucketData.size should be 12");
+static_assert(offsetof(SetBucketData, shared_memory_id) == 16,
+              "offset of SetBucketData.shared_memory_id should be 16");
+static_assert(offsetof(SetBucketData, shared_memory_offset) == 20,
+              "offset of SetBucketData.shared_memory_offset should be 20");
 
 // Sets the contents of a portion of a bucket on the service side from data in
 // the command buffer.
@@ -382,16 +394,16 @@ struct SetBucketDataImmediate {
   uint32_t size;
 };
 
-COMPILE_ASSERT(sizeof(SetBucketDataImmediate) == 16,
-               Sizeof_SetBucketDataImmediate_is_not_24);
-COMPILE_ASSERT(offsetof(SetBucketDataImmediate, header) == 0,
-               Offsetof_SetBucketDataImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(SetBucketDataImmediate, bucket_id) == 4,
-               Offsetof_SetBucketDataImmediate_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(SetBucketDataImmediate, offset) == 8,
-               Offsetof_SetBucketDataImmediate_offset_not_8);
-COMPILE_ASSERT(offsetof(SetBucketDataImmediate, size) == 12,
-               Offsetof_SetBucketDataImmediate_size_not_12);
+static_assert(sizeof(SetBucketDataImmediate) == 16,
+              "size of SetBucketDataImmediate should be 16");
+static_assert(offsetof(SetBucketDataImmediate, header) == 0,
+              "offset of SetBucketDataImmediate.header should be 0");
+static_assert(offsetof(SetBucketDataImmediate, bucket_id) == 4,
+              "offset of SetBucketDataImmediate.bucket_id should be 4");
+static_assert(offsetof(SetBucketDataImmediate, offset) == 8,
+              "offset of SetBucketDataImmediate.offset should be 8");
+static_assert(offsetof(SetBucketDataImmediate, size) == 12,
+              "offset of SetBucketDataImmediate.size should be 12");
 
 // Gets the start of a bucket the service has available. Sending a variable size
 // result back to the client and the portion of that result that fits in the
@@ -455,21 +467,22 @@ struct GetBucketStart {
   uint32_t data_memory_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetBucketStart) == 28, Sizeof_GetBucketStart_is_not_28);
-COMPILE_ASSERT(offsetof(GetBucketStart, header) == 0,
-               Offsetof_GetBucketStart_header_not_0);
-COMPILE_ASSERT(offsetof(GetBucketStart, bucket_id) == 4,
-               Offsetof_GetBucketStart_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(GetBucketStart, result_memory_id) == 8,
-               Offsetof_GetBucketStart_result_memory_id_not_8);
-COMPILE_ASSERT(offsetof(GetBucketStart, result_memory_offset) == 12,
-               Offsetof_GetBucketStart_result_memory_offset_not_12);
-COMPILE_ASSERT(offsetof(GetBucketStart, data_memory_size) == 16,
-               Offsetof_GetBucketStart_data_memory_size_not_16);
-COMPILE_ASSERT(offsetof(GetBucketStart, data_memory_id) == 20,
-               Offsetof_GetBucketStart_data_memory_id_not_20);
-COMPILE_ASSERT(offsetof(GetBucketStart, data_memory_offset) == 24,
-               Offsetof_GetBucketStart_data_memory_offset_not_24);
+static_assert(sizeof(GetBucketStart) == 28,
+              "size of GetBucketStart should be 28");
+static_assert(offsetof(GetBucketStart, header) == 0,
+              "offset of GetBucketStart.header should be 0");
+static_assert(offsetof(GetBucketStart, bucket_id) == 4,
+              "offset of GetBucketStart.bucket_id should be 4");
+static_assert(offsetof(GetBucketStart, result_memory_id) == 8,
+              "offset of GetBucketStart.result_memory_id should be 8");
+static_assert(offsetof(GetBucketStart, result_memory_offset) == 12,
+              "offset of GetBucketStart.result_memory_offset should be 12");
+static_assert(offsetof(GetBucketStart, data_memory_size) == 16,
+              "offset of GetBucketStart.data_memory_size should be 16");
+static_assert(offsetof(GetBucketStart, data_memory_id) == 20,
+              "offset of GetBucketStart.data_memory_id should be 20");
+static_assert(offsetof(GetBucketStart, data_memory_offset) == 24,
+              "offset of GetBucketStart.data_memory_offset should be 24");
 
 // Gets a piece of a result the service as available.
 // See GetBucketSize.
@@ -518,19 +531,20 @@ struct GetBucketData {
   uint32_t shared_memory_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetBucketData) == 24, Sizeof_GetBucketData_is_not_20);
-COMPILE_ASSERT(offsetof(GetBucketData, header) == 0,
-               Offsetof_GetBucketData_header_not_0);
-COMPILE_ASSERT(offsetof(GetBucketData, bucket_id) == 4,
-               Offsetof_GetBucketData_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(GetBucketData, offset) == 8,
-               Offsetof_GetBucketData_offset_not_8);
-COMPILE_ASSERT(offsetof(GetBucketData, size) == 12,
-               Offsetof_GetBucketData_size_not_12);
-COMPILE_ASSERT(offsetof(GetBucketData, shared_memory_id) == 16,
-               Offsetof_GetBucketData_shared_memory_id_not_16);
-COMPILE_ASSERT(offsetof(GetBucketData, shared_memory_offset) == 20,
-               Offsetof_GetBucketData_shared_memory_offset_not_20);
+static_assert(sizeof(GetBucketData) == 24,
+              "size of GetBucketData should be 24");
+static_assert(offsetof(GetBucketData, header) == 0,
+              "offset of GetBucketData.header should be 0");
+static_assert(offsetof(GetBucketData, bucket_id) == 4,
+              "offset of GetBucketData.bucket_id should be 4");
+static_assert(offsetof(GetBucketData, offset) == 8,
+              "offset of GetBucketData.offset should be 8");
+static_assert(offsetof(GetBucketData, size) == 12,
+              "offset of GetBucketData.size should be 12");
+static_assert(offsetof(GetBucketData, shared_memory_id) == 16,
+              "offset of GetBucketData.shared_memory_id should be 16");
+static_assert(offsetof(GetBucketData, shared_memory_offset) == 20,
+              "offset of GetBucketData.shared_memory_offset should be 20");
 
 }  // namespace cmd
 
