@@ -101,12 +101,15 @@ public abstract class Preferences extends ActionBarActivity implements
         // This must be called before the fragment transaction below.
         workAroundPlatformBugs();
 
-        // Display the fragment as the main content.
-        if (initialFragment == null) initialFragment = getTopLevelFragmentName();
-        Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, fragment)
-                .commit();
+        // If savedInstanceState is non-null, then the activity is being
+        // recreated and super.onCreate() has already recreated the fragment.
+        if (savedInstanceState == null) {
+            if (initialFragment == null) initialFragment = getTopLevelFragmentName();
+            Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
+            getFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, fragment)
+                    .commit();
+        }
 
         // Disable Android Beam on JB and later devices.
         // In ICS it does nothing - i.e. we will send a Play Store link if NFC is used.
