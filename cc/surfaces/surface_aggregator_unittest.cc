@@ -1342,6 +1342,39 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   factory.Destroy(surface_id);
 }
 
+TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
+  ResourceTrackingSurfaceFactoryClient client;
+  SurfaceFactory factory(&manager_, &client);
+  SurfaceId surface_id(7u);
+  factory.Create(surface_id);
+
+  scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  pass->id = RenderPassId(1, 1);
+  TransferableResource resource;
+  resource.id = 11;
+  // ResourceProvider is software but resource is not, so it should be
+  // ignored.
+  resource.is_software = false;
+  frame_data->resource_list.push_back(resource);
+  frame_data->render_pass_list.push_back(pass.Pass());
+  scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data = frame_data.Pass();
+  factory.SubmitFrame(surface_id, frame.Pass(), SurfaceFactory::DrawCallback());
+
+  scoped_ptr<CompositorFrame> returned_frame =
+      aggregator_->Aggregate(surface_id);
+
+  // Nothing should be available to be returned yet.
+  EXPECT_TRUE(client.returned_resources().empty());
+
+  SubmitFrameWithResources(NULL, 0u, &factory, surface_id);
+  ASSERT_EQ(1u, client.returned_resources().size());
+  EXPECT_EQ(11u, client.returned_resources()[0].id);
+
+  factory.Destroy(surface_id);
+}
+
 TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);

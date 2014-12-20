@@ -153,9 +153,9 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
     return false;
 
   int child_id = ChildIdForSurface(surface);
-  provider_->ReceiveFromChild(child_id, frame_data->resource_list);
   if (surface->factory())
     surface->factory()->RefResources(frame_data->resource_list);
+  provider_->ReceiveFromChild(child_id, frame_data->resource_list);
 
   typedef ResourceProvider::ResourceIdArray IdArray;
   IdArray referenced_resources;
