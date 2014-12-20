@@ -103,7 +103,7 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesPageSet
 
-@benchmark.Enabled('android')
+@benchmark.Enabled('android', 'chromeos')
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases
@@ -157,4 +157,3 @@ class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
     # TODO: Remove the following line once M41 goes stable
     options.AppendExtraBrowserArgs('--enable-accelerated-jpeg-decoding')
-
