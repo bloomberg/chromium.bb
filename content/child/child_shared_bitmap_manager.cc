@@ -4,6 +4,8 @@
 
 #include "content/child/child_shared_bitmap_manager.h"
 
+#include "base/debug/alias.h"
+#include "base/process/process_metrics.h"
 #include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
 #include "ui/gfx/size.h"
@@ -37,6 +39,33 @@ class ChildSharedBitmap : public SharedMemoryBitmap {
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_ptr<base::SharedMemory> shared_memory_holder_;
 };
+
+#if defined(OS_WIN)
+
+// Collect extra information for debugging bitmap creation failures.
+void CollectMemoryUsageAndDie(const gfx::Size& size) {
+  int width = size.width();
+  int height = size.height();
+  DWORD last_error = GetLastError();
+
+  scoped_ptr<base::ProcessMetrics> metrics(
+      base::ProcessMetrics::CreateProcessMetrics(
+          base::GetCurrentProcessHandle()));
+
+  size_t private_bytes = 0;
+  size_t shared_bytes = 0;
+  metrics->GetMemoryBytes(&private_bytes, &shared_bytes);
+
+  base::debug::Alias(&width);
+  base::debug::Alias(&height);
+  base::debug::Alias(&last_error);
+  base::debug::Alias(&private_bytes);
+  base::debug::Alias(&shared_bytes);
+
+  CHECK(false);
+}
+
+#endif
 
 }  // namespace
 
@@ -83,9 +112,18 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
     CHECK(false);
 #else
   memory = ChildThread::AllocateSharedMemory(memory_size, sender_.get());
+#if defined(OS_WIN)
+  if (!memory)
+    CollectMemoryUsageAndDie(size);
+#endif
+
   CHECK(memory);
-  if (!memory->Map(memory_size))
+  if (!memory->Map(memory_size)) {
+#if defined(OS_WIN)
+    CollectMemoryUsageAndDie(size);
+#endif
     CHECK(false);
+  }
   base::SharedMemoryHandle handle_to_send = memory->handle();
   sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(
       memory_size, handle_to_send, id));
