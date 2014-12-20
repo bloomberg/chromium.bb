@@ -40,11 +40,11 @@ def ExitAsStatus(status):
   Args:
     status: A status as returned by os.wait type funcs.
   """
-  sig_status = status & 0xff
-  exit_status = (status >> 8) & 0xff
+  exit_status = os.WEXITSTATUS(status)
 
-  if sig_status:
+  if os.WIFSIGNALED(status):
     # Kill ourselves with the same signal.
+    sig_status = os.WTERMSIG(status)
     pid = os.getpid()
     os.kill(pid, sig_status)
     time.sleep(0.1)
