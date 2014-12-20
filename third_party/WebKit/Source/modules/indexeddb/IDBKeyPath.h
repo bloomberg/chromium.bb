@@ -26,6 +26,7 @@
 #ifndef IDBKeyPath_h
 #define IDBKeyPath_h
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,6 +46,7 @@ public:
     IDBKeyPath() : m_type(NullType) { }
     explicit IDBKeyPath(const String&);
     explicit IDBKeyPath(const Vector<String>& array);
+    explicit IDBKeyPath(const StringOrStringSequence& keyPath);
 
     enum Type {
         NullType = 0,

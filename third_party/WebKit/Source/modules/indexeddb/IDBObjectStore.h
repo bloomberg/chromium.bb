@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBIndexParameters.h"
@@ -75,11 +76,7 @@ public:
     IDBRequest* deleteFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
     IDBRequest* clear(ScriptState*, ExceptionState&);
 
-    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const String& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
-    {
-        return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
-    }
-    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const Vector<String>& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
+    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const StringOrStringSequence& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
     {
         return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
     }

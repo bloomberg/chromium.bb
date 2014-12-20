@@ -210,6 +210,25 @@ IDBKeyPath::IDBKeyPath(const Vector<String>& array)
 #endif
 }
 
+IDBKeyPath::IDBKeyPath(const StringOrStringSequence& keyPath)
+{
+    if (keyPath.isNull()) {
+        m_type = NullType;
+    } else if (keyPath.isString()) {
+        m_type = StringType;
+        m_string = keyPath.getAsString();
+        ASSERT(!m_string.isNull());
+    } else {
+        ASSERT(keyPath.isStringSequence());
+        m_type = ArrayType;
+        m_array = keyPath.getAsStringSequence();
+#if ENABLE(ASSERT)
+        for (size_t i = 0; i < m_array.size(); ++i)
+            ASSERT(!m_array[i].isNull());
+#endif
+    }
+}
+
 bool IDBKeyPath::isValid() const
 {
     switch (m_type) {
