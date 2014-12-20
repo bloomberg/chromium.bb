@@ -67,12 +67,17 @@ bool GetOnly(const RepeatedPtrField<T>& things, T* out) {
   return true;
 }
 
-class MockCopresenceManager : public CopresenceManager {
+class FakeCopresenceManager : public CopresenceManager {
  public:
-  explicit MockCopresenceManager(CopresenceDelegate* delegate)
+  explicit FakeCopresenceManager(CopresenceDelegate* delegate)
       : delegate_(delegate) {}
-  ~MockCopresenceManager() override {}
+  ~FakeCopresenceManager() override {}
 
+  // CopresenceManager overrides.
+  copresence::CopresenceState* state() override {
+    NOTREACHED();
+    return nullptr;
+  }
   void ExecuteReportRequest(
       const ReportRequest& request,
       const std::string& app_id,
@@ -99,7 +104,7 @@ class CopresenceApiUnittest : public ExtensionApiUnittest {
 
     CopresenceService* service =
         CopresenceService::GetFactoryInstance()->Get(profile());
-    copresence_manager_ = new MockCopresenceManager(service);
+    copresence_manager_ = new FakeCopresenceManager(service);
     service->set_manager_for_testing(
         make_scoped_ptr<CopresenceManager>(copresence_manager_));
   }
@@ -134,7 +139,7 @@ class CopresenceApiUnittest : public ExtensionApiUnittest {
   }
 
   void clear_app_id() {
-    copresence_manager_->app_id_ = "";
+    copresence_manager_->app_id_.clear();
   }
 
   CopresenceDelegate* delegate() {
@@ -142,7 +147,7 @@ class CopresenceApiUnittest : public ExtensionApiUnittest {
   }
 
  protected:
-  MockCopresenceManager* copresence_manager_;
+  FakeCopresenceManager* copresence_manager_;
 };
 
 TEST_F(CopresenceApiUnittest, Publish) {

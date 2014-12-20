@@ -21,6 +21,7 @@ namespace copresence {
 
 struct AudioToken;
 class CopresenceDelegate;
+class CopresenceStateImpl;
 class DirectiveHandler;
 class GCMHandler;
 class HttpPost;
@@ -65,6 +66,7 @@ class RpcHandler {
   // are owned by the caller and must outlive the RpcHandler.
   // |server_post_callback| should be set only by tests.
   RpcHandler(CopresenceDelegate* delegate,
+             CopresenceStateImpl* state,
              DirectiveHandler* directive_handler,
              GCMHandler* gcm_handler,
              const PostCallback& server_post_callback = PostCallback());
@@ -159,6 +161,7 @@ class RpcHandler {
 
   // These belong to the caller.
   CopresenceDelegate* const delegate_;
+  CopresenceStateImpl* state_;
   DirectiveHandler* const directive_handler_;
   GCMHandler* const gcm_handler_;
 

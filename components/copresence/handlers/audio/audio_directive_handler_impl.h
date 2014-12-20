@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
+#include "components/copresence/public/copresence_constants.h"
 
 namespace base {
 class TimeTicks;
@@ -36,19 +37,21 @@ class TickClockRefCounted;
 // of this class.
 class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
  public:
-  AudioDirectiveHandlerImpl();
-  AudioDirectiveHandlerImpl(scoped_ptr<AudioManager> audio_manager,
-                            scoped_ptr<base::Timer> timer,
-                            const scoped_refptr<TickClockRefCounted>& clock);
+  explicit AudioDirectiveHandlerImpl(
+      const DirectivesCallback& update_directives_callback);
+  AudioDirectiveHandlerImpl(
+      const DirectivesCallback& update_directives_callback,
+      scoped_ptr<AudioManager> audio_manager,
+      scoped_ptr<base::Timer> timer,
+      const scoped_refptr<TickClockRefCounted>& clock);
 
-  ~AudioDirectiveHandlerImpl();
+  ~AudioDirectiveHandlerImpl() override;
 
   // AudioDirectiveHandler overrides:
   void Initialize(WhispernetClient* whispernet_client,
                   const TokensCallback& tokens_cb) override;
-  void AddInstruction(const copresence::TokenInstruction& instruction,
-                      const std::string& op_id,
-                      base::TimeDelta ttl) override;
+  void AddInstruction(const Directive& directive,
+                      const std::string& op_id) override;
   void RemoveInstructions(const std::string& op_id) override;
   const std::string PlayingToken(AudioType type) const override;
   bool IsPlayingTokenHeard(AudioType type) const override;
@@ -63,8 +66,8 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
   // instructions. If we don't have any active instructions, returns false.
   bool GetNextInstructionExpiry(base::TimeTicks* next_event);
 
+  DirectivesCallback update_directives_callback_;
   scoped_ptr<AudioManager> audio_manager_;
-
   scoped_ptr<base::Timer> audio_event_timer_;
   scoped_refptr<TickClockRefCounted> clock_;
 
@@ -72,7 +75,6 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
   // AUDIBLE = element 0, INAUDIBLE = element 1 (see copresence_constants.h).
   ScopedVector<AudioDirectiveList> transmits_lists_;
   ScopedVector<AudioDirectiveList> receives_lists_;
-
 
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveHandlerImpl);
 };

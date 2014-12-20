@@ -14,6 +14,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
+#include "components/copresence/proto/data.pb.h"
 
 namespace media {
 class AudioBusRefCounted;
@@ -26,12 +27,17 @@ class TickClockRefCounted;
 struct AudioDirective final {
   // Default ctor, required by the priority queue.
   AudioDirective();
-  AudioDirective(const std::string& op_id, base::TimeTicks end_time);
+  AudioDirective(const std::string& op_id,
+                 base::TimeTicks end_time,
+                 const Directive& server_directive);
 
   std::string op_id;
+
   // We're currently using TimeTicks to track time. This may not work for cases
   // where your machine suspends. See crbug.com/426136
   base::TimeTicks end_time;
+
+  Directive server_directive;
 };
 
 // This class maintains a list of active audio directives. It fetches the audio
@@ -40,16 +46,18 @@ struct AudioDirective final {
 // TODO(rkc): Once we implement more token technologies, move reusable code
 // from here to a base class and inherit various XxxxDirectiveList
 // classes from it.
-class AudioDirectiveList {
+class AudioDirectiveList final {
  public:
   explicit AudioDirectiveList(const scoped_refptr<TickClockRefCounted>& clock =
       make_scoped_refptr(new TickClockRefCounted(new base::DefaultTickClock)));
   ~AudioDirectiveList();
 
-  void AddDirective(const std::string& op_id, base::TimeDelta ttl);
+  void AddDirective(const std::string& op_id, const Directive& directive);
   void RemoveDirective(const std::string& op_id);
 
   scoped_ptr<AudioDirective> GetActiveDirective();
+
+  const std::vector<AudioDirective>& directives() const;
 
  private:
   // Comparator for comparing end_times on audio tokens.

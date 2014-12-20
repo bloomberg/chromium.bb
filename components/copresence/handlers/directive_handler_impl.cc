@@ -19,11 +19,19 @@ const int kMaxUnlabeledDirectiveTtl = 60000;  // 1 minute
 
 namespace copresence {
 
-// Public functions
+// Public functions.
 
 DirectiveHandlerImpl::DirectiveHandlerImpl(
+    const DirectivesCallback& update_directives_callback)
+    : DirectiveHandlerImpl(update_directives_callback,
+                           make_scoped_ptr(new AudioDirectiveHandlerImpl(
+                               update_directives_callback))) {}
+
+DirectiveHandlerImpl::DirectiveHandlerImpl(
+    const DirectivesCallback& update_directives_callback,
     scoped_ptr<AudioDirectiveHandler> audio_handler)
-    : audio_handler_(audio_handler.Pass()), is_started_(false) {}
+    : audio_handler_(audio_handler.Pass()),
+      is_started_(false) {}
 
 DirectiveHandlerImpl::~DirectiveHandlerImpl() {}
 
@@ -95,21 +103,18 @@ bool DirectiveHandlerImpl::IsAudioTokenHeard(AudioType type) const {
   return is_started_ ? audio_handler_->IsPlayingTokenHeard(type) : false;
 }
 
-// Private functions
+
+// Private functions.
 
 void DirectiveHandlerImpl::StartDirective(const std::string& op_id,
                                           const Directive& directive) {
   DCHECK(is_started_);
-  const TokenInstruction& ti = directive.token_instruction();
-  if (ti.medium() == AUDIO_ULTRASOUND_PASSBAND ||
-      ti.medium() == AUDIO_AUDIBLE_DTMF) {
-    audio_handler_->AddInstruction(
-        ti, op_id, base::TimeDelta::FromMilliseconds(directive.ttl_millis()));
-  } else {
-    // We should only get audio directives.
-    NOTREACHED() << "Received directive for unimplemented medium "
-                 << ti.medium();
-  }
+  DLOG_IF(WARNING, directive.delay_millis() > 0)
+      << "Ignoring " << directive.delay_millis() << " delay for directive";
+  const TokenMedium& medium = directive.token_instruction().medium();
+  DCHECK(medium == AUDIO_ULTRASOUND_PASSBAND || medium == AUDIO_AUDIBLE_DTMF)
+      << "Received directive for unimplemented medium " << medium;
+  audio_handler_->AddInstruction(directive, op_id);
 }
 
 }  // namespace copresence

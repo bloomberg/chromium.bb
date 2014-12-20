@@ -10,13 +10,9 @@
 #include "components/copresence/mediums/audio/audio_manager.h"
 #include "components/copresence/public/copresence_constants.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace copresence {
 
-class TokenInstruction;
+class Directive;
 class WhispernetClient;
 
 // The AudioDirectiveHandler handles audio transmit and receive instructions.
@@ -30,9 +26,8 @@ class AudioDirectiveHandler {
 
   // Adds an instruction to our handler. The instruction will execute and be
   // removed after the ttl expires.
-  virtual void AddInstruction(const TokenInstruction& instruction,
-                              const std::string& op_id,
-                              base::TimeDelta ttl) = 0;
+  virtual void AddInstruction(const Directive& directive,
+                              const std::string& op_id) = 0;
 
   // Removes all instructions associated with this operation id.
   virtual void RemoveInstructions(const std::string& op_id) = 0;

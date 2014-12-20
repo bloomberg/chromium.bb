@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "components/copresence/tokens.h"
 #include "media/base/channel_layout.h"
 
 namespace media {
@@ -17,6 +18,8 @@ class AudioBusRefCounted;
 }
 
 namespace copresence {
+
+class Directive;
 
 // Audio constants. Currently used from the AudioPlayer/AudioRecorder.
 // TODO(rkc): Make these values configurable then remove them from here.
@@ -36,6 +39,7 @@ extern const float kDefaultCarrierFrequency;
 extern const int kDefaultChannels;
 extern const media::ChannelLayout kDefaultChannelLayout;
 
+
 // These constants are used from everywhere.
 // Particularly, these are used to index the directive lists in the
 // audio manager, so do not change these enums without changing
@@ -47,12 +51,6 @@ enum AudioType {
   AUDIO_TYPE_UNKNOWN = 3,
 };
 
-struct AudioToken {
-  AudioToken(const std::string& token, bool audible)
-      : token(token), audible(audible) {}
-  std::string token;
-  bool audible;
-};
 
 // These callbacks are used from various places in Copresence.
 
@@ -60,8 +58,6 @@ struct AudioToken {
 using SuccessCallback = base::Callback<void(bool)>;
 
 // Callback to pass around found tokens.
-// Arguments:
-// const std::vector<AudioToken>& tokens - List of found tokens.
 using TokensCallback = base::Callback<void(const std::vector<AudioToken>&)>;
 
 // Callback to receive encoded samples from Whispernet.
@@ -72,6 +68,10 @@ using SamplesCallback =
     base::Callback<void(AudioType,
                         const std::string&,
                         const scoped_refptr<media::AudioBusRefCounted>&)>;
+
+// Callback to pass a list of directives back to CopresenceState.
+using DirectivesCallback = base::Callback<void(const std::vector<Directive>&)>;
+
 }  // namespace copresence
 
 #endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_H_

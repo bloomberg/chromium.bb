@@ -12,6 +12,7 @@
 
 namespace copresence {
 
+class CopresenceState;
 class ReportRequest;
 
 // The CopresenceManager class is the central interface for Copresence
@@ -22,6 +23,9 @@ class CopresenceManager {
  public:
   CopresenceManager() {}
   virtual ~CopresenceManager() {}
+
+  // Accessor for the CopresenceState instance that tracks debug info.
+  virtual CopresenceState* state() = 0;
 
   // This method will execute a report request. Each report request can have
   // multiple (un)publishes, (un)subscribes. This will ensure that once the
