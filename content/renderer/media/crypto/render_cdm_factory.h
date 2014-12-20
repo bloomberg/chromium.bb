@@ -39,7 +39,6 @@ class RenderCdmFactory : public media::CdmFactory {
       const std::string& key_system,
       const GURL& security_origin,
       const media::SessionMessageCB& session_message_cb,
-      const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::SessionErrorCB& session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,

@@ -323,7 +323,6 @@ ContentDecryptorDelegate::~ContentDecryptorDelegate() {
 void ContentDecryptorDelegate::Initialize(
     const std::string& key_system,
     const media::SessionMessageCB& session_message_cb,
-    const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
@@ -334,7 +333,6 @@ void ContentDecryptorDelegate::Initialize(
   key_system_ = key_system;
 
   session_message_cb_ = session_message_cb;
-  session_ready_cb_ = session_ready_cb;
   session_closed_cb_ = session_closed_cb;
   session_error_cb_ = session_error_cb;
   session_keys_change_cb_ = session_keys_change_cb;
@@ -798,13 +796,9 @@ void ContentDecryptorDelegate::OnSessionExpirationChange(
 }
 
 void ContentDecryptorDelegate::OnSessionReady(PP_Var web_session_id) {
-  if (session_ready_cb_.is_null())
-    return;
-
-  StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
-  DCHECK(web_session_id_string);
-
-  session_ready_cb_.Run(web_session_id_string->value());
+  // Ready events no longer generated.
+  // TODO(jrummell): Remove event from Pepper.
+  NOTREACHED();
 }
 
 void ContentDecryptorDelegate::OnSessionClosed(PP_Var web_session_id) {

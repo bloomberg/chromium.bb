@@ -26,7 +26,6 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const GURL& security_origin,
     const CreatePepperCdmCB& create_pepper_cdm_cb,
     const media::SessionMessageCB& session_message_cb,
-    const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
@@ -44,7 +43,6 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
       new PpapiDecryptor(key_system,
                          pepper_cdm_wrapper.Pass(),
                          session_message_cb,
-                         session_ready_cb,
                          session_closed_cb,
                          session_error_cb,
                          session_keys_change_cb,
@@ -55,14 +53,12 @@ PpapiDecryptor::PpapiDecryptor(
     const std::string& key_system,
     scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
     const media::SessionMessageCB& session_message_cb,
-    const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb)
     : pepper_cdm_wrapper_(pepper_cdm_wrapper.Pass()),
       session_message_cb_(session_message_cb),
-      session_ready_cb_(session_ready_cb),
       session_closed_cb_(session_closed_cb),
       session_error_cb_(session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
@@ -71,7 +67,6 @@ PpapiDecryptor::PpapiDecryptor(
       weak_ptr_factory_(this) {
   DCHECK(pepper_cdm_wrapper_.get());
   DCHECK(!session_message_cb_.is_null());
-  DCHECK(!session_ready_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
   DCHECK(!session_error_cb_.is_null());
   DCHECK(!session_keys_change_cb.is_null());
@@ -81,7 +76,6 @@ PpapiDecryptor::PpapiDecryptor(
   CdmDelegate()->Initialize(
       key_system,
       base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this),
-      base::Bind(&PpapiDecryptor::OnSessionReady, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionError, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionKeysChange, weak_this),
@@ -416,11 +410,6 @@ void PpapiDecryptor::OnSessionExpirationUpdate(
     const base::Time& new_expiry_time) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   session_expiration_update_cb_.Run(web_session_id, new_expiry_time);
-}
-
-void PpapiDecryptor::OnSessionReady(const std::string& web_session_id) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  session_ready_cb_.Run(web_session_id);
 }
 
 void PpapiDecryptor::OnSessionClosed(const std::string& web_session_id) {

@@ -43,7 +43,6 @@ bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
     media_keys_ = cdm_factory->Create(
         key_system, security_origin,
         base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionReady, weak_this),
         base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
         base::Bind(&CdmSessionAdapter::OnSessionError, weak_this),
         base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
@@ -156,11 +155,6 @@ void CdmSessionAdapter::OnSessionExpirationUpdate(
                              << web_session_id;
   if (session)
     session->OnSessionExpirationUpdate(new_expiry_time);
-}
-
-void CdmSessionAdapter::OnSessionReady(const std::string& web_session_id) {
-  // Ready events not used by unprefixed EME.
-  // TODO(jrummell): Remove when prefixed EME removed.
 }
 
 void CdmSessionAdapter::OnSessionClosed(const std::string& web_session_id) {

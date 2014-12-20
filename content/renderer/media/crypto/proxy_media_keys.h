@@ -29,7 +29,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       const GURL& security_origin,
       RendererCdmManager* manager,
       const media::SessionMessageCB& session_message_cb,
-      const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::SessionErrorCB& session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
@@ -89,7 +88,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
 
   ProxyMediaKeys(RendererCdmManager* manager,
                  const media::SessionMessageCB& session_message_cb,
-                 const media::SessionReadyCB& session_ready_cb,
                  const media::SessionClosedCB& session_closed_cb,
                  const media::SessionErrorCB& session_error_cb);
 
@@ -116,7 +114,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   int cdm_id_;
 
   media::SessionMessageCB session_message_cb_;
-  media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
 

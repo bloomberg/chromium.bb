@@ -20,7 +20,6 @@ scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
     const GURL& security_origin,
     RendererCdmManager* manager,
     const media::SessionMessageCB& session_message_cb,
-    const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
@@ -32,7 +31,6 @@ scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(
       new ProxyMediaKeys(manager,
                          session_message_cb,
-                         session_ready_cb,
                          session_closed_cb,
                          session_error_cb));
   proxy_media_keys->InitializeCdm(key_system, security_origin);
@@ -173,10 +171,6 @@ void ProxyMediaKeys::OnSessionReady(uint32 session_id) {
     media::SimpleCdmPromise* simple_promise(
         static_cast<media::SimpleCdmPromise*>(promise.get()));
     simple_promise->resolve();
-  } else {
-    // Still needed for keyadded.
-    const std::string web_session_id = LookupWebSessionId(session_id);
-    session_ready_cb_.Run(web_session_id);
   }
 }
 
@@ -228,12 +222,10 @@ void ProxyMediaKeys::OnSessionError(uint32 session_id,
 ProxyMediaKeys::ProxyMediaKeys(
     RendererCdmManager* manager,
     const media::SessionMessageCB& session_message_cb,
-    const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb)
     : manager_(manager),
       session_message_cb_(session_message_cb),
-      session_ready_cb_(session_ready_cb),
       session_closed_cb_(session_closed_cb),
       session_error_cb_(session_error_cb),
       next_session_id_(1) {

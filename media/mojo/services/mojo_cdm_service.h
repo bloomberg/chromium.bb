@@ -56,7 +56,6 @@ class MojoCdmService
                            bool has_additional_usable_key);
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  const base::Time& new_expiry_time);
-  void OnSessionReady(const std::string& session_id);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionError(const std::string& session_id,
                       MediaKeys::Exception exception,

@@ -122,10 +122,6 @@ void MojoCdmService::OnSessionExpirationUpdate(
                                       new_expiry_time.ToInternalValue());
 }
 
-void MojoCdmService::OnSessionReady(const std::string& session_id) {
-  client()->OnSessionReady(session_id);
-}
-
 void MojoCdmService::OnSessionClosed(const std::string& session_id) {
   client()->OnSessionClosed(session_id);
 }

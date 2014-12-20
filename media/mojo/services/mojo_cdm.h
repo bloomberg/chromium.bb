@@ -26,7 +26,6 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
   //     Application that is hosting a mojo::MediaRenderer.
   MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
           const SessionMessageCB& session_message_cb,
-          const SessionReadyCB& session_ready_cb,
           const SessionClosedCB& session_closed_cb,
           const SessionErrorCB& session_error_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
@@ -59,7 +58,6 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
   void OnSessionMessage(const mojo::String& session_id,
                         mojo::Array<uint8_t> message,
                         const mojo::String& destination_url) final;
-  void OnSessionReady(const mojo::String& session_id) final;
   void OnSessionClosed(const mojo::String& session_id) final;
   void OnSessionError(const mojo::String& session_id,
                       mojo::CdmException exception,
@@ -80,7 +78,6 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
-  SessionReadyCB session_ready_cb_;
   SessionClosedCB session_closed_cb_;
   SessionErrorCB session_error_cb_;
   SessionKeysChangeCB session_keys_change_cb_;

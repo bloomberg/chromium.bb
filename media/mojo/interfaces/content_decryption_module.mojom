@@ -93,8 +93,6 @@ interface ContentDecryptionModuleClient {
   OnSessionMessage(string session_id, array<uint8> message,
                    string destination_url);
 
-  OnSessionReady(string session_id);
-
   OnSessionClosed(string session_id);
 
   OnSessionError(string session_id, CdmException exception,

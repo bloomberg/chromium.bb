@@ -24,7 +24,6 @@ class MEDIA_EXPORT CdmFactory {
       const std::string& key_system,
       const GURL& security_origin,
       const SessionMessageCB& session_message_cb,
-      const SessionReadyCB& session_ready_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionErrorCB& session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,

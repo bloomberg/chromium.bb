@@ -49,7 +49,6 @@ class ContentDecryptorDelegate {
   void Initialize(
       const std::string& key_system,
       const media::SessionMessageCB& session_message_cb,
-      const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::SessionErrorCB& session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
@@ -217,7 +216,6 @@ class ContentDecryptorDelegate {
 
   // Callbacks for firing session events.
   media::SessionMessageCB session_message_cb_;
-  media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
   media::SessionKeysChangeCB session_keys_change_cb_;

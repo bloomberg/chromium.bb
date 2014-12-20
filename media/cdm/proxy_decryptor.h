@@ -78,7 +78,7 @@ class MEDIA_EXPORT ProxyDecryptor {
                            bool has_additional_usable_key);
   void OnSessionExpirationUpdate(const std::string& web_session_id,
                                  const base::Time& new_expiry_time);
-  void OnSessionReady(const std::string& web_session_id);
+  void GenerateKeyAdded(const std::string& web_session_id);
   void OnSessionClosed(const std::string& web_session_id);
   void OnSessionError(const std::string& web_session_id,
                       MediaKeys::Exception exception_code,

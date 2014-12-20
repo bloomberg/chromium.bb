@@ -128,8 +128,6 @@ typedef base::Callback<void(const std::string& web_session_id,
                             const std::vector<uint8>& message,
                             const GURL& destination_url)> SessionMessageCB;
 
-typedef base::Callback<void(const std::string& web_session_id)> SessionReadyCB;
-
 typedef base::Callback<void(const std::string& web_session_id)> SessionClosedCB;
 
 typedef base::Callback<void(const std::string& web_session_id,

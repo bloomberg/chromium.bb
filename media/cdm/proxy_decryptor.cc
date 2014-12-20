@@ -149,7 +149,7 @@ void ProxyDecryptor::AddKey(const uint8* key,
   }
 
   scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
-      base::Bind(&ProxyDecryptor::OnSessionReady,
+      base::Bind(&ProxyDecryptor::GenerateKeyAdded,
                  weak_ptr_factory_.GetWeakPtr(),
                  web_session_id),
       base::Bind(&ProxyDecryptor::OnSessionError,
@@ -215,7 +215,6 @@ scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
       key_system,
       security_origin,
       base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
-      base::Bind(&ProxyDecryptor::OnSessionReady, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionError, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionKeysChange, weak_this),
@@ -251,7 +250,8 @@ void ProxyDecryptor::OnSessionExpirationUpdate(
   // EME v0.1b doesn't support this event.
 }
 
-void ProxyDecryptor::OnSessionReady(const std::string& web_session_id) {
+void ProxyDecryptor::GenerateKeyAdded(const std::string& web_session_id) {
+  // EME WD doesn't support this event, but it is needed for EME v0.1b.
   key_added_cb_.Run(web_session_id);
 }
 
@@ -310,9 +310,9 @@ void ProxyDecryptor::SetSessionId(SessionCreationType session_type,
       session_type == PersistentSession || session_type == LoadSession;
   active_sessions_.insert(std::make_pair(web_session_id, is_persistent));
 
-  // For LoadSession(), generate the SessionReady event.
+  // For LoadSession(), generate the KeyAdded event.
   if (session_type == LoadSession)
-    OnSessionReady(web_session_id);
+    GenerateKeyAdded(web_session_id);
 }
 
 }  // namespace media
