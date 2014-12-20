@@ -1122,9 +1122,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
   // TODO(nasko): Remove the following CHECK once cross-site navigation no
   // longer relies on swapped out RFH for the top-level frame.
-  if (!frame_tree_node_->IsMainFrame()) {
+  if (!frame_tree_node_->IsMainFrame())
     CHECK(!swapped_out);
-  }
 
   scoped_ptr<RenderFrameHostImpl> new_render_frame_host;
   bool success = true;
@@ -1182,8 +1181,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
           new_render_frame_host->GetSiteInstance(), frame_tree_node_);
       proxy_hosts_[instance->GetId()] = proxy;
       proxy_routing_id = proxy->GetRoutingID();
-      if (frame_tree_node_->IsMainFrame())
-        proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
+      proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
     }
 
     success =
@@ -1198,15 +1196,18 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
         DCHECK(new_render_frame_host.get());
         success = InitRenderFrame(new_render_frame_host.get());
       }
-      if (success) {
-        if (view_routing_id_ptr)
-          *view_routing_id_ptr = render_view_host->GetRoutingID();
-        // If a brand new RFH was created, announce it to observers.
-        if (new_render_frame_host) {
-          render_frame_delegate_->RenderFrameCreated(
-              new_render_frame_host.get());
-        }
-      }
+    }
+
+    if (success) {
+      if (view_routing_id_ptr)
+        *view_routing_id_ptr = render_view_host->GetRoutingID();
+
+      // A brand new RenderFrame was created by one of the Init calls above.
+      // Announce it to observers.
+      if (swapped_out)
+        render_frame_delegate_->RenderFrameCreated(proxy->render_frame_host());
+      else
+        render_frame_delegate_->RenderFrameCreated(new_render_frame_host.get());
     }
   }
 

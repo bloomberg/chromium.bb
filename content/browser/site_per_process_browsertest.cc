@@ -436,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // subframes.
   // NavigateFrameToURL can't be used here because it doesn't guarantee that
   // FrameTreeNodes will have been created for child frames when it returns.
-  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 2);
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 3);
   GURL site_b_url(
       embedded_test_server()->GetURL(
           "bar.com", "/frame_tree/page_with_one_frame.html"));
@@ -902,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   // Navigate the first subframe to a cross-site page with two subframes.
   // NavigateFrameToURL can't be used here because it doesn't guarantee that
   // FrameTreeNodes will have been created for child frames when it returns.
-  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 3);
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 4);
   GURL foo_url(
       embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
   NavigationController::LoadURLParams params(foo_url);
