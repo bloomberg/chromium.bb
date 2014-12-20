@@ -28,13 +28,11 @@ class WhispernetClient;
 enum CopresenceStatus { SUCCESS, FAIL, AUDIO_FAIL };
 
 // Callback type to send a status.
-typedef base::Callback<void(CopresenceStatus)> StatusCallback;
+using StatusCallback = base::Callback<void(CopresenceStatus)>;
 
 // A delegate interface for users of Copresence.
 class CopresenceDelegate {
  public:
-  virtual ~CopresenceDelegate() {}
-
   // This method will be called when we have subscribed messages
   // that need to be sent to their respective apps.
   virtual void HandleMessages(
@@ -57,6 +55,9 @@ class CopresenceDelegate {
   // Clients may optionally provide a GCMDriver to receive messages from.
   // If no driver is available, this can return null.
   virtual gcm::GCMDriver* GetGCMDriver() = 0;
+
+ protected:
+  virtual ~CopresenceDelegate() {}
 };
 
 }  // namespace copresence

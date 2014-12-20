@@ -31,7 +31,7 @@ class AudioRecorderImpl final
       public media::AudioInputStream::AudioInputCallback,
       public media::AudioConverter::InputCallback {
  public:
-  typedef base::Callback<void(const std::string&)> RecordedSamplesCallback;
+  using RecordedSamplesCallback = base::Callback<void(const std::string&)>;
 
   AudioRecorderImpl();
 

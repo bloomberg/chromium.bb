@@ -6,6 +6,7 @@
 #define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
@@ -54,8 +55,8 @@ class AudioManagerImpl final : public AudioManager {
   }
 
  private:
-  typedef TimedMap<std::string, scoped_refptr<media::AudioBusRefCounted>>
-      SamplesMap;
+  using SamplesMap = TimedMap<std::string,
+                              scoped_refptr<media::AudioBusRefCounted>>;
 
   // Receives the audio samples from encoding a token.
   void OnTokenEncoded(AudioType type,

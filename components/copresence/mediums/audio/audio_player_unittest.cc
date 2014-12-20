@@ -18,8 +18,8 @@ namespace {
 
 class TestAudioOutputStream : public media::AudioOutputStream {
  public:
-  typedef base::Callback<void(scoped_ptr<media::AudioBus>, int frames)>
-      GatherSamplesCallback;
+  using GatherSamplesCallback =
+      base::Callback<void(scoped_ptr<media::AudioBus>, int frames)>;
   TestAudioOutputStream(int default_frame_count,
                         int max_frame_count,
                         GatherSamplesCallback gather_callback)

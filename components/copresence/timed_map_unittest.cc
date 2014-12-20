@@ -22,7 +22,7 @@ struct Value {
 
 class TimedMapTest : public testing::Test {
  public:
-  typedef copresence::TimedMap<int, Value> Map;
+  using Map = copresence::TimedMap<int, Value>;
 
   TimedMapTest() {}
 

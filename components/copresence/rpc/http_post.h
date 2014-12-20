@@ -33,8 +33,7 @@ class HttpPost : public net::URLFetcherDelegate {
  public:
   // Callback to receive the HTTP status code and body of the response
   // (if any). A pointer to this HttpPost object is also passed along.
-  typedef base::Callback<void(int, const std::string&)>
-      ResponseCallback;
+  using ResponseCallback = base::Callback<void(int, const std::string&)>;
 
   // Create a request to the Copresence server.
   // |url_context_getter| is owned by the caller,

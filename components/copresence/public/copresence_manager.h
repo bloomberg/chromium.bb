@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/copresence/public/copresence_delegate.h"
 
 namespace copresence {

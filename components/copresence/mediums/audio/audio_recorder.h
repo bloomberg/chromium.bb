@@ -19,7 +19,7 @@ namespace copresence {
 // The AudioRecorder class will record audio until told to stop.
 class AudioRecorder {
  public:
-  typedef base::Callback<void(const std::string&)> RecordedSamplesCallback;
+  using RecordedSamplesCallback = base::Callback<void(const std::string&)>;
 
   // Initializes the object. Do not use this object before calling this method.
   virtual void Initialize(const RecordedSamplesCallback& decode_callback) = 0;
@@ -33,7 +33,7 @@ class AudioRecorder {
   virtual void Finalize() = 0;
 
  protected:
-  virtual ~AudioRecorder() {};
+  virtual ~AudioRecorder() {}
 };
 
 }  // namespace copresence

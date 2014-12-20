@@ -33,15 +33,16 @@ class SubscribedMessage;
 class RpcHandler {
  public:
   // A callback to indicate whether handler initialization succeeded.
-  typedef base::Callback<void(bool)> SuccessCallback;
+  using SuccessCallback = base::Callback<void(bool)>;
 
   // An HttpPost::ResponseCallback along with an HttpPost object to be deleted.
   // Arguments:
   // HttpPost*: The handler should take ownership of (i.e. delete) this object.
   // int: The HTTP status code of the response.
   // string: The contents of the response.
-  typedef base::Callback<void(HttpPost*, int, const std::string&)>
-      PostCleanupCallback;
+  using PostCleanupCallback = base::Callback<void(HttpPost*,
+                                                  int,
+                                                  const std::string&)>;
 
   // Callback to allow tests to stub out HTTP POST behavior.
   // Arguments:
@@ -52,12 +53,13 @@ class RpcHandler {
   // MessageLite: Contents of POST request to be sent. This needs to be
   //     a (scoped) pointer to ease handling of the abstract MessageLite class.
   // PostCleanupCallback: Receives the response to the request.
-  typedef base::Callback<void(net::URLRequestContextGetter*,
-                              const std::string&,
-                              const std::string&,
-                              const std::string&,
-                              scoped_ptr<google::protobuf::MessageLite>,
-                              const PostCleanupCallback&)> PostCallback;
+  using PostCallback = base::Callback<void(
+      net::URLRequestContextGetter*,
+      const std::string&,
+      const std::string&,
+      const std::string&,
+      scoped_ptr<google::protobuf::MessageLite>,
+      const PostCleanupCallback&)>;
 
   // Report rpc name to send to Apiary.
   static const char kReportRequestRpcName[];

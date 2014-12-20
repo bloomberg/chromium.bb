@@ -6,11 +6,7 @@
 #define COMPONENTS_COPRESENCE_PUBLIC_WHISPERNET_CLIENT_H_
 
 #include <string>
-#include <vector>
 
-#include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/copresence/public/copresence_constants.h"
 
 namespace media {

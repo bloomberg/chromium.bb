@@ -68,7 +68,7 @@ class TimedMap {
     expiry_queue_.pop();
   }
 
-  typedef std::pair<KeyType, base::TimeTicks> KeyTimeTuple;
+  using KeyTimeTuple = std::pair<KeyType, base::TimeTicks>;
 
   class EarliestFirstComparator {
    public:
@@ -78,8 +78,8 @@ class TimedMap {
     }
   };
 
-  typedef std::priority_queue<KeyTimeTuple, std::vector<KeyTimeTuple>,
-                              EarliestFirstComparator> ExpiryQueue;
+  using ExpiryQueue = std::priority_queue<
+      KeyTimeTuple, std::vector<KeyTimeTuple>, EarliestFirstComparator>;
 
   const ValueType kEmptyValue;
 
