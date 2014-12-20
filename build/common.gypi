@@ -614,13 +614,6 @@
       # Enable hole punching for the protected video.
       'video_hole%': 0,
 
-      # Temporary hack to allow us to unify blink's definitions of load
-      # completion. blink uses a crazy set of constraints to determine load
-      # completion, but only actually requires them for layout tests. However,
-      # we need to maintain all the old behaviors while the plumbing is put in
-      # place on both sides of the repo boundary.
-      'enable_load_completion_hacks%': 0,
-
       # Automatically select platforms under ozone. Turn this off to
       # build only explicitly selected platforms.
       'ozone_auto_platforms%': 1,
@@ -1209,7 +1202,6 @@
     'use_lto%': '<(use_lto)',
     'use_lto_o2%': '<(use_lto_o2)',
     'video_hole%': '<(video_hole)',
-    'enable_load_completion_hacks%': '<(enable_load_completion_hacks)',
     'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
 
@@ -2978,9 +2970,6 @@
       }],
       ['video_hole==1', {
         'defines': ['VIDEO_HOLE=1'],
-      }],
-      ['enable_load_completion_hacks==1', {
-        'defines': ['ENABLE_LOAD_COMPLETION_HACKS=1'],
       }],
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
