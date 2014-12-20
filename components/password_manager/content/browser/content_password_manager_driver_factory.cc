@@ -81,7 +81,7 @@ ContentPasswordManagerDriverFactory::GetDriverForFrame(
 
 void ContentPasswordManagerDriverFactory::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  // The driver for the main frame will have already been created.
+  // This is called twice for the main frame.
   if (!frame_driver_map_[render_frame_host])
     CreateDriverForFrame(render_frame_host);
 }
@@ -95,26 +95,13 @@ void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
 bool ContentPasswordManagerDriverFactory::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
-  auto mapping = frame_driver_map_.find(render_frame_host);
-  if (mapping == frame_driver_map_.end())
-    return false;
-
-  return mapping->second->HandleMessage(message);
+  return frame_driver_map_[render_frame_host]->HandleMessage(message);
 }
 
 void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // This shouldn't happen, but is causing a lot of crashes.
-  // See http://crbug.com/438951
-  auto mapping = frame_driver_map_.find(render_frame_host);
-  if (mapping == frame_driver_map_.end() || mapping->second == nullptr) {
-    LOG(ERROR) << "Could not find ContentPasswordManagerDriver for frame " <<
-        render_frame_host;
-    return;
-  }
-
   frame_driver_map_[render_frame_host]->DidNavigateFrame(details, params);
 }
 
