@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkPixelSerializer.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
@@ -49,21 +50,24 @@ namespace content {
 
 namespace {
 
-// offset parameter is deprecated/ignored, and will be remove from the
-// signature in a future skia release. <reed@google.com>
-SkData* EncodeBitmapToData(size_t* offset, const SkBitmap& bm) {
-  SkPixelRef* pr = bm.pixelRef();
-  if (pr != NULL) {
-    SkData* data = pr->refEncodedData();
-    if (data != NULL)
-      return data;
+class PNGSerializer : public SkPixelSerializer {
+ protected:
+  bool onUseEncodedData(const void* data, size_t len) override { return true; }
+
+  SkData* onEncodePixels(const SkImageInfo& info,
+                         const void* pixels,
+                         size_t row_bytes) override {
+    SkBitmap bm;
+    // The const_cast is fine, since we only read from the bitmap.
+    if (bm.installPixels(info, const_cast<void*>(pixels), row_bytes)) {
+      std::vector<unsigned char> vector;
+      if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
+        return SkData::NewWithCopy(&vector.front(), vector.size());
+      }
+    }
+    return nullptr;
   }
-  std::vector<unsigned char> vector;
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
-    return SkData::NewWithCopy(&vector.front(), vector.size());
-  }
-  return NULL;
-}
+};
 
 class SkPictureSerializer {
  public:
@@ -97,7 +101,9 @@ class SkPictureSerializer {
     DCHECK(!filepath.empty());
     SkFILEWStream file(filepath.c_str());
     DCHECK(file.isValid());
-    picture->serialize(&file, &EncodeBitmapToData);
+
+    PNGSerializer serializer;
+    picture->serialize(&file, &serializer);
   }
 
  private:
