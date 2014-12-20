@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "base/win/registry.h"
 
 namespace browser_watcher {
@@ -28,6 +29,15 @@ class ExitFunnel {
   // Returns false on failure to create or open the registry path corresponding
   // to |process|.
   bool Init(const base::char16* registry_path, base::ProcessHandle process);
+
+  // Initializes the exit funnel with |registry_path|, |pid| and
+  // |creation_time|.
+  // Returns false on failure to create or open the registry path corresponding
+  // to |process|.
+  // Exposed for testing.
+  bool InitImpl(const base::char16* registry_path,
+                base::ProcessId pid,
+                base::Time creation_time);
 
   // Records |event_name| at the current time in the registry for the process
   // this instance is associated with. Returns false on failure to record the

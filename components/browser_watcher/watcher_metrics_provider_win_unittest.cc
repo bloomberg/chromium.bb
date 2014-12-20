@@ -138,7 +138,13 @@ TEST_F(WatcherMetricsProviderWinTest, ReadsExitFunnelWrites) {
   // Test that the metrics provider picks up the writes from
   ExitFunnel funnel;
 
+  // Events against our own process should not get reported.
   ASSERT_TRUE(funnel.Init(kRegistryPath, base::GetCurrentProcessHandle()));
+  ASSERT_TRUE(funnel.RecordEvent(L"Forgetaboutit"));
+
+  // Reset the funnel to a pseudo process. The PID 4 is the system process,
+  // which tests can hopefully never open.
+  ASSERT_TRUE(funnel.InitImpl(kRegistryPath, 4, base::Time::Now()));
 
   // Each named event can only exist in a single copy.
   ASSERT_TRUE(funnel.RecordEvent(L"One"));
@@ -154,9 +160,9 @@ TEST_F(WatcherMetricsProviderWinTest, ReadsExitFunnelWrites) {
   histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Two", 1);
   histogram_tester_.ExpectTotalCount("Stability.ExitFunnel.Three", 1);
 
-  // Make sure the subkey has been deleted on reporting.
+  // Make sure the subkey for the pseudo process has been deleted on reporting.
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
-  ASSERT_EQ(it.SubkeyCount(), 0);
+  ASSERT_EQ(it.SubkeyCount(), 1);
 }
 
 }  // namespace browser_watcher

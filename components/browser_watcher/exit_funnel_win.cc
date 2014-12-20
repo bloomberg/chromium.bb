@@ -31,9 +31,15 @@ bool ExitFunnel::Init(const base::char16* registry_path,
     return false;
   }
 
+  return InitImpl(registry_path, pid, base::Time::FromFileTime(creation_time));
+}
+
+bool  ExitFunnel::InitImpl(const base::char16* registry_path,
+                           base::ProcessId pid,
+                           base::Time creation_time) {
   base::string16 key_name = registry_path;
-  base::StringAppendF(&key_name, L"\\%d-%lld", pid,
-      base::Time::FromFileTime(creation_time).ToInternalValue());
+  base::StringAppendF(
+      &key_name, L"\\%d-%lld", pid, creation_time.ToInternalValue());
 
   LONG res = key_.Create(HKEY_CURRENT_USER, key_name.c_str(), KEY_SET_VALUE);
   if (res != ERROR_SUCCESS) {

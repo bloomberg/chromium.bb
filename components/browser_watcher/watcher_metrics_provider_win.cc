@@ -32,15 +32,15 @@ void CompileAsserts() {
 // with the given PID is not the same process the data was recorded for.
 // This doesn't matter for the purpose, as eventually the data will be
 // scavenged and reported.
-bool IsDeadProcess(base::StringPiece16 key_name) {
+bool IsDeadProcess(base::StringPiece16 key_or_value_name) {
   // Truncate the input string to the first occurrence of '-', if one exists.
-  size_t num_end = key_name.find(L'-');
+  size_t num_end = key_or_value_name.find(L'-');
   if (num_end != base::StringPiece16::npos)
-    key_name = key_name.substr(0, num_end);
+    key_or_value_name = key_or_value_name.substr(0, num_end);
 
   // Convert to the numeric PID.
   int pid = 0;
-  if (!base::StringToInt(key_name, &pid) || pid == 0)
+  if (!base::StringToInt(key_or_value_name, &pid) || pid == 0)
     return true;
 
   // This is a very inexpensive check for the common case of our own PID.
@@ -194,8 +194,11 @@ void RecordExitFunnels(const base::string16& registry_path) {
 
   std::vector<base::string16> to_delete;
   for (; it.Valid(); ++it) {
-    RecordSingleExitFunnel(&key, it.Name());
-    to_delete.push_back(it.Name());
+    // Defer reporting on still-live processes.
+    if (IsDeadProcess(it.Name())) {
+      RecordSingleExitFunnel(&key, it.Name());
+      to_delete.push_back(it.Name());
+    }
   }
 
   for (size_t i = 0; i < to_delete.size(); ++i) {
