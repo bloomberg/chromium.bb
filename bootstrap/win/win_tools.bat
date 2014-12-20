@@ -52,71 +52,31 @@ goto :GIT_CHECK
 
 :PYTHON_FAIL
 echo ... Failed to checkout python automatically.
-echo Please visit http://python.org to download the latest python 2.7.x client before
-echo continuing.
-echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
+echo You should get the "prebaked" version at %WIN_TOOLS_ROOT_URL%/third_party/
 set ERRORLEVEL=1
 goto :END
 
-
 :GIT_CHECK
-goto :GIT_190_CHECK
-
-
-:GIT_190_CHECK
-set GIT_ERASE_TOP=5
-set GIT_VERSION=1.9.0.chromium.6
-
-if not "%DEPOT_TOOLS_GIT_BLEEDING%" == "1" goto :GIT_190_CHECK_REST
-set GIT_ERASE_TOP=5
-set GIT_VERSION=1.9.0.chromium.6
-
-:GIT_190_CHECK_REST
-if "%DEPOT_TOOLS_GIT_190%" == "0" goto :GIT_1852_CHECK
-:: Clean up a couple of known broken releases
-for /l %%i in (1,1,%GIT_ERASE_TOP%) do if exist "%WIN_TOOLS_ROOT_DIR%\git-1.9.0.chromium.%%i_bin" (
-  rmdir /s /q "%WIN_TOOLS_ROOT_DIR%\git-1.9.0.chromium.%%i_bin"
+if "%DEPOT_TOOLS_GIT_BLEEDING%" == "1" (
+  set GIT_VERSION=1.9.5.chromium.5
+) else (
+  set GIT_VERSION=1.9.0.chromium.6
 )
 for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
 for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
 if %VERMAJOR% lss 5 set GIT_VERSION=%GIT_VERSION%-xp
 if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set GIT_VERSION=%GIT_VERSION%-xp
+
+:: Clean up any release which doesn't match the one we want.
+for /d %%i in (%WIN_TOOLS_ROOT_DIR%\git-*_bin) do (
+  if not %%i == %WIN_TOOLS_ROOT_DIR%\git-%GIT_VERSION%_bin (
+    rmdir /s /q "%%i"
+  )
+)
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
 set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
-goto :GIT_COMMON
 
-
-:GIT_1852_CHECK
-if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_180_CHECK
-set GIT_VERSION=1.8.5.2.chromium.1
-set GIT_BIN_DIR=git-%GIT_VERSION%_bin
-set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
-set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
-:: This git uses APIs that target WINVER 0x0502, so refuse to install it on
-:: anything older.
-for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
-for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
-if %VERMAJOR% lss 5 goto :GIT_VER_UNSUPPORTED
-if %VERMAJOR% equ 5 if %VERMINOR% lss 2 goto :GIT_VER_UNSUPPORTED
-goto :GIT_COMMON
-
-
-:GIT_VER_UNSUPPORTED
-echo Git %GIT_VERSION% cannot be installed on:
-ver
-goto :GIT_180_CHECK
-
-
-:GIT_180_CHECK
-set GIT_VERSION=1.8.0
-set GIT_BIN_DIR=git-%GIT_VERSION%_bin
-set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
-set GIT_ZIP_URL=%WIN_TOOLS_ROOT_URL%/third_party/%GIT_ZIP_FILE%
-goto :GIT_COMMON
-
-
-:GIT_COMMON
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
 if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\cmd\git.cmd" (
   call "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\cmd\git.cmd" --version 2>nul 1>nul
@@ -144,9 +104,6 @@ cscript //nologo //e:jscript "%~dp0unzip.js" "%ZIP_DIR%\git.zip" "%WIN_TOOLS_ROO
 if errorlevel 1 goto :GIT_FAIL
 if not exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\." goto :GIT_FAIL
 del "%ZIP_DIR%\git.zip"
-:: Ensure autocrlf and filemode are set correctly.
-call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false
-call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.filemode false
 goto :GIT_COPY_BATCH_FILES
 
 
@@ -156,14 +113,16 @@ call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\git.bat" "%WIN_TOOLS_ROOT_DIR%\
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
 call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
+
+:: Ensure autocrlf and filemode are set correctly.
+call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false
+call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.filemode false
 goto :SVN_CHECK
 
 
 :GIT_FAIL
 echo ... Failed to checkout git automatically.
-echo Please visit http://code.google.com/p/msysgit to download the latest git
-echo client before continuing.
-echo You can also get the "prebaked" version used at %GIT_ZIP_URL%
+echo You should get the "prebaked" version used at %GIT_ZIP_URL%
 set ERRORLEVEL=1
 goto :END
 
@@ -200,9 +159,7 @@ goto :END
 
 :SVN_FAIL
 echo ... Failed to checkout svn automatically.
-echo Please visit http://subversion.tigris.org to download the latest subversion client
-echo before continuing.
-echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
+echo You should get the "prebaked" version at %WIN_TOOLS_ROOT_URL%/third_party/
 set ERRORLEVEL=1
 goto :END
 
