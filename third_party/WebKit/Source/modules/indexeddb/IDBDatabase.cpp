@@ -195,24 +195,6 @@ ScriptValue IDBDatabase::version(ScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, IDBAny::create(intVersion));
 }
 
-IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionState& exceptionState)
-{
-    IDBKeyPath keyPath;
-    bool autoIncrement = false;
-    if (!options.isUndefinedOrNull()) {
-        String keyPathString;
-        Vector<String> keyPathArray;
-        if (DictionaryHelper::get(options, "keyPath", keyPathArray))
-            keyPath = IDBKeyPath(keyPathArray);
-        else if (DictionaryHelper::getWithUndefinedOrNullCheck(options, "keyPath", keyPathString))
-            keyPath = IDBKeyPath(keyPathString);
-
-        DictionaryHelper::get(options, "autoIncrement", autoIncrement);
-    }
-
-    return createObjectStore(name, keyPath, autoIncrement, exceptionState);
-}
-
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
