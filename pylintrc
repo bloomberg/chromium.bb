@@ -23,7 +23,7 @@
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=chromite.cros.commands.lint
+#load-plugins=chromite.cros.commands.lint
 
 
 [MESSAGES CONTROL]
@@ -99,7 +99,7 @@ reports=no
 [FORMAT]
 
 # Maximum number of characters on a single line.
-#max-line-length=80
+max-line-length=80
 
 # Maximum number of lines in a module
 #max-module-lines=1000
