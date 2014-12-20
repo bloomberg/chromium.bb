@@ -174,8 +174,7 @@ const CGFloat kMinimumContainerWidth = 10.0;
   frame.size.width = width;
   NSRect newFrame = NSOffsetRect(frame, dX, 0);
 
-  if ([resizeAnimation_ isAnimating])
-    [resizeAnimation_ stopAnimation];
+  [self stopAnimation];
 
   if (animate) {
     NSDictionary* animationDictionary = @{
@@ -207,6 +206,15 @@ const CGFloat kMinimumContainerWidth = 10.0;
   } else {
     return [self frame];
   }
+}
+
+- (BOOL)isAnimating {
+  return [resizeAnimation_ isAnimating];
+}
+
+- (void)stopAnimation {
+  if ([resizeAnimation_ isAnimating])
+    [resizeAnimation_ stopAnimation];
 }
 
 #pragma mark -

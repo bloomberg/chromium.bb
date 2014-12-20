@@ -83,6 +83,12 @@ extern NSString* const kTranslationWithDelta;
 // If no animation is running, returns the container's current frame.
 - (NSRect)animationEndFrame;
 
+// Returns true if the view is animating.
+- (BOOL)isAnimating;
+
+// Stops any animation in progress.
+- (void)stopAnimation;
+
 @property(nonatomic) BOOL canDragLeft;
 @property(nonatomic) BOOL canDragRight;
 @property(nonatomic) BOOL grippyPinned;

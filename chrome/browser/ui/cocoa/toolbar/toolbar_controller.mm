@@ -691,6 +691,20 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   if (!browserActionsController_.get())
     return;
 
+  if ([browserActionsContainerView_ isAnimating]) {
+    // If the browser actions container is animating, we need to stop it first,
+    // because the frame it's animating for could be incorrect with the new
+    // bounds (if, for instance, the bookmark bar was added).
+    // This will advance to the end of the animation, so we also need to adjust
+    // it afterwards.
+    [browserActionsContainerView_ stopAnimation];
+    NSRect containerFrame = [browserActionsContainerView_ frame];
+    containerFrame.origin.y =
+        NSHeight([[self view] frame]) - NSHeight(containerFrame) - 1;
+    [browserActionsContainerView_ setFrame:containerFrame];
+    [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+  }
+
   [self maintainMinimumLocationBarWidth];
 
   if (locationBarAtMinSize_) {
