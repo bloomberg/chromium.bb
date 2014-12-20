@@ -2548,12 +2548,26 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
       }
 
       if (!range_map_->StoreRange(base_address, module_size, module_index)) {
-        BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
-                        module_index << "/" << module_count << ", " <<
-                        module->code_file() << ", " <<
-                        HexString(base_address) << "+" <<
-                        HexString(module_size);
-        return false;
+        // Android's shared memory implementation /dev/ashmem can contain
+        // duplicate entries for JITted code, so ignore these.
+        // TODO(wfh): Remove this code when Android is fixed.
+        // See https://crbug.com/439531
+        const string kDevAshmem("/dev/ashmem/");
+        if (module->code_file().compare(
+            0, kDevAshmem.length(), kDevAshmem) != 0) {
+          BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
+                          module_index << "/" << module_count << ", " <<
+                          module->code_file() << ", " <<
+                          HexString(base_address) << "+" <<
+                          HexString(module_size);
+          return false;
+        } else {
+          BPLOG(INFO) << "MinidumpModuleList ignoring overlapping module " <<
+                          module_index << "/" << module_count << ", " <<
+                          module->code_file() << ", " <<
+                          HexString(base_address) << "+" <<
+                          HexString(module_size);
+        }
       }
     }
 
