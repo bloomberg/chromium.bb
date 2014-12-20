@@ -85,12 +85,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("layer_raster_tile_iterator_construct_and_iterate",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PrintResult("tiling_set_raster_queue_construct_and_iterate", "",
+                           test_name, timer_.LapsPerSecond(), "runs/s", true);
   }
 
   void RunRasterQueueConstructTest(const std::string& test_name,
@@ -107,12 +103,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("layer_raster_tile_iterator_construct",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PrintResult("tiling_set_raster_queue_construct", "", test_name,
+                           timer_.LapsPerSecond(), "runs/s", true);
   }
 
   void RunEvictionQueueConstructAndIterateTest(
@@ -140,11 +132,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("layer_eviction_tile_iterator_construct_and_iterate",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
+    perf_test::PrintResult("tiling_set_eviction_queue_construct_and_iterate",
+                           "", test_name, timer_.LapsPerSecond(), "runs/s",
                            true);
   }
 
@@ -167,12 +156,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("layer_eviction_tile_iterator_construct",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PrintResult("tiling_set_eviction_queue_construct", "", test_name,
+                           timer_.LapsPerSecond(), "runs/s", true);
   }
 
  protected:
@@ -186,8 +171,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplPerfTest);
 };
 
-// TODO(vmpstr): Rename these tests once the perf numbers are in.
-TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstructAndIterate) {
+TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
@@ -204,8 +188,7 @@ TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstructAndIterate) {
   RunRasterQueueConstructAndIterateTest("64_500x500", 64, gfx::Size(500, 500));
 }
 
-// TODO(vmpstr): Rename these tests once the perf numbers are in.
-TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstruct) {
+TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
@@ -221,8 +204,7 @@ TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstruct) {
   RunRasterQueueConstructTest("9999_0_100x100", gfx::Rect(9999, 0, 100, 100));
 }
 
-// TODO(e_hakkinen): Rename these tests once the perf numbers are in.
-TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstructAndIterate) {
+TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstructAndIterate) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
@@ -247,8 +229,7 @@ TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstructAndIterate) {
       "64_500x500", 64, gfx::Size(500, 500));
 }
 
-// TODO(e_hakkinen): Rename these tests once the perf numbers are in.
-TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstruct) {
+TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstruct) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
