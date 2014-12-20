@@ -26,7 +26,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
-#include "wtf/Vector.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace blink {

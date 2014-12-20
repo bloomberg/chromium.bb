@@ -27,7 +27,8 @@
 #define ColumnInfo_h
 
 #include "platform/LayoutUnit.h"
-#include "wtf/Vector.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
