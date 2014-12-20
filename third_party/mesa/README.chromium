@@ -52,3 +52,8 @@ Modifications made:
   https://codereview.chromium.org/216773005/
 
 - Excluded src/mapi/mapi/mapi.{h,c} from the build.
+
+- Backported f8e7aa2827e2bdb1ed238cbdd351be3c8a6e9b12 and
+  e20a2df4017ab10dd7199936948c6ac809bfacb6 to fix issues with
+  glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT_OES) when no
+  framebuffer is bound
