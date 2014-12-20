@@ -209,7 +209,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   // it takes to rasterize content. As such, the actual settings used here don't
   // really matter.
   const LayerTreeSettings& settings = layer->layer_tree_impl()->settings();
-  auto tiling_set = PictureLayerTilingSet::Create(
+  scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
       &client, settings.max_tiles_for_interest_area,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);

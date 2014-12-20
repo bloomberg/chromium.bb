@@ -107,7 +107,8 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   EXPECT_EQ(4u, lower_than_low_res_range.start);
   EXPECT_EQ(5u, lower_than_low_res_range.end);
 
-  auto set_without_low_res = CreateTilingSet(&client);
+  scoped_ptr<PictureLayerTilingSet> set_without_low_res =
+      CreateTilingSet(&client);
   set_without_low_res->AddTiling(2.0, pile);
   high_res_tiling = set_without_low_res->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
@@ -137,7 +138,8 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
-  auto set_with_only_high_and_low_res = CreateTilingSet(&client);
+  scoped_ptr<PictureLayerTilingSet> set_with_only_high_and_low_res =
+      CreateTilingSet(&client);
   high_res_tiling = set_with_only_high_and_low_res->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
   low_res_tiling = set_with_only_high_and_low_res->AddTiling(0.5, pile);
@@ -168,7 +170,8 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
-  auto set_with_only_high_res = CreateTilingSet(&client);
+  scoped_ptr<PictureLayerTilingSet> set_with_only_high_res =
+      CreateTilingSet(&client);
   high_res_tiling = set_with_only_high_res->AddTiling(1.0, pile);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
 
@@ -298,9 +301,9 @@ TEST_F(PictureLayerTilingSetTestWithResources, ManyTilings_NotEqual) {
 TEST(PictureLayerTilingSetTest, TileSizeChange) {
   FakePictureLayerTilingClient pending_client;
   FakePictureLayerTilingClient active_client;
-  auto pending_set =
+  scoped_ptr<PictureLayerTilingSet> pending_set =
       PictureLayerTilingSet::Create(&pending_client, 1000, 1.f, 1000);
-  auto active_set =
+  scoped_ptr<PictureLayerTilingSet> active_set =
       PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 100);
@@ -399,9 +402,9 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 TEST(PictureLayerTilingSetTest, MaxContentScale) {
   FakePictureLayerTilingClient pending_client;
   FakePictureLayerTilingClient active_client;
-  auto pending_set =
+  scoped_ptr<PictureLayerTilingSet> pending_set =
       PictureLayerTilingSet::Create(&pending_client, 1000, 1.f, 1000);
-  auto active_set =
+  scoped_ptr<PictureLayerTilingSet> active_set =
       PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 105);
