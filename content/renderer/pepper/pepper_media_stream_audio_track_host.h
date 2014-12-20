@@ -64,10 +64,8 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     // MediaStreamAudioSink overrides:
     // These two functions should be called on the audio thread.
-    void OnData(const int16* audio_data,
-                int sample_rate,
-                int number_of_channels,
-                int number_of_frames) override;
+    void OnData(const media::AudioBus& audio_bus,
+                base::TimeTicks estimated_capture_time) override;
     void OnSetFormat(const media::AudioParameters& params) override;
 
     // Unowned host which is available during the AudioSink's lifespan.
@@ -77,26 +75,14 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // initialization.
     PepperMediaStreamAudioTrackHost* host_;
 
-    // Timestamp of the next received audio buffer.
+    // The estimated capture time of the first sample frame of audio. This is
+    // used as the timebase to compute the buffer timestamps.
     // Access only on the audio thread.
-    base::TimeDelta timestamp_;
-
-    // Duration of one audio buffer.
-    // Access only on the audio thread.
-    base::TimeDelta buffer_duration_;
+    base::TimeTicks first_frame_capture_time_;
 
     // The current audio parameters.
     // Access only on the audio thread.
     media::AudioParameters audio_params_;
-
-    // The original audio parameters which is set in the first time of
-    // OnSetFormat being called.
-    // Access only on the audio thread.
-    media::AudioParameters original_audio_params_;
-
-    // The audio data size of one audio buffer in bytes.
-    // Access only on the audio thread.
-    uint32_t buffer_data_size_;
 
     // Index of the currently active buffer.
     // Access only on the audio thread.
@@ -107,9 +93,9 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Access only on the audio thread.
     int32_t active_buffers_generation_;
 
-    // Current offset, in bytes, within the currently active buffer.
+    // Current offset, in sample frames, within the currently active buffer.
     // Access only on the audio thread.
-    uint32_t active_buffer_offset_;
+    int active_buffer_frame_offset_;
 
     // A lock to protect the index queue |buffers_|, |buffers_generation_|,
     // buffers in |host_->buffer_manager()|, and |output_buffer_size_|.

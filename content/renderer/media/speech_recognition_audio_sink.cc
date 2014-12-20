@@ -93,8 +93,6 @@ void SpeechRecognitionAudioSink::OnSetFormat(
   static const int kNumberOfBuffersInFifo = 2;
   int frames_in_fifo = kNumberOfBuffersInFifo * fifo_buffer_size_;
   fifo_.reset(new media::AudioFifo(input_params.channels(), frames_in_fifo));
-  input_bus_ = media::AudioBus::Create(input_params.channels(),
-                                       input_params.frames_per_buffer());
 
   // Create the audio converter with |disable_fifo| as false so that the
   // converter will request input_params.frames_per_buffer() each time.
@@ -118,14 +116,13 @@ void SpeechRecognitionAudioSink::OnReadyStateChanged(
   }
 }
 
-void SpeechRecognitionAudioSink::OnData(const int16* audio_data,
-                                        int sample_rate,
-                                        int number_of_channels,
-                                        int number_of_frames) {
+void SpeechRecognitionAudioSink::OnData(
+    const media::AudioBus& audio_bus,
+    base::TimeTicks estimated_capture_time) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(input_bus_->frames(), number_of_frames);
-  DCHECK_EQ(input_bus_->channels(), number_of_channels);
-  if (fifo_->frames() + number_of_frames > fifo_->max_frames()) {
+  DCHECK_EQ(audio_bus.frames(), input_params_.frames_per_buffer());
+  DCHECK_EQ(audio_bus.channels(), input_params_.channels());
+  if (fifo_->frames() + audio_bus.frames() > fifo_->max_frames()) {
     // This would indicate a serious issue with the browser process or the
     // SyncSocket and/or SharedMemory. We drop any previous buffers and try to
     // recover by resuming where the peer left of.
@@ -133,12 +130,8 @@ void SpeechRecognitionAudioSink::OnData(const int16* audio_data,
     fifo_->Clear();
     buffer_index_ = GetAudioInputBuffer()->params.size;
   }
-  // TODO(xians): A better way to handle the interleaved and deinterleaved
-  // format switching, see issue/317710.
-  input_bus_->FromInterleaved(audio_data, number_of_frames,
-                              sizeof(audio_data[0]));
 
-  fifo_->Push(input_bus_.get());
+  fifo_->Push(&audio_bus);
   // Wait for FIFO to have at least |fifo_buffer_size_| frames ready.
   if (fifo_->frames() < fifo_buffer_size_)
     return;

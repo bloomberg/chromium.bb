@@ -63,24 +63,31 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, AddAndRemoveSink) {
       static_cast<webrtc::AudioTrackInterface*>(adapter_.get());
   webrtc_track->AddSink(sink.get());
 
-  // Send a packet via |track_| and it data should reach the sink of the
+  // Send a packet via |track_| and the data should reach the sink of the
   // |adapter_|.
-  const int length = params_.frames_per_buffer() * params_.channels();
-  scoped_ptr<int16[]> data(new int16[length]);
-  // Initialize the data to 0 to avoid Memcheck:Uninitialized warning.
-  memset(data.get(), 0, length * sizeof(data[0]));
+  const scoped_ptr<media::AudioBus> audio_bus =
+      media::AudioBus::Create(params_);
+  // While this test is not checking the signal data being passed around, the
+  // implementation in WebRtcLocalAudioTrack reads the data for its signal level
+  // computation.  Initialize all samples to zero to make the memory sanitizer
+  // happy.
+  audio_bus->Zero();
 
+  base::TimeTicks estimated_capture_time = base::TimeTicks::Now();
   EXPECT_CALL(*sink,
               OnData(_, 16, params_.sample_rate(), params_.channels(),
                      params_.frames_per_buffer()));
-  track_->Capture(data.get(), false);
+  track_->Capture(*audio_bus, estimated_capture_time, false);
 
   // Remove the sink from the webrtc track.
   webrtc_track->RemoveSink(sink.get());
   sink.reset();
 
   // Verify that no more callback gets into the sink.
-  track_->Capture(data.get(), false);
+  estimated_capture_time +=
+      params_.frames_per_buffer() * base::TimeDelta::FromSeconds(1) /
+          params_.sample_rate();
+  track_->Capture(*audio_bus, estimated_capture_time, false);
 }
 
 TEST_F(WebRtcLocalAudioTrackAdapterTest, GetSignalLevel) {

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_math.h"
+#include "media/base/audio_bus.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -66,14 +67,14 @@ namespace content {
 PepperMediaStreamAudioTrackHost::AudioSink::AudioSink(
     PepperMediaStreamAudioTrackHost* host)
     : host_(host),
-      buffer_data_size_(0),
       active_buffer_index_(-1),
       active_buffers_generation_(0),
-      active_buffer_offset_(0),
+      active_buffer_frame_offset_(0),
       buffers_generation_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       number_of_buffers_(kDefaultNumberOfBuffers),
       bytes_per_second_(0),
+      bytes_per_frame_(0),
       user_buffer_duration_(kDefaultDuration),
       weak_factory_(this) {}
 
@@ -193,35 +194,33 @@ void PepperMediaStreamAudioTrackHost::AudioSink::
     host_->SendEnqueueBufferMessageToPlugin(index);
 }
 
-void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
-                                                        int sample_rate,
-                                                        int number_of_channels,
-                                                        int number_of_frames) {
+void PepperMediaStreamAudioTrackHost::AudioSink::OnData(
+    const media::AudioBus& audio_bus,
+    base::TimeTicks estimated_capture_time) {
   DCHECK(audio_thread_checker_.CalledOnValidThread());
-  DCHECK(audio_data);
-  DCHECK_EQ(sample_rate, audio_params_.sample_rate());
-  DCHECK_EQ(number_of_channels, audio_params_.channels());
-  // Here, |number_of_frames| and |audio_params_.frames_per_buffer()| refer to
-  // the incomming audio buffer. However, this doesn't necessarily equal
+  DCHECK(audio_params_.IsValid());
+  DCHECK_EQ(audio_bus.channels(), audio_params_.channels());
+  // Here, |audio_params_.frames_per_buffer()| refers to the incomming audio
+  // buffer. However, this doesn't necessarily equal
   // |buffer->number_of_samples|, which is configured by the user when they set
   // buffer duration.
-  DCHECK_EQ(number_of_frames, audio_params_.frames_per_buffer());
+  DCHECK_EQ(audio_bus.frames(), audio_params_.frames_per_buffer());
+  DCHECK(!estimated_capture_time.is_null());
 
-  const uint32_t bytes_per_frame = number_of_channels *
-      audio_params_.bits_per_sample() / 8;
+  if (first_frame_capture_time_.is_null())
+    first_frame_capture_time_ = estimated_capture_time;
 
-  int frames_remaining = number_of_frames;
-  base::TimeDelta timestamp_offset;
+  const int bytes_per_frame = audio_params_.GetBytesPerFrame();
 
   base::AutoLock lock(lock_);
-  while (frames_remaining) {
+  for (int frame_offset = 0; frame_offset < audio_bus.frames(); ) {
     if (active_buffers_generation_ != buffers_generation_) {
       // Buffers have changed, so drop the active buffer.
       active_buffer_index_ = -1;
     }
     if (active_buffer_index_ == -1 && !buffers_.empty()) {
       active_buffers_generation_ = buffers_generation_;
-      active_buffer_offset_ = 0;
+      active_buffer_frame_offset_ = 0;
       active_buffer_index_ = buffers_.front();
       buffers_.pop_front();
     }
@@ -230,39 +229,43 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
       break;
     }
 
-    // TODO(penghuang): support re-sampling, etc.
+    // TODO(penghuang): Support re-sampling and channel mixing by using
+    // media::AudioConverter.
     ppapi::MediaStreamBuffer::Audio* buffer =
         &(host_->buffer_manager()->GetBufferPointer(active_buffer_index_)
           ->audio);
-    if (active_buffer_offset_ == 0) {
+    if (active_buffer_frame_offset_ == 0) {
       // The active buffer is new, so initialise the header and metadata fields.
       buffer->header.size = host_->buffer_manager()->buffer_size();
       buffer->header.type = ppapi::MediaStreamBuffer::TYPE_AUDIO;
-      buffer->timestamp = (timestamp_ + timestamp_offset).InMillisecondsF();
-      buffer->sample_rate = static_cast<PP_AudioBuffer_SampleRate>(sample_rate);
+      const base::TimeTicks time_at_offset = estimated_capture_time +
+          frame_offset * base::TimeDelta::FromSeconds(1) /
+              audio_params_.sample_rate();
+      buffer->timestamp =
+          (time_at_offset - first_frame_capture_time_).InMillisecondsF();
+      buffer->sample_rate =
+          static_cast<PP_AudioBuffer_SampleRate>(audio_params_.sample_rate());
       buffer->data_size = output_buffer_size_;
-      buffer->number_of_channels = number_of_channels;
-      buffer->number_of_samples = buffer->data_size * number_of_channels /
+      buffer->number_of_channels = audio_params_.channels();
+      buffer->number_of_samples = buffer->data_size * audio_params_.channels() /
           bytes_per_frame;
     }
-    uint32_t buffer_bytes_remaining =
-        buffer->data_size - active_buffer_offset_;
-    DCHECK_EQ(buffer_bytes_remaining % bytes_per_frame, 0U);
-    uint32_t incoming_bytes_remaining = frames_remaining * bytes_per_frame;
-    uint32_t bytes_to_copy = std::min(buffer_bytes_remaining,
-                                      incoming_bytes_remaining);
-    uint32_t frames_to_copy = bytes_to_copy / bytes_per_frame;
-    DCHECK_EQ(bytes_to_copy % bytes_per_frame, 0U);
-    memcpy(buffer->data + active_buffer_offset_,
-           audio_data, bytes_to_copy);
-    active_buffer_offset_ += bytes_to_copy;
-    audio_data += bytes_to_copy / sizeof(*audio_data);
-    frames_remaining -= frames_to_copy;
-    timestamp_offset += base::TimeDelta::FromMilliseconds(
-        frames_to_copy * base::Time::kMillisecondsPerSecond / sample_rate);
 
-    DCHECK_LE(active_buffer_offset_, buffer->data_size);
-    if (active_buffer_offset_ == buffer->data_size) {
+    const int frames_per_buffer =
+        buffer->number_of_samples / audio_params_.channels();
+    const int frames_to_copy = std::min(
+        frames_per_buffer - active_buffer_frame_offset_,
+        audio_bus.frames() - frame_offset);
+    audio_bus.ToInterleavedPartial(
+        frame_offset,
+        frames_to_copy,
+        audio_params_.bits_per_sample() / 8,
+        buffer->data + active_buffer_frame_offset_ * bytes_per_frame);
+    active_buffer_frame_offset_ += frames_to_copy;
+    frame_offset += frames_to_copy;
+
+    DCHECK_LE(active_buffer_frame_offset_, frames_per_buffer);
+    if (active_buffer_frame_offset_ == frames_per_buffer) {
       main_message_loop_proxy_->PostTask(
           FROM_HERE,
           base::Bind(&AudioSink::SendEnqueueBufferMessageOnMainThread,
@@ -272,7 +275,6 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
       active_buffer_index_ = -1;
     }
   }
-  timestamp_ += buffer_duration_;
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
@@ -288,28 +290,21 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
   DCHECK_NE(GetPPSampleRate(params.sample_rate()),
             PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN);
 
-  audio_params_ = params;
-
   // TODO(penghuang): support setting format more than once.
-  buffer_duration_ = params.GetBufferDuration();
-  buffer_data_size_ = params.GetBytesPerBuffer();
-
-  if (original_audio_params_.IsValid()) {
-    DCHECK_EQ(params.sample_rate(), original_audio_params_.sample_rate());
-    DCHECK_EQ(params.bits_per_sample(),
-              original_audio_params_.bits_per_sample());
-    DCHECK_EQ(params.channels(), original_audio_params_.channels());
+  if (audio_params_.IsValid()) {
+    DCHECK_EQ(params.sample_rate(), audio_params_.sample_rate());
+    DCHECK_EQ(params.bits_per_sample(), audio_params_.bits_per_sample());
+    DCHECK_EQ(params.channels(), audio_params_.channels());
   } else {
     audio_thread_checker_.DetachFromThread();
-    original_audio_params_ = params;
+    audio_params_ = params;
 
-    int bytes_per_frame = params.channels() * params.bits_per_sample() / 8;
     main_message_loop_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&AudioSink::SetFormatOnMainThread,
                    weak_factory_.GetWeakPtr(),
                    params.GetBytesPerSecond(),
-                   bytes_per_frame));
+                   params.GetBytesPerFrame()));
   }
 }
 

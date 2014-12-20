@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/webrtc_audio_sink_adapter.h"
+#include "media/base/audio_bus.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
@@ -22,19 +23,29 @@ bool WebRtcAudioSinkAdapter::IsEqual(
   return (other == sink_);
 }
 
-void WebRtcAudioSinkAdapter::OnData(const int16* audio_data,
-                                    int sample_rate,
-                                    int number_of_channels,
-                                    int number_of_frames) {
-  sink_->OnData(audio_data, 16, sample_rate, number_of_channels,
-                number_of_frames);
+void WebRtcAudioSinkAdapter::OnData(const media::AudioBus& audio_bus,
+                                    base::TimeTicks estimated_capture_time) {
+  DCHECK_EQ(audio_bus.frames(), params_.frames_per_buffer());
+  DCHECK_EQ(audio_bus.channels(), params_.channels());
+  // TODO(henrika): Remove this conversion once the interface in libjingle
+  // supports float vectors.
+  audio_bus.ToInterleaved(audio_bus.frames(),
+                          sizeof(interleaved_data_[0]),
+                          interleaved_data_.get());
+  sink_->OnData(interleaved_data_.get(),
+                16,
+                params_.sample_rate(),
+                audio_bus.channels(),
+                audio_bus.frames());
 }
 
 void WebRtcAudioSinkAdapter::OnSetFormat(
     const media::AudioParameters& params) {
-  // No need to forward the OnSetFormat() callback to
-  // webrtc::AudioTrackSinkInterface sink since the sink will handle the
-  // format change in OnData().
+  DCHECK(params.IsValid());
+  params_ = params;
+  const int num_pcm16_data_elements =
+      params_.frames_per_buffer() * params_.channels();
+  interleaved_data_.reset(new int16[num_pcm16_data_elements]);
 }
 
 }  // namespace content

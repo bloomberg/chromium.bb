@@ -75,9 +75,6 @@ class WebAudioCapturerSource
   // Handles mismatch between WebAudio buffer size and WebRTC.
   scoped_ptr<media::AudioFifo> fifo_;
 
-  // Buffer to pass audio data to WebRtc.
-  scoped_ptr<int16[]> audio_data_;
-
   // Synchronizes HandleCapture() with AudioCapturerSource calls.
   base::Lock lock_;
   bool started_;

@@ -350,7 +350,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
       : track_(track),
         output_channels_(output_channels),
         output_sample_rate_(output_sample_rate),
-        current_data_(nullptr),
+        current_input_bus_(nullptr),
         sample_frames_in_(0),
         sample_frames_out_(0) {}
 
@@ -374,18 +374,12 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 
  protected:
   // Called on real-time audio thread.
-  // TODO(miu): This interface is horrible: The first arg should be an AudioBus,
-  // while the remaining three are redundant as they are provided in the call to
-  // OnSetFormat().  http://crbug.com/437064
-  void OnData(const int16* audio_data,
-              int sample_rate,
-              int number_of_channels,
-              int number_of_sample_frames) override {
-    DCHECK(audio_data);
+  void OnData(const media::AudioBus& input_bus,
+              base::TimeTicks estimated_capture_time) override {
     DCHECK(input_params_.IsValid());
-    DCHECK_EQ(sample_rate, input_params_.sample_rate());
-    DCHECK_EQ(number_of_channels, input_params_.channels());
-    DCHECK_EQ(number_of_sample_frames, input_params_.frames_per_buffer());
+    DCHECK_EQ(input_bus.channels(), input_params_.channels());
+    DCHECK_EQ(input_bus.frames(), input_params_.frames_per_buffer());
+    DCHECK(!estimated_capture_time.is_null());
     DCHECK(converter_.get());
 
     // Determine the duration of the audio signal enqueued within |converter_|.
@@ -396,11 +390,8 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
              output_sample_rate_);
     DVLOG(2) << "Audio reference time adjustment: -("
              << signal_duration_already_buffered.InMicroseconds() << " us)";
-    // TODO(miu): Plumbing is needed to determine the actual reference timestamp
-    // of the audio (instead of just using TimeTicks::Now()) for proper
-    // audio/video sync.  http://crbug.com/335335
-    const base::TimeTicks reference_time =
-        base::TimeTicks::Now() - signal_duration_already_buffered;
+    const base::TimeTicks capture_time_of_first_converted_sample =
+        estimated_capture_time - signal_duration_already_buffered;
 
     // Convert the entire input signal.  AudioConverter is efficient in that no
     // additional copying or conversion will occur if the input signal is in the
@@ -411,14 +402,15 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     scoped_ptr<media::AudioBus> audio_bus =
         media::AudioBus::Create(output_channels_, converter_->ChunkSize());
     // AudioConverter will call ProvideInput() to fetch from |current_data_|.
-    current_data_ = audio_data;
+    current_input_bus_ = &input_bus;
     converter_->Convert(audio_bus.get());
-    DCHECK(!current_data_);  // ProvideInput() called exactly once?
+    DCHECK(!current_input_bus_);  // ProvideInput() called exactly once?
 
     sample_frames_in_ += input_params_.frames_per_buffer();
     sample_frames_out_ += audio_bus->frames();
 
-    frame_input_->InsertAudio(audio_bus.Pass(), reference_time);
+    frame_input_->InsertAudio(audio_bus.Pass(),
+                              capture_time_of_first_converted_sample);
   }
 
   // Called on real-time audio thread.
@@ -448,11 +440,9 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   // Called on real-time audio thread.
   double ProvideInput(media::AudioBus* audio_bus,
                       base::TimeDelta buffer_delay) override {
-    DCHECK(current_data_);
-    audio_bus->FromInterleaved(current_data_,
-                               input_params_.frames_per_buffer(),
-                               sizeof(current_data_[0]));
-    current_data_ = nullptr;
+    DCHECK(current_input_bus_);
+    current_input_bus_->CopyTo(audio_bus);
+    current_input_bus_ = nullptr;
     return 1.0;
   }
 
@@ -468,7 +458,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   // These members are accessed on the real-time audio time only.
   media::AudioParameters input_params_;
   scoped_ptr<media::AudioConverter> converter_;
-  const int16* current_data_;
+  const media::AudioBus* current_input_bus_;
   int64 sample_frames_in_;
   int64 sample_frames_out_;
 

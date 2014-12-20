@@ -52,8 +52,6 @@ void WebAudioCapturerSource::setFormat(
 
   wrapper_bus_ = AudioBus::CreateWrapper(params_.channels());
   capture_bus_ = AudioBus::Create(params_);
-  audio_data_.reset(
-      new int16[params_.frames_per_buffer() * params_.channels()]);
   fifo_.reset(new AudioFifo(
       params_.channels(),
       kMaxNumberOfBuffersInFifo * params_.frames_per_buffer()));
@@ -101,15 +99,20 @@ void WebAudioCapturerSource::consumeAudio(
     return;
   }
 
+  // Compute the estimated capture time of the first sample frame of audio that
+  // will be consumed from the FIFO in the loop below.
+  base::TimeTicks estimated_capture_time = base::TimeTicks::Now() -
+      fifo_->frames() * base::TimeDelta::FromSeconds(1) / params_.sample_rate();
+
   fifo_->Push(wrapper_bus_.get());
-  int capture_frames = params_.frames_per_buffer();
-  while (fifo_->frames() >= capture_frames) {
-    fifo_->Consume(capture_bus_.get(), 0, capture_frames);
-    // TODO(xians): Avoid this interleave/deinterleave operation.
-    capture_bus_->ToInterleaved(capture_bus_->frames(),
-                                params_.bits_per_sample() / 8,
-                                audio_data_.get());
-    track_->Capture(audio_data_.get(), false);
+  while (fifo_->frames() >= capture_bus_->frames()) {
+    fifo_->Consume(capture_bus_.get(), 0, capture_bus_->frames());
+    track_->Capture(*capture_bus_, estimated_capture_time, false);
+
+    // Advance the estimated capture time for the next FIFO consume operation.
+    estimated_capture_time +=
+        capture_bus_->frames() * base::TimeDelta::FromSeconds(1) /
+            params_.sample_rate();
   }
 }
 

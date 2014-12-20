@@ -126,13 +126,11 @@ class MockMediaStreamAudioSink : public MediaStreamAudioSink {
  public:
   MockMediaStreamAudioSink() {}
   ~MockMediaStreamAudioSink() {}
-  void OnData(const int16* audio_data,
-             int sample_rate,
-             int number_of_channels,
-             int number_of_frames) override {
-    EXPECT_EQ(params_.sample_rate(), sample_rate);
-    EXPECT_EQ(params_.channels(), number_of_channels);
-    EXPECT_EQ(params_.frames_per_buffer(), number_of_frames);
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override {
+    EXPECT_EQ(params_.channels(), audio_bus.channels());
+    EXPECT_EQ(params_.frames_per_buffer(), audio_bus.frames());
+    EXPECT_FALSE(estimated_capture_time.is_null());
     CaptureData();
   }
   MOCK_METHOD0(CaptureData, void());

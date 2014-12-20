@@ -21,7 +21,7 @@
 
 namespace media {
 class AudioBus;
-class AudioBlockFifo;
+class AudioFifo;
 class AudioOutputDevice;
 class AudioParameters;
 }
@@ -77,10 +77,8 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // MediaStreamAudioSink implementation.
 
   // Called on the AudioInputDevice worker thread.
-  void OnData(const int16* audio_data,
-              int sample_rate,
-              int number_of_channels,
-              int number_of_frames) override;
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override;
 
   // Called on the AudioInputDevice worker thread.
   void OnSetFormat(const media::AudioParameters& params) override;
@@ -123,7 +121,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   scoped_refptr<media::AudioOutputDevice> sink_;
 
   // Contains copies of captured audio frames.
-  scoped_ptr<media::AudioBlockFifo> loopback_fifo_;
+  scoped_ptr<media::AudioFifo> loopback_fifo_;
 
   // Stores last time a render callback was received. The time difference
   // between a new time stamp and this value can be used to derive the

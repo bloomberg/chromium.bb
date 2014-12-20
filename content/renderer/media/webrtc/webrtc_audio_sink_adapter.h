@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
+#include "media/audio/audio_parameters.h"
 
 namespace webrtc {
 class AudioTrackSinkInterface;
@@ -29,13 +30,14 @@ class WebRtcAudioSinkAdapter : public MediaStreamAudioSink {
 
  private:
   // MediaStreamAudioSink implementation.
-  void OnData(const int16* audio_data,
-              int sample_rate,
-              int number_of_channels,
-              int number_of_frames) override;
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;
 
   webrtc::AudioTrackSinkInterface* const sink_;
+
+  media::AudioParameters params_;
+  scoped_ptr<int16[]> interleaved_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioSinkAdapter);
 };

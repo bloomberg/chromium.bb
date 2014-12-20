@@ -9,8 +9,13 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "media/audio/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+
+namespace media {
+class AudioBus;
+}
 
 namespace content {
 
@@ -20,11 +25,10 @@ class MediaStreamAudioSink;
 class MediaStreamAudioTrackSink
     : public base::RefCountedThreadSafe<MediaStreamAudioTrackSink> {
  public:
-  virtual void OnData(const int16* audio_data,
-                      int sample_rate,
-                      int number_of_channels,
-                      int number_of_frames) = 0;
-
+  // Note: OnData() and OnSetFormat() have the same meaning and semantics as in
+  // content::MediaStreamAudioSink.  See comments there for usage info.
+  virtual void OnData(const media::AudioBus& audio_bus,
+                      base::TimeTicks estimated_capture_time) = 0;
   virtual void OnSetFormat(const media::AudioParameters& params) = 0;
 
   virtual void OnReadyStateChanged(

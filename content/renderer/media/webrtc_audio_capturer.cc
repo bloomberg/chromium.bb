@@ -47,10 +47,14 @@ class WebRtcAudioCapturer::TrackOwner
   explicit TrackOwner(WebRtcLocalAudioTrack* track)
       : delegate_(track) {}
 
-  void Capture(const int16* audio_data, bool force_report_nonzero_energy) {
+  void Capture(const media::AudioBus& audio_bus,
+               base::TimeTicks estimated_capture_time,
+               bool force_report_nonzero_energy) {
     base::AutoLock lock(lock_);
     if (delegate_) {
-      delegate_->Capture(audio_data, force_report_nonzero_energy);
+      delegate_->Capture(audio_bus,
+                         estimated_capture_time,
+                         force_report_nonzero_energy);
     }
   }
 
@@ -448,10 +452,14 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
   DCHECK_LE(volume, 1.6);
 #endif
 
+  // TODO(miu): Plumbing is needed to determine the actual capture timestamp
+  // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
+  // audio/video sync.  http://crbug.com/335335
+  const base::TimeTicks reference_clock_snapshot = base::TimeTicks::Now();
+
   TrackList::ItemList tracks;
   TrackList::ItemList tracks_to_notify_format;
   int current_volume = 0;
-  base::TimeDelta audio_delay;
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
@@ -462,7 +470,6 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
     // 255 since AGC does not allow values out of range.
     volume_ = static_cast<int>((volume * MaxVolume()) + 0.5);
     current_volume = volume_ > MaxVolume() ? MaxVolume() : volume_;
-    audio_delay = base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
     tracks = tracks_.Items();
     tracks_.RetrieveAndClearTags(&tracks_to_notify_format);
   }
@@ -475,11 +482,11 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
 
   // Notify the tracks on when the format changes. This will do nothing if
   // |tracks_to_notify_format| is empty.
-  media::AudioParameters output_params = audio_processor_->OutputFormat();
-  for (TrackList::ItemList::const_iterator it = tracks_to_notify_format.begin();
-       it != tracks_to_notify_format.end(); ++it) {
-    (*it)->OnSetFormat(output_params);
-    (*it)->SetAudioProcessor(audio_processor_);
+  const media::AudioParameters& output_params =
+      audio_processor_->OutputFormat();
+  for (const auto& track : tracks_to_notify_format) {
+    track->OnSetFormat(output_params);
+    track->SetAudioProcessor(audio_processor_);
   }
 
   // Figure out if the pre-processed data has any energy or not, the
@@ -489,18 +496,25 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
   const bool force_report_nonzero_energy = HasDataEnergy(*audio_source);
 
   // Push the data to the processor for processing.
-  audio_processor_->PushCaptureData(audio_source);
+  audio_processor_->PushCaptureData(
+      *audio_source,
+      base::TimeDelta::FromMilliseconds(audio_delay_milliseconds));
 
   // Process and consume the data in the processor until there is not enough
   // data in the processor.
-  int16* output = NULL;
+  media::AudioBus* processed_data = nullptr;
+  base::TimeDelta processed_data_audio_delay;
   int new_volume = 0;
   while (audio_processor_->ProcessAndConsumeData(
-      audio_delay, current_volume, key_pressed, &new_volume, &output)) {
-    // Feed the post-processed data to the tracks.
-    for (TrackList::ItemList::const_iterator it = tracks.begin();
-         it != tracks.end(); ++it) {
-      (*it)->Capture(output, force_report_nonzero_energy);
+             current_volume, key_pressed,
+             &processed_data, &processed_data_audio_delay, &new_volume)) {
+    DCHECK(processed_data);
+    const base::TimeTicks processed_data_capture_time =
+        reference_clock_snapshot - processed_data_audio_delay;
+    for (const auto& track : tracks) {
+      track->Capture(*processed_data,
+                     processed_data_capture_time,
+                     force_report_nonzero_energy);
     }
 
     if (new_volume) {

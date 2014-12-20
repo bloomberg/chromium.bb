@@ -92,9 +92,14 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       data_bus_playout_to_use = data_bus_playout.get();
     }
 
+    const base::TimeDelta input_capture_delay =
+        base::TimeDelta::FromMilliseconds(20);
+    const base::TimeDelta output_buffer_duration =
+        expected_output_buffer_size * base::TimeDelta::FromSeconds(1) /
+            expected_output_sample_rate;
     for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
       data_bus->FromInterleaved(data_ptr, data_bus->frames(), 2);
-      audio_processor->PushCaptureData(data_bus.get());
+      audio_processor->PushCaptureData(*data_bus, input_capture_delay);
 
       // |audio_processor| does nothing when the audio processing is off in
       // the processor.
@@ -117,12 +122,15 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
                                        params.sample_rate(), 10);
       }
 
-      int16* output = NULL;
+      media::AudioBus* processed_data = nullptr;
+      base::TimeDelta capture_delay;
       int new_volume = 0;
-      while(audio_processor->ProcessAndConsumeData(
-          base::TimeDelta::FromMilliseconds(10), 255, false, &new_volume,
-          &output)) {
-        EXPECT_TRUE(output != NULL);
+      while (audio_processor->ProcessAndConsumeData(
+                 255, false, &processed_data, &capture_delay, &new_volume)) {
+        EXPECT_TRUE(processed_data);
+        EXPECT_NEAR(input_capture_delay.InMillisecondsF(),
+                    capture_delay.InMillisecondsF(),
+                    output_buffer_duration.InMillisecondsF());
         EXPECT_EQ(audio_processor->OutputFormat().sample_rate(),
                   expected_output_sample_rate);
         EXPECT_EQ(audio_processor->OutputFormat().channels(),
@@ -439,24 +447,23 @@ TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
   float* left_channel_ptr = left_channel.get();
   left_channel_ptr[0] = 1.0f;
 
-  // A audio bus used for verifying the output data values.
-  scoped_ptr<media::AudioBus> output_bus = media::AudioBus::Create(
-      audio_processor->OutputFormat());
-
   // Run the test consecutively to make sure the stereo channels are not
   // flipped back and forth.
   static const int kNumberOfPacketsForTest = 100;
+  const base::TimeDelta pushed_capture_delay =
+      base::TimeDelta::FromMilliseconds(42);
   for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
-    audio_processor->PushCaptureData(wrapper.get());
+    audio_processor->PushCaptureData(*wrapper, pushed_capture_delay);
 
-    int16* output = NULL;
+    media::AudioBus* processed_data = nullptr;
+    base::TimeDelta capture_delay;
     int new_volume = 0;
     EXPECT_TRUE(audio_processor->ProcessAndConsumeData(
-        base::TimeDelta::FromMilliseconds(0), 0, false, &new_volume, &output));
-    output_bus->FromInterleaved(output, output_bus->frames(), 2);
-    EXPECT_TRUE(output != NULL);
-    EXPECT_EQ(output_bus->channel(0)[0], 0);
-    EXPECT_NE(output_bus->channel(1)[0], 0);
+        0, false, &processed_data, &capture_delay, &new_volume));
+    EXPECT_TRUE(processed_data);
+    EXPECT_EQ(processed_data->channel(0)[0], 0);
+    EXPECT_NE(processed_data->channel(1)[0], 0);
+    EXPECT_EQ(pushed_capture_delay, capture_delay);
   }
 
   // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives

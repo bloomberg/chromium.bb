@@ -69,26 +69,25 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // this method should be followed by calls to ProcessAndConsumeData() while
   // it returns false, to pull out all available data.
   // Called on the capture audio thread.
-  void PushCaptureData(const media::AudioBus* audio_source);
+  void PushCaptureData(const media::AudioBus& audio_source,
+                       base::TimeDelta capture_delay);
 
-  // Processes a block of 10 ms data from the internal FIFO and outputs it via
-  // |out|. |out| is the address of the pointer that will be pointed to
-  // the post-processed data if the method is returning a true. The lifetime
-  // of the data represeted by |out| is guaranteed until this method is called
-  // again.
+  // Processes a block of 10 ms data from the internal FIFO, returning true if
+  // |processed_data| contains the result. Returns false and does not modify the
+  // outputs if the internal FIFO has insufficient data. The caller does NOT own
+  // the object pointed to by |*processed_data|.
+  // |capture_delay| is an adjustment on the |capture_delay| value provided in
+  // the last call to PushCaptureData().
   // |new_volume| receives the new microphone volume from the AGC.
   // The new microphone volume range is [0, 255], and the value will be 0 if
   // the microphone volume should not be adjusted.
-  // Returns true if the internal FIFO has at least 10 ms data for processing,
-  // otherwise false.
   // Called on the capture audio thread.
-  //
-  // TODO(ajm): Don't we want this to output float?
-  bool ProcessAndConsumeData(base::TimeDelta capture_delay,
-                             int volume,
-                             bool key_pressed,
-                             int* new_volume,
-                             int16** out);
+  bool ProcessAndConsumeData(
+      int volume,
+      bool key_pressed,
+      media::AudioBus** processed_data,
+      base::TimeDelta* capture_delay,
+      int* new_volume);
 
   // Stops the audio processor, no more AEC dump or render data after calling
   // this method.
@@ -159,8 +158,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   scoped_ptr<MediaStreamAudioFifo> capture_fifo_;
   // Receives processing output.
   scoped_ptr<MediaStreamAudioBus> output_bus_;
-  // Receives interleaved int16 data for output.
-  scoped_ptr<int16[]> output_data_;
 
   // FIFO to provide 10 ms render chunks when the AEC is enabled.
   scoped_ptr<MediaStreamAudioFifo> render_fifo_;

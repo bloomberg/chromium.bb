@@ -53,10 +53,8 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   virtual ~WebRtcLocalAudioSourceProvider();
 
   // MediaStreamAudioSink implementation.
-  void OnData(const int16* audio_data,
-              int sample_rate,
-              int number_of_channels,
-              int number_of_frames) override;
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
@@ -87,7 +85,6 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
 
   scoped_ptr<media::AudioConverter> audio_converter_;
   scoped_ptr<media::AudioFifo> fifo_;
-  scoped_ptr<media::AudioBus> input_bus_;
   scoped_ptr<media::AudioBus> output_wrapper_;
   bool is_enabled_;
   media::AudioParameters source_params_;

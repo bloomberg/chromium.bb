@@ -15,8 +15,8 @@
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_output_device.h"
-#include "media/base/audio_block_fifo.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_fifo.h"
 
 namespace content {
 
@@ -43,15 +43,13 @@ int WebRtcLocalAudioRenderer::Render(
 
   // Provide data by reading from the FIFO if the FIFO contains enough
   // to fulfill the request.
-  if (loopback_fifo_->available_blocks()) {
-    const media::AudioBus* audio_data = loopback_fifo_->Consume();
-    DCHECK_EQ(audio_data->frames(), audio_bus->frames());
-    audio_data->CopyTo(audio_bus);
+  if (loopback_fifo_->frames() >= audio_bus->frames()) {
+    loopback_fifo_->Consume(audio_bus, 0, audio_bus->frames());
   } else {
     audio_bus->Zero();
     // This warning is perfectly safe if it happens for the first audio
     // frames. It should not happen in a steady-state mode.
-    DVLOG(2) << "loopback FIFO is empty";
+    DVLOG(2) << "loopback FIFO is not full enough yet";
   }
 
   return audio_bus->frames();
@@ -62,19 +60,25 @@ void WebRtcLocalAudioRenderer::OnRenderError() {
 }
 
 // content::MediaStreamAudioSink implementation
-void WebRtcLocalAudioRenderer::OnData(const int16* audio_data,
-                                      int sample_rate,
-                                      int number_of_channels,
-                                      int number_of_frames) {
+void WebRtcLocalAudioRenderer::OnData(const media::AudioBus& audio_bus,
+                                      base::TimeTicks estimated_capture_time) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK(!estimated_capture_time.is_null());
+
   TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::CaptureData");
+
   base::AutoLock auto_lock(thread_lock_);
   if (!playing_ || !volume_ || !loopback_fifo_)
     return;
 
   // Push captured audio to FIFO so it can be read by a local sink.
-  if (loopback_fifo_->GetUnfilledFrames() >= number_of_frames) {
-    loopback_fifo_->Push(audio_data, number_of_frames, sizeof(audio_data[0]));
+  if ((loopback_fifo_->frames() + audio_bus.frames()) <=
+          loopback_fifo_->max_frames()) {
+    // TODO(miu): Make sure the Render() method accounts for time shifting
+    // appropriately, per the comments for the usage of the
+    // |estimated_capture_time| field found in media_stream_audio_sink.h.
+    // http://crbug.com/437064
+    loopback_fifo_->Push(&audio_bus);
 
     const base::TimeTicks now = base::TimeTicks::Now();
     total_render_time_ += now - last_render_time_;
@@ -300,10 +304,8 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
     // in case since these tests were performed on a 16 core, 64GB Win 7
     // machine. We could also add some sort of error notifier in this area if
     // the FIFO overflows.
-    const int blocks_of_buffers =
-        10 * params.frames_per_buffer() / sink_params_.frames_per_buffer() + 1;
-    media::AudioBlockFifo* new_fifo = new media::AudioBlockFifo(
-        params.channels(), sink_params_.frames_per_buffer(), blocks_of_buffers);
+    media::AudioFifo* const new_fifo = new media::AudioFifo(
+        params.channels(), 10 * params.frames_per_buffer());
 
     base::AutoLock auto_lock(thread_lock_);
     loopback_fifo_.reset(new_fifo);

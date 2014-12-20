@@ -7,9 +7,13 @@
 
 #include "base/threading/thread_checker.h"
 
+namespace media {
+class AudioBus;
+}
+
 namespace content {
 
-// This class is used by the WebRtcLocalAudioTrack to calculate the  level of
+// This class is used by the WebRtcLocalAudioTrack to calculate the level of
 // the audio signal. And the audio level will be eventually used by the volume
 // animation UI.
 // The algorithm used by this class is the same as how it is done in
@@ -19,16 +23,9 @@ class MediaStreamAudioLevelCalculator {
   MediaStreamAudioLevelCalculator();
   ~MediaStreamAudioLevelCalculator();
 
-  // Calculates the signal level of the audio data.
-  // Returns the absolute value of the amplitude of the signal.
-  // |force_report_nonzero_energy| is a flag forcing the calculator to
-  // report nonzero energy even if the energy of the processed audio is zero.
-  // Since |audio_data| is post processed data, and the audio processing might
-  // zero all the audio data, when the caller detects the pre processed data
-  // contain energy, it could pass |force_report_nonzero_energy| as true to
-  // force calculator to report 1 as energy when |audio_data| is all zero.
-  int Calculate(const int16* audio_data, int number_of_channels,
-                int number_of_frames, bool force_report_nonzero_energy);
+  // Calculates the signal level of the audio data, returning the absolute value
+  // of the amplitude of the signal.
+  float Calculate(const media::AudioBus& audio_bus);
 
  private:
   // Used to DCHECK that the constructor and Calculate() are always called on
@@ -38,8 +35,8 @@ class MediaStreamAudioLevelCalculator {
   base::ThreadChecker thread_checker_;
 
   int counter_;
-  int max_amplitude_;
-  int level_;
+  float max_amplitude_;
+  float level_;
 };
 
 }  // namespace content

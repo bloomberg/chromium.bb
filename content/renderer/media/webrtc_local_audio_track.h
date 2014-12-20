@@ -15,6 +15,10 @@
 #include "content/renderer/media/tagged_list.h"
 #include "media/audio/audio_parameters.h"
 
+namespace media {
+class AudioBus;
+}
+
 namespace content {
 
 class MediaStreamAudioLevelCalculator;
@@ -65,7 +69,9 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // Method called by the capturer to deliver the capture data.
   // Called on the capture audio thread.
-  void Capture(const int16* audio_data, bool force_report_nonzero_energy);
+  void Capture(const media::AudioBus& audio_bus,
+               base::TimeTicks estimated_capture_time,
+               bool force_report_nonzero_energy);
 
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..

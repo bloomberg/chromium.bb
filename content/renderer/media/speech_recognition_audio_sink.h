@@ -52,10 +52,8 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
 
-  void OnData(const int16* audio_data,
-              int sample_rate,
-              int number_of_channels,
-              int number_of_frames) override;
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;
 
   // media::AudioConverter::Inputcallback implementation.
@@ -91,9 +89,6 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
 
   // FIFO is used for queuing audio frames before we resample.
   scoped_ptr<media::AudioFifo> fifo_;
-
-  // Audio delivered from source.
-  scoped_ptr<media::AudioBus> input_bus_;
 
   // Audio bus shared with the browser process via |shared_memory_|.
   scoped_ptr<media::AudioBus> output_bus_;

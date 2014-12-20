@@ -75,8 +75,6 @@ void WebRtcLocalAudioSourceProvider::OnSetFormat(
   fifo_.reset(new media::AudioFifo(
       params.channels(),
       kMaxNumberOfBuffers * params.frames_per_buffer()));
-  input_bus_ = media::AudioBus::Create(params.channels(),
-                                       params.frames_per_buffer());
 }
 
 void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
@@ -86,25 +84,21 @@ void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
 }
 
 void WebRtcLocalAudioSourceProvider::OnData(
-    const int16* audio_data,
-    int sample_rate,
-    int number_of_channels,
-    int number_of_frames) {
+    const media::AudioBus& audio_bus,
+    base::TimeTicks estimated_capture_time) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(audio_bus.channels(), source_params_.channels());
+  DCHECK_EQ(audio_bus.frames(), source_params_.frames_per_buffer());
+  DCHECK(!estimated_capture_time.is_null());
+
   base::AutoLock auto_lock(lock_);
   if (!is_enabled_)
     return;
 
   DCHECK(fifo_.get());
 
-  // TODO(xians): A better way to handle the interleaved and deinterleaved
-  // format switching, see issue/317710.
-  DCHECK(input_bus_->frames() == number_of_frames);
-  DCHECK(input_bus_->channels() == number_of_channels);
-  input_bus_->FromInterleaved(audio_data, number_of_frames, 2);
-
-  if (fifo_->frames() + number_of_frames <= fifo_->max_frames()) {
-    fifo_->Push(input_bus_.get());
+  if (fifo_->frames() + audio_bus.frames() <= fifo_->max_frames()) {
+    fifo_->Push(&audio_bus);
   } else {
     // This can happen if the data in FIFO is too slowly consumed or
     // WebAudio stops consuming data.

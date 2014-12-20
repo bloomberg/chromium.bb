@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_sink.h"
 
@@ -16,6 +17,7 @@ class WebMediaStreamTrack;
 }
 
 namespace media {
+class AudioBus;
 class AudioParameters;
 }
 
@@ -35,19 +37,22 @@ class CONTENT_EXPORT MediaStreamAudioSink : public MediaStreamSink {
   static void RemoveFromAudioTrack(MediaStreamAudioSink* sink,
                                    const blink::WebMediaStreamTrack& track);
 
-  // Callback on delivering the interleaved audio data.
-  // |audio_data| is the pointer to the audio data.
-  // |sample_rate| is the sample frequency of |audio_data|.
-  // |number_of_channels| is the number of audio channels of |audio_data|.
-  // |number_of_frames| is the number of audio frames in the |audio_data|.
-  // Called on real-time audio thread.
-  virtual void OnData(const int16* audio_data,
-                      int sample_rate,
-                      int number_of_channels,
-                      int number_of_frames) = 0;
+  // Callback called to deliver audio data. The data in |audio_bus| respects the
+  // AudioParameters passed in the last call to OnSetFormat().  Called on
+  // real-time audio thread.
+  //
+  // |estimated_capture_time| is the local time at which the first sample frame
+  // in |audio_bus| either: 1) was generated, if it was done so locally; or 2)
+  // should be targeted for play-out, if it was generated from a remote
+  // source. Either way, an implementation should not play-out the audio before
+  // this point-in-time. This value is NOT a high-resolution timestamp, and so
+  // it should not be used as a presentation time; but, instead, it should be
+  // used for buffering playback and for A/V synchronization purposes.
+  virtual void OnData(const media::AudioBus& audio_bus,
+                      base::TimeTicks estimated_capture_time) = 0;
 
-  // Callback called when the format of the audio stream has changed.
-  // This is called on the same thread as OnData().
+  // Callback called when the format of the audio stream has changed.  This is
+  // always called at least once before OnData(), and on the same thread.
   virtual void OnSetFormat(const media::AudioParameters& params) = 0;
 
  protected:

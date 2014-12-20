@@ -13,17 +13,11 @@ MediaStreamAudioSinkOwner::MediaStreamAudioSinkOwner(MediaStreamAudioSink* sink)
     : delegate_(sink) {
 }
 
-void MediaStreamAudioSinkOwner::OnData(const int16* audio_data,
-                                       int sample_rate,
-                                       int number_of_channels,
-                                       int number_of_frames) {
+void MediaStreamAudioSinkOwner::OnData(const media::AudioBus& audio_bus,
+                                       base::TimeTicks estimated_capture_time) {
   base::AutoLock lock(lock_);
-  if (delegate_) {
-    delegate_->OnData(audio_data,
-                      sample_rate,
-                      number_of_channels,
-                      number_of_frames);
-  }
+  if (delegate_)
+    delegate_->OnData(audio_bus, estimated_capture_time);
 }
 
 void MediaStreamAudioSinkOwner::OnSetFormat(

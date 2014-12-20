@@ -26,9 +26,6 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO, 2, 44100, 16,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
-    const int length =
-        source_params_.frames_per_buffer() * source_params_.channels();
-    source_data_.reset(new int16[length]);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     MockMediaConstraintFactory constraint_factory;
       scoped_refptr<WebRtcAudioCapturer> capturer(
@@ -59,7 +56,6 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
   }
 
   media::AudioParameters source_params_;
-  scoped_ptr<int16[]> source_data_;
   media::AudioParameters sink_params_;
   scoped_ptr<media::AudioBus> sink_bus_;
   blink::WebMediaStreamTrack blink_track_;
@@ -79,18 +75,18 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   source_provider_->provideInput(audio_data, sink_params_.frames_per_buffer());
   EXPECT_TRUE(sink_bus_->channel(0)[0] == 0);
 
-  // Set the value of source data to be 1.
-  const int length =
-      source_params_.frames_per_buffer() * source_params_.channels();
-  std::fill(source_data_.get(), source_data_.get() + length, 1);
+  // Create a source AudioBus with channel data filled with non-zero values.
+  const scoped_ptr<media::AudioBus> source_bus =
+      media::AudioBus::Create(source_params_);
+  std::fill(source_bus->channel(0),
+            source_bus->channel(0) + source_bus->frames(),
+            0.5f);
 
   // Deliver data to |source_provider_|.
-  source_provider_->OnData(source_data_.get(),
-                           source_params_.sample_rate(),
-                           source_params_.channels(),
-                           source_params_.frames_per_buffer());
+  base::TimeTicks estimated_capture_time = base::TimeTicks::Now();
+  source_provider_->OnData(*source_bus, estimated_capture_time);
 
-  // Consume the first packet in the resampler, which contains only zero.
+  // Consume the first packet in the resampler, which contains only zeros.
   // And the consumption of the data will trigger pulling the real packet from
   // the source provider FIFO into the resampler.
   // Note that we need to count in the provideInput() call a few lines above.
@@ -104,20 +100,21 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
     EXPECT_DOUBLE_EQ(0.0, sink_bus_->channel(1)[0]);
   }
 
-  // Prepare the second packet for featching.
-  source_provider_->OnData(source_data_.get(),
-                           source_params_.sample_rate(),
-                           source_params_.channels(),
-                           source_params_.frames_per_buffer());
+  // Make a second data delivery.
+  estimated_capture_time +=
+      source_bus->frames() * base::TimeDelta::FromSeconds(1) /
+      source_params_.sample_rate();
+  source_provider_->OnData(*source_bus, estimated_capture_time);
 
-  // Verify the packets.
+  // Verify that non-zero data samples are present in the results of the
+  // following calls to provideInput().
   for (int i = 0; i < source_params_.frames_per_buffer();
        i += sink_params_.frames_per_buffer()) {
     sink_bus_->Zero();
     source_provider_->provideInput(audio_data,
                                    sink_params_.frames_per_buffer());
-    EXPECT_GT(sink_bus_->channel(0)[0], 0);
-    EXPECT_GT(sink_bus_->channel(1)[0], 0);
+    EXPECT_NEAR(0.5f, sink_bus_->channel(0)[0], 0.001f);
+    EXPECT_NEAR(0.5f, sink_bus_->channel(1)[0], 0.001f);
     EXPECT_DOUBLE_EQ(sink_bus_->channel(0)[0], sink_bus_->channel(1)[0]);
   }
 }

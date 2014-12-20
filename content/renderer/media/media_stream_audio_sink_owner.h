@@ -20,10 +20,8 @@ class MediaStreamAudioSinkOwner : public MediaStreamAudioTrackSink {
   explicit MediaStreamAudioSinkOwner(MediaStreamAudioSink* sink);
 
   // MediaStreamAudioTrackSink implementation.
-  void OnData(const int16* audio_data,
-              int sample_rate,
-              int number_of_channels,
-              int number_of_frames) override;
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc_local_audio_track.h"
 
+#include <limits>
+
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
@@ -38,15 +40,26 @@ WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
   Stop();
 }
 
-void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
+void WebRtcLocalAudioTrack::Capture(const media::AudioBus& audio_bus,
+                                    base::TimeTicks estimated_capture_time,
                                     bool force_report_nonzero_energy) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK(!estimated_capture_time.is_null());
 
-  // Calculate the signal level regardless if the track is disabled or enabled.
-  int signal_level = level_calculator_->Calculate(
-      audio_data, audio_parameters_.channels(),
-      audio_parameters_.frames_per_buffer(), force_report_nonzero_energy);
-  adapter_->SetSignalLevel(signal_level);
+  // Calculate the signal level regardless of whether the track is disabled or
+  // enabled.  If |force_report_nonzero_energy| is true, |audio_bus| contains
+  // post-processed data that may be all zeros even though the signal contained
+  // energy before the processing.  In this case, report nonzero energy even if
+  // the energy of the data in |audio_bus| is zero.
+  const float minimum_signal_level = force_report_nonzero_energy ?
+      1.0f / std::numeric_limits<int16>::max() : 0.0f;
+  const float signal_level = std::max(
+      minimum_signal_level,
+      std::min(1.0f, level_calculator_->Calculate(audio_bus)));
+  const int signal_level_as_pcm16 =
+      static_cast<int>(signal_level * std::numeric_limits<int16>::max() +
+                       0.5f /* rounding to nearest int */);
+  adapter_->SetSignalLevel(signal_level_as_pcm16);
 
   scoped_refptr<WebRtcAudioCapturer> capturer;
   SinkList::ItemList sinks;
@@ -60,10 +73,8 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
 
   // Notify the tracks on when the format changes. This will do nothing if
   // |sinks_to_notify_format| is empty.
-  for (SinkList::ItemList::const_iterator it = sinks_to_notify_format.begin();
-       it != sinks_to_notify_format.end(); ++it) {
-    (*it)->OnSetFormat(audio_parameters_);
-  }
+  for (const auto& sink : sinks_to_notify_format)
+    sink->OnSetFormat(audio_parameters_);
 
   // Feed the data to the sinks.
   // TODO(jiayl): we should not pass the real audio data down if the track is
@@ -71,13 +82,8 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
   // detection and should be changed when audio processing is moved from
   // WebRTC to the track.
   std::vector<int> voe_channels = adapter_->VoeChannels();
-  for (SinkList::ItemList::const_iterator it = sinks.begin();
-       it != sinks.end();
-       ++it) {
-    (*it)->OnData(audio_data, audio_parameters_.sample_rate(),
-                  audio_parameters_.channels(),
-                  audio_parameters_.frames_per_buffer());
-  }
+  for (const auto& sink : sinks)
+    sink->OnData(audio_bus, estimated_capture_time);
 }
 
 void WebRtcLocalAudioTrack::OnSetFormat(
