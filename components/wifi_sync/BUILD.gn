@@ -1,0 +1,36 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("wifi_sync") {
+  sources = [
+    "network_state_helper_chromeos.cc",
+    "network_state_helper_chromeos.h",
+    "wifi_credential.cc",
+    "wifi_credential.h",
+    "wifi_credential_syncable_service.cc",
+    "wifi_credential_syncable_service.h",
+    "wifi_credential_syncable_service_factory.cc",
+    "wifi_credential_syncable_service_factory.h",
+    "wifi_security_class.h",
+    "wifi_security_class_chromeos.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//sync",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  deps = [
+    ":wifi_sync",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "wifi_security_class_chromeos_unittest.cc",
+  ]
+}

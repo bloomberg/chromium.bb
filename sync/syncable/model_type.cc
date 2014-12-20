@@ -937,6 +937,7 @@ const char kSupervisedUserSharedSettingNotificationType[] =
 const char kSupervisedUserWhitelistNotificationType[] =
     "MANAGED_USER_WHITELIST";
 const char kArticleNotificationType[] = "ARTICLE";
+const char kWifiCredentialNotificationType[] = "WIFI_CREDENTIAL";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -1031,6 +1032,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case ARTICLES:
       *notification_type = kArticleNotificationType;
+      return true;
+    case WIFI_CREDENTIALS:
+      *notification_type = kWifiCredentialNotificationType;
       return true;
     default:
       break;
@@ -1131,6 +1135,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kArticleNotificationType) {
     *model_type = ARTICLES;
+    return true;
+  } else if (notification_type == kWifiCredentialNotificationType) {
+    *model_type = WIFI_CREDENTIALS;
     return true;
   }
   *model_type = UNSPECIFIED;

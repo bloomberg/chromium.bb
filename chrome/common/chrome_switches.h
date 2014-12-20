@@ -181,6 +181,7 @@ extern const char kEnableTranslateNewUX[];
 extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWebAppFrame[];
 extern const char kEnableWebsiteSettingsManager[];
+extern const char kEnableWifiCredentialSync[];
 extern const char kEnhancedBookmarksExperiment[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionContentVerificationBootstrap[];

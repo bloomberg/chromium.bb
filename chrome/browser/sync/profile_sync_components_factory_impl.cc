@@ -95,6 +95,11 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "components/wifi_sync/wifi_credential_syncable_service.h"
+#include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
+#endif
+
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::BookmarkChangeProcessor;
@@ -392,6 +397,18 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
           this,
           profile_));
 #endif
+
+#if defined(OS_CHROMEOS)
+  if (command_line_->HasSwitch(switches::kEnableWifiCredentialSync) &&
+      !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+            base::Bind(&ChromeReportUnrecoverableError),
+            syncer::WIFI_CREDENTIALS,
+            this));
+  }
+#endif
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
@@ -528,6 +545,11 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return base::WeakPtr<syncer::SyncableService>();
 #endif
     }
+#if defined(OS_CHROMEOS)
+    case syncer::WIFI_CREDENTIALS:
+      return wifi_sync::WifiCredentialSyncableServiceFactory::
+          GetForBrowserContext(profile_)->AsWeakPtr();
+#endif
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:

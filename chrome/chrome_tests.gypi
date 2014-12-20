@@ -1252,6 +1252,7 @@
       'browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc',
       'browser/sync/test/integration/single_client_themes_sync_test.cc',
       'browser/sync/test/integration/single_client_typed_urls_sync_test.cc',
+      'browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc',
       'browser/sync/test/integration/sync_auth_test.cc',
       'browser/sync/test/integration/sync_errors_test.cc',
       'browser/sync/test/integration/sync_exponential_backoff_test.cc',
@@ -1268,6 +1269,7 @@
       'browser/sync/test/integration/two_client_sessions_sync_test.cc',
       'browser/sync/test/integration/two_client_themes_sync_test.cc',
       'browser/sync/test/integration/two_client_typed_urls_sync_test.cc',
+      'browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc',
     ],
     'test_support_sync_integration_sources': [
       'browser/sync/test/integration/apps_helper.cc',
@@ -1332,6 +1334,10 @@
       'browser/sync/test/integration/typed_urls_helper.h',
       'browser/sync/test/integration/updated_progress_marker_checker.cc',
       'browser/sync/test/integration/updated_progress_marker_checker.h',
+      'browser/sync/test/integration/wifi_credentials_helper.cc',
+      'browser/sync/test/integration/wifi_credentials_helper.h',
+      'browser/sync/test/integration/wifi_credentials_helper_chromeos.cc',
+      'browser/sync/test/integration/wifi_credentials_helper_chromeos.h',
     ],
     'sync_performance_tests_sources': [
       'app/chrome_command_ids.h',
@@ -2633,6 +2639,15 @@
             'browser/sync/test/integration/dictionary_load_observer.h',
           ],
         }],
+        ['chromeos==0', {
+          # Note: this list is duplicated in the GN build.
+          'sources!': [
+            'browser/sync/test/integration/wifi_credentials_helper.cc',
+            'browser/sync/test/integration/wifi_credentials_helper.h',
+            # 'browser/sync/test/integration/wifi_credentials_helper_chromeos.cc',
+            # 'browser/sync/test/integration/wifi_credentials_helper_chromeos.h',
+          ],
+        }],
         ['enable_app_list==0', {
           # Note: this list is duplicated in the GN build.
           'sources!': [
@@ -2738,6 +2753,13 @@
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',
+          ],
+        }],
+	['chromeos == 0', {
+	  'sources!': [
+	    # Note: this list is duplicated in the GN build.
+            'browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc',
+            'browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc',
           ],
         }],
         ['enable_basic_printing==1 or enable_print_preview==1', {

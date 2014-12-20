@@ -110,13 +110,17 @@ group("all_components") {
     "//components/webdata/common",
     "//components/web_resource",
     "//components/wifi",
+    "//components/wifi_sync",
   ]
 
   if (!is_win && !is_mac) {
     deps -= [ "//components/wifi" ]
   }
   if (!is_chromeos) {
-    deps -= [ "//components/pairing" ]
+    deps -= [
+      "//components/pairing",
+      "//components/wifi_sync",
+    ]
   }
   if (is_ios) {
     deps -= [

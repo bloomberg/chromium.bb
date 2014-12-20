@@ -102,6 +102,7 @@
       'includes': [
         'pairing.gypi',
         'timers.gypi',
+        'wifi_sync.gypi',
       ],
     }],
     ['OS == "win" or OS == "mac"', {

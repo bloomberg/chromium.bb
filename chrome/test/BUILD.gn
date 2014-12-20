@@ -254,6 +254,12 @@ if (!is_android) {
         "../browser/sync/test/integration/sync_app_list_helper.h",
       ]
     }
+    if (!is_chromeos) {
+      sources -= [
+        "../browser/sync/test/integration/wifi_credentials_helper.cc",
+        "../browser/sync/test/integration/wifi_credentials_helper.h",
+      ]
+    }
   }
 
   test("sync_integration_tests") {
@@ -312,6 +318,12 @@ if (!is_android) {
       ]
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]
+    }
+    if (!is_chromeos) {
+      sources -= [
+        "../browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc",
+        "../browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc",
+      ]
     }
 
     if (toolkit_views) {
