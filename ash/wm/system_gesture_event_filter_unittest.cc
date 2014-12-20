@@ -288,41 +288,6 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
 }
 
-TEST_F(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  ui::GestureConfiguration::GetInstance()
-      ->set_max_separation_for_gesture_touches_in_pixels(0);
-  views::Widget* first = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, gfx::Rect(10, 0, 50, 100));
-  first->Show();
-  views::Widget* second = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, gfx::Rect(100, 0, 100, 100));
-  second->Show();
-
-  // Start a two-finger drag on |first|, and then try to use another two-finger
-  // drag to move |second|. The attempt to move |second| should fail.
-  const gfx::Rect& first_bounds = first->GetWindowBoundsInScreen();
-  const gfx::Rect& second_bounds = second->GetWindowBoundsInScreen();
-  const int kSteps = 15;
-  const int kTouchPoints = 4;
-  gfx::Point points[kTouchPoints] = {
-    first_bounds.origin() + gfx::Vector2d(5, 5),
-    first_bounds.origin() + gfx::Vector2d(30, 10),
-    second_bounds.origin() + gfx::Vector2d(5, 5),
-    second_bounds.origin() + gfx::Vector2d(40, 20)
-  };
-
-  ui::test::EventGenerator generator(root_window);
-  // Do not drag too fast to avoid fling.
-  generator.GestureMultiFingerScroll(kTouchPoints, points,
-      50, kSteps, 0, 150);
-
-  EXPECT_NE(first_bounds.ToString(),
-            first->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ(second_bounds.ToString(),
-            second->GetWindowBoundsInScreen().ToString());
-}
-
 TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
   gfx::Rect bounds(250, 150, 100, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
