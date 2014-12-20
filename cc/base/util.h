@@ -12,13 +12,15 @@
 namespace cc {
 
 template <typename T> T RoundUp(T n, T mul) {
-  COMPILE_ASSERT(std::numeric_limits<T>::is_integer, type_must_be_integral);
+  static_assert(std::numeric_limits<T>::is_integer,
+                "T must be an integer type");
   return (n > 0) ? ((n + mul - 1) / mul) * mul
                  : (n / mul) * mul;
 }
 
 template <typename T> T RoundDown(T n, T mul) {
-  COMPILE_ASSERT(std::numeric_limits<T>::is_integer, type_must_be_integral);
+  static_assert(std::numeric_limits<T>::is_integer,
+                "T must be an integer type");
   return (n > 0) ? (n / mul) * mul
                  : (n == 0) ? 0
                  : ((n - mul + 1) / mul) * mul;

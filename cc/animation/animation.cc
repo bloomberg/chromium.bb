@@ -24,9 +24,10 @@ static const char* const s_runStateNames[] = {
   "Aborted"
 };
 
-COMPILE_ASSERT(static_cast<int>(cc::Animation::RunStateEnumSize) ==
-               arraysize(s_runStateNames),
-               RunState_names_match_enum);
+static_assert(static_cast<int>(cc::Animation::RunStateEnumSize) ==
+              arraysize(s_runStateNames),
+              "RunStateEnumSize should equal the number of elements in "
+              "s_runStateNames");
 
 // This should match the TargetProperty enum.
 static const char* const s_targetPropertyNames[] = {
@@ -37,9 +38,10 @@ static const char* const s_targetPropertyNames[] = {
   "BackgroundColor"
 };
 
-COMPILE_ASSERT(static_cast<int>(cc::Animation::TargetPropertyEnumSize) ==
-               arraysize(s_targetPropertyNames),
-               TargetProperty_names_match_enum);
+static_assert(static_cast<int>(cc::Animation::TargetPropertyEnumSize) ==
+              arraysize(s_targetPropertyNames),
+              "TargetPropertyEnumSize should equal the number of elements in "
+              "s_targetPropertyNames");
 
 }  // namespace
 

@@ -26,9 +26,10 @@ GeometryBinding::GeometryBinding(gpu::gles2::GLES2Interface* gl,
     uint16 data[6];
   };
 
-  COMPILE_ASSERT(sizeof(Quad) == 24 * sizeof(float), struct_is_densely_packed);
-  COMPILE_ASSERT(sizeof(QuadIndex) == 6 * sizeof(uint16_t),
-                 struct_is_densely_packed);
+  static_assert(sizeof(Quad) == 24 * sizeof(float),
+                "struct Quad should be densely packed");
+  static_assert(sizeof(QuadIndex) == 6 * sizeof(uint16_t),
+                "struct QuadIndex should be densely packed");
 
   Quad quad_list[8];
   QuadIndex quad_index_list[8];

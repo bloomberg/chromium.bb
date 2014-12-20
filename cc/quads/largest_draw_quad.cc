@@ -33,33 +33,33 @@ size_t LargestDrawQuadSize() {
 
   // Use compile assert to make sure largest is actually larger than all other
   // type of draw quads.
-  COMPILE_ASSERT(sizeof(CheckerboardDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. CheckerboardDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(DebugBorderDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. DebugBorderDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(IOSurfaceDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. IOSurfaceDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(PictureDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. PictureDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(TextureDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. TextureDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(SolidColorDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. SolidColorDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(SurfaceDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. SurfaceDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(TileDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. TileDrawQuad is "
-                 "currently largest.");
-  COMPILE_ASSERT(sizeof(YUVVideoDrawQuad) <= kLargestDrawQuadSize,
-                 "Largest Draw Quad size needs update. YUVVideoDrawQuad is "
-                 "currently largest.");
+  static_assert(sizeof(CheckerboardDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. CheckerboardDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(DebugBorderDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. DebugBorderDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(IOSurfaceDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. IOSurfaceDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(PictureDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. PictureDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(TextureDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. TextureDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(SolidColorDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. SolidColorDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(SurfaceDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. SurfaceDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(TileDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. TileDrawQuad is "
+                "currently largest.");
+  static_assert(sizeof(YUVVideoDrawQuad) <= kLargestDrawQuadSize,
+                "Largest Draw Quad size needs update. YUVVideoDrawQuad is "
+                "currently largest.");
 
   return kLargestDrawQuadSize;
 }

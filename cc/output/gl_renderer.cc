@@ -2061,9 +2061,10 @@ void GLRenderer::FlushTextureQuadCache() {
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, locked_quad.texture_id()));
 
-  COMPILE_ASSERT(sizeof(Float4) == 4 * sizeof(float), struct_is_densely_packed);
-  COMPILE_ASSERT(sizeof(Float16) == 16 * sizeof(float),
-                 struct_is_densely_packed);
+  static_assert(sizeof(Float4) == 4 * sizeof(float),
+                "Float4 struct should be densely packed");
+  static_assert(sizeof(Float16) == 16 * sizeof(float),
+                "Float16 struct should be densely packed");
 
   // Upload the tranforms for both points and uvs.
   GLC(gl_,
