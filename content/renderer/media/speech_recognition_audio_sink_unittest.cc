@@ -226,6 +226,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
                        output_frames_per_buffer);
     source_bus_ =
         media::AudioBus::Create(kInputChannels, input_frames_per_buffer);
+    source_bus_->Zero();
     first_frame_capture_time_ = base::TimeTicks::Now();
     sample_frames_captured_ = 0;
 
