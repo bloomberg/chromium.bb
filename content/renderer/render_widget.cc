@@ -1760,8 +1760,11 @@ void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_ == hidden)
     return;
 
-  // The status has changed.  Tell the RenderThread about it.
+  // The status has changed.  Tell the RenderThread about it and ensure
+  // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
+  FlushPendingInputEventAck();
+
   if (is_hidden_)
     RenderThreadImpl::current()->WidgetHidden();
   else
