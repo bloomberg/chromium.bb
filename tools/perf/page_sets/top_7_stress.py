@@ -21,7 +21,7 @@ class Top7StressPage(page_module.Page):
         url=url, page_set=page_set, name=name,
         credentials_path = 'data/credentials.json')
     self.user_agent_type = 'desktop'
-    self.archive_data_file = 'data/top_25.json'
+    self.archive_data_file = 'data/top_7_stress.json'
 
   def RunPageInteractions(self, action_runner):
     raise NotImplementedError()
@@ -309,19 +309,23 @@ class FacebookPage(Top7StressPage):
     action_runner.WaitForElement(text='About')
 
   def RunPageInteractions(self, action_runner):
-    action_runner.ClickElement(text='About')
-    action_runner.WaitForNavigate()
-    action_runner.ClickElement(text='The Audacity of Hope')
-    action_runner.WaitForNavigate()
-    action_runner.ClickElement(text='Back to Barack Obama\'s Timeline')
-    action_runner.WaitForNavigate()
-    action_runner.ClickElement(text='About')
-    action_runner.WaitForNavigate()
-    action_runner.ClickElement(text='Elected to U.S. Senate')
-    action_runner.WaitForNavigate()
-    action_runner.ClickElement(text='Home')
-    action_runner.WaitForNavigate()
+    # Scroll and wait for the next page to be loaded.
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
+    action_runner.WaitForJavaScriptCondition(
+        'document.documentElement.scrollHeight - window.innerHeight - '
+        'window.pageYOffset > 0')
 
+    # Scroll and wait again.
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
+    action_runner.WaitForJavaScriptCondition(
+        'document.documentElement.scrollHeight - window.innerHeight - '
+        'window.pageYOffset > 0')
 
 class Top7StressPageSet(page_set_module.PageSet):
 
@@ -330,7 +334,7 @@ class Top7StressPageSet(page_set_module.PageSet):
   def __init__(self):
     super(Top7StressPageSet, self).__init__(
       user_agent_type='desktop',
-      archive_data_file='data/top_25.json',
+      archive_data_file='data/top_7_stress.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
     self.AddUserStory(GoogleWebSearchPage(self))
