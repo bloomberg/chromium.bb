@@ -102,6 +102,8 @@ void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
 
 String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
 {
+    // FIXME: Remove scope from ServiceWorkerGlobalScope.
+    context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "ServiceWorkerGlobalScope.scope is deprecated. It will be replaced by ServiceWorkerGlobalScope.registration.scope. https://crbug.com/443881"));
     return ServiceWorkerGlobalScopeClient::from(context)->scope().string();
 }
 
