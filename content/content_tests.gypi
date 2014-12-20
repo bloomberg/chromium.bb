@@ -287,6 +287,7 @@
             '../cc/blink/cc_blink.gyp:cc_blink',
             '../cc/cc.gyp:cc',
             '../cc/cc_tests.gyp:cc_test_support',
+            '../gpu/blink/gpu_blink.gyp:gpu_blink',
             '../ipc/mojo/ipc_mojo.gyp:*',
             '../media/blink/media_blink.gyp:media_blink',
             '../media/media.gyp:media',

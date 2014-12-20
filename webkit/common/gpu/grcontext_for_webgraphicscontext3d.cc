@@ -6,10 +6,12 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
-#include "webkit/common/gpu/webgraphicscontext3d_impl.h"
+
+using gpu_blink::WebGraphicsContext3DImpl;
 
 namespace webkit {
 namespace gpu {

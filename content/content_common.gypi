@@ -558,6 +558,7 @@
     }, {  # OS!="ios"
       'dependencies': [
         '../cc/cc.gyp:cc',
+        '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_c_lib',
         '../gpu/gpu.gyp:gles2_implementation',

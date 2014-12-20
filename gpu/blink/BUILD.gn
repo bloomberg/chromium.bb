@@ -2,32 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: webkit/common/gpu/webkit_gpu.gyp:webkit_gpu
-component("gpu") {
-  output_name = "webkit_gpu"
+# GYP version: gpu/blink/gpu_blink.gyp:gpu_blink
+component("blink") {
+  output_name = "gpu_blink"
 
   sources = [
-    "context_provider_in_process.cc",
-    "context_provider_in_process.h",
-    "context_provider_web_context.h",
-    "grcontext_for_webgraphicscontext3d.cc",
-    "grcontext_for_webgraphicscontext3d.h",
-    "webgraphicscontext3d_in_process_command_buffer_impl.cc",
-    "webgraphicscontext3d_in_process_command_buffer_impl.h",
+    "gpu_blink_export.h",
+    "webgraphicscontext3d_impl.cc",
+    "webgraphicscontext3d_impl.h",
   ]
 
-  defines = [ "WEBKIT_GPU_IMPLEMENTATION" ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
+  defines = [ "GPU_BLINK_IMPLEMENTATION" ]
 
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//gpu/blink",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/service",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -41,4 +31,9 @@ component("gpu") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
 }

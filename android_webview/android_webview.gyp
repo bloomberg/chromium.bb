@@ -108,6 +108,7 @@
         '../components/components.gyp:web_contents_delegate_android',
         '../content/content.gyp:content_app_both',
         '../content/content.gyp:content_browser',
+        '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_implementation',
