@@ -37,23 +37,8 @@ NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
 }
 
 NavigationEntryImpl::NavigationEntryImpl()
-    : unique_id_(GetUniqueIDInConstructor()),
-      site_instance_(NULL),
-      bindings_(kInvalidBindings),
-      page_type_(PAGE_TYPE_NORMAL),
-      update_virtual_url_with_url_(false),
-      page_id_(-1),
-      transition_type_(ui::PAGE_TRANSITION_LINK),
-      has_post_data_(false),
-      post_id_(-1),
-      restore_type_(RESTORE_NONE),
-      is_overriding_user_agent_(false),
-      http_status_code_(0),
-      is_renderer_initiated_(false),
-      should_replace_entry_(false),
-      should_clear_history_list_(false),
-      can_load_local_resources_(false),
-      frame_tree_node_id_(-1) {
+    : NavigationEntryImpl(nullptr, -1, GURL(), Referrer(), base::string16(),
+                          ui::PAGE_TRANSITION_LINK, false) {
 }
 
 NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
