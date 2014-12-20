@@ -41,6 +41,21 @@ remoting.DesktopRemoting = function(app) {
 };
 
 /**
+ * Display the user's email address and allow access to the rest of the app,
+ * including parsing URL parameters.
+ *
+ * @param {string} email The user's email address.
+ * @param {string} fullName The user's full name. This is always null since
+ *     CRD doesn't request userinfo.profile permission.
+ * @return {void} Nothing.
+ */
+remoting.onUserInfoAvailable = function(email, fullName) {
+  document.getElementById('current-email').innerText = email;
+  document.getElementById('get-started-it2me').disabled = false;
+  document.getElementById('get-started-me2me').disabled = false;
+};
+
+/**
  * Initialize the application and register all event handlers. After this
  * is called, the app is running and waiting for user events.
  *
@@ -48,8 +63,7 @@ remoting.DesktopRemoting = function(app) {
  */
 remoting.DesktopRemoting.prototype.init = function() {
   remoting.initGlobalObjects();
-  remoting.initIdentity();
-  remoting.initIdentityEmail(remoting.onEmailAvailable);
+  remoting.initIdentity(remoting.onUserInfoAvailable);
 
   remoting.initElementEventHandlers();
   remoting.initGlobalEventHandlers();

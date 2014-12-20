@@ -7,7 +7,14 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-remoting.initIdentity = function() {
+/**
+ * Get the user's email address and full name.
+ *
+ * @param {function(string,string):void} onUserInfoAvailable Callback invoked
+ *     when the user's email address and full name are available.
+ * @return {void} Nothing.
+ */
+remoting.initIdentity = function(onUserInfoAvailable) {
 
   /**
    * Show the authorization consent UI and register a one-shot event handler to
@@ -37,6 +44,15 @@ remoting.initIdentity = function() {
     button.addEventListener('click', consentGranted, false);
   }
 
+  /** @param {remoting.Error} error */
+  function onGetIdentityInfoError(error) {
+    // No need to show the error message for NOT_AUTHENTICATED
+    // because we will show "auth-dialog".
+    if (error != remoting.Error.NOT_AUTHENTICATED) {
+      remoting.showErrorMessage(error);
+    }
+  }
+
   if (base.isAppsV2()) {
     remoting.identity = new remoting.Identity(promptForConsent);
   } else {
@@ -47,35 +63,7 @@ remoting.initIdentity = function() {
     }
     remoting.identity = remoting.oauth2;
   }
-}
 
-/** @param {remoting.Error} error */
-remoting.onGetIdentityInfoError = function(error) {
-  // No need to show the error message for NOT_AUTHENTICATED
-  // because we will show "auth-dialog".
-  if (error != remoting.Error.NOT_AUTHENTICATED) {
-    remoting.showErrorMessage(error);
-  }
-}
-
-/**
- * @param {function(string):void} onEmailAvailable Callback invoked when the
- *     email address is available.
- * @return {void} Nothing.
- */
-remoting.initIdentityEmail = function(onEmailAvailable) {
-  remoting.identity.getEmail(onEmailAvailable,
-                             remoting.onGetIdentityInfoError);
-}
-
-/**
- * Get the user's email address and full name.
- *
- * @param {function(string,string):void} onUserInfoAvailable Callback invoked
- *     when the user's email address and full name are available.
- * @return {void} Nothing.
- */
-remoting.initIdentityUserInfo = function(onUserInfoAvailable) {
   remoting.identity.getUserInfo(onUserInfoAvailable,
-                                remoting.onGetIdentityInfoError);
+                                onGetIdentityInfoError);
 }

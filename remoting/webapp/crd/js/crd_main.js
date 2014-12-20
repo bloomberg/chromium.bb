@@ -8,19 +8,6 @@
 var remoting = remoting || {};
 
 /**
- * Display the user's email address and allow access to the rest of the app,
- * including parsing URL parameters.
- *
- * @param {string} email The user's email address.
- * @return {void} Nothing.
- */
-remoting.onEmailAvailable = function(email, fullName) {
-  document.getElementById('current-email').innerText = email;
-  document.getElementById('get-started-it2me').disabled = false;
-  document.getElementById('get-started-me2me').disabled = false;
-};
-
-/**
  * Initialize the host list.
  */
 remoting.initHostlist_ = function() {
