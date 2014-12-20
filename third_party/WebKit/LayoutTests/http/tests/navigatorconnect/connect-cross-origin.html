@@ -7,39 +7,12 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/testharness-helpers.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script src="resources/connect-tests.js"></script>
 <body>
 <script>
 var cross_origin = get_host_info().UNAUTHENTICATED_ORIGIN;
 var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
-
-// Method that behaves similarly to navigator.connect, but the actual connect
-// call is made from a cross origin iframe.
-function cross_origin_connect(t, service) {
-  // |service| is a relative URL, but for this to work from the iframe it needs
-  // an absolute URL.
-  var target_url = location.origin + base_path() + service;
-  return with_iframe(
-      cross_origin + base_path() + 'resources/connect-helper.html')
-    .then(function(iframe) {
-        var channel = new MessageChannel();
-        iframe.contentWindow.postMessage(
-          {connect: target_url, port: channel.port2}, '*', [channel.port2]);
-        return new Promise(function(resolve, reject) {
-            var got_reply = false;
-            channel.port1.onmessage = t.step_func(function(event) {
-              assert_false(got_reply);
-              assert_true('success' in event.data);
-              assert_true('result' in event.data);
-              got_reply = true;
-              if (event.data.success)
-                resolve(event.data.result);
-              else
-                reject(event.data.result);
-            });
-          });
-    });
-}
 
 run_connect_tests(cross_origin_connect);
 </script>
