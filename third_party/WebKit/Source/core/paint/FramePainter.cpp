@@ -14,11 +14,12 @@
 #include "core/page/Page.h"
 #include "core/paint/LayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
@@ -34,10 +35,10 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
     documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
 
     if (!documentDirtyRect.isEmpty()) {
-        GraphicsContextStateSaver stateSaver(*context);
+        TransformRecorder transformRecorder(*context, m_frameView.renderView()->displayItemClient(),
+            AffineTransform::translation(m_frameView.x() - m_frameView.scrollX(), m_frameView.y() - m_frameView.scrollY()));
 
-        context->translate(m_frameView.x() - m_frameView.scrollX(), m_frameView.y() - m_frameView.scrollY());
-        context->clip(m_frameView.visibleContentRect());
+        ClipRecorder recorder(m_frameView.renderView()->displayItemClient(), context, DisplayItem::ClipFrameToVisibleContentRect, m_frameView.visibleContentRect());
 
         documentDirtyRect.moveBy(-m_frameView.location() + m_frameView.scrollPosition());
         paintContents(context, documentDirtyRect);
@@ -47,13 +48,15 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
 
     // Now paint the scrollbars.
     if (!m_frameView.scrollbarsSuppressed() && (m_frameView.horizontalScrollbar() || m_frameView.verticalScrollbar())) {
-        GraphicsContextStateSaver stateSaver(*context);
         IntRect scrollViewDirtyRect = rect;
         IntRect visibleAreaWithScrollbars(m_frameView.location(), m_frameView.visibleContentRect(IncludeScrollbars).size());
         scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
-        context->translate(m_frameView.x(), m_frameView.y());
         scrollViewDirtyRect.moveBy(-m_frameView.location());
-        context->clip(IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
+
+        TransformRecorder transformRecorder(*context, m_frameView.renderView()->displayItemClient(),
+            AffineTransform::translation(m_frameView.x(), m_frameView.y()));
+
+        ClipRecorder recorder(m_frameView.renderView()->displayItemClient(), context, DisplayItem::ClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }
