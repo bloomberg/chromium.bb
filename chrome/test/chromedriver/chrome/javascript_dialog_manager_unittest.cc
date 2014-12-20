@@ -113,7 +113,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
     while (closing_count_ > 0) {
       base::DictionaryValue empty;
       Status status =
-          listener_->OnEvent(this, "Page.javascriptDialogClosing", empty);
+          listener_->OnEvent(this, "Page.javascriptDialogClosed", empty);
       if (status.IsError())
         return status;
       closing_count_--;
@@ -202,7 +202,7 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
 
   ASSERT_EQ(
       kOk,
-      manager.OnEvent(&client, "Page.javascriptDialogClosing", params).code());
+      manager.OnEvent(&client, "Page.javascriptDialogClosed", params).code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
   ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());

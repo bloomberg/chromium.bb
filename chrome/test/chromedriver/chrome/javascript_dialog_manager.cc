@@ -63,7 +63,7 @@ Status JavaScriptDialogManager::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "dialog event missing or invalid 'message'");
 
     unhandled_dialog_queue_.push_back(message);
-  } else if (method == "Page.javascriptDialogClosing") {
+  } else if (method == "Page.javascriptDialogClosed") {
     // Inspector only sends this event when all dialogs have been closed.
     // Clear the unhandled queue in case the user closed a dialog manually.
     unhandled_dialog_queue_.clear();
