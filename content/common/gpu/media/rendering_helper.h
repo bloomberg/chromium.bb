@@ -114,11 +114,8 @@ class RenderingHelper {
   // Get the platform specific handle to the OpenGL display.
   void* GetGLDisplay();
 
-  // Get the GL context.
-  scoped_refptr<gfx::GLContext> GetGLContext();
-
   // Get the platform specific handle to the OpenGL context.
-  void* GetGLContextHandle();
+  void* GetGLContext();
 
   // Get rendered thumbnails as RGB.
   // Sets alpha_solid to true if the alpha channel is entirely 0xff.

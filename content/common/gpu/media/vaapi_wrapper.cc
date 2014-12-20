@@ -13,19 +13,15 @@
 #include "base/sys_info.h"
 // Auto-generated for dlopen libva libraries
 #include "content/common/gpu/media/va_stubs.h"
-#include "content/common/gpu/media/vaapi_picture.h"
 #include "third_party/libyuv/include/libyuv.h"
-#include "ui/gl/gl_bindings.h"
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
-#endif  // USE_X11
 
 using content_common_gpu_media::kModuleVa;
-#if defined(USE_X11)
-using content_common_gpu_media::kModuleVa_x11;
-#endif  // USE_X11
 using content_common_gpu_media::InitializeStubs;
 using content_common_gpu_media::StubPathMap;
+
+// libva-x11 depends on libva, so dlopen libva-x11 is enough
+static const base::FilePath::CharType kVaLib[] =
+    FILE_PATH_LITERAL("libva-x11.so.1");
 
 #define LOG_VA_ERROR_AND_REPORT(va_error, err_msg)         \
   do {                                                     \
@@ -127,10 +123,9 @@ static VAProfile ProfileToVAProfile(
   return va_profile;
 }
 
-VASurface::VASurface(VASurfaceID va_surface_id,
-                     const gfx::Size& size,
-                     const ReleaseCB& release_cb)
-    : va_surface_id_(va_surface_id), size_(size), release_cb_(release_cb) {
+VASurface::VASurface(VASurfaceID va_surface_id, const ReleaseCB& release_cb)
+    : va_surface_id_(va_surface_id),
+      release_cb_(release_cb) {
   DCHECK(!release_cb_.is_null());
 }
 
@@ -152,24 +147,27 @@ VaapiWrapper::~VaapiWrapper() {
   Deinitialize();
 }
 
-scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
+scoped_ptr<VaapiWrapper> VaapiWrapper::Create(
     CodecMode mode,
     media::VideoCodecProfile profile,
+    Display* x_display,
     const base::Closure& report_error_to_uma_cb) {
-  scoped_refptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
+  scoped_ptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
 
-  if (!vaapi_wrapper->Initialize(mode, profile, report_error_to_uma_cb))
-    vaapi_wrapper = NULL;
+  if (!vaapi_wrapper->Initialize(
+          mode, profile, x_display, report_error_to_uma_cb))
+    vaapi_wrapper.reset();
 
-  return vaapi_wrapper;
+  return vaapi_wrapper.Pass();
 }
 
 std::vector<media::VideoCodecProfile> VaapiWrapper::GetSupportedEncodeProfiles(
+    Display* x_display,
     const base::Closure& report_error_to_uma_cb) {
   std::vector<media::VideoCodecProfile> supported_profiles;
 
-  scoped_refptr<VaapiWrapper> wrapper(new VaapiWrapper());
-  if (!wrapper->VaInitialize(report_error_to_uma_cb)) {
+  scoped_ptr<VaapiWrapper> wrapper(new VaapiWrapper());
+  if (!wrapper->VaInitialize(x_display, report_error_to_uma_cb)) {
     return supported_profiles;
   }
 
@@ -204,7 +202,8 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
     DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
 }
 
-bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
+bool VaapiWrapper::VaInitialize(Display* x_display,
+                                const base::Closure& report_error_to_uma_cb) {
   static bool vaapi_functions_initialized = PostSandboxInitialization();
   if (!vaapi_functions_initialized) {
     bool running_on_chromeos = false;
@@ -225,10 +224,7 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
 
   base::AutoLock auto_lock(va_lock_);
 
-#if defined(USE_X11)
-  va_display_ = vaGetDisplay(gfx::GetXDisplay());
-#endif  // USE_X11
-
+  va_display_ = vaGetDisplay(x_display);
   if (!vaDisplayIsValid(va_display_)) {
     LOG(ERROR) << "Could not get a valid VA display";
     return false;
@@ -325,8 +321,9 @@ bool VaapiWrapper::AreAttribsSupported(
 
 bool VaapiWrapper::Initialize(CodecMode mode,
                               media::VideoCodecProfile profile,
+                              Display* x_display,
                               const base::Closure& report_error_to_uma_cb) {
-  if (!VaInitialize(report_error_to_uma_cb))
+  if (!VaInitialize(x_display, report_error_to_uma_cb))
     return false;
   std::vector<VAProfile> supported_va_profiles;
   if (!GetSupportedVaProfiles(&supported_va_profiles))
@@ -386,7 +383,7 @@ bool VaapiWrapper::VAAPIVersionLessThan(int major, int minor) {
       (major_version_ == major && minor_version_ < minor);
 }
 
-bool VaapiWrapper::CreateSurfaces(const gfx::Size& size,
+bool VaapiWrapper::CreateSurfaces(gfx::Size size,
                                   size_t num_surfaces,
                                   std::vector<VASurfaceID>* va_surfaces) {
   base::AutoLock auto_lock(va_lock_);
@@ -596,6 +593,25 @@ bool VaapiWrapper::ExecuteAndDestroyPendingBuffers(VASurfaceID va_surface_id) {
   return result;
 }
 
+bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
+                                        Pixmap x_pixmap,
+                                        gfx::Size dest_size) {
+  base::AutoLock auto_lock(va_lock_);
+
+  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
+
+  // Put the data into an X Pixmap.
+  va_res = vaPutSurface(va_display_,
+                        va_surface_id,
+                        x_pixmap,
+                        0, 0, dest_size.width(), dest_size.height(),
+                        0, 0, dest_size.width(), dest_size.height(),
+                        NULL, 0, 0);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed putting surface to pixmap", false);
+  return true;
+}
+
 bool VaapiWrapper::GetVaImageForTesting(VASurfaceID va_surface_id,
                                         VAImage* image,
                                         void** mem) {
@@ -736,33 +752,10 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
   return buffer_segment == NULL;
 }
 
-#if defined(USE_X11)
-bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
-                                        Pixmap x_pixmap,
-                                        gfx::Size dest_size) {
-  base::AutoLock auto_lock(va_lock_);
-
-  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
-
-  // Put the data into an X Pixmap.
-  va_res = vaPutSurface(va_display_, va_surface_id, x_pixmap, 0, 0,
-                        dest_size.width(), dest_size.height(), 0, 0,
-                        dest_size.width(), dest_size.height(), NULL, 0, 0);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed putting surface to pixmap", false);
-  return true;
-}
-#endif  // USE_X11
-
 // static
 bool VaapiWrapper::PostSandboxInitialization() {
   StubPathMap paths;
-
-  paths[kModuleVa].push_back("libva.so.1");
-
-#if defined(USE_X11)
-  paths[kModuleVa_x11].push_back("libva-x11.so.1");
-#endif
+  paths[kModuleVa].push_back(kVaLib);
 
   return InitializeStubs(paths);
 }

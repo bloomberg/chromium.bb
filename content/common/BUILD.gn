@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//content/common/common.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-if (is_chromeos && cpu_arch != "arm") {
+if (is_chromeos && use_x11 && cpu_arch != "arm") {
   action("libva_generate_stubs") {
     extra_header = "gpu/media/va_stub_header.fragment"
 
@@ -18,9 +18,6 @@ if (is_chromeos && cpu_arch != "arm") {
     inputs = [
       extra_header,
     ]
-    if (use_x11) {
-      sources += [ "content/common/gpu/media/va_x11.sigs" ]
-    }
     stubs_filename_root = "va_stubs"
 
     outputs = [
@@ -277,8 +274,8 @@ source_set("common") {
     }
   }
 
-  if (is_chromeos) {
-    if (cpu_arch == "arm" && use_x11) {
+  if (is_chromeos && use_x11) {
+    if (cpu_arch == "arm") {
       sources += [
         "gpu/media/exynos_v4l2_video_device.cc",
         "gpu/media/exynos_v4l2_video_device.h",
@@ -297,16 +294,13 @@ source_set("common") {
         "EGL",
         "GLESv2",
       ]
-    }
-    if (cpu_arch != "arm") {
+    } else {  # !arm
       sources += [
                    "gpu/media/h264_dpb.cc",
                    "gpu/media/h264_dpb.h",
                    "gpu/media/va_surface.h",
                    "gpu/media/vaapi_h264_decoder.cc",
                    "gpu/media/vaapi_h264_decoder.h",
-                   "gpu/media/vaapi_picture.cc",
-                   "gpu/media/vaapi_picture.h",
                    "gpu/media/vaapi_video_decode_accelerator.cc",
                    "gpu/media/vaapi_video_decode_accelerator.h",
                    "gpu/media/vaapi_video_encode_accelerator.cc",
@@ -323,12 +317,6 @@ source_set("common") {
         "//media",
         "//third_party/libyuv",
       ]
-      if (use_x11) {
-        sources += [
-          "gpu/media/vaapi_tfp_picture.cc",
-          "gpu/media/vaapi_tfp_picture.h",
-        ]
-      }
     }
   }
 

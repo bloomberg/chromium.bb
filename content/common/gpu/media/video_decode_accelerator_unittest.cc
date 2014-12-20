@@ -60,6 +60,9 @@
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
+#if defined(USE_X11)
+#include "ui/gl/gl_implementation.h"
+#endif  // USE_X11
 #else
 #error The VideoAccelerator tests are not supported on this platform.
 #endif  // OS_WIN
@@ -408,12 +411,17 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   }
   decoder_.reset(new V4L2VideoDecodeAccelerator(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-      static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
-      weak_client, base::Bind(&DoNothingReturnTrue), device.Pass(),
+      static_cast<EGLContext>(rendering_helper_->GetGLContext()),
+      weak_client,
+      base::Bind(&DoNothingReturnTrue),
+      device.Pass(),
       base::MessageLoopProxy::current()));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  decoder_.reset(
-      new VaapiVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
+  CHECK_EQ(gfx::kGLImplementationDesktopGL, gfx::GetGLImplementation())
+      << "Hardware video decode does not work with OSMesa";
+  decoder_.reset(new VaapiVideoDecodeAccelerator(
+      static_cast<Display*>(rendering_helper_->GetGLDisplay()),
+      base::Bind(&DoNothingReturnTrue)));
 #endif  // OS_WIN
   CHECK(decoder_.get());
   weak_decoder_factory_.reset(

@@ -13,17 +13,15 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/va_surface.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "third_party/libva/va/va.h"
-#include "ui/gfx/size.h"
-#if defined(USE_X11)
 #include "third_party/libva/va/va_x11.h"
-#endif  // USE_X11
+#include "ui/gfx/size.h"
 
 namespace content {
 
@@ -37,8 +35,7 @@ namespace content {
 // It is also responsible for managing and freeing VABuffers (not VASurfaces),
 // which are used to queue parameters and slice data to the HW codec,
 // as well as underlying memory for VASurfaces themselves.
-class CONTENT_EXPORT VaapiWrapper
-    : public base::RefCountedThreadSafe<VaapiWrapper> {
+class CONTENT_EXPORT VaapiWrapper {
  public:
   enum CodecMode {
     kDecode,
@@ -47,14 +44,18 @@ class CONTENT_EXPORT VaapiWrapper
 
   // |report_error_to_uma_cb| will be called independently from reporting
   // errors to clients via method return values.
-  static scoped_refptr<VaapiWrapper> Create(
+  static scoped_ptr<VaapiWrapper> Create(
       CodecMode mode,
       media::VideoCodecProfile profile,
+      Display* x_display,
       const base::Closure& report_error_to_uma_cb);
 
   // Return the supported encode profiles.
   static std::vector<media::VideoCodecProfile> GetSupportedEncodeProfiles(
+      Display* x_display,
       const base::Closure& report_error_to_uma_cb);
+
+  ~VaapiWrapper();
 
   // Create |num_surfaces| backing surfaces in driver for VASurfaces, each
   // of size |size|. Returns true when successful, with the created IDs in
@@ -63,7 +64,7 @@ class CONTENT_EXPORT VaapiWrapper
   // again to free the allocated surfaces first, but is not required to do so
   // at destruction time, as this will be done automatically from
   // the destructor.
-  bool CreateSurfaces(const gfx::Size& size,
+  bool CreateSurfaces(gfx::Size size,
                       size_t num_surfaces,
                       std::vector<VASurfaceID>* va_surfaces);
 
@@ -95,6 +96,12 @@ class CONTENT_EXPORT VaapiWrapper
   // Execute job in hardware on target |va_surface_id| and destroy pending
   // buffers. Return false if Execute() fails.
   bool ExecuteAndDestroyPendingBuffers(VASurfaceID va_surface_id);
+
+  // Put data from |va_surface_id| into |x_pixmap| of size |size|,
+  // converting/scaling to it.
+  bool PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
+                            Pixmap x_pixmap,
+                            gfx::Size dest_size);
 
   // Returns true if the VAAPI version is less than the specified version.
   bool VAAPIVersionLessThan(int major, int minor);
@@ -132,24 +139,16 @@ class CONTENT_EXPORT VaapiWrapper
   // Destroy all previously-allocated (and not yet destroyed) coded buffers.
   void DestroyCodedBuffers();
 
-#if defined(USE_X11)
-  // Put data from |va_surface_id| into |x_pixmap| of size
-  // |dest_size|, converting/scaling to it.
-  bool PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
-                            Pixmap x_pixmap,
-                            gfx::Size dest_size);
-#endif  // USE_X11
-
  private:
-  friend class base::RefCountedThreadSafe<VaapiWrapper>;
   VaapiWrapper();
-  ~VaapiWrapper();
 
   bool Initialize(CodecMode mode,
                   media::VideoCodecProfile profile,
-                  const base::Closure& report_error__to_uma_cb);
+                  Display* x_display,
+                  const base::Closure& report_error_to_uma_cb);
   void Deinitialize();
-  bool VaInitialize(const base::Closure& report_error_to_uma_cb);
+  bool VaInitialize(Display* x_display,
+                    const base::Closure& report_error_to_uma_cb);
   bool GetSupportedVaProfiles(std::vector<VAProfile>* profiles);
   bool IsEntrypointSupported(VAProfile va_profile, VAEntrypoint entrypoint);
   bool AreAttribsSupported(VAProfile va_profile,
@@ -180,7 +179,7 @@ class CONTENT_EXPORT VaapiWrapper
   int major_version_, minor_version_;
 
   // VA handles.
-  // All valid after successful Initialize() and until Deinitialize().
+  // Both valid after successful Initialize() and until Deinitialize().
   VADisplay va_display_;
   VAConfigID va_config_id_;
   // Created for the current set of va_surface_ids_ in CreateSurfaces() and

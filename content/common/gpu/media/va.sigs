@@ -31,3 +31,10 @@ VAStatus vaSetDisplayAttributes(VADisplay dpy, VADisplayAttribute *attr_list, in
 VAStatus vaSyncSurface(VADisplay dpy, VASurfaceID render_target);
 VAStatus vaTerminate(VADisplay dpy);
 VAStatus vaUnmapBuffer(VADisplay dpy, VABufferID buf_id);
+
+
+//------------------------------------------------
+// Functions from libva-x11 used in chromium code.
+//------------------------------------------------
+VADisplay vaGetDisplay(Display *dpy);
+VAStatus vaPutSurface(VADisplay dpy, VASurfaceID surface, Drawable draw, short srcx, short srcy, unsigned short srcw, unsigned short srch, short destx, short desty, unsigned short destw, unsigned short desth, VARectangle *cliprects, unsigned int number_cliprects, unsigned int flags);

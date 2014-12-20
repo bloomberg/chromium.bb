@@ -19,6 +19,8 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_glx.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -28,11 +30,9 @@
 #include "ui/gfx/x/x11_types.h"
 #endif
 
-#if defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
-#include "ui/gl/gl_surface_glx.h"
+#if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
 #define GL_VARIANT_GLX 1
 #else
-#include "ui/gl/gl_surface_egl.h"
 #define GL_VARIANT_EGL 1
 #endif
 
@@ -127,14 +127,16 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   message_loop_ = base::MessageLoop::current();
 
 #if defined(OS_WIN)
+  screen_size_ =
+      gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
   window_ = CreateWindowEx(0,
                            L"Static",
                            L"VideoDecodeAcceleratorTest",
                            WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                            0,
                            0,
-                           GetSystemMetrics(SM_CXSCREEN),
-                           GetSystemMetrics(SM_CYSCREEN),
+                           screen_size_.width(),
+                           screen_size_.height(),
                            NULL,
                            NULL,
                            NULL,
@@ -142,6 +144,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 #elif defined(USE_X11)
   Display* display = gfx::GetXDisplay();
   Screen* screen = DefaultScreenOfDisplay(display);
+  screen_size_ = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
 
   CHECK(display);
 
@@ -156,8 +159,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                           DefaultRootWindow(display),
                           0,
                           0,
-                          XWidthOfScreen(screen),
-                          XHeightOfScreen(screen),
+                          screen_size_.width(),
+                          screen_size_.height(),
                           0 /* border width */,
                           depth,
                           CopyFromParent /* class */,
@@ -173,11 +176,9 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   CHECK(window_ != gfx::kNullAcceleratedWidget);
 
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
-  screen_size_ = gl_surface_->GetSize();
-
   gl_context_ = gfx::GLContext::CreateGLContext(
       NULL, gl_surface_.get(), gfx::PreferIntegratedGpu);
-  CHECK(gl_context_->MakeCurrent(gl_surface_.get()));
+  gl_context_->MakeCurrent(gl_surface_.get());
 
   CHECK_GT(params.window_sizes.size(), 0U);
   videos_.resize(params.window_sizes.size());
@@ -303,16 +304,14 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
 
-  if (frame_duration_ != base::TimeDelta()) {
-    int warm_up_iterations = params.warm_up_iterations;
-    WarmUpRendering(warm_up_iterations);
-  }
+  if (frame_duration_ != base::TimeDelta())
+    WarmUpRendering(params.warm_up_iterations);
 
   // It's safe to use Unretained here since |rendering_thread_| will be stopped
   // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
   // a member of that class. (See video_decode_accelerator_unittest.cc.)
   gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
-  if (vsync_provider && frame_duration_ != base::TimeDelta())
+  if (vsync_provider)
     vsync_provider->GetVSyncParameters(base::Bind(
         &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
   else
@@ -324,7 +323,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 // several frames here to warm up the rendering.
 void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
   unsigned int texture_id;
-  scoped_ptr<GLubyte[]> emptyData(new GLubyte[screen_size_.GetArea() * 2]());
+  scoped_ptr<GLubyte[]> emptyData(new GLubyte[screen_size_.GetArea() * 2]);
   glGenTextures(1, &texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glTexImage2D(GL_TEXTURE_2D,
@@ -468,11 +467,7 @@ void RenderingHelper::DeleteTexture(uint32 texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-scoped_refptr<gfx::GLContext> RenderingHelper::GetGLContext() {
-  return gl_context_;
-}
-
-void* RenderingHelper::GetGLContextHandle() {
+void* RenderingHelper::GetGLContext() {
   return gl_context_->GetHandle();
 }
 
@@ -494,7 +489,7 @@ void RenderingHelper::Clear() {
 #if defined(OS_WIN)
   if (window_)
     DestroyWindow(window_);
-#elif defined(USE_X11)
+#else
   // Destroy resources acquired in Initialize, in reverse-acquisition order.
   if (window_) {
     CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
