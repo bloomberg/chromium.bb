@@ -34,9 +34,9 @@ class PDFiumPage {
   void Unload();
   // Gets the FPDF_PAGE for this page, loading and parsing it if necessary.
   FPDF_PAGE GetPage();
-  //Get the FPDF_PAGE for printing.
+  // Get the FPDF_PAGE for printing.
   FPDF_PAGE GetPrintPage();
-  //Close the printing page.
+  // Close the printing page.
   void ClosePrintPage();
 
   // Returns FPDF_TEXTPAGE for the page, loading and parsing it if necessary.
@@ -112,6 +112,15 @@ class PDFiumPage {
   base::Value* CreateTextNode(std::string text);
   base::Value* CreateURLNode(std::string text, std::string url);
 
+  class ScopedLoadCounter {
+   public:
+    explicit ScopedLoadCounter(PDFiumPage* page);
+    ~ScopedLoadCounter();
+
+   private:
+    PDFiumPage* const page_;
+  };
+
   struct Link {
     Link();
     ~Link();
@@ -125,6 +134,7 @@ class PDFiumPage {
   FPDF_PAGE page_;
   FPDF_TEXTPAGE text_page_;
   int index_;
+  int loading_count_;
   pp::Rect rect_;
   bool calculated_links_;
   std::vector<Link> links_;

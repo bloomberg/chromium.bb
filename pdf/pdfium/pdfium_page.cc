@@ -16,6 +16,8 @@
 // Used when doing hit detection.
 #define kTolerance 20.0
 
+namespace {
+
 // Dictionary Value key names for returning the accessible page content as JSON.
 const char kPageWidth[] = "width";
 const char kPageHeight[] = "height";
@@ -33,6 +35,8 @@ const char kTextNodeTypeText[] = "text";
 const char kTextNodeTypeURL[] = "url";
 const char kDocLinkURLPrefix[] = "#page";
 
+}  // namespace
+
 namespace chrome_pdf {
 
 PDFiumPage::PDFiumPage(PDFiumEngine* engine,
@@ -43,15 +47,21 @@ PDFiumPage::PDFiumPage(PDFiumEngine* engine,
       page_(NULL),
       text_page_(NULL),
       index_(i),
+      loading_count_(0),
       rect_(r),
       calculated_links_(false),
       available_(available) {
 }
 
 PDFiumPage::~PDFiumPage() {
+  DCHECK_EQ(0, loading_count_);
 }
 
 void PDFiumPage::Unload() {
+  // Do not unload while in the middle of a load.
+  if (loading_count_)
+    return;
+
   if (text_page_) {
     FPDFText_ClosePage(text_page_);
     text_page_ = NULL;
@@ -71,6 +81,7 @@ FPDF_PAGE PDFiumPage::GetPage() {
   if (!available_)
     return NULL;
   if (!page_) {
+    ScopedLoadCounter scoped_load(this);
     page_ = FPDF_LoadPage(engine_->doc(), index_);
     if (page_ && engine_->form()) {
       FORM_OnAfterLoadPage(page_, engine_->form());
@@ -83,12 +94,18 @@ FPDF_PAGE PDFiumPage::GetPrintPage() {
   ScopedUnsupportedFeature scoped_unsupported_feature(engine_);
   if (!available_)
     return NULL;
-  if (!page_)
+  if (!page_) {
+    ScopedLoadCounter scoped_load(this);
     page_ = FPDF_LoadPage(engine_->doc(), index_);
+  }
   return page_;
 }
 
 void PDFiumPage::ClosePrintPage() {
+  // Do not close |page_| while in the middle of a load.
+  if (loading_count_)
+    return;
+
   if (page_) {
     FPDF_ClosePage(page_);
     page_ = NULL;
@@ -98,8 +115,10 @@ void PDFiumPage::ClosePrintPage() {
 FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
   if (!available_)
     return NULL;
-  if (!text_page_)
+  if (!text_page_) {
+    ScopedLoadCounter scoped_load(this);
     text_page_ = FPDFText_LoadPage(GetPage());
+  }
   return text_page_;
 }
 
@@ -466,6 +485,15 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
 
   return pp::Rect(
       new_left, new_top, new_right - new_left + 1, new_bottom - new_top + 1);
+}
+
+PDFiumPage::ScopedLoadCounter::ScopedLoadCounter(PDFiumPage* page)
+    : page_(page) {
+  page_->loading_count_++;
+}
+
+PDFiumPage::ScopedLoadCounter::~ScopedLoadCounter() {
+  page_->loading_count_--;
 }
 
 PDFiumPage::Link::Link() {
