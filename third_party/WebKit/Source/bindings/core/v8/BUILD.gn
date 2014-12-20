@@ -32,8 +32,6 @@ idl_compiler("bindings_core_v8_generated_individual") {
   output_dir = bindings_core_v8_output_dir
   output_name_suffix = ""
   target_component = "core"
-  component_info =
-    "$bindings_core_output_dir/ComponentInfoCore.pickle"
 }
 
 # bindings_core_impl_generated in Source/bindings/core/v8/generated.gyp
@@ -44,6 +42,4 @@ idl_impl("bindings_core_impl_generated") {
     generated_core_testing_dictionary_files
   output_dir = bindings_core_v8_output_dir
   target_component = "core"
-  component_info =
-    "$bindings_core_output_dir/ComponentInfoCore.pickle"
 }

@@ -47,7 +47,7 @@ import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
 from bindings.scripts.idl_reader import IdlReader
-from bindings.scripts.utilities import idl_filename_to_component, write_file
+from bindings.scripts.utilities import ComponentInfoProviderCore, ComponentInfoProviderModules, idl_filename_to_component, write_file
 
 
 PASS_MESSAGE = 'All tests PASS!'
@@ -81,10 +81,10 @@ COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
 reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
 
-# component -> component_info.
+# component -> ComponentInfoProvider.
 # Note that this dict contains information about testing idl files, which live
 # in Source/bindings/tests/idls/{core,modules}, not in Source/{core,modules}.
-test_component_info = {}
+component_info_providers = {}
 
 @contextmanager
 def TemporaryDirectory():
@@ -163,6 +163,7 @@ def generate_interface_dependencies(output_directory):
     # than using a single component.
     non_test_interfaces_info, non_test_component_info = collect_interfaces_info(non_test_idl_paths)
     test_interfaces_info = {}
+    test_component_info = {}
     for component, paths in test_idl_paths.iteritems():
         test_interfaces_info[component], test_component_info[component] = collect_interfaces_info(paths)
     # In order to allow test IDL files to override the production IDL files if
@@ -170,6 +171,11 @@ def generate_interface_dependencies(output_directory):
     # non-test IDL files.
     info_individuals = [non_test_interfaces_info] + test_interfaces_info.values()
     compute_interfaces_info_overall(info_individuals)
+    component_info_providers['core'] = ComponentInfoProviderCore(
+        interfaces_info, test_component_info['core'])
+    component_info_providers['modules'] = ComponentInfoProviderModules(
+        interfaces_info, test_component_info['core'],
+        test_component_info['modules'])
 
 
 def bindings_tests(output_directory, verbose):
@@ -256,10 +262,9 @@ def bindings_tests(output_directory, verbose):
 
     def generate_union_type_containers(output_directory, component):
         generator = CodeGeneratorUnionType(
-            interfaces_info, cache_dir=None, output_dir=output_directory,
-            target_component=component)
-        outputs = generator.generate_code(
-            test_component_info[component]['union_types'])
+            component_info_providers[component], cache_dir=None,
+            output_dir=output_directory, target_component=component)
+        outputs = generator.generate_code()
         for output_path, output_code in outputs:
             write_file(output_code, output_path, only_if_changed=True)
 
@@ -272,10 +277,10 @@ def bindings_tests(output_directory, verbose):
 
             generate_union_type_containers(output_dir, component)
 
-            idl_compiler = IdlCompilerV8(output_dir,
-                                         interfaces_info=interfaces_info,
-                                         component_info=test_component_info[component],
-                                         only_if_changed=True)
+            idl_compiler = IdlCompilerV8(
+                output_dir,
+                info_provider=component_info_providers[component],
+                only_if_changed=True)
             if component == 'core':
                 partial_interface_output_dir = os.path.join(output_directory,
                                                             'modules')
@@ -283,16 +288,14 @@ def bindings_tests(output_directory, verbose):
                     os.makedirs(partial_interface_output_dir)
                 idl_partial_interface_compiler = IdlCompilerV8(
                     partial_interface_output_dir,
-                    interfaces_info=interfaces_info,
-                    component_info=test_component_info[component],
+                    info_provider=component_info_providers[component],
                     only_if_changed=True,
                     target_component='modules')
             else:
                 idl_partial_interface_compiler = None
 
             dictionary_impl_compiler = IdlCompilerDictionaryImpl(
-                output_dir, interfaces_info=interfaces_info,
-                component_info=test_component_info[component],
+                output_dir, info_provider=component_info_providers[component],
                 only_if_changed=True)
 
             idl_filenames = []

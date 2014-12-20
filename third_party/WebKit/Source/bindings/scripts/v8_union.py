@@ -28,6 +28,9 @@ header_forward_decls = set()
 
 
 def union_context(union_types, interfaces_info):
+    cpp_includes.clear()
+    header_forward_decls.clear()
+
     # For container classes we strip nullable wrappers. For example,
     # both (A or B)? and (A? or B) will become AOrB. This should be OK
     # because container classes can handle null and it seems that

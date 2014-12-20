@@ -15,6 +15,7 @@
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "bindings/modules/v8/V8TestInterface5.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -534,6 +535,52 @@ static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::Function
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodBooleanOrDOMStringArg", "TestInterface5", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+    BooleanOrString arg;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8BooleanOrString::toImpl(info.GetIsolate(), info[0], arg, exceptionState), exceptionState);
+    }
+    impl->voidMethodBooleanOrDOMStringArg(arg);
+}
+
+static void voidMethodBooleanOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterface5ImplementationV8Internal::voidMethodBooleanOrDOMStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrDOMStringArg", "TestInterface5", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+    DoubleOrString arg;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, exceptionState), exceptionState);
+    }
+    impl->voidMethodDoubleOrDOMStringArg(arg);
+}
+
+static void voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterface5ImplementationV8Internal::voidMethodDoubleOrDOMStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
@@ -760,6 +807,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterface5Methods[] =
     {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", TestInterface5ImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethod", TestInterface5ImplementationV8Internal::voidMethodMethodCallback, TestInterface5ImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"alwaysExposedMethod", TestInterface5ImplementationV8Internal::alwaysExposedMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodBooleanOrDOMStringArg", TestInterface5ImplementationV8Internal::voidMethodBooleanOrDOMStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodDoubleOrDOMStringArg", TestInterface5ImplementationV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
 };
 
 static void installV8TestInterface5Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)

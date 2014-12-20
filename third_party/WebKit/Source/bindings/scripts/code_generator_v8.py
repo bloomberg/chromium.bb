@@ -116,13 +116,11 @@ def set_global_type_info(interfaces_info):
 class CodeGeneratorBase(object):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
-    def __init__(self, interfaces_info, component_info, cache_dir, output_dir):
-        interfaces_info = interfaces_info or {}
-        self.interfaces_info = interfaces_info
-        self.component_info = component_info
+    def __init__(self, info_provider, cache_dir, output_dir):
+        self.info_provider = info_provider
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
-        set_global_type_info(interfaces_info)
+        set_global_type_info(info_provider.interfaces_info)
 
     def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as ((path, content)...)."""
@@ -131,7 +129,7 @@ class CodeGeneratorBase(object):
         IdlType.set_enums((enum.name, enum.values)
                           for enum in definitions.enumerations.values())
         # Resolve typedefs
-        definitions.resolve_typedefs(self.component_info['typedefs'])
+        definitions.resolve_typedefs(self.info_provider.component_info['typedefs'])
         return self.generate_code_internal(definitions, definition_name)
 
     def generate_code_internal(self, definitions, definition_name):
@@ -140,8 +138,8 @@ class CodeGeneratorBase(object):
 
 
 class CodeGeneratorV8(CodeGeneratorBase):
-    def __init__(self, interfaces_info, component_info, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, interfaces_info, component_info, cache_dir, output_dir)
+    def __init__(self, info_provider, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name):
         header_path = posixpath.join(self.output_dir,
@@ -164,7 +162,7 @@ class CodeGeneratorV8(CodeGeneratorBase):
         # Store other interfaces for introspection
         interfaces.update(definitions.interfaces)
 
-        interface_info = self.interfaces_info[interface_name]
+        interface_info = self.info_provider.interfaces_info[interface_name]
         component = idl_filename_to_component(
             interface_info.get('full_path'))
         include_paths = interface_info.get('dependencies_include_paths')
@@ -206,11 +204,12 @@ class CodeGeneratorV8(CodeGeneratorBase):
 
     def generate_dictionary_code(self, definitions, dictionary_name,
                                  dictionary):
+        interfaces_info = self.info_provider.interfaces_info
         header_template = self.jinja_env.get_template('dictionary_v8.h')
         cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
         template_context = v8_dictionary.dictionary_context(
-            dictionary, self.interfaces_info)
-        interface_info = self.interfaces_info[dictionary_name]
+            dictionary, interfaces_info)
+        interface_info = interfaces_info[dictionary_name]
         include_paths = interface_info.get('dependencies_include_paths')
         # Add the include for interface itself
         template_context['header_includes'].add(interface_info['include_path'])
@@ -224,8 +223,8 @@ class CodeGeneratorV8(CodeGeneratorBase):
 
 
 class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
-    def __init__(self, interfaces_info, component_info, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, interfaces_info, component_info, cache_dir, output_dir)
+    def __init__(self, info_provider, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name, interface_info):
         output_dir = posixpath.join(self.output_dir,
@@ -237,12 +236,13 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
     def generate_code_internal(self, definitions, definition_name):
         if not definition_name in definitions.dictionaries:
             raise ValueError('%s is not an IDL dictionary')
+        interfaces_info = self.info_provider.interfaces_info
         dictionary = definitions.dictionaries[definition_name]
-        interface_info = self.interfaces_info[definition_name]
+        interface_info = interfaces_info[definition_name]
         header_template = self.jinja_env.get_template('dictionary_impl.h')
         cpp_template = self.jinja_env.get_template('dictionary_impl.cpp')
         template_context = v8_dictionary.dictionary_impl_context(
-            dictionary, self.interfaces_info)
+            dictionary, interfaces_info)
         include_paths = interface_info.get('dependencies_include_paths')
         # Add union containers header file to header_includes rather than
         # cpp file so that union containers can be used in dictionary headers.
@@ -267,25 +267,37 @@ class CodeGeneratorUnionType(object):
     CodeGeneratorDictionaryImpl. It assumes that all union types are already
     collected. It doesn't process idl files directly.
     """
-    def __init__(self, interfaces_info, cache_dir, output_dir, target_component):
-        self.interfaces_info = interfaces_info
+    def __init__(self, info_provider, cache_dir, output_dir, target_component):
+        self.info_provider = info_provider
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
         self.target_component = target_component
-        set_global_type_info(interfaces_info)
+        set_global_type_info(info_provider.interfaces_info)
 
-    def generate_code(self, union_types):
+    def generate_code(self):
+        union_types = self.info_provider.union_types
         if not union_types:
             return ()
         header_template = self.jinja_env.get_template('union.h')
         cpp_template = self.jinja_env.get_template('union.cpp')
         template_context = v8_union.union_context(
-            union_types, self.interfaces_info)
+            union_types, self.info_provider.interfaces_info)
         template_context['code_generator'] = module_pyname
         capitalized_component = self.target_component.capitalize()
         template_context['header_filename'] = 'bindings/%s/v8/UnionTypes%s.h' % (
             self.target_component, capitalized_component)
         template_context['macro_guard'] = 'UnionType%s_h' % capitalized_component
+
+        # Add UnionTypesCore.h as a dependency when we generate modules union types
+        # because we only generate union type containers which are used by both
+        # core and modules in UnionTypesCore.h.
+        # FIXME: This is an ad hoc workaround and we need a general way to
+        # handle core <-> modules dependency.
+        if self.target_component == 'modules':
+            template_context['header_includes'] = sorted(
+                template_context['header_includes'] +
+                ['bindings/core/v8/UnionTypesCore.h'])
+
         header_text = header_template.render(template_context)
         cpp_text = cpp_template.render(template_context)
         header_path = posixpath.join(self.output_dir,

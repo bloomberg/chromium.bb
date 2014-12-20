@@ -88,5 +88,9 @@
     [Exposed=Window] attribute long windowExposedAttribute;
 
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
+
+    // Union types
+    void voidMethodBooleanOrDOMStringArg((boolean or DOMString) arg);
+    void voidMethodDoubleOrDOMStringArg((double or DOMString) arg);
 };
 

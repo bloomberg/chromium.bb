@@ -118,8 +118,6 @@ template("generate_event_interfaces") {
 #   output_dir = string containing the directory to put the output files.
 #   output_name_suffix = a suffix after the basename of the output file names.
 #   target_component = component to generate code for.
-#   component_info = a filename of pickle file which contains component
-#     information
 template("idl_compiler") {
   output_dir = invoker.output_dir
   output_name_suffix = invoker.output_name_suffix
@@ -164,11 +162,8 @@ template("idl_compiler") {
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--output-dir",
       rebase_path(output_dir, root_build_dir),
-      "--interfaces-info",
-      rebase_path("$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
-                  root_build_dir),
-      "--component-info",
-      rebase_path(invoker.component_info, root_build_dir),
+      "--info-dir",
+      rebase_path("$bindings_output_dir", root_build_dir),
       "--write-file-only-if-changed=1",  # Always true for Ninja.
       "--target-component",
       invoker.target_component,
@@ -193,8 +188,6 @@ template("idl_compiler") {
 #   sources = a list of IDL files to process
 #   outputs = a list of files to write to
 #   output_dir = the directory to put the output files
-#   component_info = a filename of pickle file which contains component
-#     information
 #   target_component = component to generate code for
 template("idl_impl") {
   dictionary_impl_output_dir = "$root_gen_dir/blink/"
@@ -214,11 +207,8 @@ template("idl_impl") {
       rebase_path(invoker.output_dir, root_build_dir),
       "--impl-output-dir",
       rebase_path(dictionary_impl_output_dir, root_build_dir),
-      "--interfaces-info",
-      rebase_path("$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
-                  root_build_dir),
-      "--component-info",
-      rebase_path(invoker.component_info, root_build_dir),
+      "--info-dir",
+      rebase_path("$bindings_output_dir", root_build_dir),
       "--target-component",
       invoker.target_component,
       "--write-file-only-if-changed=1",

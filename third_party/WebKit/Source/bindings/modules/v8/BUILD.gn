@@ -39,8 +39,6 @@ idl_compiler("bindings_modules_v8_generated_individual") {
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = ""
   target_component = "modules"
-  component_info =
-    "$bindings_modules_output_dir/ComponentInfoModules.pickle"
 }
 
 # bindings_modules_impl_generated in modules/v8/generated.gyp
@@ -50,8 +48,6 @@ idl_impl("bindings_modules_impl_generated") {
     generated_modules_dictionary_files
   output_dir = bindings_modules_v8_output_dir
   target_component = "modules"
-  component_info =
-    "$bindings_modules_output_dir/ComponentInfoModules.pickle"
 }
 
 # bindings_modules_generated_individual in modules/v8/generated.gyp
@@ -62,8 +58,6 @@ idl_compiler("bindings_modules_v8_generated_partial_individual") {
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "Partial"
   target_component = "modules"
-  component_info =
-    "$bindings_modules_output_dir/ComponentInfoModules.pickle"
 }
 
 # bindings_modules_generated_aggregate in modules/v8/generated.gyp

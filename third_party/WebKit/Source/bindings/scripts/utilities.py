@@ -49,6 +49,99 @@ def is_valid_component_dependency(component, dependency):
     return True
 
 
+class ComponentInfoProvider(object):
+    """Base class of information provider which provides component-specific
+    information.
+    """
+    def __init__(self):
+        pass
+
+    @property
+    def interfaces_info(self):
+        return {}
+
+    @property
+    def component_info(self):
+        return {}
+
+    @property
+    def union_types(self):
+        return set()
+
+
+class ComponentInfoProviderCore(ComponentInfoProvider):
+    def __init__(self, interfaces_info, component_info):
+        super(ComponentInfoProviderCore, self).__init__()
+        self._interfaces_info = interfaces_info
+        self._component_info = component_info
+
+    @property
+    def interfaces_info(self):
+        return self._interfaces_info
+
+    @property
+    def component_info(self):
+        return self._component_info
+
+    @property
+    def union_types(self):
+        return self._component_info['union_types']
+
+
+class ComponentInfoProviderModules(ComponentInfoProvider):
+    def __init__(self, interfaces_info, component_info_core,
+                 component_info_modules):
+        super(ComponentInfoProviderModules, self).__init__()
+        self._interfaces_info = interfaces_info
+        self._component_info_core = component_info_core
+        self._component_info_modules = component_info_modules
+
+    @property
+    def interfaces_info(self):
+        return self._interfaces_info
+
+    @property
+    def component_info(self):
+        return self._component_info_modules
+
+    @property
+    def union_types(self):
+        # Remove duplicate union types from component_info_modules to avoid
+        # generating multiple container generation.
+        return self._component_info_modules['union_types'] - self._component_info_core['union_types']
+
+
+def load_interfaces_info_overall_pickle(info_dir):
+    with open(os.path.join(info_dir, 'modules', 'InterfacesInfoOverall.pickle')) as interface_info_file:
+        return pickle.load(interface_info_file)
+
+
+def create_component_info_provider_core(info_dir):
+    interfaces_info = load_interfaces_info_overall_pickle(info_dir)
+    with open(os.path.join(info_dir, 'core', 'ComponentInfoCore.pickle')) as component_info_file:
+        component_info = pickle.load(component_info_file)
+    return ComponentInfoProviderCore(interfaces_info, component_info)
+
+
+def create_component_info_provider_modules(info_dir):
+    interfaces_info = load_interfaces_info_overall_pickle(info_dir)
+    with open(os.path.join(info_dir, 'core', 'ComponentInfoCore.pickle')) as component_info_file:
+        component_info_core = pickle.load(component_info_file)
+    with open(os.path.join(info_dir, 'modules', 'ComponentInfoModules.pickle')) as component_info_file:
+        component_info_modules = pickle.load(component_info_file)
+    return ComponentInfoProviderModules(
+        interfaces_info, component_info_core, component_info_modules)
+
+
+def create_component_info_provider(info_dir, component):
+    if component == 'core':
+        return create_component_info_provider_core(info_dir)
+    elif component == 'modules':
+        return create_component_info_provider_modules(info_dir)
+    else:
+        return ComponentInfoProvider()
+
+
 ################################################################################
 # Basic file reading/writing
 ################################################################################
