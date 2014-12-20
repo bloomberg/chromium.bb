@@ -40,12 +40,12 @@ function rejectPromise() {
     });
 }
 
-function stripScopeName(scope) {
-  return scope.split('/').slice(-1)[0];
+function stripScopeName(url) {
+  return url.split('/').slice(-1)[0];
 }
 
 oninstall = function(e) {
-  switch (stripScopeName(self.scope)) {
+  switch (stripScopeName(self.location.href)) {
     case 'install-fulfilled':
       e.waitUntil(fulfillPromise());
       break;
@@ -56,7 +56,7 @@ oninstall = function(e) {
 };
 
 onactivate = function(e) {
-  switch (stripScopeName(self.scope)) {
+  switch (stripScopeName(self.location.href)) {
     case 'activate-fulfilled':
       e.waitUntil(fulfillPromise());
       break;

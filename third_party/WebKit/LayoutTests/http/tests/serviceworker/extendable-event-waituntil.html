@@ -11,7 +11,7 @@
 var properties = {timeout: 5500};
 
 function runTest(test, scope, onRegister) {
-  var script = 'resources/extendable-event-waituntil.js';
+  var script = 'resources/extendable-event-waituntil.js?' + scope;
   service_worker_unregister_and_register(test, script, scope)
     .then(function(registration) {
         onRegister(registration.installing);

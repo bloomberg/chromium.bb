@@ -8,7 +8,6 @@ test(function() {
     verify_interface('ServiceWorkerGlobalScope',
                      self,
                      {
-                       scope: 'string',
                        clients: 'object',
                        close: 'function',
                        skipWaiting: 'function',

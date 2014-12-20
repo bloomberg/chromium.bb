@@ -64,7 +64,6 @@ public:
 
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
-    String scope(ExecutionContext*);
 
     CacheStorage* caches(ExecutionContext*);
 
