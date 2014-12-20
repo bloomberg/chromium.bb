@@ -8,7 +8,11 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VA_SURFACE_H_
 #define CONTENT_COMMON_GPU_MEDIA_VA_SURFACE_H_
 
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "third_party/libva/va/va.h"
+#include "ui/gfx/size.h"
 
 namespace content {
 
@@ -16,7 +20,7 @@ namespace content {
 // and use as reference for decoding other surfaces. It is also handed by the
 // decoder to VaapiVideoDecodeAccelerator when the contents of the surface are
 // ready and should be displayed. VAVDA converts the surface contents into an
-// X Pixmap bound to a texture for display and releases its reference to it.
+// X/Drm Pixmap bound to a texture for display and releases its reference to it.
 // Decoder releases its references to the surface when it's done decoding and
 // using it as reference. Note that a surface may still be used for reference
 // after it's been sent to output and also after it is no longer used by VAVDA.
@@ -56,11 +60,11 @@ namespace content {
 // | VASurface to VaapiVideoDecodeAccelerator,   VASurface as reference for
 // | which stores it (taking a ref) on           decoding more frames.
 // | pending_output_cbs_ queue until an output               |
-// | TFPPicture becomes available.                           v
+// | VaapiPicture becomes available.                         v
 // |                 |                           Once the DecodeSurface is not
 // |                 |                           needed as reference anymore,
 // |                 v                           it is released, releasing the
-// | A TFPPicture becomes available after        associated VASurface reference.
+// | A VaapiPicture becomes available after      associated VASurface reference.
 // | the client of VVDA returns                              |
 // | a PictureBuffer associated with it. VVDA                |
 // | puts the contents of the VASurface into                 |
@@ -84,17 +88,22 @@ class CONTENT_EXPORT VASurface : public base::RefCountedThreadSafe<VASurface> {
   // are released.
   typedef base::Callback<void(VASurfaceID)> ReleaseCB;
 
-  VASurface(VASurfaceID va_surface_id, const ReleaseCB& release_cb);
+  VASurface(VASurfaceID va_surface_id,
+            const gfx::Size& size,
+            const ReleaseCB& release_cb);
 
   VASurfaceID id() {
     return va_surface_id_;
   }
+
+  const gfx::Size& size() const { return size_; }
 
  private:
   friend class base::RefCountedThreadSafe<VASurface>;
   ~VASurface();
 
   const VASurfaceID va_surface_id_;
+  gfx::Size size_;
   ReleaseCB release_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(VASurface);

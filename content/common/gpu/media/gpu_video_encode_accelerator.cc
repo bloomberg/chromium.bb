@@ -17,13 +17,12 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 
-#if defined(ARCH_CPU_ARMEL)
+#if defined(ARCH_CPU_ARMEL) && defined(USE_X11)
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
-#include "ui/gfx/x/x11_types.h"
 #endif
 
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
@@ -191,15 +190,15 @@ GpuVideoEncodeAccelerator::ConvertMediaToGpuProfiles(const std::vector<
 scoped_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateEncoder() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-#if defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
 #elif defined(ARCH_CPU_X86_FAMILY)
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
-    encoder.reset(new VaapiVideoEncodeAccelerator(gfx::GetXDisplay()));
+    encoder.reset(new VaapiVideoEncodeAccelerator());
 #endif
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   encoder.reset(new AndroidVideoEncodeAccelerator());

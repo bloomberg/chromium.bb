@@ -61,6 +61,8 @@ unsigned PixmapDepth(unsigned internalformat) {
   switch (internalformat) {
     case GL_RGBA:
       return 32u;
+    case GL_RGB:
+      return 24u;
     default:
       NOTREACHED();
       return 0u;

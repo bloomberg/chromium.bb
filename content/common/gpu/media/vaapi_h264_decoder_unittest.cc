@@ -81,35 +81,25 @@ class VaapiH264DecoderLoop {
   // Use the data in the frame: write to file and update MD5 sum.
   bool ProcessVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
 
-  scoped_ptr<VaapiWrapper> wrapper_;
+  scoped_refptr<VaapiWrapper> wrapper_;
   scoped_ptr<VaapiH264Decoder> decoder_;
   std::string data_;            // data read from input_file
   base::FilePath output_file_;  // output data is written to this file
   std::vector<VASurfaceID> available_surfaces_;
 
-  // These members (x_display_, num_outputted_pictures_, num_surfaces_)
+  // These members (num_outputted_pictures_, num_surfaces_)
   // need to be initialized and possibly freed manually.
-  Display* x_display_;
   int num_outputted_pictures_;  // number of pictures already outputted
   size_t num_surfaces_;  // number of surfaces in the current set of surfaces
   base::MD5Context md5_context_;
 };
 
 VaapiH264DecoderLoop::VaapiH264DecoderLoop()
-    : x_display_(NULL), num_outputted_pictures_(0), num_surfaces_(0) {
+    : num_outputted_pictures_(0), num_surfaces_(0) {
   base::MD5Init(&md5_context_);
 }
 
 VaapiH264DecoderLoop::~VaapiH264DecoderLoop() {
-  // We need to destruct decoder and wrapper first because:
-  // (1) The decoder has a reference to the wrapper.
-  // (2) The wrapper has a reference to x_display_.
-  decoder_.reset();
-  wrapper_.reset();
-
-  if (x_display_) {
-    XCloseDisplay(x_display_);
-  }
 }
 
 void LogOnError(VaapiH264Decoder::VAVDAH264DecoderFailure error) {
@@ -118,17 +108,11 @@ void LogOnError(VaapiH264Decoder::VAVDAH264DecoderFailure error) {
 
 bool VaapiH264DecoderLoop::Initialize(base::FilePath input_file,
                                       base::FilePath output_file) {
-  x_display_ = XOpenDisplay(NULL);
-  if (!x_display_) {
-    LOG(ERROR) << "Can't open X display";
-    return false;
-  }
-
   media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
   base::Closure report_error_cb =
       base::Bind(&LogOnError, VaapiH264Decoder::VAAPI_ERROR);
-  wrapper_ = VaapiWrapper::Create(
-      VaapiWrapper::kDecode, profile, x_display_, report_error_cb);
+  wrapper_ =
+      VaapiWrapper::Create(VaapiWrapper::kDecode, profile, report_error_cb);
   if (!wrapper_.get()) {
     LOG(ERROR) << "Can't create vaapi wrapper";
     return false;
@@ -296,8 +280,8 @@ void VaapiH264DecoderLoop::RefillSurfaces() {
   for (size_t i = 0; i < available_surfaces_.size(); i++) {
     VASurface::ReleaseCB release_cb = base::Bind(
         &VaapiH264DecoderLoop::RecycleSurface, base::Unretained(this));
-    scoped_refptr<VASurface> surface(
-        new VASurface(available_surfaces_[i], release_cb));
+    scoped_refptr<VASurface> surface(new VASurface(
+        available_surfaces_[i], decoder_->GetPicSize(), release_cb));
     decoder_->ReuseSurface(surface);
   }
   available_surfaces_.clear();
