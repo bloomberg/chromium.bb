@@ -123,6 +123,11 @@ def StrSignal(sig_num):
   Returns:
     A string of the signal name(s)
   """
+  # Handle realtime signals first since they are unnamed.
+  if sig_num >= signal.SIGRTMIN and sig_num < signal.SIGRTMAX:
+    return 'SIGRT_%i' % sig_num
+
+  # Probe the module looking for matching signal constant.
   sig_names = []
   for name, num in signal.__dict__.iteritems():
     if name.startswith('SIG') and num == sig_num:
