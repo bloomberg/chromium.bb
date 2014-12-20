@@ -27,8 +27,7 @@ import subprocess2
 THIS_FILE_PATH = os.path.abspath(__file__)
 
 GSUTIL_DEFAULT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    'third_party', 'gsutil', 'gsutil')
+    os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 
 CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
 class DiffFiltererWrapper(object):
