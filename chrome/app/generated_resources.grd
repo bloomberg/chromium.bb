@@ -5630,12 +5630,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME">
-          Alternative shelf layout
-        </message>
-        <message name="IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION">
-          Use the alternative shelf layout.
-        </message>
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that restarts Chrome OS when clicked. ">
           Restart Now
         </message>
@@ -5792,12 +5786,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION" desc="Description of the 'Accelerated overflow scroll mode' lab.">
         When possible, puts the scrolling contents of an overflow scrolling element onto a composited layer for faster scrolling.
       </message>
-      <message name="IDS_FLAGS_DISABLE_LAYER_SQUASHING_NAME" desc="Name of the 'Disable layer squashing' lab.">
-        Disable layer squashing
-      </message>
-      <message name="IDS_FLAGS_DISABLE_LAYER_SQUASHING_DESCRIPTION" desc="Description of the 'Disable layer squashing' lab.">
-        Prevents the automatic combining of composited layers.
-      </message>
       <if expr="is_win">
         <message name="IDS_FLAGS_DISABLE_DIRECT_WRITE_NAME" desc="Name of the 'Disable DirectWrite' lab.">
           Disable DirectWrite
@@ -5902,12 +5890,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
-      </message>
-      <message name="IDS_FLAGS_DISAMBIGUATE_SERVER_NAME_TYPES_NAME" desc="Title for a flag">
-        Improve Autofill type predictions for names
-      </message>
-      <message name="IDS_FLAGS_DISAMBIGUATE_SERVER_NAME_TYPES_DESCRIPTION" desc="Description for a flag">
-        Uses local heuristics to help determine the correct Autofill type when the Autofill server classifies a field as either CREDIT_CARD_NAME or NAME_FULL
       </message>
       <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
         Enable TCP Fast Open
@@ -6376,12 +6358,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Data Reduction Proxy -->
       <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME" desc="Name of the flag to enable data compression proxy.">
-          Enable Data Compression Proxy
-        </message>
-        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION" desc="Description of flag to enable data compression proxy.">
-          Reduce data consumption by loading optimized web pages via Google proxy servers.
-        </message>
         <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME" desc="An about::flags experiment title to enable/disable the development version of the data reduction proxy">
           Enable Experiment Data Reduction Proxy
         </message>
@@ -6538,12 +6514,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to enable app launcher.">
           Enable the App Launcher. Upon enabling, creates operating system shortcuts to the App Launcher.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH" desc="Name of the flag to disable voice search in the app list.">
-          Disable voice search in the App Launcher.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION" desc="Description of the flag to disable voice search in the app list.">
-          Disable voice search in the App Launcher. If disabled, the user won't be able to search by speech.
         </message>
         <message name="IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST" desc="Name of the flag to disable the app info context menu option in the app list.">
           Disable the app info dialog.
