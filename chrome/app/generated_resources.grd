@@ -10292,7 +10292,7 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_EASY_UNLOCK_NOTIFICATION_OPTION_LABEL" desc="The label of the preference in the Smart Lock settings page to control whether notifications should be shown when unlocking the Chromebook.">
           Get notified on your phone every time Smart Lock unlocks your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
         </message>
-        <message name="IDS_OPTIONS_EASY_UNLOCK_MANAGE BLUETOOTH" desc="The label of the link in the Smart Lock settings page to open the Bluetooth settings.">
+        <message name="IDS_OPTIONS_EASY_UNLOCK_MANAGE_BLUETOOTH" desc="The label of the link in the Smart Lock settings page to open the Bluetooth settings.">
           Manage Bluetooth settings
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
