@@ -36,6 +36,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Forward.h"
@@ -156,6 +157,7 @@ private:
     OwnPtr<ImageBufferSurface> m_surface;
     OwnPtr<GraphicsContext> m_context;
     ImageBufferClient* m_client;
+    OwnPtr<DisplayItemList> m_displayItemList;
 };
 
 } // namespace blink

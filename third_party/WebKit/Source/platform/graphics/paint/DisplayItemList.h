@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class GraphicsContext;
+
 typedef Vector<OwnPtr<DisplayItem> > PaintList;
 
 class PLATFORM_EXPORT DisplayItemList {
@@ -26,6 +28,9 @@ public:
     void invalidate(DisplayItemClient);
     void invalidateAll();
     bool clientCacheIsValid(DisplayItemClient client) const { return m_cachedClients.contains(client); }
+
+    // Plays back the current PaintList() into the given context.
+    void replay(GraphicsContext*);
 
 #ifndef NDEBUG
     void showDebugData() const;

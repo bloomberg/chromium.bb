@@ -178,6 +178,11 @@
     "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
+    "prefix": "slimmingpaint",
+    "base": "fast/events",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
+  },
+  {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
     "args": ["--root-layer-scrolls"]

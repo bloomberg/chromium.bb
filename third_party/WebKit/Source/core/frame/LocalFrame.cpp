@@ -57,6 +57,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -67,6 +68,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -607,9 +609,13 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
     if (!buffer)
         return nullptr;
-    buffer->context()->scale(deviceScaleFactor, deviceScaleFactor);
-    buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
-    buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
+
+    AffineTransform transform;
+    transform.scale(deviceScaleFactor, deviceScaleFactor);
+    transform.translate(-paintingRect.x(), -paintingRect.y());
+    TransformRecorder transformRecorder(*buffer->context(), renderer->displayItemClient(), transform);
+
+    ClipRecorder clipRecorder(renderer->displayItemClient(), buffer->context(), DisplayItem::ClipNodeImage, LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
     m_view->paintContents(buffer->context(), paintingRect);
 

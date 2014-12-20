@@ -74,6 +74,7 @@ public:
         Scrollbar,
         Resizer,
         ColumnRules,
+        ClipNodeImage,
         ClipFrameToVisibleContentRect,
         ClipFrameScrollbars
     };

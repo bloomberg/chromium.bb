@@ -28,7 +28,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClie
 #if ENABLE(ASSERT)
     context->setInDrawingRecorder(true);
 #endif
-
+    ASSERT(context->displayItemList());
     m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient);
 #if ENABLE(ASSERT)
     // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.

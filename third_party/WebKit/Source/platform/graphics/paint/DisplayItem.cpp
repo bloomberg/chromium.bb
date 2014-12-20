@@ -59,6 +59,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case Scrollbar: return "Scrollbar";
     case Resizer: return "Resizer";
     case ColumnRules: return "ColumnRules";
+    case ClipNodeImage: return "ClipNodeImage";
     case ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
     case ClipFrameScrollbars: return "ClipFrameScrollbars";
     }

@@ -34,6 +34,7 @@
 #include "platform/graphics/ImageBuffer.h"
 
 #include "GrContext.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -76,7 +77,10 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     , m_client(0)
 {
     if (m_surface->canvas()) {
-        m_context = adoptPtr(new GraphicsContext(m_surface->canvas(), nullptr));
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            m_displayItemList = DisplayItemList::create();
+
+        m_context = adoptPtr(new GraphicsContext(m_surface->canvas(), m_displayItemList.get()));
         m_context->setAccelerated(m_surface->isAccelerated());
     }
     m_surface->setImageBuffer(this);
@@ -84,6 +88,8 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
 
 ImageBuffer::~ImageBuffer()
 {
+    if (m_displayItemList)
+        m_displayItemList->replay(m_context.get());
 }
 
 GraphicsContext* ImageBuffer::context() const

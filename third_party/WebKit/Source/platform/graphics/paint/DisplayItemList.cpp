@@ -142,4 +142,10 @@ void DisplayItemList::showDebugData() const
 
 #endif
 
+void DisplayItemList::replay(GraphicsContext* context)
+{
+    for (auto& displayItem : m_paintList)
+        displayItem->replay(context);
+}
+
 } // namespace blink
