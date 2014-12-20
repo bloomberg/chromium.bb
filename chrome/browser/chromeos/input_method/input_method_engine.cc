@@ -320,18 +320,21 @@ bool InputMethodEngine::SendKeyEvents(
     flags |= event.shift_key ? ui::EF_SHIFT_DOWN     : ui::EF_NONE;
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
 
-    ui::KeyEvent ui_event(
-        type,
-        key_code,
-        ui::KeycodeConverter::CodeStringToDomCode(event.code.c_str()),
-        flags);
+    base::char16 ch = 0;
     // 4-bytes UTF-8 string is at least 2-characters UTF-16 string.
     // And Key char can only be single UTF-16 character.
     if (!event.key.empty() && event.key.size() < 4) {
       base::string16 key_char = base::UTF8ToUTF16(event.key);
       if (key_char.size() == 1)
-        ui_event.set_character(key_char[0]);
+        ch = key_char[0];
     }
+    ui::KeyEvent ui_event(
+        type,
+        key_code,
+        ui::KeycodeConverter::CodeStringToDomCode(event.code.c_str()),
+        flags,
+        ui::KeycodeConverter::KeyStringToDomKey(event.key.c_str()),
+        ch);
     base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
                                                         &ui_event);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&ui_event);

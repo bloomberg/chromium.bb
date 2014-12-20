@@ -749,6 +749,14 @@ void KeyEvent::SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data) {
 }
 
 void KeyEvent::ApplyLayout() const {
+  // If the client has set the character (e.g. faked key events from virtual
+  // keyboard), it's client's responsibility to set the dom key correctly.
+  // Otherwise, set the dom key as unidentified.
+  // Please refer to crbug.com/443889.
+  if (character_ != 0) {
+    key_ = DomKey::UNIDENTIFIED;
+    return;
+  }
 #if defined(OS_WIN)
   // Native Windows character events always have is_char_ == true,
   // so this is a synthetic or native keystroke event.
