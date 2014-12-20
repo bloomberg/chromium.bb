@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(AppListSpeechRecognizerBrowserTest, RecognizeSpeech) {
   EXPECT_CALL(*mock_speech_delegate_,
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  recognizer.Start();
+  recognizer.Start(nullptr);
   run_loop.Run();
 }
 

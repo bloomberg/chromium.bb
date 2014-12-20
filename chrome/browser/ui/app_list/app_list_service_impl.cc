@@ -329,9 +329,11 @@ void AppListServiceImpl::Show() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void AppListServiceImpl::ShowForVoiceSearch(Profile* profile) {
+void AppListServiceImpl::ShowForVoiceSearch(
+    Profile* profile,
+    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   ShowForProfile(profile);
-  view_delegate_->ToggleSpeechRecognition();
+  view_delegate_->ToggleSpeechRecognitionForHotword(preamble);
 }
 
 void AppListServiceImpl::ShowForAppInstall(Profile* profile,

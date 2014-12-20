@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -41,6 +42,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+struct SpeechRecognitionSessionPreamble;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -65,6 +70,11 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Configure the AppList for the given |profile|.
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
+
+  // Invoked to toggle the status of speech recognition based on a hotword
+  // trigger.
+  void ToggleSpeechRecognitionForHotword(
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
 
   // Overridden from app_list::AppListViewDelegate:
   bool ForceNativeDesktop() const override;
@@ -124,7 +134,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Overridden from HotwordClient:
   void OnHotwordStateChanged(bool started) override;
-  void OnHotwordRecognized() override;
+  void OnHotwordRecognized(
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
+      override;
 
   // Overridden from SigninManagerFactory::Observer:
   void SigninManagerCreated(SigninManagerBase* manager) override;

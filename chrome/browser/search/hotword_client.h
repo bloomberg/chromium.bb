@@ -5,6 +5,12 @@
 #ifndef CHROME_BROWSER_SEARCH_HOTWORD_CLIENT_H_
 #define CHROME_BROWSER_SEARCH_HOTWORD_CLIENT_H_
 
+#include "base/memory/ref_counted.h"
+
+namespace content {
+struct SpeechRecognitionSessionPreamble;
+}
+
 class HotwordClient {
  public:
   virtual ~HotwordClient() {}
@@ -13,7 +19,9 @@ class HotwordClient {
   virtual void OnHotwordStateChanged(bool started) {}
 
   // Called when the hotword is recognized.
-  virtual void OnHotwordRecognized() = 0;
+  virtual void OnHotwordRecognized(
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
+      = 0;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_HOTWORD_CLIENT_H_

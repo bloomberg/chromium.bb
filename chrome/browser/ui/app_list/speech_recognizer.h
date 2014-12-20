@@ -9,6 +9,10 @@
 
 #include "base/memory/weak_ptr.h"
 
+namespace content {
+struct SpeechRecognitionSessionPreamble;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -27,8 +31,11 @@ class SpeechRecognizer {
                    const std::string& locale);
   ~SpeechRecognizer();
 
-  // Start/stop the speech recognizer. Must be called on the UI thread.
-  void Start();
+  // Start/stop the speech recognizer. |preamble| contains the preamble audio to
+  // log if auth parameters are available.
+  // Must be called on the UI thread.
+  void Start(
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
   void Stop();
 
  private:

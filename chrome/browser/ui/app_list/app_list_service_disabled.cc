@@ -32,7 +32,10 @@ class AppListServiceDisabled : public AppListService {
 
   void Show() override {}
   void ShowForProfile(Profile* profile) override {}
-  void ShowForVoiceSearch(Profile* profile) override {}
+  void ShowForVoiceSearch(
+      Profile* profile,
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
+      override {}
   void ShowForAppInstall(Profile* profile,
                          const std::string& extension_id,
                          bool start_discovery_tracking) override {}

@@ -124,7 +124,9 @@ class MockHotwordClient : public HotwordClient {
     state_changed_count_++;
   }
 
-  void OnHotwordRecognized() override { recognized_count_++; }
+  void OnHotwordRecognized(
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
+      override { recognized_count_++; }
 
   bool last_enabled() const { return last_enabled_; }
   int state_changed_count() const { return state_changed_count_; }

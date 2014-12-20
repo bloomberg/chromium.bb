@@ -43,6 +43,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -385,10 +386,11 @@ void AppListViewDelegate::OnHotwordStateChanged(bool started) {
   }
 }
 
-void AppListViewDelegate::OnHotwordRecognized() {
+void AppListViewDelegate::OnHotwordRecognized(
+    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   DCHECK_EQ(app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING,
             speech_ui_->state());
-  ToggleSpeechRecognition();
+  ToggleSpeechRecognitionForHotword(preamble);
 }
 
 void AppListViewDelegate::SigninManagerCreated(SigninManagerBase* manager) {
@@ -604,10 +606,15 @@ void AppListViewDelegate::OpenFeedback() {
 }
 
 void AppListViewDelegate::ToggleSpeechRecognition() {
+  ToggleSpeechRecognitionForHotword(nullptr);
+}
+
+void AppListViewDelegate::ToggleSpeechRecognitionForHotword(
+    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
   if (service)
-    service->ToggleSpeechRecognition();
+    service->ToggleSpeechRecognition(preamble);
 
   // With the new hotword extension, stop the hotword session. With the launcher
   // and NTP, this is unnecessary since the hotwording is implicitly stopped.

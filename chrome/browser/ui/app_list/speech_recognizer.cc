@@ -15,6 +15,7 @@
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
+#include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -43,8 +44,10 @@ class SpeechRecognizer::EventListener
                 net::URLRequestContextGetter* url_request_context_getter,
                 const std::string& locale);
 
-  void StartOnIOThread(const std::string& auth_scope,
-                       const std::string& auth_token);
+  void StartOnIOThread(
+      const std::string& auth_scope,
+      const std::string& auth_token,
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
   void StopOnIOThread();
 
  private:
@@ -107,7 +110,8 @@ SpeechRecognizer::EventListener::~EventListener() {
 
 void SpeechRecognizer::EventListener::StartOnIOThread(
     const std::string& auth_scope,
-    const std::string& auth_token) {
+    const std::string& auth_token,
+    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (session_ != kInvalidSessionId)
     StopOnIOThread();
@@ -127,6 +131,7 @@ void SpeechRecognizer::EventListener::StartOnIOThread(
       content::ChildProcessHost::kInvalidUniqueID;
   config.auth_scope = auth_scope;
   config.auth_token = auth_token;
+  config.preamble = preamble;
 
   auto speech_instance = content::SpeechRecognitionManager::GetInstance();
   session_ = speech_instance->CreateSession(config);
@@ -268,7 +273,8 @@ SpeechRecognizer::~SpeechRecognizer() {
   Stop();
 }
 
-void SpeechRecognizer::Start() {
+void SpeechRecognizer::Start(
+    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string auth_scope;
   std::string auth_token;
@@ -280,7 +286,8 @@ void SpeechRecognizer::Start() {
       base::Bind(&SpeechRecognizer::EventListener::StartOnIOThread,
                  speech_event_listener_,
                  auth_scope,
-                 auth_token));
+                 auth_token,
+                 preamble));
 }
 
 void SpeechRecognizer::Stop() {

@@ -22,6 +22,10 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 
+namespace content {
+struct SpeechRecognitionSessionPreamble;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -50,7 +54,8 @@ class StartPageService : public KeyedService,
 
   void AppListShown();
   void AppListHidden();
-  void ToggleSpeechRecognition();
+  void ToggleSpeechRecognition(
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
 
   // Called when the WebUI has finished loading.
   void WebUILoaded();

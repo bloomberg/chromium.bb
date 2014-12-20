@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -221,7 +222,8 @@ void StartPageService::AppListHidden() {
 #endif
 }
 
-void StartPageService::ToggleSpeechRecognition() {
+void StartPageService::ToggleSpeechRecognition(
+    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
   DCHECK(contents_);
   speech_button_toggled_manually_ = true;
 
@@ -245,7 +247,7 @@ void StartPageService::ToggleSpeechRecognition() {
                                profile_locale));
     }
 
-    speech_recognizer_->Start();
+    speech_recognizer_->Start(preamble);
     return;
   }
 
@@ -255,7 +257,8 @@ void StartPageService::ToggleSpeechRecognition() {
   if (!webui_finished_loading_) {
     pending_webui_callbacks_.push_back(
         base::Bind(&StartPageService::ToggleSpeechRecognition,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   preamble));
     return;
   }
 

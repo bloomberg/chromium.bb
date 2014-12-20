@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/speech_recognition_session_preamble.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -182,13 +183,28 @@ bool HotwordPrivateSetHotwordSessionStateFunction::RunSync() {
 }
 
 bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
+  scoped_ptr<api::hotword_private::NotifyHotwordRecognition::Params> params(
+      api::hotword_private::NotifyHotwordRecognition::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  scoped_refptr<content::SpeechRecognitionSessionPreamble> preamble;
+  if (params->log.get() &&
+      !params->log->buffer.empty() &&
+      params->log->channels == 1) {
+    // TODO(amistry): Convert multi-channel preamble log into mono.
+    preamble = new content::SpeechRecognitionSessionPreamble();
+    preamble->sample_rate = params->log->sample_rate;
+    preamble->sample_depth = params->log->bytes_per_sample;
+    preamble->sample_data.swap(params->log->buffer);
+  }
+
   HotwordService* hotword_service =
       HotwordServiceFactory::GetForProfile(GetProfile());
   if (hotword_service) {
     if (hotword_service->IsTraining()) {
       hotword_service->NotifyHotwordTriggered();
     } else if (hotword_service->client()) {
-      hotword_service->client()->OnHotwordRecognized();
+      hotword_service->client()->OnHotwordRecognized(preamble);
     } else if (HotwordService::IsExperimentalHotwordingEnabled() &&
                hotword_service->IsAlwaysOnEnabled()) {
       Browser* browser = GetCurrentBrowser();
@@ -197,7 +213,7 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
       AppListService* app_list_service = AppListService::Get(
           browser ? browser->host_desktop_type() : chrome::GetActiveDesktop());
       CHECK(app_list_service);
-      app_list_service->ShowForVoiceSearch(GetProfile());
+      app_list_service->ShowForVoiceSearch(GetProfile(), preamble);
     }
   }
   return true;

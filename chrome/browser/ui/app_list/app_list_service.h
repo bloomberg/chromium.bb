@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -19,6 +20,10 @@ class Profile;
 namespace base {
 class CommandLine;
 class FilePath;
+}
+
+namespace content {
+struct SpeechRecognitionSessionPreamble;
 }
 
 namespace gfx {
@@ -79,7 +84,10 @@ class AppListService {
 
   // Shows the app list, and switches to voice search. Used by always-on
   // hotwording.
-  virtual void ShowForVoiceSearch(Profile* profile) = 0;
+  virtual void ShowForVoiceSearch(
+      Profile* profile,
+      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
+      = 0;
 
   // Shows the app list, and reveals the page that contains |extension_id|. This
   // should only be called for things that show in the app list, and only when
