@@ -40,7 +40,7 @@
     }
 
     for (var i = 0; i < NUM_WORKERS; ++i) {
-        var worker = new Worker('resources/random-values-concurrent.js');
+        var worker = new Worker('random-values-concurrent.js');
         worker.onmessage = function(event)
         {
             if (event.data instanceof Uint8Array)

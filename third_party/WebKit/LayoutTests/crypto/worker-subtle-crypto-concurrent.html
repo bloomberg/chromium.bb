@@ -2,7 +2,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="resources/common.js"></script>
+<script src="subtle/resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -49,7 +49,7 @@
 
     function createPromiseForWorker()
     {
-        var worker = new Worker("resources/subtle-crypto-concurrent.js");
+        var worker = new Worker("subtle/resources/subtle-crypto-concurrent.js");
         return createPromiseForThread(worker, true);
     }
 
@@ -68,6 +68,6 @@
 
     Promise.all(allPromises).then(finishJSTest, failAndFinishJSTest);
 </script>
-<script src="resources/subtle-crypto-concurrent.js"></script>
+<script src="subtle/resources/subtle-crypto-concurrent.js"></script>
 </body>
 </html>

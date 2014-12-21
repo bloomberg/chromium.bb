@@ -3,7 +3,7 @@
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Starting worker: resources/random-values.js
+Starting worker: random-values.js
 PASS [Worker] 'crypto' in self is true
 PASS [Worker] 'getRandomValues' in self.crypto is true
 PASS [Worker] self.crypto.__proto__.hasOwnProperty('getRandomValues') is true
