@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
-#include "ui/gfx/safe_integer_conversions.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace gfx {
 
