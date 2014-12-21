@@ -1028,41 +1028,41 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     if (!locationInContainer.intersects(overflowRect))
         return false;
 
-    // Check children first.
-    // We need to account for culled inline parents of the hit-tested nodes, so that they may also get included in area-based hit-tests.
-    RenderObject* culledParent = 0;
-    for (InlineBox* curr = lastChild(); curr; curr = curr->prevOnLine()) {
-        if (curr->renderer().isText() || !curr->boxModelObject()->hasSelfPaintingLayer()) {
-            RenderObject* newParent = 0;
-            // Culled parents are only relevant for area-based hit-tests, so ignore it in point-based ones.
-            if (locationInContainer.isRectBasedTest()) {
-                newParent = curr->renderer().parent();
-                if (newParent == renderer())
-                    newParent = 0;
-            }
-            // Check the culled parent after all its children have been checked, to do this we wait until
-            // we are about to test an element with a different parent.
-            if (newParent != culledParent) {
-                if (!newParent || !newParent->isDescendantOf(culledParent)) {
-                    while (culledParent && culledParent != renderer() && culledParent != newParent) {
-                        if (culledParent->isRenderInline() && toRenderInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
-                            return true;
-                        culledParent = culledParent->parent();
-                    }
-                }
-                culledParent = newParent;
-            }
-            if (curr->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
-                renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-                return true;
-            }
-        }
-    }
-    // Check any culled ancestor of the final children tested.
-    while (culledParent && culledParent != renderer()) {
-        if (culledParent->isRenderInline() && toRenderInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
+    // We need to hit test both our inline children (InlineBoxes) and culled inlines
+    // (RenderObjects). We check our inlines in the same order as line layout but
+    // for each inline we additionally need to hit test its culled inline parents.
+    // While hit testing culled inline parents, we can stop once we reach
+    // a non-inline parent or a culled inline associated with a different inline box.
+    InlineBox* prev;
+    for (InlineBox* curr = lastChild(); curr; curr = prev) {
+        prev = curr->prevOnLine();
+
+        // Layers will handle hit testing themselves.
+        if (curr->boxModelObject() && curr->boxModelObject()->hasSelfPaintingLayer())
+            continue;
+
+        if (curr->nodeAtPoint(request, result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
+            renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
             return true;
-        culledParent = culledParent->parent();
+        }
+
+        // If the current inlinebox's renderer and the previous inlinebox's renderer are same,
+        // we should yield the hit-test to the previous inlinebox.
+        if (prev && curr->renderer() == prev->renderer())
+            continue;
+
+        RenderObject* culledParent = &curr->renderer();
+        while (true) {
+            RenderObject* sibling = culledParent->style()->isLeftToRightDirection() ? culledParent->previousSibling() : culledParent->nextSibling();
+            culledParent = culledParent->parent();
+            ASSERT(culledParent);
+
+            if (culledParent == renderer() || (sibling && prev && prev->renderer().isDescendantOf(culledParent)))
+                break;
+
+            if (culledParent->isRenderInline() && toRenderInline(culledParent)->hitTestCulledInline(request, result, locationInContainer, accumulatedOffset))
+                return true;
+        }
     }
 
     // Now check ourselves. Pixel snap hit testing.
