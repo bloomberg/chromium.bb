@@ -99,7 +99,8 @@ class DeployChrome(object):
     self.options = options
     self.staging_dir = staging_dir
     if not self.options.staging_only:
-      self.device = remote.RemoteDevice(options.to, port=options.port)
+      self.device = remote.RemoteDevice(options.to, port=options.port,
+                                        ping=options.ping)
     self._target_dir_is_still_readonly = multiprocessing.Event()
 
     self.copy_paths = chrome_util.GetCopyPaths('chrome')
@@ -418,6 +419,8 @@ def _CreateParser():
   group.add_option('--strip-flags', default=None,
                    help="Flags to call the 'strip' binutil tool with.  "
                         "Overrides the default arguments.")
+  group.add_option('--ping', action='store_true', default=False,
+                   help='Ping the device before connection attempt.')
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, 'Metadata Overrides (Advanced)',
