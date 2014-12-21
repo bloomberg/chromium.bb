@@ -122,8 +122,9 @@ component("aura") {
     sources -= [ "input_state_lookup.cc" ]
 
     deps += [
-      "//ui/metro_viewer",
       "//ipc",
+      "//ui/metro_viewer",
+      "//ui/platform_window/win:win_window",
     ]
   }
 
