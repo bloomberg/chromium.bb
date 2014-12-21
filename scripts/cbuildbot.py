@@ -33,6 +33,7 @@ from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import tee
+from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import artifact_stages
@@ -1862,7 +1863,7 @@ def main(argv):
           build_config, options)
 
     if options.mock_tree_status is not None:
-      stack.Add(mock.patch.object, timeout_util, '_GetStatus',
+      stack.Add(mock.patch.object, tree_status, '_GetStatus',
                 return_value=options.mock_tree_status)
 
     if options.mock_slave_status is not None:
