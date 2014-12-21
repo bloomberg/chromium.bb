@@ -13,6 +13,7 @@ class MemoryMobile(benchmark.Benchmark):
   page_set = page_sets.MobileMemoryPageSet
 
 
+@benchmark.Disabled
 class MemoryTop7Stress(benchmark.Benchmark):
   test = memory.Memory
   page_set = page_sets.Top7StressPageSet
