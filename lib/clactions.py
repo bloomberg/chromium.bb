@@ -526,7 +526,8 @@ def GetCQWaitTime(change, action_history):
                              if a.build_config in relevant_configs]
   start = (constants.CL_ACTION_REQUEUED, constants.CL_ACTION_FORGIVEN)
   stop = (constants.CL_ACTION_PICKED_UP,)
-  waiting_intervals = GetIntervals(change, relevant_config_actions, start, stop)
+  waiting_intervals = GetIntervals(change, relevant_config_actions, start, stop,
+                                   True)
   return MeasureTimestampIntervals(
       IntersectIntervals([ready_intervals, waiting_intervals,
                           precq_passed_interval]))
