@@ -65,6 +65,7 @@ _ANDROID_DIR_EXTRACT_PATH = 'system/chrome/*'
 _CHROME_DIR = '/opt/google/chrome'
 _CHROME_DIR_MOUNT = '/mnt/stateful_partition/deploy_rootfs/opt/google/chrome'
 
+_UMOUNT_DIR_IF_MOUNTPOINT_CMD = 'mountpoint -q %(dir)s && umount %(dir)s'
 _BIND_TO_FINAL_DIR_CMD = 'mount --rbind %s %s'
 _SET_MOUNT_FLAGS_CMD = 'mount -o remount,exec,suid %s'
 
@@ -298,6 +299,9 @@ class DeployChrome(object):
     # Create directory if does not exist
     self.device.RunCommand('mkdir -p --mode 0775 %s' % (
                                self.options.mount_dir,))
+    # Umount the existing mount on mount_dir if present first
+    self.device.RunCommand(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
+                           {'dir': self.options.mount_dir})
     self.device.RunCommand(_BIND_TO_FINAL_DIR_CMD % (self.options.target_dir,
                                                      self.options.mount_dir))
     # Chrome needs partition to have exec and suid flags set
@@ -390,10 +394,14 @@ def _CreateParser():
                     help='Show more debug output.')
   parser.add_option('--mount-dir', type='path', default=None,
                     help='Deploy Chrome in target directory and bind it '
-                         'to the directory specified by this flag.')
+                         'to the directory specified by this flag.'
+                         'Any existing mount on this directory will be '
+                         'umounted first.')
   parser.add_option('--mount', action='store_true', default=False,
                     help='Deploy Chrome to default target directory and bind '
-                         'it to the default mount directory.')
+                         'it to the default mount directory.'
+                         'Any existing mount on this directory will be '
+                         'umounted first.')
 
   group = optparse.OptionGroup(parser, 'Advanced Options')
   group.add_option('-l', '--local-pkg-path', type='path',
