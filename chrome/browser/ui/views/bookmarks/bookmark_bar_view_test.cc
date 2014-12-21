@@ -206,7 +206,7 @@ class TestingPageNavigator : public PageNavigator {
 };
 
 // TODO(erg): Fix bookmark DND tests on linux_aura. crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && defined(USE_AURA)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x
@@ -485,7 +485,7 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_HideOnDesktopClick DISABLED_HideOnDesktopClick
 #else
@@ -1234,7 +1234,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_CloseMenuAfterClosingContextMenu \
   DISABLED_CloseMenuAfterClosingContextMenu
@@ -1335,7 +1335,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
 #else
@@ -1672,7 +1672,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_ContextMenus3 DISABLED_ContextMenus3
 #elif defined(USE_OZONE)
@@ -1997,74 +1997,3 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
 };
 
 VIEW_TEST(BookmarkBarViewTest21, ContextMenusForEmptyFolder)
-
-// Test that closing the source browser window while dragging a bookmark does
-// not cause a crash.
-class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
- protected:
-  void DoTestOnMessageLoop() override {
-    // Move the mouse to the first folder on the bookmark bar and press the
-    // mouse.
-    views::LabelButton* button = GetBookmarkButton(0);
-    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
-        ui_controls::DOWN | ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest22::Step2));
-  }
-
- private:
-  void Step2() {
-    // Menu should be showing.
-    views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != NULL);
-    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
-
-    views::MenuItemView* child_menu =
-        menu->GetSubmenu()->GetMenuItemAt(0);
-    ASSERT_TRUE(child_menu != NULL);
-
-    // Move mouse to center of menu and press button.
-    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
-        ui_controls::DOWN,
-        CreateEventTask(this, &BookmarkBarViewTest22::Step3));
-  }
-
-  void Step3() {
-    views::MenuItemView* target_menu =
-        bb_view_->GetMenu()->GetSubmenu()->GetMenuItemAt(1);
-    gfx::Point loc(1, target_menu->height() - 1);
-    views::View::ConvertPointToScreen(target_menu, &loc);
-
-    // Start a drag.
-    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
-        CreateEventTask(this, &BookmarkBarViewTest22::Step4));
-
-    // See comment above this method as to why we do this.
-    ScheduleMouseMoveInBackground(loc.x(), loc.y());
-  }
-
-  void Step4() {
-    window_->Close();
-    window_ = NULL;
-
-#if defined(OS_CHROMEOS)
-    ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest22::Done));
-#else
-    // There are no widgets to send the mouse release to.
-    Done();
-#endif
-  }
-};
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(pkotwicz): Enable on Desktop Linux once crbug.com/438365 is fixed.
-#define MAYBE_CloseSourceBrowserDuringDrag DISABLED_CloseSourceBrowserDuringDrag
-#elif defined(OS_WIN)
-// This test times out on Windows. TODO(pkotwicz): Find out why.
-#define MAYBE_CloseSourceBrowserDuringDrag DISABLED_CloseSourceBrowserDuringDrag
-#else
-#define MAYBE_CloseSourceBrowserDuringDrag CloseSourceBrowserDuringDrag
-#endif
-
-VIEW_TEST(BookmarkBarViewTest22, MAYBE_CloseSourceBrowserDuringDrag)
