@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"

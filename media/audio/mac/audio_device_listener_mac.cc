@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 

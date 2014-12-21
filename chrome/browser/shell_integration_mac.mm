@@ -5,7 +5,6 @@
 #include "chrome/browser/shell_integration.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/foundation_util.h"
 #include "chrome/common/chrome_version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"

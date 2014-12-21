@@ -17,10 +17,6 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
-#if !defined(OS_IOS)
-#import "base/mac/mac_util.h"
-#endif
-
 namespace {
 
 #if !defined(OS_IOS)

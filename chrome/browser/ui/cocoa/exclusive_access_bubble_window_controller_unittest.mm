@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 
-#include "base/mac/mac_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

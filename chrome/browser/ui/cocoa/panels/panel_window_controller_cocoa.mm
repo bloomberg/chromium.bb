@@ -9,7 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*

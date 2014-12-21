@@ -12,9 +12,6 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 
-// TODO(rohitrao): Clean up sites that include mac_util.h and remove this line.
-#include "base/mac/foundation_util.h"
-
 #if defined(__OBJC__)
 #import <Foundation/Foundation.h>
 #else  // __OBJC__

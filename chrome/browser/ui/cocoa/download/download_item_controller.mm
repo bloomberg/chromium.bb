@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

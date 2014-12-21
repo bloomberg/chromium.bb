@@ -4,7 +4,6 @@
 
 #include "skia/ext/skia_utils_mac.mm"
 
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

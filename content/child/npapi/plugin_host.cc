@@ -29,10 +29,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 using blink::WebBindings;
 
 // Declarations for stub implementations of deprecated functions, which are no

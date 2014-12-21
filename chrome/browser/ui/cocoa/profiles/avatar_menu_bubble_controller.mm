@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"

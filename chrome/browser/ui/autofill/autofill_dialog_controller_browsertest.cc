@@ -69,7 +69,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #elif defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #endif

@@ -40,7 +40,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
-#include "base/mac/mac_util.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #endif  // !defined(OS_IOS)
 #endif

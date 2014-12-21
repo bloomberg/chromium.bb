@@ -18,10 +18,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 using url::kAboutBlankURL;
 using content::WebContents;
 using ui::PAGE_TRANSITION_TYPED;

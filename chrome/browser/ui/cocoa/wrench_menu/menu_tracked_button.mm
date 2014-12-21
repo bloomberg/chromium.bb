@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_button.h"
 
-#include "base/mac/mac_util.h"
-
 @interface MenuTrackedButton (Private)
 - (void)doHighlight:(BOOL)highlight;
 - (void)checkMouseInRect;

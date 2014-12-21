@@ -42,10 +42,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 namespace chrome_pdf {
 
 const char kChromePrint[] = "chrome://print/";

@@ -19,6 +19,7 @@ extern "C" {
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"

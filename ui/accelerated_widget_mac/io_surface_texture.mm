@@ -15,7 +15,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"

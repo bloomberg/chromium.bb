@@ -11,7 +11,6 @@
 #include <set>
 #include <string>
 
-#include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/stats_counters.h"
 #include "base/strings/string_util.h"

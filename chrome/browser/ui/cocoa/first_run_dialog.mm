@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"

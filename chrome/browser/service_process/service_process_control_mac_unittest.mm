@@ -4,8 +4,8 @@
 
 #include <launch.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/google_toolbox_for_mac/src/Foundation/GTMServiceManagement.h"

@@ -11,7 +11,6 @@
 #include <OpenGL/OpenGL.h>
 
 #include "base/debug/trace_event.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/accelerated_widget_mac/io_surface_texture.h"

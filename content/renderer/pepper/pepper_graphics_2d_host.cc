@@ -39,7 +39,6 @@
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #endif
 

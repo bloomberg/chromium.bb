@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view_cocoa.h"
 #include "content/public/browser/web_contents.h"
 

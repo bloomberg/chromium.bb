@@ -16,10 +16,6 @@
 #include "components/captive_portal/captive_portal_types.h"
 #include "content/public/browser/notification_service.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif

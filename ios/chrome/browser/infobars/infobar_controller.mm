@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 
-#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"

@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"

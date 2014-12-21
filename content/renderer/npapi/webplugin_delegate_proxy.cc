@@ -55,10 +55,6 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
 #include "content/public/common/sandbox_init.h"

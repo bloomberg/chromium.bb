@@ -40,7 +40,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "third_party/WebKit/public/web/WebView.h"

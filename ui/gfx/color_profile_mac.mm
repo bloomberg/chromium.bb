@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {

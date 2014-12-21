@@ -4,7 +4,7 @@
 
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"

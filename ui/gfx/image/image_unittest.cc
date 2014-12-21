@@ -14,7 +14,7 @@
 #include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_ios.h"
 #elif defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #endif
 

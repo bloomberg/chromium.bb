@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"

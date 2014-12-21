@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
 
-#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"

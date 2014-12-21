@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"

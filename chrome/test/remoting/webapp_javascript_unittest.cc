@@ -6,7 +6,7 @@
 #include "chrome/test/remoting/qunit_browser_test_runner.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #endif // !defined(OS_MACOSX)
 
 namespace remoting {

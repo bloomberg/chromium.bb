@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/login_prompt_cocoa.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

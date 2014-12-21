@@ -29,8 +29,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mac_util.h"
 #elif defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif

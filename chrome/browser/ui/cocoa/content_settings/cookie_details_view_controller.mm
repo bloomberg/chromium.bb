@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 
 #include "base/mac/bundle_locations.h"
-#import "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"

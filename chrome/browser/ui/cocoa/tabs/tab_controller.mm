@@ -9,7 +9,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/sprite_view.h"
