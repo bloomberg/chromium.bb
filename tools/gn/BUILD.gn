@@ -212,6 +212,7 @@ executable("gn") {
   deps = [
     ":gn_lib",
     ":last_commit_position",
+    "//base",
   ]
 }
 
