@@ -1024,10 +1024,14 @@ class ValidationPool(object):
   # module.
   THROTTLED_OK = True
   GLOBAL_DRYRUN = False
-  MAX_TIMEOUT = 60 * 60 * 4
+  DEFAULT_TIMEOUT = 60 * 60 * 4
   # How long to wait when the tree is throttled before checking for CR+1 CL's.
   CQ_THROTTLED_TIMEOUT = 60 * 10
   SLEEP_TIMEOUT = 30
+  # Buffer time to leave when using the global build deadline as the sync stage
+  # timeout. We need some time to possibly extend the global build deadline
+  # after the sync timeout is hit.
+  EXTENSION_TIMEOUT_BUFFER = 10 * 60
   INCONSISTENT_SUBMIT_MSG = ('Gerrit thinks that the change was not submitted, '
                              'even though we hit the submit button.')
 
@@ -1266,11 +1270,20 @@ class ValidationPool(object):
 
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
-    end_time = time.time() + cls.MAX_TIMEOUT
+    timeout = cls.DEFAULT_TIMEOUT
+    if builder_run is not None:
+      build_id, db = builder_run.GetCIDBHandle()
+      if db:
+        # We must leave enough time before the deadline to allow us to extend
+        # the deadline in case we hit this timeout.
+        timeout = db.GetTimeToDeadline(build_id) - cls.EXTENSION_TIMEOUT_BUFFER
+
+    end_time = time.time() + timeout
     # How long to wait until if the tree is throttled and we want to be more
     # accepting of changes. We leave it as end_time whenever the tree is open.
     tree_throttled_time = end_time
     status = constants.TREE_OPEN
+
     while True:
       current_time = time.time()
       time_left = end_time - current_time
@@ -1766,9 +1779,13 @@ class ValidationPool(object):
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq_trybot, 'Trybot calling SubmitPool'
 
+    # TODO(pprabhu) It is bad form for master-paladin to do work after its
+    # deadline has passed. Extend the deadline after waiting for slave
+    # completion and ensure that none of the follow up stages go beyond the
+    # deadline.
     if (check_tree_open and not self.dryrun and not
         tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
-                               timeout=self.MAX_TIMEOUT,
+                               timeout=self.DEFAULT_TIMEOUT,
                                throttled_ok=throttled_ok)):
       raise TreeIsClosedException(
           closed_or_throttled=not throttled_ok)

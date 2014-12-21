@@ -39,12 +39,17 @@ class FakeCIDBConnection(object):
 
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  deadline=None, status=constants.BUILDER_STATUS_PASSED):
+                  timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
     to have a later FinishBuild call in testing.
     """
+    deadline = None
+    if timeout_seconds is not None:
+      timediff = datetime.timedelta(seconds=timeout_seconds)
+      deadline = datetime.datetime.now() + timediff
+
     row = {'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,
            'waterfall': waterfall,
@@ -102,7 +107,9 @@ class FakeCIDBConnection(object):
 
   def ExtendDeadline(self, build_id, timeout):
     # No sanity checking in fake object.
-    self.buildStageTable[build_id]['deadline'] = timeout
+    now = datetime.datetime.now()
+    timediff = datetime.timedelta(seconds=timeout)
+    self.buildStageTable[build_id]['deadline'] = now + timediff
 
   def FinishBuildStage(self, build_stage_id, status):
     if build_stage_id > len(self.buildStageTable):
@@ -161,3 +168,9 @@ class FakeCIDBConnection(object):
     build_configs = reduce(ReduceToBuildConfig, self.buildTable, [])
     # Reverse sort as that's what's expected.
     return sorted(build_configs[-number:], reverse=True)
+
+  def GetTimeToDeadline(self, build_id):
+    """Gets the time remaining until deadline."""
+    now = datetime.datetime.now()
+    deadline = self.buildTable[build_id]['deadline']
+    return max(0, (deadline - now).total_seconds())
