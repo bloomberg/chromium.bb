@@ -392,8 +392,12 @@ AccessibilityButtonState AXObject::checkboxOrRadioValue() const
     const AtomicString& result = getAttribute(aria_checkedAttr);
     if (equalIgnoringCase(result, "true"))
         return ButtonStateOn;
-    if (equalIgnoringCase(result, "mixed"))
+    if (equalIgnoringCase(result, "mixed")) {
+        AccessibilityRole role = ariaRoleAttribute();
+        if (role == RadioButtonRole || role == MenuItemRadioRole)
+            return ButtonStateOff;
         return ButtonStateMixed;
+    }
 
     return ButtonStateOff;
 }

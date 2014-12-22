@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body id="body">
+
+<div id="element1" role="checkbox" aria-checked="mixed"></div>
+<div id="element2" role="menuitemcheckbox" aria-checked="mixed"></div>
+<div id="element3" role="radio" aria-checked="mixed"></div> <!-- Treat as false for radio role -->
+<div id="element4" role="menuitemradio" aria-checked="mixed"></div> <!-- Treat as false for menuitemradio role -->
+
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+
+    description("Check whether mixed value is reported properly");
+
+    if (window.accessibilityController) {
+        for (var i = 1; i <= 4; i++) {
+            var element = accessibilityController.accessibleElementById("element" + i);
+            debug("Role: " + element.role);
+            debug("Mixed: " + element.isButtonStateMixed);
+        }
+    }
+
+</script>
+
+</body>
+</html>
