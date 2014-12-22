@@ -37,6 +37,10 @@ class WebFloatAnimationCurveImpl : public blink::WebFloatAnimationCurve {
                    double y1,
                    double x2,
                    double y2);
+  virtual void add(const blink::WebFloatKeyframe& keyframe,
+                   int steps,
+                   float steps_start_offset);
+
   virtual void setTimingFunction(TimingFunctionType type);
   virtual void setTimingFunction(double x1, double y1, double x2, double y2);
 

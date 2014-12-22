@@ -46,6 +46,14 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
       cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
 }
 
+void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
+                                     int steps,
+                                     float steps_start_offset) {
+  curve_->AddKeyframe(cc::FloatKeyframe::Create(
+      base::TimeDelta::FromSecondsD(keyframe.time), keyframe.value,
+      cc::StepsTimingFunction::Create(steps, steps_start_offset)));
+}
+
 void WebFloatAnimationCurveImpl::setTimingFunction(TimingFunctionType type) {
   curve_->SetTimingFunction(CreateTimingFunction(type));
 }

@@ -38,6 +38,10 @@ class WebTransformAnimationCurveImpl
                    double y1,
                    double x2,
                    double y2);
+  virtual void add(const blink::WebTransformKeyframe& keyframe,
+                   int steps,
+                   float stepsStartOffset);
+
   virtual void setTimingFunction(TimingFunctionType type);
   virtual void setTimingFunction(double x1, double y1, double x2, double y2);
 

@@ -81,6 +81,28 @@ class CC_EXPORT EaseInOutTimingFunction {
   DISALLOW_IMPLICIT_CONSTRUCTORS(EaseInOutTimingFunction);
 };
 
+class CC_EXPORT StepsTimingFunction : public TimingFunction {
+ public:
+  static scoped_ptr<StepsTimingFunction> Create(int steps,
+                                                float steps_start_offset);
+  ~StepsTimingFunction() override;
+
+  float GetValue(double t) const override;
+  scoped_ptr<TimingFunction> Clone() const override;
+
+  void Range(float* min, float* max) const override;
+  float Velocity(double time) const override;
+
+ protected:
+  StepsTimingFunction(int steps, float steps_start_offset);
+
+ private:
+  int steps_;
+  float steps_start_offset_;
+
+  DISALLOW_ASSIGN(StepsTimingFunction);
+};
+
 }  // namespace cc
 
 #endif  // CC_ANIMATION_TIMING_FUNCTION_H_

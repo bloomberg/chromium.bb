@@ -440,6 +440,101 @@ TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction) {
   EXPECT_FLOAT_EQ(1.f, curve->GetValue(base::TimeDelta::FromSecondsD(1.f)));
 }
 
+// Tests a step timing function if the change of values occur at the start.
+TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtStart) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  const int num_steps = 36;
+  const float steps_start_offset = 1.0f;
+  curve->AddKeyframe(FloatKeyframe::Create(
+      base::TimeDelta(), 0.f,
+      StepsTimingFunction::Create(num_steps, steps_start_offset)));
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
+                                           num_steps, nullptr));
+
+  const float time_threshold = 0.0001f;
+
+  for (float i = 0.f; i < num_steps; i += 1.f) {
+    const base::TimeDelta time1 =
+        base::TimeDelta::FromSecondsD(i / num_steps - time_threshold);
+    const base::TimeDelta time2 =
+        base::TimeDelta::FromSecondsD(i / num_steps + time_threshold);
+    EXPECT_FLOAT_EQ(std::ceil(i), curve->GetValue(time1));
+    EXPECT_FLOAT_EQ(std::ceil(i) + 1.f, curve->GetValue(time2));
+  }
+  EXPECT_FLOAT_EQ(num_steps,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(1.0)));
+
+  for (float i = 0.5f; i <= num_steps; i += 1.0f) {
+    const base::TimeDelta time = base::TimeDelta::FromSecondsD(i / num_steps);
+    EXPECT_FLOAT_EQ(std::ceil(i), curve->GetValue(time));
+  }
+}
+
+// Tests a step timing function if the change of values occur at the middle.
+TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtMiddle) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  const int num_steps = 36;
+  const float steps_start_offset = 0.5f;
+  curve->AddKeyframe(FloatKeyframe::Create(
+      base::TimeDelta(), 0.f,
+      StepsTimingFunction::Create(num_steps, steps_start_offset)));
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
+                                           num_steps, nullptr));
+
+  const float time_threshold = 0.0001f;
+
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta()));
+  for (float i = 0.5f; i < num_steps; i += 1.f) {
+    const base::TimeDelta time1 =
+        base::TimeDelta::FromSecondsD(i / num_steps - time_threshold);
+    const base::TimeDelta time2 =
+        base::TimeDelta::FromSecondsD(i / num_steps + time_threshold);
+    EXPECT_FLOAT_EQ(std::floor(i), curve->GetValue(time1));
+    EXPECT_FLOAT_EQ(std::floor(i) + 1.f, curve->GetValue(time2));
+  }
+  EXPECT_FLOAT_EQ(num_steps,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(1.0)));
+
+  for (float i = 0.25f; i <= num_steps; i += 1.0f) {
+    const base::TimeDelta time = base::TimeDelta::FromSecondsD(i / num_steps);
+    EXPECT_FLOAT_EQ(std::floor(i), curve->GetValue(time));
+  }
+}
+
+// Tests a step timing function if the change of values occur at the end.
+TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtEnd) {
+  scoped_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  const int num_steps = 36;
+  const float steps_start_offset = 0.0f;
+  curve->AddKeyframe(FloatKeyframe::Create(
+      base::TimeDelta(), 0.f,
+      StepsTimingFunction::Create(num_steps, steps_start_offset)));
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
+                                           num_steps, nullptr));
+
+  const float time_threshold = 0.0001f;
+
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta()));
+  for (float i = 1.f; i <= num_steps; i += 1.f) {
+    const base::TimeDelta time1 =
+        base::TimeDelta::FromSecondsD(i / num_steps - time_threshold);
+    const base::TimeDelta time2 =
+        base::TimeDelta::FromSecondsD(i / num_steps + time_threshold);
+    EXPECT_FLOAT_EQ(std::floor(i) - 1.f, curve->GetValue(time1));
+    EXPECT_FLOAT_EQ(std::floor(i), curve->GetValue(time2));
+  }
+  EXPECT_FLOAT_EQ(num_steps,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(1.0)));
+
+  for (float i = 0.5f; i <= num_steps; i += 1.0f) {
+    const base::TimeDelta time = base::TimeDelta::FromSecondsD(i / num_steps);
+    EXPECT_FLOAT_EQ(std::floor(i), curve->GetValue(time));
+  }
+}
+
 // Tests that animated bounds are computed as expected.
 TEST(KeyframedAnimationCurveTest, AnimatedBounds) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve(

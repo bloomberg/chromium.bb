@@ -49,6 +49,17 @@ void WebFilterAnimationCurveImpl::add(const WebFilterKeyframe& keyframe,
       cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
 }
 
+void WebFilterAnimationCurveImpl::add(const WebFilterKeyframe& keyframe,
+                                      int steps,
+                                      float steps_start_offset) {
+  const cc::FilterOperations& filter_operations =
+      static_cast<const WebFilterOperationsImpl&>(keyframe.value())
+          .AsFilterOperations();
+  curve_->AddKeyframe(cc::FilterKeyframe::Create(
+      base::TimeDelta::FromSecondsD(keyframe.time()), filter_operations,
+      cc::StepsTimingFunction::Create(steps, steps_start_offset)));
+}
+
 void WebFilterAnimationCurveImpl::setTimingFunction(TimingFunctionType type) {
   curve_->SetTimingFunction(CreateTimingFunction(type));
 }
