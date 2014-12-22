@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -689,17 +690,15 @@ void ToolbarActionsBar::ToolbarExtensionAdded(
   if (!model_->extensions_initialized())
     return;
 
-  // If this is just an upgrade, then don't worry about resizing.
-  if (extensions::ExtensionSystem::Get(browser_->profile())->runtime_data()->
-          IsBeingUpgraded(extension->id())) {
-    delegate_->Redraw(false);
-  } else {
-    // We may need to resize (e.g. to show the new icon, or the chevron).
-    // We suppress the chevron during animation because, if we're expanding to
-    // show a new icon, we don't want to have the chevron visible only for the
-    // duration of the animation.
-    ResizeDelegate(gfx::Tween::LINEAR, true);
-  }
+  // We may need to resize (e.g. to show the new icon, or the chevron). We don't
+  // need to check if the extension is upgrading here, because ResizeDelegate()
+  // checks to see if the container is already the proper size, and because
+  // if the action is newly incognito enabled, even though it's a reload, it's
+  // a new extension to this toolbar.
+  // We suppress the chevron during animation because, if we're expanding to
+  // show a new icon, we don't want to have the chevron visible only for the
+  // duration of the animation.
+  ResizeDelegate(gfx::Tween::LINEAR, true);
 }
 
 void ToolbarActionsBar::ToolbarExtensionRemoved(
@@ -718,8 +717,13 @@ void ToolbarActionsBar::ToolbarExtensionRemoved(
 
   // If the extension is being upgraded we don't want the bar to shrink
   // because the icon is just going to get re-added to the same location.
+  // There is an exception if this is an off-the-record profile, and the
+  // extension is no longer incognito-enabled.
   if (!extensions::ExtensionSystem::Get(browser_->profile())->runtime_data()->
-            IsBeingUpgraded(extension->id())) {
+            IsBeingUpgraded(extension->id()) ||
+      (browser_->profile()->IsOffTheRecord() &&
+       !extensions::util::IsIncognitoEnabled(extension->id(),
+                                             browser_->profile()))) {
     if (toolbar_actions_.size() > model_->visible_icon_count()) {
       // If we have more icons than we can show, then we must not be changing
       // the container size (since we either removed an icon from the main

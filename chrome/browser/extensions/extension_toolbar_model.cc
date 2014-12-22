@@ -327,9 +327,6 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   // to the full list (|toolbar_items_|, there won't be another *visible*
   // browser action, which was what the observers care about.
   if (!is_highlighting_) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, ToolbarExtensionAdded(extension, new_index));
-
     // If this is an incognito profile, we also have to check to make sure the
     // overflow matches the main bar's status.
     if (profile_->IsOffTheRecord()) {
@@ -350,6 +347,9 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
       else if (!visible && all_icons_visible())
         SetVisibleIconCount(visible_icon_count() - 1);
     }
+
+    FOR_EACH_OBSERVER(
+        Observer, observers_, ToolbarExtensionAdded(extension, new_index));
   }
 }
 
