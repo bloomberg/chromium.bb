@@ -427,8 +427,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
 
 // Test for crbug.com/270278. It simulates a browser crash and verifies if user
 // wallpaper is loaded.
+// Fails on the MSAN bots. See http://crbug.com/444477
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_RestoreWallpaper DISABLED_RestoreWallpaper
+#else
+#define MAYBE_RestoreWallpaper RestoreWallpaper
+#endif
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
-                       RestoreWallpaper) {
+                       MAYBE_RestoreWallpaper) {
   EXPECT_EQ(1, LoadedWallpapers());
 }
 
