@@ -117,8 +117,6 @@ class LoaderTest : public testing::Test {
   LoaderTest() {
     build_settings_.SetBuildDir(SourceDir("//out/Debug/"));
   }
-  virtual ~LoaderTest() {
-  }
 
  protected:
   Scheduler scheduler_;
