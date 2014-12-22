@@ -98,6 +98,14 @@ const Extension* PlatformAppBrowserTest::InstallPlatformApp(
   return extension;
 }
 
+const Extension* PlatformAppBrowserTest::InstallHostedApp() {
+  const Extension* extension =
+      InstallExtension(test_data_dir_.AppendASCII("hosted_app"), 1);
+  EXPECT_TRUE(extension);
+
+  return extension;
+}
+
 const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
     const char* name) {
   content::WindowedNotificationObserver app_loaded_observer(
@@ -117,6 +125,13 @@ void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
   OpenApplication(AppLaunchParams(browser()->profile(), extension,
                                   LAUNCH_CONTAINER_NONE, NEW_WINDOW,
                                   extensions::SOURCE_TEST));
+}
+
+void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
+  AppLaunchParams launch_params(browser()->profile(), extension,
+                                NEW_FOREGROUND_TAB,
+                                extensions::SOURCE_COMMAND_LINE);
+  OpenApplication(launch_params);
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstAppWindowWebContents() {

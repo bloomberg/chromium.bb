@@ -23,13 +23,17 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -151,6 +155,62 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   DISALLOW_COPY_AND_ASSIGN(WindowedAppShimLaunchObserver);
 };
 
+// Watches for a hosted app browser window to open.
+class HostedAppBrowserListObserver : public chrome::BrowserListObserver {
+ public:
+  explicit HostedAppBrowserListObserver(const std::string& app_id)
+      : app_id_(app_id), observed_add_(false), observed_removed_(false) {
+    BrowserList::AddObserver(this);
+  }
+
+  ~HostedAppBrowserListObserver() { BrowserList::RemoveObserver(this); }
+
+  void WaitUntilAdded() {
+    if (observed_add_)
+      return;
+
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+  }
+
+  void WaitUntilRemoved() {
+    if (observed_removed_)
+      return;
+
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+  }
+
+  // BrowserListObserver overrides:
+  void OnBrowserAdded(Browser* browser) override {
+    const extensions::Extension* app =
+        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+    if (app && app->id() == app_id_) {
+      observed_add_ = true;
+      if (run_loop_.get())
+        run_loop_->Quit();
+    }
+  }
+
+  void OnBrowserRemoved(Browser* browser) override {
+    const extensions::Extension* app =
+        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+    if (app && app->id() == app_id_) {
+      observed_removed_ = true;
+      if (run_loop_.get())
+        run_loop_->Quit();
+    }
+  }
+
+ private:
+  std::string app_id_;
+  bool observed_add_;
+  bool observed_removed_;
+  scoped_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserListObserver);
+};
+
 class AppLifetimeMonitorObserver : public apps::AppLifetimeMonitor::Observer {
  public:
   AppLifetimeMonitorObserver(Profile* profile)
@@ -220,6 +280,18 @@ void UpdateAppAndAwaitShimCreation(Profile* profile,
   file_watcher->Wait();
 }
 
+Browser* GetFirstHostedAppWindow() {
+  BrowserList* browsers =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  for (Browser* browser : *browsers) {
+    const extensions::Extension* extension =
+        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+    if (extension && extension->is_hosted_app())
+      return browser;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // Watches for NSNotifications from the shared workspace.
@@ -280,13 +352,86 @@ namespace apps {
 // Shims require static libraries http://crbug.com/386024.
 #if defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
+#define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
 #define MAYBE_ShowWindow DISABLED_ShowWindow
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
 #define MAYBE_Launch Launch
+#define MAYBE_HostedAppLaunch HostedAppLaunch
 #define MAYBE_ShowWindow ShowWindow
 #define MAYBE_RebuildShim RebuildShim
 #endif
+
+IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
+  const extensions::Extension* app = InstallHostedApp();
+
+  base::FilePath shim_path = GetAppShimPath(profile(), app);
+  EXPECT_FALSE(base::PathExists(shim_path));
+
+  UpdateAppAndAwaitShimCreation(profile(), app, shim_path);
+  ASSERT_TRUE(base::PathExists(shim_path));
+  NSString* bundle_id = GetBundleID(shim_path);
+
+  // Explicitly set the launch type to open in a new window.
+  extensions::SetLaunchType(
+      extensions::ExtensionSystem::Get(profile())->extension_service(),
+      app->id(), extensions::LAUNCH_TYPE_WINDOW);
+
+  // Case 1: Launch the hosted app, it should start the shim.
+  {
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer;
+    ns_observer.reset([[WindowedNSNotificationObserver alloc]
+        initForNotification:NSWorkspaceDidLaunchApplicationNotification
+                andBundleId:bundle_id]);
+    WindowedAppShimLaunchObserver observer(app->id());
+    LaunchHostedApp(app);
+    [ns_observer wait];
+    observer.Wait();
+
+    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+    EXPECT_TRUE(GetFirstHostedAppWindow());
+
+    NSArray* running_shim = [NSRunningApplication
+        runningApplicationsWithBundleIdentifier:bundle_id];
+    ASSERT_EQ(1u, [running_shim count]);
+
+    ns_observer.reset([[WindowedNSNotificationObserver alloc]
+        initForNotification:NSWorkspaceDidTerminateApplicationNotification
+                andBundleId:bundle_id]);
+    [base::mac::ObjCCastStrict<NSRunningApplication>(
+        [running_shim objectAtIndex:0]) terminate];
+    [ns_observer wait];
+
+    EXPECT_FALSE(GetFirstHostedAppWindow());
+    EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  }
+
+  // Case 2: Launch the shim, it should start the hosted app.
+  {
+    HostedAppBrowserListObserver listener(app->id());
+    CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
+    shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
+    ProcessSerialNumber shim_psn;
+    ASSERT_TRUE(base::mac::OpenApplicationWithPath(
+        shim_path, shim_cmdline, kLSLaunchDefaults, &shim_psn));
+    listener.WaitUntilAdded();
+
+    ASSERT_TRUE(GetFirstHostedAppWindow());
+    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+
+    // If the window is closed, the shim should quit.
+    pid_t shim_pid;
+    EXPECT_EQ(noErr, GetProcessPID(&shim_psn, &shim_pid));
+    GetFirstHostedAppWindow()->window()->Close();
+    // Wait for the window to be closed.
+    listener.WaitUntilRemoved();
+    ASSERT_TRUE(
+        base::WaitForSingleProcess(shim_pid, TestTimeouts::action_timeout()));
+
+    EXPECT_FALSE(GetFirstHostedAppWindow());
+    EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  }
+}
 
 // Test that launching the shim for an app starts the app, and vice versa.
 // These two cases are combined because the time to run the test is dominated

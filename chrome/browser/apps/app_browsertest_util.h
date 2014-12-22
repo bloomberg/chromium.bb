@@ -46,12 +46,18 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // Installs the app named |name| out of the platform_apps subdirectory.
   const Extension* InstallPlatformApp(const char* name);
 
+  // Installs the sample hosted app.
+  const Extension* InstallHostedApp();
+
   // Installs and runs the app named |name| out of the platform_apps
   // subdirectory. Waits until it is launched.
   const Extension* InstallAndLaunchPlatformApp(const char* name);
 
   // Launch the given platform app.
   virtual void LaunchPlatformApp(const Extension* extension);
+
+  // Launch the given hosted app.
+  virtual void LaunchHostedApp(const Extension* extension);
 
   // Gets the WebContents associated with the first app window that is found
   // (most tests only deal with one platform app window, so this is good
