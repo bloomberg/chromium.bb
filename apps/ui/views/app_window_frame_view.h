@@ -55,7 +55,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
                      bool draw_frame,
                      const SkColor& active_frame_color,
                      const SkColor& inactive_frame_color);
-  virtual ~AppWindowFrameView();
+  ~AppWindowFrameView() override;
 
   void Init();
 
@@ -68,28 +68,26 @@ class AppWindowFrameView : public views::NonClientFrameView,
 
  private:
   // views::NonClientFrameView implementation.
-  virtual gfx::Rect GetBoundsForClientView() const override;
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
+  gfx::Rect GetBoundsForClientView() const override;
+  gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
-  virtual int NonClientHitTest(const gfx::Point& point) override;
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) override;
-  virtual void ResetWindowControls() override {}
-  virtual void UpdateWindowIcon() override {}
-  virtual void UpdateWindowTitle() override {}
-  virtual void SizeConstraintsChanged() override;
+  int NonClientHitTest(const gfx::Point& point) override;
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void ResetWindowControls() override {}
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual const char* GetClassName() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual gfx::Size GetMaximumSize() const override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Some button images we use depend on the color of the frame. This
   // will set these images based on the color of the frame.

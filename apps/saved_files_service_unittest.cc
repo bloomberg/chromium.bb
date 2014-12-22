@@ -35,7 +35,7 @@ std::string GenerateId(int i) {
 
 class SavedFilesServiceUnitTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     extension_ = env_.MakeExtension(*base::test::ParseJson(
         "{"
@@ -52,7 +52,7 @@ class SavedFilesServiceUnitTest : public testing::Test {
     path_ = base::FilePath(FILE_PATH_LITERAL("filename.ext"));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     SavedFilesService::ClearMaxSequenceNumberForTest();
     SavedFilesService::ClearLruSizeForTest();
     testing::Test::TearDown();
