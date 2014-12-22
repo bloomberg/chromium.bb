@@ -22,7 +22,7 @@ class PrintDialogGtkInterface;
 class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
  public:
   explicit PrintingContextLinux(Delegate* delegate);
-  virtual ~PrintingContextLinux();
+  ~PrintingContextLinux() override;
 
   // Sets the function that creates the print dialog.
   static void SetCreatePrintDialogFunction(
@@ -37,23 +37,22 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   void PrintDocument(const MetafilePlayer& metafile);
 
   // PrintingContext implementation.
-  virtual void AskUserForSettings(
-      int max_pages,
-      bool has_selection,
-      bool is_scripted,
-      const PrintSettingsCallback& callback) override;
-  virtual gfx::Size GetPdfPaperSizeDeviceUnits() override;
-  virtual Result UseDefaultSettings() override;
-  virtual Result UpdatePrinterSettings(bool external_preview,
-                                       bool show_system_dialog) override;
-  virtual Result InitWithSettings(const PrintSettings& settings) override;
-  virtual Result NewDocument(const base::string16& document_name) override;
-  virtual Result NewPage() override;
-  virtual Result PageDone() override;
-  virtual Result DocumentDone() override;
-  virtual void Cancel() override;
-  virtual void ReleaseContext() override;
-  virtual gfx::NativeDrawingContext context() const override;
+  void AskUserForSettings(int max_pages,
+                          bool has_selection,
+                          bool is_scripted,
+                          const PrintSettingsCallback& callback) override;
+  gfx::Size GetPdfPaperSizeDeviceUnits() override;
+  Result UseDefaultSettings() override;
+  Result UpdatePrinterSettings(bool external_preview,
+                               bool show_system_dialog) override;
+  Result InitWithSettings(const PrintSettings& settings) override;
+  Result NewDocument(const base::string16& document_name) override;
+  Result NewPage() override;
+  Result PageDone() override;
+  Result DocumentDone() override;
+  void Cancel() override;
+  void ReleaseContext() override;
+  gfx::NativeDrawingContext context() const override;
 
  private:
   base::string16 document_name_;
