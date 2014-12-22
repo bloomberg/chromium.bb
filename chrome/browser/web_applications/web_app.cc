@@ -383,7 +383,7 @@ void CreateShortcutsWithInfo(
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   const extensions::Extension* extension = registry->GetExtensionById(
-      shortcut_info.extension_id, extensions::ExtensionRegistry::ENABLED);
+      shortcut_info.extension_id, extensions::ExtensionRegistry::EVERYTHING);
   if (!extension)
     return;
 
