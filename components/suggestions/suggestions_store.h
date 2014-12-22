@@ -6,6 +6,8 @@
 #define COMPONENTS_SUGGESTIONS_SUGGESTIONS_STORE_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time/clock.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 
 class PrefService;
@@ -39,13 +41,17 @@ class SuggestionsStore {
   // Register SuggestionsStore related prefs in the Profile prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+
  protected:
   // Test seam. For simplicity of mock creation.
-  SuggestionsStore() {}
+  SuggestionsStore();
 
  private:
   // The pref service used to persist the suggestions data.
   PrefService* pref_service_;
+  // Can be set for testing.
+  scoped_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsStore);
 

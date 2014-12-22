@@ -4,6 +4,7 @@
 
 #include "components/suggestions/suggestions_store.h"
 
+#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -34,19 +35,21 @@ SuggestionsProfile CreateTestSuggestions() {
   return suggestions;
 }
 
-SuggestionsProfile CreateTestSuggestionsProfileWithExpiry(int expired_count,
-                                                          int valid_count) {
-  int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
-      .ToInternalValue();
+SuggestionsProfile CreateTestSuggestionsProfileWithExpiry(
+    base::Time current_time,
+    int expired_count,
+    int valid_count) {
+  int64 current_time_usec =
+      (current_time - base::Time::UnixEpoch()).ToInternalValue();
   int64 offset_usec = 5 * base::Time::kMicrosecondsPerMinute;
 
   SuggestionsProfile suggestions;
   for (int i = 1; i <= valid_count; i++)
     AddSuggestion(&suggestions, kTestTitle, kTestUrl,
-        now_usec + offset_usec * i);
+                  current_time_usec + offset_usec * i);
   for (int i = 1; i <= expired_count; i++)
     AddSuggestion(&suggestions, kTestTitle, kTestUrl,
-        now_usec - offset_usec * i);
+                  current_time_usec - offset_usec * i);
 
   return suggestions;
 }
@@ -76,18 +79,25 @@ class SuggestionsStoreTest : public testing::Test {
   void SetUp() override {
     SuggestionsStore::RegisterProfilePrefs(pref_service_->registry());
     suggestions_store_.reset(new SuggestionsStore(pref_service_.get()));
+
+    base::SimpleTestClock* test_clock(new base::SimpleTestClock());
+    current_time = base::Time::FromInternalValue(13063394337546738);
+    test_clock->SetNow(current_time);
+    suggestions_store_->SetClockForTesting(scoped_ptr<base::Clock>(test_clock));
   }
 
  protected:
   scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
   scoped_ptr<SuggestionsStore> suggestions_store_;
+  base::Time current_time;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsStoreTest);
 };
 
 // Tests LoadSuggestions function to filter expired suggestions.
 TEST_F(SuggestionsStoreTest, LoadAllExpired) {
-  SuggestionsProfile suggestions = CreateTestSuggestionsProfileWithExpiry(5, 0);
+  SuggestionsProfile suggestions =
+      CreateTestSuggestionsProfileWithExpiry(current_time, 5, 0);
   SuggestionsProfile filtered_suggestions;
 
   // Store and load. Expired suggestions should not be loaded.
@@ -98,7 +108,8 @@ TEST_F(SuggestionsStoreTest, LoadAllExpired) {
 
 // Tests LoadSuggestions function to filter expired suggestions.
 TEST_F(SuggestionsStoreTest, LoadValidAndExpired) {
-  SuggestionsProfile suggestions = CreateTestSuggestionsProfileWithExpiry(5, 3);
+  SuggestionsProfile suggestions =
+      CreateTestSuggestionsProfileWithExpiry(current_time, 5, 3);
   SuggestionsProfile filtered_suggestions;
 
   // Store and load. Expired suggestions should not be loaded.
@@ -109,7 +120,8 @@ TEST_F(SuggestionsStoreTest, LoadValidAndExpired) {
 
 // Tests LoadSuggestions function to filter expired suggestions.
 TEST_F(SuggestionsStoreTest, CheckStoreAfterLoadExpired) {
-  SuggestionsProfile suggestions = CreateTestSuggestionsProfileWithExpiry(5, 3);
+  SuggestionsProfile suggestions =
+      CreateTestSuggestionsProfileWithExpiry(current_time, 5, 3);
   SuggestionsProfile filtered_suggestions;
 
   // Store and load. Expired suggestions should not be loaded.
