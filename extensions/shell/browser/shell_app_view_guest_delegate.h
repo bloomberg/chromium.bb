@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_APP_VIEW_CHROME_APP_VIEW_GUEST_DELEGATE_H_
-#define CHROME_BROWSER_GUEST_VIEW_APP_VIEW_CHROME_APP_VIEW_GUEST_DELEGATE_H_
+#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_APP_VIEW_GUEST_DELEGATE_H_
+#define EXTENSIONS_SHELL_BROWSER_SHELL_APP_VIEW_GUEST_DELEGATE_H_
 
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
 
 namespace extensions {
 
-class ChromeAppViewGuestDelegate : public AppViewGuestDelegate {
+class ShellAppViewGuestDelegate : public AppViewGuestDelegate {
  public:
-  ChromeAppViewGuestDelegate();
-  ~ChromeAppViewGuestDelegate() override;
+  ShellAppViewGuestDelegate();
+  ~ShellAppViewGuestDelegate() override;
 
   // AppViewGuestDelegate:
   bool HandleContextMenu(content::WebContents* web_contents,
@@ -21,9 +21,9 @@ class ChromeAppViewGuestDelegate : public AppViewGuestDelegate {
   AppDelegate* CreateAppDelegate() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppViewGuestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ShellAppViewGuestDelegate);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_APP_VIEW_CHROME_APP_VIEW_GUEST_DELEGATE_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_APP_VIEW_GUEST_DELEGATE_H_

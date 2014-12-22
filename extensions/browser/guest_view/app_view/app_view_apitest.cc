@@ -14,11 +14,74 @@
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/shell/browser/shell_app_delegate.h"
+#include "extensions/shell/browser/shell_app_view_guest_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+#include "extensions/shell/browser/shell_extensions_api_client.h"
+#include "extensions/shell/browser/shell_extensions_browser_client.h"
 #include "extensions/shell/test/shell_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/base/filename_util.h"
+
+namespace {
+
+class MockShellAppDelegate : public extensions::ShellAppDelegate {
+ public:
+  MockShellAppDelegate() : requested_(false) {
+    DCHECK(instance_ == nullptr);
+    instance_ = this;
+  }
+  ~MockShellAppDelegate() override { instance_ = nullptr; }
+
+  void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback,
+      const extensions::Extension* extension) override {
+    requested_ = true;
+    if (request_message_loop_runner_.get())
+      request_message_loop_runner_->Quit();
+  }
+
+  void WaitForRequestMediaPermission() {
+    if (requested_)
+      return;
+    request_message_loop_runner_ = new content::MessageLoopRunner;
+    request_message_loop_runner_->Run();
+  }
+
+  static MockShellAppDelegate* Get() { return instance_; }
+
+ private:
+  bool requested_;
+  scoped_refptr<content::MessageLoopRunner> request_message_loop_runner_;
+  static MockShellAppDelegate* instance_;
+};
+
+MockShellAppDelegate* MockShellAppDelegate::instance_ = nullptr;
+
+class MockShellAppViewGuestDelegate
+    : public extensions::ShellAppViewGuestDelegate {
+ public:
+  MockShellAppViewGuestDelegate() {}
+
+  extensions::AppDelegate* CreateAppDelegate() override {
+    return new MockShellAppDelegate();
+  }
+};
+
+class MockExtensionsAPIClient : public extensions::ShellExtensionsAPIClient {
+ public:
+  MockExtensionsAPIClient() {}
+
+  extensions::AppViewGuestDelegate* CreateAppViewGuestDelegate()
+      const override {
+    return new MockShellAppViewGuestDelegate();
+  }
+};
+
+}  // namespace
 
 namespace extensions {
 
@@ -84,6 +147,19 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
   RunTest("testAppViewGoodDataShouldSucceed",
           "app_view/apitest",
           "app_view/apitest/skeleton");
+}
+
+// Tests that <appview> can handle media permission requests.
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMediaRequest) {
+  static_cast<ShellExtensionsBrowserClient*>(ExtensionsBrowserClient::Get())
+      ->SetAPIClientForTest(nullptr);
+  static_cast<ShellExtensionsBrowserClient*>(ExtensionsBrowserClient::Get())
+      ->SetAPIClientForTest(new MockExtensionsAPIClient);
+
+  RunTest("testAppViewMediaRequest", "app_view/apitest",
+          "app_view/apitest/media_request");
+
+  MockShellAppDelegate::Get()->WaitForRequestMediaPermission();
 }
 
 // Tests that <appview> correctly processes parameters passed on connect.

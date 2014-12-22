@@ -69,6 +69,23 @@ function testAppViewGoodDataShouldSucceed(appToEmbed) {
   });
 };
 
+function testAppViewMediaRequest(appToEmbed) {
+  var appview = new AppView();
+  window.console.log('appToEmbed  ' + appToEmbed);
+  document.body.appendChild(appview);
+  window.console.log('Attempting to connect to app.');
+  appview.connect(appToEmbed, {}, function(success) {
+    // Make sure we don't fail.
+    if (!success) {
+      window.console.log('Failed to connect.');
+      embedder.test.fail();
+      return;
+    }
+    window.console.log('Connected.');
+    embedder.test.succeed();
+  });
+};
+
 function testAppViewRefusedDataShouldFail(appToEmbed) {
   var appview = new AppView();
   LOG('appToEmbed  ' + appToEmbed);
@@ -117,6 +134,7 @@ function testAppViewWithUndefinedDataShouldSucceed(appToEmbed) {
 
 embedder.test.testList = {
   'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed,
+  'testAppViewMediaRequest': testAppViewMediaRequest,
   'testAppViewRefusedDataShouldFail': testAppViewRefusedDataShouldFail,
   'testAppViewWithUndefinedDataShouldSucceed':
       testAppViewWithUndefinedDataShouldSucceed

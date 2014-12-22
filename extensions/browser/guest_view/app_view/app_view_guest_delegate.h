@@ -11,6 +11,8 @@ class WebContents;
 }
 
 namespace extensions {
+class AppDelegate;
+
 // Interface to handle communication between AppView (in extensions) with the
 // browser.
 class AppViewGuestDelegate {
@@ -21,6 +23,9 @@ class AppViewGuestDelegate {
   // Returns true if the context menu was handled.
   virtual bool HandleContextMenu(content::WebContents* web_contents,
                                  const content::ContextMenuParams& params) = 0;
+
+  // Returns an AppDelegate to be used by the AppViewGuest.
+  virtual AppDelegate* CreateAppDelegate() = 0;
 };
 
 }  // namespace extensions

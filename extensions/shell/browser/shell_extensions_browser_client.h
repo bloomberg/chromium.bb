@@ -80,6 +80,9 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsBackgroundUpdateAllowed() override;
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;
 
+  // Sets the API client.
+  void SetAPIClientForTest(ExtensionsAPIClient* api_client);
+
  private:
   // The single BrowserContext for app_shell. Not owned.
   content::BrowserContext* browser_context_;

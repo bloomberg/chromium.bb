@@ -9,6 +9,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -104,6 +105,8 @@ AppViewGuest::AppViewGuest(content::BrowserContext* browser_context,
       app_view_guest_delegate_(
           ExtensionsAPIClient::Get()->CreateAppViewGuestDelegate()),
       weak_ptr_factory_(this) {
+  if (app_view_guest_delegate_)
+    app_delegate_.reset(app_view_guest_delegate_->CreateAppDelegate());
 }
 
 AppViewGuest::~AppViewGuest() {
@@ -131,6 +134,41 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
     return app_view_guest_delegate_->HandleContextMenu(web_contents(), params);
   }
   return false;
+}
+
+void AppViewGuest::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  if (!app_delegate_) {
+    WebContentsDelegate::RequestMediaAccessPermission(web_contents, request,
+                                                      callback);
+    return;
+  }
+  const ExtensionSet& enabled_extensions =
+      ExtensionRegistry::Get(browser_context())->enabled_extensions();
+  const Extension* guest_extension =
+      enabled_extensions.GetByID(guest_extension_id_);
+
+  app_delegate_->RequestMediaAccessPermission(web_contents, request, callback,
+                                              guest_extension);
+}
+
+bool AppViewGuest::CheckMediaAccessPermission(
+    content::WebContents* web_contents,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  if (!app_delegate_) {
+    return WebContentsDelegate::CheckMediaAccessPermission(
+        web_contents, security_origin, type);
+  }
+  const ExtensionSet& enabled_extensions =
+      ExtensionRegistry::Get(browser_context())->enabled_extensions();
+  const Extension* guest_extension =
+      enabled_extensions.GetByID(guest_extension_id_);
+
+  return app_delegate_->CheckMediaAccessPermission(
+      web_contents, security_origin, type, guest_extension);
 }
 
 const char* AppViewGuest::GetAPINamespace() const {
@@ -256,6 +294,10 @@ void AppViewGuest::LaunchAppAndFireEvent(
   embed_request->Set(appview::kData, data.release());
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), embed_request.Pass(), extension_host->extension());
+}
+
+void AppViewGuest::SetAppDelegateForTest(AppDelegate* delegate) {
+  app_delegate_.reset(delegate);
 }
 
 }  // namespace extensions

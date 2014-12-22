@@ -16,6 +16,7 @@
 #include "extensions/shell/browser/api/generated_api_registration.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
+#include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
 
 using content::BrowserContext;
@@ -28,7 +29,7 @@ ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
     PrefService* pref_service)
     : browser_context_(context),
       pref_service_(pref_service),
-      api_client_(new ExtensionsAPIClient),
+      api_client_(new ShellExtensionsAPIClient),
       extension_cache_(new NullExtensionCache()) {
 }
 
@@ -212,6 +213,11 @@ bool ShellExtensionsBrowserClient::IsBackgroundUpdateAllowed() {
 bool ShellExtensionsBrowserClient::IsMinBrowserVersionSupported(
     const std::string& min_version) {
   return true;
+}
+
+void ShellExtensionsBrowserClient::SetAPIClientForTest(
+    ExtensionsAPIClient* api_client) {
+  api_client_.reset(api_client);
 }
 
 }  // namespace extensions
