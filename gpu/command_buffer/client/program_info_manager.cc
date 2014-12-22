@@ -194,7 +194,11 @@ class CachedProgramInfoManager : public ProgramInfoManager {
     bool GetProgramiv(GLenum pname, GLint* params);
 
     // Updates the program info after a successful link.
-    void Update(GLES2Implementation* gl, GLuint program);
+    void Update(GLES2Implementation* gl,
+                GLuint program,
+                const std::vector<int8>& result);
+
+    bool cached() const { return cached_; }
 
    private:
     bool cached_;
@@ -315,12 +319,12 @@ template<typename T> static T LocalGetAs(
 }
 
 void CachedProgramInfoManager::Program::Update(
-    GLES2Implementation* gl, GLuint program) {
+    GLES2Implementation* gl,
+    GLuint program,
+    const std::vector<int8>& result) {
   if (cached_) {
     return;
   }
-  std::vector<int8> result;
-  gl->GetProgramInfoCHROMIUMHelper(program, &result);
   if (result.empty()) {
     // This should only happen on a lost context.
     return;
@@ -388,7 +392,22 @@ CachedProgramInfoManager::Program*
     return NULL;
   }
   Program* info = &it->second;
-  info->Update(gl, program);
+  if (info->cached())
+    return info;
+  std::vector<int8> result;
+  {
+    base::AutoUnlock unlock(lock_);
+    // lock_ can't be held across IPC call or else it may deadlock in pepper.
+    // http://crbug.com/418651
+    gl->GetProgramInfoCHROMIUMHelper(program, &result);
+  }
+
+  it = program_infos_.find(program);
+  if (it == program_infos_.end()) {
+    return NULL;
+  }
+  info = &it->second;
+  info->Update(gl, program, result);
   return info;
 }
 
@@ -418,20 +437,24 @@ bool CachedProgramInfoManager::GetProgramiv(
 
 GLint CachedProgramInfoManager::GetAttribLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
-  base::AutoLock auto_lock(lock_);
-  Program* info = GetProgramInfo(gl, program);
-  if (info) {
-    return info->GetAttribLocation(name);
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program);
+    if (info) {
+      return info->GetAttribLocation(name);
+    }
   }
   return gl->GetAttribLocationHelper(program, name);
 }
 
 GLint CachedProgramInfoManager::GetUniformLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
-  base::AutoLock auto_lock(lock_);
-  Program* info = GetProgramInfo(gl, program);
-  if (info) {
-    return info->GetUniformLocation(name);
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program);
+    if (info) {
+      return info->GetUniformLocation(name);
+    }
   }
   return gl->GetUniformLocationHelper(program, name);
 }
@@ -440,31 +463,32 @@ bool CachedProgramInfoManager::GetActiveAttrib(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
-  base::AutoLock auto_lock(lock_);
-  Program* info = GetProgramInfo(gl, program);
-  if (info) {
-    const Program::VertexAttrib* attrib_info =
-        info->GetAttribInfo(index);
-    if (attrib_info) {
-      if (size) {
-        *size = attrib_info->size;
-      }
-      if (type) {
-        *type = attrib_info->type;
-      }
-      if (length || name) {
-        GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
-                                    std::max(static_cast<size_t>(0),
-                                             attrib_info->name.size()));
-        if (length) {
-          *length = max_size;
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program);
+    if (info) {
+      const Program::VertexAttrib* attrib_info = info->GetAttribInfo(index);
+      if (attrib_info) {
+        if (size) {
+          *size = attrib_info->size;
         }
-        if (name && bufsize > 0) {
-          memcpy(name, attrib_info->name.c_str(), max_size);
-          name[max_size] = '\0';
+        if (type) {
+          *type = attrib_info->type;
         }
+        if (length || name) {
+          GLsizei max_size = std::min(
+              static_cast<size_t>(bufsize) - 1,
+              std::max(static_cast<size_t>(0), attrib_info->name.size()));
+          if (length) {
+            *length = max_size;
+          }
+          if (name && bufsize > 0) {
+            memcpy(name, attrib_info->name.c_str(), max_size);
+            name[max_size] = '\0';
+          }
+        }
+        return true;
       }
-      return true;
     }
   }
   return gl->GetActiveAttribHelper(
@@ -475,30 +499,32 @@ bool CachedProgramInfoManager::GetActiveUniform(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
-  base::AutoLock auto_lock(lock_);
-  Program* info = GetProgramInfo(gl, program);
-  if (info) {
-    const Program::UniformInfo* uniform_info = info->GetUniformInfo(index);
-    if (uniform_info) {
-      if (size) {
-        *size = uniform_info->size;
-      }
-      if (type) {
-        *type = uniform_info->type;
-      }
-      if (length || name) {
-        GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
-                                    std::max(static_cast<size_t>(0),
-                                             uniform_info->name.size()));
-        if (length) {
-          *length = max_size;
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program);
+    if (info) {
+      const Program::UniformInfo* uniform_info = info->GetUniformInfo(index);
+      if (uniform_info) {
+        if (size) {
+          *size = uniform_info->size;
         }
-        if (name && bufsize > 0) {
-          memcpy(name, uniform_info->name.c_str(), max_size);
-          name[max_size] = '\0';
+        if (type) {
+          *type = uniform_info->type;
         }
+        if (length || name) {
+          GLsizei max_size = std::min(
+              static_cast<size_t>(bufsize) - 1,
+              std::max(static_cast<size_t>(0), uniform_info->name.size()));
+          if (length) {
+            *length = max_size;
+          }
+          if (name && bufsize > 0) {
+            memcpy(name, uniform_info->name.c_str(), max_size);
+            name[max_size] = '\0';
+          }
+        }
+        return true;
       }
-      return true;
     }
   }
   return gl->GetActiveUniformHelper(
