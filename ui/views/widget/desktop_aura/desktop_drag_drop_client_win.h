@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/views_export.h"
 #include "ui/wm/public/drag_drop_client.h"
 
@@ -48,6 +49,8 @@ class VIEWS_EXPORT DesktopDragDropClientWin
   scoped_refptr<ui::DragSourceWin> drag_source_;
 
   scoped_refptr<DesktopDropTargetWin> drop_target_;
+
+  base::WeakPtrFactory<DesktopDragDropClientWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientWin);
 };
