@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/gpu_export.h"
-#include "ipc/ipc_sender.h"
 
 namespace content {
 class GpuChannel;
