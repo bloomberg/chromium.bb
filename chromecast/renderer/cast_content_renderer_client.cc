@@ -73,6 +73,7 @@ void CastContentRendererClient::AddKeySystems(
   AddChromecastPlatformKeySystems(key_systems);
 }
 
+#if !defined(OS_ANDROID)
 scoped_ptr<::media::RendererFactory>
 CastContentRendererClient::CreateMediaRendererFactory(
     ::content::RenderFrame* render_frame) {
@@ -84,6 +85,7 @@ CastContentRendererClient::CreateMediaRendererFactory(
       new chromecast::media::CmaMediaRendererFactory(
           render_frame->GetRoutingID()));
 }
+#endif
 
 blink::WebPrescientNetworking*
 CastContentRendererClient::GetPrescientNetworking() {
