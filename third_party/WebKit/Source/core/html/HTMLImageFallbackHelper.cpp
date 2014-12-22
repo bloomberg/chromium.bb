@@ -58,6 +58,7 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
 
     RefPtrWillBeRawPtr<HTMLDivElement> altText = HTMLDivElement::create(element.document());
     container->appendChild(altText);
+    altText->setAttribute(idAttr, AtomicString("alttext", AtomicString::ConstructFromLiteral));
     altText->setInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
     altText->setInlineStyleProperty(CSSPropertyDisplay, CSSValueBlock);
 

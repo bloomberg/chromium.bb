@@ -21,6 +21,7 @@ test contents:
 |           style="margin: 0px;"
 |           width="16"
 |         <div>
+|           id="alttext"
 |           style="overflow: hidden; display: block;"
 |           ""
 | <div>
