@@ -42,7 +42,7 @@ class CryptoModuleBlockingPasswordDelegate {
 // slot in which to act. (Eg, which slot to store a generated key in.)
 class NSSCryptoModuleDelegate : public CryptoModuleBlockingPasswordDelegate {
  public:
-  virtual ~NSSCryptoModuleDelegate() {}
+  ~NSSCryptoModuleDelegate() override {}
 
   // Get the slot to store the generated key.
   virtual ScopedPK11Slot RequestSlot() = 0;

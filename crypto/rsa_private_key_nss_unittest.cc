@@ -16,7 +16,7 @@ namespace crypto {
 class RSAPrivateKeyNSSTest : public testing::Test {
  public:
   RSAPrivateKeyNSSTest() {}
-  virtual ~RSAPrivateKeyNSSTest() {}
+  ~RSAPrivateKeyNSSTest() override {}
 
  private:
   ScopedTestNSSDB test_nssdb_;
