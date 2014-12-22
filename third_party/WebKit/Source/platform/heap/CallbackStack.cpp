@@ -115,9 +115,6 @@ CallbackStack::Item* CallbackStack::popSlow()
         if (Item* item = m_first->pop())
             return item;
     }
-
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 void CallbackStack::invokeEphemeronCallbacks(Visitor* visitor)

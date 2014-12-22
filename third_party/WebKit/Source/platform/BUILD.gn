@@ -257,6 +257,7 @@ component("platform") {
 
   if (is_win) {
     sources -= [
+      "clipboard/ClipboardUtilitiesPosix.cpp",
       # Uses LocaleWin instead.
       "text/LocaleICU.cpp",
       "text/LocaleICU.h",
