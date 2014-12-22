@@ -186,6 +186,21 @@ public class InfoBarContainer extends ScrollView {
         return super.onInterceptTouchEvent(ev) || mAnimation != null;
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // Consume all touch events so they do not reach the ContentView.
+        return true;
+    }
+
+    @Override
+    public boolean onHoverEvent(MotionEvent event) {
+        super.onHoverEvent(event);
+        // Consume all hover events so they do not reach the ContentView. In touch exploration mode,
+        // this prevents the user from interacting with the part of the ContentView behind the
+        // infobars. http://crbug.com/430701
+        return true;
+    }
+
     private void addToParentView() {
         if (mParentView != null && mParentView.indexOfChild(this) == -1) {
             mParentView.addView(this);

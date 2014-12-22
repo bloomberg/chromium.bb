@@ -21,11 +21,7 @@ import org.chromium.chrome.R;
 import java.util.ArrayList;
 
 /**
- * A wrapper class designed to:
- * - consume all touch events.  This way the parent view (the FrameLayout ContentView) won't
- *   have its onTouchEvent called.  If it does, ContentView will process the touch click.
- *   We don't want web content responding to clicks on the InfoBars.
- * - allow swapping out of children Views for animations.
+ * A wrapper class designed to allow swapping out of child Views for animations.
  *
  * Once an InfoBar has been hidden and removed from the InfoBarContainer, it cannot be reused
  * because the main panel is discarded after the hiding animation.
@@ -70,12 +66,6 @@ public class ContentWrapperView extends FrameLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         return !mInfoBar.areControlsEnabled();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        // Consume all motion events so they do not reach the ContentView.
-        return true;
     }
 
     /**
