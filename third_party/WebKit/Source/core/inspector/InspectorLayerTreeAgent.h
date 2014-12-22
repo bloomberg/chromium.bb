@@ -74,7 +74,7 @@ public:
     virtual void disable(ErrorString*) override;
     virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&) override;
     virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
-    virtual void loadSnapshot(ErrorString*, const String& data, String* snapshotId) override;
+    virtual void loadSnapshot(ErrorString*, const RefPtr<JSONArray>& tiles, String* snapshotId) override;
     virtual void releaseSnapshot(ErrorString*, const String& snapshotId) override;
     virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, const double* scale, String* dataURL) override;
     virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) override;

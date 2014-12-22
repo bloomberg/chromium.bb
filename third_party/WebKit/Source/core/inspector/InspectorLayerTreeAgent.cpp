@@ -347,14 +347,35 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     ASSERT_UNUSED(newEntry, newEntry);
 }
 
-void InspectorLayerTreeAgent::loadSnapshot(ErrorString* errorString, const String& data, String* snapshotId)
+void InspectorLayerTreeAgent::loadSnapshot(ErrorString* errorString, const RefPtr<JSONArray>& tiles, String* snapshotId)
 {
-    Vector<char> snapshotData;
-    if (!base64Decode(data, snapshotData)) {
-        *errorString = "Invalid base64 encoding";
+    if (!tiles->length()) {
+        *errorString = "Invalid argument, no tiles provided";
         return;
     }
-    RefPtr<GraphicsContextSnapshot> snapshot = GraphicsContextSnapshot::load(snapshotData.data(), snapshotData.size());
+    Vector<RefPtr<GraphicsContextSnapshot::TilePictureStream> > decodedTiles;
+    decodedTiles.grow(tiles->length());
+    for (size_t i = 0; i < tiles->length(); ++i) {
+        RefPtr<JSONObject> item;
+        if (!tiles->get(i)->asObject(&item)) {
+            *errorString = "Invalid argument, array item is not an object";
+            return;
+        }
+        double x = 0, y = 0;
+        String picture;
+        if (!item->getNumber("x", &x) || !item->getNumber("y", &y)
+            || !item->getString("picture", &picture)) {
+            *errorString = "Invalid argument, missing required field";
+            return;
+        }
+        decodedTiles[i] = adoptRef(new GraphicsContextSnapshot::TilePictureStream());
+        decodedTiles[i]->layerOffset.set(x, y);
+        if (!base64Decode(picture, decodedTiles[i]->data)) {
+            *errorString = "Invalid base64 encoding";
+            return;
+        }
+    }
+    RefPtr<GraphicsContextSnapshot> snapshot = GraphicsContextSnapshot::load(decodedTiles);
     if (!snapshot) {
         *errorString = "Invalida snapshot format";
         return;

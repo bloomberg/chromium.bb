@@ -89,13 +89,33 @@ static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
     return true;
 }
 
-PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const char* data, size_t size)
+PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const Vector<RefPtr<TilePictureStream> >& tiles)
 {
-    SkMemoryStream stream(data, size);
-    RefPtr<SkPicture> picture = adoptRef(SkPicture::CreateFromStream(&stream, decodeBitmap));
-    if (!picture)
-        return nullptr;
-    return adoptRef(new GraphicsContextSnapshot(picture));
+    ASSERT(!tiles.isEmpty());
+    Vector<RefPtr<SkPicture> > pictures;
+    pictures.reserveCapacity(tiles.size());
+    FloatRect unionRect;
+    for (const auto& tileStream : tiles) {
+        SkMemoryStream stream(tileStream->data.begin(), tileStream->data.size());
+        RefPtr<SkPicture> picture = adoptRef(SkPicture::CreateFromStream(&stream, decodeBitmap));
+        if (!picture)
+            return nullptr;
+        FloatRect cullRect(picture->cullRect());
+        cullRect.moveBy(tileStream->layerOffset);
+        unionRect.unite(cullRect);
+        pictures.append(picture);
+    }
+    if (tiles.size() == 1)
+        return adoptRef(new GraphicsContextSnapshot(pictures[0]));
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(unionRect.width(), unionRect.height(), 0, 0);
+    for (size_t i = 0; i < pictures.size(); ++i) {
+        canvas->save();
+        canvas->translate(tiles[i]->layerOffset.x() - unionRect.x(), tiles[i]->layerOffset.y() - unionRect.y());
+        pictures[i]->playback(canvas, 0);
+        canvas->restore();
+    }
+    return adoptRef(new GraphicsContextSnapshot(adoptRef(recorder.endRecordingAsPicture())));
 }
 
 PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
