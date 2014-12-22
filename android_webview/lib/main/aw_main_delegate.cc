@@ -82,6 +82,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
 
+  // FIXME: A couple of tests fail with the blink scheduler enabled.
+  // See: crbug.com/444572
+  cl->AppendSwitch(switches::kDisableBlinkScheduler);
+
   return false;
 }
 
