@@ -3684,6 +3684,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_RADIO_BUTTON:
       ia_role_ = ROLE_SYSTEM_RADIOBUTTON;
+      ia2_state_ = IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_RADIO_GROUP:
       ia_role_ = ROLE_SYSTEM_GROUPING;

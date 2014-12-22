@@ -675,6 +675,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRadio) {
   RunTest(FILE_PATH_LITERAL("input-radio.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                      AccessibilityInputRadioInMenu) {
+  RunTest(FILE_PATH_LITERAL("input-radio-in-menu.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRange) {
   RunTest(FILE_PATH_LITERAL("input-range.html"));
 }

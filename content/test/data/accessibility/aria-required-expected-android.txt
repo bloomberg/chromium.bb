@@ -1,3 +1,4 @@
 android.webkit.WebView focusable focused scrollable
-    android.widget.RadioButton checkable
-    android.widget.RadioButton checkable
+    android.view.View
+        android.widget.RadioButton checkable
+        android.widget.RadioButton checkable

@@ -1,10 +1,18 @@
 <!--
-@WIN-ALLOW:xml-roles:*
 @WIN-ALLOW:MIXED*
+@WIN-ALLOW:CHECKED*
 @WIN-ALLOW:checkable:*
+@WIN-ALLOW:IA2_STATE_CHECKABLE*
 -->
 <html>
   <body>
-    <input type="radio">
+    <form>
+      <input type="radio" name="r">
+      <input type="radio" name="r">
+    </form>
+    <form>
+      <input type="radio" name="r">
+      <input type="radio" name="r" checked>
+    </form>
   </body>
 </html>

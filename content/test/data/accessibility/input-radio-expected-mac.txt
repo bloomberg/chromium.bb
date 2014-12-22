@@ -1,3 +1,7 @@
 AXWebArea
     AXGroup
         AXRadioButton AXValue='0'
+        AXRadioButton AXValue='0'
+    AXGroup
+        AXRadioButton AXValue='0'
+        AXRadioButton AXValue='1'
