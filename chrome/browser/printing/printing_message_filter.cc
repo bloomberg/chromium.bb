@@ -11,7 +11,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -93,11 +93,13 @@ void RenderParamsFromPrintSettings(const PrintSettings& settings,
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
                                              Profile* profile)
     : BrowserMessageFilter(PrintMsgStart),
-      profile_io_data_(ProfileIOData::FromResourceContext(
-          profile->GetResourceContext())),
+      is_printing_enabled_(new BooleanPrefMember),
       render_process_id_(render_process_id),
       queue_(g_browser_process->print_job_manager()->queue()) {
   DCHECK(queue_.get());
+  is_printing_enabled_->Init(prefs::kPrintingEnabled, profile->GetPrefs());
+  is_printing_enabled_->MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -261,13 +263,13 @@ content::WebContents* PrintingMessageFilter::GetWebContentsForRenderView(
 
 void PrintingMessageFilter::OnIsPrintingEnabled(bool* is_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  *is_enabled = profile_io_data_->printing_enabled()->GetValue();
+  *is_enabled = is_printing_enabled_->GetValue();
 }
 
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<PrinterQuery> printer_query;
-  if (!profile_io_data_->printing_enabled()->GetValue()) {
+  if (!is_printing_enabled_->GetValue()) {
     // Reply with NULL query.
     OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
     return;
@@ -391,7 +393,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
   scoped_ptr<base::DictionaryValue> new_settings(job_settings.DeepCopy());
 
   scoped_refptr<PrinterQuery> printer_query;
-  if (!profile_io_data_->printing_enabled()->GetValue()) {
+  if (!is_printing_enabled_->GetValue()) {
     // Reply with NULL query.
     OnUpdatePrintSettingsReply(printer_query, reply_msg);
     return;

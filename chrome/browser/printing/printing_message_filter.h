@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 
 #if defined(OS_WIN)
@@ -114,7 +115,8 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
                         bool* cancel);
 #endif
 
-  ProfileIOData* profile_io_data_;
+  scoped_ptr<BooleanPrefMember, content::BrowserThread::DeleteOnUIThread>
+      is_printing_enabled_;
 
   const int render_process_id_;
 
