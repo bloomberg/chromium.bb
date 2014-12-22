@@ -36,6 +36,14 @@ function FileManager() {}
 Window.prototype.appID;
 
 /**
+ * A global flag which indicates whether it is in tests or not. This is set in
+ * gallery/js/background.js.
+ *
+ * @type {boolean}
+ */
+Window.prototype.IN_TEST;
+
+/**
  * @type {string}
  */
 Entry.prototype.cachedUrl;

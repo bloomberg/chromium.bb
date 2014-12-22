@@ -222,6 +222,10 @@ if (chrome.app.runtime) {
 // If is is run in the browser test, wait for the test resources are installed
 // as a component extension, and then load the test resources.
 if (chrome.test) {
+  // Sets a global flag that we are in tests, so other components are aware of
+  // it.
+  window.IN_TEST = true;
+
   /** @type {string} */
   window.testExtensionId = 'ejhcmmdhhpdhhgmifplfmjobgegbibkn';
   chrome.runtime.onMessageExternal.addListener(function(message) {
