@@ -11,7 +11,8 @@
 
 int main(int argc, char** argv) {
   android_webview::RegisterJni(base::android::AttachCurrentThread());
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSingleProcess);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSingleProcess);
   gfx::GLSurface::InitializeOneOffForTests();
   return base::TestSuite(argc, argv).Run();
 }

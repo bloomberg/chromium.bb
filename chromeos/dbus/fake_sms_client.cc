@@ -26,8 +26,8 @@ void FakeSMSClient::Init(dbus::Bus* bus) {}
 void FakeSMSClient::GetAll(const std::string& service_name,
                            const dbus::ObjectPath& object_path,
                            const GetAllCallback& callback) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           chromeos::switches::kSmsTestMessages))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kSmsTestMessages))
     return;
 
   // Ownership passed to callback

@@ -23,7 +23,7 @@ namespace {
 
 // Checks whether smart deployment is enabled.
 bool IsSmartVirtualKeyboardEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kDisableSmartVirtualKeyboard);
 }
 

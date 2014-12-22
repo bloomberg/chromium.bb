@@ -222,7 +222,7 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
   } else {
     FakeGsmSMSClient* gsm_sms_client = new FakeGsmSMSClient();
     gsm_sms_client->set_sms_test_message_switch_present(
-        CommandLine::ForCurrentProcess()->HasSwitch(
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kSmsTestMessages));
     gsm_sms_client_.reset(gsm_sms_client);
   }

@@ -957,7 +957,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
 
   void ParseCommandLineSwitch() {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (!command_line || !command_line->HasSwitch(switches::kPowerStub))
       return;
     std::string option_str =

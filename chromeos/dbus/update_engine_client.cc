@@ -564,7 +564,8 @@ UpdateEngineClient* UpdateEngineClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new UpdateEngineClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestAutoUpdateUI))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestAutoUpdateUI))
     return new UpdateEngineClientFakeImpl();
   else
     return new UpdateEngineClientStubImpl();

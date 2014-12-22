@@ -354,14 +354,14 @@ void DBusThreadManager::Initialize() {
 
   CHECK(!g_dbus_thread_manager);
   bool use_dbus_stub = !base::SysInfo::IsRunningOnChromeOS() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDbusStub);
-  bool force_unstub_clients = CommandLine::ForCurrentProcess()->HasSwitch(
+                       base::CommandLine::ForCurrentProcess()->HasSwitch(
+                           chromeos::switches::kDbusStub);
+  bool force_unstub_clients = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDbusUnstubClients);
   // Determine whether we use stub or real client implementations.
   if (force_unstub_clients) {
     InitializeWithPartialStub(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             chromeos::switches::kDbusUnstubClients));
   } else if (use_dbus_stub) {
     InitializeWithStubs();

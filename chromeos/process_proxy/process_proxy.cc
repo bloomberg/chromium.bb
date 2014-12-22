@@ -231,8 +231,8 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   options.environ["TERM"] = "xterm";
 
   // Launch the process.
-  return base::LaunchProcess(CommandLine(base::FilePath(command)), options,
-                             pid);
+  return base::LaunchProcess(base::CommandLine(base::FilePath(command)),
+                             options, pid);
 }
 
 void ProcessProxy::CloseAllFdPairs() {

@@ -25,7 +25,8 @@ void CrosSettingsProvider::Set(const std::string& path,
   // We don't allow changing any of the cros settings without prefix
   // "cros.session." in the guest mode.
   // It should not reach here from UI in the guest mode, but just in case.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession) &&
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGuestSession) &&
       !::StartsWithASCII(path, "cros.session.", true)) {
     LOG(ERROR) << "Ignoring the guest request to change: " << path;
     return;

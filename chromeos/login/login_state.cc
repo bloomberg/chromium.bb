@@ -19,7 +19,8 @@ namespace {
 // logged in.
 bool AlwaysLoggedInByDefault() {
   return !base::SysInfo::IsRunningOnChromeOS() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager);
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kLoginManager);
 }
 
 }  // namespace

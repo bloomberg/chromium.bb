@@ -62,7 +62,7 @@ const char kVpdDelim[] = "\n";
 const int kTimeoutSecs = 3;
 
 // The location of OEM manifest file used to trigger OOBE flow for kiosk mode.
-const CommandLine::CharType kOemManifestFilePath[] =
+const base::CommandLine::CharType kOemManifestFilePath[] =
     FILE_PATH_LITERAL("/usr/share/oem/oobe/manifest.json");
 
 }  // namespace
@@ -298,7 +298,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
 
   if (load_oem_manifest) {
     // If kAppOemManifestFile switch is specified, load OEM Manifest file.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kAppOemManifestFile)) {
       LoadOemManifestFromFile(
           command_line->GetSwitchValuePath(switches::kAppOemManifestFile));

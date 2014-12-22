@@ -56,7 +56,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   virtual void SetUp() override {
     // Append '--sms-test-messages' to the command line to tell
     // SMSClientStubImpl to generate a series of test SMS messages.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(chromeos::switches::kSmsTestMessages);
 
     // Initialize DBusThreadManager with a stub implementation.

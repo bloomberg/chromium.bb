@@ -107,10 +107,11 @@ scoped_ptr<base::DictionaryValue> ReadDictionary(std::string filename) {
 }
 
 int main(int argc, const char* argv[]) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::StringVector args = command_line.GetArgs();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = command_line.GetArgs();
   if (args.size() != 2) {
     PrintHelp();
     return kStatusArgumentError;

@@ -269,8 +269,9 @@ class AthenaWebView : public views::WebView {
   }
 
   bool CanOverscrollContent() const override {
-    const std::string value = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
+    const std::string value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kOverscrollHistoryNavigation);
     return value != "0";
   }
 

@@ -977,7 +977,7 @@ void FakeShillManagerClient::ParseCommandLineSwitch() {
   SetInitialNetworkState(shill::kTypeVPN, shill::kStateIdle);
 
   // Parse additional options
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kShillStub))
     return;
 
