@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.12",
+  "version": "7.13",
   "entries": [
     {
       "id": 1,
@@ -1091,6 +1091,19 @@ LONG_STRING_CONST(
       },
       "features": [
         "gl_begin_gl_end_on_fbo_change_to_backbuffer"
+      ]
+    },
+    {
+      "id": 97,
+      "description": "Multisampling has poor performance in Intel BayTrail",
+      "cr_bugs": [443517],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Intel",
+      "gl_renderer": "Intel.*BayTrail",
+      "features": [
+        "disable_multisampling"
       ]
     }
   ]
