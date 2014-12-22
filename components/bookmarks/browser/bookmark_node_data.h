@@ -77,7 +77,7 @@ struct BookmarkNodeData {
 
     // For reading/writing this Element.
     void WriteToPickle(Pickle* pickle) const;
-    bool ReadFromPickle(Pickle* pickle, PickleIterator* iterator);
+    bool ReadFromPickle(PickleIterator* iterator);
 
     // ID of the node.
     int64 id_;

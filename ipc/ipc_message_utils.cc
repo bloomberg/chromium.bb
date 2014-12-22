@@ -208,7 +208,7 @@ bool ReadValue(const Message* m, PickleIterator* iter, base::Value** value,
     case base::Value::TYPE_BINARY: {
       const char* data;
       int length;
-      if (!m->ReadData(iter, &data, &length))
+      if (!iter->ReadData(&data, &length))
         return false;
       *value = base::BinaryValue::CreateWithCopiedBuffer(data, length);
       break;
@@ -260,7 +260,7 @@ void ParamTraits<unsigned char>::Write(Message* m, const param_type& p) {
 bool ParamTraits<unsigned char>::Read(const Message* m, PickleIterator* iter,
                                        param_type* r) {
   const char* data;
-  if (!m->ReadBytes(iter, &data, sizeof(param_type)))
+  if (!iter->ReadBytes(&data, sizeof(param_type)))
     return false;
   memcpy(r, data, sizeof(param_type));
   return true;
@@ -277,7 +277,7 @@ void ParamTraits<unsigned short>::Write(Message* m, const param_type& p) {
 bool ParamTraits<unsigned short>::Read(const Message* m, PickleIterator* iter,
                                        param_type* r) {
   const char* data;
-  if (!m->ReadBytes(iter, &data, sizeof(param_type)))
+  if (!iter->ReadBytes(&data, sizeof(param_type)))
     return false;
   memcpy(r, data, sizeof(param_type));
   return true;
@@ -322,7 +322,7 @@ void ParamTraits<double>::Write(Message* m, const param_type& p) {
 bool ParamTraits<double>::Read(const Message* m, PickleIterator* iter,
                                param_type* r) {
   const char *data;
-  if (!m->ReadBytes(iter, &data, sizeof(*r))) {
+  if (!iter->ReadBytes(&data, sizeof(*r))) {
     NOTREACHED();
     return false;
   }
@@ -362,7 +362,7 @@ bool ParamTraits<std::vector<char> >::Read(const Message* m,
                                            param_type* r) {
   const char *data;
   int data_size = 0;
-  if (!m->ReadData(iter, &data, &data_size) || data_size < 0)
+  if (!iter->ReadData(&data, &data_size) || data_size < 0)
     return false;
   r->resize(data_size);
   if (data_size)
@@ -389,7 +389,7 @@ bool ParamTraits<std::vector<unsigned char> >::Read(const Message* m,
                                                     param_type* r) {
   const char *data;
   int data_size = 0;
-  if (!m->ReadData(iter, &data, &data_size) || data_size < 0)
+  if (!iter->ReadData(&data, &data_size) || data_size < 0)
     return false;
   r->resize(data_size);
   if (data_size)
@@ -416,7 +416,7 @@ bool ParamTraits<std::vector<bool> >::Read(const Message* m,
                                            param_type* r) {
   int size;
   // ReadLength() checks for < 0 itself.
-  if (!m->ReadLength(iter, &size))
+  if (!iter->ReadLength(&size))
     return false;
   r->resize(size);
   for (int i = 0; i < size; i++) {
@@ -749,14 +749,14 @@ void ParamTraits<Message>::Write(Message* m, const Message& p) {
 bool ParamTraits<Message>::Read(const Message* m, PickleIterator* iter,
                                 Message* r) {
   uint32 routing_id, type, flags;
-  if (!m->ReadUInt32(iter, &routing_id) ||
-      !m->ReadUInt32(iter, &type) ||
-      !m->ReadUInt32(iter, &flags))
+  if (!iter->ReadUInt32(&routing_id) ||
+      !iter->ReadUInt32(&type) ||
+      !iter->ReadUInt32(&flags))
     return false;
 
   int payload_size;
   const char* payload;
-  if (!m->ReadData(iter, &payload, &payload_size))
+  if (!iter->ReadData(&payload, &payload_size))
     return false;
 
   r->SetHeaderValues(static_cast<int32>(routing_id), type, flags);
@@ -777,7 +777,7 @@ void ParamTraits<HANDLE>::Write(Message* m, const param_type& p) {
 bool ParamTraits<HANDLE>::Read(const Message* m, PickleIterator* iter,
                                param_type* r) {
   int32 temp;
-  if (!m->ReadInt(iter, &temp))
+  if (!iter->ReadInt(&temp))
     return false;
   *r = LongToHandle(temp);
   return true;
@@ -795,7 +795,7 @@ bool ParamTraits<LOGFONT>::Read(const Message* m, PickleIterator* iter,
                                 param_type* r) {
   const char *data;
   int data_size = 0;
-  if (m->ReadData(iter, &data, &data_size) && data_size == sizeof(LOGFONT)) {
+  if (iter->ReadData(&data, &data_size) && data_size == sizeof(LOGFONT)) {
     const LOGFONT *font = reinterpret_cast<LOGFONT*>(const_cast<char*>(data));
     if (_tcsnlen(font->lfFaceName, LF_FACESIZE) < LF_FACESIZE) {
       memcpy(r, data, sizeof(LOGFONT));
@@ -819,7 +819,7 @@ bool ParamTraits<MSG>::Read(const Message* m, PickleIterator* iter,
                             param_type* r) {
   const char *data;
   int data_size = 0;
-  bool result = m->ReadData(iter, &data, &data_size);
+  bool result = iter->ReadData(&data, &data_size);
   if (result && data_size == sizeof(MSG)) {
     memcpy(r, data, sizeof(MSG));
   } else {

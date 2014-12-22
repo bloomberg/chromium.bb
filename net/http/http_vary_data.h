@@ -52,7 +52,7 @@ class NET_EXPORT_PRIVATE HttpVaryData {
   // is_valid() will return true.  Otherwise, false is returned to indicate
   // that this object is marked as invalid.
   //
-  bool InitFromPickle(const Pickle& pickle, PickleIterator* pickle_iter);
+  bool InitFromPickle(PickleIterator* pickle_iter);
 
   // Call this method to persist the vary data. Illegal to call this on an
   // invalid object.

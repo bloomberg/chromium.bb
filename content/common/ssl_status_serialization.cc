@@ -54,18 +54,17 @@ bool DeserializeSecurityInfo(
   Pickle pickle(state.data(), static_cast<int>(state.size()));
   PickleIterator iter(pickle);
   int num_scts_to_read;
-  if (!pickle.ReadInt(&iter, cert_id) ||
-      !pickle.ReadUInt32(&iter, cert_status) ||
-      !pickle.ReadInt(&iter, security_bits) ||
-      !pickle.ReadInt(&iter, ssl_connection_status) ||
-      !pickle.ReadInt(&iter, &num_scts_to_read))
+  if (!iter.ReadInt(cert_id) ||
+      !iter.ReadUInt32(cert_status) ||
+      !iter.ReadInt(security_bits) ||
+      !iter.ReadInt(ssl_connection_status) ||
+      !iter.ReadInt(&num_scts_to_read))
     return false;
 
   for (; num_scts_to_read > 0; --num_scts_to_read) {
     int id;
     uint16 status;
-    if (!pickle.ReadInt(&iter, &id) ||
-        !pickle.ReadUInt16(&iter, &status))
+    if (!iter.ReadInt(&id) || !iter.ReadUInt16(&status))
       return false;
     signed_certificate_timestamp_ids->push_back(
         SignedCertificateTimestampIDAndStatus(

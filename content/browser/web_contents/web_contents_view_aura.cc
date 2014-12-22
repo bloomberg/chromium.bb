@@ -329,15 +329,14 @@ bool ReadFileSystemFilesFromPickle(
   PickleIterator iter(pickle);
 
   size_t num_files = 0;
-  if (!pickle.ReadSizeT(&iter, &num_files))
+  if (!iter.ReadSizeT(&num_files))
     return false;
   file_system_files->resize(num_files);
 
   for (size_t i = 0; i < num_files; ++i) {
     std::string url_string;
     int64 size = 0;
-    if (!pickle.ReadString(&iter, &url_string) ||
-        !pickle.ReadInt64(&iter, &size))
+    if (!iter.ReadString(&url_string) || !iter.ReadInt64(&size))
       return false;
 
     GURL url(url_string);

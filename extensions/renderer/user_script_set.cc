@@ -110,7 +110,7 @@ bool UserScriptSet::UpdateUserScripts(
   size_t num_scripts = 0;
   Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()), pickle_size);
   PickleIterator iter(pickle);
-  CHECK(pickle.ReadSizeT(&iter, &num_scripts));
+  CHECK(iter.ReadSizeT(&num_scripts));
 
   scripts_.clear();
   scripts_.reserve(num_scripts);
@@ -124,14 +124,14 @@ bool UserScriptSet::UpdateUserScripts(
     for (size_t j = 0; j < script->js_scripts().size(); ++j) {
       const char* body = NULL;
       int body_length = 0;
-      CHECK(pickle.ReadData(&iter, &body, &body_length));
+      CHECK(iter.ReadData(&body, &body_length));
       script->js_scripts()[j].set_external_content(
           base::StringPiece(body, body_length));
     }
     for (size_t j = 0; j < script->css_scripts().size(); ++j) {
       const char* body = NULL;
       int body_length = 0;
-      CHECK(pickle.ReadData(&iter, &body, &body_length));
+      CHECK(iter.ReadData(&body, &body_length));
       script->css_scripts()[j].set_external_content(
           base::StringPiece(body, body_length));
     }

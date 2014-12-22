@@ -415,7 +415,7 @@ TYPED_TEST(ClipboardTest, DataTest) {
   Pickle read_pickle(output.data(), output.size());
   PickleIterator iter(read_pickle);
   std::string unpickled_string;
-  ASSERT_TRUE(read_pickle.ReadString(&iter, &unpickled_string));
+  ASSERT_TRUE(iter.ReadString(&unpickled_string));
   EXPECT_EQ(payload, unpickled_string);
 }
 
@@ -450,7 +450,7 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   Pickle read_pickle2(output2.data(), output2.size());
   PickleIterator iter2(read_pickle2);
   std::string unpickled_string2;
-  ASSERT_TRUE(read_pickle2.ReadString(&iter2, &unpickled_string2));
+  ASSERT_TRUE(iter2.ReadString(&unpickled_string2));
   EXPECT_EQ(payload2, unpickled_string2);
 
   {
@@ -471,7 +471,7 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   Pickle read_pickle1(output1.data(), output1.size());
   PickleIterator iter1(read_pickle1);
   std::string unpickled_string1;
-  ASSERT_TRUE(read_pickle1.ReadString(&iter1, &unpickled_string1));
+  ASSERT_TRUE(iter1.ReadString(&unpickled_string1));
   EXPECT_EQ(payload1, unpickled_string1);
 }
 

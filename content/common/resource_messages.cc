@@ -24,7 +24,7 @@ bool ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Read(
   if (!ReadParam(m, iter, &has_object))
     return false;
   if (has_object)
-    *r = new net::HttpResponseHeaders(*m, iter);
+    *r = new net::HttpResponseHeaders(iter);
   return true;
 }
 
@@ -74,7 +74,7 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
     case storage::DataElement::TYPE_BYTES: {
       const char* data;
       int len;
-      if (!m->ReadData(iter, &data, &len))
+      if (!iter->ReadData(&data, &len))
         return false;
       r->SetToBytes(data, len);
       break;

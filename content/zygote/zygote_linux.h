@@ -61,7 +61,7 @@ class Zygote {
   // new process and thus need to unwind back into ChromeMain.
   bool HandleRequestFromBrowser(int fd);
 
-  void HandleReapRequest(int fd, const Pickle& pickle, PickleIterator iter);
+  void HandleReapRequest(int fd, PickleIterator iter);
 
   // Get the termination status of |real_pid|. |real_pid| is the PID as it
   // appears outside of the sandbox.
@@ -72,7 +72,6 @@ class Zygote {
                             int* exit_code);
 
   void HandleGetTerminationStatus(int fd,
-                                  const Pickle& pickle,
                                   PickleIterator iter);
 
   // This is equivalent to fork(), except that, when using the SUID sandbox, it
@@ -91,11 +90,10 @@ class Zygote {
                       int* uma_sample,
                       int* uma_boundary_value);
 
-  // Unpacks process type and arguments from |pickle| and forks a new process.
+  // Unpacks process type and arguments from |iter| and forks a new process.
   // Returns -1 on error, otherwise returns twice, returning 0 to the child
   // process and the child process ID to the parent process, like fork().
-  base::ProcessId ReadArgsAndFork(const Pickle& pickle,
-                                  PickleIterator iter,
+  base::ProcessId ReadArgsAndFork(PickleIterator iter,
                                   ScopedVector<base::ScopedFD> fds,
                                   std::string* uma_name,
                                   int* uma_sample,
@@ -106,12 +104,10 @@ class Zygote {
   // otherwise writes the child_pid back to the browser via |fd|. Writes a
   // child_pid of -1 on error.
   bool HandleForkRequest(int fd,
-                         const Pickle& pickle,
                          PickleIterator iter,
                          ScopedVector<base::ScopedFD> fds);
 
   bool HandleGetSandboxStatus(int fd,
-                              const Pickle& pickle,
                               PickleIterator iter);
 
   // The Zygote needs to keep some information about each process. Most

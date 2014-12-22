@@ -35,7 +35,7 @@
   bool ParamTraits<enum_name>:: \
       Read(const Message* m, PickleIterator* iter, param_type* p) { \
     int value; \
-    if (!m->ReadInt(iter, &value)) \
+    if (!iter->ReadInt(&value)) \
       return false; \
     if (!(validation_expression)) \
       return false; \

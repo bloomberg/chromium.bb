@@ -70,7 +70,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   PickleIterator iter(reply);
   bool result;
-  if (!reply.ReadBool(&iter, &result))
+  if (!iter.ReadBool(&result))
     return false;
   if (!result)
     return false;
@@ -78,9 +78,9 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   SkString     reply_family;
   FontIdentity reply_identity;
   uint32_t     reply_style;
-  if (!skia::ReadSkString(reply, &iter, &reply_family) ||
-      !skia::ReadSkFontIdentity(reply, &iter, &reply_identity) ||
-      !reply.ReadUInt32(&iter, &reply_style)) {
+  if (!skia::ReadSkString(&iter, &reply_family) ||
+      !skia::ReadSkFontIdentity(&iter, &reply_identity) ||
+      !iter.ReadUInt32(&reply_style)) {
     return false;
   }
 
@@ -112,8 +112,7 @@ SkStream* FontConfigIPC::openStream(const FontIdentity& identity) {
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   bool result;
   PickleIterator iter(reply);
-  if (!reply.ReadBool(&iter, &result) ||
-      !result) {
+  if (!iter.ReadBool(&result) || !result) {
     if (result_fd)
       CloseFD(result_fd);
     return NULL;

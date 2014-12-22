@@ -55,7 +55,7 @@ class Handler : public content::WebContentsObserver {
 
     int message_request_id;
     PickleIterator iter(message);
-    CHECK(message.ReadInt(&iter, &message_request_id));
+    CHECK(iter.ReadInt(&message_request_id));
 
     if (message_request_id != request_id_)
       return false;

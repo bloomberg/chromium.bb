@@ -369,7 +369,7 @@ pid_t ZygoteHostImpl::ForkRequest(const std::vector<std::string>& argv,
 
     Pickle reply_pickle(buf, len);
     PickleIterator iter(reply_pickle);
-    if (len <= 0 || !reply_pickle.ReadInt(&iter, &pid))
+    if (len <= 0 || !iter.ReadInt(&pid))
       return base::kNullProcessHandle;
 
     // If there is a nonempty UMA name string, then there is a UMA
@@ -377,10 +377,10 @@ pid_t ZygoteHostImpl::ForkRequest(const std::vector<std::string>& argv,
     std::string uma_name;
     int uma_sample;
     int uma_boundary_value;
-    if (reply_pickle.ReadString(&iter, &uma_name) &&
+    if (iter.ReadString(&uma_name) &&
         !uma_name.empty() &&
-        reply_pickle.ReadInt(&iter, &uma_sample) &&
-        reply_pickle.ReadInt(&iter, &uma_boundary_value)) {
+        iter.ReadInt(&uma_sample) &&
+        iter.ReadInt(&uma_boundary_value)) {
       // We cannot use the UMA_HISTOGRAM_ENUMERATION macro here,
       // because that's only for when the name is the same every time.
       // Here we're using whatever name we got from the other side.
@@ -532,8 +532,7 @@ base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
     Pickle read_pickle(buf, len);
     int tmp_status, tmp_exit_code;
     PickleIterator iter(read_pickle);
-    if (!read_pickle.ReadInt(&iter, &tmp_status) ||
-        !read_pickle.ReadInt(&iter, &tmp_exit_code)) {
+    if (!iter.ReadInt(&tmp_status) || !iter.ReadInt(&tmp_exit_code)) {
       LOG(WARNING)
           << "Error parsing GetTerminationStatus response from zygote.";
     } else {

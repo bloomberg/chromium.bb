@@ -92,15 +92,15 @@ bool BrowserActionDragData::ReadFromPickle(Pickle* pickle) {
   PickleIterator data_iterator(*pickle);
 
   const char* tmp;
-  if (!pickle->ReadBytes(&data_iterator, &tmp, sizeof(profile_)))
+  if (!data_iterator.ReadBytes(&tmp, sizeof(profile_)))
     return false;
   memcpy(&profile_, tmp, sizeof(profile_));
 
-  if (!pickle->ReadString(&data_iterator, &id_))
+  if (!data_iterator.ReadString(&id_))
     return false;
 
   uint64 index;
-  if (!pickle->ReadUInt64(&data_iterator, &index))
+  if (!data_iterator.ReadUInt64(&index))
     return false;
   index_ = static_cast<size_t>(index);
 

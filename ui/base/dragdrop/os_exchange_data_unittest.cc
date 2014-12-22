@@ -160,9 +160,9 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
   EXPECT_TRUE(copy.GetPickledData(kTestFormat, &restored_pickle));
   PickleIterator iterator(restored_pickle);
   int value;
-  EXPECT_TRUE(restored_pickle.ReadInt(&iterator, &value));
+  EXPECT_TRUE(iterator.ReadInt(&value));
   EXPECT_EQ(1, value);
-  EXPECT_TRUE(restored_pickle.ReadInt(&iterator, &value));
+  EXPECT_TRUE(iterator.ReadInt(&value));
   EXPECT_EQ(2, value);
 }
 

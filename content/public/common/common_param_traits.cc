@@ -35,7 +35,7 @@ void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
 
 bool ParamTraits<GURL>::Read(const Message* m, PickleIterator* iter, GURL* p) {
   std::string s;
-  if (!m->ReadString(iter, &s) || s.length() > content::GetMaxURLChars()) {
+  if (!iter->ReadString(&s) || s.length() > content::GetMaxURLChars()) {
     *p = GURL();
     return false;
   }
@@ -60,7 +60,7 @@ bool ParamTraits<url::Origin>::Read(const Message* m,
                                     PickleIterator* iter,
                                     url::Origin* p) {
   std::string s;
-  if (!m->ReadString(iter, &s)) {
+  if (!iter->ReadString(&s)) {
     *p = url::Origin();
     return false;
   }

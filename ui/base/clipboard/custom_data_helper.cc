@@ -30,7 +30,7 @@ bool SkippablePickle::SkipString16(PickleIterator* iter) {
   DCHECK(iter);
 
   int len;
-  if (!ReadLength(iter, &len))
+  if (!iter->ReadLength(&len))
     return false;
   return iter->SkipBytes(len * sizeof(base::char16));
 }
@@ -44,7 +44,7 @@ void ReadCustomDataTypes(const void* data,
   PickleIterator iter(pickle);
 
   size_t size = 0;
-  if (!pickle.ReadSizeT(&iter, &size))
+  if (!iter.ReadSizeT(&size))
     return;
 
   // Keep track of the original elements in the types vector. On failure, we
@@ -54,8 +54,7 @@ void ReadCustomDataTypes(const void* data,
 
   for (size_t i = 0; i < size; ++i) {
     types->push_back(base::string16());
-    if (!pickle.ReadString16(&iter, &types->back()) ||
-        !pickle.SkipString16(&iter)) {
+    if (!iter.ReadString16(&types->back()) || !pickle.SkipString16(&iter)) {
       types->resize(original_size);
       return;
     }
@@ -70,15 +69,15 @@ void ReadCustomDataForType(const void* data,
   PickleIterator iter(pickle);
 
   size_t size = 0;
-  if (!pickle.ReadSizeT(&iter, &size))
+  if (!iter.ReadSizeT(&size))
     return;
 
   for (size_t i = 0; i < size; ++i) {
     base::string16 deserialized_type;
-    if (!pickle.ReadString16(&iter, &deserialized_type))
+    if (!iter.ReadString16(&deserialized_type))
       return;
     if (deserialized_type == type) {
-      ignore_result(pickle.ReadString16(&iter, result));
+      ignore_result(iter.ReadString16(result));
       return;
     }
     if (!pickle.SkipString16(&iter))
@@ -93,19 +92,19 @@ void ReadCustomDataIntoMap(const void* data,
   PickleIterator iter(pickle);
 
   size_t size = 0;
-  if (!pickle.ReadSizeT(&iter, &size))
+  if (!iter.ReadSizeT(&size))
     return;
 
   for (size_t i = 0; i < size; ++i) {
     base::string16 type;
-    if (!pickle.ReadString16(&iter, &type)) {
+    if (!iter.ReadString16(&type)) {
       // Data is corrupt, return an empty map.
       result->clear();
       return;
     }
     std::pair<std::map<base::string16, base::string16>::iterator, bool>
         insert_result = result->insert(std::make_pair(type, base::string16()));
-    if (!pickle.ReadString16(&iter, &insert_result.first->second)) {
+    if (!iter.ReadString16(&insert_result.first->second)) {
       // Data is corrupt, return an empty map.
       result->clear();
       return;

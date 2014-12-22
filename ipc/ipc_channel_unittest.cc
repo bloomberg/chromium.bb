@@ -39,19 +39,19 @@ TEST_F(IPCChannelTest, BasicMessageTest) {
   std::string vs;
   std::wstring vw;
 
-  EXPECT_TRUE(m.ReadInt(&iter, &vi));
+  EXPECT_TRUE(iter.ReadInt(&vi));
   EXPECT_EQ(v1, vi);
 
-  EXPECT_TRUE(m.ReadString(&iter, &vs));
+  EXPECT_TRUE(iter.ReadString(&vs));
   EXPECT_EQ(v2, vs);
 
-  EXPECT_TRUE(m.ReadWString(&iter, &vw));
+  EXPECT_TRUE(iter.ReadWString(&vw));
   EXPECT_EQ(v3, vw);
 
   // should fail
-  EXPECT_FALSE(m.ReadInt(&iter, &vi));
-  EXPECT_FALSE(m.ReadString(&iter, &vs));
-  EXPECT_FALSE(m.ReadWString(&iter, &vw));
+  EXPECT_FALSE(iter.ReadInt(&vi));
+  EXPECT_FALSE(iter.ReadString(&vs));
+  EXPECT_FALSE(iter.ReadWString(&vw));
 }
 
 TEST_F(IPCChannelTest, ChannelTest) {

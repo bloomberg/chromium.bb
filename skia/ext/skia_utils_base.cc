@@ -6,11 +6,11 @@
 
 namespace skia {
 
-bool ReadSkString(const Pickle& pickle, PickleIterator* iter, SkString* str) {
-  int         reply_length;
+bool ReadSkString(PickleIterator* iter, SkString* str) {
+  int reply_length;
   const char* reply_text;
 
-  if (!pickle.ReadData(iter, &reply_text, &reply_length))
+  if (!iter->ReadData(&reply_text, &reply_length))
     return false;
 
   if (str)
@@ -18,16 +18,16 @@ bool ReadSkString(const Pickle& pickle, PickleIterator* iter, SkString* str) {
   return true;
 }
 
-bool ReadSkFontIdentity(const Pickle& pickle, PickleIterator* iter,
+bool ReadSkFontIdentity(PickleIterator* iter,
                         SkFontConfigInterface::FontIdentity* identity) {
-  uint32_t    reply_id;
-  uint32_t    reply_ttcIndex;
-  int         reply_length;
+  uint32_t reply_id;
+  uint32_t reply_ttcIndex;
+  int reply_length;
   const char* reply_text;
 
-  if (!pickle.ReadUInt32(iter, &reply_id) ||
-      !pickle.ReadUInt32(iter, &reply_ttcIndex) ||
-      !pickle.ReadData(iter, &reply_text, &reply_length))
+  if (!iter->ReadUInt32(&reply_id) ||
+      !iter->ReadUInt32(&reply_ttcIndex) ||
+      !iter->ReadData(&reply_text, &reply_length))
     return false;
 
   if (identity) {

@@ -109,8 +109,7 @@ bool RestoreUpdateTabNavigationCommand(
   if (!pickle.get())
     return false;
   PickleIterator iterator(*pickle);
-  return pickle->ReadInt(&iterator, tab_id) &&
-         navigation->ReadFromPickle(&iterator);
+  return iterator.ReadInt(tab_id) && navigation->ReadFromPickle(&iterator);
 }
 
 bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
@@ -121,8 +120,7 @@ bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
     return false;
 
   PickleIterator iterator(*pickle);
-  return pickle->ReadInt(&iterator, tab_id) &&
-      pickle->ReadString(&iterator, extension_app_id);
+  return iterator.ReadInt(tab_id) && iterator.ReadString(extension_app_id);
 }
 
 bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
@@ -133,8 +131,7 @@ bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
     return false;
 
   PickleIterator iterator(*pickle);
-  return pickle->ReadInt(&iterator, tab_id) &&
-      pickle->ReadString(&iterator, user_agent_override);
+  return iterator.ReadInt(tab_id) && iterator.ReadString(user_agent_override);
 }
 
 bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
@@ -145,8 +142,7 @@ bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
     return false;
 
   PickleIterator iterator(*pickle);
-  return pickle->ReadInt(&iterator, window_id) &&
-      pickle->ReadString(&iterator, app_name);
+  return iterator.ReadInt(window_id) && iterator.ReadString(app_name);
 }
 
 }  // namespace sessions

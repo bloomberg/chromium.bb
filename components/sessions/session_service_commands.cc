@@ -534,8 +534,8 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
         SessionID::id_type command_tab_id;
         std::string session_storage_persistent_id;
         PickleIterator iter(*command_pickle.get());
-        if (!command_pickle->ReadInt(&iter, &command_tab_id) ||
-            !command_pickle->ReadString(&iter, &session_storage_persistent_id))
+        if (!iter.ReadInt(&command_tab_id) ||
+            !iter.ReadString(&session_storage_persistent_id))
           return true;
         // Associate the session storage back.
         GetTab(command_tab_id, tabs)->session_storage_persistent_id =
@@ -775,8 +775,8 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
       PickleIterator iterator(*command_pickle);
       SessionID::id_type command_tab_id;
       int command_nav_index;
-      if (!command_pickle->ReadInt(&iterator, &command_tab_id) ||
-          !command_pickle->ReadInt(&iterator, &command_nav_index)) {
+      if (!iterator.ReadInt(&command_tab_id) ||
+          !iterator.ReadInt(&command_nav_index)) {
         return false;
       }
       SessionID::id_type existing_tab_id;
@@ -787,8 +787,8 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
         // the pickle references deleted memory.
         scoped_ptr<Pickle> existing_pickle(existing_command->PayloadAsPickle());
         iterator = PickleIterator(*existing_pickle);
-        if (!existing_pickle->ReadInt(&iterator, &existing_tab_id) ||
-            !existing_pickle->ReadInt(&iterator, &existing_nav_index)) {
+        if (!iterator.ReadInt(&existing_tab_id) ||
+            !iterator.ReadInt(&existing_nav_index)) {
           return false;
         }
       }

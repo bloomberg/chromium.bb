@@ -346,7 +346,7 @@ TEST_P(PersistenceTest, Persist) {
 
   PickleIterator iter(pickle);
   scoped_refptr<net::HttpResponseHeaders> parsed2(
-      new net::HttpResponseHeaders(pickle, &iter));
+      new net::HttpResponseHeaders(&iter));
 
   std::string h2;
   parsed2->GetNormalizedHeaders(&h2);

@@ -36,37 +36,30 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   void HandleRequestFromRenderer(int fd);
 
   void HandleFontMatchRequest(int fd,
-                              const Pickle& pickle,
                               PickleIterator iter,
                               const std::vector<base::ScopedFD*>& fds);
 
   void HandleFontOpenRequest(int fd,
-                             const Pickle& pickle,
                              PickleIterator iter,
                              const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetFallbackFontForChar(int fd,
-                                  const Pickle& pickle,
                                   PickleIterator iter,
                                   const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetStyleForStrike(int fd,
-                               const Pickle& pickle,
                                PickleIterator iter,
                                const std::vector<base::ScopedFD*>& fds);
 
   void HandleLocaltime(int fd,
-                       const Pickle& pickle,
                        PickleIterator iter,
                        const std::vector<base::ScopedFD*>& fds);
 
   void HandleMakeSharedMemorySegment(int fd,
-                                     const Pickle& pickle,
                                      PickleIterator iter,
                                      const std::vector<base::ScopedFD*>& fds);
 
   void HandleMatchWithFallback(int fd,
-                               const Pickle& pickle,
                                PickleIterator iter,
                                const std::vector<base::ScopedFD*>& fds);
 

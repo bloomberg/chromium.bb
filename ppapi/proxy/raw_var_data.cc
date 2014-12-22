@@ -188,11 +188,11 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Read(const IPC::Message* m,
                                                   PickleIterator* iter) {
   scoped_ptr<RawVarDataGraph> result(new RawVarDataGraph);
   uint32_t size = 0;
-  if (!m->ReadUInt32(iter, &size))
+  if (!iter->ReadUInt32(&size))
     return scoped_ptr<RawVarDataGraph>();
   for (uint32_t i = 0; i < size; ++i) {
     int32_t type;
-    if (!m->ReadInt(iter, &type))
+    if (!iter->ReadInt(&type))
       return scoped_ptr<RawVarDataGraph>();
     PP_VarType var_type = static_cast<PP_VarType>(type);
     result->data_.push_back(RawVarData::Create(var_type));
@@ -323,13 +323,13 @@ bool BasicRawVarData::Read(PP_VarType type,
       break;
     case PP_VARTYPE_BOOL: {
       bool bool_value;
-      if (!m->ReadBool(iter, &bool_value))
+      if (!iter->ReadBool(&bool_value))
         return false;
       result.value.as_bool = PP_FromBool(bool_value);
       break;
     }
     case PP_VARTYPE_INT32:
-      if (!m->ReadInt(iter, &result.value.as_int))
+      if (!iter->ReadInt(&result.value.as_int))
         return false;
       break;
     case PP_VARTYPE_DOUBLE:
@@ -337,7 +337,7 @@ bool BasicRawVarData::Read(PP_VarType type,
         return false;
       break;
     case PP_VARTYPE_OBJECT:
-      if (!m->ReadInt64(iter, &result.value.as_id))
+      if (!iter->ReadInt64(&result.value.as_id))
         return false;
       break;
     default:
@@ -385,7 +385,7 @@ void StringRawVarData::Write(IPC::Message* m,
 bool StringRawVarData::Read(PP_VarType type,
                             const IPC::Message* m,
                             PickleIterator* iter) {
-  if (!m->ReadString(iter, &data_))
+  if (!iter->ReadString(&data_))
     return false;
   return true;
 }
@@ -503,12 +503,12 @@ bool ArrayBufferRawVarData::Read(PP_VarType type,
                                  const IPC::Message* m,
                                  PickleIterator* iter) {
   int shmem_type;
-  if (!m->ReadInt(iter, &shmem_type))
+  if (!iter->ReadInt(&shmem_type))
     return false;
   type_ = static_cast<ShmemType>(shmem_type);
   switch (type_) {
     case ARRAY_BUFFER_SHMEM_HOST:
-      if (!m->ReadInt(iter, &host_shm_handle_id_))
+      if (!iter->ReadInt(&host_shm_handle_id_))
         return false;
       break;
     case ARRAY_BUFFER_SHMEM_PLUGIN:
@@ -518,7 +518,7 @@ bool ArrayBufferRawVarData::Read(PP_VarType type,
       }
       break;
     case ARRAY_BUFFER_NO_SHMEM:
-      if (!m->ReadString(iter, &data_))
+      if (!iter->ReadString(&data_))
         return false;
       break;
     default:
@@ -584,11 +584,11 @@ bool ArrayRawVarData::Read(PP_VarType type,
                            const IPC::Message* m,
                            PickleIterator* iter) {
   uint32_t size;
-  if (!m->ReadUInt32(iter, &size))
+  if (!iter->ReadUInt32(&size))
     return false;
   for (uint32_t i = 0; i < size; ++i) {
     uint32_t index;
-    if (!m->ReadUInt32(iter, &index))
+    if (!iter->ReadUInt32(&index))
       return false;
     children_.push_back(index);
   }
@@ -650,14 +650,14 @@ bool DictionaryRawVarData::Read(PP_VarType type,
                                 const IPC::Message* m,
                                 PickleIterator* iter) {
   uint32_t size;
-  if (!m->ReadUInt32(iter, &size))
+  if (!iter->ReadUInt32(&size))
     return false;
   for (uint32_t i = 0; i < size; ++i) {
     std::string key;
     uint32_t value;
-    if (!m->ReadString(iter, &key))
+    if (!iter->ReadString(&key))
       return false;
-    if (!m->ReadUInt32(iter, &value))
+    if (!iter->ReadUInt32(&value))
       return false;
     children_.push_back(make_pair(key, value));
   }
@@ -727,15 +727,15 @@ bool ResourceRawVarData::Read(PP_VarType type,
                               const IPC::Message* m,
                               PickleIterator* iter) {
   int value;
-  if (!m->ReadInt(iter, &value))
+  if (!iter->ReadInt(&value))
     return false;
   pp_resource_ = static_cast<PP_Resource>(value);
-  if (!m->ReadInt(iter, &pending_renderer_host_id_))
+  if (!iter->ReadInt(&pending_renderer_host_id_))
     return false;
-  if (!m->ReadInt(iter, &pending_browser_host_id_))
+  if (!iter->ReadInt(&pending_browser_host_id_))
     return false;
   bool has_creation_message;
-  if (!m->ReadBool(iter, &has_creation_message))
+  if (!iter->ReadBool(&has_creation_message))
     return false;
   if (has_creation_message) {
     creation_message_.reset(new IPC::Message());
