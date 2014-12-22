@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/memory/singleton.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/win/wrapped_window_proc.h"
@@ -282,6 +283,10 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
                                      WPARAM w_param,
                                      LPARAM l_param) {
   if (message == WM_NCCREATE) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl::WndProc1"));
+
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
     WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
     DCHECK(window);
@@ -292,6 +297,10 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
       window->got_valid_hwnd_ = true;
     return TRUE;
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl::WndProc2"));
 
   WindowImpl* window = reinterpret_cast<WindowImpl*>(GetWindowUserData(hwnd));
   if (!window)
