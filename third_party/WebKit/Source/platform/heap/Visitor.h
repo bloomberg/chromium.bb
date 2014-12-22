@@ -168,6 +168,21 @@ template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
 
+template <typename T, typename = void>
+struct HasInlinedTraceMethod {
+public:
+    static const bool value = false;
+};
+
+template <typename T>
+struct HasInlinedTraceMethod<T, typename T::HasInlinedTraceMethod> {
+public:
+    static const bool value = true;
+};
+
+template <typename T, bool = HasInlinedTraceMethod<T>::value>
+struct TraceCompatibilityAdaptor;
+
 // The TraceTrait is used to specify how to mark an object pointer and
 // how to trace all of the pointers in the object.
 //
@@ -184,9 +199,10 @@ class TraceTrait {
 public:
     // Default implementation of TraceTrait<T>::trace just statically
     // dispatches to the trace method of the class T.
-    static void trace(Visitor* visitor, void* self)
+    template<typename TraceDispatcher>
+    static void trace(TraceDispatcher visitor, void* self)
     {
-        static_cast<T*>(self)->trace(visitor);
+        TraceCompatibilityAdaptor<T>::trace(visitor, static_cast<T*>(self));
     }
 
     static void mark(Visitor* visitor, const T* t)
