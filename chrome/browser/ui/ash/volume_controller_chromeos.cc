@@ -24,7 +24,7 @@ namespace {
 const double kStepPercentage = 4.0;
 
 bool VolumeAdjustSoundEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableVolumeAdjustSound);
 }
 

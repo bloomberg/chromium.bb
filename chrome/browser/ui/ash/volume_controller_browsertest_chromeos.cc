@@ -239,7 +239,7 @@ class VolumeControllerSoundsDisabledTest : public VolumeControllerSoundsTest {
   VolumeControllerSoundsDisabledTest() {}
   virtual ~VolumeControllerSoundsDisabledTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     VolumeControllerSoundsTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kDisableVolumeAdjustSound);
   }

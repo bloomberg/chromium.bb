@@ -164,7 +164,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     const GURL& base_url = embedded_test_server()->base_url();
     command_line->AppendSwitchASCII(::switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(::switches::kLsoUrl, base_url.spec());

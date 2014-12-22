@@ -38,7 +38,7 @@ class TabScrubberTest : public InProcessBrowserTest,
       : target_index_(-1) {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(chromeos::switches::kNaturalScrollDefault);
 #endif

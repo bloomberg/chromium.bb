@@ -299,7 +299,7 @@ TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableAppsFileAssociations);
   extensions::FileHandlersInfo file_handlers_info;
   extensions::FileHandlerInfo handler_0;

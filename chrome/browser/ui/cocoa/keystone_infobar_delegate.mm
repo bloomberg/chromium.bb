@@ -160,7 +160,7 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
   // don't want to be nagged about the default browser also don't want to be
   // nagged about the update check.  (Automated testers, I'm thinking of
   // you...)
-  CommandLine* commandLine = CommandLine::ForCurrentProcess();
+  base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
   if (first_run::IsChromeFirstRun() ||
       !profile->GetPrefs()->GetBoolean(prefs::kShowUpdatePromotionInfoBar) ||
       commandLine->HasSwitch(switches::kNoDefaultBrowserCheck)) {

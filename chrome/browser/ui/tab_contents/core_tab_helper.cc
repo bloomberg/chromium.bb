@@ -150,8 +150,9 @@ void CoreTabHelper::WasShown() {
 void CoreTabHelper::WebContentsDestroyed() {
   // OnCloseStarted isn't called in unit tests.
   if (!close_start_time_.is_null()) {
-    bool fast_tab_close_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableFastUnload);
+    bool fast_tab_close_enabled =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableFastUnload);
 
     if (fast_tab_close_enabled) {
       base::TimeTicks now = base::TimeTicks::Now();

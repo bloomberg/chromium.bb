@@ -147,7 +147,7 @@ TEST_F(OriginChipInfoTest, ChromeOrigin) {
 }
 
 TEST_F(OriginChipInfoTest, ExtensionOrigin) {
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   extensions::TestExtensionSystem* test_extension_system =
       static_cast<extensions::TestExtensionSystem*>(
           extensions::ExtensionSystem::Get(profile()));

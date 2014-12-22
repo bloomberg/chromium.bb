@@ -37,7 +37,7 @@ WVTestLicenseServerConfig::~WVTestLicenseServerConfig() {
 }
 
 bool WVTestLicenseServerConfig::GetServerCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   if (!GetPythonCommand(command_line)) {
     LOG(ERROR) << "Could not get Python runtime command.";
     return false;

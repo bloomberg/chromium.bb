@@ -244,13 +244,13 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
 
 // Is the fast tab unload experiment enabled?
 bool IsFastTabUnloadEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableFastUnload);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFastUnload);
 }
 
 bool IsWebAppFrameEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableWebAppFrame);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebAppFrame);
 }
 
 }  // namespace
@@ -1151,8 +1151,9 @@ bool Browser::CanOverscrollContent() const {
   if (!allow_overscroll)
     return false;
 
-  const std::string value = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
+  const std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kOverscrollHistoryNavigation);
   bool overscroll_enabled = value != "0";
   if (!overscroll_enabled)
     return false;
@@ -1354,8 +1355,9 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
          params.disposition == NEW_FOREGROUND_TAB ||
          params.disposition == NEW_BACKGROUND_TAB ||
          params.disposition == NEW_WINDOW) &&
-        !params.user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
-                                    switches::kDisablePopupBlocking)) {
+        !params.user_gesture &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisablePopupBlocking)) {
       if (popup_blocker_helper->MaybeBlockPopup(nav_params,
                                                 WebWindowFeatures())) {
         return NULL;

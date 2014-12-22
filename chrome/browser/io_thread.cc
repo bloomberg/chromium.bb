@@ -170,7 +170,8 @@ class SystemURLRequestContext : public net::URLRequestContext {
 
 scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   net::HostResolver::Options options;
 
@@ -293,7 +294,7 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   return context;
 }
 
-int GetSwitchValueAsInt(const CommandLine& command_line,
+int GetSwitchValueAsInt(const base::CommandLine& command_line,
                         const std::string& switch_name) {
   int value;
   if (!base::StringToInt(command_line.GetSwitchValueASCII(switch_name),
@@ -577,7 +578,8 @@ void IOThread::InitAsync() {
   net::SetMessageLoopForNSSHttpIO();
 #endif
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   DCHECK(!globals_);
   globals_ = new Globals;
@@ -808,7 +810,7 @@ void IOThread::CleanUp() {
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 }
 
-void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
+void IOThread::InitializeNetworkOptions(const base::CommandLine& command_line) {
   // Only handle use-spdy command line flags if "spdy.disabled" preference is
   // not disabled via policy.
   if (is_spdy_disabled_by_policy_) {
@@ -848,7 +850,7 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
   // HttpNetworkSession::Params.
 }
 
-void IOThread::ConfigureTCPFastOpen(const CommandLine& command_line) {
+void IOThread::ConfigureTCPFastOpen(const base::CommandLine& command_line) {
   const std::string trial_group =
       base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
   if (trial_group == kTCPFastOpenHttpsEnabledGroupName)
@@ -1118,7 +1120,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   DCHECK(!globals_->system_proxy_service.get());
   DCHECK(system_proxy_config_service_.get());
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   globals_->system_proxy_service.reset(
       ProxyServiceFactory::CreateProxyService(
           net_log_,
@@ -1151,7 +1154,7 @@ void IOThread::UpdateDnsClientEnabled() {
   globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
 }
 
-void IOThread::ConfigureQuic(const CommandLine& command_line) {
+void IOThread::ConfigureQuic(const base::CommandLine& command_line) {
   // Always fetch the field trial group to ensure it is reported correctly.
   // The command line flags will be associated with a group that is reported
   // so long as trial is actually queried.
@@ -1264,7 +1267,7 @@ void IOThread::ConfigureQuicGlobals(
   }
 }
 
-bool IOThread::ShouldEnableQuic(const CommandLine& command_line,
+bool IOThread::ShouldEnableQuic(const base::CommandLine& command_line,
                                 base::StringPiece quic_trial_group) {
   if (command_line.HasSwitch(switches::kDisableQuic))
     return false;
@@ -1277,7 +1280,7 @@ bool IOThread::ShouldEnableQuic(const CommandLine& command_line,
 }
 
 bool IOThread::ShouldEnableQuicPortSelection(
-      const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableQuicPortSelection))
     return false;
 
@@ -1288,7 +1291,7 @@ bool IOThread::ShouldEnableQuicPortSelection(
 }
 
 bool IOThread::ShouldEnableQuicPacing(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     base::StringPiece quic_trial_group,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kEnableQuicPacing))
@@ -1303,7 +1306,7 @@ bool IOThread::ShouldEnableQuicPacing(
 }
 
 net::QuicTagVector IOThread::GetQuicConnectionOptions(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
     return net::QuicUtils::ParseQuicConnectionOptions(
@@ -1388,7 +1391,7 @@ bool IOThread::ShouldDisableLoadingServerInfoForNewServers(
 
 // static
 size_t IOThread::GetQuicMaxPacketLength(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     base::StringPiece quic_trial_group,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
@@ -1412,7 +1415,7 @@ size_t IOThread::GetQuicMaxPacketLength(
 
 // static
 net::QuicVersion IOThread::GetQuicVersion(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicVersion)) {
     return ParseQuicVersion(

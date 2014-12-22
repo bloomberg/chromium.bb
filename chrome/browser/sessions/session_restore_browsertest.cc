@@ -66,7 +66,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
 
  protected:
 #if defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(nkostylev): Investigate if we can remove this switch.
     command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -982,14 +982,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                        RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
   ui_test_utils::NavigateToURL(browser(), url1_);
 
   // Launch an app.
-  CommandLine app_launch_arguments = GetCommandLineForRelaunch();
+  base::CommandLine app_launch_arguments = GetCommandLineForRelaunch();
   app_launch_arguments.AppendSwitchASCII(switches::kApp, url2_.spec());
 
   ui_test_utils::BrowserAddedObserver window_observer;

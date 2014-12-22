@@ -48,8 +48,9 @@ QuitWithAppsController::QuitWithAppsController()
     : notification_profile_(NULL), suppress_for_session_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  hosted_app_quit_notification_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHostedAppQuitNotification);
+  hosted_app_quit_notification_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kHostedAppQuitNotification);
 
   // There is only ever one notification to replace, so use the same replace_id
   // each time.
@@ -124,8 +125,8 @@ bool QuitWithAppsController::ShouldQuit() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Quit immediately if this is a test.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAppsKeepChromeAliveInTests)) {
     return true;
   }

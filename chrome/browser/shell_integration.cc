@@ -53,12 +53,12 @@ bool ShellIntegration::IsRunningInAppMode() {
 }
 
 // static
-CommandLine ShellIntegration::CommandLineArgsForLauncher(
+base::CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
     const base::FilePath& profile_path) {
   base::ThreadRestrictions::AssertIOAllowed();
-  CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
+  base::CommandLine new_cmd_line(base::CommandLine::NO_PROGRAM);
 
   AppendProfileArgs(
       extension_app_id.empty() ? base::FilePath() : profile_path,
@@ -79,11 +79,10 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
 }
 
 // static
-void ShellIntegration::AppendProfileArgs(
-    const base::FilePath& profile_path,
-    CommandLine* command_line) {
+void ShellIntegration::AppendProfileArgs(const base::FilePath& profile_path,
+                                         base::CommandLine* command_line) {
   DCHECK(command_line);
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
 
   // Use the same UserDataDir for new launches that we currently have set.
   base::FilePath user_data_dir =

@@ -2528,7 +2528,7 @@ TEST_F(AutofillDialogControllerTest, NotProdNotification) {
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   ASSERT_EQ(
       "",
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
@@ -2543,7 +2543,7 @@ TEST_F(AutofillDialogControllerTest, NoNotProdNotification) {
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   ASSERT_EQ(
       "",
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));

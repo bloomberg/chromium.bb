@@ -105,7 +105,8 @@ void PanelManager::SetDisplaySettingsProviderForTesting(
 bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   // If --enable-panels is on, always use panels on Linux.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePanels))
     return true;
 
   // Otherwise, panels are only supported on tested window managers.
@@ -124,12 +125,12 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {
-    return CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnablePanels) ||
-        extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd") ||
-        extension_id == std::string("ljclpkphhpbpinifbeabbhlfddcpfdde") ||
-        extension_id == std::string("ppleadejekpmccmnpjdimmlfljlkdfej") ||
-        extension_id == std::string("eggnbpckecmjlblplehfpjjdhhidfdoj");
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kEnablePanels) ||
+           extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd") ||
+           extension_id == std::string("ljclpkphhpbpinifbeabbhlfddcpfdde") ||
+           extension_id == std::string("ppleadejekpmccmnpjdimmlfljlkdfej") ||
+           extension_id == std::string("eggnbpckecmjlblplehfpjjdhhidfdoj");
   }
 
   return true;

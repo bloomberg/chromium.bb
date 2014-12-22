@@ -38,7 +38,7 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
   AppInfoDialogViewsTest()
       : widget_(NULL),
         widget_destroyed_(false),
-        command_line_(CommandLine::NO_PROGRAM) {}
+        command_line_(base::CommandLine::NO_PROGRAM) {}
   ~AppInfoDialogViewsTest() override {}
 
   // Overridden from testing::Test:
@@ -128,7 +128,7 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
   AppInfoDialog* dialog_;  // Owned by widget_ through views heirarchy.
 
  private:
-  CommandLine command_line_;
+  base::CommandLine command_line_;
 
   scoped_refptr<const extensions::Extension> app_;
 

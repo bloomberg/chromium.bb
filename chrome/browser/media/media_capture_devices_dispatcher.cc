@@ -262,8 +262,9 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 
 #if defined(OS_MACOSX)
   // AVFoundation is used for video/audio device monitoring and video capture.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceQTKit)) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceQTKit)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableAVFoundation);
   }
 #endif
@@ -573,7 +574,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   const bool origin_is_secure =
       request.security_origin.SchemeIsSecure() ||
       request.security_origin.SchemeIs(extensions::kExtensionScheme) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowHttpScreenCapture);
 
   // If basic conditions (screen capturing is enabled and origin is secure)

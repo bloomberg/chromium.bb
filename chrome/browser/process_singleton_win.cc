@@ -91,7 +91,7 @@ BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
 }
 
 bool ParseCommandLine(const COPYDATASTRUCT* cds,
-                      CommandLine* parsed_command_line,
+                      base::CommandLine* parsed_command_line,
                       base::FilePath* current_directory) {
   // We should have enough room for the shortest command (min_message_size)
   // and also be a multiple of wchar_t bytes. The shortest command
@@ -144,7 +144,7 @@ bool ParseCommandLine(const COPYDATASTRUCT* cds,
     // Get command line.
     const std::wstring cmd_line =
         msg.substr(second_null + 1, third_null - second_null);
-    *parsed_command_line = CommandLine::FromString(cmd_line);
+    *parsed_command_line = base::CommandLine::FromString(cmd_line);
     return true;
   }
   return false;
@@ -162,7 +162,7 @@ bool ProcessLaunchNotification(
   // Handle the WM_COPYDATA message from another process.
   const COPYDATASTRUCT* cds = reinterpret_cast<COPYDATASTRUCT*>(lparam);
 
-  CommandLine parsed_command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine parsed_command_line(base::CommandLine::NO_PROGRAM);
   base::FilePath current_directory;
   if (!ParseCommandLine(cds, &parsed_command_line, &current_directory)) {
     *result = TRUE;
@@ -333,7 +333,7 @@ ProcessSingleton::NotifyOtherProcessOrCreate() {
       result = PROFILE_IN_USE;
   } else {
     g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
-        *CommandLine::ForCurrentProcess());
+        *base::CommandLine::ForCurrentProcess());
   }
   return result;
 }

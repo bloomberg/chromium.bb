@@ -46,7 +46,8 @@ void PrefServiceSyncableFactory::SetRecommendedPolicies(
 }
 #endif
 
-void PrefServiceSyncableFactory::SetCommandLine(CommandLine* command_line) {
+void PrefServiceSyncableFactory::SetCommandLine(
+    base::CommandLine* command_line) {
   set_command_line_prefs(new CommandLinePrefStore(command_line));
 }
 

@@ -46,8 +46,7 @@ class ProcessSingletonPosixTest : public testing::Test {
             base::Bind(&TestableProcessSingleton::NotificationCallback,
                        base::Unretained(this))) {}
 
-
-    std::vector<CommandLine::StringVector> callback_command_lines_;
+    std::vector<base::CommandLine::StringVector> callback_command_lines_;
 
     using ProcessSingleton::NotifyOtherProcessWithTimeout;
     using ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate;
@@ -55,7 +54,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     using ProcessSingleton::OverrideKillCallbackForTesting;
 
    private:
-    bool NotificationCallback(const CommandLine& command_line,
+    bool NotificationCallback(const base::CommandLine& command_line,
                               const base::FilePath& current_directory) {
       callback_command_lines_.push_back(command_line.argv());
       return true;
@@ -163,7 +162,8 @@ class ProcessSingletonPosixTest : public testing::Test {
   ProcessSingleton::NotifyResult NotifyOtherProcess(bool override_kill) {
     scoped_ptr<TestableProcessSingleton> process_singleton(
         CreateProcessSingleton());
-    CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
+    base::CommandLine command_line(
+        base::CommandLine::ForCurrentProcess()->GetProgram());
     command_line.AppendArg("about:blank");
     if (override_kill) {
       process_singleton->OverrideCurrentPidForTesting(
@@ -182,7 +182,8 @@ class ProcessSingletonPosixTest : public testing::Test {
       const std::string& url) {
     scoped_ptr<TestableProcessSingleton> process_singleton(
         CreateProcessSingleton());
-    CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
+    base::CommandLine command_line(
+        base::CommandLine::ForCurrentProcess()->GetProgram());
     command_line.AppendArg(url);
     return process_singleton->NotifyOtherProcessWithTimeoutOrCreate(
         command_line, kRetryAttempts, timeout());

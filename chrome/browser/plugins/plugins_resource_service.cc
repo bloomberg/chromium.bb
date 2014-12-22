@@ -25,7 +25,7 @@ const char kPluginsServerUrl[] =
     "https://www.gstatic.com/chrome/config/plugins_2/";
 
 bool IsTest() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPluginsMetadataServerURL);
 }
 
@@ -42,7 +42,7 @@ GURL GetPluginsServerURL() {
 #endif
 
   std::string test_url =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPluginsMetadataServerURL);
   return GURL(IsTest() ? test_url : kPluginsServerUrl + filename);
 }

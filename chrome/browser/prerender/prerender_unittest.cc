@@ -321,7 +321,7 @@ class PrerenderTest : public testing::Test {
                     last_prerender_id_(0),
                     field_trial_list_(NULL) {
     // Enable omnibox prerendering.
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kPrerenderFromOmnibox,
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
   }

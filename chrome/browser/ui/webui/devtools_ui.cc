@@ -191,7 +191,7 @@ void DevToolsDataSource::StartDataRequest(
 
   // Serve static response while connecting to the remote device.
   if (StartsWithASCII(path, kRemoteOpenPrefix, false)) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableDevToolsExperiments)) {
       callback.Run(NULL);
       return;
@@ -377,8 +377,8 @@ DevToolsUI::~DevToolsUI() {
 void DevToolsUI::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   content::NavigationEntry* entry = load_details.entry;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDevToolsExperiments)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDevToolsExperiments)) {
     return;
   }
 

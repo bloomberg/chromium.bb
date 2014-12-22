@@ -450,7 +450,7 @@ void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
 
 void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
   // Get stats on use of command line.
-  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   size_t common_commands = 0;
   if (command_line->HasSwitch(switches::kUserDataDir)) {
     ++common_commands;

@@ -364,8 +364,8 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
   // The same URL, when specified on the command line, should allow search term
   // extraction.
   UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.foo.com/");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.foo.com/");
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
       base::ASCIIToUTF16("tractor supply"), true, true);

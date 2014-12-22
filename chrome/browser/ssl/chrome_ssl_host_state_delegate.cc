@@ -79,10 +79,10 @@ GURL GetSecureGURLForHost(const std::string& host) {
 int64 GetExpirationDelta() {
   // Check command line flags first to give them priority, then check
   // experimental groups.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRememberCertErrorDecisions)) {
     std::string switch_value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kRememberCertErrorDecisions);
     int64 expiration_delta;
     if (!base::StringToInt64(base::StringPiece(switch_value),

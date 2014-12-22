@@ -1069,7 +1069,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 #endif
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
 #if defined(OS_MACOSX)
@@ -3513,7 +3513,7 @@ class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
   PrerenderBrowserTestWithNaCl() {}
   ~PrerenderBrowserTestWithNaCl() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PrerenderBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableNaCl);
   }
@@ -3524,7 +3524,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
                        PrerenderNaClPluginEnabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -3601,7 +3602,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
 
   void SetUp() override { PrerenderBrowserTest::SetUp(); }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PrerenderBrowserTest::SetUpCommandLine(command_line);
     ExtensionApiTest::SetUpCommandLine(command_line);
   }

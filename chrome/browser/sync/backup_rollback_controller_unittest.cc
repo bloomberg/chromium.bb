@@ -87,8 +87,8 @@ TEST_F(BackupRollbackControllerTest, StartBackup) {
 }
 
 TEST_F(BackupRollbackControllerTest, NoBackupIfDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSyncDisableBackup);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSyncDisableBackup);
 
   base::RunLoop run_loop;
   EXPECT_FALSE(controller_->StartBackup());
@@ -130,8 +130,8 @@ TEST_F(BackupRollbackControllerTest, NoRollbackIfUserSignedIn) {
 TEST_F(BackupRollbackControllerTest, NoRollbackIfDisabled) {
   fake_prefs_.SetRemainingRollbackTries(1);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSyncDisableRollback);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSyncDisableRollback);
   EXPECT_FALSE(controller_->StartRollback());
   EXPECT_EQ(0, fake_prefs_.GetRemainingRollbackTries());
 

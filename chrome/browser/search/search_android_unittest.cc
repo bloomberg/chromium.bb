@@ -70,7 +70,7 @@ TEST_F(SearchUtilTest, ShouldPrefetchSearchResults_DisabledViaFieldTrials) {
 }
 
 TEST_F(SearchUtilTest, ShouldPrefetchSearchResults_EnabledViaCommandLine) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kPrefetchSearchResults);
   // Command-line enable should override Finch.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(

@@ -365,7 +365,7 @@ bool LaunchInstalledApp(NSString* installed_path,
   helper_path = helper_path.Append(chrome::kHelperProcessExecutablePath);
 
   std::vector<std::string> args =
-      CommandLine::ForCurrentProcess()->argv();
+      base::CommandLine::ForCurrentProcess()->argv();
   args[0] = browser_path.value();
 
   std::vector<std::string> relauncher_args;

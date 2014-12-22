@@ -747,7 +747,7 @@ void SupervisedUserService::SetActive(bool active) {
       SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(profile_)
           ->Init();
 
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
       if (command_line->HasSwitch(switches::kSupervisedUserSyncToken)) {
         InitSync(
             command_line->GetSwitchValueASCII(
@@ -833,17 +833,15 @@ void SupervisedUserService::SetActive(bool active) {
     UpdateSiteLists();
     UpdateManualHosts();
     UpdateManualURLs();
-    bool use_blacklist =
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSupervisedUserBlacklist);
+    bool use_blacklist = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableSupervisedUserBlacklist);
     if (delegate_ && use_blacklist) {
       base::FilePath blacklist_path = delegate_->GetBlacklistPath();
       if (!blacklist_path.empty())
         LoadBlacklist(blacklist_path, delegate_->GetBlacklistURL());
     }
-    bool use_safesites =
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSupervisedUserSafeSites);
+    bool use_safesites = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableSupervisedUserSafeSites);
     if (delegate_ && use_safesites) {
       const std::string& cx = delegate_->GetSafeSitesCx();
       if (!cx.empty()) {

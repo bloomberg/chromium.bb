@@ -32,8 +32,8 @@ void HandleAppExitingForPlatform() {
   views::Widget::CloseAllSecondaryWidgets();
 
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableZeroBrowsersOpenForTests)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableZeroBrowsersOpenForTests)) {
     // App is exiting, call DecrementKeepAliveCount() on behalf of Aura Shell.
     DecrementKeepAliveCount();
     // Make sure we have notified the session manager that we are exiting.

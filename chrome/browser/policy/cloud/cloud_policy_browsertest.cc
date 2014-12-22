@@ -209,7 +209,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
     std::string url = test_server_->GetServiceURL().spec();
 
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
 
     invalidation::ProfileInvalidationProviderFactory::GetInstance()->

@@ -62,7 +62,8 @@ typedef InProcessBrowserTest AcceleratorCommandsBrowserTest;
 IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleMaximized) {
 #if defined(OS_WIN)
   // Run the test on Win Ash only.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -128,7 +129,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
                        ToggleFullscreen) {
 #if defined(OS_WIN)
   // Run the test on Win Ash only.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -266,7 +268,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
                        ToggleFullscreen) {
 #if defined(OS_WIN)
   // Run the test on Win Ash only.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

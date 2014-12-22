@@ -27,7 +27,7 @@ class WindowSizerTest : public InProcessBrowserTest {
   WindowSizerTest() {}
   ~WindowSizerTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     // Make screens sufficiently wide to host 2 browsers side by side.
     command_line->AppendSwitchASCII("ash-host-window-bounds",

@@ -45,13 +45,13 @@ class ChromeBrowserMainExtraPartsAthena : public ChromeBrowserMainExtraParts,
     ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
   }
   virtual void PostProfileInit() override {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableZeroBrowsersOpenForTests)) {
       chrome::IncrementKeepAliveCount();
     }
     Profile* profile =
         g_browser_process->profile_manager()->GetActiveUserProfile();
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kLoginManager)) {
       athena::CreateVirtualKeyboardWithContext(profile);
       athena::StartAthenaSessionWithContext(profile);

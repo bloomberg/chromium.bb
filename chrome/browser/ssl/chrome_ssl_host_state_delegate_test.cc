@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicyExpired) {
 class IncognitoSSLHostStateDelegateTest
     : public ChromeSSLHostStateDelegateTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
                                     kDeltaSecondsString);
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
 // won't be remembered over a restart.
 class ForGetSSLHostStateDelegateTest : public ChromeSSLHostStateDelegateTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
                                     kForgetAtSessionEnd);
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ForGetSSLHostStateDelegateTest, AfterRestart) {
 class ForgetInstantlySSLHostStateDelegateTest
     : public ChromeSSLHostStateDelegateTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
                                     kForgetInstantly);
@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(ForgetInstantlySSLHostStateDelegateTest,
 // specified.
 class RememberSSLHostStateDelegateTest : public ChromeSSLHostStateDelegateTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
                                     kDeltaSecondsString);

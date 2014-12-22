@@ -206,7 +206,7 @@ class CloudPrintProxyPolicyTest : public ::testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
-  bool LaunchBrowser(const CommandLine& command_line, Profile* profile) {
+  bool LaunchBrowser(const base::CommandLine& command_line, Profile* profile) {
     int return_code = 0;
     StartupBrowserCreator browser_creator;
     return StartupBrowserCreator::ProcessCmdLineImpl(
@@ -461,7 +461,7 @@ TEST_F(CloudPrintProxyPolicyTest, StartupBrowserCreatorWithCommandLine) {
   CloudPrintProxyServiceFactory::GetInstance()->
       SetTestingFactory(&profile_, TestCloudPrintProxyServiceFactory);
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
 
   EXPECT_FALSE(LaunchBrowser(command_line, &profile_));

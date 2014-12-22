@@ -437,7 +437,7 @@ willPositionSheet:(NSWindow*)sheet
   BOOL fullscreen_for_tab =
       browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
   BOOL kiosk_mode =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
   BOOL showDropdown =
       !fullscreen_for_tab && !kiosk_mode && ([self floatingBarHasFocus]);
   if (permissionBubbleCocoa_ && permissionBubbleCocoa_->IsVisible()) {

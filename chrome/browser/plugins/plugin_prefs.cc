@@ -250,7 +250,8 @@ bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
   // information.
   // TODO(dspringer): When NaCl is on by default, remove this code.
   if ((plugin.name == base::ASCIIToUTF16(nacl::kNaClPluginName)) &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaCl)) {
     return true;
   }
 #endif

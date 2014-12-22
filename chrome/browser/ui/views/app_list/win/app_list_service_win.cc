@@ -51,7 +51,7 @@
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
   if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
-    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kViewerConnect));
     return AppListServiceAsh::GetInstance();
   }
@@ -61,7 +61,8 @@ AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kViewerConnect))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kViewerConnect))
     AppListServiceAsh::GetInstance()->Init(initial_profile);
 
   AppListServiceWin::GetInstance()->Init(initial_profile);
@@ -104,15 +105,15 @@ base::string16 GetAppListShortcutName() {
   return dist->GetShortcutName(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
 }
 
-CommandLine GetAppListCommandLine() {
+base::CommandLine GetAppListCommandLine() {
   const char* const kSwitchesToCopy[] = { switches::kUserDataDir };
-  CommandLine* current = CommandLine::ForCurrentProcess();
+  base::CommandLine* current = base::CommandLine::ForCurrentProcess();
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
      NOTREACHED();
-     return CommandLine(CommandLine::NO_PROGRAM);
+     return base::CommandLine(base::CommandLine::NO_PROGRAM);
   }
-  CommandLine command_line(chrome_exe);
+  base::CommandLine command_line(chrome_exe);
   command_line.CopySwitchesFrom(*current, kSwitchesToCopy,
                                 arraysize(kSwitchesToCopy));
   command_line.AppendSwitch(switches::kShowAppList);
@@ -124,7 +125,7 @@ base::string16 GetAppModelId() {
   // but different for different user data directories, so base it on the
   // initial profile in the current user data directory.
   base::FilePath initial_profile_path;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUserDataDir)) {
     initial_profile_path =
         command_line->GetSwitchValuePath(switches::kUserDataDir).AppendASCII(
@@ -242,7 +243,7 @@ void SetWindowAttributes(HWND hwnd) {
   }
 
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
-  CommandLine relaunch = GetAppListCommandLine();
+  base::CommandLine relaunch = GetAppListCommandLine();
   base::string16 app_name(GetAppListShortcutName());
   ui::win::SetRelaunchDetailsForWindow(
       relaunch.GetCommandLineString(), app_name, hwnd);
@@ -371,7 +372,7 @@ void AppListServiceWin::ScheduleWarmup() {
 }
 
 bool AppListServiceWin::IsWarmupNeeded() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!g_browser_process || g_browser_process->IsShuttingDown() ||
       browser_shutdown::IsTryingToQuit() ||
       command_line->HasSwitch(switches::kTestType)) {

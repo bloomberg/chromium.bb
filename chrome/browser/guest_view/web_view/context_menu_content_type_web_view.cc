@@ -40,10 +40,10 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
         // Add dev tools for unpacked extensions.
         const extensions::Extension* embedder_platform_app = GetExtension();
         return !embedder_platform_app ||
-            extensions::Manifest::IsUnpackedLocation(
-                embedder_platform_app->location()) ||
-            CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kDebugPackedApps);
+               extensions::Manifest::IsUnpackedLocation(
+                   embedder_platform_app->location()) ||
+               base::CommandLine::ForCurrentProcess()->HasSwitch(
+                   switches::kDebugPackedApps);
       }
 #else
       return ContextMenuContentType::SupportsGroup(group);

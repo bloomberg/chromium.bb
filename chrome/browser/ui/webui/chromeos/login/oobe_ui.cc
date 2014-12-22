@@ -491,7 +491,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   // If we're not doing boot animation then WebUI should trigger
   // wallpaper load on boot.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableBootAnimation)) {
     localized_strings->SetString("bootIntoWallpaper", "on");
   } else {

@@ -102,7 +102,7 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
  public:
   FakeBackgroundModeManager()
       : BackgroundModeManager(
-            CommandLine::ForCurrentProcess(),
+            base::CommandLine::ForCurrentProcess(),
             &g_browser_process->profile_manager()->GetProfileInfoCache()),
         background_mode_active_(false) {}
 

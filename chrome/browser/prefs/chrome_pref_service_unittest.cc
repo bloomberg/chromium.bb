@@ -46,7 +46,7 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   EXPECT_FALSE(actual_bool_value);
 
   // Change the command line.
-  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   cmd_line.AppendSwitch(switches::kEnableCloudPrintProxy);
 
   // Call UpdateCommandLinePrefStore and check to see if the value has changed.

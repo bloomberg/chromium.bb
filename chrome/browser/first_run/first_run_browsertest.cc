@@ -101,7 +101,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     InProcessBrowserTest::TearDown();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kForceFirstRun);
     EXPECT_EQ(first_run::AUTO_IMPORT_NONE, first_run::auto_import_state());
@@ -247,7 +247,7 @@ class FirstRunMasterPrefsWithTrackedPreferences
     : public FirstRunMasterPrefsBrowserTestT<kWithTrackedPrefs>,
       public testing::WithParamInterface<std::string> {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     FirstRunMasterPrefsBrowserTestT::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,

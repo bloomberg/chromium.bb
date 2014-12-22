@@ -121,7 +121,7 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(
 
 bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFastUnload)) {
     return chrome::FastUnloadController::RunUnloadEventsHelper(contents);
   }
@@ -130,7 +130,7 @@ bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
 
 bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFastUnload)) {
     return chrome::FastUnloadController::ShouldRunUnloadEventsHelper(contents);
   }

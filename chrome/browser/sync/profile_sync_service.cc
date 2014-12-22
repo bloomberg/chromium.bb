@@ -217,7 +217,8 @@ ProfileSyncService::ProfileSyncService(
       factory_(factory.Pass()),
       profile_(profile),
       sync_prefs_(profile_->GetPrefs()),
-      sync_service_url_(GetSyncServiceURL(*CommandLine::ForCurrentProcess())),
+      sync_service_url_(
+          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess())),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
       sync_disabled_by_admin_(false),
@@ -2467,7 +2468,8 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
 bool ProfileSyncService::IsSyncEnabled() {
   // We have switches::kEnableSync just in case we need to change back to
   // sync-disabled-by-default on a platform.
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSync);
 }
 
 bool ProfileSyncService::IsManaged() const {

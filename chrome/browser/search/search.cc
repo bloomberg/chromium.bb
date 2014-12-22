@@ -330,7 +330,8 @@ bool IsQueryExtractionEnabled() {
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableQueryExtraction))
     return true;
 
@@ -534,7 +535,7 @@ bool ShouldPrefetchSearchResults() {
     return false;
 
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPrefetchSearchResults)) {
     return true;
   }
@@ -583,7 +584,7 @@ GURL GetLocalInstantURL(Profile* profile) {
 }
 
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableSearchButtonInOmnibox))
     return DISPLAY_SEARCH_BUTTON_NEVER;
   if (cl->HasSwitch(switches::kEnableSearchButtonInOmniboxForStr))
@@ -608,7 +609,7 @@ bool ShouldDisplayOriginChip() {
 }
 
 OriginChipCondition GetOriginChipCondition() {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableOriginChip))
     return ORIGIN_CHIP_DISABLED;
   if (cl->HasSwitch(switches::kEnableOriginChipAlways))
@@ -731,7 +732,7 @@ bool ShouldPrefetchSearchResultsOnSRP() {
 }
 
 void EnableQueryExtractionForTesting() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableQueryExtraction);
 }
 

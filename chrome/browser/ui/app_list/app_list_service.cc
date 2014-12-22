@@ -30,7 +30,7 @@ enum ProfileLoadState {
   PROFILE_LOADED_NONE,
 };
 
-base::Time GetOriginalProcessStartTime(const CommandLine& command_line) {
+base::Time GetOriginalProcessStartTime(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
     std::string start_time_string =
         command_line.GetSwitchValueASCII(switches::kOriginalProcessStartTime);
@@ -48,7 +48,7 @@ base::Time GetOriginalProcessStartTime(const CommandLine& command_line) {
 #endif
 }
 
-StartupType GetStartupType(const CommandLine& command_line) {
+StartupType GetStartupType(const base::CommandLine& command_line) {
   // The presence of kOriginalProcessStartTime implies that another process
   // has sent us its command line to handle, ie: we are already running.
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
@@ -97,7 +97,7 @@ void RecordFirstPaintTiming() {
 }
 
 void RecordStartupInfo(AppListService* service,
-                       const CommandLine& command_line,
+                       const base::CommandLine& command_line,
                        Profile* launch_profile) {
   base::Time start_time = GetOriginalProcessStartTime(command_line);
   if (start_time.is_null())

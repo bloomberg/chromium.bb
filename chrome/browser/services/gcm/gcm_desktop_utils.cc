@@ -75,8 +75,8 @@ GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
 }
 
 std::string GetChannelStatusRequestUrl() {
-  GURL sync_url(
-      ProfileSyncService::GetSyncServiceURL(*CommandLine::ForCurrentProcess()));
+  GURL sync_url(ProfileSyncService::GetSyncServiceURL(
+      *base::CommandLine::ForCurrentProcess()));
   return sync_url.spec() + kChannelStatusRelativePath;
 }
 

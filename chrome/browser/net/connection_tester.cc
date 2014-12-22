@@ -185,8 +185,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
       ConnectionTester::ProxySettingsExperiment experiment,
       scoped_ptr<net::ProxyConfigService>* proxy_config_service,
       scoped_ptr<net::ProxyService>* experiment_proxy_service) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kSingleProcess)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess)) {
       // We can't create a standard proxy resolver in single-process mode.
       // Rather than falling-back to some other implementation, fail.
       return net::ERR_NOT_IMPLEMENTED;

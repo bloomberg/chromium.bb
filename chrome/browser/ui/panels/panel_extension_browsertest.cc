@@ -32,7 +32,7 @@ using extensions::Extension;
 
 class PanelExtensionBrowserTest : public ExtensionBrowserTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);

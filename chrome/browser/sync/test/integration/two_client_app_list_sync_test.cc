@@ -84,7 +84,7 @@ class TwoClientAppListSyncTest : public SyncTest {
   ~TwoClientAppListSyncTest() override {}
 
   // SyncTest
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     SyncTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(app_list::switches::kEnableSyncAppList);
   }
@@ -520,7 +520,7 @@ class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
   TwoClientAppListSyncFolderTest() {}
   ~TwoClientAppListSyncFolderTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     TwoClientAppListSyncTest::SetUpCommandLine(command_line);
   }
 

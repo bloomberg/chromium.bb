@@ -291,12 +291,12 @@ std::string QuoteArgForDesktopFileExec(const std::string& arg) {
 // file. Note: This should be used instead of GetCommandLineString, which does
 // not properly quote the string; this function is designed for the Exec key.
 std::string QuoteCommandLineForDesktopFileExec(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   // http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 
   std::string quoted_path = "";
-  const CommandLine::StringVector& argv = command_line.argv();
-  for (CommandLine::StringVector::const_iterator i = argv.begin();
+  const base::CommandLine::StringVector& argv = command_line.argv();
+  for (base::CommandLine::StringVector::const_iterator i = argv.begin();
        i != argv.end(); ++i) {
     if (i != argv.begin())
       quoted_path += " ";
@@ -343,7 +343,7 @@ bool GetChromeVersionOfScript(const std::string& script,
   argv.push_back("which");
   argv.push_back(script);
   std::string path_version;
-  if (base::GetAppOutput(CommandLine(argv), &path_version)) {
+  if (base::GetAppOutput(base::CommandLine(argv), &path_version)) {
     // Remove trailing newline
     path_version.erase(path_version.length() - 1, 1);
     base::FilePath path_version_path(path_version);
@@ -421,11 +421,11 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
 
   std::string reply;
   int success_code;
-  bool ran_ok = base::GetAppOutputWithExitCode(CommandLine(argv), &reply,
+  bool ran_ok = base::GetAppOutputWithExitCode(base::CommandLine(argv), &reply,
                                                &success_code);
   if (ran_ok && success_code == EXIT_XDG_SETTINGS_SYNTAX_ERROR) {
     if (GetChromeVersionOfScript(kXdgSettings, &argv[0])) {
-      ran_ok = base::GetAppOutputWithExitCode(CommandLine(argv), &reply,
+      ran_ok = base::GetAppOutputWithExitCode(base::CommandLine(argv), &reply,
                                               &success_code);
     }
   }
@@ -541,7 +541,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 
   std::string browser;
   // We don't care about the return value here.
-  base::GetAppOutput(CommandLine(argv), &browser);
+  base::GetAppOutput(base::CommandLine(argv), &browser);
   return browser.find("irefox") != std::string::npos;
 }
 
@@ -587,9 +587,10 @@ std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
 }
 
 std::string GetProgramClassName() {
-  DCHECK(CommandLine::InitializedForCurrentProcess());
+  DCHECK(base::CommandLine::InitializedForCurrentProcess());
   // Get the res_name component from argv[0].
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   std::string class_name = command_line->GetProgram().BaseName().value();
   if (!class_name.empty())
     class_name[0] = base::ToUpperASCII(class_name[0]);
@@ -768,15 +769,16 @@ std::string GetDesktopFileContents(
     const base::FilePath& profile_path,
     const std::string& categories,
     bool no_display) {
-  CommandLine cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-      url, extension_id, profile_path);
+  base::CommandLine cmd_line =
+      ShellIntegration::CommandLineArgsForLauncher(url, extension_id,
+                                                   profile_path);
   cmd_line.SetProgram(chrome_exe_path);
   return GetDesktopFileContentsForCommand(cmd_line, app_name, url, title,
                                           icon_name, categories, no_display);
 }
 
 std::string GetDesktopFileContentsForCommand(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const std::string& app_name,
     const GURL& url,
     const base::string16& title,
@@ -1015,7 +1017,7 @@ bool CreateAppListDesktopShortcut(
   icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
   std::string icon_name = CreateShortcutIcon(icon_images, desktop_name);
 
-  CommandLine command_line(chrome_exe_path);
+  base::CommandLine command_line(chrome_exe_path);
   command_line.AppendSwitch(switches::kShowAppList);
   std::string contents =
       GetDesktopFileContentsForCommand(command_line,

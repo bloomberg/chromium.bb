@@ -162,7 +162,7 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
 
 TEST_F(DataReductionProxySettingsAndroidTest,
        TestGetDataReductionProxyDevOrigin) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       data_reduction_proxy::switches::kDataReductionProxyDev,
       kDataReductionProxyDev);
   ResetSettings(true, true, false, true, false);

@@ -288,7 +288,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile())));
     extension_service_ = extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
     std::string error;
     extension1_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,

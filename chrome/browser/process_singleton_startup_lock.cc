@@ -32,14 +32,14 @@ void ProcessSingletonStartupLock::Unlock() {
        it != saved_startup_messages_.end(); ++it) {
     if (replayed_messages.find(*it) != replayed_messages.end())
       continue;
-    original_callback_.Run(CommandLine(it->first), it->second);
+    original_callback_.Run(base::CommandLine(it->first), it->second);
     replayed_messages.insert(*it);
   }
   saved_startup_messages_.clear();
 }
 
 bool ProcessSingletonStartupLock::NotificationCallbackImpl(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const base::FilePath& current_directory) {
   if (locked_) {
     // If locked, it means we are not ready to process this message because

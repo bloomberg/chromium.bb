@@ -536,7 +536,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   // If we're running Chrome for ChromeOS on Linux, we want to allow file
   // access.
   if (!base::SysInfo::IsRunningOnChromeOS() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     return true;
   }
 

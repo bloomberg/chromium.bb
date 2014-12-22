@@ -551,8 +551,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   }
 
   // Determine whether to show the menu for accessing tabs on other devices.
-  bool show_other_sessions_menu = should_show_other_devices_menu_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+  bool show_other_sessions_menu =
+      should_show_other_devices_menu_ &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNTPOtherSessionsMenu);
   load_time_data.SetBoolean("showOtherSessionsMenu", show_other_sessions_menu);
   load_time_data.SetBoolean(

@@ -240,7 +240,7 @@ BasePanelBrowserTest::BasePanelBrowserTest()
 BasePanelBrowserTest::~BasePanelBrowserTest() {
 }
 
-void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void BasePanelBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnablePanels);
 }
 

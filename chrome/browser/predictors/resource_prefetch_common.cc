@@ -60,10 +60,10 @@ bool IsSpeculativeResourcePrefetchingEnabled(
 
   // Enabled by command line switch. The config has the default params already
   // set. The command line with just enable them with the default params.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSpeculativeResourcePrefetching)) {
     const std::string value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kSpeculativeResourcePrefetching);
 
     if (value == switches::kSpeculativeResourcePrefetchingDisabled) {

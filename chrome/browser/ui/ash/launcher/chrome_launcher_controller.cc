@@ -1101,7 +1101,7 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   }
 
   if (window->IsActive() && allow_minimize) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMinimizeOnSecondLauncherItemClick)) {
       AnimateWindow(window->GetNativeWindow(),
                     wm::WINDOW_ANIMATION_TYPE_BOUNCE);

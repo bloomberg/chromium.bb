@@ -97,7 +97,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kPrerenderFromOmnibox,
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 

@@ -322,7 +322,7 @@ NetInternalsTest::NetInternalsTest()
 NetInternalsTest::~NetInternalsTest() {
 }
 
-void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
+void NetInternalsTest::SetUpCommandLine(base::CommandLine* command_line) {
   WebUIBrowserTest::SetUpCommandLine(command_line);
   // Needed to test the prerender view.
   command_line->AppendSwitchASCII(switches::kPrerenderMode,

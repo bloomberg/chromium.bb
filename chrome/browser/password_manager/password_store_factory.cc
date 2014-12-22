@@ -174,9 +174,10 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
                                 profile, Profile::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   crypto::AppleKeychain* keychain =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          os_crypt::switches::kUseMockKeychain) ?
-          new crypto::MockAppleKeychain() : new crypto::AppleKeychain();
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          os_crypt::switches::kUseMockKeychain)
+          ? new crypto::MockAppleKeychain()
+          : new crypto::AppleKeychain();
   ps = new PasswordStoreMac(
       main_thread_runner, db_thread_runner, keychain, login_db.release());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -190,7 +191,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   // (In all cases we fall back on the basic store in case of failure.)
   base::nix::DesktopEnvironment desktop_env;
   std::string store_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPasswordStore);
   if (store_type == "kwallet") {
     desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;

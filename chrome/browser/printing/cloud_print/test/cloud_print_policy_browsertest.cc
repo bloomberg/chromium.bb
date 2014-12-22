@@ -31,13 +31,14 @@ class CloudPrintPolicyTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
-  CommandLine new_command_line(GetCommandLineForRelaunch());
+  base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
 
   content::WindowedNotificationObserver observer(
@@ -59,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
 
 // Disabled due to http://crbug.com/144393.
 IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, DISABLED_CloudPrintPolicyFlag) {
-  CommandLine new_command_line(GetCommandLineForRelaunch());
+  base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
   // This is important for the test as the way the browser process is launched
   // here causes the predictor databases to be initialized multiple times. This

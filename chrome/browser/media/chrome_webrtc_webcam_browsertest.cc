@@ -39,7 +39,7 @@ static const char* kTestConfigFlags[] = {
 class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     public testing::WithParamInterface<const char*> {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(

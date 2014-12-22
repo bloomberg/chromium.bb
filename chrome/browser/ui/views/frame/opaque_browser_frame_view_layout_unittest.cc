@@ -202,7 +202,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   void AddAvatarButton() {
     // Disable the New Avatar Menu.
-    switches::DisableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+    switches::DisableNewAvatarMenuForTesting(
+        base::CommandLine::ForCurrentProcess());
 
     menu_button_ = new AvatarMenuButton(nullptr, false);
     menu_button_->set_id(VIEW_ID_AVATAR_BUTTON);
@@ -223,7 +224,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   void AddNewAvatarButton() {
     // Enable the New Avatar Menu.
-    switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+    switches::EnableNewAvatarMenuForTesting(
+        base::CommandLine::ForCurrentProcess());
 
     new_avatar_button_ =
         new views::MenuButton(nullptr, base::string16(), nullptr, false);

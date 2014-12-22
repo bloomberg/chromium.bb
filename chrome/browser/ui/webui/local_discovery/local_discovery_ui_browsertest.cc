@@ -424,7 +424,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     // On chromeos, don't sign in with the stub-user automatically.  Use the
     // kLoginUser instead.

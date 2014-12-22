@@ -94,7 +94,8 @@ SPDNotificationType TtsPlatformImplLinux::current_notification_ =
 
 TtsPlatformImplLinux::TtsPlatformImplLinux()
     : utterance_id_(0) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kEnableSpeechDispatcher))
     return;
 

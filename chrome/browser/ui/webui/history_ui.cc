@@ -190,9 +190,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("entrySummary", IDS_HISTORY_ENTRY_SUMMARY);
   source->AddBoolean("isFullHistorySyncEnabled",
                      WebHistoryServiceFactory::GetForProfile(profile) != NULL);
-  source->AddBoolean("groupByDomain", profile->IsSupervised() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kHistoryEnableGroupByDomain));
+  source->AddBoolean("groupByDomain",
+                     profile->IsSupervised() ||
+                         base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kHistoryEnableGroupByDomain));
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);

@@ -139,7 +139,7 @@ void ChromeBrowserPolicyConnector::AppendExtraFlagPerPolicy() {
   const base::Value* policy_value =
       chrome_policy.GetValue(key::kEnableWebBasedSignin);
   bool enabled = false;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (policy_value && policy_value->GetAsBoolean(&enabled) && enabled &&
       !command_line->HasSwitch(switches::kEnableWebBasedSignin)) {
     command_line->AppendSwitch(switches::kEnableWebBasedSignin);

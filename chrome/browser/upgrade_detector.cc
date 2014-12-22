@@ -26,7 +26,7 @@ bool UseTestingIntervals() {
   // If a command line parameter specifying how long the upgrade check should
   // be, we assume it is for testing and switch to using seconds instead of
   // hours.
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   return !cmd_line.GetSwitchValueASCII(
       switches::kCheckForUpdateIntervalSec).empty();
 }

@@ -36,7 +36,7 @@ const char kNonSigninURL[] = "http://www.google.com";
 
 class SigninBrowserTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     https_server_.reset(new net::SpawnedTestServer(
         net::SpawnedTestServer::TYPE_HTTPS,
         net::SpawnedTestServer::kLocalhost,

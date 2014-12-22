@@ -60,7 +60,7 @@ void PushMessagingServiceImpl::RegisterProfilePrefs(
 void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
   // TODO(mvanouwerkerk): Make sure to remove this check at the same time as
   // push graduates from experimental in Blink.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     return;
   }

@@ -48,7 +48,7 @@ class TestPopupObserver : public autofill::PasswordGenerationPopupObserver {
 
 class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Make sure the feature is enabled.
     command_line->AppendSwitch(autofill::switches::kEnablePasswordGeneration);
 

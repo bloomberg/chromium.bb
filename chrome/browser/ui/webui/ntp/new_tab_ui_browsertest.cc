@@ -152,7 +152,7 @@ class NewTabUIProcessPerTabTest : public NewTabUIBrowserTest {
  public:
    NewTabUIProcessPerTabTest() {}
 
-   void SetUpCommandLine(CommandLine* command_line) override {
+   void SetUpCommandLine(base::CommandLine* command_line) override {
      command_line->AppendSwitch(switches::kProcessPerTab);
    }
 };

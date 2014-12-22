@@ -113,7 +113,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     // Do not launch device discovery process.
@@ -132,14 +132,14 @@ class TaskManagerOOPIFBrowserTest : public TaskManagerBrowserTest,
   TaskManagerOOPIFBrowserTest() {}
 
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     TaskManagerBrowserTest::SetUpCommandLine(command_line);
     if (GetParam())
       command_line->AppendSwitch(switches::kSitePerProcess);
   }
 
   bool ShouldExpectSubframes() {
-    return CommandLine::ForCurrentProcess()->HasSwitch(
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kSitePerProcess);
   }
 

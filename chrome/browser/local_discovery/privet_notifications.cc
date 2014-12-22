@@ -224,14 +224,14 @@ void PrivetNotificationService::DeviceCacheFlushed() {
 
 // static
 bool PrivetNotificationService::IsEnabled() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(
       switches::kDisableDeviceDiscoveryNotifications);
 }
 
 // static
 bool PrivetNotificationService::IsForced() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableDeviceDiscoveryNotifications);
 }
 

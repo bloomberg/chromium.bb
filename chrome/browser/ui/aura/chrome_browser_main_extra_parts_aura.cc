@@ -63,13 +63,15 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
 // Returns the desktop this process was initially launched in.
 chrome::HostDesktopType GetInitialDesktop() {
 #if defined(OS_WIN) && defined(USE_ASH)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kViewerConnect) ||
       command_line->HasSwitch(switches::kViewerLaunchViaAppId)) {
     return chrome::HOST_DESKTOP_TYPE_ASH;
   }
 #elif defined(OS_LINUX)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kOpenAsh))
     return chrome::HOST_DESKTOP_TYPE_ASH;
 #endif
@@ -145,7 +147,8 @@ void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void ChromeBrowserMainExtraPartsAura::DetectRunningAsRoot() {
   if (getuid() == 0) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kUserDataDir))
       return;
 

@@ -113,8 +113,9 @@ TEST_F(StartupControllerTest, Basic) {
   controller()->TryStart();
   EXPECT_FALSE(started());
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
-  const bool deferred_start = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSyncDisableDeferredStartup);
+  const bool deferred_start =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableDeferredStartup);
   controller()->TryStart();
   EXPECT_EQ(!deferred_start, started());
   std::string state(controller()->GetBackendInitializationStateString());
@@ -228,8 +229,9 @@ TEST_F(StartupControllerTest, Reset) {
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
   controller()->TryStart();
-  const bool deferred_start = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSyncDisableDeferredStartup);
+  const bool deferred_start =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableDeferredStartup);
   EXPECT_EQ(!deferred_start, started());
   controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
   EXPECT_TRUE(started());

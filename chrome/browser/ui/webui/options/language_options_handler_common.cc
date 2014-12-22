@@ -118,7 +118,8 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
                          GetSpellCheckLanguageCodeSet());
   localized_strings->Set("uiLanguageCodeSet", GetUILanguageCodeSet());
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool enable_spelling_auto_correct =
       command_line.HasSwitch(switches::kEnableSpellingAutoCorrect);
   localized_strings->SetBoolean("enableSpellingAutoCorrect",

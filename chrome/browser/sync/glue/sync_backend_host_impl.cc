@@ -135,7 +135,7 @@ void SyncBackendHostImpl::Initialize(
     InternalComponentsFactory::BACKOFF_NORMAL
   };
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
     factory_switches.backoff_override =
         InternalComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;

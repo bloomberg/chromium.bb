@@ -43,7 +43,7 @@ bool TiclProfileSettingsProvider::UseGCMChannel() const {
     return true;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInvalidationUseGCMChannel)) {
     // Use GCM channel if it was enabled via a command-line switch.
     return true;

@@ -17,7 +17,7 @@ class GuestModeOptionsBrowserTest : public options::OptionsUIBrowserTest {
  public:
   GuestModeOptionsBrowserTest() : OptionsUIBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
                                     chromeos::login::kGuestUserName);

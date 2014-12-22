@@ -41,13 +41,13 @@ class SingleClientBackupRollbackTest : public SyncTest {
   ~SingleClientBackupRollbackTest() override {}
 
   void DisableBackup() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kSyncDisableBackup);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSyncDisableBackup);
   }
 
   void DisableRollback() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kSyncDisableRollback);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSyncDisableRollback);
   }
 
   base::Time GetBackupDbLastModified() {

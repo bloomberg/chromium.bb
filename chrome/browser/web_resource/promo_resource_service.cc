@@ -44,14 +44,16 @@ const NotificationPromo::PromoType kValidPromoTypes[] = {
 };
 
 GURL GetPromoResourceURL() {
-  const std::string promo_server_url = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kPromoServerURL);
+  const std::string promo_server_url =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPromoServerURL);
   return promo_server_url.empty() ?
       NotificationPromo::PromoServerURL() : GURL(promo_server_url);
 }
 
 bool IsTest() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kPromoServerURL);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPromoServerURL);
 }
 
 int GetCacheUpdateDelay() {

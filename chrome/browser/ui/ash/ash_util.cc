@@ -21,7 +21,7 @@ bool ShouldOpenAshOnStartup() {
   return true;
 #else
   // TODO(scottmg): http://crbug.com/133312, will need this for Win8 too.
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kOpenAsh);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kOpenAsh);
 #endif
 }
 

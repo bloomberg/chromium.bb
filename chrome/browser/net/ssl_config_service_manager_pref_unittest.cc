@@ -172,7 +172,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
 TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kSSLVersionMin, "tls1");
   command_line.AppendSwitchASCII(switches::kSSLVersionMax, "ssl3");
 

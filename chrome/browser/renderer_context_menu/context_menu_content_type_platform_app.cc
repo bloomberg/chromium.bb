@@ -38,7 +38,7 @@ bool ContextMenuContentTypePlatformApp::SupportsGroup(int group) {
       // Add dev tools for unpacked extensions.
       return extensions::Manifest::IsUnpackedLocation(
                  platform_app->location()) ||
-             CommandLine::ForCurrentProcess()->HasSwitch(
+             base::CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kDebugPackedApps);
     default:
       return false;

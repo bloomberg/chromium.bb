@@ -34,7 +34,8 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     // Disable sync to simplify the creation of a OneClickSigninSyncStarter.
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableSync);
 
     SigninManagerBase* signin_manager = static_cast<FakeSigninManager*>(
         SigninManagerFactory::GetForProfile(profile()));

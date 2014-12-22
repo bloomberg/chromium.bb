@@ -326,7 +326,7 @@ class PrefProxyConfigTrackerImplCommandLineTest
           testing::TestWithParam<CommandLineTestParams> > {
  protected:
   PrefProxyConfigTrackerImplCommandLineTest()
-      : command_line_(CommandLine::NO_PROGRAM) {}
+      : command_line_(base::CommandLine::NO_PROGRAM) {}
 
   void SetUp() override {
     for (size_t i = 0; i < arraysize(GetParam().switches); i++) {
@@ -345,7 +345,7 @@ class PrefProxyConfigTrackerImplCommandLineTest
   }
 
  private:
-  CommandLine command_line_;
+  base::CommandLine command_line_;
   scoped_ptr<PrefService> pref_service_;
 };
 

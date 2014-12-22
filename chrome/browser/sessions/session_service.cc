@@ -563,7 +563,7 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
       move_on_new_browser_ = false;
     }
     SessionStartupPref pref = StartupBrowserCreator::GetSessionStartupPref(
-        *CommandLine::ForCurrentProcess(), profile());
+        *base::CommandLine::ForCurrentProcess(), profile());
     if (pref.type == SessionStartupPref::LAST) {
       SessionRestore::RestoreSession(
           profile(), browser,

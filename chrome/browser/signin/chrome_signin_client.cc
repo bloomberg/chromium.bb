@@ -142,7 +142,7 @@ bool ChromeSigninClient::CanRevokeCredentials() {
 }
 
 std::string ChromeSigninClient::GetSigninScopedDeviceId() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSigninScopedDeviceId)) {
     return std::string();
   }

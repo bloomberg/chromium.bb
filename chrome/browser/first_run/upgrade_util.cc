@@ -9,13 +9,13 @@
 
 namespace {
 
-CommandLine* command_line;
+base::CommandLine* command_line;
 
 }  // namespace
 
 namespace upgrade_util {
 
-void SetNewCommandLine(CommandLine* new_command_line) {
+void SetNewCommandLine(base::CommandLine* new_command_line) {
   command_line = new_command_line;
 }
 

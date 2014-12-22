@@ -397,9 +397,8 @@ void PrepareFactory(
 
   factory->set_async(async);
   factory->set_extension_prefs(extension_prefs);
-  factory->set_command_line_prefs(
-      make_scoped_refptr(
-          new CommandLinePrefStore(CommandLine::ForCurrentProcess())));
+  factory->set_command_line_prefs(make_scoped_refptr(
+      new CommandLinePrefStore(base::CommandLine::ForCurrentProcess())));
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   factory->set_user_prefs(user_pref_store);
 }

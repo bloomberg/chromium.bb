@@ -85,7 +85,7 @@ class ProxyBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
   }
@@ -155,7 +155,7 @@ class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     base::FilePath pac_script_path(FILE_PATH_LITERAL("files"));
     command_line->AppendSwitchASCII(switches::kProxyPacUrl, http_server_.GetURL(
         pac_script_path.Append(kPACScript).MaybeAsASCII()).spec());
@@ -177,7 +177,7 @@ class FileProxyScriptBrowserTest : public InProcessBrowserTest {
   FileProxyScriptBrowserTest() {}
   ~FileProxyScriptBrowserTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyPacUrl,
         ui_test_utils::GetTestUrl(
             base::FilePath(base::FilePath::kCurrentDirectory),
@@ -207,7 +207,7 @@ class FtpProxyScriptBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     base::FilePath pac_script_path(kPACScript);
     command_line->AppendSwitchASCII(
         switches::kProxyPacUrl,
@@ -230,7 +230,7 @@ class DataProxyScriptBrowserTest : public InProcessBrowserTest {
   DataProxyScriptBrowserTest() {}
   ~DataProxyScriptBrowserTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     std::string contents;
     // Read in kPACScript contents.
     ASSERT_TRUE(base::ReadFileToString(ui_test_utils::GetTestFilePath(

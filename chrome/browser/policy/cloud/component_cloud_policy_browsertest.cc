@@ -105,7 +105,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
   ComponentCloudPolicyTest() {}
   ~ComponentCloudPolicyTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 #if defined(OS_CHROMEOS)
     // ExtensionBrowserTest sets the login users to a non-managed value;
@@ -123,7 +123,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     ASSERT_TRUE(test_server_.Start());
 
     std::string url = test_server_.GetServiceURL().spec();
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
 
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();

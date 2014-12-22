@@ -7,7 +7,7 @@
 
 namespace upgrade_util {
 
-bool RelaunchChromeBrowser(const CommandLine& command_line) {
+bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   return mac_relauncher::RelaunchApp(command_line.argv());
 }
 

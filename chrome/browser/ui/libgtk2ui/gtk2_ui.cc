@@ -396,7 +396,7 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 }  // namespace
 
 Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
-  GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+  GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
 void Gtk2UI::Initialize() {

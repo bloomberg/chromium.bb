@@ -145,7 +145,7 @@ class ShowAppListInteractiveTest : public InProcessBrowserTest {
  public:
   ShowAppListInteractiveTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kShowAppList);
   }
 
@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, MAYBE_ShowAppListFlag) {
   // With Chrome still running, test receiving a second --show-app-list request
   // via the process singleton. ChromeOS has no process singleton so exclude it.
 #if !defined(OS_CHROMEOS)
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kShowAppList);
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       command_line, base::FilePath(), profile->GetPath());

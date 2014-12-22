@@ -337,7 +337,7 @@ const std::string ThreadWatcherTest::crash_on_hang_thread_data =
 
 TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
   // Setup command_line arguments.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kCrashOnHangThreads,
                                  crash_on_hang_thread_names);
 
@@ -367,7 +367,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
 
 TEST_F(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs) {
   // Setup command_line arguments.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kCrashOnHangThreads,
                                  thread_names_and_live_threshold);
 
@@ -397,7 +397,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs) {
 
 TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
   // Setup command_line arguments.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kCrashOnHangThreads,
                                  crash_on_hang_thread_data);
 
@@ -697,7 +697,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   // whilst StopWatchingAll() will just PostTask to destroy it.
   // Ensure that when Stop is called, Start will NOT create
   // g_thread_watcher_list_ later on.
-  ThreadWatcherList::StartWatchingAll(*CommandLine::ForCurrentProcess());
+  ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   ThreadWatcherList::StopWatchingAll();
   message_loop_for_ui.PostDelayedTask(
       FROM_HERE,
@@ -711,7 +711,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
              "Start / Stopped");
 
   // Proceed with just |StartWatchingAll| and ensure it'll be started.
-  ThreadWatcherList::StartWatchingAll(*CommandLine::ForCurrentProcess());
+  ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   message_loop_for_ui.PostDelayedTask(
       FROM_HERE,
       message_loop_for_ui.QuitClosure(),

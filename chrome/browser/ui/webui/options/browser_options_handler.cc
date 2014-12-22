@@ -640,16 +640,14 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "easyUnlockAllowed",
       EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsAllowed());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
-  values->SetBoolean(
-      "easyUnlockProximityDetectionAllowed",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableProximityDetection));
+  values->SetBoolean("easyUnlockProximityDetectionAllowed",
+                     base::CommandLine::ForCurrentProcess()->HasSwitch(
+                         proximity_auth::switches::kEnableProximityDetection));
 
 #if defined(OS_CHROMEOS)
-  values->SetBoolean(
-      "consumerManagementEnabled",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableConsumerManagement));
+  values->SetBoolean("consumerManagementEnabled",
+                     base::CommandLine::ForCurrentProcess()->HasSwitch(
+                         chromeos::switches::kEnableConsumerManagement));
 
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
@@ -660,7 +658,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
 
   values->SetBoolean("websiteSettingsManagerEnabled",
-                     CommandLine::ForCurrentProcess()->HasSwitch(
+                     base::CommandLine::ForCurrentProcess()->HasSwitch(
                          switches::kEnableWebsiteSettingsManager));
 
   values->SetBoolean("usingNewProfilesUI", switches::IsNewAvatarMenu());
@@ -878,7 +876,8 @@ void BrowserOptionsHandler::InitializeHandler() {
 #if defined(OS_WIN)
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->AddObserver(this);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kUserDataDir)) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,

@@ -259,8 +259,8 @@ void ClientSideDetectionService::SendModelToRenderers() {
 }
 
 void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSbDisableAutoUpdate))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSbDisableAutoUpdate))
     return;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

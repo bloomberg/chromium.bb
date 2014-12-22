@@ -34,7 +34,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   void SetUp() override {
     profile_.reset(new TestingProfile());
     base::FilePath program_path(FILE_PATH_LITERAL("chrome.exe"));
-    command_line_.reset(new CommandLine(program_path));
+    command_line_.reset(new base::CommandLine(program_path));
     scope_set_.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   }
 
@@ -127,7 +127,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
-  scoped_ptr<CommandLine> command_line_;
+  scoped_ptr<base::CommandLine> command_line_;
   OAuth2TokenService::ScopeSet scope_set_;
 };
 

@@ -176,7 +176,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   ~ProfileSyncServiceTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSyncDeferredStartupTimeoutSeconds, "0");
 
     CHECK(profile_manager_.SetUp());
@@ -613,7 +613,7 @@ TEST_F(ProfileSyncServiceTest, Rollback) {
 
 TEST_F(ProfileSyncServiceTest, GetSyncServiceURL) {
   // See that we can override the URL with a flag.
-  CommandLine command_line(
+  base::CommandLine command_line(
       base::FilePath(base::FilePath(FILE_PATH_LITERAL("chrome.exe"))));
   command_line.AppendSwitchASCII(switches::kSyncServiceURL, "https://foo/bar");
   EXPECT_EQ("https://foo/bar",

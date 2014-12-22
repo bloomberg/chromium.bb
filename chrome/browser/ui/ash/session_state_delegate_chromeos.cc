@@ -140,8 +140,8 @@ void SessionStateDelegateChromeos::UnlockScreen() {
 }
 
 bool SessionStateDelegateChromeos::IsUserSessionBlocked() const {
-  bool has_login_manager = CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kLoginManager);
+  bool has_login_manager = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kLoginManager);
   return (has_login_manager && !IsActiveUserSessionStarted()) ||
          IsScreenLocked() ||
          chromeos::UserAddingScreen::Get()->IsRunning();

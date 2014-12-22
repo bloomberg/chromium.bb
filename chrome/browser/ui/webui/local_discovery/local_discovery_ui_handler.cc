@@ -110,8 +110,8 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler()
   // Google Chrome builds. Use a command-line switch for Windows non-Google
   //  Chrome builds.
   cloud_print_connector_ui_enabled_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPrintProxy);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCloudPrintProxy);
 #else
   // Always enabled for Linux and Google Chrome Windows builds.
   // Never enabled for Chrome OS, we don't even need to indicate it.
@@ -204,7 +204,7 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 #endif
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCloudDevices)) {
     StartWifiBootstrapping();
   }
@@ -264,8 +264,8 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
   cloud_devices_.clear();
 
   cloud_print_printer_list_ = CreateApiFlow();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudDevices)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCloudDevices)) {
     cloud_device_list_ = CreateApiFlow();
   }
 

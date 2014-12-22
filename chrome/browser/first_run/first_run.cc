@@ -591,7 +591,8 @@ MasterPrefs::~MasterPrefs() {}
 bool IsChromeFirstRun() {
   if (internal::g_first_run == internal::FIRST_RUN_UNKNOWN) {
     internal::g_first_run = internal::FIRST_RUN_FALSE;
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kForceFirstRun) ||
         (!command_line->HasSwitch(switches::kNoFirstRun) &&
          !internal::IsFirstRunSentinelPresent())) {
@@ -602,7 +603,7 @@ bool IsChromeFirstRun() {
 }
 
 #if defined(OS_MACOSX)
-bool IsFirstRunSuppressed(const CommandLine& command_line) {
+bool IsFirstRunSuppressed(const base::CommandLine& command_line) {
   return command_line.HasSwitch(switches::kNoFirstRun);
 }
 #endif

@@ -1840,7 +1840,8 @@ bool BrowserView::CanClose() {
     return false;
 
   bool fast_tab_closing_enabled =
-    CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableFastUnload);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFastUnload);
 
   if (!browser_->tab_strip_model()->empty()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
@@ -2002,7 +2003,7 @@ void BrowserView::InitViews() {
 
   // Start a hung plugin window detector for this browser object (as long as
   // hang detection is not disabled).
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
     InitHangMonitor();
   }
@@ -2308,7 +2309,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
   // Kiosk mode needs the whole screen, and if we're not in an Ash desktop
   // immersive fullscreen doesn't exist.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
       browser()->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
     return false;
   }

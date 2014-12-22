@@ -342,7 +342,7 @@ class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
   ShelfAppBrowserTestNoDefaultBrowser() {}
   virtual ~ShelfAppBrowserTestNoDefaultBrowser() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ShelfAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kNoStartupWindow);
   }
@@ -359,7 +359,7 @@ class ShelfAppBrowserNoMinimizeOnClick : public LauncherPlatformAppBrowserTest {
   ShelfAppBrowserNoMinimizeOnClick() {}
   virtual ~ShelfAppBrowserNoMinimizeOnClick() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LauncherPlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kDisableMinimizeOnSecondLauncherItemClick);
@@ -804,7 +804,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserMinimizeOnClick,
 // Confirm that click behavior for app panels is correct.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   // Enable experimental APIs to allow panel creation.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
   // Launch a platform app and create a panel window for it.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");
@@ -859,7 +859,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   TestAppWindowRegistryObserver test_observer(browser()->profile());
 
   // Enable experimental APIs to allow panel creation.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
 
   int base_shelf_item_count = shelf_model()->item_count();
@@ -1765,7 +1765,7 @@ class ShelfAppBrowserTestWithMultiMonitor
   ShelfAppBrowserTestWithMultiMonitor() {}
   virtual ~ShelfAppBrowserTestWithMultiMonitor() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ShelfAppBrowserTestNoDefaultBrowser::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "800x800,801+0-800x800");

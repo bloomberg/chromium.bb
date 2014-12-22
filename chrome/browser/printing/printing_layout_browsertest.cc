@@ -56,7 +56,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
     base::DeleteFile(emf_path_, true);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchPath(switches::kDebugPrint, emf_path_);
   }
 
@@ -236,7 +236,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
   }
 
   static bool GenerateFiles() {
-    return CommandLine::ForCurrentProcess()->HasSwitch(kGenerateSwitch);
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(kGenerateSwitch);
   }
 
   base::FilePath emf_path_;

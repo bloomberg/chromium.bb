@@ -74,7 +74,7 @@ class FeedbackSenderTest : public testing::Test {
   void AppendCommandLineSwitch() {
     // The command-line switch is temporary.
     // TODO(rouslan): Remove the command-line switch. http://crbug.com/247726
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSpellingFeedbackFieldTrial);
     feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();

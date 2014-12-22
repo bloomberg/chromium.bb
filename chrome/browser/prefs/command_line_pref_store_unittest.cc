@@ -23,7 +23,7 @@ const char unknown_string[] = "unknown_other_switch";
 
 class TestCommandLinePrefStore : public CommandLinePrefStore {
  public:
-  explicit TestCommandLinePrefStore(CommandLine* cl)
+  explicit TestCommandLinePrefStore(base::CommandLine* cl)
       : CommandLinePrefStore(cl) {}
 
   bool ProxySwitchesAreValid() {
@@ -64,7 +64,7 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
 
 // Tests a simple string pref on the command line.
 TEST(CommandLinePrefStoreTest, SimpleStringPref) {
-  CommandLine cl(CommandLine::NO_PROGRAM);
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
@@ -77,7 +77,7 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
 
 // Tests a simple boolean pref on the command line.
 TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
-  CommandLine cl(CommandLine::NO_PROGRAM);
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitch(switches::kNoProxyServer);
   scoped_refptr<TestCommandLinePrefStore> store =
       new TestCommandLinePrefStore(&cl);
@@ -87,7 +87,7 @@ TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
 
 // Tests a command line with no recognized prefs.
 TEST(CommandLinePrefStoreTest, NoPrefs) {
-  CommandLine cl(CommandLine::NO_PROGRAM);
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitchASCII(unknown_bool, "a value");
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
@@ -99,7 +99,7 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
 
 // Tests a complex command line with multiple known and unknown switches.
 TEST(CommandLinePrefStoreTest, MultipleSwitches) {
-  CommandLine cl(CommandLine::NO_PROGRAM);
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitchASCII(switches::kProxyServer, "proxy");
   cl.AppendSwitchASCII(switches::kProxyBypassList, "list");
@@ -129,7 +129,7 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
 
 // Tests proxy switch validation.
 TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
-  CommandLine cl(CommandLine::NO_PROGRAM);
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
 
   // No switches.
   scoped_refptr<TestCommandLinePrefStore> store =
@@ -149,7 +149,7 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
   EXPECT_FALSE(store3->ProxySwitchesAreValid());
 
   // All proxy switches except no-proxy.
-  CommandLine cl2(CommandLine::NO_PROGRAM);
+  base::CommandLine cl2(base::CommandLine::NO_PROGRAM);
   cl2.AppendSwitch(switches::kProxyAutoDetect);
   cl2.AppendSwitchASCII(switches::kProxyServer, "server");
   cl2.AppendSwitchASCII(switches::kProxyPacUrl, "url");
@@ -160,20 +160,20 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
 }
 
 TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
-  CommandLine cl1(CommandLine::NO_PROGRAM);
+  base::CommandLine cl1(base::CommandLine::NO_PROGRAM);
   cl1.AppendSwitch(unknown_string);
   cl1.AppendSwitchASCII(switches::kProxyServer, "proxy");
   scoped_refptr<TestCommandLinePrefStore> store1 =
       new TestCommandLinePrefStore(&cl1);
   store1->VerifyProxyMode(ProxyPrefs::MODE_FIXED_SERVERS);
 
-  CommandLine cl2(CommandLine::NO_PROGRAM);
+  base::CommandLine cl2(base::CommandLine::NO_PROGRAM);
   cl2.AppendSwitchASCII(switches::kProxyPacUrl, "proxy");
   scoped_refptr<TestCommandLinePrefStore> store2 =
         new TestCommandLinePrefStore(&cl2);
   store2->VerifyProxyMode(ProxyPrefs::MODE_PAC_SCRIPT);
 
-  CommandLine cl3(CommandLine::NO_PROGRAM);
+  base::CommandLine cl3(base::CommandLine::NO_PROGRAM);
   cl3.AppendSwitchASCII(switches::kProxyServer, std::string());
   scoped_refptr<TestCommandLinePrefStore> store3 =
       new TestCommandLinePrefStore(&cl3);
@@ -181,7 +181,7 @@ TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
 }
 
 TEST(CommandLinePrefStoreTest, DisableSSLCipherSuites) {
-  CommandLine cl1(CommandLine::NO_PROGRAM);
+  base::CommandLine cl1(base::CommandLine::NO_PROGRAM);
   cl1.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
                         "0x0004,0x0005");
   scoped_refptr<TestCommandLinePrefStore> store1 =
@@ -193,7 +193,7 @@ TEST(CommandLinePrefStoreTest, DisableSSLCipherSuites) {
   store1->VerifySSLCipherSuites(expected_ciphers1,
                                 arraysize(expected_ciphers1));
 
-  CommandLine cl2(CommandLine::NO_PROGRAM);
+  base::CommandLine cl2(base::CommandLine::NO_PROGRAM);
   cl2.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
                         "0x0004, WHITESPACE_IGNORED TEST , 0x0005");
   scoped_refptr<TestCommandLinePrefStore> store2 =
@@ -206,7 +206,7 @@ TEST(CommandLinePrefStoreTest, DisableSSLCipherSuites) {
   store2->VerifySSLCipherSuites(expected_ciphers2,
                                 arraysize(expected_ciphers2));
 
-  CommandLine cl3(CommandLine::NO_PROGRAM);
+  base::CommandLine cl3(base::CommandLine::NO_PROGRAM);
   cl3.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
                         "0x0004;MOAR;0x0005");
   scoped_refptr<TestCommandLinePrefStore> store3 =

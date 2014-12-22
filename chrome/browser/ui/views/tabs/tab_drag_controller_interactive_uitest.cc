@@ -1440,7 +1440,7 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
   DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
   virtual ~DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     // Make screens sufficiently wide to host 2 browsers side by side.
     command_line->AppendSwitchASCII("ash-host-window-bounds",
@@ -1818,7 +1818,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
   virtual ~DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "400x400,0+400-800x800*2");
@@ -1917,7 +1917,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
  public:
   DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     TabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "0+0-250x250,251+0-250x250");

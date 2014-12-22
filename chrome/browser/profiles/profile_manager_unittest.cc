@@ -110,7 +110,7 @@ class ProfileManagerTest : public testing::Test {
         new UnittestProfileManager(temp_dir_.path()));
 
 #if defined(OS_CHROMEOS)
-    CommandLine* cl = CommandLine::ForCurrentProcess();
+    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kTestType);
 #endif
   }
@@ -408,7 +408,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
         new UnittestGuestProfileManager(temp_dir_.path()));
 
 #if defined(OS_CHROMEOS)
-    CommandLine* cl = CommandLine::ForCurrentProcess();
+    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     // This switch is needed to skip non-test specific behavior in
     // ProfileManager (accessing DBusThreadManager).
     cl->AppendSwitch(switches::kTestType);
@@ -994,7 +994,8 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
     return;
 
   // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
@@ -1032,7 +1033,8 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
     return;
 
   // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
@@ -1078,7 +1080,8 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
     return;
 
   // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
@@ -1132,7 +1135,8 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
     return;
 
   // The command line is reset at the end of every test by the test suite.
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();

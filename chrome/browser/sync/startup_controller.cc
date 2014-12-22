@@ -51,12 +51,13 @@ StartupController::StartupController(
           base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
       first_start_(true),
       weak_factory_(this) {
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDeferredStartupTimeoutSeconds)) {
     int timeout = kDeferredInitFallbackSeconds;
-    if (base::StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kSyncDeferredStartupTimeoutSeconds), &timeout)) {
+    if (base::StringToInt(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kSyncDeferredStartupTimeoutSeconds),
+            &timeout)) {
       DCHECK_GE(timeout, 0);
       DVLOG(2) << "Sync StartupController overriding startup timeout to "
                << timeout << " seconds.";
@@ -86,7 +87,7 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_up_time_ = base::Time::Now();
 
   if (deferred_option == STARTUP_BACKEND_DEFERRED &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableDeferredStartup) &&
       sync_prefs_->GetPreferredDataTypes(registered_types_)
           .Has(syncer::SESSIONS)) {
@@ -182,7 +183,7 @@ void StartupController::RecordTimeDeferred() {
 }
 
 void StartupController::OnFallbackStartupTimerExpired() {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSyncDisableDeferredStartup));
 
   if (!start_backend_time_.is_null())
@@ -207,7 +208,7 @@ std::string StartupController::GetBackendInitializationStateString() const {
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableDeferredStartup)) {
     DVLOG(2) << "Ignoring data type request for sync startup: "
              << syncer::ModelTypeToString(type);

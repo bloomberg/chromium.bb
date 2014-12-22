@@ -54,8 +54,8 @@ ProcessSingletonModalDialogLock::AsNotificationCallback() {
 }
 
 bool ProcessSingletonModalDialogLock::NotificationCallbackImpl(
-      const CommandLine& command_line,
-      const base::FilePath& current_directory) {
+    const base::CommandLine& command_line,
+    const base::FilePath& current_directory) {
   if (active_dialog_ != NULL) {
     set_foreground_window_handler_.Run(active_dialog_);
     return true;

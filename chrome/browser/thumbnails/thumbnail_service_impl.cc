@@ -29,7 +29,7 @@ bool IsThumbnailRetargetingEnabled() {
   if (!chrome::IsInstantExtendedAPIEnabled())
     return false;
 
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableThumbnailRetargeting);
 }
 

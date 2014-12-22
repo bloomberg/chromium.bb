@@ -37,7 +37,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Ensure the infobar is enabled, since we expect that in this test.
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 

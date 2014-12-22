@@ -130,7 +130,7 @@ void AccountReconcilorTest::SetUp() {
   // If it's a non-parameterized test, or we have a parameter of true, set flag.
   if (!::testing::UnitTest::GetInstance()->current_test_info()->value_param() ||
       GetParam()) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableNewProfileManagement);
   }
 

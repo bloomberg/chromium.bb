@@ -56,7 +56,7 @@ class AccountsOptionsTest : public LoginManagerTest {
     LoginManagerTest::TearDownOnMainThread();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
   }
 

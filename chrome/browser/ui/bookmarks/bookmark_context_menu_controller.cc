@@ -92,8 +92,8 @@ void BookmarkContextMenuController::BuildMenu() {
 
   AddSeparator();
   AddItem(IDC_BOOKMARK_BAR_REMOVE, IDS_BOOKMARK_BAR_REMOVE);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBookmarkUndo)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBookmarkUndo)) {
     AddItem(IDC_BOOKMARK_BAR_UNDO, IDS_BOOKMARK_BAR_UNDO);
     AddItem(IDC_BOOKMARK_BAR_REDO, IDS_BOOKMARK_BAR_REDO);
   }

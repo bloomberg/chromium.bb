@@ -33,7 +33,8 @@ void OnApplicationStateChange(
              base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES &&
              g_application_has_stopped) {
     g_application_has_stopped = false;
-    ThreadWatcherList::StartWatchingAll(*CommandLine::ForCurrentProcess());
+    ThreadWatcherList::StartWatchingAll(
+        *base::CommandLine::ForCurrentProcess());
   }
 }
 

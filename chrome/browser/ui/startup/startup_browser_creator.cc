@@ -272,13 +272,12 @@ bool StartupBrowserCreator::InSynchronousProfileLaunch() {
 }
 
 bool StartupBrowserCreator::LaunchBrowser(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     Profile* profile,
     const base::FilePath& cur_dir,
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
     int* return_code) {
-
   in_synchronous_profile_launch_ =
       process_startup == chrome::startup::IS_PROCESS_STARTUP;
   DCHECK(profile);
@@ -353,7 +352,7 @@ bool StartupBrowserCreator::WasRestarted() {
 
 // static
 SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     Profile* profile) {
   DCHECK(profile);
   PrefService* prefs = profile->GetPrefs();
@@ -423,12 +422,12 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
 
 // static
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     Profile* profile) {
   std::vector<GURL> urls;
 
-  const CommandLine::StringVector& params = command_line.GetArgs();
+  const base::CommandLine::StringVector& params = command_line.GetArgs();
   for (size_t i = 0; i < params.size(); ++i) {
     base::FilePath param = base::FilePath(params[i]);
     // Handle Vista way of searching - "? <search-term>"
@@ -481,7 +480,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
 
 // static
 bool StartupBrowserCreator::ProcessCmdLineImpl(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     bool process_startup,
     Profile* last_used_profile,
@@ -631,8 +630,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   if (command_line.HasSwitch(apps::kLoadAndLaunchApp) &&
       !IncognitoModePrefs::ShouldLaunchIncognito(
           command_line, last_used_profile->GetPrefs())) {
-    CommandLine::StringType path = command_line.GetSwitchValueNative(
-        apps::kLoadAndLaunchApp);
+    base::CommandLine::StringType path =
+        command_line.GetSwitchValueNative(apps::kLoadAndLaunchApp);
 
     if (!apps::AppLoadService::Get(last_used_profile)->LoadAndLaunch(
             base::FilePath(path), command_line, cur_dir)) {
@@ -734,9 +733,10 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
     // Launch the last used profile with the full command line, and the other
     // opened profiles without the URLs to launch.
-    CommandLine command_line_without_urls(command_line.GetProgram());
-    const CommandLine::SwitchMap& switches = command_line.GetSwitches();
-    for (CommandLine::SwitchMap::const_iterator switch_it = switches.begin();
+    base::CommandLine command_line_without_urls(command_line.GetProgram());
+    const base::CommandLine::SwitchMap& switches = command_line.GetSwitches();
+    for (base::CommandLine::SwitchMap::const_iterator switch_it =
+             switches.begin();
          switch_it != switches.end(); ++switch_it) {
       command_line_without_urls.AppendSwitchNative(switch_it->first,
                                                    switch_it->second);
@@ -773,14 +773,15 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 }
 
 // static
-bool StartupBrowserCreator::ProcessLoadApps(const CommandLine& command_line,
-                                            const base::FilePath& cur_dir,
-                                            Profile* profile) {
-  CommandLine::StringType path_list =
+bool StartupBrowserCreator::ProcessLoadApps(
+    const base::CommandLine& command_line,
+    const base::FilePath& cur_dir,
+    Profile* profile) {
+  base::CommandLine::StringType path_list =
       command_line.GetSwitchValueNative(extensions::switches::kLoadApps);
 
-  base::StringTokenizerT<CommandLine::StringType,
-                         CommandLine::StringType::const_iterator>
+  base::StringTokenizerT<base::CommandLine::StringType,
+                         base::CommandLine::StringType::const_iterator>
       tokenizer(path_list, FILE_PATH_LITERAL(","));
 
   if (!tokenizer.GetNext())
@@ -807,7 +808,7 @@ bool StartupBrowserCreator::ProcessLoadApps(const CommandLine& command_line,
 
 // static
 void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     Profile* profile,
     Profile::CreateStatus status) {
@@ -818,7 +819,7 @@ void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
 
 // static
 void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     const base::FilePath& profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -848,7 +849,7 @@ bool HasPendingUncleanExit(Profile* profile) {
 }
 
 base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
-                                     const CommandLine& command_line) {
+                                     const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kProfileDirectory)) {
     return user_data_dir.Append(
         command_line.GetSwitchValuePath(switches::kProfileDirectory));

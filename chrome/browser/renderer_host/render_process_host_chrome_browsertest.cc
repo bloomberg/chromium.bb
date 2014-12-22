@@ -219,7 +219,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
 class ChromeRenderProcessHostTestWithCommandLine
     : public ChromeRenderProcessHostTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
   }
 };
@@ -235,7 +235,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
-  CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
 
   int tab_count = 1;
@@ -301,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
     LOG(ERROR) << "Can't background processes";
     return;
   }
-  CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
 
   // Change the first tab to be the omnibox page (TYPE_WEBUI).
@@ -377,11 +379,13 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
                        DevToolsOnSelfInOwnProcessPPT) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
-  CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
 
   int tab_count = 1;
@@ -427,7 +431,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
                        DevToolsOnSelfInOwnProcess) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

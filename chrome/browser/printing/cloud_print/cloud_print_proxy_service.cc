@@ -145,7 +145,7 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
     return;
 
   base::FilePath list_path(
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kCloudPrintSetupProxy));
   if (!list_path.empty()) {
     std::string printers_json;

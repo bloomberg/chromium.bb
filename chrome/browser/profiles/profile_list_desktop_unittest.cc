@@ -285,7 +285,8 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
 }
 
 TEST_F(ProfileListDesktopTest, DontShowOldAvatarMenuForSingleProfile) {
-  switches::DisableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+  switches::DisableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 
   manager()->CreateTestingProfile("Test 1");
 
@@ -306,7 +307,8 @@ TEST_F(ProfileListDesktopTest, AlwaysShowNewAvatarMenu) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 
   manager()->CreateTestingProfile("Test 1");
 

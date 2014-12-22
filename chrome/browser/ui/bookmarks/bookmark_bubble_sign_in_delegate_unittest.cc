@@ -50,7 +50,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
 
 void BookmarkBubbleSignInDelegateTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Force web-based signin, otherwise tests will crash because inline signin
   // involves IO thread operation.
   // TODO(guohui): fix the test for inline signin.

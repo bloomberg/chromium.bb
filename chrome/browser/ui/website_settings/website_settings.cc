@@ -157,8 +157,9 @@ bool InRememberCertificateErrorDecisionsGroup() {
           kRememberCertificateErrorDecisionsFieldTrialDefaultGroup) != 0 &&
       group_name.compare(
           kRememberCertificateErrorDecisionsFieldTrialDisableGroup) != 0;
-  bool has_command_line_switch = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRememberCertErrorDecisions);
+  bool has_command_line_switch =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRememberCertErrorDecisions);
   return in_experimental_group || has_command_line_switch;
 }
 
@@ -688,7 +689,8 @@ void WebsiteSettings::PresentSitePermissions() {
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
     if (permission_info.type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
       if (!command_line->HasSwitch(switches::kEnableWebMIDI))
         continue;
     }

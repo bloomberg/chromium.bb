@@ -622,7 +622,7 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   DCHECK(ui_message_loop_ == base::MessageLoop::current());
   DCHECK(reader);
 
-  if (parent_->notification_callback_.Run(CommandLine(argv),
+  if (parent_->notification_callback_.Run(base::CommandLine(argv),
                                           base::FilePath(current_dir))) {
     // Send back "ACK" message to prevent the client process from starting up.
     reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
@@ -755,14 +755,12 @@ ProcessSingleton::~ProcessSingleton() {
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return NotifyOtherProcessWithTimeout(
-      *CommandLine::ForCurrentProcess(),
-      kRetryAttempts,
-      base::TimeDelta::FromSeconds(kTimeoutInSeconds),
-      true);
+      *base::CommandLine::ForCurrentProcess(), kRetryAttempts,
+      base::TimeDelta::FromSeconds(kTimeoutInSeconds), true);
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
-    const CommandLine& cmd_line,
+    const base::CommandLine& cmd_line,
     int retry_attempts,
     const base::TimeDelta& timeout,
     bool kill_unresponsive) {
@@ -897,14 +895,13 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   return NotifyOtherProcessWithTimeoutOrCreate(
-      *CommandLine::ForCurrentProcess(),
-      kRetryAttempts,
+      *base::CommandLine::ForCurrentProcess(), kRetryAttempts,
       base::TimeDelta::FromSeconds(kTimeoutInSeconds));
 }
 
 ProcessSingleton::NotifyResult
 ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     int retry_attempts,
     const base::TimeDelta& timeout) {
   NotifyResult result = NotifyOtherProcessWithTimeout(

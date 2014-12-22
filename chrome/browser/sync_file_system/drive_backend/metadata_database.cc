@@ -259,7 +259,7 @@ SyncStatusCode MigrateDatabaseIfNeeded(LevelDBWrapper* db) {
       // TODO(peria): Move the migration code (from v3 to v4) here.
       return SYNC_STATUS_OK;
     case 4:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableMetadataDatabaseOnDisk)) {
         MigrateDatabaseFromV4ToV3(db->GetLevelDB());
       }
@@ -521,8 +521,9 @@ scoped_ptr<MetadataDatabase> MetadataDatabase::Create(
     const base::FilePath& database_path,
     leveldb::Env* env_override,
     SyncStatusCode* status_out) {
-  bool enable_on_disk_index = !CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableMetadataDatabaseOnDisk);
+  bool enable_on_disk_index =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableMetadataDatabaseOnDisk);
   return CreateInternal(database_path, env_override, enable_on_disk_index,
                         status_out);
 }

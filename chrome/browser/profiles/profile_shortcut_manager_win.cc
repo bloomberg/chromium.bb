@@ -643,7 +643,7 @@ base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
 
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableProfileShortcutManager) ||
          (BrowserDistribution::GetDistribution()->CanCreateDesktopShortcuts() &&
           !command_line->HasSwitch(switches::kUserDataDir));
@@ -701,7 +701,7 @@ void ProfileShortcutManagerWin::HasProfileShortcuts(
 
 void ProfileShortcutManagerWin::GetShortcutProperties(
     const base::FilePath& profile_path,
-    CommandLine* command_line,
+    base::CommandLine* command_line,
     base::string16* name,
     base::FilePath* icon_path) {
   base::FilePath chrome_exe;

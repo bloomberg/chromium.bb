@@ -529,8 +529,8 @@ TEST_F(SearchTest, CommandLineOverrides) {
   // However, if the Google base URL is specified on the command line, the
   // instant URL should just use it, even if it's HTTP.
   UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.bar.com/");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.bar.com/");
   instant_url = GetInstantURL(profile(), false);
   ASSERT_TRUE(instant_url.is_valid());
   EXPECT_EQ("http://www.bar.com/webhp?strk", instant_url.spec());
@@ -543,7 +543,7 @@ TEST_F(SearchTest, CommandLineOverrides) {
 
   // If we specify extra search query params, they should be inserted into the
   // query portion of the instant URL.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
   instant_url = GetInstantURL(profile(), false);
   ASSERT_TRUE(instant_url.is_valid());
@@ -891,7 +891,7 @@ TEST_F(DisplaySearchButtonTest, Never) {
 }
 
 TEST_F(DisplaySearchButtonTest, CommandLineNever) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableSearchButtonInOmnibox);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
 
@@ -908,7 +908,7 @@ TEST_F(DisplaySearchButtonTest, ForSearchTermReplacement) {
 }
 
 TEST_F(DisplaySearchButtonTest, CommandLineForSearchTermReplacement) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableSearchButtonInOmniboxForStr);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR, GetDisplaySearchButtonConditions());
 }
@@ -922,7 +922,7 @@ TEST_F(DisplaySearchButtonTest, ForSearchTermReplacementOrInputInProgress) {
 
 TEST_F(DisplaySearchButtonTest,
        CommandLineForSearchTermReplacementOrInputInProgress) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableSearchButtonInOmniboxForStrOrIip);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP,
             GetDisplaySearchButtonConditions());
@@ -935,7 +935,7 @@ TEST_F(DisplaySearchButtonTest, Always) {
 }
 
 TEST_F(DisplaySearchButtonTest, CommandLineAlways) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableSearchButtonInOmniboxAlways);
   EXPECT_EQ(DISPLAY_SEARCH_BUTTON_ALWAYS, GetDisplaySearchButtonConditions());
 }
@@ -984,7 +984,7 @@ TEST_F(OriginChipTest, InvalidValue) {
 }
 
 TEST_F(OriginChipTest, CommandLineDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableOriginChip);
   EXPECT_FALSE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipCondition());
@@ -997,14 +997,14 @@ TEST_F(OriginChipTest, CommandLineDisabled) {
 }
 
 TEST_F(OriginChipTest, CommandLineAlways) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableOriginChipAlways);
   EXPECT_TRUE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_ALWAYS, GetOriginChipCondition());
 }
 
 TEST_F(OriginChipTest, CommandLineOnSrp) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableOriginChipOnSrp);
   EXPECT_TRUE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_ON_SRP, GetOriginChipCondition());

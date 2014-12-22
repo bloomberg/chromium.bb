@@ -100,7 +100,7 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
 // where the default window bounds calculation is invoked.
 TEST_F(WindowSizerAshTest, MAYBE_DefaultSizeCase) {
 #if defined(OS_WIN)
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kOpenAsh);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kOpenAsh);
 #endif
   { // 4:3 monitor case, 1024x768, no taskbar
     gfx::Rect window_bounds;
@@ -889,7 +889,8 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
 
   // Check that setting the maximized command line option is forcing the
   // maximized state.
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kStartMaximized);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kStartMaximized);
 
   browser_window->browser()->set_initial_show_state(ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(GetWindowShowState(ui::SHOW_STATE_NORMAL,

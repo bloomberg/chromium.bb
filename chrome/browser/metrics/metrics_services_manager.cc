@@ -89,7 +89,8 @@ bool MetricsServicesManager::IsMetricsReportingEnabled() const {
   // If the user permits metrics reporting with the checkbox in the
   // prefs, we turn on recording.  We disable metrics completely for
   // non-official builds, or when field trials are forced.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceFieldTrials))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceFieldTrials))
     return false;
 
   bool enabled = false;

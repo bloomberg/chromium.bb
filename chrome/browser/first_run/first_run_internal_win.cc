@@ -47,7 +47,7 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
   exe_dir = exe_dir.Append(installer::kInstallerDir);
   base::FilePath exe_path = exe_dir.Append(installer::kSetupExe);
 
-  CommandLine cl(CommandLine::NO_PROGRAM);
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitchNative(installer::switches::kShowEula, value);
 
   if (base::win::IsMetroProcess()) {
@@ -63,7 +63,7 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
                              SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_FLAG_NO_UI);
     return false;
   } else {
-    CommandLine setup_path(exe_path);
+    base::CommandLine setup_path(exe_path);
     setup_path.AppendArguments(cl, false);
 
     base::Process process =

@@ -58,7 +58,7 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "nextButton", l10n_util::GetStringUTF16(IDS_FIRST_RUN_NEXT_BUTTON));
   localized_strings->SetBoolean(
       "transitionsEnabled",
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableFirstRunUITransitions));
   std::string shelf_alignment;
   ash::Shell* shell = ash::Shell::GetInstance();

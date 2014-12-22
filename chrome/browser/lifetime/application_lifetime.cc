@@ -177,7 +177,8 @@ void AttemptUserExit() {
 }
 
 void StartShutdownTracing() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kTraceShutdown)) {
     base::debug::CategoryFilter category_filter(
         command_line.GetSwitchValueASCII(switches::kTraceShutdown));

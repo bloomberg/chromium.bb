@@ -278,8 +278,8 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
           IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE,
           product_name));
 
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(chromeos::switches::kDisableNewChannelSwitcherUI)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableNewChannelSwitcherUI)) {
     localized_strings->SetBoolean("disableNewChannelSwitcherUI", true);
   }
 #endif
@@ -295,8 +295,8 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
 
   localized_strings->SetString("userAgentInfo", GetUserAgent());
 
-  CommandLine::StringType command_line =
-      CommandLine::ForCurrentProcess()->GetCommandLineString();
+  base::CommandLine::StringType command_line =
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString();
   localized_strings->SetString("commandLineInfo", command_line);
 }
 

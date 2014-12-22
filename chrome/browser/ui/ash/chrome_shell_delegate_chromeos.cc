@@ -223,7 +223,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 }  // anonymous namespace
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kFirstExecAfterBoot);
 }
 

@@ -72,7 +72,7 @@ void IncognitoModePrefs::RegisterProfilePrefs(
 
 // static
 bool IncognitoModePrefs::ShouldLaunchIncognito(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const PrefService* prefs) {
   Availability incognito_avail = GetAvailability(prefs);
   return incognito_avail != IncognitoModePrefs::DISABLED &&

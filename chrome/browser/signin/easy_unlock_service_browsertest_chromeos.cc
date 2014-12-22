@@ -114,7 +114,7 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
         scoped_ptr<PowerManagerClient>(power_manager_client_));
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         proximity_auth::switches::kForceLoadEasyUnlockAppInTests);
   }
@@ -207,7 +207,7 @@ class EasyUnlockServiceDisabledTest : public EasyUnlockServiceTest {
   ~EasyUnlockServiceDisabledTest() override {}
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(proximity_auth::switches::kDisableEasyUnlock);
   }
 

@@ -371,7 +371,7 @@ void AppListServiceMac::Init(Profile* initial_profile) {
   // OnShimLaunch(). Note that if --silent-launch is not also passed, the window
   // will instead populate via StartupBrowserCreator::Launch(). Shim-initiated
   // launches will always have --silent-launch.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList))
     ShowWindowNearDock();
 }
 

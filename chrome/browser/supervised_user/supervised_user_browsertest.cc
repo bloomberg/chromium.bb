@@ -114,7 +114,7 @@ class SupervisedUserBlockModeTest : public InProcessBrowserTest {
             new base::FundamentalValue(SupervisedUserURLFilter::BLOCK)));
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Enable the test server and remap all URLs to it.
     ASSERT_TRUE(test_server()->Start());
     std::string host_port = test_server()->host_port_pair().ToString();

@@ -28,7 +28,7 @@ using content::Referrer;
 class ViewIDTest : public InProcessBrowserTest {
  public:
   ViewIDTest() : root_window_(nil) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         extensions::switches::kEnableExperimentalExtensionApis);
   }
 

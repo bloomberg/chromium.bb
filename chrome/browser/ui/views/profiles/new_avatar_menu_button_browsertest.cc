@@ -31,7 +31,7 @@ class NewAvatarMenuButtonTest : public InProcessBrowserTest {
 
  protected:
   void SetUp() override;
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void CreateTestingProfile();
   void StartAvatarMenu();
 
@@ -50,7 +50,8 @@ void NewAvatarMenuButtonTest::SetUp() {
   DCHECK(switches::IsNewAvatarMenu());
 }
 
-void NewAvatarMenuButtonTest::SetUpCommandLine(CommandLine* command_line) {
+void NewAvatarMenuButtonTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   switches::EnableNewAvatarMenuForTesting(command_line);
 }
 

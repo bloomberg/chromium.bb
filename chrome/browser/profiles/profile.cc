@@ -205,8 +205,9 @@ std::string Profile::GetDebugName() {
 
 bool Profile::IsGuestSession() const {
 #if defined(OS_CHROMEOS)
-  static bool is_guest_session = CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kGuestSession);
+  static bool is_guest_session =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kGuestSession);
   return is_guest_session;
 #else
   return GetPath() == ProfileManager::GetGuestProfilePath();

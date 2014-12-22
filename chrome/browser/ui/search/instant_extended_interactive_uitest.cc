@@ -266,7 +266,7 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
     InstantTestBase::Init(instant_url, ntp_url, true);
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,
         "EmbeddedSearch/Group11 prefetch_results_srp:1/");

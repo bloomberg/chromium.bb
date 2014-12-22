@@ -51,12 +51,12 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
  public:
   WebRtcApprtcBrowserTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
   }
 
@@ -92,7 +92,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
       return false;
     }
 
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     EXPECT_TRUE(GetPythonCommand(&command_line));
 
     command_line.AppendArgPath(appengine_dev_appserver);
@@ -124,7 +124,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
       return false;
     }
 
-    CommandLine command_line(collider_server);
+    base::CommandLine command_line(collider_server);
 
     command_line.AppendArg("-tls=false");
     command_line.AppendArg("-port=" + collider_port);
@@ -219,7 +219,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
       return false;
     }
 
-    CommandLine command_line(firefox_launcher);
+    base::CommandLine command_line(firefox_launcher);
     command_line.AppendSwitchPath("--binary", firefox_binary);
     command_line.AppendSwitchASCII("--webpage", url.spec());
 

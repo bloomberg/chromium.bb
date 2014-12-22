@@ -212,7 +212,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     params.Set("localizedStrings", localized_strings);
   }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   const GURL gaia_url =
       command_line->HasSwitch(::switches::kGaiaUrl)
@@ -720,7 +720,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   }
 
   context.embedded_signin_enabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableEmbeddedSignin) ||
       embedded_signin_enabled_by_shortcut_;
 

@@ -57,7 +57,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Unzip the package into a temporary directory.
-  CommandLine cl(base::FilePath("/usr/bin/unzip"));
+  base::CommandLine cl(base::FilePath("/usr/bin/unzip"));
   cl.AppendArg(dest.value().c_str());
   cl.AppendArg("-d");
   cl.AppendArg(temp_dir.path().value().c_str());

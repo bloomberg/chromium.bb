@@ -203,7 +203,7 @@ TEST_F(ChromePasswordManagerClientTest,
 
 TEST_F(ChromePasswordManagerClientTest,
        IsAutomaticPasswordSavingEnabledWhenFlagIsSetTest) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       password_manager::switches::kEnableAutomaticPasswordSaving);
   if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN)
     EXPECT_TRUE(GetClient()->IsAutomaticPasswordSavingEnabled());
@@ -238,7 +238,7 @@ TEST_F(ChromePasswordManagerClientTest, ShouldAskUserToSubmitURLEmptyURL) {
 
 TEST_F(ChromePasswordManagerClientTest, ShouldFilterAutofillResult_Reauth) {
   // Make client disallow only reauth requests.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(
       password_manager::switches::kDisallowAutofillSyncCredentialForReauth);
   scoped_ptr<TestChromePasswordManagerClient> client(
@@ -278,7 +278,7 @@ TEST_F(ChromePasswordManagerClientTest, ShouldFilterAutofillResult) {
   EXPECT_FALSE(client->ShouldFilterAutofillResult(form));
 
   // Adding disallow switch should cause sync credential to be filtered.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(
       password_manager::switches::kDisallowAutofillSyncCredential);
   client.reset(new TestChromePasswordManagerClient(web_contents()));

@@ -157,7 +157,8 @@ class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
     // Revisit and address.
 #if defined(OS_WIN)
     force_ash = ash::Shell::HasInstance() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kViewerConnect);
+                base::CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kViewerConnect);
 #endif
     // Use the target display on ash.
     if (chrome::ShouldOpenAshOnStartup() || force_ash) {
@@ -431,7 +432,8 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
   if (show_state)
     return browser_->initial_show_state();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStartMaximized))
     return ui::SHOW_STATE_MAXIMIZED;
 
   if (browser_->initial_show_state() != ui::SHOW_STATE_DEFAULT)

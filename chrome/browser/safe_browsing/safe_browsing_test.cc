@@ -280,7 +280,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     SafeBrowsingService::RegisterFactory(NULL);
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // This test uses loopback. No need to use IPv6 especially it makes
     // local requests slow on Windows trybot when ipv6 local address [::1]
     // is not setup.

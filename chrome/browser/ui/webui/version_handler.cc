@@ -29,7 +29,7 @@ void GetFilePaths(const base::FilePath& profile_path,
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   base::FilePath executable_path = base::MakeAbsoluteFilePath(
-      CommandLine::ForCurrentProcess()->GetProgram());
+      base::CommandLine::ForCurrentProcess()->GetProgram());
   if (!executable_path.empty()) {
     *exec_path_out = executable_path.LossyDisplayName();
   } else {

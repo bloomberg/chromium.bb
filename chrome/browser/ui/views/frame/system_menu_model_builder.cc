@@ -112,7 +112,7 @@ void SystemMenuModelBuilder::BuildSystemMenuForAppOrPopupWindow(
 }
 
 void SystemMenuModelBuilder::AddFrameToggleItems(ui::SimpleMenuModel* model) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDebugEnableFrameToggle)) {
     model->AddSeparator(ui::NORMAL_SEPARATOR);
     model->AddItem(IDC_DEBUG_FRAME_TOGGLE,

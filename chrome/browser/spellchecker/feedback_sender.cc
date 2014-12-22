@@ -145,7 +145,7 @@ std::string GetApiVersion() {
   // TODO(rouslan): Remove the guard. http://crbug.com/247726
   if (base::FieldTrialList::FindFullName(kFeedbackFieldTrialName) ==
           kFeedbackFieldTrialEnabledGroupName &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSpellingFeedbackFieldTrial)) {
     return "v2-internal";
   }
@@ -167,10 +167,10 @@ FeedbackSender::FeedbackSender(net::URLRequestContextGetter* request_context,
   // The command-line switch is for testing and temporary.
   // TODO(rouslan): Remove the command-line switch when testing is complete.
   // http://crbug.com/247726
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSpellingServiceFeedbackUrl)) {
     feedback_service_url_ =
-        GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kSpellingServiceFeedbackUrl));
   }
 }
@@ -314,11 +314,12 @@ void FeedbackSender::StartFeedbackCollection() {
   // This command-line switch is for testing and temporary.
   // TODO(rouslan): Remove the command-line switch when testing is complete.
   // http://crbug.com/247726
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSpellingServiceFeedbackIntervalSeconds)) {
-    base::StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                          switches::kSpellingServiceFeedbackIntervalSeconds),
-                      &interval_seconds);
+    base::StringToInt(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kSpellingServiceFeedbackIntervalSeconds),
+        &interval_seconds);
     if (interval_seconds < kMinIntervalSeconds)
       interval_seconds = kMinIntervalSeconds;
     static const int kSessionSeconds =

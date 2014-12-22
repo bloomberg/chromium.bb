@@ -106,7 +106,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
     gallery_prefs_ =
         MediaGalleriesPreferencesFactory::GetForProfile(profile_.get());

@@ -29,7 +29,8 @@ class SyncPromoUITest : public testing::Test {
 
  protected:
   void DisableSync() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableSync);
   }
 
   scoped_ptr<TestingProfile> profile_;

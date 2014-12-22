@@ -105,10 +105,10 @@ void PermissionRequestCreatorApiary::CreatePermissionRequest(
 }
 
 GURL PermissionRequestCreatorApiary::GetApiUrl() const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPermissionRequestApiUrl)) {
-    GURL url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                 switches::kPermissionRequestApiUrl));
+    GURL url(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kPermissionRequestApiUrl));
     LOG_IF(WARNING, !url.is_valid())
         << "Got invalid URL for " << switches::kPermissionRequestApiUrl;
     return url;
@@ -118,9 +118,9 @@ GURL PermissionRequestCreatorApiary::GetApiUrl() const {
 }
 
 std::string PermissionRequestCreatorApiary::GetApiScope() const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPermissionRequestApiScope)) {
-    return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
         switches::kPermissionRequestApiScope);
   } else {
     return kApiScope;

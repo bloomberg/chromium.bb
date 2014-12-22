@@ -90,7 +90,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,
     net::ProxyConfigService* proxy_config_service,
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     bool quick_check_enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

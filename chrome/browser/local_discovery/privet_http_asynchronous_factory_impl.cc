@@ -62,7 +62,8 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
       request_context_(request_context) {
   net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPrivetIPv6Only)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrivetIPv6Only)) {
     address_family = net::ADDRESS_FAMILY_IPV6;
   }
 

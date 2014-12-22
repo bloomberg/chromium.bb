@@ -134,7 +134,7 @@ using sync_driver::UIDataTypeController;
 namespace {
 
 syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   syncer::ModelTypeSet disabled_types;
   std::string disabled_types_str =
       command_line.GetSwitchValueASCII(switches::kDisableSyncTypes);
@@ -143,7 +143,7 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
 }
 
 syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   syncer::ModelTypeSet enabled_types;
   return enabled_types;
 }
@@ -152,14 +152,15 @@ syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile,
-    CommandLine* command_line,
+    base::CommandLine* command_line,
     const GURL& sync_service_url,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* url_request_context_getter)
     : profile_(profile),
       command_line_(command_line),
       web_data_service_(WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, Profile::EXPLICIT_ACCESS)),
+          profile_,
+          Profile::EXPLICIT_ACCESS)),
       sync_service_url_(sync_service_url),
       token_service_(token_service),
       url_request_context_getter_(url_request_context_getter),

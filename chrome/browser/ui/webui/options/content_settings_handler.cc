@@ -969,7 +969,8 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
 }
 
 void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebMIDI)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebMIDI)) {
     web_ui()->CallJavascriptFunction(
         "ContentSettings.showExperimentalWebMIDISettings",
         base::FundamentalValue(true));

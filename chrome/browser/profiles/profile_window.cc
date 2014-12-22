@@ -257,7 +257,7 @@ void FindOrCreateNewWindowForProfile(
   }
 
   content::RecordAction(UserMetricsAction("NewWindow"));
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   int return_code;
   StartupBrowserCreator browser_creator;
   browser_creator.LaunchBrowser(command_line, profile, base::FilePath(),
@@ -455,7 +455,7 @@ void EnableNewProfileManagementPreview(Profile* profile) {
       true);
 
   switches::EnableNewProfileManagementForTesting(
-      CommandLine::ForCurrentProcess());
+      base::CommandLine::ForCurrentProcess());
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_TUTORIAL_OVERVIEW,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);

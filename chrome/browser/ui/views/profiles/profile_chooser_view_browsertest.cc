@@ -36,7 +36,7 @@ class ProfileChooserViewBrowserTest : public InProcessBrowserTest {
 
  protected:
   void SetUp() override;
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void OpenProfileChooserView();
 
  private:
@@ -55,8 +55,9 @@ void ProfileChooserViewBrowserTest::SetUp() {
 }
 
 void ProfileChooserViewBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+    base::CommandLine* command_line) {
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
 }
 
 void ProfileChooserViewBrowserTest::OpenProfileChooserView() {

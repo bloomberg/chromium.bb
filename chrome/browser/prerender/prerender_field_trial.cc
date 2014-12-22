@@ -197,7 +197,7 @@ void SetupPrerenderFieldTrial() {
 
 }  // end namespace
 
-void ConfigurePrerender(const CommandLine& command_line) {
+void ConfigurePrerender(const base::CommandLine& command_line) {
   enum PrerenderOption {
     PRERENDER_OPTION_AUTO,
     PRERENDER_OPTION_DISABLED,
@@ -249,10 +249,10 @@ bool IsOmniboxEnabled(Profile* profile) {
     return false;
 
   // Override any field trial groups if the user has set a command line flag.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPrerenderFromOmnibox)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrerenderFromOmnibox)) {
     const string switch_value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kPrerenderFromOmnibox);
 
     if (switch_value == switches::kPrerenderFromOmniboxSwitchValueEnabled)
@@ -302,10 +302,9 @@ bool IsLocalPredictorEnabled() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   return false;
 #endif
-  return
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePrerenderLocalPredictor) &&
-      GetLocalPredictorSpecValue(kLocalPredictorKeyName) == kEnabledGroup;
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisablePrerenderLocalPredictor) &&
+         GetLocalPredictorSpecValue(kLocalPredictorKeyName) == kEnabledGroup;
 }
 
 bool ShouldDisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile) {

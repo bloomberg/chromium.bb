@@ -147,7 +147,7 @@ class PrefHashBrowserTestBase
       : protection_level_(GetProtectionLevelFromTrialGroup(GetParam())) {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     EXPECT_FALSE(command_line->HasSwitch(switches::kForceFieldTrials));
     command_line->AppendSwitchASCII(

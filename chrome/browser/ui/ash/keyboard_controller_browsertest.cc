@@ -29,7 +29,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   }
 
   // Ensure that the virtual keyboard is enabled.
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
   }

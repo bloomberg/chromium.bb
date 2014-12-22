@@ -128,7 +128,7 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
 
@@ -139,7 +139,7 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
   }
 
   void ConfigureFakeDeviceToPlayFile(const base::FilePath& wav_file_path) {
-    CommandLine::ForCurrentProcess()->AppendSwitchPath(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
         switches::kUseFileForFakeAudioCapture, wav_file_path);
   }
 
@@ -192,7 +192,7 @@ class AudioRecorder {
     EXPECT_FALSE(recording_application_.IsValid())
         << "Tried to record, but is already recording.";
 
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 #if defined(OS_WIN)
     // This disable is required to run SoundRecorder.exe on 64-bit Windows
     // from a 32-bit binary. We need to load the wow64 disable function from
@@ -273,7 +273,7 @@ class AudioRecorder {
 bool ForceMicrophoneVolumeTo100Percent() {
 #if defined(OS_WIN)
   // Note: the force binary isn't in tools since it's one of our own.
-  CommandLine command_line(test::GetReferenceFilesDir().Append(
+  base::CommandLine command_line(test::GetReferenceFilesDir().Append(
       FILE_PATH_LITERAL("force_mic_volume_max.exe")));
   DVLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
@@ -282,7 +282,8 @@ bool ForceMicrophoneVolumeTo100Percent() {
     return false;
   }
 #elif defined(OS_MACOSX)
-  CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("osascript")));
+  base::CommandLine command_line(
+      base::FilePath(FILE_PATH_LITERAL("osascript")));
   command_line.AppendArg("-e");
   command_line.AppendArg("set volume input volume 100");
   command_line.AppendArg("-e");
@@ -300,7 +301,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
   for (int device_index = 0; device_index < 5; ++device_index) {
     std::string result;
     const std::string kHundredPercentVolume = "65536";
-    CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("pacmd")));
+    base::CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("pacmd")));
     command_line.AppendArg("set-source-volume");
     command_line.AppendArg(base::StringPrintf("%d", device_index));
     command_line.AppendArg(kHundredPercentVolume);
@@ -316,18 +317,18 @@ bool ForceMicrophoneVolumeTo100Percent() {
 
 // Sox is the "Swiss army knife" of audio processing. We mainly use it for
 // silence trimming. See http://sox.sourceforge.net.
-CommandLine MakeSoxCommandLine() {
+base::CommandLine MakeSoxCommandLine() {
 #if defined(OS_WIN)
   base::FilePath sox_path = test::GetReferenceFilesDir().Append(
       FILE_PATH_LITERAL("tools/sox.exe"));
   if (!base::PathExists(sox_path)) {
     LOG(ERROR) << "Missing sox.exe binary in " << sox_path.value()
                << "; you may have to provide this binary yourself.";
-    return CommandLine(CommandLine::NO_PROGRAM);
+    return base::CommandLine(base::CommandLine::NO_PROGRAM);
   }
-  CommandLine command_line(sox_path);
+  base::CommandLine command_line(sox_path);
 #else
-  CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
+  base::CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
 #endif
   return command_line;
 }
@@ -350,7 +351,7 @@ bool RemoveSilence(const base::FilePath& input_file,
   const char* kDuration = "2";
   const char* kTreshold = "3%";
 
-  CommandLine command_line = MakeSoxCommandLine();
+  base::CommandLine command_line = MakeSoxCommandLine();
   if (command_line.GetProgram().empty())
     return false;
   command_line.AppendArgPath(input_file);
@@ -380,7 +381,7 @@ bool RemoveSilence(const base::FilePath& input_file,
 // speech segments must be at least 500 ms for this to be reliable.
 bool SplitFileOnSilence(const base::FilePath& input_file,
                         const base::FilePath& output_file_template) {
-  CommandLine command_line = MakeSoxCommandLine();
+  base::CommandLine command_line = MakeSoxCommandLine();
   if (command_line.GetProgram().empty())
     return false;
 
@@ -449,7 +450,7 @@ bool RunPesq(const base::FilePath& reference_file,
     return false;
   }
 
-  CommandLine command_line(pesq_path);
+  base::CommandLine command_line(pesq_path);
   command_line.AppendArg(base::StringPrintf("+%d", sample_rate));
   command_line.AppendArgPath(reference_file);
   command_line.AppendArgPath(actual_file);

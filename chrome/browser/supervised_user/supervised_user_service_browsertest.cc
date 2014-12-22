@@ -29,7 +29,7 @@ void TestAuthErrorCallback(const GoogleServiceAuthError& error) {}
 class SupervisedUserServiceTestSupervised : public InProcessBrowserTest {
  public:
   // content::BrowserTestBase:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
 };

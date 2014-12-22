@@ -29,7 +29,7 @@ public:
   }
 
 protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+ virtual void SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kTryChromeAgain, "10001");
   }
 };

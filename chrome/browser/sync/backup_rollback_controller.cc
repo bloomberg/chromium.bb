@@ -52,7 +52,7 @@ bool BackupRollbackController::StartRollback() {
     return false;
 
   // Don't roll back if disabled or user is signed in.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableRollback) ||
       !signin_->GetEffectiveUsername().empty()) {
     sync_prefs_->SetRemainingRollbackTries(0);
@@ -86,9 +86,9 @@ bool BackupRollbackController::IsBackupEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName(kSyncBackupFinchName);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableBackup) ||
-      group_name == kSyncBackupFinchDisabled)  {
+      group_name == kSyncBackupFinchDisabled) {
     return false;
   }
   return true;

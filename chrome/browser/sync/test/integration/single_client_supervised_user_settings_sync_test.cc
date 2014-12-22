@@ -25,7 +25,7 @@ class SingleClientSupervisedUserSettingsSyncTest : public SyncTest {
   ~SingleClientSupervisedUserSettingsSyncTest() override {}
 
   // SyncTest overrides:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     SyncTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }

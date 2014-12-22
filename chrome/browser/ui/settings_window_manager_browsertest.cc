@@ -59,7 +59,7 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
     settings_manager_->RemoveObserver(&observer_);
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kEnableSettingsWindow);
   }
 

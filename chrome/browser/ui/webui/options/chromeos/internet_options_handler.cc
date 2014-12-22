@@ -289,8 +289,8 @@ void InternetOptionsHandler::GetLocalizedValues(
                             LoginState::LOGGED_IN_USER_OWNER;
   localized_strings->SetBoolean(kLoggedInAsOwnerKey, logged_in_as_owner);
   localized_strings->SetBoolean(
-      kShowCarrierSelectKey, CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableCarrierSwitching));
+      kShowCarrierSelectKey, base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                 chromeos::switches::kEnableCarrierSwitching));
 
   base::DictionaryValue* network_dictionary = new base::DictionaryValue;
   FillNetworkInfo(network_dictionary);

@@ -322,7 +322,7 @@ void DesktopMediaListView::OnSourceAdded(int index) {
     parent_->OnMediaListRowsChanged();
 
   std::string autoselect_source =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAutoSelectDesktopCaptureSource);
   if (!autoselect_source.empty() &&
       base::ASCIIToUTF16(autoselect_source) == source.name) {

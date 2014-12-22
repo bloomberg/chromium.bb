@@ -80,7 +80,7 @@ variations::Study_Channel GetChannelForVariations() {
       break;
   }
   const std::string forced_channel =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kFakeVariationsChannel);
   if (forced_channel == "stable")
     return variations::Study_Channel_STABLE;
@@ -373,8 +373,9 @@ void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
 // static
 GURL VariationsService::GetVariationsServerURL(
     PrefService* policy_pref_service) {
-  std::string server_url_string(CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kVariationsServerURL));
+  std::string server_url_string(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kVariationsServerURL));
   if (server_url_string.empty())
     server_url_string = kDefaultVariationsServerURL;
   GURL server_url = GURL(server_url_string);
@@ -428,7 +429,7 @@ scoped_ptr<VariationsService> VariationsService::Create(
 #if !defined(GOOGLE_CHROME_BUILD)
   // Unless the URL was provided, unsupported builds should return NULL to
   // indicate that the service should not be used.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVariationsServerURL)) {
     DVLOG(1) << "Not creating VariationsService in unofficial build without --"
              << switches::kVariationsServerURL << " specified.";

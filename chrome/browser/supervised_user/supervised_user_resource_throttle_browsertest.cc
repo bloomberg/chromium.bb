@@ -33,7 +33,7 @@ class SupervisedUserResourceThrottleTest : public InProcessBrowserTest {
 
  private:
   void SetUpOnMainThread() override;
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   SupervisedUserService* supervised_user_service_;
 };
@@ -44,7 +44,7 @@ void SupervisedUserResourceThrottleTest::SetUpOnMainThread() {
 }
 
 void SupervisedUserResourceThrottleTest::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
 }
 

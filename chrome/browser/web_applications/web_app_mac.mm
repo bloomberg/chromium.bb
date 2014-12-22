@@ -148,7 +148,7 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
 bool AppShimsDisabledForTest() {
   // Disable app shims in tests because shims created in ~/Applications will not
   // be cleaned up.
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType);
 }
 
 base::FilePath GetWritableApplicationsDirectory() {
@@ -236,7 +236,7 @@ void LaunchShimOnFileThread(const web_app::ShortcutInfo& shortcut_info,
   if (!base::PathExists(shim_path))
     return;
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(
       app_mode::kLaunchedByChromeProcessId,
       base::IntToString(base::GetCurrentProcId()));
@@ -859,7 +859,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   [plist setObject:base::mac::FilePathToNSString(app_name)
             forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAppsFileAssociations)) {
     UpdateFileTypes(plist, file_handlers_info_);
   }
@@ -1000,7 +1000,7 @@ void MaybeLaunchShortcut(const ShortcutInfo& shortcut_info) {
       base::Bind(&LaunchShimOnFileThread, shortcut_info, false));
 }
 
-bool MaybeRebuildShortcut(const CommandLine& command_line) {
+bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   if (!command_line.HasSwitch(app_mode::kAppShimError))
     return false;
 

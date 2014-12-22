@@ -68,7 +68,8 @@ net::BackendType ChooseCacheBackendType() {
 #if defined(OS_ANDROID)
   return net::CACHE_BACKEND_SIMPLE;
 #else
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kUseSimpleCacheBackend)) {
     const std::string opt_value =
         command_line.GetSwitchValueASCII(switches::kUseSimpleCacheBackend);
@@ -912,6 +913,6 @@ void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
 
 bool ProfileImplIOData::IsDataReductionProxyEnabled() const {
   return data_reduction_proxy_enabled_.GetValue() ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-            data_reduction_proxy::switches::kEnableDataReductionProxy);
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             data_reduction_proxy::switches::kEnableDataReductionProxy);
 }

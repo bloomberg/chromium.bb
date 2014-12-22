@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   SessionStartupPref::SetStartupPref(profile_4, pref_urls);
 
   // Do a simple non-process-startup browser launch.
-  CommandLine dummy(CommandLine::NO_PROGRAM);
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
 
   int return_code;
   StartupBrowserCreator browser_creator;

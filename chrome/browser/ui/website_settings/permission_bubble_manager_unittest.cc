@@ -118,7 +118,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(PermissionBubbleManagerTest, TestFlag) {
   EXPECT_FALSE(PermissionBubbleManager::Enabled());
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnablePermissionsBubbles);
   EXPECT_TRUE(PermissionBubbleManager::Enabled());
 }

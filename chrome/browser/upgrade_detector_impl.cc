@@ -58,21 +58,21 @@ const uint64 kOutdatedBuildAgeInDays = 12 * 7;
 // Return the string that was passed as a value for the
 // kCheckForUpdateIntervalSec switch.
 std::string CmdLineInterval() {
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   return cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
 }
 
 // Check if one of the outdated simulation switches was present on the command
 // line.
 bool SimulatingOutdated() {
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   return cmd_line.HasSwitch(switches::kSimulateOutdated) ||
       cmd_line.HasSwitch(switches::kSimulateOutdatedNoAU);
 }
 
 // Check if any of the testing switches was present on the command line.
 bool IsTesting() {
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   return cmd_line.HasSwitch(switches::kSimulateUpgrade) ||
       cmd_line.HasSwitch(switches::kCheckForUpdateIntervalSec) ||
       cmd_line.HasSwitch(switches::kSimulateCriticalUpdate) ||
@@ -169,7 +169,7 @@ base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
       Version(base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
 #elif defined(OS_POSIX)
   // POSIX but not Mac OS X: Linux, etc.
-  CommandLine command_line(*CommandLine::ForCurrentProcess());
+  base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
   command_line.AppendSwitch(switches::kProductVersion);
   std::string reply;
   if (!base::GetAppOutput(command_line, &reply)) {
@@ -189,7 +189,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
       is_auto_update_enabled_(true),
       build_date_(base::GetBuildTime()),
       weak_factory_(this) {
-  CommandLine command_line(*CommandLine::ForCurrentProcess());
+  base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
   // The different command line switches that affect testing can't be used
   // simultaneously, if they do, here's the precedence order, based on the order
   // of the if statements below:

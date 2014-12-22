@@ -96,7 +96,7 @@ bool TranslateService::IsTranslateBubbleEnabled() {
   return true;
 #elif defined(OS_MACOSX)
   // The bubble UX is experimental on Mac OS X.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTranslateNewUX);
 #else
   // The bubble UX is not implemented on other platforms.

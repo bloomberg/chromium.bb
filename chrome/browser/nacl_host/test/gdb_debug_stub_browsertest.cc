@@ -19,7 +19,7 @@ class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
   NaClGdbDebugStubTest() {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   void StartTestScript(base::ProcessHandle* test_process,
                        std::string test_name, int debug_stub_port);
@@ -27,7 +27,7 @@ class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {
                         const std::string& test_name);
 };
 
-void NaClGdbDebugStubTest::SetUpCommandLine(CommandLine* command_line) {
+void NaClGdbDebugStubTest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPINaClNewlibTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableNaClDebug);
 }
@@ -36,7 +36,7 @@ void NaClGdbDebugStubTest::StartTestScript(base::ProcessHandle* test_process,
                                            std::string test_name,
                                            int debug_stub_port) {
   // We call python script to reuse GDB RSP protocol implementation.
-  CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
+  base::CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
   base::FilePath script;
   PathService::Get(chrome::DIR_TEST_DATA, &script);
   script = script.AppendASCII("nacl/debug_stub_browser_tests.py");

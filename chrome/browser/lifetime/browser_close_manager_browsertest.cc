@@ -179,7 +179,7 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
  public:
   FakeBackgroundModeManager()
       : BackgroundModeManager(
-            CommandLine::ForCurrentProcess(),
+            base::CommandLine::ForCurrentProcess(),
             &g_browser_process->profile_manager()->GetProfileInfoCache()),
         suspended_(false) {}
 
@@ -220,7 +220,7 @@ class BrowserCloseManagerBrowserTest
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     if (GetParam())
       command_line->AppendSwitch(switches::kEnableFastUnload);
 #if defined(OS_CHROMEOS)

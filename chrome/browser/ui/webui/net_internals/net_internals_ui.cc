@@ -1448,8 +1448,9 @@ base::Value* NetInternalsUI::GetConstants() {
     dict->SetString("official",
                     version_info.IsOfficialBuild() ? "official" : "unofficial");
     dict->SetString("os_type", version_info.OSType());
-    dict->SetString("command_line",
-                    CommandLine::ForCurrentProcess()->GetCommandLineString());
+    dict->SetString(
+        "command_line",
+        base::CommandLine::ForCurrentProcess()->GetCommandLineString());
 
     constants_dict->Set("clientInfo", dict);
 

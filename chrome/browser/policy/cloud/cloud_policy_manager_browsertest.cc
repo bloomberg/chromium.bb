@@ -50,7 +50,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
   ~CloudPolicyManagerTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
                                     "http://localhost");
   }

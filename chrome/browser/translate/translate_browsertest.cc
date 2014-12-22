@@ -54,7 +54,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
                       base::FilePath(kTranslateRoot)),
         infobar_service_(NULL) {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(https_server_.Start());
     // Setup alternate security origin for testing in order to allow XHR against
     // local test server. Note that this flag shows a confirm infobar in tests.

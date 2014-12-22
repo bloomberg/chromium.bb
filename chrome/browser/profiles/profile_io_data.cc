@@ -1021,7 +1021,8 @@ void ProfileIOData::Init(
 
   IOThread* const io_thread = profile_params_->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(

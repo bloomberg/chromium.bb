@@ -431,7 +431,8 @@ ProfileImpl::ProfileImpl(
 
   // Determine if prefetch is enabled for this profile.
   // If not profile_manager is present, it means we are in a unittest.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   predictor_ = chrome_browser_net::Predictor::CreatePredictor(
       !command_line->HasSwitch(switches::kDisablePreconnect),
       !command_line->HasSwitch(switches::kDnsPrefetchDisable),
@@ -591,7 +592,8 @@ void ProfileImpl::DoFinalInit() {
   // or launch-on-startup support unless kKeepAliveForTest is set.
   bool init_background_mode_manager = true;
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepAliveForTest))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKeepAliveForTest))
     init_background_mode_manager = false;
 #endif
   if (init_background_mode_manager) {
@@ -628,7 +630,7 @@ void ProfileImpl::DoFinalInit() {
 #else
   SessionStartupPref::Type startup_pref_type =
       StartupBrowserCreator::GetSessionStartupPref(
-          *CommandLine::ForCurrentProcess(), this).type;
+          *base::CommandLine::ForCurrentProcess(), this).type;
 #endif
   content::CookieStoreConfig::SessionCookieMode session_cookie_mode =
       content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES;
@@ -1306,7 +1308,8 @@ void ProfileImpl::ClearNetworkingHistorySince(
 
 GURL ProfileImpl::GetHomePage() {
   // --homepage overrides any preferences.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kHomePage)) {
     // TODO(evanm): clean up usage of DIR_CURRENT.
     //   http://code.google.com/p/chromium/issues/detail?id=60630

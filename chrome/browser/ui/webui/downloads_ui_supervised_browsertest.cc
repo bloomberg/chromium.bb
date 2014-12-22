@@ -10,6 +10,6 @@
 #include "content/public/test/test_utils.h"
 
 void DownloadsWebUIForSupervisedUsersTest::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
 }

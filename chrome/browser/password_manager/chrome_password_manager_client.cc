@@ -104,8 +104,8 @@ ChromePasswordManagerClient::~ChromePasswordManagerClient() {
 }
 
 bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      password_manager::switches::kEnableAutomaticPasswordSaving) &&
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             password_manager::switches::kEnableAutomaticPasswordSaving) &&
          chrome::VersionInfo::GetChannel() ==
              chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
@@ -505,7 +505,7 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 #if !defined(USE_AURA) && !defined(OS_MACOSX)
   return false;
 #endif
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableSavePasswordBubble))
     return false;
 
@@ -520,7 +520,7 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 }
 
 bool ChromePasswordManagerClient::EnabledForSyncSignin() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(
           password_manager::switches::kDisableManagerForSyncSignin))
     return false;
@@ -539,7 +539,7 @@ void ChromePasswordManagerClient::SetUpAutofillSyncState() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillSyncCredential");
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(
           password_manager::switches::kAllowAutofillSyncCredential)) {
     autofill_sync_state_ = ALLOW_SYNC_CREDENTIALS;

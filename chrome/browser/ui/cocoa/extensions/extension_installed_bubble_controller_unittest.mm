@@ -55,7 +55,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(browser());
     window_ = browser()->window()->GetNativeWindow();
     icon_ = LoadTestIcon();
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
         extensions::ExtensionSystem::Get(profile()))->CreateExtensionService(
             &command_line, base::FilePath(), false);

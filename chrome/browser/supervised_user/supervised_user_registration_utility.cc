@@ -363,7 +363,7 @@ void SupervisedUserRegistrationUtilityImpl::OnReceivedToken(
 }
 
 void SupervisedUserRegistrationUtilityImpl::CompleteRegistrationIfReady() {
-  bool skip_check = CommandLine::ForCurrentProcess()->HasSwitch(
+  bool skip_check = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNoSupervisedUserAcknowledgmentCheck);
 
   if (!pending_supervised_user_acknowledged_ && !skip_check)

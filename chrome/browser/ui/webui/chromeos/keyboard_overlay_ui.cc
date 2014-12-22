@@ -258,7 +258,7 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
   source->AddString("keyboardOverlayLearnMoreURL",
                     base::UTF8ToUTF16(kLearnMoreURL));
   source->AddBoolean("keyboardOverlayHasChromeOSDiamondKey",
-                     CommandLine::ForCurrentProcess()->HasSwitch(
+                     base::CommandLine::ForCurrentProcess()->HasSwitch(
                          chromeos::switches::kHasChromeOSDiamondKey));
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::DisplayManager* display_manager = shell->display_manager();

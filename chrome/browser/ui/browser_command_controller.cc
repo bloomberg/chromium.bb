@@ -1015,9 +1015,8 @@ void BrowserCommandController::InitCommandState() {
 
   // Distill current page.
   command_updater_.UpdateCommandEnabled(
-      IDC_DISTILL_PAGE,
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller));
+      IDC_DISTILL_PAGE, base::CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kEnableDomDistiller));
 
   // Initialize other commands whose state changes based on various conditions.
   UpdateCommandsForFullscreenMode();

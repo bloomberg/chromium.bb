@@ -29,7 +29,7 @@ bool TestLicenseServer::Start() {
     return false;
   }
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   if (!server_config_->GetServerCommandLine(&command_line)) {
     DVLOG(0) << "Could not get server command line to launch.";
     return false;

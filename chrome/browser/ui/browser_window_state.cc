@@ -138,7 +138,8 @@ void GetSavedWindowBoundsAndShowState(const Browser* browser,
                                                   bounds,
                                                   show_state);
 
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool record_mode = parsed_command_line.HasSwitch(switches::kRecordMode);
   bool playback_mode = parsed_command_line.HasSwitch(switches::kPlaybackMode);
   if (record_mode || playback_mode) {

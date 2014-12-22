@@ -129,7 +129,8 @@ bool BrowserProcessResource::ReportsSqliteMemoryUsed() const {
 
 // BrowserProcess uses v8 for proxy resolver in certain cases.
 bool BrowserProcessResource::ReportsV8MemoryStats() const {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   bool using_v8 = !command_line->HasSwitch(switches::kWinHttpProxyResolver);
   if (using_v8 && command_line->HasSwitch(switches::kSingleProcess)) {
     using_v8 = false;

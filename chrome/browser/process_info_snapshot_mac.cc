@@ -130,7 +130,7 @@ static bool GetProcessMemoryInfoUsingPS(
     const std::vector<base::ProcessId>& pid_list,
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
   const base::FilePath kProgram("/bin/ps");
-  CommandLine command_line(kProgram);
+  base::CommandLine command_line(kProgram);
 
   // Get resident set size, virtual memory size.
   command_line.AppendArg("-o");
@@ -193,7 +193,7 @@ static bool GetProcessMemoryInfoUsingPS(
 static bool GetProcessMemoryInfoUsingTop(
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
   const base::FilePath kProgram("/usr/bin/top");
-  CommandLine command_line(kProgram);
+  base::CommandLine command_line(kProgram);
 
   // -stats tells top to print just the given fields as ordered.
   command_line.AppendArg("-stats");

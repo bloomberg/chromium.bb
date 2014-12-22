@@ -108,7 +108,8 @@ bool IsAppShortcutForProfile(const base::FilePath& shortcut_file_name,
   base::string16 cmd_line_string;
   if (base::win::ResolveShortcut(shortcut_file_name, NULL, &cmd_line_string)) {
     cmd_line_string = L"program " + cmd_line_string;
-    CommandLine shortcut_cmd_line = CommandLine::FromString(cmd_line_string);
+    base::CommandLine shortcut_cmd_line =
+        base::CommandLine::FromString(cmd_line_string);
     return shortcut_cmd_line.HasSwitch(switches::kProfileDirectory) &&
            shortcut_cmd_line.GetSwitchValuePath(switches::kProfileDirectory) ==
                profile_path.BaseName() &&
@@ -195,13 +196,13 @@ bool CreateShortcutsInPaths(
   // Working directory.
   base::FilePath working_dir(chrome_exe.DirName());
 
-  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   cmd_line = ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
       shortcut_info.extension_id, shortcut_info.profile_path);
 
   // TODO(evan): we rely on the fact that command_line_string() is
   // properly quoted for a Windows command line.  The method on
-  // CommandLine should probably be renamed to better reflect that
+  // base::CommandLine should probably be renamed to better reflect that
   // fact.
   base::string16 wide_switches(cmd_line.GetCommandLineString());
 
@@ -338,7 +339,7 @@ void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
                                      HWND hwnd) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  CommandLine command_line =
+  base::CommandLine command_line =
       ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
                                                    shortcut_info.extension_id,
                                                    shortcut_info.profile_path);
@@ -415,13 +416,14 @@ base::CommandLine GetAppShimCommandLine(const base::FilePath& app_shim_path,
                                         const std::string& extension_id,
                                         const base::FilePath& profile_path) {
   // Get the command-line to pass to the shim (e.g., "chrome.exe --app-id=...").
-  CommandLine chrome_cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-      GURL(), extension_id, profile_path);
+  base::CommandLine chrome_cmd_line =
+      ShellIntegration::CommandLineArgsForLauncher(GURL(), extension_id,
+                                                   profile_path);
   chrome_cmd_line.AppendArg("%1");
 
   // Get the command-line for calling the shim (e.g.,
   // "app_shim [--chrome-sxs] -- --app-id=...").
-  CommandLine shim_cmd_line(app_shim_path);
+  base::CommandLine shim_cmd_line(app_shim_path);
   // If this is a canary build, launch the shim in canary mode.
   if (InstallUtil::IsChromeSxSProcess())
     shim_cmd_line.AppendSwitch(installer::switches::kChromeSxS);
@@ -470,7 +472,7 @@ bool CreateFileAssociationsForApp(
   if (!CreateAppShimBinary(app_shim_path))
     return false;
 
-  CommandLine shim_cmd_line(
+  base::CommandLine shim_cmd_line(
       GetAppShimCommandLine(app_shim_path, extension_id, profile_path));
 
   // TODO(mgiuca): Get the file type name from the manifest, or generate a

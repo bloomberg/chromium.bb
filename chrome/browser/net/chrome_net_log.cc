@@ -20,7 +20,8 @@
 
 ChromeNetLog::ChromeNetLog()
     : net_log_temp_file_(new NetLogTempFile(this)) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
     base::FilePath log_path =

@@ -23,7 +23,7 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
 #if defined(OS_CHROMEOS)
   // On ChromeOS browsing is only allowed once OOBE has completed. Therefore all
   // requests are blocked until this condition is met.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeGuestSession)) {
     if (!url.SchemeIs("chrome") && !url.SchemeIs("chrome-extension")) {
       *reason = net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING;

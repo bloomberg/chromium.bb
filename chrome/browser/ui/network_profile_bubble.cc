@@ -101,7 +101,7 @@ void NetworkProfileBubble::CheckNetworkProfile(
   // start faster.
   // Collect a lot of stats along the way to see which cases do occur in the
   // wild often enough.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNoNetworkProfileWarning)) {
     RecordUmaEvent(METRIC_CHECK_SUPPRESSED);
     return;

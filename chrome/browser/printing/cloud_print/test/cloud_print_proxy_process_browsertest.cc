@@ -212,7 +212,7 @@ typedef base::Callback<void(MockServiceIPCServer* server)>
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("Main Thread");
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 
 #if defined(OS_MACOSX)
@@ -258,10 +258,10 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   // Connect up the parent/child IPC channel to signal that the test can
   // continue.
   TestStartupClientChannelListener listener;
-  EXPECT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+  EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kProcessChannelID));
   std::string startup_channel_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
   scoped_ptr<IPC::ChannelProxy> startup_channel;
   startup_channel =
@@ -318,9 +318,9 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   void OnChannelConnected(int32 peer_pid) override;
 
   // MultiProcessTest implementation.
-  CommandLine MakeCmdLine(const std::string& procname) override;
+  base::CommandLine MakeCmdLine(const std::string& procname) override;
 
-  bool LaunchBrowser(const CommandLine& command_line, Profile* profile) {
+  bool LaunchBrowser(const base::CommandLine& command_line, Profile* profile) {
     int return_code = 0;
     StartupBrowserCreator browser_creator;
     return StartupBrowserCreator::ProcessCmdLineImpl(
@@ -407,7 +407,7 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
   // from InProcessBrowserTest::SetUp(). These tests require a more complex
   // process startup so they are unable to just inherit from
   // InProcessBrowserTest.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath user_data_dir =
       command_line->GetSwitchValuePath(switches::kUserDataDir);
   if (user_data_dir.empty()) {
@@ -490,9 +490,9 @@ void CloudPrintProxyPolicyStartupTest::OnChannelConnected(int32 peer_pid) {
   observer_.Notify();
 }
 
-CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
+base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
     const std::string& procname) {
-  CommandLine cl = MultiProcessTest::MakeCmdLine(procname);
+  base::CommandLine cl = MultiProcessTest::MakeCmdLine(procname);
   cl.AppendSwitchASCII(switches::kProcessChannelID, startup_channel_id_);
 #if defined(OS_MACOSX)
   cl.AppendSwitchASCII(kTestExecutablePath, executable_path_.value());
@@ -552,7 +552,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
       prefs::kCloudPrintEmail,
       new base::StringValue(MockServiceIPCServer::EnabledUserId()));
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
@@ -602,7 +602,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
   prefs->SetManagedPref(prefs::kCloudPrintProxyEnabled,
                         new base::FundamentalValue(false));
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 

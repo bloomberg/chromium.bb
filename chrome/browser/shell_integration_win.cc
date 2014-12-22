@@ -91,7 +91,7 @@ base::string16 GetAppListAppName() {
 
 // Gets expected app id for given Chrome (based on |command_line| and
 // |is_per_user_install|).
-base::string16 GetExpectedAppId(const CommandLine& command_line,
+base::string16 GetExpectedAppId(const base::CommandLine& command_line,
                                 bool is_per_user_install) {
   base::FilePath user_data_dir;
   if (command_line.HasSwitch(switches::kUserDataDir))
@@ -461,8 +461,9 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
         chrome_exe != target_path) {
       continue;
     }
-    CommandLine command_line(CommandLine::FromString(base::StringPrintf(
-        L"\"%ls\" %ls", target_path.value().c_str(), arguments.c_str())));
+    base::CommandLine command_line(
+        base::CommandLine::FromString(base::StringPrintf(
+            L"\"%ls\" %ls", target_path.value().c_str(), arguments.c_str())));
 
     // Get the expected AppId for this Chrome shortcut.
     base::string16 expected_app_id(

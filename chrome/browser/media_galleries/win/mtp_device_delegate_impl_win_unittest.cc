@@ -99,7 +99,7 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
       static_cast<extensions::TestExtensionSystem*>(
           extensions::ExtensionSystem::Get(profile())));
   extension_system->CreateExtensionService(
-      CommandLine::ForCurrentProcess(), base::FilePath(), false);
+      base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
   std::vector<std::string> all_permissions;
   all_permissions.push_back("allAutoDetected");

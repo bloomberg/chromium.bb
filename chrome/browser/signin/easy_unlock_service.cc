@@ -85,7 +85,7 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 
 // static
 bool EasyUnlockService::IsSignInEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       proximity_auth::switches::kDisableEasyUnlock);
 }
 
@@ -261,7 +261,7 @@ bool EasyUnlockService::IsAllowed() {
   if (shut_down_)
     return false;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableEasyUnlock)) {
     return false;
   }
@@ -500,7 +500,7 @@ void EasyUnlockService::LoadApp() {
 #if defined(OS_CHROMEOS)
   // TODO(xiyuan): Remove this when the app is bundled with chrome.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kForceLoadEasyUnlockAppInTests)) {
     return;
   }
@@ -514,7 +514,8 @@ void EasyUnlockService::LoadApp() {
 
 #ifndef NDEBUG
   // Only allow app path override switch for debug build.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEasyUnlockAppPath)) {
     easy_unlock_path =
         command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath);

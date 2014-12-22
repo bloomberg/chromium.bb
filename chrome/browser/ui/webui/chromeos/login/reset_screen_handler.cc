@@ -93,7 +93,7 @@ void ResetScreenHandler::Show() {
 
 void ResetScreenHandler::ChooseAndApplyShowScenario() {
   PrefService* prefs = g_browser_process->local_state();
-  restart_required_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+  restart_required_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kFirstExecAfterBoot);
 
   reboot_was_requested_ = false;
@@ -101,7 +101,7 @@ void ResetScreenHandler::ChooseAndApplyShowScenario() {
   if (!restart_required_)  // First exec after boot.
     reboot_was_requested_ = prefs->GetBoolean(prefs::kFactoryResetRequested);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRollbackOption)) {
     rollback_available_ = false;
     ShowWithParams();

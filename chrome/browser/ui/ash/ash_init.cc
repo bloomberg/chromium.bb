@@ -84,8 +84,8 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   shell->partial_magnification_controller()->
       SetEnabled(magnifier_enabled && magnifier_type == ui::MAGNIFIER_PARTIAL);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableZeroBrowsersOpenForTests)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableZeroBrowsersOpenForTests)) {
     chrome::IncrementKeepAliveCount();
   }
 #endif

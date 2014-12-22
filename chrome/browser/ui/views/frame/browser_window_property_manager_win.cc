@@ -80,7 +80,7 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
     const base::FilePath& profile_path = profile->GetPath();
 
     // Set relaunch details to use profile.
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     base::FilePath icon_path;
     shortcut_manager->GetShortcutProperties(profile_path, &command_line,
                                             &pinned_name, &icon_path);

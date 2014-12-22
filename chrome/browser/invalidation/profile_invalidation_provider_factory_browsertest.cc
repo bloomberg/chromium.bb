@@ -52,7 +52,7 @@ class ProfileInvalidationProviderFactoryLoginScreenBrowserTest
   ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
   virtual ~ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -68,7 +68,7 @@ ProfileInvalidationProviderFactoryLoginScreenBrowserTest::
 }
 
 void ProfileInvalidationProviderFactoryLoginScreenBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 }
@@ -88,7 +88,7 @@ class ProfileInvalidationProviderFactoryGuestBrowserTest
   ProfileInvalidationProviderFactoryGuestBrowserTest();
   virtual ~ProfileInvalidationProviderFactoryGuestBrowserTest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProviderFactoryGuestBrowserTest);
@@ -103,7 +103,7 @@ ProfileInvalidationProviderFactoryGuestBrowserTest::
 }
 
 void ProfileInvalidationProviderFactoryGuestBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kGuestSession);
   command_line->AppendSwitch(::switches::kIncognito);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");

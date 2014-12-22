@@ -47,7 +47,7 @@ bool HotwordServiceFactory::IsHotwordHardwareAvailable() {
   // Fill in once the hardware has the correct interface implemented.
   // In the meantime, this function can be used to get other parts moving
   // based on a flag.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware);
 }
 

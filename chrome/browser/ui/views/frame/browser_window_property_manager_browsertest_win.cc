@@ -81,7 +81,8 @@ void ValidateBrowserWindowProperties(
   EXPECT_EQ(S_OK, pps->GetValue(PKEY_AppUserModel_RelaunchCommand,
                                 prop_var.Receive()));
   EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
-  CommandLine cmd_line(CommandLine::FromString(prop_var.get().pwszVal));
+  base::CommandLine cmd_line(
+      base::CommandLine::FromString(prop_var.get().pwszVal));
   EXPECT_EQ(browser->profile()->GetPath().BaseName().value(),
             cmd_line.GetSwitchValueNative(switches::kProfileDirectory));
   prop_var.Reset();
@@ -120,7 +121,8 @@ void ValidateHostedAppWindowProperties(const Browser* browser,
       S_OK,
       pps->GetValue(PKEY_AppUserModel_RelaunchCommand, prop_var.Receive()));
   EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
-  CommandLine cmd_line(CommandLine::FromString(prop_var.get().pwszVal));
+  base::CommandLine cmd_line(
+      base::CommandLine::FromString(prop_var.get().pwszVal));
   EXPECT_EQ(browser->profile()->GetPath().BaseName().value(),
             cmd_line.GetSwitchValueNative(switches::kProfileDirectory));
   EXPECT_EQ(base::UTF8ToWide(extension->id()),
@@ -167,7 +169,7 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
  public:
   BrowserTestWithProfileShortcutManager() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableProfileShortcutManager);
   }
 
@@ -180,7 +182,8 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
                        DISABLED_WindowProperties) {
   // Disable this test in Metro+Ash where Windows window properties aren't used.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 
   // This test checks HWND properties that are only available on Win7+.
@@ -231,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
 IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
 #if defined(USE_ASH)
   // Disable this test in Metro+Ash where Windows window properties aren't used.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

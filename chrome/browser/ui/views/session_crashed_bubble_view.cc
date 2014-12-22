@@ -91,7 +91,8 @@ bool IsBubbleUIEnabled() {
 #if defined(OS_CHROMEOS)
   return false;
 #else
-  const base::CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableSessionCrashedBubble))
     return false;
   if (command_line.HasSwitch(switches::kEnableSessionCrashedBubble))

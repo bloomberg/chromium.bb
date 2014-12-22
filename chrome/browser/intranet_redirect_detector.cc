@@ -66,7 +66,7 @@ void IntranetRedirectDetector::FinishSleep() {
   STLDeleteElements(&fetchers_);
   resulting_origins_.clear();
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableBackgroundNetworking))
     return;
 

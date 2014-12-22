@@ -100,7 +100,8 @@ class ChromeCookieMonsterDelegate : public net::CookieMonsterDelegate {
 namespace chrome_browser_net {
 
 bool IsCookieRecordMode() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   // Only allow Record Mode if we are in a Debug build or where we are running
   // a cycle, and the user has limited control.
   return command_line.HasSwitch(switches::kRecordMode) &&
@@ -108,7 +109,8 @@ bool IsCookieRecordMode() {
 }
 
 bool ShouldUseInMemoryCookiesAndCache() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   return IsCookieRecordMode() ||
       command_line.HasSwitch(switches::kPlaybackMode);
 }

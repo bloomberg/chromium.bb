@@ -36,7 +36,7 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
   ~MediaStreamInfoBarTest() override {}
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // This test expects to run with fake devices but real UI.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream))
@@ -128,7 +128,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

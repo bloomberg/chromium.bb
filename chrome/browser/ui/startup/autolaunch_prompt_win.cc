@@ -152,7 +152,8 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   if (infobar_shown >= kMaxTimesToShowInfoBar)
     return false;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kAutoLaunchAtStartup) &&
       !first_run::IsChromeFirstRun()) {
     return false;

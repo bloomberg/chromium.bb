@@ -61,7 +61,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // UITest::LaunchBrowserHelper somehow?
     base::FilePath program;
     ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
-    CommandLine command_line(program);
+    base::CommandLine command_line(program);
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
 
     if (first_run)
@@ -71,10 +71,11 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
 
     // Add the normal test-mode switches, except for the ones we're adding
     // ourselves.
-    CommandLine standard_switches(CommandLine::NO_PROGRAM);
+    base::CommandLine standard_switches(base::CommandLine::NO_PROGRAM);
     test_launcher_utils::PrepareBrowserCommandLineForTests(&standard_switches);
-    const CommandLine::SwitchMap& switch_map = standard_switches.GetSwitches();
-    for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
+    const base::CommandLine::SwitchMap& switch_map =
+        standard_switches.GetSwitches();
+    for (base::CommandLine::SwitchMap::const_iterator i = switch_map.begin();
          i != switch_map.end(); ++i) {
       const std::string& switch_name = i->first;
       if (switch_name == switches::kUserDataDir ||

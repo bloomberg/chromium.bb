@@ -78,7 +78,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
   };
 
   for (const char** flag = kBadFlags; *flag; ++flag) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(*flag)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(*flag)) {
       SimpleAlertInfoBarDelegate::Create(
           InfoBarService::FromWebContents(web_contents),
           infobars::InfoBarDelegate::kNoIconID,

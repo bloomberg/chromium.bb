@@ -49,7 +49,7 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
   explicit PrefetchBrowserTestBase(bool disabled_via_field_trial)
       : disabled_via_field_trial_(disabled_via_field_trial) {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     if (disabled_via_field_trial_) {
       command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                       "Prefetch/ExperimentDisabled/");

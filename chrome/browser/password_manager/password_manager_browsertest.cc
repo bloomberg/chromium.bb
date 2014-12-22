@@ -281,7 +281,7 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         browser()->profile(), TestPasswordStoreService::Build);
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-    ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
+    ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         password_manager::switches::kEnableAutomaticPasswordSaving));
   }
 
@@ -638,7 +638,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForXHRSubmit) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
   NavigateToFile("/password/password_xhr_submit.html");
@@ -1051,7 +1052,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   NavigateToFile("/password/password_form.html");
 
   // Add the enable-automatic-password-saving switch.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       password_manager::switches::kEnableAutomaticPasswordSaving);
 
   // Fill a form and submit through a <input type="submit"> button.
@@ -1224,9 +1225,9 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTest,
     NoPromptForLoginFailedAndServerPushSeperateLoginForm_HttpsToHttp) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowRunningInsecureContent);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kIgnoreCertificateErrors);
   const base::FilePath::CharType kDocRoot[] =
       FILE_PATH_LITERAL("chrome/test/data");

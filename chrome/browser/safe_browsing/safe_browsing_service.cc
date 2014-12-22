@@ -219,7 +219,7 @@ void SafeBrowsingService::Initialize() {
 
 #if defined(FULL_SAFE_BROWSING)
 #if !defined(OS_ANDROID)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(safe_browsing::ClientSideDetectionService::Create(
         url_request_context_getter_.get()));
@@ -443,7 +443,7 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
 #endif
 
 #endif  // defined(OS_WIN)
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   config.disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(switches::kDisableBackgroundNetworking);

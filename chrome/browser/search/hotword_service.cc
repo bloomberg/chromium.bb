@@ -277,7 +277,7 @@ bool HotwordService::IsExperimentalHotwordingEnabled() {
     return true;
   }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kDisableExperimentalHotwording);
 }
 
@@ -355,7 +355,7 @@ HotwordService::HotwordService(Profile* profile)
     // Show the hotword notification in 5 seconds if the experimental flag is
     // on, or in 30 minutes if not. We need to wait at least a few seconds
     // for the hotword extension to be installed.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware)) {
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,

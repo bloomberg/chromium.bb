@@ -404,7 +404,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     SafeBrowsingService::RegisterFactory(NULL);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // Makes sure the auto update is not triggered during the test.
     // This test will fill up the database using testing prefixes
     // and urls.

@@ -35,7 +35,7 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // This test should run with fake devices.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 

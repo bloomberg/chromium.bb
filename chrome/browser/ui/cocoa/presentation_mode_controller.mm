@@ -334,7 +334,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   if (!inPresentationMode_)
     return;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return;
 
   if (self.slidingStyle == fullscreen_mac::OMNIBOX_TABS_PRESENT)

@@ -274,7 +274,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   // Android only supports a subset of FULL_SAFE_BROWSING.
   // TODO(shess): This shouldn't be OS-driven <http://crbug.com/394379>
 #if !defined(OS_ANDROID)
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   enable_download_protection_ =
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
 

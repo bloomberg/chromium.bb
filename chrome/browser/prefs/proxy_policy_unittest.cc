@@ -81,8 +81,7 @@ void assertProxyModeWithoutParams(const ProxyConfigDictionary& dict,
 
 class ProxyPolicyTest : public testing::Test {
  protected:
-  ProxyPolicyTest()
-      : command_line_(CommandLine::NO_PROGRAM) {}
+  ProxyPolicyTest() : command_line_(base::CommandLine::NO_PROGRAM) {}
 
   void SetUp() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -110,7 +109,7 @@ class ProxyPolicyTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  CommandLine command_line_;
+  base::CommandLine command_line_;
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
 };

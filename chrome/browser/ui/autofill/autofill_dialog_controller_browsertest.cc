@@ -280,7 +280,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   AutofillDialogControllerTest() : controller_(NULL) {}
   virtual ~AutofillDialogControllerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
   }
 
@@ -1474,7 +1474,7 @@ class AutofillDialogControllerSecurityTest :
   AutofillDialogControllerSecurityTest() {}
   ~AutofillDialogControllerSecurityTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     CHECK(!command_line->HasSwitch(::switches::kReduceSecurityForTesting));
   }
 

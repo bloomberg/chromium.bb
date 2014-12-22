@@ -276,7 +276,8 @@ void NaClDomHandler::AddPnaclInfo(base::ListValue* list) {
 void NaClDomHandler::AddNaClInfo(base::ListValue* list) {
   base::string16 nacl_enabled_string = ASCIIToUTF16("Disabled");
   if (isPluginEnabled(0) &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaCl)) {
     nacl_enabled_string = ASCIIToUTF16("Enabled by flag '--enable-nacl'");
   }
   AddPair(list,

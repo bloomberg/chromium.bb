@@ -257,7 +257,7 @@ void LaunchDateAndTimeSettings() {
     { "/opt/bin/kcmshell4", "clock" },
   };
 
-  CommandLine command(base::FilePath(""));
+  base::CommandLine command(base::FilePath(""));
   for (size_t i = 0; i < arraysize(kClockCommands); ++i) {
     base::FilePath pathname(kClockCommands[i].pathname);
     if (base::PathExists(pathname)) {
@@ -277,7 +277,7 @@ void LaunchDateAndTimeSettings() {
   base::LaunchProcess(command, options);
 
 #elif defined(OS_MACOSX)
-  CommandLine command(base::FilePath("/usr/bin/open"));
+  base::CommandLine command(base::FilePath("/usr/bin/open"));
   command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
 
   base::LaunchOptions options;
@@ -289,7 +289,7 @@ void LaunchDateAndTimeSettings() {
   PathService::Get(base::DIR_SYSTEM, &path);
   static const base::char16 kControlPanelExe[] = L"control.exe";
   path = path.Append(base::string16(kControlPanelExe));
-  CommandLine command(path);
+  base::CommandLine command(path);
   command.AppendArg(std::string("/name"));
   command.AppendArg(std::string("Microsoft.DateAndTime"));
 

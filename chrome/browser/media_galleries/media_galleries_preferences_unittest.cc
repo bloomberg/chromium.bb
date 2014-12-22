@@ -120,7 +120,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
     ReinitPrefsAndExpectations();
 

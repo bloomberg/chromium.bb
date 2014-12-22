@@ -154,7 +154,7 @@ void DeleteSessionOnlyData(Profile* profile) {
 #else
   SessionStartupPref::Type startup_pref_type =
       StartupBrowserCreator::GetSessionStartupPref(
-          *CommandLine::ForCurrentProcess(), profile).type;
+          *base::CommandLine::ForCurrentProcess(), profile).type;
 #endif
 
   scoped_refptr<SessionDataDeleter> deleter(
