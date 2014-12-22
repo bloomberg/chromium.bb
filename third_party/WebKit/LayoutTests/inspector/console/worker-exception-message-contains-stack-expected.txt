@@ -1,7 +1,7 @@
 CONSOLE ERROR: line 3: Uncaught Error
-CONSOLE MESSAGE: line 21: Uncaught Error
+CONSOLE MESSAGE: line 18: Uncaught Error
 Tests exception message from worker contains stack trace.
 
 worker-with-throw.js:3 Uncaught Errorworker-with-throw.js:3 fooworker-with-throw.js:7 booworker-with-throw.js:11 onmessage
-worker-exception-message-contains-stack.html:21 Uncaught Error
+worker-exception-message-contains-stack.html:18 Uncaught Error
 

@@ -3,55 +3,62 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
-var worker;
+var worker1;
+var worker2;
 
-function startWorker()
+function startWorker1()
 {
-    worker = new Worker("resources/worker-with-throw.js");
+    worker1 = new Worker("resources/worker-with-throw.js");
 }
 
-function postMessageToWorker()
+function startWorker2()
 {
-    worker.postMessage();
-}
-
-function setupErrorHandler()
-{
-    worker.onerror = function(e) {
+    worker2 = new Worker("resources/worker-with-throw.js");
+    worker2.onerror = function(e) {
         console.log(e.message);
         e.preventDefault();
     }
 }
 
+function postMessageToWorker(worker)
+{
+    worker.postMessage();
+}
+
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
-    InspectorTest.evaluateInPage("startWorker()");
+    var isContextCreated = false;
+    var isAgentEnabled = false;
 
-    function contextCreated()
-    {
-        InspectorTest.evaluateInPage("postMessageToWorker()", step2);
-    }
+    startWorkerAndPostMessage(step2, "worker1", "startWorker1");
 
     function step2()
     {
-        InspectorTest.evaluateInPage("setupErrorHandler()", step3);
+        InspectorTest.waitUntilMessageReceived(step3);
+        startWorkerAndPostMessage(undefined, "worker2", "startWorker2");
     }
 
     function step3()
     {
-        InspectorTest.evaluateInPage("postMessageToWorker()", step4);
+        InspectorTest.expandConsoleMessages(step4);
     }
 
     function step4()
     {
-        InspectorTest.expandConsoleMessages(step5);
-    }
-
-    function step5()
-    {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
+    }
+
+    function contextCreated(next, workerName)
+    {
+        InspectorTest.evaluateInPage("postMessageToWorker(" + workerName + ")", next);
+    }
+
+    function startWorkerAndPostMessage(next, workerName, workerStartFunction)
+    {
+        isContextCreated = false;
+        InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated.bind(this, next, workerName));
+        InspectorTest.evaluateInPage(workerStartFunction + "()");
     }
 };
 </script>
