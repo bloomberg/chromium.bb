@@ -261,11 +261,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GRADIENT_PRECISION
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_GRADIENT_FACTORIES
-#   define SK_SUPPORT_LEGACY_GRADIENT_FACTORIES
-#endif
-
-
 #ifndef    SK_IGNORE_ETC1_SUPPORT
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
