@@ -238,6 +238,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
 @synthesize containerView = containerView_;
 @synthesize browser = browser_;
+@synthesize isOverflow = isOverflow_;
 
 #pragma mark -
 #pragma mark Public Methods
@@ -633,27 +634,34 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
   // Determine what index the dragged button should lie in, alter the model and
   // reposition the buttons.
-  CGFloat dragThreshold = ToolbarActionsBar::IconWidth(false) / 2;
   BrowserActionButton* draggedButton = [notification object];
   NSRect draggedButtonFrame = [draggedButton frame];
+  // Find the mid-point. We flip the y-coordinates so that y = 0 is at the
+  // top of the container to make row calculation more logical.
+  NSPoint midPoint =
+      NSMakePoint(NSMidX(draggedButtonFrame),
+                  NSMaxY([containerView_ bounds]) - NSMidY(draggedButtonFrame));
 
-  NSUInteger index = 0;
-  for (BrowserActionButton* button in buttons_.get()) {
-    CGFloat intersectionWidth =
-        NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
+  // Calculate the row index and the index in the row. We bound the latter
+  // because the view can go farther right than the right-most icon in the last
+  // row of the overflow menu.
+  NSInteger rowIndex = midPoint.y / ToolbarActionsBar::IconHeight();
+  int icons_per_row = isOverflow_ ?
+      toolbarActionsBar_->platform_settings().icons_per_overflow_menu_row :
+      toolbarActionsBar_->GetIconCount();
+  NSInteger indexInRow = std::min(icons_per_row - 1,
+      static_cast<int>(midPoint.x / ToolbarActionsBar::IconWidth(true)));
 
-    NSUInteger maxIndex =
-        isOverflow_ ? [buttons_ count] : [self visibleButtonCount];
-    if (intersectionWidth > dragThreshold && button != draggedButton &&
-        ![button isAnimating] && index < maxIndex) {
-      toolbarActionsBar_->OnDragDrop(
-          [buttons_ indexOfObject:draggedButton],
-          index,
-          ToolbarActionsBar::DRAG_TO_SAME);
-      return;
-    }
-    ++index;
-  }
+  // Find the desired index for the button.
+  NSInteger maxIndex = [buttons_ count] - 1;
+  NSInteger offset = isOverflow_ ?
+      [buttons_ count] - toolbarActionsBar_->GetIconCount() : 0;
+  NSInteger index =
+      std::min(maxIndex, offset + rowIndex * icons_per_row + indexInRow);
+
+  toolbarActionsBar_->OnDragDrop([buttons_ indexOfObject:draggedButton],
+                                 index,
+                                 ToolbarActionsBar::DRAG_TO_SAME);
 }
 
 - (void)actionButtonDragFinished:(NSNotification*)notification {

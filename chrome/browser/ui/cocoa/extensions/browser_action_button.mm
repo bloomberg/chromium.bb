@@ -220,14 +220,22 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   NSRect buttonFrame = [self frame];
   // The desired x is the current mouse point, minus the original offset of the
   // mouse into the button.
-  CGFloat desiredX = [[self superview] convertPoint:eventPoint fromView:nil].x -
-      dragStartPoint_.x;
+  NSPoint localPoint = [[self superview] convertPoint:eventPoint fromView:nil];
+  CGFloat desiredX = localPoint.x - dragStartPoint_.x;
   // Clamp the button to be within its superview along the X-axis.
   NSRect containerBounds = [[self superview] bounds];
   desiredX = std::min(std::max(NSMinX(containerBounds), desiredX),
                       NSMaxX(containerBounds) - NSWidth(buttonFrame));
-
   buttonFrame.origin.x = desiredX;
+
+  // If the button is in the overflow menu, it could move along the y-axis, too.
+  if ([browserActionsController_ isOverflow]) {
+    CGFloat desiredY = localPoint.y - dragStartPoint_.y;
+    desiredY = std::min(std::max(NSMinY(containerBounds), desiredY),
+                        NSMaxY(containerBounds) - NSHeight(buttonFrame));
+    buttonFrame.origin.y = desiredY;
+  }
+
   [self setFrame:buttonFrame];
   [self setNeedsDisplay:YES];
   [[NSNotificationCenter defaultCenter]

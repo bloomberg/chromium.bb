@@ -1000,13 +1000,13 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
 }
 
 void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
-  AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
-  // We only add the separator if there are > 0 items to show in the overflow.
-  extensions::ExtensionToolbarModel* toolbar_model =
-      extensions::ExtensionToolbarModel::Get(browser_->profile());
-  // A count of -1 means all actions are visible.
-  if (!toolbar_model->all_icons_visible())
+  // We only add the extensions overflow container if there are any icons that
+  // aren't shown in the main container.
+  if (!extensions::ExtensionToolbarModel::Get(browser_->profile())->
+          all_icons_visible()) {
+    AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
     AddSeparator(ui::UPPER_SEPARATOR);
+  }
 }
 
 void WrenchMenuModel::CreateCutCopyPasteMenu() {

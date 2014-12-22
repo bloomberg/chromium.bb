@@ -64,6 +64,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
 @property(readonly, nonatomic) Browser* browser;
+@property(readonly, nonatomic) BOOL isOverflow;
 
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons. If |mainController| is nil, the created
