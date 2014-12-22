@@ -75,28 +75,15 @@ crbug.com/428980 fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyF
 crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
 crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
-crbug.com/428980 fast/dom/partial-layout-non-overlay-scrollbars.html [ Failure ]
-crbug.com/428980 fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/428980 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
-crbug.com/428980 fast/dom/focus-contenteditable.html [ Failure ]
-crbug.com/428980 fast/events/autoscroll.html [ Failure ]
-crbug.com/428980 fast/events/reveal-link-when-focused.html [ Failure ]
-crbug.com/428980 [ Win ] http/tests/inspector/extensions-useragent.html [ Timeout ]
-crbug.com/428980 [ Win Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure ]
-crbug.com/428980 [ Win Mac ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ImageOnlyFailure ]
-crbug.com/428980 [ Win Mac ] fast/frames/transparent-scrollbar.html [ Failure ]
-crbug.com/428980 [ Win ] fast/forms/focus-selection-textarea.html [ Failure ]
-crbug.com/428980 [ Win ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure ]
-crbug.com/428980 [ Win ] plugins/overlay-scrollbar-mouse-capture.html [ Failure ]
-crbug.com/428980 [ Win ] fast/pagination/div-x-horizontal-bt-rtl.html [ Crash ]
-crbug.com/428980 [ Mac ] rubberbanding/content-size-change.html [ Failure ]
-crbug.com/428980 [ Mac ] rubberbanding/scroll-bounce-fix.html [ Failure ]
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/basic/013.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/positioning/window-height-change.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/positioning/inline-block-relposition.html [ ImageOnlyFailure ]
 crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/margin-collapse/103.html [ Failure ImageOnlyFailure ]
+
+crbug.com/444211 [ Win Mac ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ImageOnlyFailure ]
 
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
@@ -325,7 +312,7 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 # Untriaged Mavericks failures
 
-# crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 # crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-v.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-001.html [ Pass ImageOnlyFailure ]
@@ -500,7 +487,7 @@ crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnl
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
-# crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
