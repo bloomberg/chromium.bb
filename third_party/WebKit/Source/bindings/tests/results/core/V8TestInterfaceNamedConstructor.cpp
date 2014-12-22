@@ -32,7 +32,7 @@ namespace TestInterfaceNamedConstructorV8Internal {
 
 static void TestInterfaceNamedConstructorConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> data = info.Data();
+    v8::Local<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
     V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
     if (!perContextData)
@@ -99,7 +99,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
                 exceptionState.throwIfNeeded();
                 return;
             }
-            v8::Handle<v8::Object> wrapper = info.Holder();
+            v8::Local<v8::Object> wrapper = info.Holder();
             impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper);
             v8SetReturnValue(info, wrapper);
             return;
@@ -112,7 +112,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         exceptionState.throwIfNeeded();
         return;
     }
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

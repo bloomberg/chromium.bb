@@ -44,7 +44,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
@@ -88,7 +88,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
@@ -109,7 +109,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
                 exceptionState.throwIfNeeded();
                 return;
             }
-            v8::Handle<v8::Object> wrapper = info.Holder();
+            v8::Local<v8::Object> wrapper = info.Holder();
             impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
             v8SetReturnValue(info, wrapper);
             return;
@@ -124,7 +124,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
@@ -148,7 +148,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
@@ -246,7 +246,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
                 exceptionState.throwIfNeeded();
                 return;
             }
-            v8::Handle<v8::Object> wrapper = info.Holder();
+            v8::Local<v8::Object> wrapper = info.Holder();
             impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
             v8SetReturnValue(info, wrapper);
             return;
@@ -261,7 +261,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
         exceptionState.throwIfNeeded();
         return;
     }
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

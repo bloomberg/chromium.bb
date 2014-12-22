@@ -31,7 +31,7 @@ namespace TestExceptionV8Internal {
 
 static void readonlyUnsignedShortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestException* impl = V8TestException::toImpl(holder);
     v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
 }
@@ -45,7 +45,7 @@ static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::
 
 static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestException* impl = V8TestException::toImpl(holder);
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }

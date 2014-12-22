@@ -38,7 +38,7 @@ namespace blink {
 
     ScriptState::Scope scope(m_scriptState.get());
     {% if method.call_with_this_handle %}
-    v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
+    v8::Local<v8::Value> thisHandle = thisValue.v8Value();
     if (thisHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -46,7 +46,7 @@ namespace blink {
     }
     {% endif %}
     {% for argument in method.arguments %}
-    v8::Handle<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
+    v8::Local<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
     if ({{argument.handle}}.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -54,10 +54,10 @@ namespace blink {
     }
     {% endfor %}
     {% if method.arguments %}
-    v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
+    v8::Local<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
     {% else %}
     {# Empty array initializers are illegal, and don't compile in MSVC. #}
-    v8::Handle<v8::Value> *argv = 0;
+    v8::Local<v8::Value> *argv = 0;
     {% endif %}
 
     {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else 'm_scriptState->context()->Global(), ' %}

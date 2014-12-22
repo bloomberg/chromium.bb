@@ -36,7 +36,7 @@ namespace TestTypedefsV8Internal {
 
 static void uLongLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
@@ -50,7 +50,7 @@ static void uLongLongAttributeAttributeGetterCallback(v8::Local<v8::String>, con
 
 static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "uLongLongAttribute", "TestTypedefs", holder, info.GetIsolate());
     TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned long long, cppValue, toUInt64(v8Value, exceptionState), exceptionState);
@@ -66,7 +66,7 @@ static void uLongLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8:
 
 static void TestTypedefsConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> data = info.Data();
+    v8::Local<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
     V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
     if (!perContextData)
@@ -267,7 +267,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

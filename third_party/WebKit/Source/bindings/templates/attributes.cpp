@@ -15,14 +15,14 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {# holder #}
     {% if not attribute.is_static %}
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {# impl #}
     {% if attribute.cached_attribute_validation_method %}
-    v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Handle<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
+        v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
         if (!v8Value.IsEmpty()) {
             v8SetReturnValue(info, v8Value);
             return;
@@ -87,7 +87,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_keep_alive_for_gc %}
     if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate());
+    v8::Local<v8::Value> wrapper = toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), wrapper);
         {{attribute.v8_set_return_value}};
@@ -212,7 +212,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {# Local variables #}
     {% if not attribute.is_static %}
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
@@ -343,7 +343,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    v8::Local<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (contextInPrivateScript.IsEmpty())
         return false;
     ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
@@ -352,10 +352,10 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
         return false;
 
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder);
+    v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder);
     if (v8Value.IsEmpty())
         return false;
     {{attribute.private_script_v8_value_to_local_cpp_value}};
@@ -373,7 +373,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    v8::Local<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (contextInPrivateScript.IsEmpty())
         return false;
     ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
@@ -382,7 +382,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
         return false;
 
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});

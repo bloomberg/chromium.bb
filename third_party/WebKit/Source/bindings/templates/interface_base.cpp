@@ -78,7 +78,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% if has_constructor_attributes %}
 static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> data = info.Data();
+    v8::Local<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
     V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
     if (!perContextData)

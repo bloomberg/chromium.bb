@@ -33,7 +33,7 @@ namespace SVGTestInterfaceV8Internal {
 
 static void typeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
 }
@@ -47,7 +47,7 @@ static void typeAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 
 static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;

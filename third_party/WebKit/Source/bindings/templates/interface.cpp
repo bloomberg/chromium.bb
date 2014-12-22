@@ -376,7 +376,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
+    v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
     v8SetReturnValue(info, v8names);
@@ -410,7 +410,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
@@ -566,7 +566,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 
     {% endif %}
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     event->associateWithWrapper(info.GetIsolate(), &{{v8_class}}::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
@@ -842,7 +842,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
     if (scriptWrappable)
         return scriptWrappable->toImpl<{{cpp_class}}>();
 
-    v8::Handle<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
+    v8::Local<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
     RefPtr<{{cpp_class}}> typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
     typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
 
@@ -908,7 +908,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
-            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+            v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
             configureShadowObjectTemplate(templ, isolate);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
             return templ;
@@ -918,7 +918,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForNonMainWorld, ());
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
-            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+            v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
             configureShadowObjectTemplate(templ, isolate);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
             return templ;

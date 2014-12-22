@@ -32,7 +32,7 @@ namespace TestInterfaceCheckSecurityV8Internal {
 
 static void longAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->longAttribute());
 }
@@ -46,7 +46,7 @@ static void longAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 
 static void doNotCheckSecurityLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityLongAttribute());
 }
@@ -60,7 +60,7 @@ static void doNotCheckSecurityLongAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
@@ -76,7 +76,7 @@ static void doNotCheckSecurityLongAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void doNotCheckSecurityReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityReadonlyLongAttribute());
 }
@@ -90,7 +90,7 @@ static void doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback(v8::L
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityOnSetterLongAttribute());
 }
@@ -104,7 +104,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback(v8::L
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityOnSetterLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
@@ -120,7 +120,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::L
 
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityReplaceableReadonlyLongAttribute());
 }
@@ -197,9 +197,9 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+    v8::Local<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
 
-    v8::Handle<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -209,12 +209,12 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+        v8::Local<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityVoidMethod"));
+    v8::Local<v8::Value> hiddenValue = v8::Local<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -247,9 +247,9 @@ static void doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGette
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0);
+    v8::Local<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0);
 
-    v8::Handle<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -259,12 +259,12 @@ static void doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGette
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0);
+        v8::Local<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityDoNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityDoNotCheckSignatureVoidMethod"));
+    v8::Local<v8::Value> hiddenValue = v8::Local<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityDoNotCheckSignatureVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -297,9 +297,9 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+    v8::Local<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
 
-    v8::Handle<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -309,12 +309,12 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+        v8::Local<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
+    v8::Local<v8::Value> hiddenValue = v8::Local<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -347,9 +347,9 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+    v8::Local<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
 
-    v8::Handle<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -359,12 +359,12 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+        v8::Local<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
+    v8::Local<v8::Value> hiddenValue = v8::Local<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -397,9 +397,9 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+    v8::Local<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
 
-    v8::Handle<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -409,12 +409,12 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
+        v8::Local<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate())), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod"));
+    v8::Local<v8::Value> hiddenValue = v8::Local<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -432,7 +432,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetterCallbac
 
 static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);

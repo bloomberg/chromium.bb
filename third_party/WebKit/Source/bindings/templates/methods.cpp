@@ -475,9 +475,9 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
+    v8::Local<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
 
-    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -487,13 +487,13 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
+        v8::Local<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
     {# The findInstanceInPrototypeChain() call above only returns a non-empty handle if info.This() is an Object. #}
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "{{method.name}}"));
+    v8::Local<v8::Value> hiddenValue = v8::Local<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "{{method.name}}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -519,7 +519,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
         return false;
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Handle<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    v8::Local<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (contextInPrivateScript.IsEmpty())
         return false;
     ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
@@ -528,19 +528,19 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
         return false;
 
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     {% for argument in method.arguments %}
-    v8::Handle<v8::Value> {{argument.handle}} = {{argument.private_script_cpp_value_to_v8_value}};
+    v8::Local<v8::Value> {{argument.handle}} = {{argument.private_script_cpp_value_to_v8_value}};
     {% endfor %}
     {% if method.arguments %}
-    v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
+    v8::Local<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
     {% else %}
     {# Empty array initializers are illegal, and don\t compile in MSVC. #}
-    v8::Handle<v8::Value> *argv = 0;
+    v8::Local<v8::Value> *argv = 0;
     {% endif %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
+    v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (v8Value.IsEmpty())
         return false;
     {% if method.idl_type != 'void' %}
@@ -594,7 +594,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {% set constructor_class = v8_class + ('Constructor'
                                        if constructor.is_named_constructor else
                                        '') %}
-v8::Handle<v8::Object> wrapper = info.Holder();
+v8::Local<v8::Object> wrapper = info.Holder();
 impl->associateWithWrapper(info.GetIsolate(), &{{constructor_class}}::wrapperTypeInfo, wrapper);
 v8SetReturnValue(info, wrapper);
 {% endmacro %}

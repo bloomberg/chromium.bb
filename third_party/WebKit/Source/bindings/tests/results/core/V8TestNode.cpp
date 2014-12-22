@@ -32,7 +32,7 @@ namespace TestNodeV8Internal {
 
 static void hrefAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->href(), info.GetIsolate());
 }
@@ -46,7 +46,7 @@ static void hrefAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 
 static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setHref(cppValue);
@@ -61,7 +61,7 @@ static void hrefAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Val
 
 static void hrefThrowsAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->hrefThrows(), info.GetIsolate());
 }
@@ -75,7 +75,7 @@ static void hrefThrowsAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 
 static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefThrows", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
@@ -92,7 +92,7 @@ static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void hrefCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->hrefCallWith(), info.GetIsolate());
 }
@@ -106,7 +106,7 @@ static void hrefCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -122,7 +122,7 @@ static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 
 static void hrefByteStringAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->hrefByteString(), info.GetIsolate());
 }
@@ -136,7 +136,7 @@ static void hrefByteStringAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toByteString(v8Value, exceptionState), exceptionState);
@@ -153,7 +153,7 @@ static void hrefByteStringAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtrWillBeRawPtr<TestNode> impl = TestNode::create();
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestNode::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

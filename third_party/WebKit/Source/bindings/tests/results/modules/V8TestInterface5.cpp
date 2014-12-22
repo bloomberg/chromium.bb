@@ -37,7 +37,7 @@ namespace TestInterface5ImplementationV8Internal {
 
 static void testInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
 }
@@ -51,7 +51,7 @@ static void testInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TestInterface5Implementation* cppValue = V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -72,7 +72,7 @@ static void testInterfaceAttributeAttributeSetterCallback(v8::Local<v8::String>,
 
 static void doubleAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValue(info, impl->doubleAttribute());
 }
@@ -86,7 +86,7 @@ static void doubleAttributeAttributeGetterCallback(v8::Local<v8::String>, const 
 
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
@@ -107,7 +107,7 @@ static void doubleAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Lo
 
 static void floatAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValue(info, impl->floatAttribute());
 }
@@ -121,7 +121,7 @@ static void floatAttributeAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
@@ -142,7 +142,7 @@ static void floatAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 
 static void unrestrictedDoubleAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
 }
@@ -156,7 +156,7 @@ static void unrestrictedDoubleAttributeAttributeGetterCallback(v8::Local<v8::Str
 
 static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
@@ -172,7 +172,7 @@ static void unrestrictedDoubleAttributeAttributeSetterCallback(v8::Local<v8::Str
 
 static void unrestrictedFloatAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
 }
@@ -186,7 +186,7 @@ static void unrestrictedFloatAttributeAttributeGetterCallback(v8::Local<v8::Stri
 
 static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(float, cppValue, toFloat(v8Value, exceptionState), exceptionState);
@@ -227,7 +227,7 @@ static void staticStringAttributeAttributeSetterCallback(v8::Local<v8::String>, 
 
 static void alwaysExposedAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValueInt(info, impl->alwaysExposedAttribute());
 }
@@ -241,7 +241,7 @@ static void alwaysExposedAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
@@ -257,7 +257,7 @@ static void alwaysExposedAttributeAttributeSetterCallback(v8::Local<v8::String>,
 
 static void workerExposedAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValueInt(info, impl->workerExposedAttribute());
 }
@@ -271,7 +271,7 @@ static void workerExposedAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
@@ -287,7 +287,7 @@ static void workerExposedAttributeAttributeSetterCallback(v8::Local<v8::String>,
 
 static void windowExposedAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     v8SetReturnValueInt(info, impl->windowExposedAttribute());
 }
@@ -301,7 +301,7 @@ static void windowExposedAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
@@ -317,7 +317,7 @@ static void windowExposedAttributeAttributeSetterCallback(v8::Local<v8::String>,
 
 static void TestInterface5ImplementationConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> data = info.Data();
+    v8::Local<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
     V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
     if (!perContextData)
@@ -762,7 +762,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
+    v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
     v8SetReturnValue(info, v8names);

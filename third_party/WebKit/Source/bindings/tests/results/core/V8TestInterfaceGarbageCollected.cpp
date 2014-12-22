@@ -33,7 +33,7 @@ namespace TestInterfaceGarbageCollectedV8Internal {
 
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
@@ -47,7 +47,7 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     impl->setAttr1(WTF::getPtr(cppValue));
@@ -92,7 +92,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         TOSTRING_VOID_INTERNAL(str, info[0]);
     }
     RawPtr<TestInterfaceGarbageCollected> impl = TestInterfaceGarbageCollected::create(str);
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceGarbageCollected::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

@@ -33,7 +33,7 @@ namespace TestInterfaceEventInitConstructorV8Internal {
 
 static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
+    v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceEventInitConstructor* impl = V8TestInterfaceEventInitConstructor::toImpl(holder);
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
@@ -65,7 +65,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestInterfaceEventInit::toImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState), exceptionState);
     }
     RefPtrWillBeRawPtr<TestInterfaceEventInitConstructor> impl = TestInterfaceEventInitConstructor::create(type, testInterfaceEventInit);
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventInitConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

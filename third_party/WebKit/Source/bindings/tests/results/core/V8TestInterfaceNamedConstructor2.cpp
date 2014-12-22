@@ -54,7 +54,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
     RefPtr<TestInterfaceNamedConstructor2> impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
-    v8::Handle<v8::Object> wrapper = info.Holder();
+    v8::Local<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }

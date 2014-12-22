@@ -38,7 +38,7 @@ void V8TestCallbackInterface::voidMethod()
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> *argv = 0;
+    v8::Local<v8::Value> *argv = 0;
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 0, argv, m_scriptState->isolate());
 }
@@ -52,7 +52,7 @@ bool V8TestCallbackInterface::booleanMethod()
         return true;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> *argv = 0;
+    v8::Local<v8::Value> *argv = 0;
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -69,13 +69,13 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg)
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> boolArgHandle = v8Boolean(boolArg, m_scriptState->isolate());
+    v8::Local<v8::Value> boolArgHandle = v8Boolean(boolArg, m_scriptState->isolate());
     if (boolArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { boolArgHandle };
+    v8::Local<v8::Value> argv[] = { boolArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 1, argv, m_scriptState->isolate());
 }
@@ -89,13 +89,13 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const Vector<RefPtr<TestInte
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Local<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (sequenceArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { sequenceArgHandle };
+    v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 1, argv, m_scriptState->isolate());
 }
@@ -109,13 +109,13 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg)
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> floatArgHandle = v8::Number::New(m_scriptState->isolate(), floatArg);
+    v8::Local<v8::Value> floatArgHandle = v8::Number::New(m_scriptState->isolate(), floatArg);
     if (floatArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { floatArgHandle };
+    v8::Local<v8::Value> argv[] = { floatArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 1, argv, m_scriptState->isolate());
 }
@@ -129,13 +129,13 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> testInterfaceEmptyArgHandle = toV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Local<v8::Value> testInterfaceEmptyArgHandle = toV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (testInterfaceEmptyArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
+    v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 1, argv, m_scriptState->isolate());
 }
@@ -149,19 +149,19 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> testInterfaceEmptyArgHandle = toV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Local<v8::Value> testInterfaceEmptyArgHandle = toV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (testInterfaceEmptyArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
+    v8::Local<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
     if (stringArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
+    v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 2, argv, m_scriptState->isolate());
 }
@@ -175,19 +175,19 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
+    v8::Local<v8::Value> thisHandle = thisValue.v8Value();
     if (thisHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
+    v8::Local<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
     if (stringArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { stringArgHandle };
+    v8::Local<v8::Value> argv[] = { stringArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), thisHandle, 1, argv, m_scriptState->isolate());
 }
@@ -201,13 +201,13 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const 
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Local<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (sequenceArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { sequenceArgHandle };
+    v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 1, argv, m_scriptState->isolate());
 }
@@ -221,13 +221,13 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const Wil
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> arrayArgHandle = toV8(arrayArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Local<v8::Value> arrayArgHandle = toV8(arrayArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (arrayArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return;
     }
-    v8::Handle<v8::Value> argv[] = { arrayArgHandle };
+    v8::Local<v8::Value> argv[] = { arrayArgHandle };
 
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), 1, argv, m_scriptState->isolate());
 }
