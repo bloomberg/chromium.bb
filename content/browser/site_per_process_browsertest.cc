@@ -779,7 +779,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // created in the FrameTree skipping the subtree of the navigating frame.
 //
 // Disabled on Mac due to flakiness on ASAN. http://crbug.com/425248
-#if defined(OS_MACOSX)
+// Disabled on Windows due to flakiness on Win 7 bot. http://crbug.com/444563
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_ProxyCreationSkipsSubtree DISABLED_ProxyCreationSkipsSubtree
 #else
 #define MAYBE_ProxyCreationSkipsSubtree ProxyCreationSkipsSubtree
