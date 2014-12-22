@@ -34,7 +34,7 @@ class WeakXmppClientTest : public testing::Test {
  protected:
   WeakXmppClientTest() : task_pump_(new jingle_glue::TaskPump()) {}
 
-  virtual ~WeakXmppClientTest() {}
+  ~WeakXmppClientTest() override {}
 
   void ConnectSignals(buzz::XmppClient* xmpp_client) {
     xmpp_client->SignalStateChange.connect(

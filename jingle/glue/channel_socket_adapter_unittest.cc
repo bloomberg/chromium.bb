@@ -66,7 +66,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     target_.reset(new TransportChannelSocketAdapter(&channel_));
   }
 

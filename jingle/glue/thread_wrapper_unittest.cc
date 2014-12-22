@@ -80,7 +80,7 @@ class ThreadWrapperTest : public testing::Test {
       : thread_(NULL) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     JingleThreadWrapper::EnsureForCurrentMessageLoop();
     thread_ = rtc::Thread::Current();
   }

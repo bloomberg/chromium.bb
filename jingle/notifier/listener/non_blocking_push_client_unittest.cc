@@ -24,9 +24,9 @@ class NonBlockingPushClientTest : public testing::Test {
  protected:
   NonBlockingPushClientTest() : fake_push_client_(NULL) {}
 
-  virtual ~NonBlockingPushClientTest() {}
+  ~NonBlockingPushClientTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     push_client_.reset(
         new NonBlockingPushClient(
             base::MessageLoopProxy::current(),
@@ -37,7 +37,7 @@ class NonBlockingPushClientTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Clear out any pending notifications before removing observers.
     message_loop_.RunUntilIdle();
     push_client_->RemoveObserver(&fake_observer_);

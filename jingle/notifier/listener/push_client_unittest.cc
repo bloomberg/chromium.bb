@@ -26,7 +26,7 @@ class PushClientTest : public testing::Test {
             message_loop_.message_loop_proxy());
   }
 
-  virtual ~PushClientTest() {}
+  ~PushClientTest() override {}
 
   // The sockets created by the XMPP code expect an IO loop.
   base::MessageLoopForIO message_loop_;

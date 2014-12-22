@@ -154,9 +154,9 @@ class ChromeAsyncSocketTest
     message_loop_.reset(new base::MessageLoop(pump.Pass()));
   }
 
-  virtual ~ChromeAsyncSocketTest() {}
+  ~ChromeAsyncSocketTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<net::MockClientSocketFactory> mock_client_socket_factory(
         new net::MockClientSocketFactory());
     mock_client_socket_factory->AddSocketDataProvider(
@@ -189,7 +189,7 @@ class ChromeAsyncSocketTest
         this, &ChromeAsyncSocketTest::OnError);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Run any tasks that we forgot to pump.
     message_loop_->RunUntilIdle();
     ExpectClosed();

@@ -93,15 +93,13 @@ class SingleLoginAttemptTest : public ::testing::Test {
           "auth_mechanism"),
         attempt_(new SingleLoginAttempt(login_settings_, &fake_delegate_)) {}
 
-  virtual void TearDown() override {
-    message_loop_.RunUntilIdle();
-  }
+  void TearDown() override { message_loop_.RunUntilIdle(); }
 
   void FireRedirect(buzz::XmlElement* redirect_error) {
     attempt_->OnError(buzz::XmppEngine::ERROR_STREAM, 0, redirect_error);
   }
 
-  virtual ~SingleLoginAttemptTest() {
+  ~SingleLoginAttemptTest() override {
     attempt_.reset();
     message_loop_.RunUntilIdle();
   }

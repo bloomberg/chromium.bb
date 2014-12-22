@@ -89,7 +89,7 @@ class FakeSSLClientSocketTest : public testing::Test {
  protected:
   FakeSSLClientSocketTest() {}
 
-  virtual ~FakeSSLClientSocketTest() {}
+  ~FakeSSLClientSocketTest() override {}
 
   scoped_ptr<net::StreamSocket> MakeClientSocket() {
     return mock_client_socket_factory_.CreateTransportClientSocket(

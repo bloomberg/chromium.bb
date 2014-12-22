@@ -83,9 +83,9 @@ class XmppConnectionTest : public testing::Test {
         message_loop_->message_loop_proxy());
   }
 
-  virtual ~XmppConnectionTest() {}
+  ~XmppConnectionTest() override {}
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Clear out any messages posted by XmppConnection's destructor.
     message_loop_->RunUntilIdle();
   }
