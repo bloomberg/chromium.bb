@@ -24,21 +24,3 @@ login.createScreen('HostPairingScreen', 'host-pairing', function() {
     }
   };
 });
-
-Polymer('host-pairing-screen', (function() {
-  'use strict';
-
-  /** @const */ var CALLBACK_CONTEXT_READY = 'contextReady';
-
-  return {
-    onBeforeShow: function() {
-      Oobe.getInstance().headerHidden = true;
-    },
-
-    /** @override */
-    initialize: function() {
-      this.send(CALLBACK_CONTEXT_READY);
-    }
-  };
-})());
-

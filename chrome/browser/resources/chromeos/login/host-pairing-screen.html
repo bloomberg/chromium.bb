@@ -1,0 +1,76 @@
+<link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/core-iconset-svg/core-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/core-item/core-item.html">
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+
+<core-iconset-svg id="host-pairing-icons" iconSize="48">
+  <svg>
+    <defs>
+      <g id="cast">
+        <include src="../../../../app/theme/cast_icon.svg">
+      </g>
+    </defs>
+  </svg>
+</core-iconset-svg>
+
+<polymer-element name="host-pairing-page" noscript>
+  <template>
+    <link rel="stylesheet" href="oobe_screen_host_pairing_page.css">
+
+    <div id="title">
+      <content select=".title"></content>
+    </div>
+    <div id="content">
+      <content></content>
+    </div>
+  </template>
+</polymer-element>
+
+<polymer-element name="host-pairing-screen" extends="oobe-screen">
+  <template>
+    <link rel="stylesheet" href="oobe_screen_host_pairing.css">
+
+    <core-animated-pages transitions="cross-fade-all"
+                         selected="{{C.page}}">
+      <host-pairing-page name="welcome">
+        <div class="title">{{'welcomeTitle' | i18n}}</div>
+        <div>{{'welcomeText' | i18n}}</div>
+      </host-pairing-page>
+      <host-pairing-page name="code-confirmation">
+        <div class="title">{{'confirmationTitle' | i18n}}</div>
+        <div id="code">{{C.code}}</div>
+      </host-pairing-page>
+      <host-pairing-page name="update">
+        <div class="title">{{'updatingTitle' | i18n}}</div>
+        <!-- Not yet implemented on backend side. -->
+        <!--div>{{['updatingText', C.downloadedMb, C.totalMb] | i18n}}</div-->
+      </host-pairing-page>
+      <host-pairing-page name="enrollment-introduction">
+        <div class="title">{{'enrollTitle' | i18n}}</div>
+      </host-pairing-page>
+      <host-pairing-page name="enrollment">
+        <div class="title">
+          <!-- 'enrollmentTitle' contains <strong> tag. We need to wrap it in
+               'html-echo' to prevent HTML escaping. -->
+          <html-echo
+              content="{{['enrollingTitle', C.enrollmentDomain] | i18n}}">
+          </html-echo>
+        </div>
+      </host-pairing-page>
+      <host-pairing-page name="enrollment-error">
+        <div class="title">{{'enrollmentErrorTitle' | i18n}}</div>
+        <div>{{'errorNeedsRestart' | i18n}}</div>
+      </host-pairing-page>
+      <host-pairing-page name="pairing-done">
+        <div class="title">{{'doneTitle' | i18n}}</div>
+        <div>{{'doneText' | i18n}}</div>
+      </host-pairing-page>
+    </core-animated-pages>
+    <core-item id="device-indicator"class="font-scalable"
+        icon="host-pairing-icons:cast">
+      <div id="device-label">{{C.deviceName}}</div>
+    </core-item>
+    <div id="illustration"></div>
+  </template>
+</polymer-element>
