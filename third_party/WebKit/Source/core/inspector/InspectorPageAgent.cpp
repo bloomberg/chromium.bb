@@ -1468,6 +1468,11 @@ void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, co
     m_state->setBoolean(PageAgentState::showGridOnResize, asBool(showGrid));
 }
 
+void InspectorPageAgent::animationsPlaybackRate(ErrorString*, double* playbackRate)
+{
+    *playbackRate = toLocalFrame(m_page->mainFrame())->document()->timeline().playbackRate();
+}
+
 void InspectorPageAgent::setAnimationsPlaybackRate(ErrorString*, double playbackRate)
 {
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
