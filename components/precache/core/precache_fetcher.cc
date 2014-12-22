@@ -27,7 +27,8 @@ namespace precache {
 namespace {
 
 GURL GetConfigURL() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kPrecacheConfigSettingsURL)) {
     return GURL(
         command_line.GetSwitchValueASCII(switches::kPrecacheConfigSettingsURL));
@@ -43,7 +44,8 @@ GURL GetConfigURL() {
 }
 
 std::string GetManifestURLPrefix() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kPrecacheManifestURLPrefix)) {
     return command_line.GetSwitchValueASCII(
         switches::kPrecacheManifestURLPrefix);

@@ -143,9 +143,9 @@ class PrecacheManagerTest : public testing::Test {
   void SetUp() override {
     base::StatisticsRecorder::Initialize();
 
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kPrecacheConfigSettingsURL, kConfigURL);
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
 
     // Make the fetch of the precache configuration settings fail. Precaching

@@ -622,7 +622,7 @@ void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
                               scoped_ptr<MessageLite> request_proto,
                               const PostCleanupCallback& callback) {
   // Create the base URL to call.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string copresence_server_host =
       command_line->HasSwitch(switches::kCopresenceServer) ?
       command_line->GetSwitchValueASCII(switches::kCopresenceServer) :

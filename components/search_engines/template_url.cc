@@ -356,7 +356,7 @@ std::string TemplateURLRef::ReplaceSearchTerms(
   std::vector<std::string> query_params;
   if (search_terms_args.append_extra_query_params) {
     std::string extra_params(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kExtraSearchQueryParams));
     if (!extra_params.empty())
       query_params.push_back(extra_params);

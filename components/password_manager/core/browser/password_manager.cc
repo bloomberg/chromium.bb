@@ -71,7 +71,7 @@ bool ShouldDropSyncCredential() {
   std::string group_name =
       base::FieldTrialList::FindFullName("PasswordManagerDropSyncCredential");
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDropSyncCredential))
     return true;
 

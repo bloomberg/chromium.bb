@@ -44,7 +44,8 @@ void ResourceRequestAllowedNotifier::Init(Observer* observer) {
 ResourceRequestAllowedNotifier::State
 ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState() {
   if (disable_network_switch_ &&
-      CommandLine::ForCurrentProcess()->HasSwitch(disable_network_switch_)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          disable_network_switch_)) {
     return DISALLOWED_COMMAND_LINE_DISABLED;
   }
 

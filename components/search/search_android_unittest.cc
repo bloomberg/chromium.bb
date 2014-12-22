@@ -19,7 +19,7 @@ namespace {
 TEST(SearchTest, EmbeddedSearchAPIEnabled) {
   EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableEmbeddedSearchAPI);
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());

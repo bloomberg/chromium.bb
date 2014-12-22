@@ -132,12 +132,12 @@ bool ShouldFillOnAccountSelect() {
   std::string group_name =
       base::FieldTrialList::FindFullName(kFillOnAccountSelectFieldTrialName);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableFillOnAccountSelect)) {
     return false;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFillOnAccountSelect)) {
     return true;
   }

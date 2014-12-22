@@ -50,7 +50,8 @@ PrecacheManager::~PrecacheManager() {}
 bool PrecacheManager::IsPrecachingEnabled() {
   return base::FieldTrialList::FindFullName(kPrecacheFieldTrialName) ==
              kPrecacheFieldTrialEnabledGroup ||
-         CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePrecache);
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnablePrecache);
 }
 
 bool PrecacheManager::IsPrecachingAllowed() {

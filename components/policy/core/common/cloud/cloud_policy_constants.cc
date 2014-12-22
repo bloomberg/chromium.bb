@@ -88,7 +88,7 @@ const char kPolicyVerificationKeyHash[] = "1:356l7w";
 std::string GetPolicyVerificationKey() {
   // Disable key verification by default until production servers generate
   // the proper signatures.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisablePolicyKeyVerification)) {
     return std::string();
   } else {
@@ -99,7 +99,7 @@ std::string GetPolicyVerificationKey() {
 
 const char* GetChromeUserPolicyType() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kFakeCloudPolicyType))
     return "google/chrome/user";
 #endif

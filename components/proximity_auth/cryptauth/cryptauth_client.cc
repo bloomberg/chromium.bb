@@ -36,7 +36,7 @@ const char kQueryProtobuf[] = "?alt=proto";
 
 // Creates the full CryptAuth URL for endpoint to the API with |request_path|.
 GURL CreateRequestUrl(const std::string& request_path) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   GURL google_apis_url =
       GURL(command_line->HasSwitch(switches::kCryptAuthHTTPHost)
                ? command_line->GetSwitchValueASCII(switches::kCryptAuthHTTPHost)

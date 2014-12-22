@@ -104,7 +104,7 @@ TEST_F(TranslateScriptTest, CheckScriptParameters) {
 
 TEST_F(TranslateScriptTest, CheckScriptURL) {
   const std::string script_url("http://www.tamurayukari.com/mero-n.js");
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(translate::switches::kTranslateScriptURL,
                                   script_url);
 

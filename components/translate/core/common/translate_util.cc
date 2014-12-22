@@ -137,7 +137,7 @@ void ToChromeLanguageSynonym(std::string* language) {
 
 GURL GetTranslateSecurityOrigin() {
   std::string security_origin(kSecurityOrigin);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kTranslateSecurityOrigin)) {
     security_origin =
         command_line->GetSwitchValueASCII(switches::kTranslateSecurityOrigin);

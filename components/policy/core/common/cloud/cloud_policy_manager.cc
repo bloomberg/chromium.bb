@@ -119,7 +119,7 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   // See the comments on ComponentCloudPolicyService for the details.
   CHECK(!core()->client());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentCloudPolicy) ||
       policy_cache_path.empty()) {
     return;

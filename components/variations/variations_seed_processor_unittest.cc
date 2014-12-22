@@ -136,7 +136,7 @@ class VariationsSeedProcessorTest : public ::testing::Test {
 };
 
 TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
 
   base::FieldTrialList field_trial_list(NULL);
 
@@ -154,7 +154,7 @@ TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
 
 // Test that the group for kForcingFlag1 is forced.
 TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
 
   base::FieldTrialList field_trial_list(NULL);
 
@@ -166,7 +166,7 @@ TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
 
 // Test that the group for kForcingFlag2 is forced.
 TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
 
   base::FieldTrialList field_trial_list(NULL);
 
@@ -178,8 +178,8 @@ TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
 
 TEST_F(VariationsSeedProcessorTest, ForceGroup_ChooseFirstGroupWithFlag) {
   // Add the flag to the command line arguments so the flag group is forced.
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
 
   base::FieldTrialList field_trial_list(NULL);
 
@@ -303,7 +303,7 @@ TEST_F(VariationsSeedProcessorTest, OverrideUIStringsWithForcingFlag) {
   override->set_name_hash(1234);
   override->set_value("test");
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
   base::FieldTrialList field_trial_list(NULL);
   EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name, base::FieldTrialList::FindFullName(study.name()));
@@ -391,7 +391,7 @@ TEST_F(VariationsSeedProcessorTest, VariationParamsWithForcingFlag) {
   param->set_name("x");
   param->set_value("y");
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
   base::FieldTrialList field_trial_list(NULL);
   EXPECT_TRUE(CreateTrialFromStudy(&study));
   EXPECT_EQ(kFlagGroup1Name, base::FieldTrialList::FindFullName(study.name()));
@@ -449,7 +449,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
 }
 
 TEST_F(VariationsSeedProcessorTest, StartsActiveWithFlag) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
 
   base::FieldTrialList field_trial_list(NULL);
 
@@ -474,7 +474,7 @@ TEST_F(VariationsSeedProcessorTest, ForcingFlagAlreadyForced) {
   base::FieldTrialList field_trial_list(NULL);
   base::FieldTrialList::CreateFieldTrial(kFlagStudyName, kNonFlagGroupName);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
   EXPECT_TRUE(CreateTrialFromStudy(&study));
   // The previously forced experiment should still hold.
   EXPECT_EQ(kNonFlagGroupName,

@@ -61,7 +61,7 @@ void SessionManager::Start() {
 // static
 bool SessionManager::HasBrowserRestarted() {
 #if defined(OS_CHROMEOS)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return base::SysInfo::IsRunningOnChromeOS() &&
          command_line->HasSwitch(chromeos::switches::kLoginUser);
 #else

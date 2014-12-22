@@ -1247,7 +1247,7 @@ TEST_F(TemplateURLTest, SuggestQueryParams) {
 
   // Add extra_query_params in the mix, and ensure it works.
   search_terms.append_extra_query_params = true;
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
   EXPECT_EQ("http://www.google.com/search?a=b&pq=xyz&q=abc#oq=def&x",
             url.url_ref().ReplaceSearchTerms(search_terms, search_terms_data_));
@@ -1276,7 +1276,7 @@ TEST_F(TemplateURLTest, ExtraQueryParams) {
             url.url_ref().ReplaceSearchTerms(search_terms, search_terms_data_));
 
   // Now append the command-line arg.  This should be inserted into the query.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
   EXPECT_EQ("http://www.google.com/search?a=b&q=abc#oq=def&x",
             url.url_ref().ReplaceSearchTerms(search_terms, search_terms_data_));

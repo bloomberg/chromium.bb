@@ -102,9 +102,9 @@ const char kForcedStartingURLManifestURL[] =
     "http%253A%252F%252Fforced-starting-url.com%252F";
 
 TEST_F(PrecacheFetcherTest, FullPrecache) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheManifestURLPrefix, kManfiestURLPrefix);
 
   std::list<GURL> starting_urls;
@@ -164,7 +164,7 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
 }
 
 TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
 
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
@@ -187,7 +187,7 @@ TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
 }
 
 TEST_F(PrecacheFetcherTest, BadConfig) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
 
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
@@ -209,7 +209,7 @@ TEST_F(PrecacheFetcherTest, BadConfig) {
 }
 
 TEST_F(PrecacheFetcherTest, Cancel) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
 
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
@@ -271,7 +271,7 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultConfigSettingsURL) {
 // If the default precache manifest URL prefix is defined, then test that it
 // works with the PrecacheFetcher.
 TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultManifestURLPrefix) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
 
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));

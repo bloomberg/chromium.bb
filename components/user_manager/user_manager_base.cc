@@ -1038,7 +1038,7 @@ void UserManagerBase::SetLRUUser(User* user) {
 void UserManagerBase::SendGaiaUserLoginMetrics(const std::string& user_id) {
   // If this isn't the first time Chrome was run after the system booted,
   // assume that Chrome was restarted because a previous session ended.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kFirstExecAfterBoot)) {
     const std::string last_email =
         GetLocalState()->GetString(kLastLoggedInGaiaUser);

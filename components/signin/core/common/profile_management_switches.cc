@@ -31,23 +31,21 @@ State GetProcessState() {
     return STATE_OLD_AVATAR_MENU;
 
   // Find the state of both command line args.
-  bool is_new_avatar_menu =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewAvatarMenu);
+  bool is_new_avatar_menu = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewAvatarMenu);
   bool is_new_profile_management =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNewProfileManagement);
   bool is_consistent_identity =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAccountConsistency);
-  bool not_new_avatar_menu =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewAvatarMenu);
+  bool not_new_avatar_menu = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNewAvatarMenu);
   bool not_new_profile_management =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNewProfileManagement);
   bool not_consistent_identity =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAccountConsistency);
   int count_args = (is_new_avatar_menu ? 1 : 0) +
       (is_new_profile_management ? 1 : 0) +
@@ -116,7 +114,7 @@ State GetProcessState() {
 
 bool CheckFlag(std::string command_switch, State min_state) {
   // Individiual flag settings take precedence.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(command_switch))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(command_switch))
     return true;
 
   return GetProcessState() >= min_state;
@@ -131,12 +129,13 @@ bool IsEnableAccountConsistency() {
 }
 
 bool IsEnableWebBasedSignin() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebBasedSignin) && !IsEnableWebviewBasedSignin();
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableWebBasedSignin) &&
+         !IsEnableWebviewBasedSignin();
 }
 
 bool IsEnableWebviewBasedSignin() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebviewBasedSignin);
 }
 
@@ -146,7 +145,7 @@ bool IsExtensionsMultiAccount() {
 }
 
 bool IsFastUserSwitching() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kFastUserSwitching);
 }
 

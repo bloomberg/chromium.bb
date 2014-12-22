@@ -107,7 +107,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 
   // Allow disabling of translate from the command line to assist with
   // automated browser testing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           translate::switches::kDisableTranslate)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH);

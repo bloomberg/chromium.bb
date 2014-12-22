@@ -62,7 +62,7 @@ TEST_F(TranslateUtilTest, SecurityOrigin) {
   EXPECT_EQ(std::string(translate::kSecurityOrigin), origin.spec());
 
   const std::string running_origin("http://www.tamurayukari.com/");
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(translate::switches::kTranslateSecurityOrigin,
                                   running_origin);
   GURL modified_origin = translate::GetTranslateSecurityOrigin();

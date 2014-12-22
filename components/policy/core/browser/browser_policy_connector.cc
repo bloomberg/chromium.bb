@@ -234,7 +234,7 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
 
 // static
 std::string BrowserPolicyConnector::GetDeviceManagementUrl() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl))
     return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
   else

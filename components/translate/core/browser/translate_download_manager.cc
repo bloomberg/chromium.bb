@@ -45,7 +45,7 @@ void TranslateDownloadManager::RequestLanguageList() {
 void TranslateDownloadManager::RequestLanguageList(PrefService* prefs) {
   // We don't want to do this when translate is disabled.
   DCHECK(prefs != NULL);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           translate::switches::kDisableTranslate) ||
       !prefs->GetBoolean(prefs::kEnableTranslate)) {
     return;

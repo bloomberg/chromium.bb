@@ -512,7 +512,7 @@ void AccountTrackerService::SendRefreshTokenAnnotationRequest(
 // We only need to send RefreshTokenAnnotationRequest from desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (IsRefreshTokenDeviceIdExperimentEnabled() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRefreshTokenAnnotationRequest)) {
     scoped_ptr<RefreshTokenAnnotationRequest> request =
         RefreshTokenAnnotationRequest::SendIfNeeded(

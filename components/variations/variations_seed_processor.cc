@@ -103,7 +103,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
 
   // Check if any experiments need to be forced due to a command line
   // flag. Force the first experiment with an existing flag.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
     if (experiment.has_forcing_flag() &&

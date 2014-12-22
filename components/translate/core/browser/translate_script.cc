@@ -66,7 +66,8 @@ void TranslateScript::Request(const RequestCallback& callback) {
 
   GURL translate_script_url;
   // Check if command-line contains an alternative URL for translate service.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(translate::switches::kTranslateScriptURL)) {
     translate_script_url = GURL(command_line.GetSwitchValueASCII(
         translate::switches::kTranslateScriptURL));

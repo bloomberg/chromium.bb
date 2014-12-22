@@ -36,7 +36,7 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
   // If the user is clearing the token service from the command line, then
   // clear their login info also (not valid to be logged in without any
   // tokens).
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kClearTokenService))
     client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 

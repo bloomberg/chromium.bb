@@ -67,8 +67,8 @@ bool IsInstantExtendedAPIEnabled() {
 // default search provider. If 0, the embedded search UI should not be enabled.
 uint64 EmbeddedSearchPageVersion() {
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEmbeddedSearchAPI)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableEmbeddedSearchAPI)) {
     return kEmbeddedSearchEnabledVersion;
   }
 #endif

@@ -343,7 +343,7 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
   // specified on the command line.
   const std::string foo_url("http://www.foo.com/search?q={searchTerms}");
   EXPECT_EQ(SEARCH_ENGINE_OTHER, GetEngineType(foo_url));
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.foo.com/");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.foo.com/");
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE, GetEngineType(foo_url));
 }
