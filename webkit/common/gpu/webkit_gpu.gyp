@@ -42,8 +42,6 @@
             'context_provider_web_context.h',
             'grcontext_for_webgraphicscontext3d.cc',
             'grcontext_for_webgraphicscontext3d.h',
-            'webgraphicscontext3d_impl.cc',
-            'webgraphicscontext3d_impl.h',
             'webgraphicscontext3d_in_process_command_buffer_impl.cc',
             'webgraphicscontext3d_in_process_command_buffer_impl.h',
           ],
