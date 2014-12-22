@@ -37,6 +37,7 @@ private:
     friend class AnimationLengthStyleInterpolationTest;
     friend class LengthBoxStyleInterpolation;
     friend class LengthPairStyleInterpolation;
+    friend class LengthPoint3DStyleInterpolation;
 };
 
 }

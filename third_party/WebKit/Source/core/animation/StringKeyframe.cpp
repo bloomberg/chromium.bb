@@ -10,6 +10,7 @@
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
+#include "core/animation/LengthPoint3DStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -120,6 +121,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
         }
         break;
+
     case CSSPropertyFill:
     case CSSPropertyStroke:
     case CSSPropertyBackgroundColor:
@@ -137,6 +139,13 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyWebkitTextStrokeColor:
         if (ColorStyleInterpolation::canCreateFrom(*fromCSSValue) && ColorStyleInterpolation::canCreateFrom(*toCSSValue))
             return ColorStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
+        break;
+
+    case CSSPropertyTransformOrigin:
+        if (LengthPoint3DStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPoint3DStyleInterpolation::canCreateFrom(*toCSSValue))
+            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+        break;
+
     default:
         break;
     }
