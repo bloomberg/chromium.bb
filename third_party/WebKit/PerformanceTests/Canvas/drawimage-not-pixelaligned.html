@@ -15,10 +15,17 @@ target.width = source.width;
 target.height = source.height;
 var context = target.getContext("2d")
 
+function ensureComplete() {
+    // Drawing to self is just to flush out the content when
+    // accelerated 2D canvas or display list 2D canvas are in use.
+    context.drawImage(target, 0, 0, 1, 1, 0, 0, 1, 1);
+}
+
 PerfTestRunner.measureRunsPerSecond({
     description: "Measures performance of drawing an image onto a canvas that is not pixel aligned.",
     run: function() {
         context.drawImage(source, 10.5, 10.5, 200, 200);
+        ensureComplete();
     }
 });
 </script>
