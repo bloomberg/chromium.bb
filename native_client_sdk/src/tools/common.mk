@@ -142,7 +142,11 @@ endif
 # Disable DOS PATH warning when using Cygwin based NaCl tools on Windows.
 #
 ifeq ($(OSNAME),win)
-  CYGWIN?=nodosfilewarning
+  # Always use cmd.exe as the shell on Windows. Otherwise Make may try to
+  # search the path for sh.exe. If it is found in a path with a space, the
+  # command will fail.
+  SHELL := cmd.exe
+  CYGWIN ?= nodosfilewarning
   export CYGWIN
 endif
 

@@ -7,6 +7,13 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
+# Always use cmd.exe as the shell on Windows. Otherwise Make may try to search
+# the path for sh.exe. If it is found in a path with a space, the command will
+# fail.
+ifeq ($(OS),Windows_NT)
+  SHELL := cmd.exe
+endif
+
 PROJECTS := \
 [[for project in projects:]]
   {{project}} \
