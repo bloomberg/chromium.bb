@@ -140,19 +140,6 @@ class AppsGridViewTest : public views::ViewsTestBase {
     return apps_grid_view_->pagination_model();
   }
 
-  // Point is in |apps_grid_view_|'s coordinates.
-  void SimulateContinueDrag(AppsGridView::Pointer pointer,
-                            const AppListItemView* view,
-                            const gfx::Point& to) {
-    DCHECK(view);
-
-    gfx::Point translated_to =
-        gfx::PointAtOffsetFromOrigin(to - view->bounds().origin());
-
-    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to, 0, 0);
-    apps_grid_view_->UpdateDragFromItem(pointer, drag_event);
-  }
-
   // Points are in |apps_grid_view_|'s coordinates.
   AppListItemView* SimulateDrag(AppsGridView::Pointer pointer,
                                 const gfx::Point& from,
@@ -162,12 +149,16 @@ class AppsGridViewTest : public views::ViewsTestBase {
 
     gfx::Point translated_from = gfx::PointAtOffsetFromOrigin(
         from - view->bounds().origin());
+    gfx::Point translated_to = gfx::PointAtOffsetFromOrigin(
+        to - view->bounds().origin());
 
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
                                  translated_from, from, 0, 0);
     apps_grid_view_->InitiateDrag(view, pointer, pressed_event);
 
-    SimulateContinueDrag(pointer, view, to);
+    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                              translated_to, to, 0, 0);
+    apps_grid_view_->UpdateDragFromItem(pointer, drag_event);
     return view;
   }
 
@@ -455,68 +446,15 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
 
   // Move onto the folder and end the drag.
   to = GetItemTileRectAt(0, 1).CenterPoint();
-  SimulateContinueDrag(AppsGridView::MOUSE, dragged_view, to);
+  gfx::Point translated_to =
+      gfx::PointAtOffsetFromOrigin(to - dragged_view->bounds().origin());
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to, 0, 0);
+  apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event);
   apps_grid_view_->EndDrag(false);
 
   // The item should not have moved into the folder.
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
-  test_api_->LayoutToIdealBounds();
-}
-
-// Drag item into solitary folder on 2nd page.  This fails to test Issue 439055,
-// because there's no |drag_and_drop_host_| to enter the offending code block in
-// AppsGridView::EndDrag(), but we'll keep it as a useful edge case test.
-TEST_F(AppsGridViewTest, MouseDragItemIntoLonelyFolder) {
-  EnsureFoldersEnabled();
-
-  size_t kTotalItems = kTilesPerPage + 1;
-  model_->PopulateApps(kTilesPerPage);
-  model_->CreateAndPopulateFolderWithApps(2);
-  EXPECT_EQ(kTotalItems, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(2, GetPaginationModel()->total_pages());
-  EXPECT_EQ(
-      AppListFolderItem::kItemType,
-      model_->top_level_item_list()->item_at(kTilesPerPage)->GetItemType());
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-
-  // Set up page switching
-  test_api_->SetPageFlipDelay(10);
-  // NOTE: We lower |duration_ms| arg to 0.  During slow valgrind tests, the
-  // drag-and-hover would push the target folder into the empty space on the
-  // first page, leaving nothing to drop the item on, and foiling the test.
-  GetPaginationModel()->SetTransitionDurations(0, 10);
-  PageFlipWaiter page_flip_waiter(message_loop(), GetPaginationModel());
-
-  gfx::Point from = GetItemTileRectAt(0, 0).CenterPoint();
-  gfx::Point to =
-      gfx::Point(apps_grid_view_->width(), apps_grid_view_->height() / 2);
-
-  // Drag to right edge, page should flip
-  page_flip_waiter.Reset();
-  AppListItemView* view = SimulateDrag(AppsGridView::MOUSE, from, to);
-  while (test_api_->HasPendingPageFlip()) {
-    page_flip_waiter.Wait();
-  }
-  EXPECT_EQ(1, GetPaginationModel()->selected_page());
-
-  // Continue drag to lonely folder, then drop
-  to = GetItemTileRectAt(0, 0).CenterPoint();
-  AppListItemView* folder = GetItemViewForPoint(to);
-  EXPECT_NE(nullptr, folder);
-  if (folder) {
-    EXPECT_EQ(AppListFolderItem::kItemType, folder->item()->GetItemType());
-    SimulateContinueDrag(AppsGridView::MOUSE, view, to);
-  }
-  apps_grid_view_->EndDrag(false);
-
-  // Moving item from first page to folder should shift folder to first page
-  EXPECT_EQ(1, GetPaginationModel()->total_pages());
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-  EXPECT_EQ(kTotalItems - 1, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(
-      AppListFolderItem::kItemType,
-      model_->top_level_item_list()->item_at(kTilesPerPage - 1)->GetItemType());
   test_api_->LayoutToIdealBounds();
 }
 

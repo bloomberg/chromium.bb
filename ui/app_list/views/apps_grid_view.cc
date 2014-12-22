@@ -708,19 +708,17 @@ void AppsGridView::EndDrag(bool cancel) {
     // If we had a drag and drop proxy icon, we delete it and make the real
     // item visible again.
     drag_and_drop_host_->DestroyDragIconProxy();
-    // Issue 439055: MoveItemToFolder() can sometimes delete drag_view_
-    if (drag_view_) {
-      if (landed_in_drag_and_drop_host) {
-        // Move the item directly to the target location, avoiding the
-        // "zip back" animation if the user was pinning it to the shelf.
-        int i = reorder_drop_target_.slot;
-        gfx::Rect bounds = view_model_.ideal_bounds(i);
-        drag_view_->SetBoundsRect(bounds);
-      }
-      // Fade in slowly if it landed in the shelf.
-      SetViewHidden(drag_view_, false /* show */,
-                    !landed_in_drag_and_drop_host /* animate */);
+    if (landed_in_drag_and_drop_host) {
+      // Move the item directly to the target location, avoiding the "zip back"
+      // animation if the user was pinning it to the shelf.
+      int i = reorder_drop_target_.slot;
+      gfx::Rect bounds = view_model_.ideal_bounds(i);
+      drag_view_->SetBoundsRect(bounds);
     }
+    // Fade in slowly if it landed in the shelf.
+    SetViewHidden(drag_view_,
+                  false /* show */,
+                  !landed_in_drag_and_drop_host /* animate */);
   }
 
   // The drag can be ended after the synchronous drag is created but before it
