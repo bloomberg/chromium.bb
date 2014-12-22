@@ -38,25 +38,6 @@ function focus(element) {
         throw error;
     }
   }
-
-  var activeElement = doc.activeElement;
-  // If the element is in a shadow DOM, then as far as the document is
-  // concerned, the shadow host is the active element. We need to go through the
-  // tree of shadow DOMs to check that the element we gave focus to is now
-  // active.
-  if (element != activeElement) {
-    var shadowRoot = activeElement.shadowRoot;
-    while (shadowRoot) {
-      var activeElement = shadowRoot.activeElement;
-      if (element == activeElement) {
-        // the shadow DOM's active element is our requested element. We're good.
-        break;
-      }
-      // The shadow DOM's active element isn't our requested element, check to
-      // see if there's a nested shadow DOM.
-      shadowRoot = activeElement.shadowRoot;
-    }
-  }
-  if (element != activeElement)
+  if (element != doc.activeElement)
     throw new Error('cannot focus element');
 }
