@@ -11,10 +11,10 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard.h"
 
-using bookmarks::BookmarkNodeData;
-
 NSString* const kBookmarkDictionaryListPboardType =
     @"BookmarkDictionaryListPboardType";
+
+namespace bookmarks {
 
 namespace {
 
@@ -331,3 +331,5 @@ bool PasteboardContainsBookmarks(ui::ClipboardType type) {
                                 nil];
   return [pb availableTypeFromArray:availableTypes] != nil;
 }
+
+}  // namespace bookmarks

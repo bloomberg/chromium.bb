@@ -127,7 +127,7 @@ using base::UserMetricsAction;
   if (![controller_ draggingAllowed:info])
     return NSDragOperationNone;
   if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
-      PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
+      bookmarks::PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
       [[info draggingPasteboard] containsURLData]) {
     // We only show the drop indicator if we're not in a position to
     // perform a hover-open since it doesn't make sense to do both.

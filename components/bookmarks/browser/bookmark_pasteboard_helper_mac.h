@@ -15,24 +15,28 @@ namespace base {
 class FilePath;
 }
 
+namespace bookmarks {
+
 // This set of functions lets C++ code interact with the cocoa pasteboard and
 // dragging methods.
 
 // Writes a set of bookmark elements from a profile to the specified pasteboard.
 void WriteBookmarksToPasteboard(
     ui::ClipboardType type,
-    const std::vector<bookmarks::BookmarkNodeData::Element>& elements,
+    const std::vector<BookmarkNodeData::Element>& elements,
     const base::FilePath& profile_path);
 
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadBookmarksFromPasteboard(
     ui::ClipboardType type,
-    std::vector<bookmarks::BookmarkNodeData::Element>& elements,
+    std::vector<BookmarkNodeData::Element>& elements,
     base::FilePath* profile_path);
 
 // Returns true if the specified pasteboard contains any sort of bookmark
 // elements. It currently does not consider a plaintext url a valid bookmark.
 bool PasteboardContainsBookmarks(ui::ClipboardType type);
+
+}  // namespace bookmarks
 
 #if defined(__OBJC__)
 // Pasteboard type for dictionary containing bookmark structure consisting
