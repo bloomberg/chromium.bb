@@ -61,6 +61,7 @@ class PepperPluginInstanceThrottlerTest : public testing::Test {
                         int expect_change_callback_count) {
     blink::WebMouseEvent event;
     event.type = event_type;
+    event.modifiers = blink::WebInputEvent::Modifiers::LeftButtonDown;
     EXPECT_EQ(expect_consumed, throttler()->ConsumeInputEvent(event));
     EXPECT_EQ(expect_throttled, throttler()->is_throttled());
     EXPECT_EQ(expect_change_callback_count, change_callback_calls());
@@ -187,6 +188,30 @@ TEST_F(PepperPluginInstanceThrottlerTest, EventConsumption) {
 
   // Subsequent MouseUps should also not be consumed.
   SendEventAndTest(blink::WebInputEvent::Type::MouseUp, false, false, 2);
+}
+
+TEST_F(PepperPluginInstanceThrottlerTest, ThrottleOnLeftClickOnly) {
+  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_EQ(0, change_callback_calls());
+
+  EngageThrottle();
+  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_EQ(1, change_callback_calls());
+
+  blink::WebMouseEvent event;
+  event.type = blink::WebInputEvent::Type::MouseUp;
+
+  event.modifiers = blink::WebInputEvent::Modifiers::RightButtonDown;
+  EXPECT_FALSE(throttler()->ConsumeInputEvent(event));
+  EXPECT_TRUE(throttler()->is_throttled());
+
+  event.modifiers = blink::WebInputEvent::Modifiers::MiddleButtonDown;
+  EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
+  EXPECT_TRUE(throttler()->is_throttled());
+
+  event.modifiers = blink::WebInputEvent::Modifiers::LeftButtonDown;
+  EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
+  EXPECT_FALSE(throttler()->is_throttled());
 }
 
 }  // namespace content

@@ -163,13 +163,22 @@ void PepperPluginInstanceThrottler::OnImageFlush(const SkBitmap* bitmap) {
 
 bool PepperPluginInstanceThrottler::ConsumeInputEvent(
     const blink::WebInputEvent& event) {
+  // Always allow right-clicks through so users may verify it's a plug-in.
+  // TODO(tommycli): We should instead show a custom context menu (probably
+  // using PluginPlaceholder) so users aren't confused and try to click the
+  // Flash-internal 'Play' menu item. This is a stopgap solution.
+  if (event.modifiers & blink::WebInputEvent::Modifiers::RightButtonDown)
+    return false;
+
   if (!has_been_clicked_ && is_flash_plugin_ &&
-      event.type == blink::WebInputEvent::MouseDown) {
+      event.type == blink::WebInputEvent::MouseDown &&
+      (event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
     has_been_clicked_ = true;
     RecordFlashClickSizeMetric(bounds_.width, bounds_.height);
   }
 
-  if (event.type == blink::WebInputEvent::MouseUp && is_peripheral_content_) {
+  if (is_peripheral_content_ && event.type == blink::WebInputEvent::MouseUp &&
+      (event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
     is_peripheral_content_ = false;
     power_saver_enabled_ = false;
     needs_representative_keyframe_ = false;
