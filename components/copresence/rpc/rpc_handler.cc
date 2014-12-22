@@ -19,6 +19,7 @@
 #undef DeviceCapabilities
 #endif
 
+#include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/copresence_switches.h"
 #include "components/copresence/handlers/directive_handler.h"
 #include "components/copresence/handlers/gcm_handler.h"
@@ -165,10 +166,12 @@ void AddTokenToRequest(const AudioToken& token, ReportRequest* request) {
 // Public functions.
 
 RpcHandler::RpcHandler(CopresenceDelegate* delegate,
+                       CopresenceStateImpl* state,
                        DirectiveHandler* directive_handler,
                        GCMHandler* gcm_handler,
                        const PostCallback& server_post_callback)
     : delegate_(delegate),
+      state_(state),
       directive_handler_(directive_handler),
       gcm_handler_(gcm_handler),
       server_post_callback_(server_post_callback),
@@ -491,6 +494,7 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
       directive_handler_->AddDirective(directive);
 
     for (const Token& token : update_response.token()) {
+      state_->UpdateTokenStatus(token.id(), token.status());
       switch (token.status()) {
         case VALID:
           // TODO(rkc/ckehoe): Store the token in a |valid_token_cache_| with a

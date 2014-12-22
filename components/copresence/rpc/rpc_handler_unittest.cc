@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/handlers/directive_handler.h"
 #include "components/copresence/mediums/audio/audio_manager.h"
 #include "components/copresence/proto/data.pb.h"
@@ -50,7 +51,11 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
  public:
   RpcHandlerTest()
       : whispernet_client_(new StubWhispernetClient),
+        // TODO(ckehoe): Use a FakeCopresenceState here
+        // and test that it gets called correctly.
+        state_(new CopresenceStateImpl),
         rpc_handler_(this,
+                     state_.get(),
                      &directive_handler_,
                      nullptr,
                      base::Bind(&RpcHandlerTest::CaptureHttpPost,
@@ -154,6 +159,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
 
   scoped_ptr<WhispernetClient> whispernet_client_;
   FakeDirectiveHandler directive_handler_;
+  scoped_ptr<CopresenceStateImpl> state_;
   RpcHandler rpc_handler_;
 
   CopresenceStatus status_;
