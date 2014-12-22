@@ -43,8 +43,8 @@ const MetricsEntry kMetricsEntries[] = {
     {UMA_PAGE_SCHEME, kTranslatePageScheme},
     {UMA_SIMILAR_LANGUAGE_MATCH, kTranslateSimilarLanguageMatch}, };
 
-COMPILE_ASSERT(arraysize(kMetricsEntries) == UMA_MAX,
-               arraysize_of_kMetricsEntries_should_be_UMA_MAX);
+static_assert(arraysize(kMetricsEntries) == UMA_MAX,
+              "kMetricsEntries should have UMA_MAX elements");
 
 LanguageCheckType GetLanguageCheckMetric(const std::string& provided_code,
                                          const std::string& revised_code) {

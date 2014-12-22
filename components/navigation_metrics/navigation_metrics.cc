@@ -35,8 +35,8 @@ const char* const kSchemeNames[] = {
   "max",
 };
 
-COMPILE_ASSERT(arraysize(kSchemeNames) == SCHEME_MAX + 1,
-               NavigationMetricsRecorder_name_count_mismatch);
+static_assert(arraysize(kSchemeNames) == SCHEME_MAX + 1,
+              "kSchemeNames should have SCHEME_MAX + 1 elements");
 
 }  // namespace
 

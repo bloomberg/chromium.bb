@@ -55,8 +55,9 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_DEFAULT,  // CONTENT_SETTINGS_TYPE_APP_BANNER
 #endif
 };
-COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
-               default_settings_incorrect_size);
+static_assert(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
+              "kDefaultSettings should have CONTENT_SETTINGS_NUM_TYPES "
+              "elements");
 
 }  // namespace
 

@@ -156,8 +156,8 @@ int AutocompleteMatch::TypeToIcon(Type type) {
     IDR_OMNIBOX_HTTP,
     IDR_OMNIBOX_SEARCH,
   };
-  COMPILE_ASSERT(arraysize(icons) == AutocompleteMatchType::NUM_TYPES,
-                 icons_array_must_match_type_enum);
+  static_assert(arraysize(icons) == AutocompleteMatchType::NUM_TYPES,
+                "icons array must have NUM_TYPES elements");
   return icons[type];
 }
 

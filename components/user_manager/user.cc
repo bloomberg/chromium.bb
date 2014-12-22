@@ -308,7 +308,8 @@ UserType PublicAccountUser::GetType() const {
 }
 
 bool User::has_gaia_account() const {
-  COMPILE_ASSERT(user_manager::NUM_USER_TYPES == 7, num_user_types_unexpected);
+  static_assert(user_manager::NUM_USER_TYPES == 7,
+                "NUM_USER_TYPES should equal 7");
   switch (GetType()) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_CHILD:

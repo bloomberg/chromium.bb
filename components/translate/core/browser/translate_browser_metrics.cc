@@ -47,8 +47,8 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateUnsupportedLanguageAtInitiation },
 };
 
-COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
-               arraysize_of_kMetricsEntries_should_be_UMA_MAX);
+static_assert(arraysize(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
+              "kMetricsEntries should have UMA_MAX elements");
 
 }  // namespace
 

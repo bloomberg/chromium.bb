@@ -23,8 +23,8 @@ void CompileAsserts() {
   // and parsing, this code uses int. In practice there are no process IDs with
   // the high bit set on Windows, so there's no danger of overflow if this is
   // done consistently.
-  COMPILE_ASSERT(sizeof(DWORD) == sizeof(int),
-                 process_ids_have_outgrown_an_int);
+  static_assert(sizeof(DWORD) == sizeof(int),
+                "process ids are expected to be no larger than int");
 }
 
 // This function does soft matching on the PID recorded in the key only.

@@ -107,9 +107,9 @@ typedef std::map<SessionID::id_type, SessionWindow*> IdToSessionWindow;
 
 // Assert to ensure PersistedWindowShowState is updated if ui::WindowShowState
 // is changed.
-COMPILE_ASSERT(ui::SHOW_STATE_END ==
-                   static_cast<ui::WindowShowState>(PERSISTED_SHOW_STATE_END),
-               persisted_show_state_mismatch);
+static_assert(ui::SHOW_STATE_END ==
+                  static_cast<ui::WindowShowState>(PERSISTED_SHOW_STATE_END),
+              "SHOW_STATE_END must equal PERSISTED_SHOW_STATE_END");
 
 // Returns the show state to store to disk based |state|.
 PersistedWindowShowState ShowStateToPersistedShowState(

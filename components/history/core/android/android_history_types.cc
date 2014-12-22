@@ -31,9 +31,10 @@ class BookmarkIDMapping : public std::map<std::string,
                                           HistoryAndBookmarkRow::ColumnID> {
  public:
   BookmarkIDMapping() {
-    COMPILE_ASSERT(arraysize(kAndroidBookmarkColumn) <=
-                   HistoryAndBookmarkRow::COLUMN_END,
-                   Array_size_must_not_exceed_enum);
+    static_assert(arraysize(kAndroidBookmarkColumn) <=
+                  HistoryAndBookmarkRow::COLUMN_END,
+                  "kAndroidBookmarkColumn should not have more than "
+                  "COLUMN_END elements");
     for (size_t i = 0; i < arraysize(kAndroidBookmarkColumn); ++i) {
       (*this)[kAndroidBookmarkColumn[i]] =
           static_cast<HistoryAndBookmarkRow::ColumnID>(i);
@@ -49,8 +50,9 @@ class SearchIDMapping : public std::map<std::string,
                                         SearchRow::ColumnID> {
  public:
   SearchIDMapping() {
-    COMPILE_ASSERT(arraysize(kAndroidSearchColumn) <= SearchRow::COLUMN_END,
-                   Array_size_must_not_exceed_enum);
+    static_assert(arraysize(kAndroidSearchColumn) <= SearchRow::COLUMN_END,
+                  "kAndroidSearchColumn should not have more than "
+                  "COLUMN_END elements");
     for (size_t i = 0; i < arraysize(kAndroidSearchColumn); ++i) {
       (*this)[kAndroidSearchColumn[i]] =
               static_cast<SearchRow::ColumnID>(i);

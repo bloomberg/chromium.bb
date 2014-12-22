@@ -41,8 +41,8 @@ void SocketTunnelPacketHandler::DecodePacket(const void* data, size_t length) {
     memcpy(packet->data(), bytes + 1, length - 1);
     HandleDataPacket(connection_index, packet);
   } else if (length >= kControlPacketSizeBytes) {
-    COMPILE_ASSERT(kControlPacketSizeBytes == 3,
-                   unexpected_control_packet_size);
+    static_assert(kControlPacketSizeBytes == 3,
+                  "kControlPacketSizeBytes should equal 3");
 
     int op_code = bytes[1];
     connection_id = bytes[2];

@@ -94,7 +94,7 @@ double SHA1EntropyProvider::GetEntropyForTrial(
                       sha1_hash);
 
   uint64 bits;
-  COMPILE_ASSERT(sizeof(bits) < sizeof(sha1_hash), need_more_data);
+  static_assert(sizeof(bits) < sizeof(sha1_hash), "more data required");
   memcpy(&bits, sha1_hash, sizeof(bits));
   bits = base::ByteSwapToLE64(bits);
 

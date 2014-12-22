@@ -304,9 +304,10 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_data.set_title(base::UTF16ToUTF8(title_));
 
   // Page transition core.
-  COMPILE_ASSERT(ui::PAGE_TRANSITION_LAST_CORE ==
-                 ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                 PageTransitionCoreBounds);
+  static_assert(ui::PAGE_TRANSITION_LAST_CORE ==
+                ui::PAGE_TRANSITION_KEYWORD_GENERATED,
+                "PAGE_TRANSITION_LAST_CORE must equal "
+                "PAGE_TRANSITION_KEYWORD_GENERATED");
   switch (ui::PageTransitionStripQualifier(transition_type_)) {
     case ui::PAGE_TRANSITION_LINK:
       sync_data.set_page_transition(

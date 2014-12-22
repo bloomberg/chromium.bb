@@ -386,8 +386,8 @@ int NaClIPCAdapter::Send(const NaClImcTypedMsgHdr* msg) {
     // we know that data_len < max size (checked above) and our current
     // accumulated value is also < max size, we just need to make sure that
     // 2x max size can never overflow.
-    COMPILE_ASSERT(IPC::Channel::kMaximumMessageSize < (UINT_MAX / 2),
-                   MaximumMessageSizeWillOverflow);
+    static_assert(IPC::Channel::kMaximumMessageSize < (UINT_MAX / 2),
+                  "kMaximumMessageSize is too large, and may overflow");
     size_t new_size = locked_data_.to_be_sent_.size() + input_data_len;
     if (new_size > IPC::Channel::kMaximumMessageSize) {
       ClearToBeSent();

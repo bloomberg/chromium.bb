@@ -62,9 +62,9 @@ content_settings::SettingSource kProviderSourceMap[] = {
   content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_USER,
 };
-COMPILE_ASSERT(arraysize(kProviderSourceMap) ==
+static_assert(arraysize(kProviderSourceMap) ==
                    HostContentSettingsMap::NUM_PROVIDER_TYPES,
-               kProviderSourceMap_has_incorrect_size);
+              "kProviderSourceMap should have NUM_PROVIDER_TYPES elements");
 
 // Returns true if the |content_type| supports a resource identifier.
 // Resource identifiers are supported (but not required) for plug-ins.

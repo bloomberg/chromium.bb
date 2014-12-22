@@ -851,11 +851,11 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
             &serialized_map));
     iov[5].iov_base = serialized_map;
 #if !defined(ADDRESS_SANITIZER)
-    COMPILE_ASSERT(5 == kCrashIovSize - 1, Incorrect_Number_Of_Iovec_Members);
+    static_assert(5 == kCrashIovSize - 1, "kCrashIovSize should equal 6");
 #else
     iov[6].iov_base = const_cast<char*>(g_asan_report_str);
     iov[6].iov_len = kMaxAsanReportSize + 1;
-    COMPILE_ASSERT(6 == kCrashIovSize - 1, Incorrect_Number_Of_Iovec_Members);
+    static_assert(6 == kCrashIovSize - 1, "kCrashIovSize should equal 7");
 #endif
 
     msg.msg_iov = iov;

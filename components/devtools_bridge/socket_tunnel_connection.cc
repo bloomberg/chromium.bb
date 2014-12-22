@@ -30,8 +30,8 @@ void SocketTunnelConnection::Write(scoped_refptr<net::IOBufferWithSize> chunk) {
 
 void SocketTunnelConnection::BuildControlPacket(char* buffer,
                                                 int op_code) {
-  COMPILE_ASSERT(kControlPacketSizeBytes == 3,
-                 unexpected_control_packet_size);
+  static_assert(kControlPacketSizeBytes == 3,
+                "kControlPacketSizeBytes should equal 3");
   buffer[0] = kControlConnectionId;
   buffer[1] = op_code;
   buffer[2] = index_ + kMinConnectionId;

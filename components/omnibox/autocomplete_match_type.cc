@@ -29,7 +29,7 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
     "navsuggest-personalized",
     "search-suggest-answer",
   };
-  COMPILE_ASSERT(arraysize(strings) == AutocompleteMatchType::NUM_TYPES,
-                 strings_array_must_match_type_enum);
+  static_assert(arraysize(strings) == AutocompleteMatchType::NUM_TYPES,
+                "strings array must have NUM_TYPES elements");
   return strings[type];
 }

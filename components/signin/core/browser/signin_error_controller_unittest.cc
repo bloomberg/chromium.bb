@@ -164,8 +164,8 @@ TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
   };
-  COMPILE_ASSERT(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
-      kTable_size_does_not_match_number_of_auth_error_types);
+  static_assert(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
+      "table array does not match the number of auth error types");
 
   for (size_t i = 0; i < arraysize(table); ++i) {
     FakeAuthStatusProvider provider(error_controller_.get());

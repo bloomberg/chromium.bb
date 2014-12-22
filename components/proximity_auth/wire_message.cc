@@ -41,7 +41,7 @@ bool ParseHeader(const std::string& serialized_message,
     return false;
   }
 
-  COMPILE_ASSERT(kHeaderLength > 2, header_length_too_small);
+  static_assert(kHeaderLength > 2, "kHeaderLength too small");
   size_t version = serialized_message[0];
   if (version != kExpectedMessageFormatVersion) {
     VLOG(1) << "Error: Invalid message version. Got " << version

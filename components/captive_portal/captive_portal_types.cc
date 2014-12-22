@@ -16,8 +16,9 @@ const char* const kCaptivePortalResultNames[] = {
   "BehindCaptivePortal",
   "NumCaptivePortalResults",
 };
-COMPILE_ASSERT(arraysize(kCaptivePortalResultNames) == RESULT_COUNT + 1,
-               captive_portal_result_name_count_mismatch);
+static_assert(arraysize(kCaptivePortalResultNames) == RESULT_COUNT + 1,
+              "kCaptivePortalResultNames should have "
+              "RESULT_COUNT + 1 elements");
 
 }  // namespace
 

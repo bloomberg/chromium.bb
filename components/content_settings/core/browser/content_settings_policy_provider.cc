@@ -50,8 +50,9 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of app banners
 #endif
 };
-COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
-               managed_content_settings_pref_names_array_size_incorrect);
+static_assert(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
+              "kPrefToManageType should have CONTENT_SETTINGS_NUM_TYPES "
+              "elements");
 
 struct PrefsForManagedContentSettingsMapEntry {
   const char* pref_name;

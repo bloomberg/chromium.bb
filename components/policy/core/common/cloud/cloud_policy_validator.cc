@@ -36,8 +36,10 @@ const uint8 kSHA256SignatureAlgorithm[] = {
     0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00
 };
 
-COMPILE_ASSERT(sizeof(kSHA256SignatureAlgorithm) ==
-               sizeof(kSHA1SignatureAlgorithm), invalid_algorithm_size);
+static_assert(sizeof(kSHA256SignatureAlgorithm) ==
+              sizeof(kSHA1SignatureAlgorithm),
+              "kSHA256SignatureAlgorithm must be the same size as "
+              "kSHA1SignatureAlgorithm");
 
 const int kSignatureAlgorithmSize = sizeof(kSHA1SignatureAlgorithm);
 
