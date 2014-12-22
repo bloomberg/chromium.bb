@@ -596,6 +596,10 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['CC_host'] = os.path.join(clang_path, 'clang')
     env['CXX_host'] = os.path.join(clang_path, 'clang++')
 
+    # Enable debug fission.
+    env['CFLAGS'] = env.get('CFLAGS', '') +  ' -gsplit-dwarf'
+    env['CXXFLAGS'] = env.get('CXXFLAGS', '') + ' -gsplit-dwarf'
+
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
                         goma_port=None):
     """Sets environment variables to export to the SDK shell."""
