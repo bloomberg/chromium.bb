@@ -43,7 +43,7 @@ class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
     has_report_id_ = device_info.has_report_id;
   }
 
-  virtual ~Helper() { DCHECK(thread_checker_.CalledOnValidThread()); }
+  ~Helper() override { DCHECK(thread_checker_.CalledOnValidThread()); }
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
   // Must be called on a thread that has a base::MessageLoopForIO. The helper

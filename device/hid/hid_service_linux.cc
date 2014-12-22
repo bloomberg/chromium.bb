@@ -75,9 +75,7 @@ class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
         base::Bind(&HidServiceLinux::FirstEnumerationComplete, service_));
   }
 
-  virtual ~Helper() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-  }
+  ~Helper() override { DCHECK(thread_checker_.CalledOnValidThread()); }
 
  private:
   // DeviceMonitorLinux::Observer:

@@ -30,7 +30,7 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
              uint32_t buffer_size,
              int32_t fatal_error_value);
 
-  ~DataSender();
+  ~DataSender() override;
 
   // Starts an asynchronous send of |data|. If the send completes successfully,
   // |callback| will be called. Otherwise, |error_callback| will be called with

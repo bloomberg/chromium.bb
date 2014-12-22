@@ -22,7 +22,7 @@ class VibrationManagerEmptyImpl : public mojo::InterfaceImpl<VibrationManager> {
 
  private:
   VibrationManagerEmptyImpl() {}
-  virtual ~VibrationManagerEmptyImpl() {}
+  ~VibrationManagerEmptyImpl() override {}
 };
 
 }  // namespace
