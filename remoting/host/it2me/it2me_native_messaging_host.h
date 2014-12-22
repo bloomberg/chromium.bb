@@ -27,7 +27,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   It2MeNativeMessagingHost(
       scoped_ptr<ChromotingHostContext> host_context,
       scoped_ptr<It2MeHostFactory> host_factory);
-  ~It2MeNativeMessagingHost();
+  ~It2MeNativeMessagingHost() override;
 
   // extensions::NativeMessageHost implementation.
   void OnMessage(const std::string& message) override;
