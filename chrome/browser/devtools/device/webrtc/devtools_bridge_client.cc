@@ -254,6 +254,8 @@ void DevToolsBridgeClient::OnDevToolsBridgeInstancesRequestSucceeded(
   browsers_.swap(browsers);
 
   browser_list_request_.reset();
+
+  OnBrowserListUpdatedForTests();
 }
 
 void DevToolsBridgeClient::OnDevToolsBridgeInstancesRequestFailed() {

@@ -28,12 +28,11 @@ class GCDApiFlow;
 }  // local_discovery
 
 // Lives on the UI thread.
-class DevToolsBridgeClient final
-    : private content::NotificationObserver,
-      private IdentityProvider::Observer,
-      private content::WebContentsObserver,
-      private SendCommandRequest::Delegate,
-      private DevToolsBridgeInstancesRequest::Delegate {
+class DevToolsBridgeClient : protected content::WebContentsObserver,
+                             private content::NotificationObserver,
+                             private IdentityProvider::Observer,
+                             private SendCommandRequest::Delegate,
+                             private DevToolsBridgeInstancesRequest::Delegate {
  public:
   using BrowserInfo = AndroidDeviceManager::BrowserInfo;
   using DeviceInfo = AndroidDeviceManager::DeviceInfo;
@@ -56,17 +55,27 @@ class DevToolsBridgeClient final
       content::WebContents* web_contents);
   void RegisterMessageHandlers(content::WebUI* web_ui);
 
- private:
+ protected:
   DevToolsBridgeClient(Profile* profile,
                        SigninManagerBase* signin_manager,
                        ProfileOAuth2TokenService* token_service);
 
-  ~DevToolsBridgeClient();
+  // Implementation of content::WebContentsObserver.
+  void DocumentOnLoadCompletedInMainFrame() override;
+
+  ~DevToolsBridgeClient() override;
 
   bool IsAuthenticated();
 
+  // Overridden in tests.
+  virtual scoped_ptr<local_discovery::GCDApiFlow> CreateGCDApiFlow();
+  virtual void OnBrowserListUpdatedForTests() {}
+
+  const BrowserInfoList& browsers() const { return browsers_; }
+  ProfileIdentityProvider& identity_provider() { return identity_provider_; }
+
+ private:
   void CreateBackgroundWorker();
-  scoped_ptr<local_discovery::GCDApiFlow> CreateGCDApiFlow();
   void UpdateBrowserList();
 
   void HandleSendCommand(const base::ListValue* args);
@@ -74,9 +83,6 @@ class DevToolsBridgeClient final
   // Implementation of IdentityProvider::Observer.
   void OnActiveAccountLogin() override;
   void OnActiveAccountLogout() override;
-
-  // Implementation of WebContentsObserver.
-  void DocumentOnLoadCompletedInMainFrame() override;
 
   // Implementation of NotificationObserver.
   void Observe(int type,
