@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -41,10 +41,10 @@ class TestPageClickListener : public PageClickListener {
   bool was_focused_;
 };
 
-class PageClickTrackerTest : public content::RenderViewTest {
+class PageClickTrackerTest : public ChromeRenderViewTest {
  protected:
   void SetUp() override {
-    content::RenderViewTest::SetUp();
+    ChromeRenderViewTest::SetUp();
 
     // RenderView creates PageClickTracker but it doesn't keep it around.
     // Rather than make it do so for the test, we create a new object.
@@ -71,7 +71,7 @@ class PageClickTrackerTest : public content::RenderViewTest {
     textarea_.reset();
     test_listener_.ClearResults();
     page_click_tracker_.reset();
-    content::RenderViewTest::TearDown();
+    ChromeRenderViewTest::TearDown();
   }
 
   // Simulates a click on the given element and then waits for the stack
