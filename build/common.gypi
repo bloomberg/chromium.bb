@@ -4375,7 +4375,7 @@
               }],
             ],
             'conditions': [
-              ['release_valgrind_build==0', {
+              ['release_valgrind_build==0 and order_profiling==0', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
@@ -4674,7 +4674,7 @@
                   }],
                 ],
               }],
-              ['target_arch == "arm"', {
+              ['target_arch == "arm" and order_profiling==0', {
                 'ldflags': [
                   # Enable identical code folding to reduce size.
                   '-Wl,--icf=safe',
