@@ -60,6 +60,7 @@ template<typename T> class GarbageCollectedFinalized;
 class GarbageCollectedMixin;
 class GeneralHeapObjectHeader;
 class HeapObjectHeader;
+class InlinedGlobalMarkingVisitor;
 template<typename T> class Member;
 template<typename T> class WeakMember;
 class Visitor;
@@ -202,6 +203,42 @@ public:
 };
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
+
+#if ENABLE(INLINED_TRACE)
+
+#define DECLARE_TRACE(maybevirtual, maybeoverride)                           \
+public:                                                                      \
+    typedef HasInlinedTraceMethod int;                                       \
+    maybevirtual void trace(Visitor*) maybeoverride;                         \
+    maybevirtual void trace(InlinedGlobalMarkingVisitor) maybeoverride;      \
+private:                                                                     \
+    template <typename VisitorDispatcher> void traceImpl(VisitorDispatcher); \
+public:
+
+#define DEFINE_TRACE(T)                                                        \
+    void T::trace(Visitor* visitor) { traceImpl(visitor); }                    \
+    void T::trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); } \
+    template <typename VisitorDispatcher>                                      \
+    ALWAYS_INLINE void T::traceImpl(VisitorDispatcher visitor)
+
+#define DEFINE_INLINE_TRACE(maybevirtual, maybeoverride)                                               \
+    maybevirtual void trace(Visitor* visitor) maybeoverride { traceImpl(visitor); }                    \
+    maybevirtual void trace(InlinedGlobalMarkingVisitor visitor) maybeoverride { traceImpl(visitor); } \
+    template <typename VisitorDispatcher>                                                              \
+    inline void traceImpl(VisitorDispatcher visitor)
+
+#else // !ENABLE(INLINED_TRACE)
+
+#define DECLARE_TRACE(maybevirtual, maybeoverride)   \
+public:                                              \
+    maybevirtual void trace(Visitor*) maybeoverride;
+
+#define DEFINE_TRACE(T) void T::trace(Visitor* visitor)
+
+#define DEFINE_INLINE_TRACE(maybevirtual, maybeoverride)    \
+    maybevirtual void trace(Visitor* visitor) maybeoverride
+
+#endif
 
 // If MARKER_EAGER_TRACING is set to 1, a marker thread is allowed
 // to directly invoke the trace() method of not-as-yet marked objects upon
