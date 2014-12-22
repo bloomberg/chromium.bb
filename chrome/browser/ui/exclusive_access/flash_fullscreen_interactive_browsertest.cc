@@ -270,8 +270,10 @@ IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
 // stored/restored correctly.  Mouse and keyboard events are used to confirm
 // that the widget the UI thinks is focused is the one that responds to these
 // input events.
+//
+// Flaky, see http://crbug.com/444476
 IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
-                       FullscreenWithinTab_FocusWhenSwitchingTabs) {
+                       DISABLED_FullscreenWithinTab_FocusWhenSwitchingTabs) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   StartFakingTabCapture();
   ASSERT_TRUE(LaunchFlashFullscreen());
