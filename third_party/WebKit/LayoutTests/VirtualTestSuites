@@ -3,13 +3,15 @@
     "prefix": "gpu",
     "base": "fast/canvas",
     "args": ["--enable-accelerated-2d-canvas",
-             "--disable-display-list-2d-canvas"]
+             "--disable-display-list-2d-canvas",
+             "--enable-impl-side-painting"]
   },
   {
     "prefix": "gpu",
     "base": "canvas/philip",
     "args": ["--enable-accelerated-2d-canvas",
-             "--disable-display-list-2d-canvas"]
+             "--disable-display-list-2d-canvas",
+             "--enable-impl-side-painting"]
   },
   {
     "prefix": "display_list_2d_canvas",
