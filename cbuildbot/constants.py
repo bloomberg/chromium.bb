@@ -65,7 +65,7 @@ BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
 RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'
 BRANCH_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.branch'
-CHROMIUM_DASHBOARD = ('https://uberchromegw.corp.google.com/',
+CHROMIUM_DASHBOARD = ('https://uberchromegw.corp.google.com/'
                       'i/chromiumos.chromium')
 
 # Waterfall to dashboard URL mapping.
