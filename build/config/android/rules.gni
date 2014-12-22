@@ -1453,6 +1453,9 @@ template("unittest_apk") {
     java_files = [ "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java" ]
     android_manifest = "//testing/android/java/AndroidManifest.xml"
     native_libs = [ unittests_binary ]
+    if (defined(invoker.asset_location)) {
+      asset_location = invoker.asset_location
+    }
     deps = [
       "//base:base_java",
     ]
