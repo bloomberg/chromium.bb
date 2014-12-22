@@ -31,7 +31,7 @@ class GLClearFramebufferTest : public testing::TestWithParam<bool> {
   void SetUp() override {
     if (GetParam()) {
       // Force the glClear() workaround so we can test it here.
-      CommandLine command_line(base::CommandLine::NO_PROGRAM);
+      base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
       command_line.AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
                                      base::IntToString(gpu::GL_CLEAR_BROKEN));
       gl_.InitializeWithCommandLine(GLManager::Options(), &command_line);

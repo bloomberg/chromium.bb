@@ -17,7 +17,7 @@ namespace gpu {
 AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
     gfx::GLContext* context) {
   TRACE_EVENT0("gpu", "AsyncPixelTransferManager::Create");
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableShareGroupAsyncTextureUpload)) {
     DCHECK(context);
     return static_cast<AsyncPixelTransferManager*> (

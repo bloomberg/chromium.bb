@@ -981,7 +981,7 @@ TEST_P(GLES2DecoderWithShaderTest, BindUniformLocationCHROMIUMBucket) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE));

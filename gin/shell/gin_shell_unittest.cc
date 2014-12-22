@@ -30,7 +30,7 @@ TEST(GinShellTest, HelloWorld) {
   ASSERT_TRUE(base::PathExists(gin_shell_path));
   ASSERT_TRUE(base::PathExists(hello_world_path));
 
-  CommandLine cmd(gin_shell_path);
+  base::CommandLine cmd(gin_shell_path);
   cmd.AppendArgPath(hello_world_path);
   std::string output;
   ASSERT_TRUE(base::GetAppOutput(cmd, &output));

@@ -40,7 +40,7 @@ ContextGroup::ContextGroup(
       shader_translator_cache_(shader_translator_cache),
       subscription_ref_set_(subscription_ref_set),
       pending_valuebuffer_state_(pending_valuebuffer_state),
-      enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
+      enforce_gl_minimums_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnforceGLMinimums)),
       bind_generates_resource_(bind_generates_resource),
       max_vertex_attribs_(0u),

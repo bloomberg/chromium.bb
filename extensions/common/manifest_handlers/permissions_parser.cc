@@ -63,7 +63,7 @@ bool CanSpecifyHostPermission(const Extension* extension,
     if (PermissionsData::CanExecuteScriptEverywhere(extension))
       return true;
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kExtensionsOnChromeURLs)) {
       return true;
     }

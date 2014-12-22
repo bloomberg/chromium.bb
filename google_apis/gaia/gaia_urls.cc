@@ -49,7 +49,7 @@ const char kOAuthUserInfoUrlSuffix[] = "oauth2/v1/userinfo";
 void GetSwitchValueWithDefault(const char* switch_value,
                                const char* default_value,
                                std::string* output_value) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switch_value)) {
     *output_value = command_line->GetSwitchValueASCII(switch_value);
   } else {

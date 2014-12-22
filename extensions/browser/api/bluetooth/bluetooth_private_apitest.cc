@@ -47,7 +47,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   ~BluetoothPrivateApiTest() override {}
 
   void SetUpOnMainThread() override {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kTestExtensionId);
     mock_adapter_ = new NiceMock<MockBluetoothAdapter>();
     event_router()->SetAdapterForTest(mock_adapter_.get());

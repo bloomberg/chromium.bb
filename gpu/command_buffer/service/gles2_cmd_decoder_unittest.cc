@@ -57,7 +57,7 @@ using namespace cmds;
 void GLES2DecoderRGBBackbufferTest::SetUp() {
   // Test codepath with workaround clear_alpha_in_readpixels because
   // ReadPixelsEmulator emulates the incorrect driver behavior.
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::CLEAR_ALPHA_IN_READPIXELS));

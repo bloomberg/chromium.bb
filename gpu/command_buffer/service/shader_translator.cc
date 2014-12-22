@@ -135,8 +135,8 @@ int ShaderTranslator::GetCompileOptions() const {
       SH_LIMIT_EXPRESSION_COMPLEXITY | SH_LIMIT_CALL_STACK_DEPTH |
       SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kGLShaderIntermOutput))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGLShaderIntermOutput))
     compile_options |= SH_INTERMEDIATE_TREE;
 
   compile_options |= driver_bug_workarounds_;

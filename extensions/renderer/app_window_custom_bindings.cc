@@ -112,8 +112,8 @@ void AppWindowCustomBindings::GetWindowControlsHtmlTemplate(
   CHECK_EQ(args.Length(), 0);
 
   v8::Handle<v8::Value> result = v8::String::Empty(args.GetIsolate());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAppWindowControls)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAppWindowControls)) {
     base::StringValue value(
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(IDR_WINDOW_CONTROLS_TEMPLATE_HTML)

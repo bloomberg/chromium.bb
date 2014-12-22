@@ -124,7 +124,7 @@ class CastChannelAPITest : public ExtensionApiTest {
  public:
   CastChannelAPITest() : ip_endpoint_(CreateIPEndPointForTest()) {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,

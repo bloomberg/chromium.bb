@@ -189,7 +189,8 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       is_webkit_initialized_(false),
       user_script_set_manager_observer_(this),
       webrequest_used_(false) {
-  const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
+  const base::CommandLine& command_line =
+      *(base::CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
       command_line.HasSwitch(::switches::kSingleProcess);
@@ -1148,7 +1149,7 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 
         // Skip chrome.test if this isn't a test.
         if (api_name == "test" &&
-            !CommandLine::ForCurrentProcess()->HasSwitch(
+            !base::CommandLine::ForCurrentProcess()->HasSwitch(
                 ::switches::kTestType)) {
           continue;
         }

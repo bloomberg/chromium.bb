@@ -43,7 +43,7 @@ void GTFMain(int argc, char* argv[]) {
 
 int main(int argc, char *argv[]) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   base::MessageLoopForUI message_loop;
 
   GTFMain(argc, argv);

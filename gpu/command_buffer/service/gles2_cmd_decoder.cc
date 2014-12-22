@@ -2385,7 +2385,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       shader_texture_lod_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
       lose_context_when_out_of_memory_(false),
-      service_logging_(CommandLine::ForCurrentProcess()->HasSwitch(
+      service_logging_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGPUServiceLoggingGPU)),
       viewport_max_width_(0),
       viewport_max_height_(0),
@@ -2417,7 +2417,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   // tests because GLES2DecoderWithShaderTest.GetShaderInfoLogValidArgs passes
   // the empty string to CompileShader and this is not a valid shader.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGLSLTranslator)) {
     use_shader_translator_ = false;
   }
@@ -2443,23 +2443,24 @@ bool GLES2DecoderImpl::Initialize(
   gpu_tracer_.reset(new GPUTracer(this));
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUDebugging)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUDebugging)) {
     set_debug(true);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUCommandLogging)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUCommandLogging)) {
     set_log_commands(true);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableUnsafeES3APIs)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnsafeES3APIs)) {
     set_unsafe_es3_apis_enabled(true);
   }
 
-  compile_shader_always_succeeds_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kCompileShaderAlwaysSucceeds);
+  compile_shader_always_succeeds_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCompileShaderAlwaysSucceeds);
 
   // Take ownership of the context and surface. The surface can be replaced with
   // SetSurface.
@@ -2960,8 +2961,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (workarounds().regenerate_struct_names)
     driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEmulateShaderPrecision))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEmulateShaderPrecision))
     resources.WEBGL_debug_shader_precision = true;
 
   vertex_translator_ = shader_translator_cache()->GetTranslator(

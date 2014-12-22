@@ -22,7 +22,7 @@ int RunHelper(base::TestSuite* test_suite) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);
   ShInitialize();
   base::TestSuite test_suite(argc, argv);

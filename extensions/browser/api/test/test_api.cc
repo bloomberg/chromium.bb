@@ -38,7 +38,7 @@ namespace WaitForRoundTrip = core_api::test::WaitForRoundTrip;
 TestExtensionFunction::~TestExtensionFunction() {}
 
 bool TestExtensionFunction::RunSync() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     error_ = kNotTestProcessError;
     return false;
   }

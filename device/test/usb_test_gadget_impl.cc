@@ -123,7 +123,7 @@ class UsbTestGadgetImpl : public UsbTestGadget {
 }  // namespace
 
 bool UsbTestGadget::IsTestEnabled() {
-  base::CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(kCommandLineSwitch);
 }
 

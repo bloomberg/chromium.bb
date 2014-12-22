@@ -110,16 +110,16 @@ FeatureSwitch::ScopedOverride::~ScopedOverride() {
 
 FeatureSwitch::FeatureSwitch(const char* switch_name,
                              DefaultValue default_value) {
-  Init(CommandLine::ForCurrentProcess(), switch_name, default_value);
+  Init(base::CommandLine::ForCurrentProcess(), switch_name, default_value);
 }
 
-FeatureSwitch::FeatureSwitch(const CommandLine* command_line,
+FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
                              const char* switch_name,
                              DefaultValue default_value) {
   Init(command_line, switch_name, default_value);
 }
 
-void FeatureSwitch::Init(const CommandLine* command_line,
+void FeatureSwitch::Init(const base::CommandLine* command_line,
                          const char* switch_name,
                          DefaultValue default_value) {
   command_line_ = command_line;

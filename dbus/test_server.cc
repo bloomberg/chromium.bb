@@ -10,7 +10,7 @@
 
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   TestTimeouts::Initialize();
 
   base::Thread* dbus_thread = new base::Thread("D-Bus Thread");

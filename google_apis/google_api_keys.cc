@@ -81,7 +81,7 @@ class APIKeyCache {
  public:
   APIKeyCache() {
     scoped_ptr<base::Environment> environment(base::Environment::Create());
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     api_key_ = CalculateKeyValue(GOOGLE_API_KEY,
                                  STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY),
@@ -211,7 +211,7 @@ class APIKeyCache {
                                        const char* command_line_switch,
                                        const std::string& default_if_unset,
                                        base::Environment* environment,
-                                       CommandLine* command_line) {
+                                       base::CommandLine* command_line) {
     std::string key_value = baked_in_value;
     std::string temp;
     if (environment->GetVar(environment_variable_name, &temp)) {

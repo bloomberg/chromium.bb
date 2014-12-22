@@ -35,13 +35,13 @@ int main(int argc, char** argv) {
   ui::gl::android::RegisterJni(base::android::AttachCurrentThread());
 #endif
   base::TestSuite test_suite(argc, argv);
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();
-  gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
+  gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTestsSerially(
       argc,

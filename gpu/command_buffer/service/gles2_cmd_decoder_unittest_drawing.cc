@@ -858,7 +858,7 @@ TEST_P(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
 // Same as DrawArraysValidAttributesSucceeds, but with workaround
 // |init_vertex_attributes|.
 TEST_P(GLES2DecoderManualInitTest, InitVertexAttributes) {
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::INIT_VERTEX_ATTRIBUTES));

@@ -106,7 +106,7 @@ EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor) {
   const char* const argv[] = {
     "dummy"
   };
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   gfx::GLSurface::InitializeOneOff();
 
   *major = 1;

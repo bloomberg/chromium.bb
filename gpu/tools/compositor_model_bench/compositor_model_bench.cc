@@ -353,8 +353,8 @@ class Simulator {
 };
 
 int main(int argc, char* argv[]) {
-  CommandLine::Init(argc, argv);
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
 
   if (argc != 3 && argc != 4) {
     LOG(INFO) << "Usage: \n" <<

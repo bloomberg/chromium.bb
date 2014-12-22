@@ -78,7 +78,7 @@ void ProcessInfoNativeHandler::IsSendRequestDisabled(
 void ProcessInfoNativeHandler::HasSwitch(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK(args.Length() == 1 && args[0]->IsString());
-  bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
+  bool has_switch = base::CommandLine::ForCurrentProcess()->HasSwitch(
       *v8::String::Utf8Value(args[0]));
   args.GetReturnValue().Set(v8::Boolean::New(args.GetIsolate(), has_switch));
 }

@@ -54,13 +54,14 @@ class FeatureInfoTest : public GpuServiceTest {
     info_->Initialize();
   }
 
-  void SetupWithCommandLine(const CommandLine& command_line) {
+  void SetupWithCommandLine(const base::CommandLine& command_line) {
     GpuServiceTest::SetUp();
     info_ = new FeatureInfo(command_line);
   }
 
   void SetupInitExpectationsWithCommandLine(
-      const char* extensions, const CommandLine& command_line) {
+      const char* extensions,
+      const base::CommandLine& command_line) {
     GpuServiceTest::SetUpWithGLVersion("2.0", extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, "", "");
@@ -1210,7 +1211,7 @@ TEST_F(FeatureInfoTest, InitializeOES_element_index_uint) {
 }
 
 TEST_F(FeatureInfoTest, InitializeVAOsWithClientSideArrays) {
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
@@ -1302,7 +1303,7 @@ TEST_F(FeatureInfoTest, InitializeWithoutSamplers) {
 }
 
 TEST_F(FeatureInfoTest, ParseDriverBugWorkaroundsSingle) {
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::EXIT_ON_CONTEXT_LOST));
@@ -1312,7 +1313,7 @@ TEST_F(FeatureInfoTest, ParseDriverBugWorkaroundsSingle) {
 }
 
 TEST_F(FeatureInfoTest, ParseDriverBugWorkaroundsMultiple) {
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::EXIT_ON_CONTEXT_LOST) + "," +
@@ -1351,7 +1352,7 @@ TEST_F(FeatureInfoTest, InitializeWithPreferredEXTDrawBuffers) {
 }
 
 TEST_F(FeatureInfoTest, ARBSyncDisabled) {
-  CommandLine command_line(0, NULL);
+  base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::DISABLE_ARB_SYNC));

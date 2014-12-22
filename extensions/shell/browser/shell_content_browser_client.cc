@@ -185,7 +185,7 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
-    CommandLine* command_line,
+    base::CommandLine* command_line,
     int child_process_id) {
   std::string process_type =
       command_line->GetSwitchValueASCII(::switches::kProcessType);
@@ -235,7 +235,7 @@ ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(
 }
 
 void ShellContentBrowserClient::AppendRendererSwitches(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   // TODO(jamescook): Should we check here if the process is in the extension
   // service process map, or can we assume all renderers are extension
   // renderers?
@@ -247,9 +247,8 @@ void ShellContentBrowserClient::AppendRendererSwitches(
   static const char* const kSwitchNames[] = {
     ::switches::kEnableNaClDebug,
   };
-  command_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                                 kSwitchNames,
-                                 arraysize(kSwitchNames));
+  command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                 kSwitchNames, arraysize(kSwitchNames));
 #endif  // !defined(DISABLE_NACL)
 }
 

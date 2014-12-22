@@ -21,7 +21,8 @@
 namespace {
 
 size_t GetCacheSizeBytes() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kGpuProgramCacheSizeKb)) {
     size_t size;
     if (base::StringToSizeT(
@@ -215,7 +216,7 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   shader_b->set_varying_map(value->varying_map_1());
 
   if (!shader_callback.is_null() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
     scoped_ptr<GpuProgramProto> proto(
         GpuProgramProto::default_instance().New());
@@ -284,7 +285,7 @@ void MemoryProgramCache::SaveLinkedProgram(
   }
 
   if (!shader_callback.is_null() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
     scoped_ptr<GpuProgramProto> proto(
         GpuProgramProto::default_instance().New());

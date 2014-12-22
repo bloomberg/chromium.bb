@@ -161,14 +161,14 @@ FeatureInfo::Workarounds::Workarounds() :
 }
 
 FeatureInfo::FeatureInfo() {
-  InitializeBasicState(*CommandLine::ForCurrentProcess());
+  InitializeBasicState(*base::CommandLine::ForCurrentProcess());
 }
 
-FeatureInfo::FeatureInfo(const CommandLine& command_line) {
+FeatureInfo::FeatureInfo(const base::CommandLine& command_line) {
   InitializeBasicState(command_line);
 }
 
-void FeatureInfo::InitializeBasicState(const CommandLine& command_line) {
+void FeatureInfo::InitializeBasicState(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
     std::string types = command_line.GetSwitchValueASCII(
         switches::kGpuDriverBugWorkarounds);

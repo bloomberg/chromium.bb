@@ -426,8 +426,9 @@ void ApplyBSDiffPatch(const base::FilePath& old_file,
 
 int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
-  CommandLine::Init(argc, argv);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
@@ -447,7 +448,7 @@ int main(int argc, const char* argv[]) {
   bool cmd_spread_1_unadjusted = command_line.HasSwitch("gen1u");
 
   std::vector<base::FilePath> values;
-  const CommandLine::StringVector& args = command_line.GetArgs();
+  const base::CommandLine::StringVector& args = command_line.GetArgs();
   for (size_t i = 0; i < args.size(); ++i) {
     values.push_back(base::FilePath(args[i]));
   }

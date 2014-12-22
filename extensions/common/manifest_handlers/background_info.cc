@@ -170,8 +170,8 @@ bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
     }
 
     if (!(background_url_.SchemeIs("https") ||
-          (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAllowHTTPBackgroundPage) &&
+          (base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kAllowHTTPBackgroundPage) &&
            background_url_.SchemeIs("http")))) {
       *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
       return false;

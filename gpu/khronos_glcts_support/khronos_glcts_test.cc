@@ -67,7 +67,7 @@ bool RunKhronosGLCTSTest(const char* test_name) {
       g_deqp_log_dir.AppendASCII(test_info->name()).
       AddExtension(FILE_PATH_LITERAL(".log"));
 
-  CommandLine cmdline(program);
+  base::CommandLine cmdline(program);
   cmdline.AppendSwitchPath("--deqp-log-filename", log);
   cmdline.AppendSwitchPath("--deqp-archive-dir", archive);
   cmdline.AppendArg("--deqp-gl-config-id=-1");

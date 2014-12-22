@@ -53,15 +53,15 @@ void MergeFeatureSets(std::set<int>* dst, const std::set<int>& src) {
   dst->insert(src.begin(), src.end());
 }
 
-void ApplyGpuDriverBugWorkarounds(CommandLine* command_line) {
+void ApplyGpuDriverBugWorkarounds(base::CommandLine* command_line) {
   GPUInfo gpu_info;
   CollectBasicGraphicsInfo(&gpu_info);
 
   ApplyGpuDriverBugWorkarounds(gpu_info, command_line);
 }
 
-void ApplyGpuDriverBugWorkarounds(
-    const GPUInfo& gpu_info, CommandLine* command_line) {
+void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
+                                  base::CommandLine* command_line) {
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   list->LoadList(kGpuDriverBugListJson,
                  GpuControlList::kCurrentOsOnly);

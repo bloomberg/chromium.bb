@@ -55,7 +55,8 @@ std::string GpuDriverBugWorkaroundTypeToString(
 
 // static
 void GpuDriverBugList::AppendWorkaroundsFromCommandLine(
-    std::set<int>* workarounds, const CommandLine& command_line) {
+    std::set<int>* workarounds,
+    const base::CommandLine& command_line) {
   DCHECK(workarounds);
   for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; i++) {
     if (!command_line.HasSwitch(kFeatureList[i].name))

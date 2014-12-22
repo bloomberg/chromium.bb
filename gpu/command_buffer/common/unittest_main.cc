@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 #if !defined(OS_ANDROID)
   base::AtExitManager exit_manager;
 #endif
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTests(argc,
                                argv,

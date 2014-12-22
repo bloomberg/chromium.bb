@@ -466,9 +466,10 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
   DCHECK(gpu_info);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kUseGL);
     if (requested_implementation_name == "swiftshader") {
       gpu_info->software_rendering = true;
       gpu_info->context_info_state = kCollectInfoNonFatalFailure;

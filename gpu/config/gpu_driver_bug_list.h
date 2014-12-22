@@ -24,7 +24,8 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
   // Append |workarounds| with these passed in through the
   // |command_line|.
   static void AppendWorkaroundsFromCommandLine(
-      std::set<int>* workarounds, const CommandLine& command_line);
+      std::set<int>* workarounds,
+      const base::CommandLine& command_line);
 
  private:
   GpuDriverBugList();

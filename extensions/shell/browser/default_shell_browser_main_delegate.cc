@@ -35,13 +35,12 @@ void DefaultShellBrowserMainDelegate::Start(
         ExtensionSystem::Get(browser_context));
     extension_system->Init();
 
-    CommandLine::StringType path_list =
+    base::CommandLine::StringType path_list =
         command_line->GetSwitchValueNative(switches::kLoadApps);
 
-    base::StringTokenizerT<CommandLine::StringType,
-                           CommandLine::StringType::const_iterator>
+    base::StringTokenizerT<base::CommandLine::StringType,
+                           base::CommandLine::StringType::const_iterator>
         tokenizer(path_list, FILE_PATH_LITERAL(","));
-
 
     std::string launch_id;
     while (tokenizer.GetNext()) {

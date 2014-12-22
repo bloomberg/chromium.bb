@@ -99,7 +99,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
 void ShellMainDelegate::PreSandboxStartup() {
   std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
   if (ProcessNeedsResourceBundle(process_type))
     InitializeResourceBundle();

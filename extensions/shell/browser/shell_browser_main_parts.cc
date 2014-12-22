@@ -109,7 +109,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
-      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kAppShellPreferredNetwork)));
 #else
   // Non-Chrome OS platforms are for developer convenience, so use a test IME.
@@ -185,7 +185,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       browser_context_.get());
 
   // Initialize OAuth2 support from command line.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   oauth2_token_service_.reset(new ShellOAuth2TokenService(
       browser_context_.get(),
       cmd->GetSwitchValueASCII(switches::kAppShellUser),

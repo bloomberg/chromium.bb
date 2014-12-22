@@ -341,7 +341,7 @@ bool Extension::ShouldNotBeVisible() const {
   // Don't show component extensions because they are only extensions as an
   // implementation detail of Chrome.
   if (extensions::Manifest::IsComponentLocation(location()) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kShowComponentExtensionOptions)) {
     return true;
   }
@@ -714,7 +714,7 @@ bool Extension::LoadManifestVersion(base::string16* error) {
   manifest_version_ = manifest_->GetManifestVersion();
   if (manifest_version_ < kModernManifestVersion &&
       ((creation_flags_ & REQUIRE_MODERN_MANIFEST_VERSION &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAllowLegacyExtensionManifests)) ||
        GetType() == Manifest::TYPE_PLATFORM_APP)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(

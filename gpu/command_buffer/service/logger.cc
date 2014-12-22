@@ -27,7 +27,7 @@ Logger::~Logger() {}
 void Logger::LogMessage(
     const char* filename, int line, const std::string& msg) {
   if (log_message_count_ < kMaxLogMessages ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGLErrorLimit)) {
     std::string prefixed_msg(std::string("[") + GetLogPrefix() + "]" + msg);
     ++log_message_count_;

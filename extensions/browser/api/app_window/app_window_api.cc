@@ -491,7 +491,7 @@ AppWindow::Frame AppWindowCreateFunction::GetFrameFromString(
   if (frame_string == kHtmlFrameOption &&
       (extension()->permissions_data()->HasAPIPermission(
            APIPermission::kExperimental) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableExperimentalExtensionApis))) {
      inject_html_titlebar_ = true;
      return AppWindow::FRAME_NONE;

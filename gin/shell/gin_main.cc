@@ -57,7 +57,7 @@ class GinShellRunnerDelegate : public ModuleRunnerDelegate {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   base::i18n::InitializeICU();
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::IsolateHolder::LoadV8Snapshot();
@@ -77,8 +77,9 @@ int main(int argc, char** argv) {
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(true);
   }
 
-  CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
-  for (CommandLine::StringVector::const_iterator it = args.begin();
+  base::CommandLine::StringVector args =
+      base::CommandLine::ForCurrentProcess()->GetArgs();
+  for (base::CommandLine::StringVector::const_iterator it = args.begin();
        it != args.end(); ++it) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         gin::Run, runner.GetWeakPtr(), base::FilePath(*it)));

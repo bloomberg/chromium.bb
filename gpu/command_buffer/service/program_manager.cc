@@ -404,8 +404,8 @@ void Program::Update() {
   }
 
 #if !defined(NDEBUG)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceLoggingGPU)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUServiceLoggingGPU)) {
     DVLOG(1) << "----: attribs for service_id: " << service_id();
     for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
       const VertexAttrib& info = attrib_infos_[ii];
@@ -482,8 +482,8 @@ void Program::Update() {
   }
 
 #if !defined(NDEBUG)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceLoggingGPU)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUServiceLoggingGPU)) {
     DVLOG(1) << "----: uniforms for service_id: " << service_id();
     for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
       const UniformInfo& info = uniform_infos_[ii];

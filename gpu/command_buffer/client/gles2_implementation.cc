@@ -111,7 +111,7 @@ GLES2Implementation::GLES2Implementation(
   this_in_hex_ = ss.str();
 
   GPU_CLIENT_LOG_CODE_BLOCK({
-    debug_ = CommandLine::ForCurrentProcess()->HasSwitch(
+    debug_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableGPUClientLogging);
   });
 

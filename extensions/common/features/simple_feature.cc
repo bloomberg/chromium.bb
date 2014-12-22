@@ -353,12 +353,12 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     if (!IsIdInWhitelist(extension_id)) {
       // TODO(aa): This is gross. There should be a better way to test the
       // whitelist.
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
       if (!command_line->HasSwitch(switches::kWhitelistedExtensionID))
         return CreateAvailability(NOT_FOUND_IN_WHITELIST, type);
 
       std::string whitelist_switch_value =
-          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kWhitelistedExtensionID);
       if (extension_id != whitelist_switch_value)
         return CreateAvailability(NOT_FOUND_IN_WHITELIST, type);
