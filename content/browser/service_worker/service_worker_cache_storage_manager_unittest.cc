@@ -387,7 +387,9 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchNoCache) {
   EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchCacheNotReferenced) {
+// Flaky. See crbug.com/444503
+TEST_P(ServiceWorkerCacheStorageManagerTestP,
+       DISABLED_StorageMatchCacheNotReferenced) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   callback_cache_ = nullptr;
