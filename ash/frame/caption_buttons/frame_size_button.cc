@@ -13,7 +13,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/i18n/rtl.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

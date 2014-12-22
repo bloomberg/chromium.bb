@@ -7,7 +7,7 @@
 
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {

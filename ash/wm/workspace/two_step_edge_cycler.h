@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/time/time.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ash {
 

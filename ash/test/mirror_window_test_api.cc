@@ -9,7 +9,7 @@
 #include "ash/display/mirror_window_controller.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/shell.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ash {
 namespace test {

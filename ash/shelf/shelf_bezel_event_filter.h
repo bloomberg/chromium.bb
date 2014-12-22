@@ -7,7 +7,7 @@
 
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 class ShelfLayoutManager;

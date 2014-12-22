@@ -20,8 +20,8 @@
 #include "ui/aura/window_property.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform.h"
 

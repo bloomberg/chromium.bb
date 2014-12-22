@@ -10,7 +10,7 @@
 #include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace app_list {

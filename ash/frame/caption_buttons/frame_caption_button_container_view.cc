@@ -19,8 +19,8 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/strings/grit/ui_strings.h"  // Accessibility names
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

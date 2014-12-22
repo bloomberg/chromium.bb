@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_USER_BUTTON_FROM_VIEW_H_
 
 #include "base/macros.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace ash {

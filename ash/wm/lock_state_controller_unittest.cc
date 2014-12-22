@@ -18,7 +18,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"

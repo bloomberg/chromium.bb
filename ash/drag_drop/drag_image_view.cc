@@ -9,7 +9,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"

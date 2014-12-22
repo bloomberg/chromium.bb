@@ -6,8 +6,8 @@
 
 #include "base/time/time.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace ash {

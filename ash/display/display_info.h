@@ -11,8 +11,8 @@
 #include "ash/ash_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 

@@ -29,7 +29,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 

@@ -7,7 +7,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 

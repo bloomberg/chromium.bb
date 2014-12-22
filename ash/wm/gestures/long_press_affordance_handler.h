@@ -8,7 +8,7 @@
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/animation/linear_animation.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ui {
 class GestureEvent;

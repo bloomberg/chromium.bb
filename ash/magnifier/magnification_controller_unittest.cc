@@ -14,7 +14,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"

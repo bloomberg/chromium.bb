@@ -13,8 +13,8 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_processor.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {

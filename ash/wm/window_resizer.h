@@ -10,7 +10,7 @@
 #include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
 namespace aura {

@@ -11,8 +11,8 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/size.h"
 
 namespace blink {
 

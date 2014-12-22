@@ -22,7 +22,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 

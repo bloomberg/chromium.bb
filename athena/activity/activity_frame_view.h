@@ -7,7 +7,7 @@
 
 #include "athena/activity/public/activity_view.h"
 #include "athena/wm/public/window_manager_observer.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {

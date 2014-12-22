@@ -8,9 +8,9 @@
 #include <string>
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 

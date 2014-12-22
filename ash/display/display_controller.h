@@ -20,7 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/display_observer.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace aura {
 class Display;

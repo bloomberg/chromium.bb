@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_SPECIAL_POPUP_ROW_H_
 
 #include "ash/ash_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/view.h"
 
 namespace views {

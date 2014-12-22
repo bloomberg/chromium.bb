@@ -8,8 +8,8 @@
 #include "ash/shell.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {

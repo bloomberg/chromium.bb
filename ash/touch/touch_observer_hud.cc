@@ -10,9 +10,9 @@
 #include "ash/shell_window_ids.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

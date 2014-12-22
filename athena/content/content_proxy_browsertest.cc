@@ -13,8 +13,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 namespace athena {

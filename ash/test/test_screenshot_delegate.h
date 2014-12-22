@@ -8,7 +8,7 @@
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 namespace test {

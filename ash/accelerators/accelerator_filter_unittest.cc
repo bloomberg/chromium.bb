@@ -20,7 +20,7 @@
 #include "ui/base/accelerators/accelerator_history.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 namespace test {

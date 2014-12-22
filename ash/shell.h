@@ -23,9 +23,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_target.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/size.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
 

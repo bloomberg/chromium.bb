@@ -10,7 +10,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/view.h"

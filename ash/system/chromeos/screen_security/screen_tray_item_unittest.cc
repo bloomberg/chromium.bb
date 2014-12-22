@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
 

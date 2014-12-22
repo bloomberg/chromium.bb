@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/ExternalVideoSurfaceContainer_jni.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
 using content::ContentViewCore;

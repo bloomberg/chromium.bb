@@ -12,8 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/size_conversions.h"
-#include "ui/gfx/size_f.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 
 #if defined(OS_WIN)
 #include "ui/aura/window_tree_host.h"

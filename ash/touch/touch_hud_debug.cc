@@ -17,7 +17,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"

@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_border.h"
 
 namespace views {

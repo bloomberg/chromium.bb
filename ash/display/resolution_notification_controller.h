@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/display_observer.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chromeos {
 FORWARD_DECLARE_TEST(DisplayPreferencesTest, PreventStore);

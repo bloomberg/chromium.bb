@@ -11,7 +11,7 @@
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/macros.h"
 #include "ui/events/platform/platform_event_observer.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ash {
 

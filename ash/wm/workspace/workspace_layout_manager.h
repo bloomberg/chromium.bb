@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 

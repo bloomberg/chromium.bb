@@ -7,7 +7,7 @@
 #include "ash/wm/window_animations.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"

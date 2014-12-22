@@ -29,9 +29,9 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/size_conversions.h"
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"

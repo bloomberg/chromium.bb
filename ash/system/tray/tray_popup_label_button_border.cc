@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/native_theme_delegate.h"

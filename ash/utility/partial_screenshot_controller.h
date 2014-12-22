@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace aura {
 class Window;

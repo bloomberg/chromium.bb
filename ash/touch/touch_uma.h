@@ -9,7 +9,7 @@
 
 #include "ash/shell.h"
 #include "base/memory/singleton.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget.h"
 
 namespace aura {
