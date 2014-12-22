@@ -61,30 +61,71 @@ class TestCLActionHistory(cros_test_lib.TestCase):
   def testGetCLHandlingTime(self):
     """Test that we correctly compute a CL's handling time."""
     change = metadata_lib.GerritPatchTuple(1, 1, False)
-    build_id = self.fake_db.InsertBuild('n', 'w', 1, 'c', 'h')
+    launcher_id = self.fake_db.InsertBuild(
+        'launcher', constants.WATERFALL_INTERNAL, 1,
+        constants.PRE_CQ_LAUNCHER_CONFIG, 'hostname')
+    trybot_id = self.fake_db.InsertBuild(
+        'banana pre cq', constants.WATERFALL_INTERNAL, 1,
+        'banana-pre-cq', 'hostname')
+    master_id = self.fake_db.InsertBuild(
+        'CQ master', constants.WATERFALL_INTERNAL, 1,
+        constants.CQ_MASTER, 'hostname')
+    slave_id = self.fake_db.InsertBuild(
+        'banana paladin', constants.WATERFALL_INTERNAL, 1,
+        'banana-paladin', 'hostname')
 
     start_time = datetime.datetime.now()
     c = itertools.count()
     def next_time():
       return start_time + datetime.timedelta(seconds=c.next())
 
-    # Simulate a CL getting speculatively picked up, then marked as ready
-    # then rejected, then remarked as ready, then submitted.
-    # Only the time while it was ready (2 seconds in our fake clock) should
-    # count as handling time.
-    self._Act(build_id, change, constants.CL_ACTION_SPECULATIVE,
-              timestamp=next_time())
-    self._Act(build_id, change, constants.CL_ACTION_REQUEUED,
-              timestamp=next_time())
-    self._Act(build_id, change, constants.CL_ACTION_KICKED_OUT,
-              timestamp=next_time())
-    self._Act(build_id, change, constants.CL_ACTION_REQUEUED,
-              timestamp=next_time())
-    self._Act(build_id, change, constants.CL_ACTION_SUBMITTED,
-              timestamp=next_time())
+    def a(build_id, action, reason=None):
+      self._Act(build_id, change, action, reason=reason, timestamp=next_time())
+
+    # Change is screened, picked up, and rejected by the pre-cq,
+    # non-speculatively.
+    a(launcher_id, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
+      reason='banana-pre-cq')
+    a(launcher_id, constants.CL_ACTION_SCREENED_FOR_PRE_CQ)
+    a(launcher_id, constants.CL_ACTION_TRYBOT_LAUNCHING,
+      reason='banana-pre-cq')
+    a(trybot_id, constants.CL_ACTION_PICKED_UP)
+    a(trybot_id, constants.CL_ACTION_KICKED_OUT)
+
+    # Change is re-marked by developer, picked up again by pre-cq, verified, and
+    # marked as passed.
+    a(launcher_id, constants.CL_ACTION_REQUEUED)
+    a(launcher_id, constants.CL_ACTION_TRYBOT_LAUNCHING,
+      reason='banana-pre-cq')
+    a(trybot_id, constants.CL_ACTION_PICKED_UP)
+    a(trybot_id, constants.CL_ACTION_VERIFIED)
+    a(launcher_id, constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED)
+    a(launcher_id, constants.CL_ACTION_PRE_CQ_PASSED)
+
+    # Change is picked up by the CQ and rejected.
+    a(master_id, constants.CL_ACTION_PICKED_UP)
+    a(slave_id, constants.CL_ACTION_PICKED_UP)
+    a(master_id, constants.CL_ACTION_KICKED_OUT)
+
+    # Change is re-marked, picked up by the CQ, and forgiven.
+    a(launcher_id, constants.CL_ACTION_REQUEUED)
+    a(master_id, constants.CL_ACTION_PICKED_UP)
+    a(slave_id, constants.CL_ACTION_PICKED_UP)
+    a(master_id, constants.CL_ACTION_FORGIVEN)
+
+    # Change is re-marked, picked up by the CQ, and forgiven.
+    a(master_id, constants.CL_ACTION_PICKED_UP)
+    a(slave_id, constants.CL_ACTION_PICKED_UP)
+    a(master_id, constants.CL_ACTION_SUBMITTED)
 
     action_history = self.fake_db.GetActionsForChanges([change])
-    self.assertEqual(2, clactions.GetCLHandlingTime(change, action_history))
+    # Note: There are 2 ticks in the total handling time that are not accounted
+    # for in the sub-times. These are the time between VALIDATION_PENDING and
+    # SCREENED, and the time between FULLY_VERIFIED and PASSED.
+    self.assertEqual(18, clactions.GetCLHandlingTime(change, action_history))
+    self.assertEqual(7, clactions.GetPreCQTime(change, action_history))
+    self.assertEqual(3, clactions.GetCQWaitTime(change, action_history))
+    self.assertEqual(6, clactions.GetCQRunTime(change, action_history))
 
   def _Act(self, build_id, change, action, reason=None, timestamp=None):
     self.fake_db.InsertCLActions(
