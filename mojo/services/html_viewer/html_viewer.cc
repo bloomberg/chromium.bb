@@ -200,9 +200,9 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };
 
+}  // namespace html_viewer
+
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new HTMLViewer);
+  mojo::ApplicationRunnerChromium runner(new html_viewer::HTMLViewer);
   return runner.Run(shell_handle);
 }
-
-}  // namespace html_viewer
