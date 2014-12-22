@@ -491,21 +491,16 @@ void GeneralHeapObjectHeader::finalize()
 }
 
 template<typename Header>
-void LargeObject<Header>::unmark()
+void LargeObject<Header>::sweep()
 {
-    return heapObjectHeader()->unmark();
+    Heap::increaseMarkedObjectSize(size());
+    heapObjectHeader()->unmark();
 }
 
 template<typename Header>
-bool LargeObject<Header>::isMarked()
+bool LargeObject<Header>::isEmpty()
 {
-    return heapObjectHeader()->isMarked();
-}
-
-template<typename Header>
-void LargeObject<Header>::markDead()
-{
-    heapObjectHeader()->markDead();
+    return !heapObjectHeader()->isMarked();
 }
 
 template<typename Header>
@@ -523,10 +518,11 @@ void LargeObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 template<typename Header>
 void LargeObject<Header>::markUnmarkedObjectsDead()
 {
-    if (isMarked())
-        unmark();
+    Header* header = heapObjectHeader();
+    if (header->isMarked())
+        header->unmark();
     else
-        markDead();
+        header->markDead();
 }
 
 #if ENABLE(ASSERT)
@@ -1074,9 +1070,8 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 }
 
 template<typename Header>
-void ThreadHeap<Header>::freeLargeObject(LargeObject<Header>* object, LargeObject<Header>** previousNext)
+void ThreadHeap<Header>::freeLargeObject(LargeObject<Header>* object)
 {
-    object->unlink(previousNext);
     object->finalize();
     Heap::decreaseAllocatedSpace(object->size());
 
@@ -1280,7 +1275,7 @@ void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo* gcInfo)
 }
 
 template <typename Header>
-void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
+void ThreadHeap<Header>::freePage(HeapPage<Header>* page)
 {
     Heap::decreaseAllocatedSpace(blinkPageSize);
 
@@ -1396,7 +1391,7 @@ void ThreadHeap<Header>::sweepNormalPages()
         if (page->isEmpty()) {
             HeapPage<Header>* next = page->next();
             page->unlink(previousNext);
-            removePageFromHeap(page);
+            freePage(page);
             page = next;
         } else {
             page->sweep(this);
@@ -1410,21 +1405,21 @@ template<typename Header>
 void ThreadHeap<Header>::sweepLargePages()
 {
     TRACE_EVENT0("blink_gc", "ThreadHeap::sweepLargePages");
+    LargeObject<Header>* largeObject = m_firstLargeObject;
     LargeObject<Header>** previousNext = &m_firstLargeObject;
-    for (LargeObject<Header>* current = m_firstLargeObject; current;) {
-        if (current->isMarked()) {
-            Heap::increaseMarkedObjectSize(current->size());
-            current->unmark();
-            previousNext = &current->m_next;
-            current = current->next();
+    while (largeObject) {
+        if (largeObject->isEmpty()) {
+            LargeObject<Header>* next = largeObject->next();
+            largeObject->unlink(previousNext);
+            freeLargeObject(largeObject);
+            largeObject = next;
         } else {
-            LargeObject<Header>* next = current->next();
-            freeLargeObject(current, previousNext);
-            current = next;
+            largeObject->sweep();
+            previousNext = &largeObject->m_next;
+            largeObject = largeObject->next();
         }
     }
 }
-
 
 // STRICT_ASAN_FINALIZATION_CHECKING turns on poisoning of all objects during
 // sweeping to catch cases where dead objects touch each other.  This is not
@@ -1569,7 +1564,7 @@ template<typename Header>
 bool HeapPage<Header>::isEmpty()
 {
     HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(payload());
-    return header->isFree() && (header->size() == payloadSize());
+    return header->isFree() && header->size() == payloadSize();
 }
 
 template<typename Header>
@@ -1856,7 +1851,7 @@ void LargeObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo*
     Header* header = heapObjectHeader();
     size_t tag = info->getClassTag(header->gcInfo());
     size_t age = header->age();
-    if (isMarked()) {
+    if (header->isMarked()) {
         info->liveCount[tag] += 1;
         info->liveSize[tag] += header->size();
         // Count objects that are live when promoted to the final generation.
@@ -1874,7 +1869,7 @@ void LargeObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo*
     if (json) {
         json->setInteger("class", tag);
         json->setInteger("size", header->size());
-        json->setInteger("isMarked", isMarked());
+        json->setInteger("isMarked", header->isMarked());
     }
 }
 #endif

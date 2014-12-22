@@ -601,12 +601,11 @@ public:
         return reinterpret_cast<Header*>(headerAddress);
     }
 
-    bool isMarked();
-    void unmark();
     size_t objectPayloadSizeForTesting();
     void mark(Visitor*);
     void finalize();
-    void markDead();
+    void sweep();
+    bool isEmpty();
     void markUnmarkedObjectsDead();
     virtual void markOrphaned() override
     {
@@ -833,7 +832,7 @@ public:
 
     virtual void prepareHeapForTermination() override;
 
-    void removePageFromHeap(HeapPage<Header>*);
+    void freePage(HeapPage<Header>*);
 
     PLATFORM_EXPORT void promptlyFreeObject(Header*);
     PLATFORM_EXPORT bool expandObject(Header*, size_t);
@@ -860,7 +859,7 @@ private:
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, const GCInfo*);
 
-    void freeLargeObject(LargeObject<Header>*, LargeObject<Header>**);
+    void freeLargeObject(LargeObject<Header>*);
     void allocatePage(const GCInfo*);
 
     inline Address allocateSize(size_t allocationSize, const GCInfo*);
