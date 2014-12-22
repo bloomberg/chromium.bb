@@ -5,8 +5,6 @@
 #ifndef WebCompositorAnimation_h
 #define WebCompositorAnimation_h
 
-#define WEB_ANIMATION_SUPPORTS_FILL_MODE 1
-
 namespace blink {
 
 // A compositor driven animation.
