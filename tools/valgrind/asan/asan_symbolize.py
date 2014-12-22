@@ -68,8 +68,6 @@ def chrome_dsym_hints(binary):
       app_positions.append(index)
     elif part.endswith('.framework'):
       framework_positions.append(index)
-  assert len(framework_positions) <= 1, \
-      "The path contains more than one framework: %s" % binary
   bundle_positions = app_positions + framework_positions
   bundle_positions.sort()
   assert len(bundle_positions) <= 2, \
@@ -77,9 +75,9 @@ def chrome_dsym_hints(binary):
   if len(bundle_positions) == 0:
     # Case 1: this is a standalone executable or dylib.
     return []
-  assert (len(bundle_positions) == 1 or
-          len(app_positions) == 2 or
-          app_positions[0] < framework_positions[0]), \
+  assert (not (len(app_positions) == 1 and
+               len(framework_positions) == 1 and
+               app_positions[0] < framework_positions[0])), \
       "The path contains an app bundle inside a framework: %s" % binary
   # Cases 2 and 3. The outermost bundle (which is the only bundle in the case 2)
   # is located in the product dir.
