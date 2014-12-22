@@ -1002,6 +1002,7 @@
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
             'components.gyp:autofill_content_browser',
+            'components.gyp:autofill_content_renderer',
             'components.gyp:password_manager_content_renderer',
             'components.gyp:pref_registry_test_support',
             'components_resources.gyp:components_resources',
@@ -1030,6 +1031,7 @@
           ],
           'sources': [
             'autofill/content/browser/risk/fingerprint_browsertest.cc',
+            'autofill/content/renderer/password_form_conversion_utils_browsertest.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
             'password_manager/content/renderer/credential_manager_client_browsertest.cc',
           ],

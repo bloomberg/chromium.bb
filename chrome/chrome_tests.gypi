@@ -24,9 +24,6 @@
       # The list of sources which is only used by chrome browser tests.
       '../apps/app_restore_service_browsertest.cc',
       '../apps/load_and_launch_browsertest.cc',
-      # TODO(blundell): Bring up a components_browsertests target and move
-      # this test to be in that target. crbug.com/283846
-      '../components/autofill/content/renderer/password_form_conversion_utils_browsertest.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.h',
       '../components/autofill/content/renderer/test_password_autofill_agent.cc',
       '../components/autofill/content/renderer/test_password_generation_agent.h',
