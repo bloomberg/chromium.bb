@@ -174,6 +174,8 @@
         'common/pref_names.h',
         'renderer/cast_content_renderer_client.cc',
         'renderer/cast_content_renderer_client.h',
+        'renderer/cast_media_load_deferrer.cc',
+        'renderer/cast_media_load_deferrer.h',
         'renderer/key_systems_cast.cc',
         'renderer/key_systems_cast.h',
       ],

@@ -30,6 +30,8 @@ class CastContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
       content::RenderFrame* render_frame) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
+  void DeferMediaLoad(content::RenderFrame* render_frame,
+                      const base::Closure& closure) override;
 
  private:
   scoped_ptr<dns_prefetch::PrescientNetworkingDispatcher>

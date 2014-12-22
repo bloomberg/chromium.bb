@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chromecast/common/chromecast_switches.h"
+#include "chromecast/renderer/cast_media_load_deferrer.h"
 #include "chromecast/renderer/key_systems_cast.h"
 #include "chromecast/renderer/media/cma_media_renderer_factory.h"
 #include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
@@ -87,6 +88,18 @@ CastContentRendererClient::CreateMediaRendererFactory(
 blink::WebPrescientNetworking*
 CastContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();
+}
+
+void CastContentRendererClient::DeferMediaLoad(
+    content::RenderFrame* render_frame,
+    const base::Closure& closure) {
+  if (!render_frame->IsHidden()) {
+    closure.Run();
+    return;
+  }
+
+  // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+  new CastMediaLoadDeferrer(render_frame, closure);
 }
 
 }  // namespace shell
