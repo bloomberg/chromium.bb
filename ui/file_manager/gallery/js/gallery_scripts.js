@@ -60,12 +60,13 @@
 //<include src="image_editor/image_encoder.js">
 //<include src="image_editor/exif_encoder.js">
 
+//<include src="entry_list_watcher.js">
+//<include src="error_banner.js">
 //<include src="gallery.js">
 //<include src="gallery_item.js">
-//<include src="error_banner.js">
 //<include src="mosaic_mode.js">
-//<include src="slide_mode.js">
 //<include src="ribbon.js">
+//<include src="slide_mode.js">
 
 // Exports
 window.ImageUtil = ImageUtil;

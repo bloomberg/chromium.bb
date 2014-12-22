@@ -653,12 +653,16 @@ ImageView.prototype.replace = function(
       ImageUtil.setAttribute(newScreenImage, 'fade', false);
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);
       var reverse = opt_effect.getReverse();
-      assert(reverse);
-      this.setTransform_(oldScreenImage, oldViewport, reverse);
-      setTimeout(function() {
+      if (reverse) {
+        this.setTransform_(oldScreenImage, oldViewport, reverse);
+        setTimeout(function() {
+          if (oldScreenImage.parentNode)
+            oldScreenImage.parentNode.removeChild(oldScreenImage);
+        }, reverse.getSafeInterval());
+      } else {
         if (oldScreenImage.parentNode)
           oldScreenImage.parentNode.removeChild(oldScreenImage);
-      }, reverse.getSafeInterval());
+      }
     }
   }.bind(this), 0);
 };

@@ -142,11 +142,6 @@ Ribbon.prototype.disable = function() {
  * @private
  */
 Ribbon.prototype.onSplice_ = function(event) {
-  if (event.removed.length > 1) {
-    console.error('Cannot remove multiple items.');
-    return;
-  }
-
   if (event.removed.length > 0 && event.added.length > 0) {
     console.error('Replacing is not implemented.');
     return;
@@ -163,12 +158,6 @@ Ribbon.prototype.onSplice_ = function(event) {
           nextItem && this.renderCache_[nextItem.getEntry().toURL()];
       this.insertBefore(element, nextElement);
     }
-    return;
-  }
-
-  var removed = this.renderCache_[event.removed[0].getEntry().toURL()];
-  if (!removed || !removed.parentNode || !removed.hasAttribute('selected')) {
-    console.error('Can only remove the selected item');
     return;
   }
 
@@ -203,9 +192,20 @@ Ribbon.prototype.onSplice_ = function(event) {
     }
   }
 
-  removed.removeAttribute('selected');
-  removed.setAttribute('vanishing', 'smooth');
-  this.scheduleRemove_();
+  var removed = false;
+  for (var i = 0; i < event.removed.length; i++) {
+    var removedDom = this.renderCache_[event.removed[i].getEntry().toURL()];
+    if (removedDom) {
+      removedDom.removeAttribute('selected');
+      removedDom.setAttribute('vanishing', 'smooth');
+      removed = true;
+    }
+  }
+
+  if (removed)
+    this.scheduleRemove_();
+
+  this.onSelection_();
 };
 
 /**

@@ -31,6 +31,10 @@ function GalleryDataModel(metadataCache) {
    * @type {DirectoryEntry}
    */
   this.fallbackSaveDirectory = null;
+
+  // Start to watch file system entries.
+  var watcher = new EntryListWatcher(this);
+  watcher.getEntry = function(item) { return item.getEntry(); };
 }
 
 /**

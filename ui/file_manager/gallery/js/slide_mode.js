@@ -158,10 +158,10 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
   this.savedSelection_ = null;
 
   /**
-   * @type {number}
+   * @type {Gallery.Item}
    * @private
    */
-  this.displayedIndex_ = -1;
+  this.displayedItem_ = null;
 
   /**
    * @type {?number}
@@ -536,7 +536,7 @@ SlideMode.prototype.enter = function(
   new Promise(function(fulfill) {
     // If the items are empty, just show the error message.
     if (this.getItemCount_() === 0) {
-      this.displayedIndex_ = -1;
+      this.displayedItem_ = null;
       //TODO(hirono) Show this message in the grid mode too.
       this.errorBanner_.show('GALLERY_NO_IMAGES');
       fulfill();
@@ -554,11 +554,11 @@ SlideMode.prototype.enter = function(
     // Ensure valid single selection.
     // Note that the SlideMode object is not listening to selection change yet.
     this.select(Math.max(0, this.getSelectedIndex()));
-    this.displayedIndex_ = this.getSelectedIndex();
 
     // Show the selected item ASAP, then complete the initialization
     // (loading the ribbon thumbnails can take some time).
     var selectedItem = this.getSelectedItem();
+    this.displayedItem_ = selectedItem;
 
     // Load the image of the item.
     this.loadItem_(
@@ -712,7 +712,7 @@ SlideMode.prototype.onSelection_ = function() {
   if (!this.isSlideshowOn_())
     this.savedSelection_ = null;
 
-  if (this.getSelectedIndex() === this.displayedIndex_)
+  if (this.getSelectedItem() === this.displayedItem_)
     return;  // Do not reselect.
 
   this.commitItem_(this.loadSelectedItem_.bind(this));
@@ -751,11 +751,13 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var slideHint = this.slideHint_;
   this.slideHint_ = null;
 
-  var index = this.getSelectedIndex();
-  if (index === this.displayedIndex_)
+  if (this.getSelectedItem() === this.displayedItem_)
     return;  // Do not reselect.
 
-  var step = slideHint || (index - this.displayedIndex_);
+  var index = this.getSelectedIndex();
+  var displayedIndex = this.dataModel_.indexOf(this.displayedItem_);
+  var step =
+      slideHint || (displayedIndex > 0 ? index - displayedIndex : 1);
 
   if (Math.abs(step) != 1) {
     // Long leap, the sequence is broken, we have no good prefetch candidate.
@@ -770,7 +772,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     this.sequenceLength_ = 1;
   }
 
-  this.displayedIndex_ = index;
+  this.displayedItem_ = this.getSelectedItem();
   var selectedItem = assertInstanceof(this.getSelectedItem(), Gallery.Item);
 
   if (this.sequenceLength_ <= 1) {
@@ -841,17 +843,22 @@ SlideMode.prototype.onSplice_ = function(event) {
 
   // Delay the selection to let the ribbon splice handler work first.
   setTimeout(function() {
+    var displayedItemNotRemvoed = event.removed.every(function(item) {
+      return item !== this.displayedItem_;
+    }.bind(this));
+    if (displayedItemNotRemvoed)
+      return;
+    var nextIndex;
     if (event.index < this.dataModel_.length) {
       // There is the next item, select it.
       // The next item is now at the same index as the removed one, so we need
       // to correct displayIndex_ so that loadSelectedItem_ does not think
       // we are re-selecting the same item (and does right-to-left slide-in
       // animation).
-      this.displayedIndex_ = event.index - 1;
-      this.select(event.index);
+      nextIndex = event.index;
     } else if (this.dataModel_.length) {
       // Removed item is the rightmost, but there are more items.
-      this.select(event.index - 1);  // Select the new last index.
+      nextIndex = event.index - 1;  // Select the new last index.
     } else {
       // No items left. Unload the image, disable edit and print button, and
       // show the banner.
@@ -861,7 +868,11 @@ SlideMode.prototype.onSplice_ = function(event) {
         this.editButton_.disabled = true;
         this.errorBanner_.show('GALLERY_NO_IMAGES');
       }.bind(this));
+      return;
     }
+    // To force to dispatch a selection change event, clear selection before.
+    this.selectionModel_.clear();
+    this.select(nextIndex);
   }.bind(this), 0);
 };
 
