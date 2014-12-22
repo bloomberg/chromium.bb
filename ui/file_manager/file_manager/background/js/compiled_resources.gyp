@@ -50,6 +50,7 @@
           '../../../externs/connection.js',
           '../../../externs/css_rule.js',
           '../../../externs/webview_tag.js',
+          '../../../externs/platform.js',
           '../../common/js/externs.js',
         ],
       },

@@ -20,3 +20,10 @@ window.initialize = function(backgroundComponents) {};
  * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
  */
 window.loadEntries = function(entries, selectedEntries) {};
+
+/**
+ * This definition is required by
+ * ui/file_manager/file_manager/common/js/util.js.
+ * @type {string}
+ */
+Window.prototype.appID;

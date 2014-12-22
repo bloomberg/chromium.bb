@@ -16,16 +16,18 @@
           '../../file_manager/common/js/util.js',
           '../../file_manager/common/js/async_util.js',
           '../../file_manager/common/js/volume_manager_common.js',
-          '../../file_manager/background/js/volume_manager.js',
           '../../file_manager/common/js/error_util.js',
-          '../../file_manager/common/js/file_type.js'
+          '../../file_manager/common/js/file_type.js',
+          '../../file_manager/background/js/volume_manager.js',
         ],
         'externs': [
           '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
+          '../../externs/chrome_test.js',
           '../../externs/chrome_app_window.js',
           '../../externs/gallery_background.js',
+          '../../externs/platform.js',
         ],
       },
       'includes': [
@@ -52,6 +54,11 @@
           '../../../webui/resources/js/cr/ui/list_selection_controller.js',
           '../../../webui/resources/js/cr/ui/list.js',
           '../../../webui/resources/js/cr/ui/grid.js',
+          '../../file_manager/common/js/volume_manager_common.js',
+          '../../file_manager/common/js/lru_cache.js',
+          '../../file_manager/common/js/async_util.js',
+          '../../file_manager/common/js/file_type.js',
+          '../../file_manager/common/js/util.js',
           '../../file_manager/foreground/js/metrics_base.js',
           '../../file_manager/foreground/js/metrics.js',
           '../../file_manager/foreground/js/metadata/metadata_cache.js',
@@ -62,11 +69,6 @@
           '../../file_manager/foreground/js/ui/share_dialog.js',
           '../../file_manager/foreground/js/volume_manager_wrapper.js',
           '../../file_manager/background/js/volume_manager.js',
-          '../../file_manager/common/js/lru_cache.js',
-          '../../file_manager/common/js/async_util.js',
-          '../../file_manager/common/js/file_type.js',
-          '../../file_manager/common/js/util.js',
-          '../../file_manager/common/js/volume_manager_common.js',
           '../../image_loader/image_loader_client.js',
           './image_editor/commands.js',
           './image_editor/exif_encoder.js',
@@ -94,6 +96,8 @@
           '../../externs/chrome_test.js',
           '../../externs/exif_entry.js',
           '../../externs/gallery_foreground.js',
+          '../../externs/platform.js',
+          '../../externs/webview_tag.js',
         ],
       },
       'includes': [
@@ -102,5 +106,3 @@
     }
   ],
 }
-
-

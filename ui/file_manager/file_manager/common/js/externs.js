@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(yawano): Move all externs under ui/file_manager/externs.
+
 /**
  * @constructor
  * @extends {Window}
@@ -69,19 +71,6 @@ DirectoryChangeEvent.prototype.newDirEntry;
 
 /** @type {boolean} */
 DirectoryChangeEvent.prototype.volumeChanged;
-
-/**
- * @param {string} url
- * @param {function(!Entry)} successCallback
- * @param {function(!FileError)=} opt_errorCallback
- */
-Window.prototype.webkitResolveLocalFileSystemURL =
-    function(url, successCallback, opt_errorCallback) {};
-
-/**
- * @type {string}
- */
-Window.prototype.appID;
 
 /**
  * @type {boolean}

@@ -18,3 +18,24 @@ function BackgroundComponents() {
    */
   this.volumeManager;
 }
+
+/**
+ * File Manager. This definition is required by
+ * ui/file_manager/file_manager/foreground/js/ui/file_manager_dialog_base.js.
+ *
+ * @constructor
+ * @struct
+ */
+function FileManager() {}
+
+/**
+ * This definition is required by
+ * ui/file_manager/file_manager/common/js/util.js.
+ * @type {string}
+ */
+Window.prototype.appID;
+
+/**
+ * @type {string}
+ */
+Entry.prototype.cachedUrl;

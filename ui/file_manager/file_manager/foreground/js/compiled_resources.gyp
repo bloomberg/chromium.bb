@@ -131,6 +131,7 @@
           '../../../externs/css_rule.js',
           '../../../externs/html_menu_item_element.js',
           '../../../externs/webview_tag.js',
+          '../../../externs/platform.js',
           '../../common/js/externs.js',
         ],
       },
