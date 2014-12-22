@@ -151,6 +151,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DoBeginTest();
   void Timeout();
 
+  bool verify_property_trees() const { return verify_property_trees_; }
+  void set_verify_property_trees(bool verify_property_trees) {
+    verify_property_trees_ = verify_property_trees;
+  }
+
  protected:
   LayerTreeTest();
 
@@ -210,7 +215,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   TestWebGraphicsContext3D* TestContext();
 
-
  private:
   LayerTreeSettings settings_;
   scoped_ptr<LayerTreeHostClientForTesting> client_;
@@ -225,6 +229,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool started_;
   bool ended_;
   bool delegating_renderer_;
+  bool verify_property_trees_;
 
   int timeout_seconds_;
 

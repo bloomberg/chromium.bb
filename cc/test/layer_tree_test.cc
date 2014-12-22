@@ -449,6 +449,7 @@ LayerTreeTest::LayerTreeTest()
       started_(false),
       ended_(false),
       delegating_renderer_(false),
+      verify_property_trees_(true),
       timeout_seconds_(0),
       weak_factory_(this) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -709,7 +710,7 @@ void LayerTreeTest::RunTest(bool threaded,
   settings_.renderer_settings.refresh_rate = 200.0;
   settings_.background_animation_rate = 200.0;
   settings_.impl_side_painting = impl_side_painting;
-  settings_.verify_property_trees = true;
+  settings_.verify_property_trees = verify_property_trees_;
   InitializeSettings(&settings_);
 
   main_task_runner_->PostTask(

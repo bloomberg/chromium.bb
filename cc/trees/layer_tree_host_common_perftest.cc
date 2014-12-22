@@ -80,9 +80,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
 class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
  public:
-  void RunCalcDrawProps() {
-    RunTest(false, false, false);
-  }
+  void RunCalcDrawProps() { RunTest(false, false, false); }
 
   void BeginTest() override {
     timer_.Reset();
@@ -324,7 +322,12 @@ TEST_F(LayerSorterMainTest, LayerSorterCubes) {
 TEST_F(LayerSorterMainTest, LayerSorterRubik) {
   SetTestName("layer_sort_rubik");
   ReadTestFile("layer_sort_rubik");
+  // TODO(vollick): Remove verify_property_trees setting after
+  // crbug.com/444219 is fixed.
+  bool old_verify_property_trees = verify_property_trees();
+  set_verify_property_trees(false);
   RunSortLayers();
+  set_verify_property_trees(old_verify_property_trees);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes) {
@@ -338,7 +341,12 @@ TEST_F(BspTreePerfTest, BspTreeRubik) {
   SetTestName("bsp_tree_rubik");
   SetNumberOfDuplicates(1);
   ReadTestFile("layer_sort_rubik");
+  // TODO(vollick): Remove verify_property_trees setting after
+  // crbug.com/444219 is fixed.
+  bool old_verify_property_trees = verify_property_trees();
+  set_verify_property_trees(false);
   RunSortLayers();
+  set_verify_property_trees(old_verify_property_trees);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes_2) {
