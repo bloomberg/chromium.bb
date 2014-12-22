@@ -1,3 +1,0 @@
-Tests that an animation with no keyframes does not start.
-PASS
-

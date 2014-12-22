@@ -93,8 +93,6 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
         return;
 
     const WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe>>& styleKeyframes = keyframesRule->keyframes();
-    if (styleKeyframes.isEmpty())
-        return;
 
     // Construct and populate the style for each keyframe
     PropertySet specifiedPropertiesForUseCounter;
@@ -132,7 +130,6 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
             keyframes.append(toAnimatableValueKeyframe(keyframe->cloneWithOffset(offsets[j]).get()));
         }
     }
-    ASSERT(!keyframes.isEmpty());
 
     for (CSSPropertyID property : specifiedPropertiesForUseCounter) {
         ASSERT(property != CSSPropertyInvalid);
@@ -151,11 +148,12 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
             keyframes[targetIndex] = keyframes[i];
         }
     }
-    keyframes.shrink(targetIndex + 1);
+    if (!keyframes.isEmpty())
+        keyframes.shrink(targetIndex + 1);
 
     // Add 0% and 100% keyframes if absent.
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = keyframes[0];
-    if (startKeyframe->offset()) {
+    RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = keyframes.isEmpty() ? nullptr : keyframes[0];
+    if (!startKeyframe || keyframes[0]->offset() != 0) {
         startKeyframe = AnimatableValueKeyframe::create();
         startKeyframe->setOffset(0);
         startKeyframe->setEasing(defaultTimingFunction);
