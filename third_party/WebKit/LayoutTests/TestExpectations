@@ -626,7 +626,7 @@ crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-hmac.html [ Failure Pass
 # See http://crbug.com/440450.
 crbug.com/440277 crypto/subtle/abandon-crypto-operation.html [ Pass Crash ]
 crbug.com/440277 crypto/subtle/abandon-crypto-operation2.html [ Crash Pass ]
-crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass ]
+crbug.com/409767 crypto/subtle/worker-subtle-crypto-concurrent.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc-decrypt-failure.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc-encrypt-decrypt.html [ Crash Pass ]
 
