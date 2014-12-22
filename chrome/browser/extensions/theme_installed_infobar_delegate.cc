@@ -50,11 +50,11 @@ void ThemeInstalledInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents);
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
   scoped_ptr<infobars::InfoBar> new_infobar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new ThemeInstalledInfoBarDelegate(
+      infobar_service->CreateConfirmInfoBar(
+          scoped_ptr<ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
               extensions::ExtensionSystem::Get(profile)->extension_service(),
-              theme_service, new_theme,
-              previous_theme_id, previous_using_system_theme))));
+              theme_service, new_theme, previous_theme_id,
+              previous_using_system_theme))));
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.

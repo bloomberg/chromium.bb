@@ -1,4 +1,5 @@
 include_rules = [
   "+components/infobars/core",
+  "+components/infobars/test",
   "+components/keyed_service/core",
 ]

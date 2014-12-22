@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -137,8 +138,7 @@
 
 @end
 
-// static
-scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
   scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(delegate.Pass()));
   base::scoped_nsobject<ConfirmInfoBarController> controller(

@@ -26,7 +26,7 @@ void AutofillCCInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const base::Closure& save_card_callback) {
   infobar_service->AddInfoBar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new AutofillCCInfoBarDelegate(save_card_callback))));
 }
 

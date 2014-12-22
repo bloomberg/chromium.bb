@@ -70,8 +70,8 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 // static
 void AutolaunchInfoBarDelegate::Create(InfoBarService* infobar_service,
                                        Profile* profile) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new AutolaunchInfoBarDelegate(profile))));
 }
 

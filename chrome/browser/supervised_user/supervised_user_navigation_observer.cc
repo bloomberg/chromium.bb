@@ -100,8 +100,8 @@ class SupervisedUserWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
 // static
 infobars::InfoBar* SupervisedUserWarningInfoBarDelegate::Create(
     InfoBarService* infobar_service) {
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  return infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new SupervisedUserWarningInfoBarDelegate())));
 }
 

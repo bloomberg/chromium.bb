@@ -33,8 +33,10 @@ void SessionCrashedInfoBarDelegate::Create(Browser* browser) {
   if (profile->IsOffTheRecord() || !web_contents)
     return;
 
-  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new SessionCrashedInfoBarDelegate(profile))));
 }
 

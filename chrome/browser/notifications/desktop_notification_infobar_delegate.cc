@@ -26,7 +26,7 @@ infobars::InfoBar* DesktopNotificationInfoBarDelegate::Create(
     const std::string& display_languages) {
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new DesktopNotificationInfoBarDelegate(
           controller, id, requesting_frame,
           committed_entry ? committed_entry->GetUniqueID() : 0,

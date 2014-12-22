@@ -46,10 +46,11 @@ void SavePasswordInfoBarDelegate::Create(
     return;
 #endif
 
-  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new SavePasswordInfoBarDelegate(form_to_save.Pass(),
-                                          uma_histogram_suffix))));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new SavePasswordInfoBarDelegate(
+          form_to_save.Pass(), uma_histogram_suffix))));
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {

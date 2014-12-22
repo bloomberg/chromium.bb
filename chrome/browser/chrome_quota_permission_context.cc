@@ -188,7 +188,7 @@ void RequestQuotaInfoBarDelegate::Create(
     int64 requested_quota,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new RequestQuotaInfoBarDelegate(
           context, origin_url, requested_quota, display_languages, callback))));
 }

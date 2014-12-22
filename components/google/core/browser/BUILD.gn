@@ -56,7 +56,6 @@ source_set("unit_tests") {
     "//base:prefs",
     "//base:prefs_test_support",
     "//components/infobars/core",
-    "//components/infobars/test:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]

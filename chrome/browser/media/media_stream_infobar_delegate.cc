@@ -53,7 +53,7 @@ bool MediaStreamInfoBarDelegate::Create(
   }
 
   scoped_ptr<infobars::InfoBar> infobar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new MediaStreamInfoBarDelegate(controller.Pass()))));
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);

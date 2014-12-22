@@ -136,7 +136,7 @@ bool AutoLoginInfoBarDelegate::Create(content::WebContents* web_contents,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   typedef AutoLoginInfoBarDelegate Delegate;
-  return !!infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  return !!infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new Delegate(params, profile))));
 }
 

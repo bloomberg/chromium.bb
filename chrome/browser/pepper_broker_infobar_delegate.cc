@@ -55,7 +55,7 @@ void PepperBrokerInfoBarDelegate::Create(
         base::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
-    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+    infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(new PepperBrokerInfoBarDelegate(
             url, plugin_path,
             profile->GetPrefs()->GetString(prefs::kAcceptLanguages),

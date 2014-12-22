@@ -24,7 +24,7 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
       base::UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
 
   scoped_ptr<infobars::InfoBar> infobar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new RegisterProtocolHandlerInfoBarDelegate(registry, handler))));
 
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {

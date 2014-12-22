@@ -16,6 +16,7 @@
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
 #include "components/google/core/browser/google_url_tracker_navigation_helper.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -185,6 +186,10 @@ class TestInfoBarManager : public infobars::InfoBarManager {
   int GetActiveEntryID() override;
 
  private:
+  // infobars::InfoBarManager:
+  scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate> delegate) override;
+
   int unique_id_;
   DISALLOW_COPY_AND_ASSIGN(TestInfoBarManager);
 };
@@ -198,6 +203,11 @@ TestInfoBarManager::~TestInfoBarManager() {
 
 int TestInfoBarManager::GetActiveEntryID() {
   return unique_id_;
+}
+
+scoped_ptr<infobars::InfoBar> TestInfoBarManager::CreateConfirmInfoBar(
+    scoped_ptr<ConfirmInfoBarDelegate> delegate) {
+  return make_scoped_ptr(new infobars::InfoBar(delegate.Pass()));
 }
 
 }  // namespace

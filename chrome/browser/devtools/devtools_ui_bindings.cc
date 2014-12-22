@@ -145,8 +145,8 @@ void DevToolsConfirmInfoBarDelegate::Create(
     return;
   }
 
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new DevToolsConfirmInfoBarDelegate(callback, message))));
 }
 

@@ -18,7 +18,7 @@ infobars::InfoBar* GoogleURLTrackerInfoBarDelegate::Create(
     infobars::InfoBarManager* infobar_manager,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {
-  return infobar_manager->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  return infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new GoogleURLTrackerInfoBarDelegate(
           google_url_tracker, search_url))));
 }

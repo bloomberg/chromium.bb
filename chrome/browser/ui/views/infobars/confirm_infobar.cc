@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
 
 #include "base/logging.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/base/window_open_disposition.h"
@@ -12,11 +13,9 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
+// InfoBarService -------------------------------------------------------------
 
-// ConfirmInfoBarDelegate -----------------------------------------------------
-
-// static
-scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
   return make_scoped_ptr(new ConfirmInfoBar(delegate.Pass()));
 }

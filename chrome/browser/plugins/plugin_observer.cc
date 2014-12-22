@@ -150,7 +150,7 @@ void ReloadPluginInfoBarDelegate::Create(
     content::NavigationController* controller,
     const base::string16& message) {
   infobar_service->AddInfoBar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new ReloadPluginInfoBarDelegate(controller, message))));
 }
 

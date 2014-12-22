@@ -162,7 +162,7 @@ infobars::InfoBar* HungPluginInfoBarDelegate::Create(
     HungPluginTabHelper* helper,
     int plugin_child_id,
     const base::string16& plugin_name) {
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
           helper, plugin_child_id, plugin_name))));
 }

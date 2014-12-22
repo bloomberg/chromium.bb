@@ -36,7 +36,7 @@ void DownloadRequestInfoBarDelegate::Create(
     // "downloads" permission) to automatically download >1 files.
     host->Cancel();
   } else {
-    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+    infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(
             new DownloadRequestInfoBarDelegate(host))));
   }

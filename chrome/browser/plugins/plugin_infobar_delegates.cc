@@ -91,9 +91,10 @@ void OutdatedPluginInfoBarDelegate::Create(
   // Copy the name out of |plugin_metadata| now, since the Pass() call below
   // will make it impossible to get at.
   base::string16 name(plugin_metadata->name());
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
-          installer, plugin_metadata.Pass(), l10n_util::GetStringFUTF16(
+          installer, plugin_metadata.Pass(),
+          l10n_util::GetStringFUTF16(
               (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE) ?
                   IDS_PLUGIN_OUTDATED_PROMPT : IDS_PLUGIN_DOWNLOADING,
               name)))));
@@ -232,13 +233,13 @@ void PluginInstallerInfoBarDelegate::Create(
     return;
   }
 #endif
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new PluginInstallerInfoBarDelegate(
           installer, plugin_metadata.Pass(), callback, true,
           l10n_util::GetStringFUTF16(
-              (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE) ?
-                  IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT :
-                  IDS_PLUGIN_DOWNLOADING,
+              (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE)
+                  ? IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT
+                  : IDS_PLUGIN_DOWNLOADING,
               name)))));
 }
 
@@ -249,9 +250,10 @@ void PluginInstallerInfoBarDelegate::Replace(
     bool new_install,
     const base::string16& message) {
   DCHECK(infobar->owner());
-  infobar->owner()->ReplaceInfoBar(infobar,
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new PluginInstallerInfoBarDelegate(
+  infobar->owner()->ReplaceInfoBar(
+      infobar,
+      infobar->owner()->CreateConfirmInfoBar(
+          scoped_ptr<ConfirmInfoBarDelegate>(new PluginInstallerInfoBarDelegate(
               installer, plugin_metadata.Pass(),
               PluginInstallerInfoBarDelegate::InstallCallback(), new_install,
               message))));
@@ -365,8 +367,8 @@ void PluginMetroModeInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginMetroModeInfoBarDelegate::Mode mode,
     const base::string16& name) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new PluginMetroModeInfoBarDelegate(mode, name))));
 }
 

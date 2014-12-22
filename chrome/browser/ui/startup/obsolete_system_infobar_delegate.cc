@@ -23,7 +23,7 @@ void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
       !ObsoleteSystemMac::Has32BitOnlyCPU()) {
     return;
   }
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new ObsoleteSystemInfoBarDelegate())));
 #else
   // No other platforms currently show this infobar.

@@ -104,7 +104,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
                                            PrefService* prefs,
                                            bool interactive_flow_required) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new DefaultBrowserInfoBarDelegate(
           prefs, interactive_flow_required))));
 }

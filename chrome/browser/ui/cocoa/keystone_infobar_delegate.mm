@@ -81,7 +81,7 @@ void KeystonePromotionInfoBarDelegate::Create() {
     return;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(webContents);
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new KeystonePromotionInfoBarDelegate(
           Profile::FromBrowserContext(
               webContents->GetBrowserContext())->GetPrefs()))));

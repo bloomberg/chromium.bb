@@ -26,8 +26,8 @@ infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegate::Create(
     const std::string& display_languages) {
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  return infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new ProtectedMediaIdentifierInfoBarDelegate(
               controller, id, requesting_frame,
               committed_entry ? committed_entry->GetUniqueID() : 0,

@@ -31,7 +31,7 @@ class CryptotokenPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   static void Create(InfoBarService* infobar_service,
                      const base::string16& message,
                      const InfoBarCallback& callback) {
-    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+    infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(
             new CryptotokenPermissionInfoBarDelegate(message, callback))));
   }

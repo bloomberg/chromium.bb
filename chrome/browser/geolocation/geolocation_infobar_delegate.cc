@@ -35,9 +35,8 @@ infobars::InfoBar* GeolocationInfoBarDelegate::Create(
           committed_entry ? committed_entry->GetUniqueID() : 0,
           display_languages);
 
-  infobars::InfoBar* infobar = ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(delegate)).release();
-  return infobar_service->AddInfoBar(scoped_ptr<infobars::InfoBar>(infobar));
+  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(delegate)));
 }
 
 GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(

@@ -35,7 +35,7 @@ class SSLAddCertificateInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates an SSL certificate enrollment result infobar and delegate.
   static void Create(InfoBarService* infobar_service,
                      net::X509Certificate* cert) {
-    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+    infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(
             new SSLAddCertificateInfoBarDelegate(cert))));
   }

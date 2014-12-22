@@ -37,21 +37,5 @@
         'infobars/core/infobars_switches.h',
       ],
     },
-    {
-      # GN version: //components/infobars/test:test_support
-      'target_name': 'infobars_test_support',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-      ],
-      'sources': [
-        # Note: sources list duplicated in GN build.
-        'infobars/test/infobar_test.cc',
-      ],
-    },
   ],
 }

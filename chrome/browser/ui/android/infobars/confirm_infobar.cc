@@ -8,14 +8,13 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "jni/ConfirmInfoBarDelegate_jni.h"
 
+// InfoBarService -------------------------------------------------------------
 
-// ConfirmInfoBarDelegate -----------------------------------------------------
-
-// static
-scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
   return make_scoped_ptr(new ConfirmInfoBar(delegate.Pass()));
 }

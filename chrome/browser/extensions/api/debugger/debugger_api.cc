@@ -195,8 +195,8 @@ infobars::InfoBar* ExtensionDevToolsInfoBarDelegate::Create(
   if (!infobar_service)
     return NULL;
 
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  return infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new ExtensionDevToolsInfoBarDelegate(client_name))));
 }
 

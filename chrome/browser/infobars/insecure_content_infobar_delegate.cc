@@ -22,7 +22,7 @@
 void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
                                             InfoBarType type) {
   scoped_ptr<infobars::InfoBar> new_infobar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new InsecureContentInfoBarDelegate(type))));
 
   // Only supsersede an existing insecure content infobar if we are upgrading

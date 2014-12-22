@@ -95,6 +95,9 @@ void InfoBarService::NotifyInfoBarRemoved(InfoBar* infobar, bool animate) {
       content::Details<InfoBar::RemovedDetails>(&removed_details));
 }
 
+// InfoBarService::CreateConfirmInfoBar() is implemented in platform-specific
+// files.
+
 void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }

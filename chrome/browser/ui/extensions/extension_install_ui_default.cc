@@ -96,7 +96,7 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
 // static
 void ErrorInfoBarDelegate::Create(InfoBarService* infobar_service,
                                   const extensions::CrxInstallerError& error) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new ErrorInfoBarDelegate(error))));
 }
 

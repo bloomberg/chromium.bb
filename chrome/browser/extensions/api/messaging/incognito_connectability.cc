@@ -38,7 +38,7 @@ class IncognitoConnectabilityInfoBarDelegate : public ConfirmInfoBarDelegate {
   static InfoBar* Create(InfoBarManager* infobar_manager,
                          const base::string16& message,
                          const InfoBarCallback& callback) {
-    return infobar_manager->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+    return infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(
             new IncognitoConnectabilityInfoBarDelegate(message, callback))));
   }

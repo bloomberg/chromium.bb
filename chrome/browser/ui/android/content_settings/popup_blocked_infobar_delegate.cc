@@ -23,12 +23,12 @@ void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
   const GURL& url = web_contents->GetURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  scoped_ptr<infobars::InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  scoped_ptr<infobars::InfoBar> infobar(infobar_service->CreateConfirmInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new PopupBlockedInfoBarDelegate(
           num_popups, url, profile->GetHostContentSettingsMap()))));
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
   // See if there is an existing popup infobar already.
   // TODO(dfalcantara) When triggering more than one popup the infobar
   // will be shown once, then hide then be shown again.

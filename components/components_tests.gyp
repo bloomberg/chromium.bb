@@ -383,9 +383,6 @@
             'components.gyp:history_core_browser',
             'components.gyp:history_core_common',
 
-            # Dependencies of infobar
-            'components.gyp:infobars_test_support',
-
             # Dependencies of invalidation
             'components.gyp:invalidation',
             'components.gyp:invalidation_test_support',

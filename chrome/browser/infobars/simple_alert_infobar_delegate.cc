@@ -13,8 +13,8 @@ void SimpleAlertInfoBarDelegate::Create(InfoBarService* infobar_service,
                                         int icon_id,
                                         const base::string16& message,
                                         bool auto_expire) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new SimpleAlertInfoBarDelegate(icon_id, message, auto_expire))));
 }
 

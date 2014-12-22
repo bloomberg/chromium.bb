@@ -16,8 +16,11 @@
 // static
 void DataReductionProxyInfoBarDelegate::Create(
     content::WebContents* web_contents, const std::string& link_url) {
-  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(
       DataReductionProxyInfoBarDelegate::CreateInfoBar(
+          infobar_service,
           scoped_ptr<DataReductionProxyInfoBarDelegate>(
               new DataReductionProxyInfoBarDelegate(link_url))));
 }
@@ -27,8 +30,9 @@ void DataReductionProxyInfoBarDelegate::Create(
 
 // static
 scoped_ptr<infobars::InfoBar> DataReductionProxyInfoBarDelegate::CreateInfoBar(
+    infobars::InfoBarManager* infobar_manager,
     scoped_ptr<DataReductionProxyInfoBarDelegate> delegate) {
-  return ConfirmInfoBarDelegate::CreateInfoBar(delegate.Pass());
+  return infobar_manager->CreateConfirmInfoBar(delegate.Pass());
 }
 #endif
 
