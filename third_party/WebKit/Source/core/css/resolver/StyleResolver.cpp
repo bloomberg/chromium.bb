@@ -254,13 +254,14 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
 
 void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
 {
+    m_treeBoundaryCrossingRules.reset(&treeScope.rootNode());
+    resetRuleFeatures();
+
     ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
     if (!resolver)
         return;
 
-    m_treeBoundaryCrossingRules.reset(&treeScope.rootNode());
     resolver->resetAuthorStyle();
-    resetRuleFeatures();
     if (treeScope.rootNode().isDocumentNode())
         return;
 
