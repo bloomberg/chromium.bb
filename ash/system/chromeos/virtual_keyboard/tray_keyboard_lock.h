@@ -14,13 +14,12 @@
 
 namespace ash {
 
-// TrayKeyboardLock is a provider of views for the SystemTray. Both a tray view
-// and a default view are provided. Each view indicates the current state of
-// the virtual keyboard when an external keyboard is plugged in. The default
-// view can be interacted with, it toggles the state of the keyboard lock.
-class ASH_EXPORT TrayKeyboardLock : public TrayImageItem,
-                                    public VirtualKeyboardObserver,
-                                    public AccessibilityObserver {
+// TrayKeyboardLock is a provider of the default view for the SystemTray. This
+// view indicates the current state of the virtual keyboard when an external
+// keyboard is plugged in. The default view can be interacted with, it toggles
+// the state of the keyboard lock.
+class ASH_EXPORT TrayKeyboardLock : public SystemTrayItem,
+                                    public VirtualKeyboardObserver {
  public:
   explicit TrayKeyboardLock(SystemTray* system_tray);
   virtual ~TrayKeyboardLock();
@@ -31,19 +30,8 @@ class ASH_EXPORT TrayKeyboardLock : public TrayImageItem,
   // SystemTrayItem:
   virtual views::View* CreateDefaultView(user::LoginStatus status) override;
 
-  // AccessibilityObserver:
-  void OnAccessibilityModeChanged(
-      ui::AccessibilityNotificationVisibility notify) override;
-
- protected:
-  // TrayImageItem:
-  virtual bool GetInitialVisibility() override;
-
  private:
   friend class TrayKeyboardLockTest;
-
-  // True if the virtual keyboard is suppressed by an external keyboard.
-  bool ShouldTrayBeVisible();
 
   // True if the on-screen keyboard is suppressed.
   bool virtual_keyboard_suppressed_;

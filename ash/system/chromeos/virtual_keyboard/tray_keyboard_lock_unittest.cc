@@ -22,18 +22,16 @@ class TrayKeyboardLockTest : public test::AshTestBase {
 
   TrayKeyboardLock* tray() { return tray_.get(); }
 
-  views::View* tray_view() { return tray_view_.get(); }
-
   views::View* default_view() { return default_view_.get(); }
 
-  // Sets up a TrayKeyboardLock, its tray view, and its default view.
+  // Sets up a TrayKeyboardLock and its default view.
   void SetUpForStatusAreaWidget(StatusAreaWidget* status_area_widget);
 
   // Mocks enabling the a11y virtual keyboard since the actual a11y manager
   // is not created in ash tests.
   void SetAccessibilityKeyboardEnabled(bool enabled);
 
-  // Resets |tray_| |tray_view_| and |default_view_| so that all components of
+  // Resets |tray_| and |default_view_| so that all components of
   // TrayKeyboardLock have been cleared. Tests may then call
   // SetUpForStatusAreaWidget in order to initialize the components.
   void TearDownViews();
@@ -44,15 +42,12 @@ class TrayKeyboardLockTest : public test::AshTestBase {
 
  private:
   scoped_ptr<TrayKeyboardLock> tray_;
-  scoped_ptr<views::View> tray_view_;
   scoped_ptr<views::View> default_view_;
 };
 
 void TrayKeyboardLockTest::SetUpForStatusAreaWidget(
     StatusAreaWidget* status_area_widget) {
   tray_.reset(new TrayKeyboardLock(status_area_widget->system_tray()));
-  tray_view_.reset(
-      tray_->CreateTrayView(StatusAreaWidgetTestHelper::GetUserLoginStatus()));
   default_view_.reset(tray_->CreateDefaultView(
       StatusAreaWidgetTestHelper::GetUserLoginStatus()));
 }
@@ -69,7 +64,6 @@ void TrayKeyboardLockTest::SetAccessibilityKeyboardEnabled(bool enabled) {
 }
 
 void TrayKeyboardLockTest::TearDownViews() {
-  tray_view_.reset();
   default_view_.reset();
   tray_.reset();
 }
@@ -85,45 +79,39 @@ void TrayKeyboardLockTest::TearDown() {
   test::AshTestBase::TearDown();
 }
 
-// Tests that when the tray is initially created that both view are hidden.
+// Tests that when the tray is initially created that the default view is
+// hidden.
 TEST_F(TrayKeyboardLockTest, HiddenOnCreation) {
-  EXPECT_FALSE(tray_view()->visible());
   EXPECT_FALSE(default_view()->visible());
 }
 
 // Tests that the default view and tray are hidden when a11y is enabled.
 TEST_F(TrayKeyboardLockTest, HidesOnA11yEnabled) {
   test::VirtualKeyboardTestHelper::SuppressKeyboard();
-  EXPECT_TRUE(tray_view()->visible());
   EXPECT_TRUE(default_view()->visible());
   // Enable a11y keyboard.
   SetAccessibilityKeyboardEnabled(true);
-  EXPECT_FALSE(tray_view()->visible());
   EXPECT_FALSE(default_view()->visible());
   // Disable the a11y keyboard.
   SetAccessibilityKeyboardEnabled(false);
   EXPECT_TRUE(default_view()->visible());
-  EXPECT_TRUE(tray_view()->visible());
 }
 
 TEST_F(TrayKeyboardLockTest, PerformActionOnDefaultView) {
   test::VirtualKeyboardTestHelper::SuppressKeyboard();
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-  EXPECT_TRUE(tray_view()->visible());
   EXPECT_TRUE(default_view()->visible());
 
   ui::GestureEvent tap(
       0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   default_view()->OnGestureEvent(&tap);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  EXPECT_FALSE(tray_view()->visible());
   EXPECT_TRUE(default_view()->visible());
 
   tap = ui::GestureEvent(
       0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   default_view()->OnGestureEvent(&tap);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-  EXPECT_TRUE(tray_view()->visible());
   EXPECT_TRUE(default_view()->visible());
 }
 
