@@ -188,8 +188,8 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
   # interactive; this is however a rare case and the user will immediately
   # see it (nor will they be checking the exit code manually).
   if ret.returncode != 0 and additional_args:
-    raise SystemExit('Running %r failed with exit code %i'
-                     % (cmd, ret.returncode))
+    raise SystemExit('Running {%s} failed with exit code %i'
+                     % (ret.cmdstr, ret.returncode))
 
 
 def _SudoCommand():
