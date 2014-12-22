@@ -171,6 +171,7 @@ private:
 
     OwnPtrWillBeMember<ConsoleMessageStorage> m_messageStorage;
 
+    unsigned long m_workerExceptionUniqueIdentifier;
     WillBeHeapHashMap<unsigned long, RefPtrWillBeMember<ConsoleMessage>> m_pendingMessages;
 };
 

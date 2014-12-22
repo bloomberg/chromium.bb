@@ -60,14 +60,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 
-namespace {
-    unsigned long createWorkerExceptionUniqueIdentifier()
-    {
-        static unsigned long s_workerExceptionUniqueIdentifier = 0;
-        return ++s_workerExceptionUniqueIdentifier;
-    }
-}
-
 namespace blink {
 
 class CloseWorkerGlobalScopeTask : public ExecutionContextTask {
@@ -98,6 +90,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
     , m_timeOrigin(timeOrigin)
     , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
+    , m_workerExceptionUniqueIdentifier(0)
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOrigin)
@@ -277,7 +270,7 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
 
 void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
-    unsigned long exceptionId = createWorkerExceptionUniqueIdentifier();
+    unsigned long exceptionId = ++m_workerExceptionUniqueIdentifier;
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
     consoleMessage->setCallStack(callStack);
     m_pendingMessages.set(exceptionId, consoleMessage);
