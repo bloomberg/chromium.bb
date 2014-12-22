@@ -967,6 +967,21 @@ String AXNodeObject::ariaAutoComplete() const
     return String();
 }
 
+String AXNodeObject::placeholder() const
+{
+    String placeholder;
+    if (node()) {
+        if (isHTMLInputElement(*node())) {
+            HTMLInputElement* inputElement = toHTMLInputElement(node());
+            placeholder = inputElement->strippedPlaceholder();
+        } else if (isHTMLTextAreaElement(*node())) {
+            HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(node());
+            placeholder = textAreaElement->strippedPlaceholder();
+        }
+    }
+    return placeholder;
+}
+
 String AXNodeObject::text() const
 {
     // If this is a user defined static text, use the accessible name computation.

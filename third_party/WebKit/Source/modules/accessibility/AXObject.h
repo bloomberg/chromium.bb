@@ -446,6 +446,7 @@ public:
     virtual float valueForRange() const { return 0.0f; }
     virtual float maxValueForRange() const { return 0.0f; }
     virtual float minValueForRange() const { return 0.0f; }
+    virtual String placeholder() const { return String(); }
     virtual String stringValue() const { return String(); }
     virtual const AtomicString& textInputType() const { return nullAtom; }
 

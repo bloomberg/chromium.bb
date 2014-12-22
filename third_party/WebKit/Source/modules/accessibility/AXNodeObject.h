@@ -75,6 +75,7 @@ protected:
     AXObject* menuButtonForMenu() const;
     Element* menuItemElementForMenu() const;
     Element* mouseButtonListener() const;
+    String placeholder() const;
     AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
     bool isNativeCheckboxOrRadio() const;
     void setNode(Node*);

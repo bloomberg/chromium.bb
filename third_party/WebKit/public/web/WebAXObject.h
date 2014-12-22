@@ -134,6 +134,7 @@ public:
     BLINK_EXPORT int hierarchicalLevel() const;
     BLINK_EXPORT WebAXObject hitTest(const WebPoint&) const;
     BLINK_EXPORT WebString keyboardShortcut() const;
+    BLINK_EXPORT WebString placeholder() const;
     BLINK_EXPORT WebAXRole role() const;
     BLINK_EXPORT unsigned selectionEnd() const;
     BLINK_EXPORT unsigned selectionEndLineNumber() const;
