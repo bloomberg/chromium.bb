@@ -82,6 +82,9 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   // Returns true if this animation is a translation.
   virtual bool IsTranslation() const = 0;
 
+  // Returns true if this animation preserves axis alignment.
+  virtual bool PreservesAxisAlignment() const = 0;
+
   // Set |max_scale| to the maximum scale along any dimension at the end of
   // intermediate animation target points (eg keyframe end points). When
   // |forward_direction| is true, the animation curve assumes it plays from

@@ -174,6 +174,10 @@ bool FakeTransformTransition::AffectsScale() const { return false; }
 
 bool FakeTransformTransition::IsTranslation() const { return true; }
 
+bool FakeTransformTransition::PreservesAxisAlignment() const {
+  return true;
+}
+
 bool FakeTransformTransition::MaximumTargetScale(bool forward_direction,
                                                  float* max_scale) const {
   *max_scale = 1.f;

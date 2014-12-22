@@ -106,6 +106,14 @@ class CC_EXPORT LayerTreeHostCommon {
       CalcDrawPropsMainInputs;
   typedef CalcDrawPropsInputsForTesting<Layer, RenderSurfaceLayerList>
       CalcDrawPropsMainInputsForTesting;
+  static void UpdateRenderSurfaces(Layer* root_layer,
+                                   bool can_render_to_separate_surface,
+                                   const gfx::Transform& transform,
+                                   bool preserves_2d_axis_alignment);
+  static void UpdateRenderSurface(Layer* layer,
+                                  bool can_render_to_separate_surface,
+                                  gfx::Transform* transform,
+                                  bool* animation_preserves_axis_alignment);
   static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
 
   typedef CalcDrawPropsInputs<LayerImpl, LayerImplList> CalcDrawPropsImplInputs;

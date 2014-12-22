@@ -50,7 +50,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   layer->draw_properties().visible_content_rect = visible_content_rect;
   layer->SetBounds(layer_size);
   layer->SetContentBounds(layer_size);
-  layer->CreateRenderSurface();
+  layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
 
   UIResourceId uid = 1;

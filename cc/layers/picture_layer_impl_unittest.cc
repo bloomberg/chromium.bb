@@ -209,6 +209,7 @@ class PictureLayerImplTest : public testing::Test {
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
     }
+    pending_root->SetHasRenderSurface(true);
     // The bounds() just mirror the pile size.
     pending_layer->SetBounds(raster_source->GetSize());
     pending_layer->SetContentBounds(raster_source->GetSize());
@@ -1209,6 +1210,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   mask_ptr->SetContentBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
+  pending_layer_->SetHasRenderSurface(true);
 
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
@@ -1342,6 +1344,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   mask_ptr->SetContentBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
+  pending_layer_->SetHasRenderSurface(true);
 
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(

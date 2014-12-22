@@ -27,13 +27,9 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     const gfx::Size& bounds,
     bool flatten_transform,
     bool is_3d_sorted) {
-  SetLayerPropertiesForTestingInternal<Layer>(layer,
-                                              transform,
-                                              transform_origin,
-                                              position,
-                                              bounds,
-                                              flatten_transform,
-                                              is_3d_sorted);
+  SetLayerPropertiesForTestingInternal(layer, transform, transform_origin,
+                                       position, bounds, flatten_transform,
+                                       is_3d_sorted);
 }
 
 void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
@@ -43,14 +39,15 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     const gfx::PointF& position,
     const gfx::Size& bounds,
     bool flatten_transform,
-    bool is_3d_sorted) {
-  SetLayerPropertiesForTestingInternal<LayerImpl>(layer,
-                                                  transform,
-                                                  transform_origin,
-                                                  position,
-                                                  bounds,
-                                                  flatten_transform,
-                                                  is_3d_sorted);
+    bool is_3d_sorted,
+    bool create_render_surface) {
+  SetLayerPropertiesForTestingInternal(layer, transform, transform_origin,
+                                       position, bounds, flatten_transform,
+                                       is_3d_sorted);
+  if (create_render_surface) {
+    layer->SetHasRenderSurface(true);
+  }
+
   layer->SetContentBounds(bounds);
 }
 

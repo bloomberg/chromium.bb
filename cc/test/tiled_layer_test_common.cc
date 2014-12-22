@@ -99,8 +99,10 @@ void FakeTiledLayer::SetTexturePriorities(
   // itself.
   bool missing_target_render_surface = !render_target();
 
-  if (missing_target_render_surface)
+  if (missing_target_render_surface) {
     CreateRenderSurface();
+    draw_properties().render_target = this;
+  }
 
   TiledLayer::SetTexturePriorities(calculator);
 

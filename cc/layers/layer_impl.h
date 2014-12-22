@@ -222,9 +222,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
 
-  bool force_render_surface() const { return force_render_surface_; }
-  void SetForceRenderSurface(bool force) { force_render_surface_ = force; }
-
   void SetTransformOrigin(const gfx::Point3F& transform_origin);
   gfx::Point3F transform_origin() const { return transform_origin_; }
 
@@ -303,9 +300,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // These invalidate the host's render surface layer list.  The caller
   // is responsible for calling set_needs_update_draw_properties on the tree
   // so that its list can be recreated.
-  void CreateRenderSurface();
-  void ClearRenderSurface();
   void ClearRenderSurfaceLayerList();
+  void SetHasRenderSurface(bool has_render_surface);
+
+  RenderSurfaceImpl* render_surface() const { return render_surface_.get(); }
 
   DrawProperties<LayerImpl>& draw_properties() {
     return draw_properties_;
@@ -357,9 +355,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
            draw_properties_.render_target->render_surface());
     return draw_properties_.render_target;
   }
-  RenderSurfaceImpl* render_surface() const {
-    return draw_properties_.render_surface.get();
-  }
+
   int num_unclipped_descendants() const {
     return draw_properties_.num_unclipped_descendants;
   }
@@ -567,14 +563,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
 
-  // TODO(vollick): These is temporary and will be removed as soon as render
-  // surface determinations are moved out of CDP. They only exist because
-  // certain logic depends on whether or not a layer would render to a separate
-  // surface, but CDP destroys surfaces and targets it doesn't need, so without
-  // this boolean, this is impossible to determine after the fact without
-  // wastefully recomputing it.
-  void SetHasRenderSurface(bool value) {}
-
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 
@@ -655,7 +643,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
-  bool force_render_surface_ : 1;
 
   // Cache transform_'s invertibility.
   bool transform_is_invertible_ : 1;
@@ -729,7 +716,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   DrawProperties<LayerImpl> draw_properties_;
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> debug_info_;
-
+  scoped_ptr<RenderSurfaceImpl> render_surface_;
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
 

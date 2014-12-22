@@ -60,7 +60,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       draw_checkerboard_for_missing_tiles_(false),
       draws_content_(false),
       hide_layer_and_subtree_(false),
-      force_render_surface_(false),
       transform_is_invertible_(true),
       is_container_for_fixed_position_layers_(false),
       background_color_(0),
@@ -204,7 +203,7 @@ void LayerImpl::SetClipChildren(std::set<LayerImpl*>* children) {
 void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
   if (requests->empty())
     return;
-
+  DCHECK(render_surface());
   bool was_empty = copy_requests_.empty();
   copy_requests_.insert_and_take(copy_requests_.end(), requests);
   requests->clear();
@@ -218,6 +217,7 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
     ScopedPtrVector<CopyOutputRequest>* requests) {
   DCHECK(!copy_requests_.empty());
   DCHECK(layer_tree_impl()->IsActiveTree());
+  DCHECK_EQ(render_target(), this);
 
   size_t first_inserted_request = requests->size();
   requests->insert_and_take(requests->end(), &copy_requests_);
@@ -238,20 +238,9 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
   layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
 }
 
-void LayerImpl::CreateRenderSurface() {
-  DCHECK(!draw_properties_.render_surface);
-  draw_properties_.render_surface =
-      make_scoped_ptr(new RenderSurfaceImpl(this));
-  draw_properties_.render_target = this;
-}
-
-void LayerImpl::ClearRenderSurface() {
-  draw_properties_.render_surface = nullptr;
-}
-
 void LayerImpl::ClearRenderSurfaceLayerList() {
-  if (draw_properties_.render_surface)
-    draw_properties_.render_surface->layer_list().clear();
+  if (render_surface_)
+    render_surface_->ClearLayerLists();
 }
 
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
@@ -519,9 +508,9 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
-  layer->SetForceRenderSurface(force_render_surface_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
+  layer->SetHasRenderSurface(!!render_surface());
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
@@ -740,8 +729,8 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
   update_rect_ = gfx::Rect();
   damage_rect_ = gfx::RectF();
 
-  if (draw_properties_.render_surface)
-    draw_properties_.render_surface->ResetPropertyChangedFlag();
+  if (render_surface_)
+    render_surface_->ResetPropertyChangedFlag();
 
   if (mask_layer_)
     mask_layer_->ResetAllChangeTrackingForSubtree();
@@ -1592,6 +1581,19 @@ void LayerImpl::NotifyAnimationFinished(
     int group) {
   if (target_property == Animation::ScrollOffset)
     layer_tree_impl_->InputScrollAnimationFinished();
+}
+
+void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
+  if (!!render_surface() == should_have_render_surface)
+    return;
+
+  SetNeedsPushProperties();
+  layer_tree_impl()->set_needs_update_draw_properties();
+  if (should_have_render_surface) {
+    render_surface_ = make_scoped_ptr(new RenderSurfaceImpl(this));
+    return;
+  }
+  render_surface_.reset();
 }
 
 }  // namespace cc

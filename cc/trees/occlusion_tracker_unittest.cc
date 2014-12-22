@@ -127,6 +127,9 @@ struct OcclusionTrackerTestMainThreadTypes {
     *layer = NULL;
     return ref;
   }
+  static void SetForceRenderSurface(LayerType* layer, bool force) {
+    layer->SetForceRenderSurface(force);
+  }
 
   static void DestroyLayer(LayerPtrType* layer) { *layer = NULL; }
 
@@ -156,6 +159,9 @@ struct OcclusionTrackerTestImplThreadTypes {
     return layer->Pass();
   }
 
+  static void SetForceRenderSurface(LayerType* layer, bool force) {
+    layer->SetHasRenderSurface(force);
+  }
   static void DestroyLayer(LayerPtrType* layer) { layer->reset(); }
 
   static void RecursiveUpdateNumChildren(LayerType* layer) {
@@ -189,6 +195,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     DCHECK(!root_.get());
     root_ = Types::PassLayerPtr(&layer);
 
+    Types::SetForceRenderSurface(layer_ptr, true);
     SetRootLayerOnMainThread(layer_ptr);
 
     return layer_ptr;
@@ -211,7 +218,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
                                            const gfx::Size& bounds) {
     typename Types::LayerType* layer =
         CreateLayer(parent, transform, position, bounds);
-    layer->SetForceRenderSurface(true);
+    Types::SetForceRenderSurface(layer, true);
     return layer;
   }
 
@@ -272,7 +279,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
       bool opaque) {
     typename Types::ContentLayerType* layer =
         CreateDrawingLayer(parent, transform, position, bounds, opaque);
-    layer->SetForceRenderSurface(true);
+    Types::SetForceRenderSurface(layer, true);
     return layer;
   }
 
@@ -300,12 +307,12 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
         CopyOutputRequest::CreateBitmapRequest(base::Bind(
             &OcclusionTrackerTest<Types>::CopyOutputCallback,
             base::Unretained(this))));
+    layer->SetHasRenderSurface(true);
     layer->PassCopyRequests(&requests);
   }
 
   void CalcDrawEtc(TestContentLayerImpl* root) {
     DCHECK(root == root_.get());
-    DCHECK(!root->render_surface());
 
     Types::RecursiveUpdateNumChildren(root);
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -734,7 +741,7 @@ class OcclusionTrackerTestScaledRenderSurface
     layer1_matrix.Scale(2.0, 2.0);
     typename Types::ContentLayerType* layer1 = this->CreateDrawingLayer(
         parent, layer1_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    layer1->SetForceRenderSurface(true);
+    Types::SetForceRenderSurface(layer1, true);
 
     gfx::Transform layer2_matrix;
     layer2_matrix.Translate(25.0, 25.0);
@@ -848,9 +855,8 @@ class OcclusionTrackerTestSurfaceRotatedOffAxis
         this->identity_matrix, gfx::PointF(), gfx::Size(1000, 1000));
     typename Types::ContentLayerType* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    typename Types::LayerType* child = this->CreateLayer(
+    typename Types::LayerType* child = this->CreateSurface(
         parent, child_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500));
-    child->SetMasksToBounds(true);
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         child, layer_transform, gfx::PointF(), gfx::Size(500, 500), true);
     this->CalcDrawEtc(root);
@@ -1169,14 +1175,17 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest<Types> {
                                  gfx::Size(500, 500),
                                  true);
 
+    Types::SetForceRenderSurface(blur_layer, true);
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(10.f));
     blur_layer->SetFilters(filters);
 
+    Types::SetForceRenderSurface(opaque_layer, true);
     filters.Clear();
     filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
     opaque_layer->SetFilters(filters);
 
+    Types::SetForceRenderSurface(opacity_layer, true);
     filters.Clear();
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     opacity_layer->SetFilters(filters);
@@ -2229,8 +2238,8 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
                                    gfx::PointF(50.f, 50.f),
                                    gfx::Size(100, 100),
                                    false);
+      Types::SetForceRenderSurface(filtered_surface, true);
       filtered_surface->SetBackgroundFilters(filters);
-
       gfx::Rect occlusion_rect;
       switch (i) {
         case LEFT:
@@ -2341,6 +2350,8 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
                                  true);
 
     // Filters make the layers own surfaces.
+    Types::SetForceRenderSurface(filtered_surface1, true);
+    Types::SetForceRenderSurface(filtered_surface2, true);
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(1.f));
     filtered_surface1->SetBackgroundFilters(filters);
@@ -2427,6 +2438,7 @@ class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter
                              gfx::Size());
 
     // Filters make the layer own a surface.
+    Types::SetForceRenderSurface(filtered_surface, true);
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
@@ -2501,6 +2513,7 @@ class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded
                                  true);
 
     // Filters make the layer own a surface.
+    Types::SetForceRenderSurface(filtered_surface, true);
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
@@ -2597,6 +2610,7 @@ class OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded
                                  true);
 
     // Filters make the layer own a surface.
+    Types::SetForceRenderSurface(filtered_surface, true);
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);

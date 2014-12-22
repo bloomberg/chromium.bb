@@ -20,7 +20,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
   owning_layer_impl->SetBounds(layer_size);
   owning_layer_impl->SetContentBounds(layer_size);
   owning_layer_impl->SetDrawsContent(true);
-  owning_layer_impl->SetForceRenderSurface(true);
+  owning_layer_impl->SetHasRenderSurface(true);
 
   impl.CalcDrawProps(viewport_size);
 

@@ -101,6 +101,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>();
   scroll_children->insert(scroll_child);
   scroll_children->insert(root);
+  root->SetHasRenderSurface(true);
 
   scoped_ptr<LayerImpl> clip_parent =
       LayerImpl::Create(host_impl.active_tree(), 5);
@@ -253,6 +254,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   host_impl.active_tree()->SetRootLayer(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* root = host_impl.active_tree()->root_layer();
+  root->SetHasRenderSurface(true);
   scoped_ptr<LayerImpl> layer_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* layer = layer_ptr.get();
@@ -275,6 +277,14 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
   SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
+
+  // Render surface functions.
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(false));
+  // Create a render surface, because we must have a render surface if we have
+  // filters.
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
 
   // Related filter functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));

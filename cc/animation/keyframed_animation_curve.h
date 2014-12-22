@@ -194,6 +194,7 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool AffectsScale() const override;
+  bool PreservesAxisAlignment() const override;
   bool IsTranslation() const override;
   bool MaximumTargetScale(bool forward_direction,
                           float* max_scale) const override;

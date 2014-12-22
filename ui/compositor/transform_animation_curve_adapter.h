@@ -32,6 +32,7 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
                             gfx::BoxF* bounds) const override;
   bool AffectsScale() const override;
   bool IsTranslation() const override;
+  bool PreservesAxisAlignment() const override;
   bool MaximumTargetScale(bool forward_direction,
                           float* max_scale) const override;
 
@@ -62,6 +63,7 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
                             gfx::BoxF* bounds) const override;
   bool AffectsScale() const override;
   bool IsTranslation() const override;
+  bool PreservesAxisAlignment() const override;
   bool MaximumTargetScale(bool forward_direction,
                           float* max_scale) const override;
 

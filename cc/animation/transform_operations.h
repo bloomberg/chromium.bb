@@ -63,6 +63,9 @@ class CC_EXPORT TransformOperations {
   // Returns true if these operations are only translations.
   bool IsTranslation() const;
 
+  // Returns false if the operations affect 2d axis alignment.
+  bool PreservesAxisAlignment() const;
+
   // Returns true if this operation and its descendants have the same types
   // as other and its descendants.
   bool MatchesTypes(const TransformOperations& other) const;

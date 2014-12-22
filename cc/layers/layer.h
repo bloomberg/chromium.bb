@@ -57,6 +57,7 @@ class LayerAnimationEventObserver;
 class LayerClient;
 class LayerImpl;
 class LayerTreeHost;
+class LayerTreeHostCommon;
 class LayerTreeImpl;
 class PriorityCalculator;
 class RenderingStatsInstrumentation;
@@ -178,6 +179,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
+  bool AnimationsPreserveAxisAlignment() const;
   bool transform_is_invertible() const { return transform_is_invertible_; }
 
   void SetTransformOrigin(const gfx::Point3F&);
@@ -256,13 +258,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
            draw_properties_.render_target->render_surface());
     return draw_properties_.render_target;
   }
-  RenderSurface* render_surface() const {
-    return draw_properties_.render_surface.get();
-  }
   int num_unclipped_descendants() const {
     return draw_properties_.num_unclipped_descendants;
   }
 
+  RenderSurface* render_surface() const { return render_surface_.get(); }
   void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
   gfx::ScrollOffset scroll_offset() const { return scroll_offset_; }
   void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
@@ -377,6 +377,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void CreateRenderSurface();
   void ClearRenderSurface();
+
   void ClearRenderSurfaceLayerList();
 
   // The contents scale converts from logical, non-page-scaled pixels to target
@@ -503,9 +504,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool has_render_surface() const {
     return has_render_surface_;
   }
-  void SetHasRenderSurface(bool has_render_surface) {
-    has_render_surface_ = has_render_surface;
-  }
 
  protected:
   friend class LayerImpl;
@@ -586,9 +584,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
  private:
   friend class base::RefCounted<Layer>;
-
+  friend class LayerTreeHostCommon;
   void SetParent(Layer* layer);
   bool DescendantIsFixedToContainerLayer() const;
+
+  // This should only be called during BeginMainFrame since it does not
+  // trigger a Commit.
+  void SetHasRenderSurface(bool has_render_surface);
 
   // Returns the index of the child or -1 if not found.
   int IndexOfChild(const Layer* reference);
@@ -690,6 +692,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   DrawProperties<Layer> draw_properties_;
 
   PaintProperties paint_properties_;
+  // TODO(awoloszyn): This is redundant with has_render_surface_,
+  // and should get removed once it is no longer needed on main thread.
+  scoped_ptr<RenderSurface> render_surface_;
 
   gfx::Rect visible_rect_from_property_trees_;
   DISALLOW_COPY_AND_ASSIGN(Layer);

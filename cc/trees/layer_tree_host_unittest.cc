@@ -290,6 +290,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
+    root->CreateRenderSurface();
     root->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
@@ -483,6 +484,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
+    root_layer_->CreateRenderSurface();
 
     if (layer_tree_host()->settings().impl_side_painting)
       scaled_layer_ = FakePictureLayer::Create(&client_);
@@ -544,6 +546,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
   void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
+    root_layer_->CreateRenderSurface();
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
@@ -795,6 +798,7 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
       : root_layer_(Layer::Create()) {}
 
   void SetupTree() override {
+    root_layer_->CreateRenderSurface();
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(gfx::Size(20, 20));
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -3178,6 +3182,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
 
   void SetupTree() override {
     root_ = PushPropertiesCountingLayer::Create();
+    root_->CreateRenderSurface();
     child_ = PushPropertiesCountingLayer::Create();
     child2_ = PushPropertiesCountingLayer::Create();
     grandchild_ = PushPropertiesCountingLayer::Create();
@@ -3190,6 +3195,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     child2_->AddChild(leaf_always_pushing_layer_);
 
     other_root_ = PushPropertiesCountingLayer::Create();
+    other_root_->CreateRenderSurface();
 
     // Don't set the root layer here.
     LayerTreeHostTest::SetupTree();
@@ -3562,6 +3568,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
 
   void SetupTree() override {
     root_ = Layer::Create();
+    root_->CreateRenderSurface();
     root_->SetBounds(gfx::Size(1, 1));
 
     bool paint_scrollbar = true;
@@ -3618,6 +3625,7 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
 
   void SetupTree() override {
     root_ = PushPropertiesCountingLayer::Create();
+    root_->CreateRenderSurface();
     child_ = PushPropertiesCountingLayer::Create();
     root_->AddChild(child_);
 
@@ -3679,6 +3687,7 @@ class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
 
   void SetupTree() override {
     root_ = PushPropertiesCountingLayer::Create();
+    root_->CreateRenderSurface();
     child_ = PushPropertiesCountingLayer::Create();
     grandchild1_ = PushPropertiesCountingLayer::Create();
     grandchild2_ = PushPropertiesCountingLayer::Create();
@@ -4232,6 +4241,7 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
     root_layer_ = Layer::Create();
+    root_layer_->CreateRenderSurface();
     root_layer_->SetPosition(gfx::Point());
     root_layer_->SetBounds(gfx::Size(10, 10));
 
@@ -4340,6 +4350,7 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
     scoped_refptr<SolidColorLayer> root_layer = SolidColorLayer::Create();
     root_layer->SetBounds(gfx::Size(200, 200));
     root_layer->SetIsDrawable(true);
+    root_layer->CreateRenderSurface();
 
     layer_tree_host()->SetRootLayer(root_layer);
     LayerTreeHostTest::SetupTree();
@@ -5199,6 +5210,7 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
   void SetupTree() override {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(bounds_);
+    root_layer->CreateRenderSurface();
 
     if (layer_tree_host()->settings().impl_side_painting) {
       picture_layer_ = FakePictureLayer::Create(&client_);

@@ -115,6 +115,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
       pending_layer =
           FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_, pile);
       pending_layer->SetDrawsContent(true);
+      pending_layer->SetHasRenderSurface(true);
     }
     // The bounds() just mirror the pile size.
     pending_layer->SetBounds(pending_layer->raster_source()->GetSize());

@@ -62,7 +62,8 @@ class LayerTreeHostCommonTestBase {
                                     const gfx::PointF& position,
                                     const gfx::Size& bounds,
                                     bool flatten_transform,
-                                    bool is_3d_sorted);
+                                    bool is_3d_sorted,
+                                    bool create_render_surface);
 
   void ExecuteCalculateDrawProperties(Layer* root_layer,
                                       float device_scale_factor,

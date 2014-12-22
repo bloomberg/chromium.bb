@@ -363,6 +363,14 @@ bool KeyframedTransformAnimationCurve::AffectsScale() const {
   return false;
 }
 
+bool KeyframedTransformAnimationCurve::PreservesAxisAlignment() const {
+  for (size_t i = 0; i < keyframes_.size(); ++i) {
+    if (!keyframes_[i]->Value().PreservesAxisAlignment())
+      return false;
+  }
+  return true;
+}
+
 bool KeyframedTransformAnimationCurve::IsTranslation() const {
   for (size_t i = 0; i < keyframes_.size(); ++i) {
     if (!keyframes_[i]->Value().IsTranslation() &&

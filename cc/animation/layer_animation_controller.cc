@@ -501,6 +501,21 @@ bool LayerAnimationController::HasOnlyTranslationTransforms() const {
   return true;
 }
 
+bool LayerAnimationController::AnimationsPreserveAxisAlignment() const {
+  for (size_t i = 0; i < animations_.size(); ++i) {
+    if (animations_[i]->is_finished() ||
+        animations_[i]->target_property() != Animation::Transform)
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        animations_[i]->curve()->ToTransformAnimationCurve();
+    if (!transform_animation_curve->PreservesAxisAlignment())
+      return false;
+  }
+
+  return true;
+}
+
 bool LayerAnimationController::MaximumTargetScale(float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {

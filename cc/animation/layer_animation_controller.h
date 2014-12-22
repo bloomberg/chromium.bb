@@ -134,6 +134,8 @@ class CC_EXPORT LayerAnimationController
 
   bool HasOnlyTranslationTransforms() const;
 
+  bool AnimationsPreserveAxisAlignment() const;
+
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.

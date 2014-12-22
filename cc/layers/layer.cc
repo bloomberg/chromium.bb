@@ -594,6 +594,10 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   SetNeedsCommit();
 }
 
+bool Layer::AnimationsPreserveAxisAlignment() const {
+  return layer_animation_controller_->AnimationsPreserveAxisAlignment();
+}
+
 bool Layer::TransformIsAnimating() const {
   return layer_animation_controller_->IsAnimatingProperty(Animation::Transform);
 }
@@ -881,9 +885,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
-  layer->SetForceRenderSurface(force_render_surface_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
+  layer->SetHasRenderSurface(has_render_surface_);
   if (!layer->FilterIsAnimatingOnImplOnly() && !FilterIsAnimating())
     layer->SetFilters(filters_);
   DCHECK(!(FilterIsAnimating() && layer->FilterIsAnimatingOnImplOnly()));
@@ -1084,19 +1088,27 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
     return nullptr;
 }
 
+void Layer::SetHasRenderSurface(bool has_render_surface) {
+  if (has_render_surface_ == has_render_surface)
+    return;
+  has_render_surface_ = has_render_surface;
+  // We do not need SetNeedsCommit here, since this is only ever called
+  // during a commit, from CalculateDrawProperties.
+  SetNeedsPushProperties();
+}
+
 void Layer::CreateRenderSurface() {
-  DCHECK(!draw_properties_.render_surface);
-  draw_properties_.render_surface = make_scoped_ptr(new RenderSurface(this));
-  draw_properties_.render_target = this;
+  DCHECK(!render_surface_);
+  render_surface_ = make_scoped_ptr(new RenderSurface(this));
 }
 
 void Layer::ClearRenderSurface() {
-  draw_properties_.render_surface = nullptr;
+  render_surface_ = nullptr;
 }
 
 void Layer::ClearRenderSurfaceLayerList() {
-  if (draw_properties_.render_surface)
-    draw_properties_.render_surface->layer_list().clear();
+  if (render_surface_)
+    render_surface_->ClearLayerLists();
 }
 
 gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {

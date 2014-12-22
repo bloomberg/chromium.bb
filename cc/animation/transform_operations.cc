@@ -94,6 +94,27 @@ bool TransformOperations::AffectsScale() const {
   return false;
 }
 
+bool TransformOperations::PreservesAxisAlignment() const {
+  for (size_t i = 0; i < operations_.size(); ++i) {
+    switch (operations_[i].type) {
+      case TransformOperation::TransformOperationIdentity:
+      case TransformOperation::TransformOperationTranslate:
+      case TransformOperation::TransformOperationScale:
+        continue;
+      case TransformOperation::TransformOperationMatrix:
+        if (!operations_[i].matrix.IsIdentity() &&
+            !operations_[i].matrix.IsScaleOrTranslation())
+          return false;
+        continue;
+      case TransformOperation::TransformOperationRotate:
+      case TransformOperation::TransformOperationSkew:
+      case TransformOperation::TransformOperationPerspective:
+        return false;
+    }
+  }
+  return true;
+}
+
 bool TransformOperations::IsTranslation() const {
   for (size_t i = 0; i < operations_.size(); ++i) {
     switch (operations_[i].type) {

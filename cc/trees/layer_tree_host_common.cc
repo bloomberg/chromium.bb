@@ -553,9 +553,8 @@ static inline void SavePaintPropertiesLayer(Layer* layer) {
     layer->replica_layer()->mask_layer()->SavePaintProperties();
 }
 
-template <typename LayerType>
 static bool SubtreeShouldRenderToSeparateSurface(
-    LayerType* layer,
+    Layer* layer,
     bool axis_aligned_with_respect_to_parent) {
   //
   // A layer and its descendants should render onto a new RenderSurfaceImpl if
@@ -1111,18 +1110,6 @@ static inline void CalculateAnimationContentsScale(
       std::max(ancestor_transform_scales.x(), ancestor_transform_scales.y());
 }
 
-template <typename LayerType>
-static inline typename LayerType::RenderSurfaceType* CreateOrReuseRenderSurface(
-    LayerType* layer) {
-  if (!layer->render_surface()) {
-    layer->CreateRenderSurface();
-    return layer->render_surface();
-  }
-
-  layer->render_surface()->ClearLayerLists();
-  return layer->render_surface();
-}
-
 template <typename LayerTypePtr>
 static inline void MarkLayerWithRenderSurfaceLayerListId(
     LayerTypePtr layer,
@@ -1206,12 +1193,29 @@ struct PreCalculateMetaInformationRecursiveData {
   }
 };
 
+static bool ValidateRenderSurface(LayerImpl* layer) {
+  // There are a few cases in which it is incorrect to not have a
+  // render_surface.
+  if (layer->render_surface())
+    return true;
+
+  return layer->filters().IsEmpty() && layer->background_filters().IsEmpty() &&
+         !layer->mask_layer() && !layer->replica_layer() &&
+         !IsRootLayer(layer) && !layer->is_root_for_isolated_group() &&
+         !layer->HasCopyRequest();
+}
+
+static bool ValidateRenderSurface(Layer* layer) {
+  return true;
+}
+
 // Recursively walks the layer tree to compute any information that is needed
 // before doing the main recursion.
 template <typename LayerType>
 static void PreCalculateMetaInformation(
     LayerType* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
+  DCHECK(ValidateRenderSurface(layer));
 
   layer->draw_properties().sorted_for_recursion = false;
   layer->draw_properties().has_child_with_a_scroll_parent = false;
@@ -1609,6 +1613,7 @@ static void CalculateDrawPropertiesInternal(
   if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
+    layer->draw_properties().render_target = nullptr;
     return;
   }
 
@@ -1834,28 +1839,26 @@ static void CalculateDrawPropertiesInternal(
       ? combined_transform_scales
       : gfx::Vector2dF(layer_scale_factors, layer_scale_factors);
 
-  bool render_to_separate_surface;
-  if (globals.can_render_to_separate_surface) {
-    render_to_separate_surface = SubtreeShouldRenderToSeparateSurface(
-          layer, combined_transform.Preserves2dAxisAlignment());
-  } else {
-    render_to_separate_surface = IsRootLayer(layer);
-  }
-
-  layer->SetHasRenderSurface(render_to_separate_surface);
+  bool render_to_separate_surface =
+      IsRootLayer(layer) ||
+      (globals.can_render_to_separate_surface && layer->render_surface());
 
   if (render_to_separate_surface) {
+    DCHECK(layer->render_surface());
     // Check back-face visibility before continuing with this surface and its
     // subtree
     if (!layer->double_sided() && TransformToParentIsKnown(layer) &&
         IsSurfaceBackFaceVisible(layer, combined_transform)) {
       layer->ClearRenderSurfaceLayerList();
+      layer->draw_properties().render_target = nullptr;
       return;
     }
 
     typename LayerType::RenderSurfaceType* render_surface =
-        CreateOrReuseRenderSurface(layer);
+        layer->render_surface();
+    layer->ClearRenderSurfaceLayerList();
 
+    layer_draw_properties.render_target = layer;
     if (IsRootLayer(layer)) {
       // The root layer's render surface size is predetermined and so the root
       // layer can't directly support non-identity transforms.  It should just
@@ -2035,8 +2038,6 @@ static void CalculateDrawPropertiesInternal(
         animating_opacity_to_screen;
     data_for_children.parent_matrix = combined_transform;
 
-    layer->ClearRenderSurface();
-
     // Layers without render_surfaces directly inherit the ancestor's clip
     // status.
     layer_or_ancestor_clips_descendants = ancestor_clips_subtree;
@@ -2077,7 +2078,7 @@ static void CalculateDrawPropertiesInternal(
 
   if (LayerClipsSubtree(layer)) {
     layer_or_ancestor_clips_descendants = true;
-    if (ancestor_clips_subtree && !layer->render_surface()) {
+    if (ancestor_clips_subtree && !render_to_separate_surface) {
       // A layer without render surface shares the same target as its ancestor.
       clip_rect_in_target_space =
           ancestor_clip_rect_in_target_space;
@@ -2102,8 +2103,8 @@ static void CalculateDrawPropertiesInternal(
   }
 
   typename LayerType::LayerListType& descendants =
-      (layer->render_surface() ? layer->render_surface()->layer_list()
-                               : *layer_list);
+      (render_to_separate_surface ? layer->render_surface()->layer_list()
+                                  : *layer_list);
 
   // Any layers that are appended after this point are in the layer's subtree
   // and should be included in the sorting process.
@@ -2185,7 +2186,8 @@ static void CalculateDrawPropertiesInternal(
         &descendants,
         accumulated_surface_state,
         current_render_surface_layer_list_id);
-    if (child->render_surface() &&
+    // If the child is its own render target, then it has a render surface.
+    if (child->render_target() == child &&
         !child->render_surface()->layer_list().empty() &&
         !child->render_surface()->content_rect().IsEmpty()) {
       // This child will contribute its render surface, which means
@@ -2224,12 +2226,12 @@ static void CalculateDrawPropertiesInternal(
   // target surface space).
   gfx::Rect local_drawable_content_rect_of_subtree =
       accumulated_surface_state->back().drawable_content_rect;
-  if (layer->render_surface()) {
+  if (render_to_separate_surface) {
     DCHECK(accumulated_surface_state->back().render_target == layer);
     accumulated_surface_state->pop_back();
   }
 
-  if (layer->render_surface() && !IsRootLayer(layer) &&
+  if (render_to_separate_surface && !IsRootLayer(layer) &&
       layer->render_surface()->layer_list().empty()) {
     RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
     return;
@@ -2255,10 +2257,10 @@ static void CalculateDrawPropertiesInternal(
   // one.
   if (IsRootLayer(layer)) {
     // The root layer's surface's content_rect is always the entire viewport.
-    DCHECK(layer->render_surface());
+    DCHECK(render_to_separate_surface);
     layer->render_surface()->SetContentRect(
         ancestor_clip_rect_in_target_space);
-  } else if (layer->render_surface()) {
+  } else if (render_to_separate_surface) {
     typename LayerType::RenderSurfaceType* render_surface =
         layer->render_surface();
     gfx::Rect clipped_content_rect = local_drawable_content_rect_of_subtree;
@@ -2352,7 +2354,7 @@ static void CalculateDrawPropertiesInternal(
 
   // If neither this layer nor any of its children were added, early out.
   if (sorting_start_index == descendants.size()) {
-    DCHECK(!layer->render_surface() || IsRootLayer(layer));
+    DCHECK(!render_to_separate_surface || IsRootLayer(layer));
     return;
   }
 
@@ -2435,6 +2437,49 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->subtree_is_visible_from_ancestor = true;
 }
 
+void LayerTreeHostCommon::UpdateRenderSurface(
+    Layer* layer,
+    bool can_render_to_separate_surface,
+    gfx::Transform* transform,
+    bool* draw_transform_is_axis_aligned) {
+  bool preserves_2d_axis_alignment =
+      transform->Preserves2dAxisAlignment() && *draw_transform_is_axis_aligned;
+  if (IsRootLayer(layer) || (can_render_to_separate_surface &&
+                             SubtreeShouldRenderToSeparateSurface(
+                                 layer, preserves_2d_axis_alignment))) {
+    // We reset the transform here so that any axis-changing transforms
+    // will now be relative to this RenderSurface.
+    transform->MakeIdentity();
+    *draw_transform_is_axis_aligned = true;
+    if (!layer->render_surface()) {
+      layer->CreateRenderSurface();
+    }
+    layer->SetHasRenderSurface(true);
+    return;
+  }
+  layer->SetHasRenderSurface(false);
+  if (layer->render_surface())
+    layer->ClearRenderSurface();
+}
+
+void LayerTreeHostCommon::UpdateRenderSurfaces(
+    Layer* layer,
+    bool can_render_to_separate_surface,
+    const gfx::Transform& parent_transform,
+    bool draw_transform_is_axis_aligned) {
+  gfx::Transform transform_for_children = layer->transform();
+  transform_for_children *= parent_transform;
+  draw_transform_is_axis_aligned &= layer->AnimationsPreserveAxisAlignment();
+  UpdateRenderSurface(layer, can_render_to_separate_surface,
+                      &transform_for_children, &draw_transform_is_axis_aligned);
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    UpdateRenderSurfaces(layer->children()[i].get(),
+                         can_render_to_separate_surface, transform_for_children,
+                         draw_transform_is_axis_aligned);
+  }
+}
+
 static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
   static const int tolerance = 1;
   return std::abs(r1.x() - r2.x()) <= tolerance &&
@@ -2445,6 +2490,9 @@ static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
+  UpdateRenderSurfaces(inputs->root_layer,
+                       inputs->can_render_to_separate_surface, gfx::Transform(),
+                       false);
   LayerList dummy_layer_list;
   SubtreeGlobals<Layer> globals;
   DataForRecursion<Layer> data_for_recursion;

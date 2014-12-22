@@ -37,7 +37,7 @@ class TiledLayerImplTest : public testing::Test {
     layer->draw_properties().opacity = 1;
     layer->SetBounds(layer_size);
     layer->SetContentBounds(layer_size);
-    layer->CreateRenderSurface();
+    layer->SetHasRenderSurface(true);
     layer->draw_properties().render_target = layer.get();
     return layer.Pass();
   }

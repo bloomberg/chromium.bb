@@ -79,9 +79,6 @@ struct CC_EXPORT DrawProperties {
   // ancestor of this layer.
   LayerType* render_target;
 
-  // The surface that this layer and its subtree would contribute to.
-  scoped_ptr<typename LayerType::RenderSurfaceType> render_surface;
-
   // This rect is in the layer's content space.
   gfx::Rect visible_content_rect;
 

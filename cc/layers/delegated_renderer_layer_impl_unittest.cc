@@ -67,18 +67,19 @@ class DelegatedRendererLayerImplTestSimple
 
     host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->SetHasRenderSurface(true);
 
     layer_before->SetPosition(gfx::Point(20, 20));
     layer_before->SetBounds(gfx::Size(14, 14));
     layer_before->SetContentBounds(gfx::Size(14, 14));
     layer_before->SetDrawsContent(true);
-    layer_before->SetForceRenderSurface(true);
+    layer_before->SetHasRenderSurface(true);
 
     layer_after->SetPosition(gfx::Point(5, 5));
     layer_after->SetBounds(gfx::Size(15, 15));
     layer_after->SetContentBounds(gfx::Size(15, 15));
     layer_after->SetDrawsContent(true);
-    layer_after->SetForceRenderSurface(true);
+    layer_after->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
     delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
@@ -297,61 +298,12 @@ TEST_F(DelegatedRendererLayerImplTestSimple, RenderPassTransformIsModified) {
   host_impl_->DidDrawAllLayers(frame);
 }
 
-TEST_F(DelegatedRendererLayerImplTestSimple, DoesNotOwnARenderSurface) {
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-
-  // If the DelegatedRendererLayer is axis aligned and has opacity 1, then it
-  // has no need to be a RenderSurface for the quads it carries.
-  EXPECT_FALSE(delegated_renderer_layer_->render_surface());
-
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-}
-
-TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurfaceForOpacity) {
-  delegated_renderer_layer_->SetOpacity(0.5f);
-
-  LayerTreeHostImpl::FrameData frame;
-  FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(
-      host_impl_->active_tree()->root_layer());
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-
-  // This test case has quads from multiple layers in the delegated renderer, so
-  // if the DelegatedRendererLayer has opacity < 1, it should end up with a
-  // render surface.
-  EXPECT_TRUE(delegated_renderer_layer_->render_surface());
-
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-}
-
-TEST_F(DelegatedRendererLayerImplTestSimple,
-       DoesOwnARenderSurfaceForTransform) {
-  gfx::Transform rotation;
-  rotation.RotateAboutZAxis(30.0);
-  delegated_renderer_layer_->SetTransform(rotation);
-
-  LayerTreeHostImpl::FrameData frame;
-  FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(
-      host_impl_->active_tree()->root_layer());
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-
-  // This test case has quads from multiple layers in the delegated renderer, so
-  // if the DelegatedRendererLayer has opacity < 1, it should end up with a
-  // render surface.
-  EXPECT_TRUE(delegated_renderer_layer_->render_surface());
-
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-}
-
 class DelegatedRendererLayerImplTestOwnSurface
     : public DelegatedRendererLayerImplTestSimple {
  public:
   DelegatedRendererLayerImplTestOwnSurface()
       : DelegatedRendererLayerImplTestSimple() {
-    delegated_renderer_layer_->SetForceRenderSurface(true);
+    delegated_renderer_layer_->SetHasRenderSurface(true);
   }
 };
 
@@ -507,6 +459,7 @@ class DelegatedRendererLayerImplTestTransform
 
     host_impl_->SetViewportSize(gfx::Size(200, 200));
     root_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
     delegated_renderer_layer->SetBounds(gfx::Size(75, 75));
@@ -803,7 +756,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   root_delegated_render_pass_is_clipped_ = false;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -851,7 +804,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   root_delegated_render_pass_is_clipped_ = true;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -948,6 +901,7 @@ class DelegatedRendererLayerImplTestClip
 
     host_impl_->SetViewportSize(gfx::Size(100, 100));
     root_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->SetHasRenderSurface(true);
 
     delegated_renderer_layer->SetPosition(gfx::Point(20, 20));
     delegated_renderer_layer->SetBounds(gfx::Size(50, 50));
@@ -1216,7 +1170,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   clip_delegated_renderer_layer_ = false;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -1245,7 +1199,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   clip_delegated_renderer_layer_ = false;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -1275,7 +1229,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   clip_delegated_renderer_layer_ = true;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -1303,7 +1257,7 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   clip_delegated_renderer_layer_ = true;
   SetUpTest();
 
-  delegated_renderer_layer_->SetForceRenderSurface(true);
+  delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -1336,6 +1290,7 @@ TEST_F(DelegatedRendererLayerImplTest, InvalidRenderPassDrawQuad) {
       FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 4);
 
   host_impl_->SetViewportSize(gfx::Size(100, 100));
+  root_layer->SetHasRenderSurface(true);
 
   delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
   delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
