@@ -53,7 +53,7 @@ protected:
 
 TEST_F(AnimationLengthPoint3DStyleInterpolationTest, ZeroPoint3D)
 {
-    RefPtr<CSSValueList> lengthPoint3D = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> lengthPoint3D = CSSValueList::createCommaSeparated();
     lengthPoint3D->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
     lengthPoint3D->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
     lengthPoint3D->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE));
@@ -63,7 +63,7 @@ TEST_F(AnimationLengthPoint3DStyleInterpolationTest, ZeroPoint3D)
 
 TEST_F(AnimationLengthPoint3DStyleInterpolationTest, SingleUnitPoint3D)
 {
-    RefPtr<CSSValueList> lengthPoint3D = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> lengthPoint3D = CSSValueList::createCommaSeparated();
     lengthPoint3D->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
     lengthPoint3D->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PERCENTAGE));
     lengthPoint3D->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS));
@@ -73,7 +73,7 @@ TEST_F(AnimationLengthPoint3DStyleInterpolationTest, SingleUnitPoint3D)
 
 TEST_F(AnimationLengthPoint3DStyleInterpolationTest, MultipleValuePoint3D)
 {
-    RefPtr<CSSValueList> lengthPoint3DPx = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> lengthPoint3DPx = CSSValueList::createCommaSeparated();
     lengthPoint3DPx->append(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
     lengthPoint3DPx->append(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
     lengthPoint3DPx->append(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_EMS));
