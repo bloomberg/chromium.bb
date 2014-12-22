@@ -6,8 +6,6 @@ static_library("copresence") {
   sources = [
     "copresence_constants.cc",
     "copresence_manager_impl.cc",
-    "copresence_state_impl.cc",
-    "copresence_state_impl.h",
     "copresence_switches.cc",
     "copresence_switches.h",
     "handlers/audio/audio_directive_handler.h",
@@ -35,16 +33,12 @@ static_library("copresence") {
     "public/copresence_constants.h",
     "public/copresence_delegate.h",
     "public/copresence_manager.h",
-    "public/copresence_observer.h",
-    "public/copresence_state.h",
     "public/whispernet_client.h",
     "rpc/http_post.cc",
     "rpc/http_post.h",
     "rpc/rpc_handler.cc",
     "rpc/rpc_handler.h",
     "timed_map.h",
-    "tokens.cc",
-    "tokens.h",
   ]
 
   deps = [

@@ -762,7 +762,6 @@
             }],
             ['OS != "ios" and OS != "android"', {
               'sources': [
-                'copresence/copresence_state_unittest.cc',
                 'copresence/handlers/audio/audio_directive_handler_unittest.cc',
                 'copresence/handlers/audio/audio_directive_list_unittest.cc',
                 'copresence/handlers/directive_handler_unittest.cc',

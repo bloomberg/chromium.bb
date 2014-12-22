@@ -13,14 +13,6 @@ using testing::IsNull;
 
 namespace copresence {
 
-static const int64 kTtl = 10;
-
-const Directive CreateDirective(int64 ttl) {
-  Directive directive;
-  directive.set_ttl_millis(ttl);
-  return directive;
-}
-
 class AudioDirectiveListTest : public testing::Test {
  public:
   AudioDirectiveListTest() : directive_list_(new AudioDirectiveList) {}
@@ -31,11 +23,13 @@ class AudioDirectiveListTest : public testing::Test {
 };
 
 TEST_F(AudioDirectiveListTest, Basic) {
+  const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
+
   EXPECT_THAT(directive_list_->GetActiveDirective(), IsNull());
 
-  directive_list_->AddDirective("op_id1", CreateDirective(kTtl));
-  directive_list_->AddDirective("op_id2", CreateDirective(kTtl * 3));
-  directive_list_->AddDirective("op_id3", CreateDirective(kTtl * 2));
+  directive_list_->AddDirective("op_id1", kTtl);
+  directive_list_->AddDirective("op_id2", kTtl * 3);
+  directive_list_->AddDirective("op_id3", kTtl * 2);
   EXPECT_EQ("op_id2", directive_list_->GetActiveDirective()->op_id);
 
   directive_list_->RemoveDirective("op_id2");
@@ -43,11 +37,13 @@ TEST_F(AudioDirectiveListTest, Basic) {
 }
 
 TEST_F(AudioDirectiveListTest, AddDirectiveMultiple) {
-  directive_list_->AddDirective("op_id1", CreateDirective(kTtl));
-  directive_list_->AddDirective("op_id2", CreateDirective(kTtl * 2));
-  directive_list_->AddDirective("op_id3", CreateDirective(kTtl * 3 * 2));
-  directive_list_->AddDirective("op_id3", CreateDirective(kTtl * 3 * 3));
-  directive_list_->AddDirective("op_id4", CreateDirective(kTtl * 4));
+  const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
+
+  directive_list_->AddDirective("op_id1", kTtl);
+  directive_list_->AddDirective("op_id2", kTtl * 2);
+  directive_list_->AddDirective("op_id3", kTtl * 3 * 2);
+  directive_list_->AddDirective("op_id3", kTtl * 3 * 3);
+  directive_list_->AddDirective("op_id4", kTtl * 4);
 
   EXPECT_EQ("op_id3", directive_list_->GetActiveDirective()->op_id);
   directive_list_->RemoveDirective("op_id3");
@@ -61,10 +57,12 @@ TEST_F(AudioDirectiveListTest, AddDirectiveMultiple) {
 }
 
 TEST_F(AudioDirectiveListTest, RemoveDirectiveMultiple) {
-  directive_list_->AddDirective("op_id1", CreateDirective(kTtl));
-  directive_list_->AddDirective("op_id2", CreateDirective(kTtl * 2));
-  directive_list_->AddDirective("op_id3", CreateDirective(kTtl * 3));
-  directive_list_->AddDirective("op_id4", CreateDirective(kTtl * 4));
+  const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
+
+  directive_list_->AddDirective("op_id1", kTtl);
+  directive_list_->AddDirective("op_id2", kTtl * 2);
+  directive_list_->AddDirective("op_id3", kTtl * 3);
+  directive_list_->AddDirective("op_id4", kTtl * 4);
 
   EXPECT_EQ("op_id4", directive_list_->GetActiveDirective()->op_id);
   directive_list_->RemoveDirective("op_id4");

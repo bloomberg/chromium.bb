@@ -13,21 +13,17 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
-#include "components/copresence/public/copresence_constants.h"
 
 namespace copresence {
 
 // The directive handler manages transmit and receive directives.
 class DirectiveHandlerImpl final : public DirectiveHandler {
  public:
-  explicit DirectiveHandlerImpl(
-      const DirectivesCallback& update_directives_callback);
-  DirectiveHandlerImpl(
-      const DirectivesCallback& update_directives_callback,
-      scoped_ptr<AudioDirectiveHandler> audio_handler);
+  explicit DirectiveHandlerImpl(scoped_ptr<AudioDirectiveHandler>
+      audio_handler = make_scoped_ptr(new AudioDirectiveHandlerImpl));
   ~DirectiveHandlerImpl() override;
 
-  // DirectiveHandler overrides.
+  // DirectiveHandler overrides
   void Start(WhispernetClient* whispernet_client,
              const TokensCallback& tokens_cb) override;
   void AddDirective(const Directive& directive) override;

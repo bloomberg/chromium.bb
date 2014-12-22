@@ -11,11 +11,8 @@ namespace copresence {
 AudioDirective::AudioDirective() {}
 
 AudioDirective::AudioDirective(const std::string& op_id,
-                               base::TimeTicks end_time,
-                               const Directive& server_directive)
-    : op_id(op_id),
-      end_time(end_time),
-      server_directive(server_directive) {}
+                               base::TimeTicks end_time)
+    : op_id(op_id), end_time(end_time) {}
 
 AudioDirectiveList::AudioDirectiveList(
     const scoped_refptr<TickClockRefCounted>& clock)
@@ -24,9 +21,8 @@ AudioDirectiveList::AudioDirectiveList(
 AudioDirectiveList::~AudioDirectiveList() {}
 
 void AudioDirectiveList::AddDirective(const std::string& op_id,
-                                      const Directive& server_directive) {
-  base::TimeTicks end_time = clock_->NowTicks() +
-      base::TimeDelta::FromMilliseconds(server_directive.ttl_millis());
+                                      base::TimeDelta ttl) {
+  base::TimeTicks end_time = clock_->NowTicks() + ttl;
 
   // If this op is already in the list, update it instead of adding it again.
   auto it = FindDirectiveByOpId(op_id);
@@ -38,8 +34,7 @@ void AudioDirectiveList::AddDirective(const std::string& op_id,
     return;
   }
 
-  active_directives_.push_back(
-      AudioDirective(op_id, end_time, server_directive));
+  active_directives_.push_back(AudioDirective(op_id, end_time));
   std::push_heap(active_directives_.begin(),
                  active_directives_.end(),
                  LatestFirstComparator());
@@ -66,10 +61,6 @@ scoped_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
   }
 
   return make_scoped_ptr(new AudioDirective(active_directives_.front()));
-}
-
-const std::vector<AudioDirective>& AudioDirectiveList::directives() const {
-  return active_directives_;
 }
 
 

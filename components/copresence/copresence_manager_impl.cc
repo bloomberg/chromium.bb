@@ -8,9 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/handlers/directive_handler_impl.h"
 #include "components/copresence/handlers/gcm_handler_impl.h"
 #include "components/copresence/proto/rpcs.pb.h"
@@ -35,12 +33,7 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
           // This callback gets cancelled when we are destroyed.
           base::Unretained(this))),
       init_failed_(false),
-      state_(new CopresenceStateImpl),
-      directive_handler_(new DirectiveHandlerImpl(
-          // The directive handler and its descendants
-          // will be destructed before the CopresenceState instance.
-          base::Bind(&CopresenceStateImpl::UpdateDirectives,
-                     base::Unretained(state_.get())))),
+      directive_handler_(new DirectiveHandlerImpl),
       poll_timer_(new base::RepeatingTimer<CopresenceManagerImpl>),
       audio_check_timer_(new base::RepeatingTimer<CopresenceManagerImpl>) {
   DCHECK(delegate_);
@@ -53,17 +46,12 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
                                           directive_handler_.get()));
 
   rpc_handler_.reset(new RpcHandler(delegate,
-                                    state_.get(),
                                     directive_handler_.get(),
                                     gcm_handler_.get()));
 }
 
 CopresenceManagerImpl::~CopresenceManagerImpl() {
   whispernet_init_callback_.Cancel();
-}
-
-CopresenceState* CopresenceManagerImpl::state() {
-  return state_.get();
 }
 
 // Returns false if any operations were malformed.
@@ -91,9 +79,11 @@ void CopresenceManagerImpl::WhispernetInitComplete(bool success) {
   if (success) {
     DVLOG(3) << "Whispernet initialized successfully.";
 
+    // We destroy |directive_handler_| before |rpc_handler_|, hence passing
+    // in |rpc_handler_|'s pointer is safe here.
     directive_handler_->Start(delegate_->GetWhispernetClient(),
-                              base::Bind(&CopresenceManagerImpl::ReceivedTokens,
-                                         base::Unretained(this)));
+                              base::Bind(&RpcHandler::ReportTokens,
+                                         base::Unretained(rpc_handler_.get())));
 
     // Start up timers.
     poll_timer_->Start(FROM_HERE,
@@ -106,21 +96,6 @@ void CopresenceManagerImpl::WhispernetInitComplete(bool success) {
   } else {
     LOG(ERROR) << "Whispernet initialization failed!";
     init_failed_ = true;
-  }
-}
-
-void CopresenceManagerImpl::ReceivedTokens(
-    const std::vector<AudioToken>& tokens) {
-  rpc_handler_->ReportTokens(tokens);
-
-  // Update the CopresenceState.
-  for (const AudioToken audio_token : tokens) {
-    DVLOG(3) << "Heard token: " << audio_token.token;
-    ReceivedToken token(
-        audio_token.token,
-        audio_token.audible ? AUDIO_AUDIBLE_DTMF : AUDIO_ULTRASOUND_PASSBAND,
-        base::Time::Now());
-    state_->UpdateReceivedToken(token);
   }
 }
 

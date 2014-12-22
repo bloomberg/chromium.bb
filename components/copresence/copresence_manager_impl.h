@@ -6,12 +6,10 @@
 #define COMPONENTS_COPRESENCE_COPRESENCE_MANAGER_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/public/copresence_manager.h"
 
 namespace base {
@@ -41,8 +39,6 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   ~CopresenceManagerImpl() override;
 
-  // CopresenceManager overrides.
-  CopresenceState* state() override;
   void ExecuteReportRequest(const ReportRequest& request,
                             const std::string& app_id,
                             const std::string& auth_token,
@@ -51,16 +47,12 @@ class CopresenceManagerImpl : public CopresenceManager {
  private:
   void WhispernetInitComplete(bool success);
 
-  // Handle tokens decoded by Whispernet.
-  // TODO(ckehoe): Replace AudioToken with ReceivedToken.
-  void ReceivedTokens(const std::vector<AudioToken>& tokens);
-
-  // This function will be called every kPollTimerIntervalMs milliseconds
-  // to poll the server for new messages.
+  // This function will be called every kPollTimerIntervalMs milliseconds to
+  // poll the server for new messages.
   void PollForMessages();
 
-  // Verify that we can hear the audio we're playing
-  // every kAudioCheckIntervalMs milliseconds.
+  // This function will verify that we can hear the audio we're playing every
+  // kAudioCheckIntervalMs milliseconds.
   void AudioCheck();
 
   // Belongs to the caller.
@@ -72,9 +64,8 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   bool init_failed_;
 
-  // This order is required because each object
-  // makes calls to those listed before it.
-  scoped_ptr<CopresenceStateImpl> state_;
+  // The GCMHandler must destruct before the DirectiveHandler,
+  // which must destruct before the RpcHandler. Do not change this order.
   scoped_ptr<RpcHandler> rpc_handler_;
   scoped_ptr<DirectiveHandler> directive_handler_;
   scoped_ptr<GCMHandler> gcm_handler_;
