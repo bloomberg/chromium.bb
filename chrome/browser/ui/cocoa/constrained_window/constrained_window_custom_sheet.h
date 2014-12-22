@@ -13,7 +13,7 @@
 // Represents a custom sheet. The sheet's window is shown without using the
 // system |beginSheet:...| API.
 @interface CustomConstrainedWindowSheet : NSObject<ConstrainedWindowSheet> {
- @private
+ @protected
   base::scoped_nsobject<NSWindow> customWindow_;
 }
 

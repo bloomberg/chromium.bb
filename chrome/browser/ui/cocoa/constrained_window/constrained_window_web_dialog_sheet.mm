@@ -1,0 +1,30 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_web_dialog_sheet.h"
+
+#include "ui/gfx/size.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+
+@implementation WebDialogConstrainedWindowSheet
+
+- (id)initWithCustomWindow:(NSWindow*)customWindow
+         webDialogDelegate:(ui::WebDialogDelegate*)delegate {
+  if (self = [super initWithCustomWindow:customWindow]) {
+    web_dialog_delegate_ = delegate;
+  }
+
+  return self;
+}
+
+- (void)updateSheetPosition {
+  if (web_dialog_delegate_) {
+    gfx::Size size;
+    web_dialog_delegate_->GetDialogSize(&size);
+    [customWindow_ setContentSize:NSMakeSize(size.width(), size.height())];
+  }
+  [super updateSheetPosition];
+}
+
+@end

@@ -345,6 +345,8 @@
       'browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_sheet_info.h',
       'browser/ui/cocoa/constrained_window/constrained_window_sheet_info.mm',
+      'browser/ui/cocoa/constrained_window/constrained_window_web_dialog_sheet.h',
+      'browser/ui/cocoa/constrained_window/constrained_window_web_dialog_sheet.mm',
       'browser/ui/cocoa/content_settings/collected_cookies_mac.h',
       'browser/ui/cocoa/content_settings/collected_cookies_mac.mm',
       'browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h',
