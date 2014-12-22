@@ -9,8 +9,7 @@ function test()
     {
         var workspace = new WebInspector.Workspace();
         var projectDelegate = new WebInspector.NetworkProjectDelegate(workspace, "");
-        var projectStore = workspace.addProject("projectId", projectDelegate);
-        var project = projectStore.project();
+        var project = workspace.addProject("projectId", projectDelegate);
         project.requestFileContent = function(uri, callback)
         {
             callback("<script content>");
