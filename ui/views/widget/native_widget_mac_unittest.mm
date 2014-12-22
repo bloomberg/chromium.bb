@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/run_loop.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 
@@ -85,12 +86,18 @@ TEST_F(NativeWidgetMacTest, HideAndShowExternally) {
   // Test when hiding the entire application. This doesn't send an orderOut:
   // to the NSWindow.
   [NSApp hide:nil];
+  // When the activation policy is NSApplicationActivationPolicyRegular, the
+  // calls via NSApp are asynchronous, and the run loop needs to be flushed.
+  // With NSApplicationActivationPolicyProhibited, the following RunUntilIdle
+  // calls are superfluous, but don't hurt.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(widget->IsVisible());
   EXPECT_FALSE([ns_window isVisible]);
   EXPECT_EQ(3, observer.gained_visible_count());
   EXPECT_EQ(3, observer.lost_visible_count());
 
   [NSApp unhideWithoutActivation];
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_EQ(4, observer.gained_visible_count());
@@ -98,14 +105,29 @@ TEST_F(NativeWidgetMacTest, HideAndShowExternally) {
 
   // Hide again to test unhiding with an activation.
   [NSApp hide:nil];
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(4, observer.lost_visible_count());
   [NSApp unhide:nil];
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5, observer.gained_visible_count());
+
+  // Hide again to test makeKeyAndOrderFront:.
+  [ns_window orderOut:nil];
+  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_FALSE([ns_window isVisible]);
+  EXPECT_EQ(5, observer.gained_visible_count());
+  EXPECT_EQ(5, observer.lost_visible_count());
+
+  [ns_window makeKeyAndOrderFront:nil];
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE([ns_window isVisible]);
+  EXPECT_EQ(6, observer.gained_visible_count());
+  EXPECT_EQ(5, observer.lost_visible_count());
 
   // No change when closing.
   widget->CloseNow();
-  EXPECT_EQ(4, observer.lost_visible_count());
-  EXPECT_EQ(5, observer.gained_visible_count());
+  EXPECT_EQ(5, observer.lost_visible_count());
+  EXPECT_EQ(6, observer.gained_visible_count());
 }
 
 // A view that counts calls to OnPaint().
