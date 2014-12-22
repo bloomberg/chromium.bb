@@ -5,16 +5,17 @@
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
 namespace {
 
 void TerminateSharedWorkerOnIO(
-    EmbeddedWorkerDevToolsAgentHost::WorkerId worker_id) {
+    WorkerDevToolsAgentHost::WorkerId worker_id) {
   SharedWorkerServiceImpl::GetInstance()->TerminateWorker(
       worker_id.first, worker_id.second);
 }
@@ -24,7 +25,7 @@ void TerminateSharedWorkerOnIO(
 SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
     WorkerId worker_id,
     const SharedWorkerInstance& shared_worker)
-    : EmbeddedWorkerDevToolsAgentHost(worker_id),
+    : WorkerDevToolsAgentHost(worker_id),
       shared_worker_(new SharedWorkerInstance(shared_worker)) {
 }
 
@@ -56,6 +57,8 @@ bool SharedWorkerDevToolsAgentHost::Matches(
 }
 
 SharedWorkerDevToolsAgentHost::~SharedWorkerDevToolsAgentHost() {
+  SharedWorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(
+      worker_id());
 }
 
 }  // namespace content

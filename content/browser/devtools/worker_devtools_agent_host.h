@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_EMBEDDED_WORKER_DEVTOOLS_AGENT_HOST_H_
-#define CONTENT_BROWSER_DEVTOOLS_EMBEDDED_WORKER_DEVTOOLS_AGENT_HOST_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_WORKER_DEVTOOLS_AGENT_HOST_H_
+#define CONTENT_BROWSER_DEVTOOLS_WORKER_DEVTOOLS_AGENT_HOST_H_
 
-#include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
+#include "content/browser/devtools/worker_devtools_manager.h"
 #include "ipc/ipc_listener.h"
 
 namespace content {
@@ -14,12 +14,10 @@ namespace content {
 class BrowserContext;
 class SharedWorkerInstance;
 
-class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
-                                        public IPC::Listener {
+class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
+                                public IPC::Listener {
  public:
-  typedef EmbeddedWorkerDevToolsManager::WorkerId WorkerId;
-  typedef EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier
-      ServiceWorkerIdentifier;
+  typedef WorkerDevToolsManager::WorkerId WorkerId;
 
   // DevToolsAgentHost override.
   bool IsWorker() const override;
@@ -39,15 +37,9 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   void WorkerDestroyed();
   bool IsTerminated();
 
-  // TODO(kinuko): Remove these virtual methods after we split devtools manager.
-  virtual bool Matches(const SharedWorkerInstance& other);
-  virtual bool Matches(const ServiceWorkerIdentifier& other);
-
  protected:
-  friend class EmbeddedWorkerDevToolsManagerTest;
-
-  EmbeddedWorkerDevToolsAgentHost(WorkerId worker_id);
-  ~EmbeddedWorkerDevToolsAgentHost() override;
+  WorkerDevToolsAgentHost(WorkerId worker_id);
+  ~WorkerDevToolsAgentHost() override;
 
   enum WorkerState {
     WORKER_UNINSPECTED,
@@ -68,12 +60,14 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   const WorkerId& worker_id() const { return worker_id_; }
 
  private:
+  friend class SharedWorkerDevToolsManagerTest;
+
   WorkerState state_;
   WorkerId worker_id_;
   std::string saved_agent_state_;
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerDevToolsAgentHost);
+  DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_EMBEDDED_WORKER_DEVTOOLS_AGENT_HOST_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_WORKER_DEVTOOLS_AGENT_HOST_H_

@@ -9,7 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
-#include "content/browser/devtools/embedded_worker_devtools_manager.h"
+#include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -42,7 +42,7 @@ void NotifyWorkerReadyForInspection(int worker_process_id,
                                        worker_route_id));
     return;
   }
-  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
+  ServiceWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
       worker_process_id, worker_route_id);
 }
 
@@ -55,7 +55,7 @@ void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id) {
         base::Bind(NotifyWorkerDestroyed, worker_process_id, worker_route_id));
     return;
   }
-  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
+  ServiceWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
       worker_process_id, worker_route_id);
 }
 
@@ -69,7 +69,7 @@ void NotifyWorkerStopIgnored(int worker_process_id, int worker_route_id) {
                                        worker_route_id));
     return;
   }
-  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerStopIgnored(
+  ServiceWorkerDevToolsManager::GetInstance()->WorkerStopIgnored(
       worker_process_id, worker_route_id);
 }
 
@@ -101,10 +101,10 @@ void RegisterToWorkerDevToolsManager(
     // |rph| may be NULL in unit tests.
     worker_devtools_agent_route_id = rph->GetNextRoutingID();
     wait_for_debugger =
-        EmbeddedWorkerDevToolsManager::GetInstance()->ServiceWorkerCreated(
+        ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
             process_id,
             worker_devtools_agent_route_id,
-            EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier(
+            ServiceWorkerDevToolsManager::ServiceWorkerIdentifier(
                 service_worker_context,
                 service_worker_context_weak,
                 service_worker_version_id,

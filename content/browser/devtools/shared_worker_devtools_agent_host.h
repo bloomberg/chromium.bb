@@ -5,13 +5,13 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 
-#include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
+#include "content/browser/devtools/worker_devtools_agent_host.h"
 
 namespace content {
 
 class SharedWorkerInstance;
 
-class SharedWorkerDevToolsAgentHost : public EmbeddedWorkerDevToolsAgentHost {
+class SharedWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
   SharedWorkerDevToolsAgentHost(WorkerId worker_id,
                                 const SharedWorkerInstance& shared_worker);
@@ -23,10 +23,11 @@ class SharedWorkerDevToolsAgentHost : public EmbeddedWorkerDevToolsAgentHost {
   bool Activate() override;
   bool Close() override;
 
-  // EmbeddedWorkerDevToolsAgentHost override.
-  bool Matches(const SharedWorkerInstance& other) override;
+  bool Matches(const SharedWorkerInstance& other);
 
  private:
+  friend class SharedWorkerDevToolsManagerTest;
+
   ~SharedWorkerDevToolsAgentHost() override;
   scoped_ptr<SharedWorkerInstance> shared_worker_;
 

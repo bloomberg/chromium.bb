@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/devtools/embedded_worker_devtools_manager.h"
+#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
@@ -198,7 +198,7 @@ class SharedWorkerServiceImpl::SharedWorkerReserver
     bool pause_on_start = false;
     if (is_new_worker_) {
       pause_on_start =
-          EmbeddedWorkerDevToolsManager::GetInstance()->SharedWorkerCreated(
+          SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
               worker_process_id_, worker_route_id_, instance_);
     }
     BrowserThread::PostTask(

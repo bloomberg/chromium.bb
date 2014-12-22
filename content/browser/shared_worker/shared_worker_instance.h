@@ -17,7 +17,7 @@ namespace content {
 class ResourceContext;
 
 // SharedWorkerInstance is copyable value-type data type. It could be passed to
-// the UI thread and be used for comparison in EmbeddedWorkerDevToolsManager.
+// the UI thread and be used for comparison in SharedWorkerDevToolsManager.
 class CONTENT_EXPORT SharedWorkerInstance {
  public:
   SharedWorkerInstance(const GURL& url,

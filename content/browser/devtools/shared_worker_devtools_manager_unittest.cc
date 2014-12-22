@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/embedded_worker_devtools_manager.h"
+#include "content/browser/devtools/shared_worker_devtools_manager.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
+#include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/public/test/test_browser_context.h"
@@ -37,13 +37,13 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   scoped_refptr<DevToolsAgentHost> agent_host_;
   DISALLOW_COPY_AND_ASSIGN(TestDevToolsClientHost);
 };
-}
+}  // namespace
 
-class EmbeddedWorkerDevToolsManagerTest : public testing::Test {
+class SharedWorkerDevToolsManagerTest : public testing::Test {
  public:
-  typedef EmbeddedWorkerDevToolsAgentHost::WorkerState WorkerState;
+  typedef SharedWorkerDevToolsAgentHost::WorkerState WorkerState;
 
-  EmbeddedWorkerDevToolsManagerTest()
+  SharedWorkerDevToolsManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         browser_context_(new TestBrowserContext()),
         partition_(
@@ -59,25 +59,25 @@ class EmbeddedWorkerDevToolsManagerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    manager_ = EmbeddedWorkerDevToolsManager::GetInstance();
+    manager_ = SharedWorkerDevToolsManager::GetInstance();
   }
   void TearDown() override {
-    EmbeddedWorkerDevToolsManager::GetInstance()->ResetForTesting();
+    SharedWorkerDevToolsManager::GetInstance()->ResetForTesting();
   }
 
   void CheckWorkerState(int worker_process_id,
                         int worker_route_id,
                         WorkerState state) {
-    const EmbeddedWorkerDevToolsManager::WorkerId id(worker_process_id,
+    const SharedWorkerDevToolsManager::WorkerId id(worker_process_id,
                                                      worker_route_id);
-    EmbeddedWorkerDevToolsManager::AgentHostMap::iterator it =
-        manager_->workers_.find(id);
+    SharedWorkerDevToolsManager::AgentHostMap::iterator it =
+        manager_->workers().find(id);
     EXPECT_TRUE(manager_->workers_.end() != it);
     EXPECT_EQ(state, it->second->state_);
   }
 
   void CheckWorkerNotExist(int worker_process_id, int worker_route_id) {
-    const EmbeddedWorkerDevToolsManager::WorkerId id(worker_process_id,
+    const SharedWorkerDevToolsManager::WorkerId id(worker_process_id,
                                                      worker_route_id);
     EXPECT_TRUE(manager_->workers_.end() == manager_->workers_.find(id));
   }
@@ -91,10 +91,10 @@ class EmbeddedWorkerDevToolsManagerTest : public testing::Test {
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<WorkerStoragePartition> partition_;
   const WorkerStoragePartitionId partition_id_;
-  EmbeddedWorkerDevToolsManager* manager_;
+  SharedWorkerDevToolsManager* manager_;
 };
 
-TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
+TEST_F(SharedWorkerDevToolsManagerTest, BasicTest) {
   scoped_refptr<DevToolsAgentHostImpl> agent_host;
 
   SharedWorkerInstance instance1(GURL("http://example.com/w.js"),
@@ -109,7 +109,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
 
   // Created -> Started -> Destroyed
   CheckWorkerNotExist(1, 1);
-  manager_->SharedWorkerCreated(1, 1, instance1);
+  manager_->WorkerCreated(1, 1, instance1);
   CheckWorkerState(1, 1, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(1, 1);
   CheckWorkerState(1, 1, WorkerState::WORKER_UNINSPECTED);
@@ -118,7 +118,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
 
   // Created -> GetDevToolsAgentHost -> Started -> Destroyed
   CheckWorkerNotExist(1, 2);
-  manager_->SharedWorkerCreated(1, 2, instance1);
+  manager_->WorkerCreated(1, 2, instance1);
   CheckWorkerState(1, 2, WorkerState::WORKER_UNINSPECTED);
   agent_host = manager_->GetDevToolsAgentHostForWorker(1, 2);
   EXPECT_TRUE(agent_host.get());
@@ -133,7 +133,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
 
   // Created -> Started -> GetDevToolsAgentHost -> Destroyed
   CheckWorkerNotExist(1, 3);
-  manager_->SharedWorkerCreated(1, 3, instance1);
+  manager_->WorkerCreated(1, 3, instance1);
   CheckWorkerState(1, 3, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(1, 3);
   CheckWorkerState(1, 3, WorkerState::WORKER_UNINSPECTED);
@@ -147,14 +147,14 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
 
   // Created -> Destroyed
   CheckWorkerNotExist(1, 4);
-  manager_->SharedWorkerCreated(1, 4, instance1);
+  manager_->WorkerCreated(1, 4, instance1);
   CheckWorkerState(1, 4, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerDestroyed(1, 4);
   CheckWorkerNotExist(1, 4);
 
   // Created -> GetDevToolsAgentHost -> Destroyed
   CheckWorkerNotExist(1, 5);
-  manager_->SharedWorkerCreated(1, 5, instance1);
+  manager_->WorkerCreated(1, 5, instance1);
   CheckWorkerState(1, 5, WorkerState::WORKER_UNINSPECTED);
   agent_host = manager_->GetDevToolsAgentHostForWorker(1, 5);
   EXPECT_TRUE(agent_host.get());
@@ -166,7 +166,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
 
   // Created -> GetDevToolsAgentHost -> Free agent_host -> Destroyed
   CheckWorkerNotExist(1, 6);
-  manager_->SharedWorkerCreated(1, 6, instance1);
+  manager_->WorkerCreated(1, 6, instance1);
   CheckWorkerState(1, 6, WorkerState::WORKER_UNINSPECTED);
   agent_host = manager_->GetDevToolsAgentHostForWorker(1, 6);
   EXPECT_TRUE(agent_host.get());
@@ -176,7 +176,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
   CheckWorkerNotExist(1, 6);
 }
 
-TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
+TEST_F(SharedWorkerDevToolsManagerTest, AttachTest) {
   scoped_refptr<DevToolsAgentHostImpl> agent_host1;
   scoped_refptr<DevToolsAgentHostImpl> agent_host2;
 
@@ -196,7 +196,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   // Created -> GetDevToolsAgentHost -> Register -> Started -> Destroyed
   scoped_ptr<TestDevToolsClientHost> client_host1(new TestDevToolsClientHost());
   CheckWorkerNotExist(2, 1);
-  manager_->SharedWorkerCreated(2, 1, instance1);
+  manager_->WorkerCreated(2, 1, instance1);
   CheckWorkerState(2, 1, WorkerState::WORKER_UNINSPECTED);
   agent_host1 = manager_->GetDevToolsAgentHostForWorker(2, 1);
   EXPECT_TRUE(agent_host1.get());
@@ -212,7 +212,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
 
   // Created -> Started -> GetDevToolsAgentHost -> Register -> Destroyed
   scoped_ptr<TestDevToolsClientHost> client_host2(new TestDevToolsClientHost());
-  manager_->SharedWorkerCreated(2, 2, instance2);
+  manager_->WorkerCreated(2, 2, instance2);
   CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(2, 2);
   CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
@@ -229,7 +229,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
 
   // Re-created -> Started -> ClientHostClosing -> Destroyed
   CheckWorkerState(2, 1, WorkerState::WORKER_TERMINATED);
-  manager_->SharedWorkerCreated(2, 3, instance1);
+  manager_->WorkerCreated(2, 3, instance1);
   CheckWorkerNotExist(2, 1);
   CheckWorkerState(2, 3, WorkerState::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host1.get(), manager_->GetDevToolsAgentHostForWorker(2, 3));
@@ -243,7 +243,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
 
   // Re-created -> Destroyed
   CheckWorkerState(2, 2, WorkerState::WORKER_TERMINATED);
-  manager_->SharedWorkerCreated(2, 4, instance2);
+  manager_->WorkerCreated(2, 4, instance2);
   CheckWorkerNotExist(2, 2);
   CheckWorkerState(2, 4, WorkerState::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host2.get(), manager_->GetDevToolsAgentHostForWorker(2, 4));
@@ -252,7 +252,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   CheckWorkerState(2, 4, WorkerState::WORKER_TERMINATED);
 
   // Re-created -> ClientHostClosing -> Destroyed
-  manager_->SharedWorkerCreated(2, 5, instance2);
+  manager_->WorkerCreated(2, 5, instance2);
   CheckWorkerNotExist(2, 2);
   CheckWorkerState(2, 5, WorkerState::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host2.get(), manager_->GetDevToolsAgentHostForWorker(2, 5));
@@ -264,7 +264,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   CheckWorkerCount(0);
 }
 
-TEST_F(EmbeddedWorkerDevToolsManagerTest, ReattachTest) {
+TEST_F(SharedWorkerDevToolsManagerTest, ReattachTest) {
   SharedWorkerInstance instance(GURL("http://example.com/w3.js"),
                                 base::string16(),
                                 base::string16(),
@@ -273,7 +273,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, ReattachTest) {
                                 partition_id_);
   scoped_ptr<TestDevToolsClientHost> client_host(new TestDevToolsClientHost());
   // Created -> GetDevToolsAgentHost -> Register -> Destroyed
-  manager_->SharedWorkerCreated(3, 1, instance);
+  manager_->WorkerCreated(3, 1, instance);
   CheckWorkerState(3, 1, WorkerState::WORKER_UNINSPECTED);
   scoped_refptr<DevToolsAgentHost> agent_host(
       manager_->GetDevToolsAgentHostForWorker(3, 1));
@@ -286,7 +286,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, ReattachTest) {
   // ClientHostClosing -> Re-created -> release agent_host -> Destroyed
   client_host->InspectAgentHost(NULL);
   CheckWorkerState(3, 1, WorkerState::WORKER_TERMINATED);
-  manager_->SharedWorkerCreated(3, 2, instance);
+  manager_->WorkerCreated(3, 2, instance);
   CheckWorkerState(3, 2, WorkerState::WORKER_UNINSPECTED);
   agent_host = NULL;
   CheckWorkerState(3, 2, WorkerState::WORKER_UNINSPECTED);

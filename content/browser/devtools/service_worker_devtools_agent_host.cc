@@ -5,6 +5,7 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 
 #include "base/strings/stringprintf.h"
+#include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,7 +42,7 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     WorkerId worker_id,
     const ServiceWorkerIdentifier& service_worker,
     bool debug_service_worker_on_start)
-    : EmbeddedWorkerDevToolsAgentHost(worker_id),
+    : WorkerDevToolsAgentHost(worker_id),
       service_worker_(new ServiceWorkerIdentifier(service_worker)) {
   if (debug_service_worker_on_start)
     set_state(WORKER_PAUSED_FOR_DEBUG_ON_START);
@@ -76,7 +77,7 @@ bool ServiceWorkerDevToolsAgentHost::Close() {
 }
 
 void ServiceWorkerDevToolsAgentHost::OnClientAttached() {
-  EmbeddedWorkerDevToolsAgentHost::OnClientAttached();
+  WorkerDevToolsAgentHost::OnClientAttached();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SetDevToolsAttachedOnIO,
                   service_worker_->context_weak(),
@@ -85,7 +86,7 @@ void ServiceWorkerDevToolsAgentHost::OnClientAttached() {
 }
 
 void ServiceWorkerDevToolsAgentHost::OnClientDetached() {
-  EmbeddedWorkerDevToolsAgentHost::OnClientDetached();
+  WorkerDevToolsAgentHost::OnClientDetached();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SetDevToolsAttachedOnIO,
                   service_worker_->context_weak(),
@@ -99,6 +100,8 @@ bool ServiceWorkerDevToolsAgentHost::Matches(
 }
 
 ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
+  ServiceWorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(
+      worker_id());
 }
 
 }  // namespace content

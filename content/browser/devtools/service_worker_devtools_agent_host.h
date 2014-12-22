@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_AGENT_HOST_H_
 
-#include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
+#include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/devtools/worker_devtools_agent_host.h"
 
 namespace content {
 
-class ServiceWorkerDevToolsAgentHost : public EmbeddedWorkerDevToolsAgentHost {
+class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
+  typedef ServiceWorkerDevToolsManager::ServiceWorkerIdentifier
+      ServiceWorkerIdentifier;
+
   ServiceWorkerDevToolsAgentHost(WorkerId worker_id,
                                  const ServiceWorkerIdentifier& service_worker,
                                  bool debug_service_worker_on_start);
@@ -26,8 +30,7 @@ class ServiceWorkerDevToolsAgentHost : public EmbeddedWorkerDevToolsAgentHost {
   void OnClientAttached() override;
   void OnClientDetached() override;
 
-  // EmbeddedWorkerDevToolsAgentHost override.
-  bool Matches(const ServiceWorkerIdentifier& other) override;
+  bool Matches(const ServiceWorkerIdentifier& other);
 
  private:
   ~ServiceWorkerDevToolsAgentHost() override;

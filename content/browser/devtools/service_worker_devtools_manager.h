@@ -1,0 +1,87 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_MANAGER_H_
+#define CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_MANAGER_H_
+
+#include <map>
+
+#include "base/basictypes.h"
+#include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/worker_devtools_manager.h"
+#include "content/browser/shared_worker/shared_worker_instance.h"
+
+namespace content {
+
+class ServiceWorkerDevToolsAgentHost;
+class ServiceWorkerContextCore;
+
+// Manages WorkerDevToolsAgentHost's for Service Workers.
+// This class lives on UI thread.
+class CONTENT_EXPORT ServiceWorkerDevToolsManager
+    : public WorkerDevToolsManager {
+ public:
+  class ServiceWorkerIdentifier {
+   public:
+    ServiceWorkerIdentifier(
+        const ServiceWorkerContextCore* context,
+        base::WeakPtr<ServiceWorkerContextCore> context_weak,
+        int64 version_id,
+        const GURL& url);
+    ServiceWorkerIdentifier(const ServiceWorkerIdentifier& other);
+    ~ServiceWorkerIdentifier();
+
+    bool Matches(const ServiceWorkerIdentifier& other) const;
+
+    const ServiceWorkerContextCore* context() const { return context_; }
+    base::WeakPtr<ServiceWorkerContextCore> context_weak() const {
+      return context_weak_;
+    }
+    int64 version_id() const { return version_id_; }
+    GURL url() const { return url_; }
+
+   private:
+    const ServiceWorkerContextCore* const context_;
+    const base::WeakPtr<ServiceWorkerContextCore> context_weak_;
+    const int64 version_id_;
+    const GURL url_;
+  };
+
+  // Returns the ServiceWorkerDevToolsManager singleton.
+  static ServiceWorkerDevToolsManager* GetInstance();
+
+  // Returns true when the worker must be paused on start because a DevTool
+  // window for the same former ServiceWorkerIdentifier is still opened or
+  // debug-on-start is enabled in chrome://serviceworker-internals.
+  bool WorkerCreated(int worker_process_id,
+                     int worker_route_id,
+                     const ServiceWorkerIdentifier& service_worker_id);
+  void WorkerStopIgnored(int worker_process_id, int worker_route_id);
+
+  void set_debug_service_worker_on_start(bool debug_on_start) {
+    debug_service_worker_on_start_ = debug_on_start;
+  }
+  bool debug_service_worker_on_start() const {
+    return debug_service_worker_on_start_;
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<ServiceWorkerDevToolsManager>;
+  friend class ServiceWorkerDevToolsAgentHost;
+
+  ServiceWorkerDevToolsManager();
+  ~ServiceWorkerDevToolsManager() override;
+
+  AgentHostMap::iterator FindExistingWorkerAgentHost(
+      const ServiceWorkerIdentifier& service_worker_id);
+
+  bool debug_service_worker_on_start_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDevToolsManager);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_MANAGER_H_

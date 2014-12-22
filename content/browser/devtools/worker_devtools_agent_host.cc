@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
+#include "content/browser/devtools/worker_devtools_agent_host.h"
 
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/common/devtools_messages.h"
@@ -11,16 +11,16 @@
 
 namespace content {
 
-bool EmbeddedWorkerDevToolsAgentHost::IsWorker() const {
+bool WorkerDevToolsAgentHost::IsWorker() const {
   return true;
 }
 
-BrowserContext* EmbeddedWorkerDevToolsAgentHost::GetBrowserContext() {
+BrowserContext* WorkerDevToolsAgentHost::GetBrowserContext() {
   RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
   return rph ? rph->GetBrowserContext() : nullptr;
 }
 
-void EmbeddedWorkerDevToolsAgentHost::SendMessageToAgent(
+void WorkerDevToolsAgentHost::SendMessageToAgent(
     IPC::Message* message_raw) {
   scoped_ptr<IPC::Message> message(message_raw);
   if (state_ != WORKER_INSPECTED)
@@ -31,7 +31,7 @@ void EmbeddedWorkerDevToolsAgentHost::SendMessageToAgent(
   }
 }
 
-void EmbeddedWorkerDevToolsAgentHost::Attach() {
+void WorkerDevToolsAgentHost::Attach() {
   if (state_ != WORKER_INSPECTED) {
     state_ = WORKER_INSPECTED;
     AttachToWorker();
@@ -39,11 +39,11 @@ void EmbeddedWorkerDevToolsAgentHost::Attach() {
   IPCDevToolsAgentHost::Attach();
 }
 
-void EmbeddedWorkerDevToolsAgentHost::OnClientAttached() {
+void WorkerDevToolsAgentHost::OnClientAttached() {
   DevToolsAgentHostImpl::NotifyCallbacks(this, true);
 }
 
-void EmbeddedWorkerDevToolsAgentHost::OnClientDetached() {
+void WorkerDevToolsAgentHost::OnClientDetached() {
   if (state_ == WORKER_INSPECTED) {
     state_ = WORKER_UNINSPECTED;
     DetachFromWorker();
@@ -53,11 +53,11 @@ void EmbeddedWorkerDevToolsAgentHost::OnClientDetached() {
   DevToolsAgentHostImpl::NotifyCallbacks(this, false);
 }
 
-bool EmbeddedWorkerDevToolsAgentHost::OnMessageReceived(
+bool WorkerDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerDevToolsAgentHost, msg)
+  IPC_BEGIN_MESSAGE_MAP(WorkerDevToolsAgentHost, msg)
   IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
                       OnDispatchOnInspectorFrontend)
   IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
@@ -67,7 +67,7 @@ bool EmbeddedWorkerDevToolsAgentHost::OnMessageReceived(
   return handled;
 }
 
-void EmbeddedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
+void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
   if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
     RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
     Inspect(rph->GetBrowserContext());
@@ -79,20 +79,20 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
   }
 }
 
-void EmbeddedWorkerDevToolsAgentHost::WorkerRestarted(WorkerId worker_id) {
+void WorkerDevToolsAgentHost::WorkerRestarted(WorkerId worker_id) {
   DCHECK_EQ(WORKER_TERMINATED, state_);
   state_ = IsAttached() ? WORKER_PAUSED_FOR_REATTACH : WORKER_UNINSPECTED;
   worker_id_ = worker_id;
   WorkerCreated();
 }
 
-void EmbeddedWorkerDevToolsAgentHost::WorkerDestroyed() {
+void WorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   if (state_ == WORKER_INSPECTED) {
     DCHECK(IsAttached());
     // Client host is debugging this worker agent host.
     base::Callback<void(const std::string&)> raw_message_callback(
-        base::Bind(&EmbeddedWorkerDevToolsAgentHost::SendMessageToClient,
+        base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
                 base::Unretained(this)));
     devtools::worker::Client worker(raw_message_callback);
     worker.DisconnectedFromWorker(
@@ -103,48 +103,36 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerDestroyed() {
   Release();  // Balanced in WorkerCreated().
 }
 
-bool EmbeddedWorkerDevToolsAgentHost::IsTerminated() {
+bool WorkerDevToolsAgentHost::IsTerminated() {
   return state_ == WORKER_TERMINATED;
 }
 
-bool EmbeddedWorkerDevToolsAgentHost::Matches(
-    const SharedWorkerInstance& other) {
-  return false;
-}
-
-bool EmbeddedWorkerDevToolsAgentHost::Matches(
-    const ServiceWorkerIdentifier& other) {
-  return false;
-}
-
-EmbeddedWorkerDevToolsAgentHost::EmbeddedWorkerDevToolsAgentHost(
+WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
     WorkerId worker_id)
     : state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
   WorkerCreated();
 }
 
-EmbeddedWorkerDevToolsAgentHost::~EmbeddedWorkerDevToolsAgentHost() {
+WorkerDevToolsAgentHost::~WorkerDevToolsAgentHost() {
   DCHECK_EQ(WORKER_TERMINATED, state_);
-  EmbeddedWorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(
-      worker_id_);
 }
 
-void EmbeddedWorkerDevToolsAgentHost::AttachToWorker() {
+void WorkerDevToolsAgentHost::AttachToWorker() {
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
     host->AddRoute(worker_id_.second, this);
 }
 
-void EmbeddedWorkerDevToolsAgentHost::DetachFromWorker() {
+void WorkerDevToolsAgentHost::DetachFromWorker() {
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
     host->RemoveRoute(worker_id_.second);
 }
 
-void EmbeddedWorkerDevToolsAgentHost::WorkerCreated() {
+void WorkerDevToolsAgentHost::WorkerCreated() {
   AddRef();  // Balanced in WorkerDestroyed()
 }
 
-void EmbeddedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
+void WorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const std::string& message,
     uint32 total_size) {
   if (!IsAttached())
@@ -153,7 +141,7 @@ void EmbeddedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
   ProcessChunkedMessageFromAgent(message, total_size);
 }
 
-void EmbeddedWorkerDevToolsAgentHost::OnSaveAgentRuntimeState(
+void WorkerDevToolsAgentHost::OnSaveAgentRuntimeState(
     const std::string& state) {
   saved_agent_state_ = state;
 }

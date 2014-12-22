@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/embedded_worker_devtools_manager.h"
+#include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -457,7 +457,7 @@ ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {
 void ServiceWorkerInternalsUI::GetOptions(const ListValue* args) {
   DictionaryValue options;
   options.SetBoolean("debug_on_start",
-                     EmbeddedWorkerDevToolsManager::GetInstance()
+                     ServiceWorkerDevToolsManager::GetInstance()
                          ->debug_service_worker_on_start());
   web_ui()->CallJavascriptFunction("serviceworker.onOptions", options);
 }
@@ -469,7 +469,7 @@ void ServiceWorkerInternalsUI::SetOption(const ListValue* args) {
       !args->GetBoolean(1, &option_boolean)) {
     return;
   }
-  EmbeddedWorkerDevToolsManager::GetInstance()
+  ServiceWorkerDevToolsManager::GetInstance()
       ->set_debug_service_worker_on_start(option_boolean);
 }
 
@@ -623,7 +623,7 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
   base::Callback<void(ServiceWorkerStatusCode)> callback =
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
   scoped_refptr<DevToolsAgentHostImpl> agent_host(
-      EmbeddedWorkerDevToolsManager::GetInstance()
+      ServiceWorkerDevToolsManager::GetInstance()
           ->GetDevToolsAgentHostForWorker(process_id, devtools_agent_route_id));
   if (!agent_host.get()) {
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);

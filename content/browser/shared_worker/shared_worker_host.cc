@@ -5,7 +5,7 @@
 #include "content/browser/shared_worker/shared_worker_host.h"
 
 #include "base/metrics/histogram.h"
-#include "content/browser/devtools/embedded_worker_devtools_manager.h"
+#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
@@ -42,7 +42,7 @@ void NotifyWorkerReadyForInspection(int worker_process_id,
                                        worker_route_id));
     return;
   }
-  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
+  SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
       worker_process_id, worker_route_id);
 }
 
@@ -54,7 +54,7 @@ void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id) {
         base::Bind(NotifyWorkerDestroyed, worker_process_id, worker_route_id));
     return;
   }
-  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
+  SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
       worker_process_id, worker_route_id);
 }
 
