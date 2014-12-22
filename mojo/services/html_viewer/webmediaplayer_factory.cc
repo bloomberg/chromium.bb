@@ -16,6 +16,7 @@
 #include "media/base/media_log.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/cdm/default_cdm_factory.h"
 #include "media/filters/default_renderer_factory.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
@@ -102,9 +103,11 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
       media_log, GetMediaThreadTaskRunner(), compositor_task_runner_, nullptr);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
-  // TODO(xhwang): Provide a media based CdmFactory implementation.
-  return new media::WebMediaPlayerImpl(
-      frame, client, delegate, media_renderer_factory.Pass(), nullptr, params);
+  scoped_ptr<media::CdmFactory> cdm_factory(new media::DefaultCdmFactory());
+
+  return new media::WebMediaPlayerImpl(frame, client, delegate,
+                                       media_renderer_factory.Pass(),
+                                       cdm_factory.Pass(), params);
 #endif
 }
 

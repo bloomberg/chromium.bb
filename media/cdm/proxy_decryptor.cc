@@ -13,7 +13,6 @@
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/key_systems.h"
-#include "media/cdm/aes_decryptor.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
 
@@ -200,17 +199,6 @@ scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
     const std::string& key_system,
     const GURL& security_origin) {
   base::WeakPtr<ProxyDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
-
-  if (CanUseAesDecryptor(key_system)) {
-    return scoped_ptr<media::MediaKeys>(new AesDecryptor(
-        base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
-        base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),
-        base::Bind(&ProxyDecryptor::OnSessionKeysChange, weak_this)));
-  }
-
-  if (!cdm_factory)
-    return nullptr;
-
   return cdm_factory->Create(
       key_system,
       security_origin,

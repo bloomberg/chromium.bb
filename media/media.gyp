@@ -392,6 +392,8 @@
         'base/wall_clock_time_source.h',
         'cdm/aes_decryptor.cc',
         'cdm/aes_decryptor.h',
+        'cdm/default_cdm_factory.cc',
+        'cdm/default_cdm_factory.h',
         'cdm/json_web_key.cc',
         'cdm/json_web_key.h',
         'cdm/key_system_names.cc',

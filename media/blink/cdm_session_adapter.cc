@@ -13,7 +13,6 @@
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
-#include "media/cdm/aes_decryptor.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -33,22 +32,13 @@ bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
       kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
 
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
-
-  if (CanUseAesDecryptor(key_system)) {
-    media_keys_.reset(new AesDecryptor(
-        base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this)));
-  } else if (cdm_factory) {
-    media_keys_ = cdm_factory->Create(
-        key_system, security_origin,
-        base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionError, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
-        base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this));
-  }
-
+  media_keys_ = cdm_factory->Create(
+      key_system, security_origin,
+      base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
+      base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
+      base::Bind(&CdmSessionAdapter::OnSessionError, weak_this),
+      base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
+      base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this));
   return media_keys_.get() != nullptr;
 }
 
