@@ -580,7 +580,16 @@ crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedica
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-# On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).
+# Linux uses the system's NSS library for its WebCrypto implementation, whereas
+# Windows, Mac and Android use a statically-linked BoringSSL.
+# As such:
+#
+#  (a) Support for RSA is not guaranteed as the system NSS may be ancient.
+#  (b) RSA-PSS, AES-CTR, ECDH and ECDSA have only been implemented for BoringSSL
+#      based WebCrypto.
+#
+# These issue will be resolved once Linux switches to BoringSSL
+# (http://crbug.com/338887).
 crbug.com/382732 [ Linux ] crypto/subtle/rsa-oaep-generate-non-extractable-key.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/subtle/rsa-oaep-key-manipulation.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/subtle/rsa-oaep-plaintext-length.html [ Failure Pass ]
@@ -594,9 +603,6 @@ crbug.com/378315 [ Linux ] crypto/subtle/rsa-oaep-encrypt-parseAlgorithm-failure
 crbug.com/378315 [ Linux ] crypto/subtle/rsassa-pkcs1-v1_5-import-jwk-small-key.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/subtle/rsassa-pkcs1-v1_5-import-jwk.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/subtle/rsassa-pkcs1-v1_5-sign-verify.html [ Failure Pass ]
-
-# RSA-PSS, ECDSA and ECDH are not available for NSS-based WebCrypto (which is
-# what Linux is currently using).
 crbug.com/338883 [ Linux ] crypto/subtle/rsa-pss-verify.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/clone-ecKey-private.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/clone-ecKey-public.html [ Failure Pass ]
@@ -613,6 +619,16 @@ crbug.com/338883 [ Linux ] crypto/subtle/ecdh-import-jwk.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-aes.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-failures.html [ Failure Pass ]
 crbug.com/338883 [ Linux ] crypto/subtle/ecdh-deriveKey-hmac.html [ Failure Pass ]
+
+# There are some unresolved problems with the teardown of WebWorkers that make
+# the "abandon" WebCrypto tests flaky-crash. This flakiness can also affect the
+# tests run immediately afterwards (the two AES-CBC decrypt tests).
+# See http://crbug.com/440450.
+crbug.com/440277 crypto/subtle/abandon-crypto-operation.html [ Pass Crash ]
+crbug.com/440277 crypto/subtle/abandon-crypto-operation2.html [ Crash Pass ]
+crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass ]
+crbug.com/438403 crypto/subtle/aes-cbc-decrypt-failure.html [ Crash Pass ]
+crbug.com/438403 crypto/subtle/aes-cbc-encrypt-decrypt.html [ Crash Pass ]
 
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
@@ -1175,7 +1191,6 @@ crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupport
 crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
 
 crbug.com/390358 http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure Pass ]
-crbug.com/384564 crypto/subtle/rsassa-pkcs1-v1_5-generate-key.html [ Pass Timeout ]
 crbug.com/384950 fast/forms/submit-change-fragment.html [ Pass Timeout ]
 crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pass ]
 
@@ -1258,7 +1273,6 @@ crbug.com/425186 media/encrypted-media/encrypted-media-istypesupported.html [ Sk
 
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
-crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
 
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 crbug.com/409534 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
@@ -1490,7 +1504,6 @@ crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass ImageOnlyFailure 
 crbug.com/442512 svg/dom/complex-svgView-specification.html [ Pass ImageOnlyFailure ]
 
 crbug.com/436445 fast/css-grid-layout/flex-and-minmax-content-resolution-rows.html [ Failure ]
-crbug.com/440277 crypto/subtle/abandon-crypto-operation.html [ Pass Crash ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass ImageOnlyFailure ]
 
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
