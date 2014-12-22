@@ -35,11 +35,9 @@ class TransparentButton
   TransparentActivateWindowButtonDelegate* delegate() { return delegate_; }
 
   // views::View:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
-  virtual const char* GetClassName() const override {
-    return kTransparentButtonName;
-  }
+  const char* GetClassName() const override { return kTransparentButtonName; }
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

@@ -40,7 +40,7 @@ class PartialScreenshotController::PartialScreenshotLayer
     layer()->SetVisible(true);
     layer()->set_delegate(this);
   }
-  ~PartialScreenshotLayer() {}
+  ~PartialScreenshotLayer() override {}
 
   const gfx::Rect& region() const { return region_; }
 

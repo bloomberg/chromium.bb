@@ -38,9 +38,9 @@ class TestLayoutManager : public WorkspaceLayoutManager {
   explicit TestLayoutManager(aura::Window* window)
       : WorkspaceLayoutManager(window), keyboard_bounds_changed_(false) {}
 
-  ~TestLayoutManager() {}
+  ~TestLayoutManager() override {}
 
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& bounds) override {
+  void OnKeyboardBoundsChanging(const gfx::Rect& bounds) override {
     keyboard_bounds_changed_ = true;
     WorkspaceLayoutManager::OnKeyboardBoundsChanging(bounds);
   }

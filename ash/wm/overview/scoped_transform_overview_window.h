@@ -51,7 +51,7 @@ class ScopedTransformOverviewWindow
                                             const gfx::Rect& dst_rect);
 
   explicit ScopedTransformOverviewWindow(aura::Window* window);
-  virtual ~ScopedTransformOverviewWindow();
+  ~ScopedTransformOverviewWindow() override;
 
   gfx::Transform get_overview_transform() const { return overview_transform_; }
 
