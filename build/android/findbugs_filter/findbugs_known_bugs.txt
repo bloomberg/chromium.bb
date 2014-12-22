@@ -23,9 +23,9 @@ M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browse
 M V EI2: org.chromium.content_public.browser.LoadUrlParams.setPostData(byte[]) may expose internal representation by storing an externally mutable object into LoadUrlParams.mPostData  At LoadUrlParams.java
 M V EI: org.chromium.content_public.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
 M V EI2: org.chromium.net.ChromiumUrlRequest.setUploadData(String, byte[]) may expose internal representation by storing an externally mutable object into ChromiumUrlRequest.mUploadData  At ChromiumUrlRequest.java
-M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.extraHeaders  In PendingDocumentData.java
+M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.extraHeaders  At DocumentTabModelSelector.java
+M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.postData  At DocumentTabModelSelector.java
+M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.PendingDocumentData.referrer  At DocumentTabModelSelector.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.nativeWebContents  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.originalIntent  In PendingDocumentData.java
-M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.postData  In PendingDocumentData.java
-M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.referrer  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.url  In PendingDocumentData.java

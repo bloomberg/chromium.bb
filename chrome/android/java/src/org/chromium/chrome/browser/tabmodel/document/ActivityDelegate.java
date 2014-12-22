@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class ActivityDelegate {
         ActivityManager activityManager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            Intent intent = task.getTaskInfo().baseIntent;
+            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
             if (!isValidActivity(isIncognito, intent)) continue;
 
             int tabId = getTabIdFromIntent(intent);
@@ -120,7 +121,7 @@ public class ActivityDelegate {
         ActivityManager activityManager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            Intent intent = task.getTaskInfo().baseIntent;
+            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
             int taskId = getTabIdFromIntent(intent);
             if (taskId == tabId && isValidActivity(isIncognito, intent)) return task;
         }
