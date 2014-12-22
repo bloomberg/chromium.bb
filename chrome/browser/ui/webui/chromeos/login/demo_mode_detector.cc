@@ -54,6 +54,7 @@ void DemoModeDetector::InitDetection() {
 }
 
 void DemoModeDetector::StopDetection() {
+  oobe_timer_.Stop();
   idle_detector_.reset();
 }
 
