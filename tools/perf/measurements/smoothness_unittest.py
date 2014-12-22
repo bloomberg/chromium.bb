@@ -128,6 +128,21 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
       self.assertGreater(
           mean_input_event_latency[0].GetRepresentativeNumber(), 0)
 
+  @decorators.Enabled('android')  # SurfaceFlinger is android-only
+  def testSmoothnessSurfaceFlingerMetricsCalculated(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+    measurement = smoothness.Smoothness()
+    results = self.RunMeasurement(measurement, ps, options=self._options)
+    self.assertEquals(0, len(results.failures))
+
+    avg_surface_fps = results.FindAllPageSpecificValuesNamed('avg_surface_fps')
+    self.assertEquals(1, len(avg_surface_fps))
+    self.assertGreater(avg_surface_fps[0].GetRepresentativeNumber, 0)
+
+    jank_count = results.FindAllPageSpecificValuesNamed('jank_count')
+    self.assertEquals(1, len(jank_count))
+    self.assertGreater(jank_count[0].GetRepresentativeNumber(), -1)
+
   @decorators.Disabled('mac', 'chromeos')  # http://crbug.com/403903
   def testSmoothnessForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()

@@ -11,18 +11,19 @@ import unittest
 
 from telemetry.image_processing import histogram
 from telemetry.image_processing import rgba_color
-from telemetry.timeline import inspector_timeline_data
 from telemetry.timeline import model
+from telemetry.timeline import trace_data as trace_data_module
 from metrics import speedindex
 
 # Sample timeline data in the json format provided by devtools.
 # The sample events will be used in several tests below.
 _TEST_DIR = os.path.join(os.path.dirname(__file__), 'unittest_data')
 _SAMPLE_DATA = json.load(open(os.path.join(_TEST_DIR, 'sample_timeline.json')))
-_SAMPLE_TIMELINE_DATA = inspector_timeline_data.InspectorTimelineData(
-    _SAMPLE_DATA)
+_SAMPLE_TRACE_BUILDER = trace_data_module.TraceDataBuilder()
+_SAMPLE_TRACE_BUILDER.AddEventsTo(
+    trace_data_module.INSPECTOR_TRACE_PART, _SAMPLE_DATA)
 _SAMPLE_EVENTS = model.TimelineModel(
-    timeline_data=_SAMPLE_TIMELINE_DATA).GetAllEvents()
+    _SAMPLE_TRACE_BUILDER.AsData()).GetAllEvents()
 
 
 class FakeImageUtil(object):
@@ -204,9 +205,11 @@ class WPTComparisonTest(unittest.TestCase):
     file_path = os.path.join(_TEST_DIR, filename)
     with open(file_path) as json_file:
       raw_events = json.load(json_file)
-      timeline_data = inspector_timeline_data.InspectorTimelineData(raw_events)
+      trace_data_builder = trace_data_module.TraceDataBuilder()
+      trace_data_builder.AddEventsTo(
+          trace_data_module.INSPECTOR_TRACE_PART, raw_events)
       tab.timeline_model.SetAllEvents(
-          model.TimelineModel(timeline_data=timeline_data).GetAllEvents())
+          model.TimelineModel(trace_data_builder.AsData()).GetAllEvents())
       tab.SetEvaluateJavaScriptResult(viewport)
       actual = impl.CalculateSpeedIndex(tab)
       # The result might differ by 1 or more milliseconds due to rounding,

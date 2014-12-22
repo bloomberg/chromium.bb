@@ -40,8 +40,8 @@ class TaskExecutionTime(page_test.PageTest):
         options, category_filter, self._TIME_OUT_IN_SECONDS)
 
   def DidRunActions(self, page, tab):
-    timeline_data = tab.browser.platform.tracing_controller.Stop()
-    timeline_model = TimelineModel(timeline_data=timeline_data)
+    trace_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_model = TimelineModel(trace_data)
     self._renderer_thread = timeline_model.GetRendererThreadFromTabId(tab.id)
 
   def ValidateAndMeasurePage(self, page, tab, results):

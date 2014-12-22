@@ -6,6 +6,7 @@ import sys
 from measurements import smooth_gesture_util
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
+from telemetry.timeline import trace_data as trace_data_module
 from telemetry.timeline.model import TimelineModel
 from telemetry.page import page_test
 from telemetry.page.actions import action_runner
@@ -22,9 +23,9 @@ RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 class SmoothnessController(object):
   def __init__(self):
     self._timeline_model = None
-    self._tracing_timeline_data = None
+    self._trace_data = None
     self._interaction = None
-    self._surface_flinger_timeline_data = None
+    self._surface_flinger_trace_data = None
 
   def SetUp(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
@@ -51,21 +52,25 @@ class SmoothnessController(object):
     self._interaction.End()
     # Stop tracing for smoothness metric.
     if tab.browser.platform.IsDisplayTracingSupported():
-      self._surface_flinger_timeline_data = \
+      self._surface_flinger_trace_data = \
           tab.browser.platform.StopDisplayTracing()
-    self._tracing_timeline_data = tab.browser.platform.tracing_controller.Stop()
-    timeline_data = [self._tracing_timeline_data]
-    if self._surface_flinger_timeline_data:
-      timeline_data.append(self._surface_flinger_timeline_data)
-    self._timeline_model = TimelineModel(
-        timeline_data=timeline_data)
+    self._trace_data = tab.browser.platform.tracing_controller.Stop()
+    trace_data_builder = trace_data_module.TraceDataBuilder()
+    for part in self._trace_data.active_parts:
+      trace_data_builder.AddEventsTo(part, self._trace_data.GetEventsFor(part))
+    if self._surface_flinger_trace_data:
+      trace_data_builder.AddEventsTo(
+          trace_data_module.SURFACE_FLINGER_PART,
+          self._surface_flinger_trace_data.GetEventsFor(
+              trace_data_module.SURFACE_FLINGER_PART))
+    self._timeline_model = TimelineModel(trace_data_builder.AsData())
 
   def AddResults(self, tab, results):
     # Add results of smoothness metric. This computes the smoothness metric for
     # the time ranges of gestures, if there is at least one, else the the time
     # ranges from the first action to the last action.
     results.AddValue(trace.TraceValue(
-        results.current_page, self._tracing_timeline_data))
+        results.current_page, self._trace_data))
     renderer_thread = self._timeline_model.GetRendererThreadFromTabId(
         tab.id)
     run_smooth_actions_record = None
@@ -91,7 +96,7 @@ class SmoothnessController(object):
     if len(smooth_records) == 0:
       if run_smooth_actions_record is None:
         sys.stderr.write('Raw tracing data:\n')
-        sys.stderr.write(repr(self._tracing_timeline_data.EventData()))
+        self._trace_data.Serialize(sys.stderr)
         sys.stderr.write('\n')
         raise Exception('SmoothnessController failed to issue markers for the '
                         'whole interaction.')
