@@ -796,7 +796,7 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
     ++num_exits_;
   }
 
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event) override {
     ++num_drops_;
     last_event_mouse_position_ = event.location();
     last_event_flags_ = event.flags();

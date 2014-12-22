@@ -79,7 +79,7 @@ class TouchSelectionControllerTest : public testing::Test,
     selection_end_ = extent;
   }
 
-  virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) override {
+  void MoveRangeSelectionExtent(const gfx::PointF& extent) override {
     selection_moved_ = true;
     selection_end_ = extent;
   }

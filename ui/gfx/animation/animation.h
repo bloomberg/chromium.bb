@@ -82,7 +82,7 @@ class GFX_EXPORT Animation : public AnimationContainerElement {
 
   // AnimationContainer::Element overrides
   void SetStartTime(base::TimeTicks start_time) override;
-  virtual void Step(base::TimeTicks time_now) override = 0;
+  void Step(base::TimeTicks time_now) override = 0;
   base::TimeDelta GetTimerInterval() const override;
 
  private:

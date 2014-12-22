@@ -1774,7 +1774,7 @@ def GenerateAPIHeader(file, functions, set_name):
 
   # Write API declaration.
   for func in functions:
-    file.write('  virtual %s %sFn(%s) override;\n' %
+    file.write('  %s %sFn(%s) override;\n' %
       (func['return_type'], func['known_as'], func['arguments']))
 
   file.write('\n')

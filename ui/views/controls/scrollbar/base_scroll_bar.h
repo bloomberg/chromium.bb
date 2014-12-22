@@ -64,8 +64,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                            CustomButton::ButtonState new_state);
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const override = 0;
-  virtual void Layout() override = 0;
+  gfx::Size GetPreferredSize() const override = 0;
+  void Layout() override = 0;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
@@ -81,7 +81,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   void Update(int viewport_size,
               int content_size,
               int contents_scroll_offset) override;
-  virtual int GetLayoutSize() const override = 0;
+  int GetLayoutSize() const override = 0;
   int GetPosition() const override;
 
   // ScrollDelegate overrides:
@@ -99,7 +99,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
  protected:
   // View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) override = 0;
+  void OnPaint(gfx::Canvas* canvas) override = 0;
 
   BaseScrollBarThumb* GetThumb() const;
   CustomButton::ButtonState GetThumbTrackState() const;

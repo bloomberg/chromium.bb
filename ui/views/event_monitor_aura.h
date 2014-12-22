@@ -18,7 +18,7 @@ class EventMonitorAura : public EventMonitor {
  public:
   EventMonitorAura(ui::EventHandler* event_handler,
                    ui::EventTarget* event_target);
-  virtual ~EventMonitorAura();
+  ~EventMonitorAura() override;
 
  private:
   ui::EventHandler* event_handler_;  // Weak. Owned by our owner.

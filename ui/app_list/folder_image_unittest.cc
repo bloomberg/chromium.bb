@@ -56,9 +56,9 @@ class FolderImageTest : public testing::Test {
  public:
   FolderImageTest() : folder_image_(app_list_model_.top_level_item_list()) {}
 
-  ~FolderImageTest() {}
+  ~FolderImageTest() override {}
 
-  void SetUp() {
+  void SetUp() override {
     // Populate the AppListModel with three items (to test that the FolderImage
     // correctly supports having fewer than four icons).
     AddAppWithColoredIcon("app1", SK_ColorRED);
@@ -69,7 +69,7 @@ class FolderImageTest : public testing::Test {
     folder_image_.AddObserver(&observer_);
   }
 
-  void TearDown() { folder_image_.RemoveObserver(&observer_); }
+  void TearDown() override { folder_image_.RemoveObserver(&observer_); }
 
  protected:
   void AddAppWithColoredIcon(const std::string& id, SkColor icon_color) {
