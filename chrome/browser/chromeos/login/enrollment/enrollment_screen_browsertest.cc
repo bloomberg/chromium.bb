@@ -89,7 +89,7 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
 
  private:
   // Overridden from InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
                     "app_mode", "kiosk_manifest", &test_data_dir));

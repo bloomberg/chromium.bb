@@ -32,7 +32,7 @@ const char* kSimpleArticlePath = "/dom_distiller/simple_article.html";
 
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 };

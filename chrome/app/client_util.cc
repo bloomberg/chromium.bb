@@ -160,7 +160,7 @@ HMODULE MainDllLoader::Load(base::string16* version, base::FilePath* module) {
 // environment variable and just calling the entry point. Derived classes can
 // add custom code in the OnBeforeLaunch callback.
 int MainDllLoader::Launch(HINSTANCE instance) {
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   process_type_ = cmd_line.GetSwitchValueASCII(switches::kProcessType);
 
   base::string16 version;

@@ -49,7 +49,7 @@ base::FilePath NativeProcessLauncher::FindManifest(
 
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     base::Process* process,
     base::File* read_file,
     base::File* write_file) {

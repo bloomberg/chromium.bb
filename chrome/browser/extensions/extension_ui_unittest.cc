@@ -51,7 +51,7 @@ class ExtensionUITest : public testing::Test {
     TestExtensionSystem* system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     management_policy_ = system->management_policy();
 
     handler_.reset(new ExtensionSettingsHandler(extension_service_,

@@ -226,7 +226,7 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
   AccessibilityManagerTest() : default_autoclick_delay_(0) {}
   virtual ~AccessibilityManagerTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);

@@ -97,7 +97,7 @@ TEST_F(ExternalProviderImplChromeOSTest, Normal) {
 
 // App mode, no external app should be installed.
 TEST_F(ExternalProviderImplChromeOSTest, AppMode) {
-  CommandLine* command = CommandLine::ForCurrentProcess();
+  base::CommandLine* command = base::CommandLine::ForCurrentProcess();
   command->AppendSwitchASCII(switches::kForceAppMode, std::string());
   command->AppendSwitchASCII(switches::kAppId, std::string("app_id"));
 

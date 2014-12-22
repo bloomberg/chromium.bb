@@ -13,7 +13,8 @@
 #include "components/dom_distiller/core/url_constants.h"
 
 void RegisterDomDistillerViewerSource(Profile* profile) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableDomDistiller)) {
     dom_distiller::DomDistillerServiceFactory* dom_distiller_service_factory =
         dom_distiller::DomDistillerServiceFactory::GetInstance();

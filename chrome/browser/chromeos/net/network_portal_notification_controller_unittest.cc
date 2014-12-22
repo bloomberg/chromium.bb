@@ -67,7 +67,7 @@ class NetworkPortalNotificationControllerTest : public testing::Test {
   virtual ~NetworkPortalNotificationControllerTest() {}
 
   virtual void SetUp() override {
-    CommandLine* cl = CommandLine::ForCurrentProcess();
+    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kEnableNetworkPortalNotification);
     MessageCenter::Initialize();
     MessageCenter::Get()->AddObserver(&observer_);

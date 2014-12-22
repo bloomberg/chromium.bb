@@ -103,7 +103,7 @@ const ModifierRemapping* GetRemappedKey(const std::string& pref_name,
 }
 
 bool HasDiamondKey() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kHasChromeOSDiamondKey);
 }
 

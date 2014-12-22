@@ -89,7 +89,8 @@ bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUnlimitedStorage))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUnlimitedStorage))
     return true;
 
   if (origin.SchemeIs(content::kChromeDevToolsScheme) &&

@@ -586,8 +586,8 @@ bool DebuggerAttachFunction::RunAsync() {
   }
 
   infobars::InfoBar* infobar = NULL;
-  if (!CommandLine::ForCurrentProcess()->
-       HasSwitch(::switches::kSilentDebuggerExtensionAPI)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kSilentDebuggerExtensionAPI)) {
     // Do not attach to the target if for any reason the infobar cannot be shown
     // for this WebContents instance.
     infobar = ExtensionDevToolsInfoBarDelegate::Create(

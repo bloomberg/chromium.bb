@@ -38,7 +38,7 @@ void BrowserProcessPlatformPart::OnMetroViewerProcessTerminated() {
 }
 
 void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   // Check for Windows 8 specific commandlines requesting that this process
   // either connect to an existing viewer or launch a new viewer and
   // synchronously wait for it to connect.

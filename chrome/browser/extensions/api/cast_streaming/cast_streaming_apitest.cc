@@ -37,7 +37,7 @@ namespace extensions {
 
 class CastStreamingApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
@@ -321,7 +321,7 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
     CastStreamingApiTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(::switches::kWindowSize, "128,128");
     CastStreamingApiTest::SetUpCommandLine(command_line);
   }

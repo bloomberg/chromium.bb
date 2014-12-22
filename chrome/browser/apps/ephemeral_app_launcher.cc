@@ -98,8 +98,9 @@ bool EphemeralAppLauncher::IsFeatureEnabled() {
 
 // static
 bool EphemeralAppLauncher::IsFeatureEnabledInWebstore() {
-  return IsFeatureEnabled() && CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEphemeralAppsInWebstore);
+  return IsFeatureEnabled() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableEphemeralAppsInWebstore);
 }
 
 // static

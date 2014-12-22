@@ -190,7 +190,7 @@ void EphemeralAppService::Init() {
       apps::AppLifetimeMonitorFactory::GetForProfile(profile_));
 
   // Execute startup clean up tasks (except during tests).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     return;
 
   TriggerGarbageCollect(

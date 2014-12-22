@@ -48,7 +48,7 @@ using content::WebContents;
 
 // Disabled, http://crbug.com/64899.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
 
   extensions::ResultCatcher catcher;
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
 }
 
 class WindowOpenPanelDisabledTest : public ExtensionApiTest {
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // TODO(jennb): Re-enable when panels are enabled by default.
     // command_line->AppendSwitch(switches::kDisablePanels);
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest,
 }
 
 class WindowOpenPanelTest : public ExtensionApiTest {
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }
@@ -287,14 +287,16 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        MAYBE_CloseNonExtensionPanelsOnUninstall) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
 #if defined(USE_ASH_PANELS)
   // On Ash, new panel windows open as popup windows instead.
   int num_popups, num_panels;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePanels)) {
     num_popups = 2;
     num_panels = 2;
   } else {
@@ -340,7 +342,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   // Expect everything else, including panels, to close.
   num_popups -= 1;
 #if defined(USE_ASH_PANELS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePanels)) {
     // On Ash, new panel windows open as popup windows instead, so there are 2
     // extension domain popups that will close (instead of 1 popup on non-Ash).
     num_popups -= 1;

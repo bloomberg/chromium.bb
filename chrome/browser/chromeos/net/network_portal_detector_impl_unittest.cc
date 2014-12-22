@@ -67,7 +67,7 @@ class NetworkPortalDetectorImplTest
       public captive_portal::CaptivePortalDetectorTestBase {
  protected:
   virtual void SetUp() {
-    CommandLine* cl = CommandLine::ForCurrentProcess();
+    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
 
     DBusThreadManager::Initialize();

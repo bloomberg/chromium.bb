@@ -62,7 +62,8 @@ bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
   // started to show the app launcher. Background hosts will be loaded later
   // via NOTIFICATION_BROWSER_WINDOW_READY. http://crbug.com/178260
   return chrome::GetTotalBrowserCountForProfile(profile) == 0 &&
-         CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList);
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kShowAppList);
 }
 
 void ChromeProcessManagerDelegate::Observe(

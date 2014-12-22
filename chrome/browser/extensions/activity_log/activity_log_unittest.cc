@@ -61,10 +61,10 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
-    CommandLine command_line(CommandLine::NO_PROGRAM);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogging);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile()))->CreateExtensionService

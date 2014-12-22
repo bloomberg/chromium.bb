@@ -17,7 +17,7 @@
 
 class ExtensionIconSourceTest : public ExtensionApiTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         extensions::switches::kAllowLegacyExtensionManifests);

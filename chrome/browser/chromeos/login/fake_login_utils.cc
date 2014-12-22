@@ -46,13 +46,9 @@ void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
     chrome::startup::IsFirstRun first_run =
         first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
                                       : chrome::startup::IS_NOT_FIRST_RUN;
-    ASSERT_TRUE(
-        browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
-                                      profile,
-                                      base::FilePath(),
-                                      chrome::startup::IS_PROCESS_STARTUP,
-                                      first_run,
-                                      NULL));
+    ASSERT_TRUE(browser_creator.LaunchBrowser(
+        *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
+        chrome::startup::IS_PROCESS_STARTUP, first_run, NULL));
   }
   if (login_host)
     login_host->Finalize();

@@ -36,7 +36,7 @@ void LoginManagerTest::TearDownOnMainThread() {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-void LoginManagerTest::SetUpCommandLine(CommandLine* command_line) {
+void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   MixinBasedBrowserTest::SetUpCommandLine(command_line);

@@ -276,9 +276,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // This functionality requires a feature flag.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui",
-      "1");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
 
   ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
       << message_;
@@ -321,9 +320,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // This functionality requires a feature flag.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui",
-      "1");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
 
   ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
       << message_;
@@ -365,9 +363,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // This functionality requires a feature flag.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui",
-      "1");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
 
   ASSERT_TRUE(RunExtensionTest("keybinding/basics"))
       << message_;

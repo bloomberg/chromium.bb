@@ -276,7 +276,8 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 // content::BrowserMainParts and ChromeBrowserMainExtraParts overrides ---------
 
 void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
-  CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* singleton_command_line =
+      base::CommandLine::ForCurrentProcess();
 
   if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
@@ -594,7 +595,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   renderer_freezer_.reset(
       new RendererFreezer(scoped_ptr<RendererFreezer::Delegate>(
           new FreezerCgroupProcessManager())));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWakeOnPackets))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWakeOnPackets))
     light_bar_.reset(new LightBar());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
@@ -644,7 +646,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   g_browser_process->platform_part()->oom_priority_manager()->Start();
 
   if (ui::ShouldDefaultToNaturalScroll()) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kNaturalScrollDefault);
     system::InputDeviceSettings::Get()->SetTapToClick(true);
   }

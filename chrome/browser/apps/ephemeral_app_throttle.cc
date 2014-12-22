@@ -66,7 +66,7 @@ content::ResourceThrottle*
 EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
     net::URLRequest* request,
     ProfileIOData* profile_io_data) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLinkableEphemeralApps))
     return NULL;
 

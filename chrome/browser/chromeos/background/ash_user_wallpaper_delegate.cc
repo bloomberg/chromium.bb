@@ -26,10 +26,11 @@ namespace {
 
 bool IsNormalWallpaperChange() {
   if (chromeos::LoginState::Get()->IsUserLoggedIn() ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kFirstExecAfterBoot) ||
       WizardController::IsZeroDelayEnabled() ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLoginManager)) {
     return true;
   }
 
@@ -68,7 +69,8 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     // It is a first boot case now. If kDisableBootAnimation flag
     // is passed, it only disables any transition after OOBE.
     bool is_registered = StartupUtils::IsDeviceRegistered();
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
     bool disable_boot_animation = command_line->
         HasSwitch(switches::kDisableBootAnimation);
     if (is_registered && disable_boot_animation)

@@ -406,7 +406,7 @@ void FindFileHandlerTasks(
     // If the new ZIP unpacker is disabled, then hide its handlers, so we don't
     // show both the legacy one and the new one in Files app for ZIP files.
     if (extension->id() == extension_misc::kZIPUnpackerExtensionId &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kDisableNewZIPUnpacker)) {
       continue;
     }

@@ -70,7 +70,7 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   bool register_bookmark_undo_service_as_observer = true;
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   register_bookmark_undo_service_as_observer =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBookmarkUndo);
 #endif  // !defined(OS_IOS)
   if (register_bookmark_undo_service_as_observer) {

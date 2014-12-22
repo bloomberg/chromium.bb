@@ -87,7 +87,7 @@ class BlockingLoginTest
  public:
   BlockingLoginTest() : profile_added_(NULL) {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // Initialize the test server early, so that we can use its base url for
     // the command line flags.
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());

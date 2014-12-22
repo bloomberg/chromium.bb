@@ -749,7 +749,7 @@ class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
  public:
   SavePageAsMHTMLBrowserTest() {}
   ~SavePageAsMHTMLBrowserTest() override;
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSavePageAsMHTML);
   }
 

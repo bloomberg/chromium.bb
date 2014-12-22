@@ -74,7 +74,7 @@ void KioskModeIdleAppNameNotification::Setup() {
 
 void KioskModeIdleAppNameNotification::OnUserActivity(const ui::Event* event) {
   if (show_notification_upon_next_user_activity_) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     const std::string app_id =
         command_line->GetSwitchValueASCII(::switches::kAppId);
     Profile* profile = ProfileManager::GetActiveUserProfile();

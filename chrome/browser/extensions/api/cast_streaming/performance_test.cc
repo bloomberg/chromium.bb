@@ -292,7 +292,7 @@ class CastV2PerformanceTest
   }
 
   bool IsGpuAvailable() const {
-    return CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
+    return base::CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
   }
 
   std::string GetSuffixForTestFlags() {
@@ -354,7 +354,7 @@ class CastV2PerformanceTest
     ExtensionApiTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Some of the tests may launch http requests through JSON or AJAX
     // which causes a security error (cross domain request) when the page
     // is loaded from the local file system ( file:// ). The following switch

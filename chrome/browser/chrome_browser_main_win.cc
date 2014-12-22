@@ -181,10 +181,10 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     if (metro_switches_proc) {
       base::string16 metro_switches = (*metro_switches_proc)();
       if (!metro_switches.empty()) {
-        CommandLine extra_switches(CommandLine::NO_PROGRAM);
+        base::CommandLine extra_switches(base::CommandLine::NO_PROGRAM);
         extra_switches.ParseFromString(metro_switches);
-        CommandLine::ForCurrentProcess()->AppendArguments(extra_switches,
-                                                          false);
+        base::CommandLine::ForCurrentProcess()->AppendArguments(extra_switches,
+                                                                false);
       }
     }
   }
@@ -239,7 +239,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   // Revisit this when the pdf plugin uses skia and stops using GDI.
   if (switches::IsWin32kRendererLockdownEnabled() &&
       base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableOutOfProcessPdf);
   }
   return rv;
@@ -298,7 +298,7 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
 // static
 void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
-    const CommandLine& parsed_command_line) {
+    const base::CommandLine& parsed_command_line) {
   // Clear this var so child processes don't show the dialog by default.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(env_vars::kShowRestart);
@@ -332,7 +332,7 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
 
 // static
 void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
-    const CommandLine& parsed_command_line) {
+    const base::CommandLine& parsed_command_line) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_VISTA);
   base::ScopedNativeLibrary library(base::FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
@@ -345,7 +345,7 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
   }
   // The Windows Restart Manager expects a string of command line flags only,
   // without the program.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendArguments(parsed_command_line, false);
   if (!command_line.HasSwitch(switches::kRestoreLastSession))
     command_line.AppendSwitch(switches::kRestoreLastSession);
@@ -367,7 +367,7 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
 
 // static
 int ChromeBrowserMainPartsWin::HandleIconsCommands(
-    const CommandLine& parsed_command_line) {
+    const base::CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
     base::string16 cp_applet;
     base::win::Version version = base::win::GetVersion();
@@ -418,7 +418,7 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
         ui::MessageBox(NULL, text, caption, flags);
       }
-      CommandLine uninstall_cmd(
+      base::CommandLine uninstall_cmd(
           InstallUtil::GetChromeUninstallCmd(false, dist->GetType()));
       if (!uninstall_cmd.GetProgram().empty()) {
         uninstall_cmd.AppendSwitch(installer::switches::kSelfDestruct);

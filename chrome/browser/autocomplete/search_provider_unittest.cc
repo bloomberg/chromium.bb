@@ -1159,9 +1159,9 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.bar.com/");
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.bar.com/");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
 
   TestData cases[] = {
@@ -3325,7 +3325,7 @@ TEST_F(SearchProviderTest, CheckDuplicateMatchesSaved) {
 }
 
 TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableAnswersInSuggest);
 
   TemplateURLService* turl_model =

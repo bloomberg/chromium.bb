@@ -192,7 +192,7 @@ void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
 
 class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableHangMonitor);
   }
@@ -289,7 +289,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
 
 class DevToolsUnresponsiveBeforeUnloadTest: public DevToolsBeforeUnloadTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {}
+  void SetUpCommandLine(base::CommandLine* command_line) override {}
 };
 
 void TimeoutCallback(const std::string& timeout_message) {
@@ -391,7 +391,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
 class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         extensions::switches::kEnableExperimentalExtensionApis);
   }
@@ -875,7 +875,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -925,7 +926,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
 }
 
 class RemoteDebuggingTest: public ExtensionApiTest {
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
 
@@ -944,7 +945,8 @@ class RemoteDebuggingTest: public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

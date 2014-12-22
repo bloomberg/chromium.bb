@@ -54,7 +54,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
 class UserManagerTest : public testing::Test {
  protected:
   virtual void SetUp() override {
-    CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
     command_line.AppendSwitch(::switches::kTestType);
     command_line.AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);

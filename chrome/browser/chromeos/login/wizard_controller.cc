@@ -106,8 +106,8 @@ const char *kResumableScreens[] = {
 
 // Checks flag for HID-detection screen show.
 bool CanShowHIDDetectionScreen() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kDisableHIDDetectionOnOOBE);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableHIDDetectionOnOOBE);
 }
 
 bool IsResumableScreen(const std::string& screen) {
@@ -1252,8 +1252,9 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 
 bool WizardController::IsHostPairingOobe() const {
   return IsRemoraRequisition() &&
-    (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHostPairingOobe) ||
-     shark_controller_detected_);
+         (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kHostPairingOobe) ||
+          shark_controller_detected_);
 }
 
 void WizardController::MaybeStartListeningForSharkConnection() {

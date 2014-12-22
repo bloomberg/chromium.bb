@@ -158,7 +158,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         .Times(1);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
   }
 

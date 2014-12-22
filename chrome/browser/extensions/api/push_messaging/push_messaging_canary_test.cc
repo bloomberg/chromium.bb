@@ -39,7 +39,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
   ~PushMessagingCanaryTest() override {}
 
   void SetUp() override {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     ASSERT_TRUE(command_line->HasSwitch(kPasswordFileForTest));
     base::FilePath password_file =

@@ -75,7 +75,8 @@ void ExternalComponentLoader::StartLoading() {
 
 #if defined(OS_CHROMEOS)
   {
-    CommandLine* const command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* const command_line =
+        base::CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(chromeos::switches::kDisableNewZIPUnpacker)) {
       const std::string extension_id = extension_misc::kZIPUnpackerExtensionId;
       prefs_->SetString(extension_id + ".external_update_url",

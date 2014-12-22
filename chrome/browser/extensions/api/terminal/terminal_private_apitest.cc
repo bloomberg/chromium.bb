@@ -7,7 +7,7 @@
 #include "extensions/common/switches.h"
 
 class ExtensionTerminalPrivateApiTest : public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,

@@ -24,7 +24,7 @@ namespace diagnostics {
 // run a test in.
 class DiagnosticsControllerTest : public testing::Test {
  protected:
-  DiagnosticsControllerTest() : cmdline_(CommandLine::NO_PROGRAM) {}
+  DiagnosticsControllerTest() : cmdline_(base::CommandLine::NO_PROGRAM) {}
 
   ~DiagnosticsControllerTest() override {}
 
@@ -45,7 +45,7 @@ class DiagnosticsControllerTest : public testing::Test {
     PathService::Override(base::DIR_HOME, profile_dir_);
 #endif
 
-    cmdline_ = CommandLine(CommandLine::NO_PROGRAM);
+    cmdline_ = base::CommandLine(base::CommandLine::NO_PROGRAM);
     cmdline_.AppendSwitchPath(switches::kUserDataDir, profile_dir_);
     cmdline_.AppendSwitch(switches::kDiagnostics);
     cmdline_.AppendSwitch(switches::kDiagnosticsRecovery);
@@ -70,7 +70,7 @@ class DiagnosticsControllerTest : public testing::Test {
   }
 
   scoped_ptr<DiagnosticsModel> model_;
-  CommandLine cmdline_;
+  base::CommandLine cmdline_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<DiagnosticsWriter> writer_;
   base::FilePath profile_dir_;

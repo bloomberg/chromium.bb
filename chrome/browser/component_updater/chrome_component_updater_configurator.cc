@@ -109,7 +109,7 @@ std::string GetSwitchArgument(const std::vector<std::string>& vec,
 
 class ChromeConfigurator : public Configurator {
  public:
-  ChromeConfigurator(const CommandLine* cmdline,
+  ChromeConfigurator(const base::CommandLine* cmdline,
                      net::URLRequestContextGetter* url_request_getter);
 
   ~ChromeConfigurator() override {}
@@ -149,7 +149,7 @@ class ChromeConfigurator : public Configurator {
 };
 
 ChromeConfigurator::ChromeConfigurator(
-    const CommandLine* cmdline,
+    const base::CommandLine* cmdline,
     net::URLRequestContextGetter* url_request_getter)
     : url_request_getter_(url_request_getter),
       fast_update_(false),

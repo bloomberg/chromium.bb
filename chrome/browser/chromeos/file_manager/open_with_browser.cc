@@ -95,7 +95,7 @@ bool IsFlashPluginEnabled(Profile* profile) {
   DCHECK(profile);
 
   base::FilePath plugin_path(
-      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kPpapiFlashPath));
   if (plugin_path.empty())
     PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &plugin_path);

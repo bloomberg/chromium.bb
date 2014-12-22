@@ -116,7 +116,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
         Profile* profile,
         bool force_immediate_load,
         scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // Don't initialize cloud policy for the signin profile.
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return scoped_ptr<UserCloudPolicyManagerChromeOS>();

@@ -1489,12 +1489,9 @@ class ExtensionUpdaterTest : public testing::Test {
     // service, not on our mock |service|.  This allows us to fake
     // the CrxInstaller actions we want.
     TestingProfile profile;
-    static_cast<TestExtensionSystem*>(
-        ExtensionSystem::Get(&profile))->
-        CreateExtensionService(
-            CommandLine::ForCurrentProcess(),
-            base::FilePath(),
-            false);
+    static_cast<TestExtensionSystem*>(ExtensionSystem::Get(&profile))
+        ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                                 base::FilePath(), false);
     ExtensionService* extension_service =
         ExtensionSystem::Get(&profile)->extension_service();
     extension_service->set_extensions_enabled(true);

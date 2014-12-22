@@ -111,7 +111,7 @@ class PreferencesPrivateApiTest : public ExtensionApiTest {
   PreferencesPrivateApiTest() : browser_(NULL), service_(NULL) {}
   ~PreferencesPrivateApiTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);

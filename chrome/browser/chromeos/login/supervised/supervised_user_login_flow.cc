@@ -41,7 +41,8 @@ void SupervisedUserLoginFlow::AppendAdditionalCommandLineSwitches() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsCurrentUserNew()) {
     // Supervised users should launch into empty desktop on first run.
-    CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kSilentLaunch);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kSilentLaunch);
   }
 }
 

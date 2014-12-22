@@ -132,9 +132,9 @@ void RecordPasswordLoginEvent(const UserContext& user_context) {
 
 bool CanShowDebuggingFeatures() {
   // We need to be on the login screen and in dev mode to show this menu item.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kSystemDevMode) &&
-         CommandLine::ForCurrentProcess()->HasSwitch(
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kLoginManager) &&
          !user_manager::UserManager::Get()->IsSessionStarted();
 }

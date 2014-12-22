@@ -80,7 +80,7 @@ void OobeBaseTest::TearDownOnMainThread() {
   ExtensionApiTest::TearDownOnMainThread();
 }
 
-void OobeBaseTest::SetUpCommandLine(CommandLine* command_line) {
+void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionApiTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);

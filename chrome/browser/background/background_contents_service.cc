@@ -253,7 +253,8 @@ const char kFrameNameKey[] = "name";
 int BackgroundContentsService::restart_delay_in_ms_ = 3000;  // 3 seconds.
 
 BackgroundContentsService::BackgroundContentsService(
-    Profile* profile, const CommandLine* command_line)
+    Profile* profile,
+    const base::CommandLine* command_line)
     : prefs_(NULL), extension_registry_observer_(this) {
   // Don't load/store preferences if the parent profile is incognito.
   if (!profile->IsOffTheRecord())

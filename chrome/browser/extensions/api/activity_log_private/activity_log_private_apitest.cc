@@ -21,16 +21,16 @@ namespace extensions {
 
 class ActivityLogApiTest : public ExtensionApiTest {
  public:
-  ActivityLogApiTest() : saved_cmdline_(CommandLine::NO_PROGRAM) {}
+  ActivityLogApiTest() : saved_cmdline_(base::CommandLine::NO_PROGRAM) {}
 
   ~ActivityLogApiTest() override {
     ExtensionApiTest::SetUpCommandLine(&saved_cmdline_);
-    *CommandLine::ForCurrentProcess() = saved_cmdline_;
+    *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    saved_cmdline_ = *CommandLine::ForCurrentProcess();
+    saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
   }
 
@@ -43,7 +43,7 @@ class ActivityLogApiTest : public ExtensionApiTest {
   }
 
  private:
-  CommandLine saved_cmdline_;
+  base::CommandLine saved_cmdline_;
 };
 
 #if defined(OS_WIN) && !defined(NDEBUG)

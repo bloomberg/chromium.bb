@@ -166,17 +166,18 @@ class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {
 // lifetime of this class.
 class ScopedExperimentalCommandLine {
  public:
-  ScopedExperimentalCommandLine() : saved_(*CommandLine::ForCurrentProcess()) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+  ScopedExperimentalCommandLine()
+      : saved_(*base::CommandLine::ForCurrentProcess()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalExtensionApis);
   }
 
   ~ScopedExperimentalCommandLine() {
-    *CommandLine::ForCurrentProcess() = saved_;
+    *base::CommandLine::ForCurrentProcess() = saved_;
   }
 
  private:
-  CommandLine saved_;
+  base::CommandLine saved_;
 };
 
 }  // namespace
@@ -555,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
   base::ShadowingAtExitManager at_exit_manager;
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableExtensionAssetsSharing);
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());

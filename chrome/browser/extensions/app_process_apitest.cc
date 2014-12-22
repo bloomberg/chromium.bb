@@ -57,11 +57,11 @@ class AppApiTest : public ExtensionApiTest {
   }
 
   // Pass flags to make testing apps easier.
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisablePopupBlocking);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         extensions::switches::kAllowHTTPBackgroundPage);
   }
 
@@ -134,9 +134,9 @@ class AppApiTest : public ExtensionApiTest {
 // Omits the disable-popup-blocking flag so we can cover that case.
 class BlockedAppApiTest : public AppApiTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         extensions::switches::kAllowHTTPBackgroundPage);
   }
 };
@@ -599,7 +599,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
 IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

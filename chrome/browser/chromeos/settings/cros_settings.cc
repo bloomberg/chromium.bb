@@ -50,7 +50,7 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
       base::Bind(&CrosSettings::FireObservers,
                  // This is safe since |this| is never deleted.
                  base::Unretained(this)));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStubCrosSettings)) {
     AddSettingsProvider(new StubCrosSettingsProvider(notify_cb));
   } else {

@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingEventURL) {
 
 // Tests connecting from a panel to its extension.
 class PanelMessagingTest : public ExtensionApiTest {
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }

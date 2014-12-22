@@ -66,7 +66,7 @@ class DemoAppLauncherTest : public ExtensionBrowserTest {
 
   virtual ~DemoAppLauncherTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");

@@ -454,7 +454,7 @@ class DownloadTest : public InProcessBrowserTest {
     file_activity_observer_.reset();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
   }
 
@@ -1824,7 +1824,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -2878,7 +2879,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -3169,7 +3171,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadPrefs_SaveFilePath) {
 // A download that is interrupted due to a file error should be able to be
 // resumed.
 IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_NoPrompt) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   scoped_refptr<content::TestFileErrorInjector> error_injector(
       content::TestFileErrorInjector::Create(
@@ -3194,7 +3196,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_NoPrompt) {
 // path is invalid or unusable should cause a prompt to be displayed on
 // resumption.
 IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPrompt) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   scoped_refptr<content::TestFileErrorInjector> error_injector(
       content::TestFileErrorInjector::Create(
@@ -3218,7 +3220,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPrompt) {
 // The user shouldn't be prompted on a resumed download unless a prompt is
 // necessary due to the interrupt reason.
 IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPromptAlways) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kPromptForDownload, true);
@@ -3248,7 +3250,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPromptAlways) {
 // A download that is interrupted due to a transient error should be resumed
 // automatically.
 IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   scoped_refptr<content::TestFileErrorInjector> error_injector(
       content::TestFileErrorInjector::Create(
@@ -3268,7 +3270,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
 
 // An interrupting download should be resumable multiple times.
 IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   scoped_refptr<content::TestFileErrorInjector> error_injector(
       content::TestFileErrorInjector::Create(

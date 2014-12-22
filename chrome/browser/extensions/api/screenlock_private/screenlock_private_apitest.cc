@@ -36,7 +36,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   ~ScreenlockPrivateApiTest() override {}
 
   // ExtensionApiTest
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID, kTestExtensionId);

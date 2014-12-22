@@ -29,7 +29,7 @@ namespace {
 class ProcessManagementTest : public ExtensionBrowserTest {
  private:
   // This is needed for testing isolated apps, which are still experimental.
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         extensions::switches::kEnableExperimentalExtensionApis);

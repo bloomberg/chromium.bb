@@ -62,7 +62,7 @@ class TabCapturePerformanceTest
   }
 
   bool IsGpuAvailable() const {
-    return CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
+    return base::CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
   }
 
   std::string ScalingMethod() const {
@@ -100,7 +100,7 @@ class TabCapturePerformanceTest
     ExtensionApiTest::SetUp();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     if (!ScalingMethod().empty()) {
       command_line->AppendSwitchASCII(switches::kTabCaptureUpscaleQuality,
                                       ScalingMethod());

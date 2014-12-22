@@ -329,8 +329,9 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   bool is_registered = StartupUtils::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
-  bool disable_boot_animation = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBootAnimation);
+  bool disable_boot_animation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBootAnimation);
 
   waiting_for_wallpaper_load_ = !zero_delay_enabled &&
                                 (!is_registered || !disable_boot_animation);
@@ -350,9 +351,10 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       kHiddenWebUIInitializationDefault && !zero_delay_enabled;
 
   // Check if WebUI init type is overriden.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshWebUIInit)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshWebUIInit)) {
     const std::string override_type =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kAshWebUIInit);
     if (override_type == kWebUIInitParallel)
       initialize_webui_hidden_ = true;
@@ -947,7 +949,7 @@ void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
     return;
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLoginAnimations))
     ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
 #endif
@@ -1179,7 +1181,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
         prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
   system::InputDeviceSettings::Get()->SetNaturalScroll(
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault));
 #endif
 

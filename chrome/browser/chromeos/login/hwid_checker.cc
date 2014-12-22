@@ -112,7 +112,7 @@ bool IsMachineHWIDCorrect() {
 #if !defined(GOOGLE_CHROME_BUILD)
   return true;
 #endif
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(::switches::kTestType))
     return true;
   if (!base::SysInfo::IsRunningOnChromeOS())

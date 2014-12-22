@@ -504,7 +504,7 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
   // Component updated flash supersedes bundled flash therefore if that one
   // is disabled then this one should never install.
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash))
     return;
   BrowserThread::PostTask(BrowserThread::FILE,

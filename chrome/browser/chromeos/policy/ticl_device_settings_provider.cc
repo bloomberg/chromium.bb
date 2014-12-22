@@ -16,7 +16,7 @@ TiclDeviceSettingsProvider::~TiclDeviceSettingsProvider() {
 }
 
 bool TiclDeviceSettingsProvider::UseGCMChannel() const {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidationUseGCMChannel);
 }
 

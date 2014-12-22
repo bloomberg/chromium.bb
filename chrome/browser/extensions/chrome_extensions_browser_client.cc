@@ -62,7 +62,7 @@ bool ChromeExtensionsBrowserClient::IsShuttingDown() {
 }
 
 bool ChromeExtensionsBrowserClient::AreExtensionsDisabled(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   return command_line.HasSwitch(switches::kDisableExtensions) ||
@@ -176,7 +176,7 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
     return false;
 
   // If we're inside a browser test, then assume prefs are all up-to-date.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     return false;
 
   PrefService* pref_service = extension_prefs->pref_service();
@@ -281,7 +281,7 @@ ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
 }
 
 bool ChromeExtensionsBrowserClient::IsBackgroundUpdateAllowed() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableBackgroundNetworking);
 }
 

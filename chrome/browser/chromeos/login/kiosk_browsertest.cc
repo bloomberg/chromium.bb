@@ -336,7 +336,7 @@ class KioskTest : public OobeBaseTest {
     KioskAppManager::Get()->CleanUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
     fake_cws_->Init(embedded_test_server());
   }
@@ -1774,7 +1774,7 @@ class KioskHiddenWebUITest : public KioskTest,
   KioskHiddenWebUITest() : wallpaper_loaded_(false) {}
 
   // KioskTest overrides:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     KioskTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableBootAnimation);
   }

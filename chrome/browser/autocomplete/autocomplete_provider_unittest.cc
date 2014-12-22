@@ -545,7 +545,7 @@ TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
 // query params set on the command line.
 TEST_F(AutocompleteProviderTest, ExtraQueryParams) {
   ResetControllerWithKeywordAndSearchProviders();
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
   RunExactKeymatchTest(true);
   CopyResults();

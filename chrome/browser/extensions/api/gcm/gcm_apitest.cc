@@ -61,7 +61,7 @@ class GcmApiTest : public ExtensionApiTest {
   GcmApiTest() : fake_gcm_profile_service_(NULL) {}
 
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
   void StartCollecting();
@@ -74,7 +74,7 @@ class GcmApiTest : public ExtensionApiTest {
   gcm::FakeGCMProfileService* fake_gcm_profile_service_;
 };
 
-void GcmApiTest::SetUpCommandLine(CommandLine* command_line) {
+void GcmApiTest::SetUpCommandLine(base::CommandLine* command_line) {
   // We now always create the GCMProfileService instance in
   // ProfileSyncServiceFactory that is called when a profile is being
   // initialized. In order to prevent it from being created, we add the switch

@@ -69,12 +69,12 @@ TEST_F(ActivityLogEnabledTest, CommandLineSwitch) {
   scoped_ptr<TestingProfile> profile2(
     static_cast<TestingProfile*>(CreateBrowserContext()));
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  CommandLine saved_cmdline_ = *CommandLine::ForCurrentProcess();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  base::CommandLine saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExtensionActivityLogging);
   ActivityLog* activity_log1 = ActivityLog::GetInstance(profile1.get());
-  *CommandLine::ForCurrentProcess() = saved_cmdline_;
+  *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
   ActivityLog* activity_log2 = ActivityLog::GetInstance(profile2.get());
 
   EXPECT_EQ(0,
@@ -123,7 +123,7 @@ TEST_F(ActivityLogEnabledTest, PrefSwitch) {
 }
 
 TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   scoped_ptr<TestingProfile> profile1(
     static_cast<TestingProfile*>(CreateBrowserContext()));
   scoped_ptr<TestingProfile> profile2(
@@ -228,9 +228,9 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
 
 TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   // Set the command line switch.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  CommandLine saved_cmdline_ = *CommandLine::ForCurrentProcess();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  base::CommandLine saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExtensionActivityLogging);
 
   scoped_ptr<TestingProfile> profile(
@@ -280,7 +280,7 @@ TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   EXPECT_FALSE(activity_log->IsWatchdogAppActive());
 
   // Cleanup.
-  *CommandLine::ForCurrentProcess() = saved_cmdline_;
+  *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
 }
 
 }  // namespace extensions

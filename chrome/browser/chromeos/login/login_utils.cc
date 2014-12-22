@@ -157,8 +157,8 @@ void LoginUtils::Set(LoginUtils* mock) {
 bool LoginUtils::IsWhitelisted(const std::string& username,
                                bool* wildcard_match) {
   // Skip whitelist check for tests.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kOobeSkipPostLogin)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kOobeSkipPostLogin)) {
     return true;
   }
 

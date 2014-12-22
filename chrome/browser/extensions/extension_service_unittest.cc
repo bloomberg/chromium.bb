@@ -5601,12 +5601,12 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   scoped_ptr<chromeos::ScopedTestUserManager> user_manager(
       new chromeos::ScopedTestUserManager);
 #endif
-  scoped_ptr<CommandLine> command_line;
+  scoped_ptr<base::CommandLine> command_line;
   base::FilePath install_dir = profile->GetPath()
       .AppendASCII(extensions::kInstallDirectoryName);
 
   // By default, we are enabled.
-  command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
+  command_line.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
   ExtensionService* service = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
@@ -5653,7 +5653,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
+  command_line.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
   service = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
@@ -7041,7 +7041,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
 // permissions.
 TEST_F(ExtensionServiceTest, InstallWhitelistedExtension) {
   std::string test_id = "hdkklepkcpckhnpgjnmbdfhehckloojk";
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       extensions::switches::kWhitelistedExtensionID, test_id);
 
   InitializeEmptyExtensionService();

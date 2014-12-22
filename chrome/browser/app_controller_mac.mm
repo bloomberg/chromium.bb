@@ -430,7 +430,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // sessions.
   if (!browser_shutdown::IsTryingToQuit() && quitWithAppsController_.get() &&
       !quitWithAppsController_->ShouldQuit()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kHostedAppQuitNotification)) {
       return NO;
     }
@@ -1387,9 +1387,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (!profile_manager)
     return NULL;
 
-  return profile_manager->GetProfile(GetStartupProfilePath(
-      profile_manager->user_data_dir(),
-      *CommandLine::ForCurrentProcess()));
+  return profile_manager->GetProfile(
+      GetStartupProfilePath(profile_manager->user_data_dir(),
+                            *base::CommandLine::ForCurrentProcess()));
 }
 
 - (Profile*)safeLastProfileForNewWindows {
@@ -1429,7 +1429,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     browser->window()->Show();
   }
 
-  CommandLine dummy(CommandLine::NO_PROGRAM);
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);

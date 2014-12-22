@@ -154,7 +154,7 @@ void AppShortcutManager::OnProfileWillBeRemoved(
 }
 
 void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     return;
 
   int last_version = prefs_->GetInteger(prefs::kAppShortcutsVersion);

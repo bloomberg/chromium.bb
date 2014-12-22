@@ -85,7 +85,7 @@ bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
 bool ChromeVirtualKeyboardDelegate::MoveCursor(int swipe_direction,
                                                int modifier_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kEnableSwipeSelection)) {
     return false;
   }

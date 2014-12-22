@@ -731,7 +731,7 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
                                                   "2000-01");
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(
@@ -980,7 +980,7 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
         WizardController::kNetworkScreenName);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(::switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
   }
@@ -1010,7 +1010,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
   WizardControllerKioskFlowTest() {}
 
   // Overridden from InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
                     "app_mode", "kiosk_manifest", &test_data_dir));
@@ -1117,7 +1117,7 @@ class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
   WizardControllerEnableDebuggingTest() {}
 
   // Overridden from InProcessBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
   }

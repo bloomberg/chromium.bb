@@ -33,7 +33,7 @@ const std::string kHashPageB =
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
   ASSERT_TRUE(test_server()->Start());
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowLegacyExtensionManifests);
 
   // This page action will not show an icon, since it doesn't specify one but

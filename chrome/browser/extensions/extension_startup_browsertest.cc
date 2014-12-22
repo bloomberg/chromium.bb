@@ -50,7 +50,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
  protected:
   // InProcessBrowserTest
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     if (load_extensions_.empty()) {
       // If no |load_extensions_| were specified, allow unauthenticated
       // extension settings to be loaded from Preferences as if they had been

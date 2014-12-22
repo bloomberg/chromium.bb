@@ -183,7 +183,8 @@ DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
                                       socket_name_prefix.c_str())) {
   // Override the socket name if one is specified on the command line.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {
     socket_name_ = command_line.GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);

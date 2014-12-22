@@ -165,7 +165,7 @@ using content::ResourceDispatcherHost;
 
 BrowserProcessImpl::BrowserProcessImpl(
     base::SequencedTaskRunner* local_state_task_runner,
-    const CommandLine& command_line)
+    const base::CommandLine& command_line)
     : created_watchdog_thread_(false),
       created_browser_policy_connector_(false),
       created_profile_manager_(false),
@@ -865,7 +865,7 @@ BrowserProcessImpl::component_updater() {
       return NULL;
     component_updater::Configurator* configurator =
         component_updater::MakeChromeComponentUpdaterConfigurator(
-            CommandLine::ForCurrentProcess(),
+            base::CommandLine::ForCurrentProcess(),
             io_thread()->system_url_request_context_getter());
     // Creating the component updater does not do anything, components
     // need to be registered and Start() needs to be called.
@@ -1002,7 +1002,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #if defined(OS_POSIX)
   // Also find plugins in a user-specific plugins dir,
   // e.g. ~/.config/chromium/Plugins.
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   if (!cmd_line.HasSwitch(switches::kDisablePluginsDiscovery)) {
     base::FilePath user_data_dir;
     if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
@@ -1020,7 +1020,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 #endif  // defined(ENABLE_PLUGINS)
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources)) {
     DCHECK(!promo_resource_service_.get());
     promo_resource_service_ = new PromoResourceService;
@@ -1059,7 +1060,7 @@ void BrowserProcessImpl::CreateBackgroundModeManager() {
 #if defined(ENABLE_BACKGROUND)
   DCHECK(background_mode_manager_.get() == NULL);
   background_mode_manager_.reset(
-      new BackgroundModeManager(CommandLine::ForCurrentProcess(),
+      new BackgroundModeManager(base::CommandLine::ForCurrentProcess(),
                                 &profile_manager()->GetProfileInfoCache()));
 #endif
 }
@@ -1163,19 +1164,21 @@ const char* const kSwitchesToAddOnAutorestart[] = {
 };
 
 void BrowserProcessImpl::RestartBackgroundInstance() {
-  CommandLine* old_cl = CommandLine::ForCurrentProcess();
-  scoped_ptr<CommandLine> new_cl(new CommandLine(old_cl->GetProgram()));
+  base::CommandLine* old_cl = base::CommandLine::ForCurrentProcess();
+  scoped_ptr<base::CommandLine> new_cl(
+      new base::CommandLine(old_cl->GetProgram()));
 
-  std::map<std::string, CommandLine::StringType> switches =
+  std::map<std::string, base::CommandLine::StringType> switches =
       old_cl->GetSwitches();
 
   switches::RemoveSwitchesForAutostart(&switches);
 
   // Append the rest of the switches (along with their values, if any)
   // to the new command line
-  for (std::map<std::string, CommandLine::StringType>::const_iterator i =
-      switches.begin(); i != switches.end(); ++i) {
-      CommandLine::StringType switch_value = i->second;
+  for (std::map<std::string, base::CommandLine::StringType>::const_iterator i =
+           switches.begin();
+       i != switches.end(); ++i) {
+    base::CommandLine::StringType switch_value = i->second;
       if (switch_value.length() > 0) {
         new_cl->AppendSwitchNative(i->first, i->second);
       } else {

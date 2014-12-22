@@ -40,7 +40,7 @@ PlatformAppBrowserTest::PlatformAppBrowserTest() {
   ChromeAppDelegate::DisableExternalOpenForTesting();
 }
 
-void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void PlatformAppBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Skips ExtensionApiTest::SetUpCommandLine.
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 
@@ -196,9 +196,9 @@ size_t PlatformAppBrowserTest::GetAppWindowCountForApp(
 }
 
 void PlatformAppBrowserTest::ClearCommandLineArgs() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  CommandLine::StringVector args = command_line->GetArgs();
-  CommandLine::StringVector argv = command_line->argv();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = command_line->GetArgs();
+  base::CommandLine::StringVector argv = command_line->argv();
   for (size_t i = 0; i < args.size(); i++)
     argv.pop_back();
   command_line->InitFromArgv(argv);
@@ -206,7 +206,7 @@ void PlatformAppBrowserTest::ClearCommandLineArgs() {
 
 void PlatformAppBrowserTest::SetCommandLineArg(const std::string& test_file) {
   ClearCommandLineArgs();
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath test_doc(test_data_dir_.AppendASCII(test_file));
   test_doc = test_doc.NormalizePathSeparators();
   command_line->AppendArgPath(test_doc);
@@ -271,7 +271,7 @@ AppWindow* PlatformAppBrowserTest::CreateTestAppWindow(
 }
 
 void ExperimentalPlatformAppBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   PlatformAppBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
 }

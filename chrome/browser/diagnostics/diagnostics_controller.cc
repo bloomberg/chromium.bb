@@ -58,7 +58,7 @@ void DiagnosticsController::RecordRegularStartup() {
 
 // This entry point is called from early in startup when very few things have
 // been initialized, so be careful what you use.
-int DiagnosticsController::Run(const CommandLine& command_line,
+int DiagnosticsController::Run(const base::CommandLine& command_line,
                                DiagnosticsWriter* writer) {
   writer_ = writer;
 
@@ -70,7 +70,7 @@ int DiagnosticsController::Run(const CommandLine& command_line,
 
 // This entry point is called from early in startup when very few things have
 // been initialized, so be careful what you use.
-int DiagnosticsController::RunRecovery(const CommandLine& command_line,
+int DiagnosticsController::RunRecovery(const base::CommandLine& command_line,
                                        DiagnosticsWriter* writer) {
 // Separate out recoveries that we execute automatically as a result of a
 // crash from user-run recoveries.

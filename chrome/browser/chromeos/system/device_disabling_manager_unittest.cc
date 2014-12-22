@@ -202,7 +202,7 @@ TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenExplicitlyNotDisabled) {
 // Verifies that the device is not considered disabled during OOBE when device
 // disabling is turned off by flag, even if the device is marked as disabled.
 TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenTurnedOffByFlag) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableDeviceDisabling);
   SetDeviceDisabled(true);
   CheckWhetherDeviceDisabledDuringOOBE();
@@ -375,7 +375,7 @@ TEST_F(DeviceDisablingManagerTest, NotDisabledWhenExplicitlyNotDisabled) {
 // Verifies that the device is not considered disabled when device disabling is
 // turned off by flag, even if the device is marked as disabled.
 TEST_F(DeviceDisablingManagerTest, NotDisabledWhenTurnedOffByFlag) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableDeviceDisabling);
   SetEnterpriseOwned();
   MakeCrosSettingsTrusted();
@@ -500,7 +500,7 @@ TEST_F(DeviceDisablingManagerTest, HonorDeviceDisablingDuringNormalOperation) {
       DeviceDisablingManager::HonorDeviceDisablingDuringNormalOperation());
 
   // Enterprise owned, disabled by flag.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableDeviceDisabling);
   EXPECT_FALSE(
       DeviceDisablingManager::HonorDeviceDisablingDuringNormalOperation());

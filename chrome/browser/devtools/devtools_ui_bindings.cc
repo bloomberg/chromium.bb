@@ -335,8 +335,8 @@ GURL DevToolsUIBindings::ApplyThemeToURL(Profile* profile,
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_TOOLBAR)) +
       "&textColor=" +
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDevToolsExperiments))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
 #if defined(DEBUG_DEVTOOLS)
   url_string += "&debugFrontend=true";

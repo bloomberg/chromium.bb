@@ -36,8 +36,8 @@ TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
 class DisableWebRtcEncryptionFlagTest : public testing::Test {
  public:
   DisableWebRtcEncryptionFlagTest()
-      : from_command_line_(CommandLine::NO_PROGRAM),
-        to_command_line_(CommandLine::NO_PROGRAM) {}
+      : from_command_line_(base::CommandLine::NO_PROGRAM),
+        to_command_line_(base::CommandLine::NO_PROGRAM) {}
 
  protected:
   void SetUp() override {
@@ -51,8 +51,8 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
         channel);
   }
 
-  CommandLine from_command_line_;
-  CommandLine to_command_line_;
+  base::CommandLine from_command_line_;
+  base::CommandLine to_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(DisableWebRtcEncryptionFlagTest);
 };

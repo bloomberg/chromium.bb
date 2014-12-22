@@ -3858,7 +3858,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());

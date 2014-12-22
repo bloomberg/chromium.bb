@@ -231,7 +231,7 @@ class CustomizationWallpaperDownloaderBrowserTest
     local_state_ = g_browser_process->local_state();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }

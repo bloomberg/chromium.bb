@@ -221,7 +221,7 @@ void NetworkPortalDetectorImpl::Initialize(
     return;
   CHECK(!NetworkPortalDetector::network_portal_detector())
       << "NetworkPortalDetector was initialized twice.";
-  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
     set_network_portal_detector(new NetworkPortalDetectorStubImpl());
   else
     set_network_portal_detector(new NetworkPortalDetectorImpl(url_context));

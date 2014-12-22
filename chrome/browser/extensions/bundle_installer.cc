@@ -95,7 +95,7 @@ const int kHeadingIds[3][4] = {
 
 // static
 void BundleInstaller::SetAutoApproveForTesting(bool auto_approve) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType));
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType));
   g_auto_approve_for_test = auto_approve ? PROCEED : ABORT;
 }
 

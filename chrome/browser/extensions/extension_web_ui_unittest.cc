@@ -34,7 +34,7 @@ class ExtensionWebUITest : public testing::Test {
     TestExtensionSystem* system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
   }
 
   void TearDown() override {

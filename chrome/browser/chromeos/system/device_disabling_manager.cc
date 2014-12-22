@@ -58,7 +58,7 @@ void DeviceDisablingManager::RemoveObserver(Observer* observer) {
 }
 
 void DeviceDisablingManager::Init() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDeviceDisabling)) {
     // If device disabling is turned off by flags, do not start monitoring cros
     // settings.
@@ -91,7 +91,7 @@ void DeviceDisablingManager::CacheDisabledMessageAndNotify(
 void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
     const DeviceDisabledCheckCallback& callback) {
   if (policy::GetRestoreMode() != policy::RESTORE_MODE_DISABLED ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDeviceDisabling)) {
     // Indicate that the device is not disabled if it is not marked as such in
     // local state or device disabling has been turned off by flag.
@@ -150,10 +150,11 @@ void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
 bool DeviceDisablingManager::HonorDeviceDisablingDuringNormalOperation() {
   // Device disabling should be honored when the device is enterprise managed
   // and device disabling has not been turned off by flag.
-  return g_browser_process->platform_part()->
-            browser_policy_connector_chromeos()->IsEnterpriseManaged() &&
-         !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableDeviceDisabling);
+  return g_browser_process->platform_part()
+             ->browser_policy_connector_chromeos()
+             ->IsEnterpriseManaged() &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableDeviceDisabling);
 }
 
 void DeviceDisablingManager::UpdateFromCrosSettings() {

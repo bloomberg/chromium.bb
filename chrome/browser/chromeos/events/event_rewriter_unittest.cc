@@ -522,12 +522,12 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeysWithDiamondKeyFlag) {
   // Make sure the num lock works correctly even when Diamond key exists.
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  const base::CommandLine original_cl(*base::CommandLine::ForCurrentProcess());
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kHasChromeOSDiamondKey, "");
 
   TestRewriteNumPadKeys();
-  *CommandLine::ForCurrentProcess() = original_cl;
+  *base::CommandLine::ForCurrentProcess() = original_cl;
 }
 
 // Tests if the rewriter can handle a Command + Num Pad event.
@@ -566,12 +566,12 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
 TEST_F(EventRewriterTest,
        TestRewriteNumPadKeysOnAppleKeyboardWithDiamondKeyFlag) {
   // Makes sure the num lock works correctly even when Diamond key exists.
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  const base::CommandLine original_cl(*base::CommandLine::ForCurrentProcess());
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kHasChromeOSDiamondKey, "");
 
   TestRewriteNumPadKeysOnAppleKeyboard();
-  *CommandLine::ForCurrentProcess() = original_cl;
+  *base::CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
@@ -1050,8 +1050,8 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKey) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  const base::CommandLine original_cl(*base::CommandLine::ForCurrentProcess());
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kHasChromeOSDiamondKey, "");
 
   TestingPrefServiceSyncable prefs;
@@ -1166,7 +1166,7 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
       GetRewrittenEventAsString(
           &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
-  *CommandLine::ForCurrentProcess() = original_cl;
+  *base::CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
@@ -1664,7 +1664,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+  const base::CommandLine original_cl(*base::CommandLine::ForCurrentProcess());
 
   // Remap Search to Control.
   TestingPrefServiceSyncable prefs;
@@ -1677,7 +1677,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kHasChromeOSKeyboard, "");
 
   KeyTestCase tests[] = {
@@ -1698,7 +1698,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
     CheckKeyTestCase(&rewriter, tests[i]);
   }
 
-  *CommandLine::ForCurrentProcess() = original_cl;
+  *base::CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {

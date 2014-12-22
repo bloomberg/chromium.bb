@@ -32,7 +32,7 @@ class OobeTest : public InProcessBrowserTest {
   OobeTest() {}
   virtual ~OobeTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
@@ -47,7 +47,7 @@ class OobeTest : public InProcessBrowserTest {
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
     LOG(INFO) << "Set up http server at " << embedded_test_server()->base_url();
 
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         ::switches::kGaiaUrl, embedded_test_server()->base_url().spec());
   }
 

@@ -74,8 +74,9 @@ void ErrorScreen::OnAuthSuccess(const UserContext& user_context) {
 
 void ErrorScreen::OnOffTheRecordAuthSuccess() {
   // Restart Chrome to enter the guest session.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine command_line(browser_command_line.GetProgram());
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine command_line(browser_command_line.GetProgram());
   std::string cmd_line_str =
       GetOffTheRecordCommandLine(GURL(),
                                  StartupUtils::IsOobeCompleted(),

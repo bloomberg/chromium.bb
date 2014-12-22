@@ -29,16 +29,17 @@ void GetTouchLogsX11(system_logs::SystemLogsResponse* response) {
       (*response)[kHUDLogDataKey] = touch_log;
   }
 
-  std::vector<std::pair<std::string, CommandLine>> commands;
-  CommandLine command =
-      CommandLine(base::FilePath("/opt/google/input/inputcontrol"));
+  std::vector<std::pair<std::string, base::CommandLine>> commands;
+  base::CommandLine command =
+      base::CommandLine(base::FilePath("/opt/google/input/inputcontrol"));
   command.AppendArg("--status");
   commands.push_back(std::make_pair("hack-33025-touchpad", command));
 
-  command = CommandLine(base::FilePath("/opt/google/input/cmt_feedback"));
+  command = base::CommandLine(base::FilePath("/opt/google/input/cmt_feedback"));
   commands.push_back(std::make_pair("hack-33025-touchpad_activity", command));
 
-  command = CommandLine(base::FilePath("/opt/google/input/evdev_feedback"));
+  command =
+      base::CommandLine(base::FilePath("/opt/google/input/evdev_feedback"));
   commands.push_back(
       std::make_pair("hack-33025-touchscreen_activity", command));
 

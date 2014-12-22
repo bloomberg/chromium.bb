@@ -43,11 +43,11 @@ bool IsFastStartSwitch(const std::string& command_line_switch) {
   return false;
 }
 
-bool ContainsNonFastStartFlag(const CommandLine& command_line) {
-  const CommandLine::SwitchMap& switches = command_line.GetSwitches();
+bool ContainsNonFastStartFlag(const base::CommandLine& command_line) {
+  const base::CommandLine::SwitchMap& switches = command_line.GetSwitches();
   if (switches.size() > arraysize(kFastStartSwitches))
     return true;
-  for (CommandLine::SwitchMap::const_iterator it = switches.begin();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (!IsFastStartSwitch(it->first))
       return true;
@@ -55,7 +55,7 @@ bool ContainsNonFastStartFlag(const CommandLine& command_line) {
   return false;
 }
 
-bool AttemptFastNotify(const CommandLine& command_line) {
+bool AttemptFastNotify(const base::CommandLine& command_line) {
   if (ContainsNonFastStartFlag(command_line))
     return false;
 
@@ -138,7 +138,7 @@ int main() {
   SignalChromeElf();
 
   // Initialize the commandline singleton from the environment.
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
 
@@ -148,7 +148,7 @@ int main() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     EnableHighDPISupport();
 
-  if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
+  if (AttemptFastNotify(*base::CommandLine::ForCurrentProcess()))
     return 0;
 
   // Load and launch the chrome dll. *Everything* happens inside.

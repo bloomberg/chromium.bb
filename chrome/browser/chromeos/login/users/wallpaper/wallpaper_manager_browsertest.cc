@@ -77,7 +77,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
     UpdateDisplay("800x600");
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 class WallpaperManagerBrowserTestNoAnimation
     : public WallpaperManagerBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(chromeos::switches::kDisableLoginAnimations);
@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 class WallpaperManagerBrowserTestCrashRestore
     : public WallpaperManagerBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kDisableLoginAnimations);
     command_line->AppendSwitch(chromeos::switches::kDisableBootAnimation);
     command_line->AppendSwitchASCII(switches::kLoginUser, kTestUser1);
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
 class WallpaperManagerBrowserTestCacheUpdate
     : public WallpaperManagerBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kLoginUser, kTestUser1);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }

@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
   // Case 2: Launch the shim, it should start the hosted app.
   {
     HostedAppBrowserListObserver listener(app->id());
-    CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
+    base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
     shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
     ProcessSerialNumber shim_psn;
     ASSERT_TRUE(base::mac::OpenApplicationWithPath(
@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
   // Case 2: Launch the shim, it should start the app.
   {
     ExtensionTestMessageListener launched_listener("Launched", false);
-    CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
+    base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
     shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
     ProcessSerialNumber shim_psn;
     ASSERT_TRUE(base::mac::OpenApplicationWithPath(
@@ -692,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   // (3) After rebuilding, Chrome again launches the shim and expects it to
   //     behave normally.
   ExtensionTestMessageListener launched_listener("Launched", false);
-  CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
+  base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
   ASSERT_TRUE(base::mac::OpenApplicationWithPath(
       shim_path, shim_cmdline, kLSLaunchDefaults, NULL));
 

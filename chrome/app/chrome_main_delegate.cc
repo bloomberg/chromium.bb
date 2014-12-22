@@ -255,7 +255,7 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 #if defined(OS_POSIX)
 // Check for --version and --product-version; return true if we encountered
 // one of these switches and should exit now.
-bool HandleVersionSwitches(const CommandLine& command_line) {
+bool HandleVersionSwitches(const base::CommandLine& command_line) {
   const chrome::VersionInfo version_info;
 
 #if !defined(OS_MACOSX)
@@ -278,7 +278,7 @@ bool HandleVersionSwitches(const CommandLine& command_line) {
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 // Show the man page if --help or -h is on the command line.
-void HandleHelpSwitches(const CommandLine& command_line) {
+void HandleHelpSwitches(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kHelp) ||
       command_line.HasSwitch(switches::kHelpShort)) {
     base::FilePath binary(command_line.argv()[0]);
@@ -316,7 +316,7 @@ struct MainFunction {
 
 // Initializes the user data dir. Must be called before InitializeLocalState().
 void InitializeUserDataDir() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath user_data_dir =
       command_line->GetSwitchValuePath(switches::kUserDataDir);
   std::string process_type =
@@ -394,7 +394,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
 #endif
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
 #if defined(OS_MACOSX)
   // Give the browser process a longer treadmill, since crashes
@@ -496,7 +497,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     // statistics to be collected.  It's safe to call this more than once.
     base::StatisticsRecorder::Initialize();
 
-    CommandLine interim_command_line(command_line.GetProgram());
+    base::CommandLine interim_command_line(command_line.GetProgram());
     const char* const kSwitchNames[] = {switches::kUserDataDir, };
     interim_command_line.CopySwitchesFrom(
         command_line, kSwitchNames, arraysize(kSwitchNames));
@@ -645,7 +646,8 @@ void ChromeMainDelegate::InitMacCrashReporter(
 #endif  // defined(OS_MACOSX)
 
 void ChromeMainDelegate::PreSandboxStartup() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
@@ -916,7 +918,8 @@ void ChromeMainDelegate::ZygoteForked() {
 
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
   // this up for the browser process in a different manner.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
   breakpad::InitCrashReporter(process_type);

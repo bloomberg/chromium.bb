@@ -66,9 +66,9 @@ const char kSwitchFormatString[] = " --%s=\"%s\"";
 // - Set start url if given;
 // - Append/override switches using |new_switches|;
 std::string DeriveCommandLine(const GURL& start_url,
-                              const CommandLine& base_command_line,
+                              const base::CommandLine& base_command_line,
                               const base::DictionaryValue& new_switches,
-                              CommandLine* command_line) {
+                              base::CommandLine* command_line) {
   DCHECK_NE(&base_command_line, command_line);
 
   static const char* const kForwardSwitches[] = {
@@ -343,8 +343,8 @@ void ChromeRestartRequest::RestartJob() {
 std::string GetOffTheRecordCommandLine(
     const GURL& start_url,
     bool is_oobe_completed,
-    const CommandLine& base_command_line,
-    CommandLine* command_line) {
+    const base::CommandLine& base_command_line,
+    base::CommandLine* command_line) {
   base::DictionaryValue otr_switches;
   otr_switches.SetString(switches::kGuestSession, std::string());
   otr_switches.SetString(::switches::kIncognito, std::string());

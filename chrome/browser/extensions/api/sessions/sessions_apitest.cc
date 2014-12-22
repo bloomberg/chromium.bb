@@ -85,7 +85,7 @@ void BuildTabSpecifics(const std::string& tag,
 
 class ExtensionSessionsTest : public InProcessBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
  protected:
@@ -108,7 +108,7 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
   scoped_refptr<Extension> extension_;
 };
 
-void ExtensionSessionsTest::SetUpCommandLine(CommandLine* command_line) {
+void ExtensionSessionsTest::SetUpCommandLine(base::CommandLine* command_line) {
 #if defined(OS_CHROMEOS)
   command_line->AppendSwitch(
       chromeos::switches::kIgnoreUserProfileMappingForTests);
@@ -384,7 +384,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SessionsApis) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

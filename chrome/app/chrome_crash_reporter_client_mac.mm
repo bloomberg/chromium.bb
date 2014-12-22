@@ -35,7 +35,7 @@ bool NaClBreakpadCrashFilter(int exception_type,
 
 void ChromeCrashReporterClient::InstallAdditionalFilters(BreakpadRef breakpad) {
 #if !defined(DISABLE_NACL)
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType) == switches::kNaClLoaderProcess) {
     BreakpadSetFilterCallback(breakpad, NaClBreakpadCrashFilter, NULL);
   }

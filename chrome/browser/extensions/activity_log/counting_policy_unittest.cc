@@ -38,14 +38,14 @@ class CountingPolicyTest : public testing::Test {
  public:
   CountingPolicyTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        saved_cmdline_(CommandLine::NO_PROGRAM) {
+        saved_cmdline_(base::CommandLine::NO_PROGRAM) {
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
-    CommandLine command_line(CommandLine::NO_PROGRAM);
-    saved_cmdline_ = *CommandLine::ForCurrentProcess();
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    saved_cmdline_ = *base::CommandLine::ForCurrentProcess();
     profile_.reset(new TestingProfile());
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogging);
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_.get()))->CreateExtensionService
@@ -60,7 +60,7 @@ class CountingPolicyTest : public testing::Test {
     profile_.reset(NULL);
     base::RunLoop().RunUntilIdle();
     // Restore the original command line and undo the affects of SetUp().
-    *CommandLine::ForCurrentProcess() = saved_cmdline_;
+    *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 
   // Wait for the task queue for the specified thread to empty.
@@ -526,7 +526,7 @@ class CountingPolicyTest : public testing::Test {
   // The test framework will do this itself as well. However, by then,
   // it is too late to call ActivityLog::RecomputeLoggingIsEnabled() in
   // TearDown().
-  CommandLine saved_cmdline_;
+  base::CommandLine saved_cmdline_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

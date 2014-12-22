@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
 // such as http://crbug.com/164223.
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        SitePerProcessNavigation) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kSitePerProcess);
   ASSERT_TRUE(test_server()->Start());
   const GURL url(test_server()->GetURL("files/title1.html"));

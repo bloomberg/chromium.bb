@@ -130,7 +130,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
   }
 
  private:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 

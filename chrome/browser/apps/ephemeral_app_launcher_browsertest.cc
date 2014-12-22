@@ -313,7 +313,7 @@ class EphemeralAppLauncherTestDisabled : public EphemeralAppLauncherTest {
 // Verifies that an ephemeral app will not be installed and launched if the
 // feature is disabled.
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTestDisabled, FeatureDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       app_list::switches::kDisableExperimentalAppList);
   RunLaunchTest(
       kDefaultAppCrxFilename, webstore_install::LAUNCH_FEATURE_DISABLED, false);

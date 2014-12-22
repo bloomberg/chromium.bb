@@ -203,8 +203,8 @@ void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
 }
 
 // Returns new CommandLine with per-user flags.
-CommandLine CreatePerSessionCommandLine(Profile* profile) {
-  CommandLine user_flags(CommandLine::NO_PROGRAM);
+base::CommandLine CreatePerSessionCommandLine(Profile* profile) {
+  base::CommandLine user_flags(base::CommandLine::NO_PROGRAM);
   about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
                                       about_flags::kAddSentinels);
@@ -213,8 +213,8 @@ CommandLine CreatePerSessionCommandLine(Profile* profile) {
 
 // Returns true if restart is needed to apply per-session flags.
 bool NeedRestartToApplyPerSessionFlags(
-    const CommandLine& user_flags,
-    std::set<CommandLine::StringType>* out_command_line_difference) {
+    const base::CommandLine& user_flags,
+    std::set<base::CommandLine::StringType>* out_command_line_difference) {
   // Don't restart browser if it is not first profile in session.
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() != 1)
     return false;
@@ -224,7 +224,7 @@ bool NeedRestartToApplyPerSessionFlags(
     return false;
 
   if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
-          user_flags, *CommandLine::ForCurrentProcess(),
+          user_flags, *base::CommandLine::ForCurrentProcess(),
           out_command_line_difference)) {
     return false;
   }
@@ -342,8 +342,9 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
 
   // For guest session we ask session_manager to restart Chrome with --bwsi
   // flag. We keep only some of the arguments of this process.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine command_line(browser_command_line.GetProgram());
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine command_line(browser_command_line.GetProgram());
   std::string cmd_line_str =
       GetOffTheRecordCommandLine(start_url,
                                  StartupUtils::IsOobeCompleted(),
@@ -356,14 +357,11 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
   // the guest profile session flags will not match the current command line and
   // another restart will be attempted in order to reset the user flags for the
   // guest user.
-  const CommandLine user_flags(CommandLine::NO_PROGRAM);
+  const base::CommandLine user_flags(base::CommandLine::NO_PROGRAM);
   if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
-           user_flags,
-           *CommandLine::ForCurrentProcess(),
-           NULL)) {
+          user_flags, *base::CommandLine::ForCurrentProcess(), NULL)) {
     DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-        chromeos::login::kGuestUserName,
-        CommandLine::StringVector());
+        chromeos::login::kGuestUserName, base::CommandLine::StringVector());
   }
 
   RestartChrome(cmd_line_str);
@@ -588,8 +586,8 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   if (early_restart && !CanPerformEarlyRestart())
     return false;
 
-  const CommandLine user_flags(CreatePerSessionCommandLine(profile));
-  std::set<CommandLine::StringType> command_line_difference;
+  const base::CommandLine user_flags(CreatePerSessionCommandLine(profile));
+  std::set<base::CommandLine::StringType> command_line_difference;
   if (!NeedRestartToApplyPerSessionFlags(user_flags, &command_line_difference))
     return false;
 
@@ -598,7 +596,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   about_flags::ReportCustomFlags("Login.CustomFlags", command_line_difference);
 
   CommandLine::StringVector flags;
-  // argv[0] is the program name |CommandLine::NO_PROGRAM|.
+  // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
   LOG(WARNING) << "Restarting to apply per-session flags...";
   DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
@@ -728,7 +726,8 @@ void UserSessionManager::OnConnectionTypeChanged(
 
 void UserSessionManager::OnProfilePrepared(Profile* profile,
                                            bool browser_launched) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestName)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestName)) {
     // Did not log in (we crashed or are debugging), need to restore Sync.
     // TODO(nkostylev): Make sure that OAuth state is restored correctly for all
     // users once it is fully multi-profile aware. http://crbug.com/238987
@@ -751,7 +750,7 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
 void UserSessionManager::PreStartSession() {
   // Switch log file as soon as possible.
   if (base::SysInfo::IsRunningOnChromeOS())
-    logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
+    logging::RedirectChromeLogging(*(base::CommandLine::ForCurrentProcess()));
 }
 
 void UserSessionManager::StartCrosSession() {
@@ -1025,11 +1024,12 @@ void UserSessionManager::InitializeStartUrls() const {
     // Don't open default Chrome window if we're going to launch the first-run
     // app. Because we dont' want the first-run app to be hidden in the
     // background.
-    CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kSilentLaunch);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kSilentLaunch);
     first_run::MaybeLaunchDialogAfterSessionStart();
   } else {
     for (size_t i = 0; i < start_urls.size(); ++i) {
-      CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+      base::CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
     }
   }
 }
@@ -1044,7 +1044,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   if (start_session_type_ == PRIMARY_USER_SESSION) {
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
     WizardController* oobe_controller = WizardController::default_controller();
-    base::CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
     bool skip_post_login_screens =
         user_flow->ShouldSkipPostLoginScreens() ||
         (oobe_controller && oobe_controller->skip_post_login_screens()) ||
@@ -1072,7 +1072,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 }
 
 void UserSessionManager::InitSessionRestoreStrategy() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool in_app_mode = chrome::IsRunningInForcedAppMode();
 
   // Are we in kiosk app mode?
@@ -1117,7 +1117,7 @@ void UserSessionManager::RestoreAuthSessionImpl(
         !restore_from_auth_cookies);
 
   if (chrome::IsRunningInForcedAppMode() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableGaiaServices)) {
     return;
   }
@@ -1439,7 +1439,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
                                       : chrome::startup::IS_NOT_FIRST_RUN;
 
   browser_creator.LaunchBrowser(
-      *CommandLine::ForCurrentProcess(), profile, base::FilePath(),
+      *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
       chrome::startup::IS_PROCESS_STARTUP, first_run, &return_code);
 
   // Triggers app launcher start page service to load start page web contents.

@@ -47,8 +47,8 @@ OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
 
   // For telemetry, we mark session restore completed to avoid warnings from
   // MergeSessionThrottle.
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(chromeos::switches::kDisableGaiaServices)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
     SetSessionRestoreState(SESSION_RESTORE_DONE);
   }
 }

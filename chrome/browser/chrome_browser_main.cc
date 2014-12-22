@@ -222,7 +222,7 @@ namespace {
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
-void HandleTestParameters(const CommandLine& command_line) {
+void HandleTestParameters(const base::CommandLine& command_line) {
   // This parameter causes an assertion.
   if (command_line.HasSwitch(switches::kBrowserAssertTest)) {
     DCHECK(false);
@@ -250,7 +250,7 @@ void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
 // |local_state_task_runner| must be a shutdown-blocking task runner.
 PrefService* InitializeLocalState(
     base::SequencedTaskRunner* local_state_task_runner,
-    const CommandLine& parsed_command_line) {
+    const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::InitializeLocalState")
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
@@ -327,7 +327,7 @@ PrefService* InitializeLocalState(
 // should not continue.
 Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
                               const base::FilePath& user_data_dir,
-                              const CommandLine& parsed_command_line) {
+                              const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
   base::Time start = base::Time::Now();
   if (profiles::IsMultipleProfilesEnabled() &&
@@ -455,7 +455,7 @@ void RegisterComponentsForUpdate() {
 
 #if !defined(OS_ANDROID)
 bool ProcessSingletonNotificationCallback(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const base::FilePath& current_directory) {
   // Drop the request if the browser process is already in shutdown path.
   if (!g_browser_process || g_browser_process->IsShuttingDown())
@@ -492,7 +492,7 @@ bool ProcessSingletonNotificationCallback(
 }
 #endif  // !defined(OS_ANDROID)
 
-void LaunchDevToolsHandlerIfNeeded(const CommandLine& command_line) {
+void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string port_str =
         command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
@@ -600,7 +600,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   field_trial_list_.reset(
       new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     base::FieldTrial::EnableBenchmarking();
@@ -875,17 +876,18 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     about_flags::PrefServiceFlagsStorage flags_storage_(
         g_browser_process->local_state());
     about_flags::ConvertFlagsToSwitches(&flags_storage_,
-                                        CommandLine::ForCurrentProcess(),
+                                        base::CommandLine::ForCurrentProcess(),
                                         about_flags::kAddSentinels);
   }
 #endif
 
   local_state_->UpdateCommandLinePrefStore(
-      new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
+      new CommandLinePrefStore(base::CommandLine::ForCurrentProcess()));
 
   // Reset the command line in the crash report details, since we may have
   // just changed it to include experiments.
-  crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());
+  crash_keys::SetSwitchesFromCommandLine(
+      base::CommandLine::ForCurrentProcess());
 
   // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
   // needed when loading the MainMenu.nib and the language doesn't depend on

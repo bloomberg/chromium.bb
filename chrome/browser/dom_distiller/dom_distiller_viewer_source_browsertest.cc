@@ -87,7 +87,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override { delete database_model_; }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 

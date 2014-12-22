@@ -36,7 +36,7 @@ const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
 
 class TabCaptureApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Specify smallish window size to make testing of tab capture less CPU
     // intensive.
@@ -44,7 +44,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
   }
 
   void AddExtensionToCommandLineWhitelist() {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kExtensionId);
   }
 
@@ -82,7 +82,7 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
     // TODO(miu): Look into enabling these tests for the Debug build bots once
     // they prove to be stable again on the Release bots.
     // http://crbug.com/396413
-    return !CommandLine::ForCurrentProcess()->HasSwitch(
+    return !base::CommandLine::ForCurrentProcess()->HasSwitch(
         "run-tab-capture-api-pixel-tests");
 #endif
   }

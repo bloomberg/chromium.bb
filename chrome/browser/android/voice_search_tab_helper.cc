@@ -24,7 +24,8 @@ static void UpdateAutoplayStatus(JNIEnv* env,
                                  jobject j_web_contents) {
   // In the case where media autoplay has been disabled by default (e.g. in
   // performance media tests) do not update it based on navigation changes.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback))
     return;

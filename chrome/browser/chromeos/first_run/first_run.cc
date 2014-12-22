@@ -68,7 +68,7 @@ class DialogLauncher : public content::NotificationObserver {
     DCHECK(type == chrome::NOTIFICATION_SESSION_STARTED);
     DCHECK(content::Details<const user_manager::User>(details).ptr() ==
            ProfileHelper::Get()->GetUserByProfile(profile_));
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     bool launched_in_test = command_line->HasSwitch(::switches::kTestType);
     bool launched_in_telemetry =
         command_line->HasSwitch(switches::kOobeSkipPostLogin);

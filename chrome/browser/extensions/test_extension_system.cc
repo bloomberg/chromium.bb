@@ -51,7 +51,7 @@ void TestExtensionSystem::Shutdown() {
 }
 
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
-    const CommandLine* command_line,
+    const base::CommandLine* command_line,
     const base::FilePath& install_directory) {
   bool extensions_disabled =
       command_line && command_line->HasSwitch(switches::kDisableExtensions);
@@ -75,7 +75,7 @@ ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
-    const CommandLine* command_line,
+    const base::CommandLine* command_line,
     const base::FilePath& install_directory,
     bool autoupdate_enabled) {
   if (!ExtensionPrefs::Get(profile_))

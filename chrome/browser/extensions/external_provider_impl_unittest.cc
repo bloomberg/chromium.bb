@@ -112,7 +112,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 
     test_extension_cache_.reset(new ExtensionCacheFake());
 
-    CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
     cmdline->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
                                test_server_->GetURL(kManifestPath).spec());
   }

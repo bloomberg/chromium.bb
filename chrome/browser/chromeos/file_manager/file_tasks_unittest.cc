@@ -405,8 +405,7 @@ TEST(FileManagerFileTasksTest, IsGenericFileHandler) {
 class FileManagerFileTasksComplexTest : public testing::Test {
  protected:
   FileManagerFileTasksComplexTest()
-      : command_line_(CommandLine::NO_PROGRAM),
-        extension_service_(NULL) {
+      : command_line_(base::CommandLine::NO_PROGRAM), extension_service_(NULL) {
     extensions::TestExtensionSystem* test_extension_system =
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(&test_profile_));
@@ -421,7 +420,7 @@ class FileManagerFileTasksComplexTest : public testing::Test {
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedTestUserManager test_user_manager_;
   TestingProfile test_profile_;
-  CommandLine command_line_;
+  base::CommandLine command_line_;
   ExtensionService* extension_service_;  // Owned by test_profile_;
 };
 

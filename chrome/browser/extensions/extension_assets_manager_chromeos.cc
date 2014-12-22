@@ -253,7 +253,7 @@ base::SequencedTaskRunner* ExtensionAssetsManagerChromeOS::GetFileTaskRunner(
 bool ExtensionAssetsManagerChromeOS::CanShareAssets(
     const Extension* extension,
     const base::FilePath& unpacked_extension_root) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExtensionAssetsSharing)) {
     return false;
   }

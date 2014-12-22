@@ -40,7 +40,8 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   extensions::ComponentLoader* component_loader = GetComponentLoader(context);
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     base::FilePath auth_extension_path =
         command_line->GetSwitchValuePath(switches::kAuthExtensionPath);

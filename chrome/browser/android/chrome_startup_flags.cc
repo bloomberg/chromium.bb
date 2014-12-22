@@ -20,14 +20,14 @@
 namespace {
 
 void SetCommandLineSwitch(const std::string& switch_string) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switch_string))
     command_line->AppendSwitch(switch_string);
 }
 
 void SetCommandLineSwitchASCII(const std::string& switch_string,
                                const std::string& value) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switch_string))
     command_line->AppendSwitchASCII(switch_string, value);
 }

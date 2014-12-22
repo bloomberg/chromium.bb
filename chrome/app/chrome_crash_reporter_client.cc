@@ -340,7 +340,7 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  bool is_guest_session = CommandLine::ForCurrentProcess()->HasSwitch(
+  bool is_guest_session = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kGuestSession);
   bool is_stable_channel =
       chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;

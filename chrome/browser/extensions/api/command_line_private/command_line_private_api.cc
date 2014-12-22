@@ -32,7 +32,7 @@ bool CommandLinePrivateHasSwitchFunction::RunSync() {
   }
 
   results_ = command_line_private::HasSwitch::Results::Create(
-      CommandLine::ForCurrentProcess()->HasSwitch(params->name));
+      base::CommandLine::ForCurrentProcess()->HasSwitch(params->name));
   return true;
 }
 

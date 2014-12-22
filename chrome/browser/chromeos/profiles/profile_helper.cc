@@ -295,7 +295,7 @@ user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
   // Now these tests will specify special flag to continue working.
   // In future those tests can get a proper CrOS configuration i.e. register
   // and login several users if they want to work with an additional profile.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIgnoreUserProfileMappingForTests)) {
     return user_manager->GetActiveUser();
   }

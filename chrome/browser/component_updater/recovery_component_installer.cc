@@ -62,8 +62,8 @@ enum ChromeRecoveryExitCode {
 // Checks if elevated recovery simulation switch was present on the command
 // line. This is for testing purpose.
 bool SimulatingElevatedRecovery() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSimulateElevatedRecovery);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSimulateElevatedRecovery);
 }
 #endif
 
@@ -97,7 +97,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   if (!version.IsValid())
     return;
 
-  CommandLine cmdline(main_file);
+  base::CommandLine cmdline(main_file);
   std::string arguments;
   if (manifest->GetStringASCII("x-recovery-args", &arguments))
     cmdline.AppendArg(arguments);
@@ -145,7 +145,7 @@ class RecoveryComponentInstaller : public ComponentInstaller {
                         base::FilePath* installed_file) override;
 
  private:
-  bool RunInstallCommand(const CommandLine& cmdline,
+  bool RunInstallCommand(const base::CommandLine& cmdline,
                          const base::FilePath& installer_folder) const;
 
   Version current_version_;
@@ -217,7 +217,8 @@ void WaitForInstallToComplete(base::ProcessHandle process_handle,
 }
 
 bool RecoveryComponentInstaller::RunInstallCommand(
-    const CommandLine& cmdline, const base::FilePath& installer_folder) const {
+    const base::CommandLine& cmdline,
+    const base::FilePath& installer_folder) const {
   base::ProcessHandle process_handle;
   base::LaunchOptions options;
   options.start_hidden = true;
@@ -238,7 +239,8 @@ bool RecoveryComponentInstaller::RunInstallCommand(
 }
 #else
 bool RecoveryComponentInstaller::RunInstallCommand(
-    const CommandLine& cmdline, const base::FilePath&) const {
+    const base::CommandLine& cmdline,
+    const base::FilePath&) const {
   return base::LaunchProcess(cmdline, base::LaunchOptions(), NULL);
 }
 #endif
@@ -275,7 +277,7 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
   if (!base::PathExists(main_file))
     return false;
   // Run the recovery component.
-  CommandLine cmdline(main_file);
+  base::CommandLine cmdline(main_file);
   std::string arguments;
   if (manifest.GetStringASCII("x-recovery-args", &arguments))
     cmdline.AppendArg(arguments);

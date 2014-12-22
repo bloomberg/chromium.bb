@@ -539,7 +539,7 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   virtual void SetUpOnMainThread() override;
 
   // Adds an incognito and guest-mode flags for tests in the guest mode.
-  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Loads our testing extension and sends it a string identifying the current
   // test.
@@ -603,7 +603,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
 }
 
-void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
+void FileManagerBrowserTestBase::SetUpCommandLine(
+    base::CommandLine* command_line) {
   if (GetGuestModeParam() == IN_GUEST_MODE) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
@@ -1170,7 +1171,7 @@ static const TestAccountInfo kTestAccounts[] = {
 class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
  protected:
   // Enables multi-profiles.
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
     // Logs in to a dummy profile (For making MultiProfileWindowManager happy;
     // browser test creates a default window and the manager tries to assign a
@@ -1500,7 +1501,7 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     FileManagerBrowserTestBase::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);

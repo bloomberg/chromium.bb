@@ -43,7 +43,7 @@ class BackgroundContentsServiceTest : public testing::Test {
   BackgroundContentsServiceTest() {}
   ~BackgroundContentsServiceTest() override {}
   void SetUp() override {
-    command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
+    command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
   }
 
   const base::DictionaryValue* GetPrefs(Profile* profile) {
@@ -62,7 +62,7 @@ class BackgroundContentsServiceTest : public testing::Test {
     return url;
   }
 
-  scoped_ptr<CommandLine> command_line_;
+  scoped_ptr<base::CommandLine> command_line_;
 };
 
 class MockBackgroundContents : public BackgroundContents {

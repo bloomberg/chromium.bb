@@ -64,7 +64,7 @@ const int kGraylistedPath = base::DIR_HOME;
 
 class FileSystemApiTest : public PlatformAppBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     test_root_folder_ = test_data_dir_.AppendASCII("api_test")
         .AppendASCII("file_system");

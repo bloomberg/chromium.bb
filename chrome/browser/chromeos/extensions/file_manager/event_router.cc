@@ -326,7 +326,7 @@ bool ShouldShowNotificationForVolume(
 
   // If the disable-default-apps flag is on, Files.app is not opened
   // automatically on device mount not to obstruct the manual test.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDefaultApps)) {
     return false;
   }

@@ -75,7 +75,7 @@ class TrayAccessibilityTest
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);

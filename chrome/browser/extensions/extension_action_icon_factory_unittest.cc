@@ -133,7 +133,7 @@ class ExtensionActionIconFactoryTest
     file_thread_.Start();
     io_thread_.Start();
     profile_.reset(new TestingProfile);
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
         extensions::ExtensionSystem::Get(profile_.get()))->
         CreateExtensionService(&command_line, base::FilePath(), false);

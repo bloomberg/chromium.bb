@@ -178,7 +178,7 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
   LoginUIKeyboardTestWithUsersAndOwner() : LoginManagerTest(false) {}
   virtual ~LoginUIKeyboardTestWithUsersAndOwner() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kStubCrosSettings);
 

@@ -42,7 +42,7 @@ using extensions::Extension;
 
 class AppBackgroundPageApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
     command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);

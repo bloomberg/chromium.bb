@@ -87,7 +87,7 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // default user-data-dir. So if a user is running multiple instances of
   // Chrome with different user-data-dirs, they won't conflict in their
   // use of LoginItems.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
 
   // There are a few cases we need to handle:

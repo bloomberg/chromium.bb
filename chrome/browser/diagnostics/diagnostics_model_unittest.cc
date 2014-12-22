@@ -14,9 +14,7 @@ namespace diagnostics {
 // Basic harness to acquire and release the Diagnostic model object.
 class DiagnosticsModelTest : public testing::Test {
  protected:
-  DiagnosticsModelTest()
-      : cmdline_(CommandLine::NO_PROGRAM) {
-  }
+  DiagnosticsModelTest() : cmdline_(base::CommandLine::NO_PROGRAM) {}
 
   ~DiagnosticsModelTest() override {}
 
@@ -28,7 +26,7 @@ class DiagnosticsModelTest : public testing::Test {
   void TearDown() override { model_.reset(); }
 
   scoped_ptr<DiagnosticsModel> model_;
-  CommandLine cmdline_;
+  base::CommandLine cmdline_;
 
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelTest);
 };

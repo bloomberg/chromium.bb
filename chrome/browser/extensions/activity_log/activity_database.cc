@@ -43,7 +43,7 @@ ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
       batch_mode_(true),
       already_closed_(false),
       did_init_(false) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogTesting)) {
     batching_period_ = base::TimeDelta::FromSeconds(10);
   } else {

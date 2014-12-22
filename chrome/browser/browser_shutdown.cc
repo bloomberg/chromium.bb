@@ -223,17 +223,20 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
     // which prevents us from appending to the command line directly (issue
     // 46182). We therefore use GetSwitches to copy the command line (it stops
     // at the switch argument terminator).
-    CommandLine old_cl(*CommandLine::ForCurrentProcess());
-    scoped_ptr<CommandLine> new_cl(new CommandLine(old_cl.GetProgram()));
-    std::map<std::string, CommandLine::StringType> switches =
+    base::CommandLine old_cl(*base::CommandLine::ForCurrentProcess());
+    scoped_ptr<base::CommandLine> new_cl(
+        new base::CommandLine(old_cl.GetProgram()));
+    std::map<std::string, base::CommandLine::StringType> switches =
         old_cl.GetSwitches();
     // Remove the switches that shouldn't persist across restart.
     about_flags::RemoveFlagsSwitches(&switches);
     switches::RemoveSwitchesForAutostart(&switches);
     // Append the old switches to the new command line.
-    for (std::map<std::string, CommandLine::StringType>::const_iterator i =
-        switches.begin(); i != switches.end(); ++i) {
-      CommandLine::StringType switch_value = i->second;
+    for (
+        std::map<std::string, base::CommandLine::StringType>::const_iterator i =
+            switches.begin();
+        i != switches.end(); ++i) {
+      base::CommandLine::StringType switch_value = i->second;
       if (!switch_value.empty())
         new_cl->AppendSwitchNative(i->first, i->second);
       else

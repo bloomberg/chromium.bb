@@ -294,7 +294,8 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
 }  // namespace
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
 
   navigation_observer_.reset(new NavigationObserver(profile_));
 
@@ -314,14 +315,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     autoupdate_enabled = false;
 #endif
   extension_service_.reset(new ExtensionService(
-      profile_,
-      CommandLine::ForCurrentProcess(),
+      profile_, base::CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
-      ExtensionPrefs::Get(profile_),
-      Blacklist::Get(profile_),
-      autoupdate_enabled,
-      extensions_enabled,
-      &ready_));
+      ExtensionPrefs::Get(profile_), Blacklist::Get(profile_),
+      autoupdate_enabled, extensions_enabled, &ready_));
 
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
@@ -360,11 +357,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       skip_session_extensions);
 #endif
   if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
-    CommandLine::StringType path_list = command_line->GetSwitchValueNative(
-        switches::kLoadComponentExtension);
-    base::StringTokenizerT<CommandLine::StringType,
-        CommandLine::StringType::const_iterator> t(path_list,
-                                                   FILE_PATH_LITERAL(","));
+    base::CommandLine::StringType path_list =
+        command_line->GetSwitchValueNative(switches::kLoadComponentExtension);
+    base::StringTokenizerT<base::CommandLine::StringType,
+                           base::CommandLine::StringType::const_iterator>
+        t(path_list, FILE_PATH_LITERAL(","));
     while (t.GetNext()) {
       // Load the component extension manifest synchronously.
       // Blocking the UI thread is acceptable here since
@@ -387,11 +384,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     // TODO(yoz): Seems like this should move into ExtensionService::Init.
     // But maybe it's no longer important.
     if (command_line->HasSwitch(switches::kLoadExtension)) {
-      CommandLine::StringType path_list = command_line->GetSwitchValueNative(
-          switches::kLoadExtension);
-      base::StringTokenizerT<CommandLine::StringType,
-          CommandLine::StringType::const_iterator> t(path_list,
-                                                     FILE_PATH_LITERAL(","));
+      base::CommandLine::StringType path_list =
+          command_line->GetSwitchValueNative(switches::kLoadExtension);
+      base::StringTokenizerT<base::CommandLine::StringType,
+                             base::CommandLine::StringType::const_iterator>
+          t(path_list, FILE_PATH_LITERAL(","));
       while (t.GetNext()) {
         std::string extension_id;
         UnpackedInstaller::Create(extension_service_.get())->

@@ -22,7 +22,7 @@ namespace android {
 
 // static
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDomDistiller);
 }
 

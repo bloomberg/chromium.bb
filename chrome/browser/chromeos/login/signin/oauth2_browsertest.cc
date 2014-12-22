@@ -134,7 +134,7 @@ class OAuth2Test : public OobeBaseTest {
  protected:
   OAuth2Test() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
 
     // Disable sync sinc we don't really need this for these tests and it also
@@ -616,7 +616,7 @@ class MergeSessionTest : public OAuth2Test {
     fake_gaia_.reset(delayed_fake_gaia_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     OAuth2Test::SetUpCommandLine(command_line);
 
     // Get fake URL for fake google.com.

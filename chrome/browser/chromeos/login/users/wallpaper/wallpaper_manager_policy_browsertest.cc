@@ -171,7 +171,7 @@ class WallpaperManagerPolicyTest
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // Set the same switches as LoginManagerTest, except that kMultiProfiles is
     // only set when GetParam() is true and except that kLoginProfile is set
     // when GetParam() is false.  The latter seems to be required for the sane

@@ -17,7 +17,7 @@ class StartupHelperBrowserTest : public InProcessBrowserTest {
   StartupHelperBrowserTest() {}
   ~StartupHelperBrowserTest() override {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kNoStartupWindow);
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("extensions");
@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(StartupHelperBrowserTest, ValidateCrx) {
   for (std::vector<std::pair<base::FilePath, bool> >::iterator i =
            expectations.begin();
        i != expectations.end(); ++i) {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     const base::FilePath& path = i->first;
     command_line.AppendSwitchPath(switches::kValidateCrx, path);
 

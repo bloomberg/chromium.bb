@@ -249,7 +249,7 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
     return s_test_delegate_;
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(

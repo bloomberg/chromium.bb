@@ -33,7 +33,7 @@ class ResourceLoaderBrowserTest : public InProcessBrowserTest {
   ResourceLoaderBrowserTest() {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // Needed to load file:// URLs in XHRs.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
   }

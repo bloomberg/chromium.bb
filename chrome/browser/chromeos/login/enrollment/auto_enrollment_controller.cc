@@ -28,7 +28,7 @@ const int kSafeguardTimeoutSeconds = 30;
 // Returns the int value of the |switch_name| argument, clamped to the [0, 62]
 // interval. Returns 0 if the argument doesn't exist or isn't an int value.
 int GetSanitizedArg(const std::string& switch_name) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switch_name))
     return 0;
   std::string value = command_line->GetSwitchValueASCII(switch_name);
@@ -72,7 +72,7 @@ const char AutoEnrollmentController::kForcedReEnrollmentOfficialBuild[] =
     "official";
 
 AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   std::string command_line_mode = command_line->GetSwitchValueASCII(
       switches::kEnterpriseEnableForcedReEnrollment);
@@ -118,7 +118,7 @@ void AutoEnrollmentController::Start() {
   //    also enables factories to start full guest sessions for testing, see
   //    http://crbug.com/397354 for more context.
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kDisableGaiaServices) ||
       (!command_line->HasSwitch(
            chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&

@@ -228,7 +228,7 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
 
 }  // namespace
 
-DiagnosticsModel* MakeDiagnosticsModel(const CommandLine& cmdline) {
+DiagnosticsModel* MakeDiagnosticsModel(const base::CommandLine& cmdline) {
   base::FilePath user_data_dir =
       cmdline.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())

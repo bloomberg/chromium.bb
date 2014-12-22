@@ -94,7 +94,7 @@ void StartupHelper::OnPackFailure(const std::string& error_message,
   PrintPackExtensionMessage(error_message);
 }
 
-bool StartupHelper::PackExtension(const CommandLine& cmd_line) {
+bool StartupHelper::PackExtension(const base::CommandLine& cmd_line) {
   if (!cmd_line.HasSwitch(switches::kPackExtension))
     return false;
 
@@ -205,7 +205,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
 
 }  // namespace
 
-bool StartupHelper::ValidateCrx(const CommandLine& cmd_line,
+bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
                                 std::string* error) {
   CHECK(error);
   base::FilePath path = cmd_line.GetSwitchValuePath(switches::kValidateCrx);
@@ -304,7 +304,7 @@ void AppInstallHelper::OnAppInstallComplete(bool success,
 
 }  // namespace
 
-bool StartupHelper::InstallEphemeralApp(const CommandLine& cmd_line,
+bool StartupHelper::InstallEphemeralApp(const base::CommandLine& cmd_line,
                                         Profile* profile) {
   std::string id =
       cmd_line.GetSwitchValueASCII(switches::kInstallEphemeralAppFromWebstore);

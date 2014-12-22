@@ -116,7 +116,7 @@ void ExtensionBrowserTest::SetUp() {
   InProcessBrowserTest::SetUp();
 }
 
-void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
   observer_.reset(new ExtensionTestNotificationObserver(browser()));

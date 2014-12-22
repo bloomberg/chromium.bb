@@ -324,7 +324,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     }
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
 
@@ -743,7 +743,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
 class WebViewDPITest : public WebViewTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                                     base::StringPrintf("%f", scale()));
@@ -2294,7 +2294,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoContentSettingsAPI) {
 #if defined(ENABLE_PLUGINS)
 class WebViewPluginTest : public WebViewTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
 
     // Append the switch to register the pepper plugin.

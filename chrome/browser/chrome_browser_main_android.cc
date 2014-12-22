@@ -42,8 +42,8 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
 
   // Allow Breakpad to be enabled in Chromium builds for testing purposes.
   if (!breakpad_enabled)
-    breakpad_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCrashReporterForTesting);
+    breakpad_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableCrashReporterForTesting);
 
   if (breakpad_enabled) {
     base::FilePath crash_dump_dir;

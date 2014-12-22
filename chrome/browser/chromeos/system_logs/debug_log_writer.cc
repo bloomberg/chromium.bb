@@ -190,7 +190,7 @@ void OnSystemLogsAdded(const DebugLogWriter::StoreLogsCallback& callback,
   base::FilePath compressed_output_path =
       tar_file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
   base::FilePath user_log_dir =
-      logging::GetSessionLogDir(*CommandLine::ForCurrentProcess());
+      logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE,

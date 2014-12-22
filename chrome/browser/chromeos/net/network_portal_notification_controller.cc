@@ -42,7 +42,7 @@ namespace chromeos {
 namespace {
 
 bool IsPortalNotificationEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNetworkPortalNotification);
 }
 
@@ -101,7 +101,7 @@ void NetworkPortalNotificationControllerDelegate::Click() {
       NetworkPortalNotificationController::USER_ACTION_METRIC_CLICKED,
       NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableCaptivePortalBypassProxy)) {
     if (controller_)
       controller_->ShowDialog();

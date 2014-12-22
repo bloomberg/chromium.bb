@@ -50,7 +50,7 @@ WebstoreInstallerTest::WebstoreInstallerTest(
 
 WebstoreInstallerTest::~WebstoreInstallerTest() {}
 
-void WebstoreInstallerTest::SetUpCommandLine(CommandLine* command_line) {
+void WebstoreInstallerTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   // We start the test server now instead of in
   // SetUpInProcessBrowserTestFixture so that we can get its port number.
@@ -64,7 +64,7 @@ void WebstoreInstallerTest::SetUpCommandLine(CommandLine* command_line) {
       switches::kAppsGalleryURL, test_gallery_url_);
 
   GURL crx_url = GenerateTestServerUrl(webstore_domain_, crx_filename_);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryUpdateURL, crx_url.spec());
 
   // Allow tests to call window.gc(), so that we can check that callback

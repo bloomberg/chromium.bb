@@ -32,8 +32,8 @@ class IdleAppNameNotificationViewTest : public BrowserWithTestWindowTest {
 
   virtual void SetUp() override {
     // Add the application switch.
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(::switches::kAppId,
-                                                        kTestAppName);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kAppId, kTestAppName);
 
     BrowserWithTestWindowTest::SetUp();
 

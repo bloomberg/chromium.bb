@@ -47,7 +47,7 @@ int WINAPI wWinMain(HINSTANCE instance,
                     HINSTANCE prev_instance,
                     wchar_t* /*command_line*/,
                     int show_command) {
-  CommandLine::Init(0, nullptr);
+  base::CommandLine::Init(0, nullptr);
 
   // Log to stderr. Otherwise it will log to a file by default.
   logging::LoggingSettings logging_settings;
@@ -63,12 +63,12 @@ int WINAPI wWinMain(HINSTANCE instance,
     LOG(ERROR) << "Could not find chrome.exe path in the registry.";
     return kNoProgram;
   }
-  CommandLine command_line(chrome_path);
+  base::CommandLine command_line(chrome_path);
 
   // Get the command-line arguments for the subprocess, consisting of the
   // arguments (but not switches) to this binary. This gets everything after the
   // "--".
-  for (const auto& arg : CommandLine::ForCurrentProcess()->GetArgs())
+  for (const auto& arg : base::CommandLine::ForCurrentProcess()->GetArgs())
     command_line.AppendArgNative(arg);
 
   if (!base::LaunchProcess(command_line, base::LaunchOptions()).IsValid()) {

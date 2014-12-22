@@ -129,7 +129,7 @@ class ScreenLockerTest : public InProcessBrowserTest {
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 

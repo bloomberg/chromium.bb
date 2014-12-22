@@ -454,7 +454,7 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
   }
 }
 
-int GetCrashSignalFD(const CommandLine& command_line) {
+int GetCrashSignalFD(const base::CommandLine& command_line) {
   // Extensions have the same process type as renderers.
   if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
     static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
@@ -1197,7 +1197,8 @@ bool IsAutoReloadEnabled() {
   // manually enable or disable auto-reload.
   std::string group = base::FieldTrialList::FindFullName(
       "AutoReloadExperiment");
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload))
     return true;
   if (browser_command_line.HasSwitch(switches::kDisableOfflineAutoReload))
@@ -1209,7 +1210,8 @@ bool IsAutoReloadVisibleOnlyEnabled() {
   // See the block comment in IsAutoReloadEnabled().
   std::string group = base::FieldTrialList::FindFullName(
       "AutoReloadVisibleOnlyExperiment");
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(
       switches::kEnableOfflineAutoReloadVisibleOnly)) {
     return true;
@@ -1224,7 +1226,8 @@ bool IsAutoReloadVisibleOnlyEnabled() {
 }  // namespace
 
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
-    CommandLine* command_line, int child_process_id) {
+    base::CommandLine* command_line,
+    int child_process_id) {
 #if defined(OS_POSIX)
   if (breakpad::IsCrashReporterEnabled()) {
     scoped_ptr<metrics::ClientInfo> client_info =
@@ -1240,7 +1243,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   static const char* const kCommonSwitchNames[] = {
     switches::kUserAgent,
@@ -2130,8 +2134,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                      render_process_id,
                                      opener_id);
 
-  if (!user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisablePopupBlocking)) {
+  if (!user_gesture &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePopupBlocking)) {
     if (content_settings->GetContentSetting(opener_top_level_frame_url,
                                             opener_top_level_frame_url,
                                             CONTENT_SETTINGS_TYPE_POPUPS,
@@ -2432,7 +2437,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     int child_process_id,
     FileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
@@ -2603,8 +2608,8 @@ ChromeContentBrowserClient::OverrideCookieStoreForRenderProcess(
 
 #if defined(ENABLE_WEBRTC)
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
-    CommandLine* to_command_line,
-    const CommandLine& from_command_line,
+    base::CommandLine* to_command_line,
+    const base::CommandLine& from_command_line,
     VersionInfo::Channel channel) {
 #if defined(OS_ANDROID)
   const VersionInfo::Channel kMaxDisableEncryptionChannel =

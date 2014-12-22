@@ -287,8 +287,9 @@ class InstallSigner::FetcherDelegate : public net::URLFetcherDelegate {
 
 // static
 ExtensionIdSet InstallSigner::GetForcedNotFromWebstore() {
-  std::string value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kExtensionsNotWebstore);
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kExtensionsNotWebstore);
   if (value.empty())
     return ExtensionIdSet();
 

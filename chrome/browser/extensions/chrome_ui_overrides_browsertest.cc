@@ -13,9 +13,8 @@ class ChromeUIOverridesBrowserTest : public ExtensionBrowserTest {};
 IN_PROC_BROWSER_TEST_F(ChromeUIOverridesBrowserTest,
                        BookmarkShortcutOverrides) {
   // This functionality requires a feature flag.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--enable-override-bookmarks-ui",
-      "1");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("bookmarks_ui")));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));

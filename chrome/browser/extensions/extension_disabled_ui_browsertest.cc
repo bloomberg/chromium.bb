@@ -33,7 +33,7 @@ using extensions::ExtensionPrefs;
 
 class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
                                     "http://localhost/autoupdate/updates.xml");

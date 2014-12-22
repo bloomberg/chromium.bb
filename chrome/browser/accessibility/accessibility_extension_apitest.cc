@@ -21,7 +21,8 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetAlertsForTab) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -36,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetAlertsForTab) {
   SimpleAlertInfoBarDelegate::Create(infobar_service,
                                      infobars::InfoBarDelegate::kNoIconID,
                                      base::ASCIIToUTF16(kAlertMessage), false);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(RunComponentExtensionTest("accessibility/get_alerts_for_tab"))
       << message_;

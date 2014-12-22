@@ -121,7 +121,7 @@ void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
 bool AreSwitchesIdenticalToCurrentCommandLine(
     const base::CommandLine& new_cmdline,
     const base::CommandLine& active_cmdline,
-    std::set<CommandLine::StringType>* out_difference);
+    std::set<base::CommandLine::StringType>* out_difference);
 
 // Differentiate between generic flags available on a per session base and flags
 // that influence the whole machine and can be said by the admin only. This flag

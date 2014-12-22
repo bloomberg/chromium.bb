@@ -182,7 +182,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     return;
   }
 
-  CommandLine command_line(host_path);
+  base::CommandLine command_line(host_path);
   command_line.AppendArg(origin.spec());
 
   // Pass handle of the native view window to the native messaging host. This

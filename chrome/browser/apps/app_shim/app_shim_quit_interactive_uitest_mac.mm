@@ -85,7 +85,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     content::RunAllPendingInMessageLoop();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     // Simulate an app shim initiated launch, i.e. launch app but not browser.
     app_path_ = test_data_dir_

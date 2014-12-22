@@ -62,7 +62,7 @@ const char kWallpaperManifestBaseURL[] =
 #endif
 
 bool IsOEMDefaultWallpaper() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDefaultWallpaperIsOem);
 }
 
@@ -739,7 +739,7 @@ bool WallpaperPrivateGetThumbnailFunction::RunAsync() {
     // TODO(bshe): Small resolution wallpaper is used here as wallpaper
     // thumbnail. We should either resize it or include a wallpaper thumbnail in
     // addition to large and small wallpaper resolutions.
-    thumbnail_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+    thumbnail_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
         chromeos::switches::kDefaultWallpaperSmall);
   }
 

@@ -55,7 +55,8 @@ VirtualKeyboardBrowserTestConfig::VirtualKeyboardBrowserTestConfig()
 
 VirtualKeyboardBrowserTestConfig::~VirtualKeyboardBrowserTestConfig() {};
 
-void VirtualKeyboardBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void VirtualKeyboardBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
 }
 

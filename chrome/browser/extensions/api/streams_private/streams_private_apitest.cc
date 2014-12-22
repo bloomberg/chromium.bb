@@ -244,7 +244,8 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -274,7 +275,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -304,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -434,7 +437,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -463,7 +467,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
 IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Abort) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 

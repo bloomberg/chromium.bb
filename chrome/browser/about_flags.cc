@@ -119,22 +119,22 @@ void AddOsStrings(unsigned bitmask, base::ListValue* list) {
 }
 
 // Convert switch constants to proper CommandLine::StringType strings.
-CommandLine::StringType GetSwitchString(const std::string& flag) {
-  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+base::CommandLine::StringType GetSwitchString(const std::string& flag) {
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   cmd_line.AppendSwitch(flag);
   DCHECK_EQ(2U, cmd_line.argv().size());
   return cmd_line.argv()[1];
 }
 
 // Scoops flags from a command line.
-std::set<CommandLine::StringType> ExtractFlagsFromCommandLine(
-    const CommandLine& cmdline) {
-  std::set<CommandLine::StringType> flags;
+std::set<base::CommandLine::StringType> ExtractFlagsFromCommandLine(
+    const base::CommandLine& cmdline) {
+  std::set<base::CommandLine::StringType> flags;
   // First do the ones between --flag-switches-begin and --flag-switches-end.
-  CommandLine::StringVector::const_iterator first =
+  base::CommandLine::StringVector::const_iterator first =
       std::find(cmdline.argv().begin(), cmdline.argv().end(),
                 GetSwitchString(switches::kFlagSwitchesBegin));
-  CommandLine::StringVector::const_iterator last =
+  base::CommandLine::StringVector::const_iterator last =
       std::find(cmdline.argv().begin(), cmdline.argv().end(),
                 GetSwitchString(switches::kFlagSwitchesEnd));
   if (first != cmdline.argv().end() && last != cmdline.argv().end())
@@ -2101,7 +2101,7 @@ class FlagsState {
  public:
   FlagsState() : needs_restart_(false) {}
   void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                              CommandLine* command_line,
+                              base::CommandLine* command_line,
                               SentinelsMode sentinels);
   bool IsRestartNeededToCommitChanges();
   void SetExperimentEnabled(
@@ -2109,7 +2109,7 @@ class FlagsState {
       const std::string& internal_name,
       bool enable);
   void RemoveFlagsSwitches(
-      std::map<std::string, CommandLine::StringType>* switch_list);
+      std::map<std::string, base::CommandLine::StringType>* switch_list);
   void ResetAllFlags(FlagsStorage* flags_storage);
   void reset();
 
@@ -2291,7 +2291,7 @@ base::string16 Experiment::DescriptionForChoice(int index) const {
 }
 
 void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                            CommandLine* command_line,
+                            base::CommandLine* command_line,
                             SentinelsMode sentinels) {
   FlagsState::GetInstance()->ConvertFlagsToSwitches(flags_storage,
                                                     command_line,
@@ -2299,12 +2299,12 @@ void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
 }
 
 bool AreSwitchesIdenticalToCurrentCommandLine(
-    const CommandLine& new_cmdline,
-    const CommandLine& active_cmdline,
-    std::set<CommandLine::StringType>* out_difference) {
-  std::set<CommandLine::StringType> new_flags =
+    const base::CommandLine& new_cmdline,
+    const base::CommandLine& active_cmdline,
+    std::set<base::CommandLine::StringType>* out_difference) {
+  std::set<base::CommandLine::StringType> new_flags =
       ExtractFlagsFromCommandLine(new_cmdline);
-  std::set<CommandLine::StringType> active_flags =
+  std::set<base::CommandLine::StringType> active_flags =
       ExtractFlagsFromCommandLine(active_cmdline);
 
   bool result = false;
@@ -2392,7 +2392,7 @@ void SetExperimentEnabled(FlagsStorage* flags_storage,
 }
 
 void RemoveFlagsSwitches(
-    std::map<std::string, CommandLine::StringType>* switch_list) {
+    std::map<std::string, base::CommandLine::StringType>* switch_list) {
   FlagsState::GetInstance()->RemoveFlagsSwitches(switch_list);
 }
 
@@ -2479,7 +2479,7 @@ void SetFlagToSwitchMapping(const std::string& key,
 }
 
 void FlagsState::ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                                        CommandLine* command_line,
+                                        base::CommandLine* command_line,
                                         SentinelsMode sentinels) {
   if (command_line->HasSwitch(switches::kNoExperiments))
     return;
@@ -2617,7 +2617,7 @@ void FlagsState::SetExperimentEnabled(FlagsStorage* flags_storage,
 }
 
 void FlagsState::RemoveFlagsSwitches(
-    std::map<std::string, CommandLine::StringType>* switch_list) {
+    std::map<std::string, base::CommandLine::StringType>* switch_list) {
   for (const auto& entry : flags_switches_)
     switch_list->erase(entry.first);
 }

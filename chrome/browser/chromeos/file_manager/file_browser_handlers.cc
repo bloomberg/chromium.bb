@@ -141,7 +141,7 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
                                    "chrome-extension://*/*.zip");
       if (handler->extension_id() == kFileManagerAppId &&
           zip_pattern.MatchesURL(selected_file_url) &&
-          !CommandLine::ForCurrentProcess()->HasSwitch(
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
               chromeos::switches::kDisableNewZIPUnpacker)) {
         continue;
       }

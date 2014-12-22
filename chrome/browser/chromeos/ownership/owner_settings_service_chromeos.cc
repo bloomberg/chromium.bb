@@ -47,7 +47,8 @@ namespace {
 
 bool IsOwnerInTests(const std::string& user_id) {
   if (user_id.empty() ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType) ||
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType) ||
       !CrosSettings::IsInitialized()) {
     return false;
   }

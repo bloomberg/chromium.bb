@@ -154,7 +154,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   virtual ~CryptohomeAuthenticatorTest() {}
 
   virtual void SetUp() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kLoginManager);
 
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);

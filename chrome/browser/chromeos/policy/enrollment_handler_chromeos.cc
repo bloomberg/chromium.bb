@@ -262,7 +262,7 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     device_id_ = validator->policy_data()->device_id();
     request_token_ = validator->policy_data()->request_token();
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kEnterpriseEnrollmentSkipRobotAuth)) {
       // For test purposes we allow enrollment to succeed without proper robot
       // account and use the provided value as a token.

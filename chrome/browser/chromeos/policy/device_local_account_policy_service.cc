@@ -215,7 +215,7 @@ void DeviceLocalAccountPolicyBroker::OnComponentCloudPolicyUpdated() {
 void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     CloudPolicyClient* client) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentCloudPolicy)) {
     // Disabled via the command line.
     return;

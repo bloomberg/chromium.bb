@@ -122,9 +122,8 @@ void Preferences::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kNaturalScroll,
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNaturalScrollDefault),
+      prefs::kNaturalScroll, base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                 switches::kNaturalScrollDefault),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kPrimaryMouseButtonRight,
@@ -390,7 +389,8 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   // If a guest is logged in, initialize the prefs as if this is the first
   // login. For a regular user this is done in
   // UserSessionManager::InitProfilePreferences().
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGuestSession))
     session_manager->SetFirstLoginPrefs(profile, std::string(), std::string());
 }
 
@@ -616,10 +616,9 @@ void Preferences::OnIsSyncingChanged() {
 
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault) &&
-      prefs_->IsSyncing() &&
-      !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
+      prefs_->IsSyncing() && !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
     DVLOG(1) << "Natural scroll forced to true";
     natural_scroll_.SetValue(true);
     UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Forced", true);

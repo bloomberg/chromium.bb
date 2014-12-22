@@ -184,7 +184,7 @@ GURL WebstoreInstaller::GetWebstoreInstallURL(
       install_source = kDefaultInstallSource;
   }
 
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kAppsGalleryDownloadURL)) {
     std::string download_url =
         cmd_line->GetSwitchValueASCII(switches::kAppsGalleryDownloadURL);

@@ -48,7 +48,7 @@ ScreenshotTester::Result::~Result() {
 }
 
 bool ScreenshotTester::TryInitialize() {
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kEnableScreenshotTestingWithMode))
     return false;
 

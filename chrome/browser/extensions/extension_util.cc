@@ -155,7 +155,7 @@ bool CanLoadInIncognito(const Extension* extension,
 
 bool AllowFileAccess(const std::string& extension_id,
                      content::BrowserContext* context) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableExtensionsFileAccessCheck) ||
          ExtensionPrefs::Get(context)->AllowFileAccess(extension_id);
 }
@@ -350,8 +350,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 }
 
 bool IsStreamlinedHostedAppsEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewBookmarkApps);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNewBookmarkApps);
 }
 
 }  // namespace util

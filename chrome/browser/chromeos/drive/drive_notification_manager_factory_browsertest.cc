@@ -20,7 +20,7 @@ namespace drive {
 class DriveNotificationManagerFactoryLoginScreenBrowserTest
     : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(DriveNotificationManagerFactoryLoginScreenBrowserTest,
 class DriveNotificationManagerFactoryGuestBrowserTest
     : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");

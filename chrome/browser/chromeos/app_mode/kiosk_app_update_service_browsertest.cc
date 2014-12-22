@@ -87,7 +87,7 @@ class KioskAppUpdateServiceTest
         test_data_dir_.AppendASCII("api_test/runtime/on_restart_required"));
 
     // Fake app mode command line.
-    CommandLine* command = CommandLine::ForCurrentProcess();
+    base::CommandLine* command = base::CommandLine::ForCurrentProcess();
     command->AppendSwitch(switches::kForceAppMode);
     command->AppendSwitchASCII(switches::kAppId, app_->id());
 

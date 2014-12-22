@@ -46,7 +46,7 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
     TabHelper::CreateForWebContents(web_contents());
     // Create an ExtensionService so the LocationBarController can find its
     // extensions.
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     extension_service_ = static_cast<TestExtensionSystem*>(

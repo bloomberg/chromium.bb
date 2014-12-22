@@ -441,7 +441,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 class MediaGalleriesPlatformAppPpapiTest
     : public MediaGalleriesPlatformAppBrowserTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     MediaGalleriesPlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePepperTesting);
   }
@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppPpapiTest, SendFilesystem) {
   AppLaunchParams params(browser()->profile(), extension,
                          extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
                          extensions::SOURCE_TEST);
-  params.command_line = *CommandLine::ForCurrentProcess();
+  params.command_line = *base::CommandLine::ForCurrentProcess();
   OpenApplication(params);
 
   bool result = true;

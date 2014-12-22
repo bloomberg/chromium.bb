@@ -52,11 +52,12 @@ bool OwnerFlagsStorage::SetFlags(const std::set<std::string>& flags) {
 
   base::ListValue experiments_list;
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   ::about_flags::ConvertFlagsToSwitches(this, &command_line,
                                         ::about_flags::kNoSentinels);
-  CommandLine::StringVector switches = command_line.argv();
-  for (CommandLine::StringVector::const_iterator it = switches.begin() + 1;
+  base::CommandLine::StringVector switches = command_line.argv();
+  for (base::CommandLine::StringVector::const_iterator it =
+           switches.begin() + 1;
        it != switches.end(); ++it) {
     experiments_list.Append(new base::StringValue(*it));
   }

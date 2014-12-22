@@ -34,7 +34,7 @@ class SearchProviderTest : public InProcessBrowserTest {
  protected:
   SearchProviderTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(test_server()->Start());
 
     // Map all hosts to our local server.

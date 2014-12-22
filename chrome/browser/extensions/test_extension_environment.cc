@@ -53,7 +53,7 @@ TestExtensionSystem* TestExtensionEnvironment::GetExtensionSystem() {
 ExtensionService* TestExtensionEnvironment::GetExtensionService() {
   if (extension_service_ == NULL) {
     extension_service_ = GetExtensionSystem()->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
   }
   return extension_service_;
 }
@@ -61,7 +61,7 @@ ExtensionService* TestExtensionEnvironment::GetExtensionService() {
 ExtensionPrefs* TestExtensionEnvironment::GetExtensionPrefs() {
   if (extension_prefs_ == NULL) {
     extension_prefs_ = GetExtensionSystem()->CreateExtensionPrefs(
-        CommandLine::ForCurrentProcess(), base::FilePath());
+        base::CommandLine::ForCurrentProcess(), base::FilePath());
   }
   return extension_prefs_;
 }

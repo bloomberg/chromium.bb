@@ -39,13 +39,13 @@ bool IsCommandAllowedInAppMode(int command_id) {
 }
 
 bool IsRunningInAppMode() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kKioskMode) ||
       IsRunningInForcedAppMode();
 }
 
 bool IsRunningInForcedAppMode() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kForceAppMode) &&
       command_line->HasSwitch(switches::kAppId);
 }

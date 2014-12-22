@@ -285,7 +285,7 @@ class SamlTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
@@ -664,7 +664,7 @@ class SAMLEnrollmentTest : public SamlTest,
 
   // SamlTest:
   void SetUp() override;
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
   void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) override;
 
@@ -705,7 +705,7 @@ void SAMLEnrollmentTest::SetUp() {
   SamlTest::SetUp();
 }
 
-void SAMLEnrollmentTest::SetUpCommandLine(CommandLine* command_line) {
+void SAMLEnrollmentTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                   test_server_->GetServiceURL().spec());
   command_line->AppendSwitch(policy::switches::kDisablePolicyKeyVerification);

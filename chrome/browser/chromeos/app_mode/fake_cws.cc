@@ -113,7 +113,7 @@ void FakeCWS::SetupWebStoreURL(const GURL& test_server_url) {
 void FakeCWS::OverrideGalleryCommandlineSwitches() {
   DCHECK(web_store_url_.is_valid());
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   command_line->AppendSwitchASCII(
       ::switches::kAppsGalleryURL,

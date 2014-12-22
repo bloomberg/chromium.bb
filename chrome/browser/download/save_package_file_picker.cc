@@ -115,8 +115,8 @@ void AddCompleteFileTypeInfo(
 
 bool SavePackageFilePicker::ShouldSaveAsMHTML() const {
 #if !defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSavePageAsMHTML))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSavePageAsMHTML))
     return false;
 #endif
   return can_save_as_complete_;

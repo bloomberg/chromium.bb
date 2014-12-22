@@ -33,7 +33,7 @@ class DeviceDisablingTest : public InProcessBrowserTest {
  private:
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override;
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyCrosTestHelper test_helper_;
@@ -65,7 +65,7 @@ void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
   test_helper_.MarkAsEnterpriseOwned();
 }
 
-void DeviceDisablingTest::SetUpCommandLine(CommandLine* command_line) {
+void DeviceDisablingTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kLoginManager);
   command_line->AppendSwitch(switches::kForceLoginManagerInTests);
 }

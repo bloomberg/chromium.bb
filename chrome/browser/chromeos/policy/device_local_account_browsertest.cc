@@ -431,7 +431,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     DevicePolicyCrosBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
@@ -445,8 +445,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
     // Clear command-line arguments (but keep command-line switches) so the
     // startup pages policy takes effect.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    CommandLine::StringVector argv(command_line->argv());
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    base::CommandLine::StringVector argv(command_line->argv());
     argv.erase(argv.begin() + argv.size() - command_line->GetArgs().size(),
                argv.end());
     command_line->InitFromArgv(argv);

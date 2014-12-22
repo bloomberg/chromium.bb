@@ -14,7 +14,7 @@ using extensions::PageCaptureSaveAsMHTMLFunction;
 
 class ExtensionPageCaptureApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }

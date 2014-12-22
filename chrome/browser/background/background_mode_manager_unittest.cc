@@ -38,8 +38,8 @@ namespace {
 // exposes them via getters.
 class SimpleTestBackgroundModeManager : public BackgroundModeManager {
  public:
-  SimpleTestBackgroundModeManager(
-      CommandLine* command_line, ProfileInfoCache* cache)
+  SimpleTestBackgroundModeManager(base::CommandLine* command_line,
+                                  ProfileInfoCache* cache)
       : BackgroundModeManager(command_line, cache),
         have_status_tray_(false),
         launch_on_startup_(false),
@@ -93,8 +93,9 @@ class TestStatusIcon : public StatusIcon {
 // smaller tests that don't have to install/uninstall extensions.
 class TestBackgroundModeManager : public SimpleTestBackgroundModeManager {
  public:
-  TestBackgroundModeManager(
-      CommandLine* command_line, ProfileInfoCache* cache, bool enabled)
+  TestBackgroundModeManager(base::CommandLine* command_line,
+                            ProfileInfoCache* cache,
+                            bool enabled)
       : SimpleTestBackgroundModeManager(command_line, cache),
         enabled_(enabled),
         app_count_(0),
@@ -154,11 +155,11 @@ class BackgroundModeManagerTest : public testing::Test {
   BackgroundModeManagerTest() {}
   ~BackgroundModeManagerTest() override {}
   void SetUp() override {
-    command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
+    command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
     profile_manager_ = CreateTestingProfileManager();
     profile_ = profile_manager_->CreateTestingProfile("p1");
   }
-  scoped_ptr<CommandLine> command_line_;
+  scoped_ptr<base::CommandLine> command_line_;
 
  protected:
   scoped_refptr<extensions::Extension> CreateExtension(
@@ -596,10 +597,9 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
         "ID-4"));
 
   static_cast<extensions::TestExtensionSystem*>(
-      extensions::ExtensionSystem::Get(profile_))->CreateExtensionService(
-          CommandLine::ForCurrentProcess(),
-          base::FilePath(),
-          false);
+      extensions::ExtensionSystem::Get(profile_))
+      ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                               base::FilePath(), false);
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->Init();
@@ -674,10 +674,9 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
         "ID-4"));
 
   static_cast<extensions::TestExtensionSystem*>(
-      extensions::ExtensionSystem::Get(profile_))->CreateExtensionService(
-          CommandLine::ForCurrentProcess(),
-          base::FilePath(),
-          false);
+      extensions::ExtensionSystem::Get(profile_))
+      ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                               base::FilePath(), false);
   ExtensionService* service1 =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service1->Init();
@@ -688,10 +687,9 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
   service1->AddExtension(regular_extension_with_options.get());
 
   static_cast<extensions::TestExtensionSystem*>(
-      extensions::ExtensionSystem::Get(profile2))->CreateExtensionService(
-          CommandLine::ForCurrentProcess(),
-          base::FilePath(),
-          false);
+      extensions::ExtensionSystem::Get(profile2))
+      ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                               base::FilePath(), false);
   ExtensionService* service2 =
       extensions::ExtensionSystem::Get(profile2)->extension_service();
   service2->Init();
@@ -840,10 +838,9 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
         "ID-3"));
 
   static_cast<extensions::TestExtensionSystem*>(
-      extensions::ExtensionSystem::Get(profile_))->CreateExtensionService(
-          CommandLine::ForCurrentProcess(),
-          base::FilePath(),
-          false);
+      extensions::ExtensionSystem::Get(profile_))
+      ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                               base::FilePath(), false);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();

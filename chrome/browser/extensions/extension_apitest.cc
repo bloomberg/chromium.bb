@@ -313,7 +313,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
     AppLaunchParams params(browser()->profile(), extension,
                            extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
                            extensions::SOURCE_TEST);
-    params.command_line = *CommandLine::ForCurrentProcess();
+    params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }
 
@@ -413,7 +413,7 @@ bool ExtensionApiTest::StartSpawnedTestServer() {
   return true;
 }
 
-void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
+void ExtensionApiTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
 }

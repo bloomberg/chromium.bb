@@ -24,7 +24,7 @@
 #endif
 
 ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
-    const CommandLine& parsed_command_line)
+    const base::CommandLine& parsed_command_line)
     : parsed_command_line_(parsed_command_line) {
 }
 

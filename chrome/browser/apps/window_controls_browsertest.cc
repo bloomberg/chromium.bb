@@ -11,7 +11,7 @@
 
 class WindowControlsTest : public extensions::PlatformAppBrowserTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(extensions::switches::kEnableAppWindowControls);
   }

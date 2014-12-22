@@ -74,7 +74,8 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
 }
 
 std::string GetDeviceManagementServerUrlForConsumer() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(
           chromeos::switches::kConsumerDeviceManagementUrl)) {
     return command_line->GetSwitchValueASCII(
@@ -115,7 +116,8 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
                            &install_attrs_file));
     install_attributes_->ReadCacheFile(install_attrs_file);
 
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(
             chromeos::switches::kEnableConsumerManagement)) {
       consumer_management_service_.reset(
@@ -149,7 +151,8 @@ void BrowserPolicyConnectorChromeOS::Init(
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   ChromeBrowserPolicyConnector::Init(local_state, request_context);
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kEnableConsumerManagement)) {
     scoped_ptr<DeviceManagementService::Configuration> configuration(
         new DeviceManagementServiceConfiguration(

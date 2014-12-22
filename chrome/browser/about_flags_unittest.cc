@@ -385,7 +385,7 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
 TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("foo");
 
   EXPECT_TRUE(command_line.HasSwitch("foo"));
@@ -398,7 +398,7 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   EXPECT_TRUE(command_line.HasSwitch(switches::kFlagSwitchesBegin));
   EXPECT_TRUE(command_line.HasSwitch(switches::kFlagSwitchesEnd));
 
-  CommandLine command_line2(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line2(base::CommandLine::NO_PROGRAM);
 
   ConvertFlagsToSwitches(&flags_storage_, &command_line2, kNoSentinels);
 
@@ -407,7 +407,7 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   EXPECT_FALSE(command_line2.HasSwitch(switches::kFlagSwitchesEnd));
 }
 
-CommandLine::StringType CreateSwitch(const std::string& value) {
+base::CommandLine::StringType CreateSwitch(const std::string& value) {
 #if defined(OS_WIN)
   return base::ASCIIToUTF16(value);
 #else
@@ -420,16 +420,16 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
 
   const std::string kDoubleDash("--");
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("foo");
 
-  CommandLine new_command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine new_command_line(base::CommandLine::NO_PROGRAM);
   ConvertFlagsToSwitches(&flags_storage_, &new_command_line, kAddSentinels);
 
   EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
       new_command_line, command_line, NULL));
   {
-    std::set<CommandLine::StringType> difference;
+    std::set<base::CommandLine::StringType> difference;
     EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
         new_command_line, command_line, &difference));
     EXPECT_EQ(1U, difference.size());
@@ -441,7 +441,7 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(
       new_command_line, command_line, NULL));
   {
-    std::set<CommandLine::StringType> difference;
+    std::set<base::CommandLine::StringType> difference;
     EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(
         new_command_line, command_line, &difference));
     EXPECT_TRUE(difference.empty());
@@ -451,13 +451,13 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   SetExperimentEnabled(&flags_storage_, kFlags1, false);
   SetExperimentEnabled(&flags_storage_, kFlags2, true);
 
-  CommandLine another_command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine another_command_line(base::CommandLine::NO_PROGRAM);
   ConvertFlagsToSwitches(&flags_storage_, &another_command_line, kAddSentinels);
 
   EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
       new_command_line, another_command_line, NULL));
   {
-    std::set<CommandLine::StringType> difference;
+    std::set<base::CommandLine::StringType> difference;
     EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
         new_command_line, another_command_line, &difference));
     EXPECT_EQ(2U, difference.size());
@@ -469,11 +469,11 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
 }
 
 TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
-  std::map<std::string, CommandLine::StringType> switch_list;
-  switch_list[kSwitch1] = CommandLine::StringType();
-  switch_list[switches::kFlagSwitchesBegin] = CommandLine::StringType();
-  switch_list[switches::kFlagSwitchesEnd] = CommandLine::StringType();
-  switch_list["foo"] = CommandLine::StringType();
+  std::map<std::string, base::CommandLine::StringType> switch_list;
+  switch_list[kSwitch1] = base::CommandLine::StringType();
+  switch_list[switches::kFlagSwitchesBegin] = base::CommandLine::StringType();
+  switch_list[switches::kFlagSwitchesEnd] = base::CommandLine::StringType();
+  switch_list["foo"] = base::CommandLine::StringType();
 
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
 
@@ -488,7 +488,7 @@ TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
   EXPECT_TRUE(switch_list.find("foo") != switch_list.end());
 
   // Call ConvertFlagsToSwitches(), then RemoveFlagsSwitches() again.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("foo");
   ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
   RemoveFlagsSwitches(&switch_list);
@@ -503,7 +503,7 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   // Enable experiments 1 and 3.
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
   SetExperimentEnabled(&flags_storage_, kFlags3, true);
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
   EXPECT_FALSE(command_line.HasSwitch(kSwitch3));
 
@@ -532,7 +532,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
   // Enable experiments 1 and 2.
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
   SetExperimentEnabled(&flags_storage_, kFlags2, true);
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
   EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
 
@@ -591,7 +591,7 @@ TEST_F(AboutFlagsTest, MultiValues) {
   // Initially, the first "deactivated" option of the multi experiment should
   // be set.
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
@@ -600,7 +600,7 @@ TEST_F(AboutFlagsTest, MultiValues) {
   // Enable the 2nd choice of the multi-value.
   SetExperimentEnabled(&flags_storage_, experiment.NameForChoice(2), true);
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_TRUE(command_line.HasSwitch(kMultiSwitch2));
@@ -611,7 +611,7 @@ TEST_F(AboutFlagsTest, MultiValues) {
   // Disable the multi-value experiment.
   SetExperimentEnabled(&flags_storage_, experiment.NameForChoice(0), true);
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
@@ -624,7 +624,7 @@ TEST_F(AboutFlagsTest, EnableDisableValues) {
 
   // Nothing selected.
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
@@ -633,7 +633,7 @@ TEST_F(AboutFlagsTest, EnableDisableValues) {
   // "Enable" option selected.
   SetExperimentEnabled(&flags_storage_, experiment.NameForChoice(1), true);
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
@@ -643,7 +643,7 @@ TEST_F(AboutFlagsTest, EnableDisableValues) {
   // "Disable" option selected.
   SetExperimentEnabled(&flags_storage_, experiment.NameForChoice(2), true);
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
     EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
@@ -653,7 +653,7 @@ TEST_F(AboutFlagsTest, EnableDisableValues) {
   // "Default" option selected, same as nothing selected.
   SetExperimentEnabled(&flags_storage_, experiment.NameForChoice(0), true);
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));

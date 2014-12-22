@@ -20,7 +20,7 @@ namespace extensions {
 
 class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  protected:
   // Performs the following sequence:
@@ -112,9 +112,8 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
                                           const char* handler);
 };
 
-
 void PlatformAppUrlRedirectorBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   PlatformAppBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(::switches::kDisablePopupBlocking);
   command_line->AppendSwitchASCII(::switches::kPrerenderMode,

@@ -28,7 +28,7 @@ class ChromeMainTest : public InProcessBrowserTest {
  public:
   ChromeMainTest() {}
 
-  void Relaunch(const CommandLine& new_command_line) {
+  void Relaunch(const base::CommandLine& new_command_line) {
     base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(), NULL);
   }
 };
@@ -37,7 +37,8 @@ class ChromeMainTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -51,13 +52,14 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
-  CommandLine new_command_line(GetCommandLineForRelaunch());
+  base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
   content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
@@ -87,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
   // Run with --incognito switch and an URL specified.
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
-  CommandLine new_command_line(GetCommandLineForRelaunch());
+  base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendSwitch(switches::kIncognito);
   new_command_line.AppendArgPath(test_file_path);
 
@@ -106,7 +108,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
@@ -137,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   // Run with just an URL specified, no --incognito switch.
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
-  CommandLine new_command_line(GetCommandLineForRelaunch());
+  base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
   content::WindowedNotificationObserver tab_observer(
         chrome::NOTIFICATION_TAB_ADDED,

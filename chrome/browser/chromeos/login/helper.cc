@@ -48,7 +48,7 @@ bool LoginScrollIntoViewEnabled() {
   // be centered when virtual keyboard shown, crbug.com/411879
   return false;
 #else
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableLoginScrollIntoView);
 #endif
 }

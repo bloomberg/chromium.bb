@@ -74,7 +74,7 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
     ASSERT_EQ(num_portal_notifications, delegate_.num_portal_notifications());
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
   }

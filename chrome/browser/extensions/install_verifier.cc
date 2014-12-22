@@ -55,8 +55,9 @@ VerifyStatus GetExperimentStatus() {
   const std::string group = base::FieldTrialList::FindFullName(
       kExperimentName);
 
-  std::string forced_trials = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kForceFieldTrials);
+  std::string forced_trials =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kForceFieldTrials);
   if (forced_trials.find(kExperimentName) != std::string::npos) {
     // We don't want to allow turning off enforcement by forcing the field
     // trial group to something other than enforcement.
@@ -81,7 +82,7 @@ VerifyStatus GetExperimentStatus() {
 }
 
 VerifyStatus GetCommandLineStatus() {
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (!InstallSigner::GetForcedNotFromWebstore().empty())
     return ENFORCE;
 

@@ -27,7 +27,8 @@ void WizardInProcessBrowserTest::SetUp() {
   InProcessBrowserTest::SetUp();
 }
 
-void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void WizardInProcessBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   command_line->AppendSwitch(::switches::kNoStartupWindow);
   command_line->AppendSwitch(switches::kLoginManager);
 }

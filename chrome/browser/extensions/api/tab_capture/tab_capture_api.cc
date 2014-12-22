@@ -89,7 +89,7 @@ bool TabCaptureCaptureFunction::RunSync() {
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           SessionTabHelper::IdForTab(target_contents),
           APIPermission::kTabCaptureForTab) &&
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInList(
           extension_id,

@@ -65,7 +65,7 @@ void DisableShowProfileSwitcherTrialIfNecessary() {
 
 }  // namespace
 
-void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
+void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line,
                              PrefService* local_state) {
   prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();

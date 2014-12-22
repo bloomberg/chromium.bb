@@ -360,8 +360,8 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       extension_registry_observer_(this),
       watchdog_apps_active_(0) {
   // This controls whether logging statements are printed & which policy is set.
-  testing_mode_ = CommandLine::ForCurrentProcess()->HasSwitch(
-    switches::kEnableExtensionActivityLogTesting);
+  testing_mode_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogTesting);
 
   // Check if the watchdog extension is previously installed and active.
   watchdog_apps_active_ =
@@ -377,10 +377,10 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
     has_threads_ = false;
   }
 
-  db_enabled_ = has_threads_
-      && (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableExtensionActivityLogging)
-      || watchdog_apps_active_);
+  db_enabled_ =
+      has_threads_ && (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                           switches::kEnableExtensionActivityLogging) ||
+                       watchdog_apps_active_);
 
   ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -480,7 +480,7 @@ void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
   profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
                                    watchdog_apps_active_);
   if (watchdog_apps_active_ == 0 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging)) {
     db_enabled_ = false;
   }
@@ -492,7 +492,7 @@ void ActivityLog::OnExtensionUninstalled(
     const Extension* extension,
     extensions::UninstallReason reason) {
   if (ActivityLogAPI::IsExtensionWhitelisted(extension->id()) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging) &&
       watchdog_apps_active_ == 0) {
     DeleteDatabase();

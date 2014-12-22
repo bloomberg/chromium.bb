@@ -106,7 +106,7 @@ class AppControllerPlatformAppBrowserTest
                                 chrome::GetActiveDesktop())) {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kAppId,
                                     "1234");
@@ -162,7 +162,7 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
                                 chrome::GetActiveDesktop())) {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kApp, GetAppURL());
   }
 
@@ -223,7 +223,7 @@ class AppControllerNewProfileManagementBrowserTest
                                 chrome::GetActiveDesktop())) {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     switches::EnableNewProfileManagementForTesting(command_line);
   }
 
@@ -362,7 +362,7 @@ class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
     g_open_shortcut_url = embedded_test_server()->GetURL("/simple.html");
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // If the arg is empty, PrepareTestCommandLine() after this function will
     // append about:blank as default url.
     command_line->AppendArg(chrome::kChromeUINewTabURL);
@@ -385,7 +385,7 @@ class AppControllerReplaceNTPBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // If the arg is empty, PrepareTestCommandLine() after this function will
     // append about:blank as default url.
     command_line->AppendArg(chrome::kChromeUINewTabURL);

@@ -93,7 +93,7 @@ void CollectLogInfo(
 // Returns directory location of app-specific logs that are initiated with
 // logPrivate.startEventRecorder() calls - /home/chronos/user/log/apps
 base::FilePath GetAppLogDirectory() {
-  return logging::GetSessionLogDir(*CommandLine::ForCurrentProcess())
+  return logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess())
       .Append(kAppLogsSubdir);
 }
 

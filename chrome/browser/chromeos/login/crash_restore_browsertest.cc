@@ -37,7 +37,7 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
 
   virtual ~CrashRestoreSimpleTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kLoginUser, kUserId1);
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,

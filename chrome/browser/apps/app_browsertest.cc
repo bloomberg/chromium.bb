@@ -183,7 +183,7 @@ bool CopyTestDataAndSetCommandLineArg(
   if (!(base::CopyFile(test_data_file, path)))
     return false;
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendArgPath(path);
   return true;
 }
@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   // Setup the command line
   ClearCommandLineArgs();
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath relative_test_doc =
       base::FilePath::FromUTF8Unsafe(kTestFilePath);
   relative_test_doc = relative_test_doc.NormalizePathSeparators();
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   // Run the test
   AppLaunchParams params(browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
                          NEW_WINDOW, extensions::SOURCE_TEST);
-  params.command_line = *CommandLine::ForCurrentProcess();
+  params.command_line = *base::CommandLine::ForCurrentProcess();
   params.current_directory = test_data_dir_;
   OpenApplication(params);
 
@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNewFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ClearCommandLineArgs();
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendArgPath(temp_dir.path().AppendASCII("new_file.txt"));
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_new_file")) << message_;
 }
@@ -864,7 +864,8 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
 IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
   RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);
@@ -1179,7 +1180,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
                                         public AppWindowRegistry::Observer {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     // Tell chromeos to launch in Guest mode, aka incognito.
     command_line->AppendSwitch(switches::kIncognito);
     PlatformAppBrowserTest::SetUpCommandLine(command_line);

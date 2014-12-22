@@ -238,7 +238,7 @@ class SpokenFeedbackTest
   SpokenFeedbackTest() {}
   virtual ~SpokenFeedbackTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     if (GetParam() == kTestAsGuestUser) {
       command_line->AppendSwitch(chromeos::switches::kGuestSession);
       command_line->AppendSwitch(::switches::kIncognito);
@@ -528,7 +528,7 @@ class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
   GuestSpokenFeedbackTest() {}
   virtual ~GuestSpokenFeedbackTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
@@ -559,7 +559,7 @@ class OobeSpokenFeedbackTest : public InProcessBrowserTest {
   OobeSpokenFeedbackTest() {}
   virtual ~OobeSpokenFeedbackTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");

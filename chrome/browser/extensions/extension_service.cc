@@ -246,7 +246,7 @@ bool ExtensionService::UninstallExtensionHelper(
 }
 
 ExtensionService::ExtensionService(Profile* profile,
-                                   const CommandLine* command_line,
+                                   const base::CommandLine* command_line,
                                    const base::FilePath& install_directory,
                                    extensions::ExtensionPrefs* extension_prefs,
                                    extensions::Blacklist* blacklist,
@@ -388,7 +388,7 @@ void ExtensionService::Init() {
   DCHECK(!is_ready());  // Can't redo init.
   DCHECK_EQ(registry_->enabled_extensions().size(), 0u);
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kInstallEphemeralAppFromWebstore)) {
     // The sole purpose of this launch is to install a new extension from CWS
     // and immediately terminate: loading already installed extensions is

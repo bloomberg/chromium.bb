@@ -203,9 +203,8 @@ bool BackgroundModeManager::BackgroundModeData::BackgroundModeDataCompare(
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, public
-BackgroundModeManager::BackgroundModeManager(
-    CommandLine* command_line,
-    ProfileInfoCache* profile_cache)
+BackgroundModeManager::BackgroundModeManager(base::CommandLine* command_line,
+                                             ProfileInfoCache* profile_cache)
     : profile_cache_(profile_cache),
       status_tray_(NULL),
       status_icon_(NULL),

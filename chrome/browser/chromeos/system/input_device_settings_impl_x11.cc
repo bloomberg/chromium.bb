@@ -56,7 +56,7 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
     return;
 
   base::ProcessHandle handle;
-  base::LaunchProcess(CommandLine(argv), base::LaunchOptions(), &handle);
+  base::LaunchProcess(base::CommandLine(argv), base::LaunchOptions(), &handle);
   base::EnsureProcessGetsReaped(handle);
 }
 
@@ -66,8 +66,8 @@ void ExecuteScript(const std::vector<std::string>& argv) {
   if (argv.size() == 1)
     return;
 
-  VLOG(1) << "About to launch: \"" << CommandLine(argv).GetCommandLineString()
-          << "\"";
+  VLOG(1) << "About to launch: \""
+          << base::CommandLine(argv).GetCommandLineString() << "\"";
 
   // Control scripts can take long enough to cause SIGART during shutdown
   // (http://crbug.com/261426). Run the blocking pool task with
@@ -107,7 +107,7 @@ void DeviceExistsBlockingPool(const char* device_type,
   std::string output;
   // Output is empty if the device is not found.
   exists->data =
-      base::GetAppOutput(CommandLine(argv), &output) && !output.empty();
+      base::GetAppOutput(base::CommandLine(argv), &output) && !output.empty();
   DVLOG(1) << "DeviceExistsBlockingPool:" << device_type << "=" << exists->data;
 }
 

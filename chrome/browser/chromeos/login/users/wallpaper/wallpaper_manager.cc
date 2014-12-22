@@ -374,7 +374,7 @@ void WallpaperManager::InitializeWallpaper() {
                             scoped_ptr<gfx::ImageSkia>().Pass());
   }
 
-  CommandLine* command_line = GetCommandLine();
+  base::CommandLine* command_line = GetCommandLine();
   if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
     // Guest wallpaper should be initialized when guest login.
     // Note: This maybe called before login. So IsLoggedInAsGuest can not be

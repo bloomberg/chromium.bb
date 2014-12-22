@@ -64,7 +64,7 @@ void SetupDataCompressionProxyFieldTrials() {
 
 }  // namespace
 
-void SetupMobileFieldTrials(const CommandLine& parsed_command_line) {
+void SetupMobileFieldTrials(const base::CommandLine& parsed_command_line) {
   SetupDataCompressionProxyFieldTrials();
 #if defined(OS_ANDROID)
   prerender::ConfigurePrerender(parsed_command_line);
