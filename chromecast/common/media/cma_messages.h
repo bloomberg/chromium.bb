@@ -5,6 +5,7 @@
 // IPC messages for the Cast Media Acceleration (CMA) pipeline.
 // Multiply-included message file, hence no include guard.
 
+#include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/common/media/cma_param_traits.h"
 #include "chromecast/common/media/cma_param_traits_macros.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
@@ -44,23 +45,23 @@ IPC_MESSAGE_CONTROL2(CmaHostMsg_SetPlaybackRate,
 
 IPC_MESSAGE_CONTROL3(CmaHostMsg_CreateAvPipe,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      size_t /* Fifo size */);
 IPC_MESSAGE_CONTROL3(CmaHostMsg_AudioInitialize,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      media::AudioDecoderConfig /* Audio config */)
 IPC_MESSAGE_CONTROL3(CmaHostMsg_VideoInitialize,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      media::VideoDecoderConfig /* Video config */)
 IPC_MESSAGE_CONTROL3(CmaHostMsg_SetVolume,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      float /* Volume */)
 IPC_MESSAGE_CONTROL2(CmaHostMsg_NotifyPipeWrite,
                      int /* Media pipeline ID */,
-                     int /* Track ID */)
+                     chromecast::media::TrackId /* Track ID */)
 
 IPC_MESSAGE_CONTROL5(CmaHostMsg_NotifyExternalSurface,
                      int /* Surface ID */,
@@ -85,30 +86,30 @@ IPC_MESSAGE_CONTROL2(CmaMsg_BufferingNotification,
 
 IPC_MESSAGE_CONTROL5(CmaMsg_AvPipeCreated,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      bool /* Status */,
                      base::SharedMemoryHandle /* Shared memory */,
                      base::FileDescriptor /* socket handle */)
 IPC_MESSAGE_CONTROL3(CmaMsg_TrackStateChanged,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      media::PipelineStatus /* Status */)
 IPC_MESSAGE_CONTROL2(CmaMsg_NotifyPipeRead,
                      int /* Media pipeline ID */,
-                     int /* Track ID */)
+                     chromecast::media::TrackId /* Track ID */)
 
 IPC_MESSAGE_CONTROL2(CmaMsg_Eos,
                      int /* Media pipeline ID */,
-                     int /* Track ID */)
+                     chromecast::media::TrackId /* Track ID */)
 IPC_MESSAGE_CONTROL3(CmaMsg_PlaybackError,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      media::PipelineStatus /* status */)
 IPC_MESSAGE_CONTROL3(CmaMsg_PlaybackStatistics,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      media::PipelineStatistics /* status */)
 IPC_MESSAGE_CONTROL3(CmaMsg_NaturalSizeChanged,
                      int /* Media pipeline ID */,
-                     int /* Track ID */,
+                     chromecast::media::TrackId /* Track ID */,
                      gfx::Size /* Size */)

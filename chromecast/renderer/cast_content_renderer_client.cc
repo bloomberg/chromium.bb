@@ -8,9 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "chromecast/common/chromecast_switches.h"
 #include "chromecast/renderer/key_systems_cast.h"
+#include "chromecast/renderer/media/cma_media_renderer_factory.h"
 #include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
@@ -67,6 +70,18 @@ void CastContentRendererClient::AddKeySystems(
     std::vector< ::media::KeySystemInfo>* key_systems) {
   AddChromecastKeySystems(key_systems);
   AddChromecastPlatformKeySystems(key_systems);
+}
+
+scoped_ptr<::media::RendererFactory>
+CastContentRendererClient::CreateMediaRendererFactory(
+    ::content::RenderFrame* render_frame) {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
+    return nullptr;
+
+  return scoped_ptr<::media::RendererFactory>(
+      new chromecast::media::CmaMediaRendererFactory(
+          render_frame->GetRoutingID()));
 }
 
 blink::WebPrescientNetworking*

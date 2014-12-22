@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_RENDERER_CAST_CONTENT_RENDERER_CLIENT_H_
 #define CHROMECAST_RENDERER_CAST_CONTENT_RENDERER_CLIENT_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
 
@@ -25,6 +27,8 @@ class CastContentRendererClient : public content::ContentRendererClient {
   void RenderViewCreated(content::RenderView* render_view) override;
   void AddKeySystems(
       std::vector< ::media::KeySystemInfo>* key_systems) override;
+  scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
+      content::RenderFrame* render_frame) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
 
  private:

@@ -8,6 +8,7 @@
 #ifndef CHROMECAST_COMMON_MEDIA_CMA_PARAM_TRAITS_MACROS_H_
 #define CHROMECAST_COMMON_MEDIA_CMA_PARAM_TRAITS_MACROS_H_
 
+#include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
@@ -22,6 +23,10 @@
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(chromecast::media::LoadType,
                               chromecast::media::kLoadTypeURL,
                               chromecast::media::kLoadTypeMediaStream)
+
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(chromecast::media::TrackId,
+                              chromecast::media::kNoTrackId,
+                              chromecast::media::kVideoTrackId)
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::AudioCodec,
                               media::AudioCodec::kUnknownAudioCodec,
