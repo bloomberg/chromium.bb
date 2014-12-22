@@ -85,8 +85,7 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         CommandLine.init(null);
         loadNativeLibraryAndInitBrowserProcess();
 
-        mActivityDelegate =
-                new MockActivityDelegate("DocumentActivity", "IncognitoDocumentActivity");
+        mActivityDelegate = new MockActivityDelegate();
         mTabDelegate = new MockTabDelegate();
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
     }

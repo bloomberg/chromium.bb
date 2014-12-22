@@ -6,6 +6,9 @@ package org.chromium.chrome.test.util.browser.tabmodel.document;
 
 import static junit.framework.Assert.assertTrue;
 
+import android.app.Activity;
+import android.content.Intent;
+
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 
@@ -21,11 +24,19 @@ public class MockActivityDelegate extends ActivityDelegate {
 
     /**
      * Creates a MockActivityDelegate.
-     * @param regularName Name of the regular DocumentActivity.
-     * @param incognitoName Name of the Incognito DocumentActivity.
      */
-    public MockActivityDelegate(String regularName, String incognitoName) {
-        super(regularName, incognitoName);
+    public MockActivityDelegate() {
+        super(null, null);
+    }
+
+    @Override
+    public boolean isDocumentActivity(Activity activity) {
+        return true;
+    }
+
+    @Override
+    public boolean isValidActivity(boolean isIncognito, Intent intent) {
+        return true;
     }
 
     @Override

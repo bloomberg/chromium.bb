@@ -47,8 +47,7 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
 
         mContext = getInstrumentation().getTargetContext();
         mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir(), true);
-        mActivityDelegate =
-                new MockActivityDelegate("DocumentActivity", "IncognitoDocumentActivity");
+        mActivityDelegate = new MockActivityDelegate();
         mTabDelegate = new MockTabDelegate();
     }
 

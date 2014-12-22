@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.tabmodel.document;
 import android.app.Activity;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.document.PendingDocumentData;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Provides Tabs to a DocumentTabModel.
@@ -21,6 +23,13 @@ public interface TabDelegate {
      * @return Tab for the DocumentActivity, if it is a valid DocumentActivity.  Null otherwise.
      */
     Tab getActivityTab(boolean incognito, ActivityDelegate delgate, Activity activity);
+
+    /**
+     * Opens a new Tab in the foreground.
+     * Assumed to be triggered by a window.open().
+     */
+    void createTabInForeground(Activity parentActivity, boolean incognito,
+            LoadUrlParams loadUrlParams, PendingDocumentData documentParams);
 
     /**
      * Creates a frozen Tab for the Entry.

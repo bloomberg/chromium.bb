@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -28,17 +29,27 @@ import java.util.List;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ActivityDelegate {
-    private final String mRegularActivityName;
-    private final String mIncognitoActivityName;
+    private final Class<?> mRegularClass;
+    private final Class<?> mIncognitoClass;
 
     /**
      * Creates a ActivityDelegate.
-     * @param regularName Name of the regular DocumentActivity.
-     * @param incognitoName Name of the Incognito DocumentActivity.
+     * @param regularClass Class of the regular DocumentActivity.
+     * @param incognitoClass Class of the Incognito DocumentActivity.
      */
-    public ActivityDelegate(String regularName, String incognitoName) {
-        mRegularActivityName = regularName;
-        mIncognitoActivityName = incognitoName;
+    public ActivityDelegate(Class<?> regularClass, Class<?> incognitoClass) {
+        mRegularClass = regularClass;
+        mIncognitoClass = incognitoClass;
+    }
+
+    /**
+     * Returns whether an Activity is a DocumentActivity.  Assumes the Incognito Activity inherits
+     * from the regular Activity.
+     * @param activity Activity to check.
+     * @return Whether the Activity is a DocumentActivity.
+     */
+    public boolean isDocumentActivity(Activity activity) {
+        return mRegularClass.isInstance(activity);
     }
 
     /**
@@ -49,7 +60,7 @@ public class ActivityDelegate {
      */
     public boolean isValidActivity(boolean isIncognito, Intent intent) {
         if (intent == null) return false;
-        String desiredClassName = isIncognito ? mIncognitoActivityName : mRegularActivityName;
+        String desiredClassName = isIncognito ? mIncognitoClass.getName() : mRegularClass.getName();
         String className = null;
         if (intent.getComponent() == null) {
             Context context = ApplicationStatus.getApplicationContext();
