@@ -233,6 +233,7 @@ SUPPORTED_ATTRIBUTES = [
     'CPUFeature_AESAVX',
     'CPUFeature_ALTMOVCR8',
     'CPUFeature_AVX',
+    'CPUFeature_AVX2',
     'CPUFeature_BMI1',
     'CPUFeature_CLFLUSH',
     'CPUFeature_CLMUL',

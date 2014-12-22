@@ -21,6 +21,7 @@ NACL_X86_CPU_FEATURE(CPUSupported  , NONE , NONE       , FixedOn , NONE, "CPU su
 NACL_X86_CPU_FEATURE(3DNOW         , EDX_A, EDX_3DN    , FixedOff, AMD , "3DNow"          )
 NACL_X86_CPU_FEATURE(AES           , ECX_I, ECX_AES    , FixedOff, NONE, "AES"            )
 NACL_X86_CPU_FEATURE(AVX           , ECX_I, ECX_AVX    , FixedOff, NONE, "AVX"            )
+NACL_X86_CPU_FEATURE(AVX2          , EBX_7, EBX_AVX2   , FixedOff, NONE, "AVX2"           )
 NACL_X86_CPU_FEATURE(BMI1          , EBX_7, EBX_BMI1   , FixedOff, NONE, "BMI1"           )
 NACL_X86_CPU_FEATURE(CLFLUSH       , EDX_I, EDX_CLFLUSH, FixedOn , NONE, "CLFLUSH"        )
 NACL_X86_CPU_FEATURE(CLMUL         , ECX_I, ECX_CLMUL  , FixedOff, NONE, "CLMUL"          )

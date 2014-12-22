@@ -49,6 +49,7 @@ extern const NaClCPUFeaturesX86 kValidatorCPUIDFeatures;
 #define CPUFeature_AESAVX(FEATURES) \
   (CPUFeature_AES(FEATURES) && CPUFeature_AVX(FEATURES))
 #define CPUFeature_AVX(FEATURES)      FEATURES[NaClCPUFeatureX86_AVX]
+#define CPUFeature_AVX2(FEATURES)     FEATURES[NaClCPUFeatureX86_AVX2]
 #define CPUFeature_BMI1(FEATURES)     FEATURES[NaClCPUFeatureX86_BMI1]
 #define CPUFeature_CLFLUSH(FEATURES)  FEATURES[NaClCPUFeatureX86_CLFLUSH]
 #define CPUFeature_CLMUL(FEATURES)    FEATURES[NaClCPUFeatureX86_CLMUL]

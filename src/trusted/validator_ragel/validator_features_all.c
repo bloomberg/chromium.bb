@@ -26,6 +26,7 @@ const NaClCPUFeaturesX86 kFullCPUIDFeatures = {
     1, /* NaClCPUFeatureX86_3DNOW */  /* AMD-specific */
     1, /* NaClCPUFeatureX86_AES */
     1, /* NaClCPUFeatureX86_AVX */
+    1, /* NaClCPUFeatureX86_AVX2 */
     1, /* NaClCPUFeatureX86_BMI1 */
     1, /* NaClCPUFeatureX86_CLFLUSH */
     1, /* NaClCPUFeatureX86_CLMUL */

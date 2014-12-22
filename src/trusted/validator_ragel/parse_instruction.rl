@@ -835,6 +835,7 @@
   action CPUFeature_AESAVX        { SET_CPU_FEATURE(CPUFeature_AESAVX);    }
   action CPUFeature_ALTMOVCR8     { SET_CPU_FEATURE(CPUFeature_ALTMOVCR8); }
   action CPUFeature_AVX           { SET_CPU_FEATURE(CPUFeature_AVX);       }
+  action CPUFeature_AVX2          { SET_CPU_FEATURE(CPUFeature_AVX2);      }
   action CPUFeature_BMI1          { SET_CPU_FEATURE(CPUFeature_BMI1);      }
   action CPUFeature_CLFLUSH       { SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
   action CPUFeature_CLMUL         { SET_CPU_FEATURE(CPUFeature_CLMUL);     }

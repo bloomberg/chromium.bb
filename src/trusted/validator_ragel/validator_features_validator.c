@@ -14,6 +14,7 @@ NaClCPUFeaturesX86 kValidatorCPUIDFeatures = {
     1, /* NaClCPUFeatureX86_3DNOW */  /* AMD-specific */
     0, /* NaClCPUFeatureX86_AES */
     1, /* NaClCPUFeatureX86_AVX */
+    1, /* NaClCPUFeatureX86_AVX2 */
     0, /* NaClCPUFeatureX86_BMI1 */
     1, /* NaClCPUFeatureX86_CLFLUSH */
     0, /* NaClCPUFeatureX86_CLMUL */
