@@ -110,6 +110,11 @@
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
+
 namespace chromeos {
 
 namespace {
@@ -395,17 +400,18 @@ const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
     const {
   if (!IsUserSupervised())
     return base::string16();
-  std::string user_manager_name = GetSupervisedUserManager();
-  LOG_IF(WARNING, user_manager_name.empty()) <<
-      "Returning incomplete supervised user message as manager not known yet.";
-  return l10n_util::GetStringFUTF16(
-      IDS_USER_IS_SUPERVISED_BY_NOTICE,
-      base::UTF8ToUTF16(user_manager_name));
+  if (IsUserChild())
+    return GetChildUserMessage();
+  return GetLegacySupervisedUserMessage();
 }
 
 bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
   return user && user->IsSupervised();
+}
+
+bool SystemTrayDelegateChromeOS::IsUserChild() const {
+  return user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 }
 
 void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
@@ -1316,6 +1322,41 @@ void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
     accessibility_subscription_.reset();
   else
     OnAccessibilityModeChanged(details.notify);
+}
+
+const base::string16
+SystemTrayDelegateChromeOS::GetLegacySupervisedUserMessage() const {
+  std::string user_manager_name = GetSupervisedUserManager();
+  return l10n_util::GetStringFUTF16(
+      IDS_USER_IS_SUPERVISED_BY_NOTICE,
+      base::UTF8ToUTF16(user_manager_name));
+}
+
+const base::string16
+SystemTrayDelegateChromeOS::GetChildUserMessage() const {
+#if defined(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(user_profile_);
+  base::string16 first_custodian =
+      base::UTF8ToUTF16(service->GetCustodianEmailAddress());
+  base::string16 second_custodian =
+      base::UTF8ToUTF16(service->GetSecondCustodianEmailAddress());
+  LOG_IF(WARNING, first_custodian.empty()) <<
+      "Returning incomplete child user message as manager not known yet.";
+  if (second_custodian.empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_CHILD_USER_IS_MANAGED_BY_ONE_PARENT_NOTICE, first_custodian);
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_CHILD_USER_IS_MANAGED_BY_TWO_PARENTS_NOTICE,
+        first_custodian,
+        second_custodian);
+  }
+#endif
+
+  LOG(WARNING) << "SystemTrayDelegateChromeOS::GetChildUserMessage call while "
+               << "ENABLE_SUPERVISED_USERS undefined.";
+  return base::string16();
 }
 
 ash::SystemTrayDelegate* CreateSystemTrayDelegate() {

@@ -137,8 +137,14 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns the notification for supervised users.
   virtual const base::string16 GetSupervisedUserMessage() const = 0;
 
-  // Returns true if the current user is supervised.
+  // Returns true if the current user is supervised: has legacy supervised
+  // account or kid account.
   virtual bool IsUserSupervised() const = 0;
+
+  // Returns true if the current user is child.
+  // TODO(merkulova): remove on FakeUserManager componentization.
+  // crbug.com/443119
+  virtual bool IsUserChild() const = 0;
 
   // Fills |info| structure with current update info.
   virtual void GetSystemUpdateInfo(UpdateInfo* info) const = 0;

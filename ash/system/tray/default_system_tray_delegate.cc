@@ -86,6 +86,10 @@ bool DefaultSystemTrayDelegate::IsUserSupervised() const {
   return GetUserLoginStatus() == ash::user::LOGGED_IN_SUPERVISED;
 }
 
+bool DefaultSystemTrayDelegate::IsUserChild() const {
+  return false;
+}
+
 void DefaultSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
   DCHECK(info);
   info->severity = UpdateInfo::UPDATE_NORMAL;

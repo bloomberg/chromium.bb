@@ -81,6 +81,10 @@ bool SystemTrayDelegateCommon::IsUserSupervised() const {
   return false;
 }
 
+bool SystemTrayDelegateCommon::IsUserChild() const {
+  return false;
+}
+
 void SystemTrayDelegateCommon::GetSystemUpdateInfo(
     ash::UpdateInfo* info) const {
   GetUpdateInfo(UpgradeDetector::GetInstance(), info);

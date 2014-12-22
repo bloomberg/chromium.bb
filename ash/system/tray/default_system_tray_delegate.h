@@ -29,6 +29,7 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   const base::string16 GetSupervisedUserManagerName() const override;
   const base::string16 GetSupervisedUserMessage() const override;
   bool IsUserSupervised() const override;
+  bool IsUserChild() const override;
   void GetSystemUpdateInfo(UpdateInfo* info) const override;
   base::HourClockType GetHourClockType() const override;
   void ShowSettings() override;

@@ -82,6 +82,7 @@ void TraySupervisedUser::UpdateAfterLoginStatusChange(
     return;
 
   if (is_user_supervised &&
+      !delegate->IsUserChild() &&
       status_ != ash::user::LOGGED_IN_LOCKED &&
       !delegate->GetSupervisedUserManager().empty())
     CreateOrUpdateSupervisedWarningNotification();
@@ -113,9 +114,11 @@ void TraySupervisedUser::OnCustodianInfoChanged() {
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   std::string manager_name = delegate->GetSupervisedUserManager();
   if (!manager_name.empty()) {
-    if (!message_center::MessageCenter::Get()->FindVisibleNotificationById(
-            kNotificationId))
+    if (!delegate->IsUserChild() &&
+        !message_center::MessageCenter::Get()->FindVisibleNotificationById(
+            kNotificationId)) {
       CreateOrUpdateSupervisedWarningNotification();
+    }
     UpdateMessage();
   }
 }
