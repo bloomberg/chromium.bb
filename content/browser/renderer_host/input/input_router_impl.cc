@@ -136,11 +136,14 @@ void InputRouterImpl::SendWheelEvent(const QueuedWheelEvent& wheel_event) {
     // dropping the old event, as for mouse moves) results in very slow
     // scrolling on the Mac (on which many, very small wheel events are sent).
     // Note that we can't coalesce wheel events for pinches because the GEQ
-    // expects one ACK for each (but it's fine to coalesce non-pinch wheels
-    // into a pinch one).  Note that the GestureEventQueue ensures we only
-    // ever have a single pinch event queued here.
+    // expects one ACK for each.  But such events always have canScroll==false
+    // and hasPreciseDeltas=true, which should never happen for a real wheel
+    // event and so coalescing shouldn't occur.  Note that the
+    // GestureEventQueue ensures we only ever have a single pinch event queued
+    // here.
     if (coalesced_mouse_wheel_events_.empty() ||
-        wheel_event.synthesized_from_pinch ||
+        wheel_event.synthesized_from_pinch !=
+            coalesced_mouse_wheel_events_.back().synthesized_from_pinch ||
         !coalesced_mouse_wheel_events_.back().event.CanCoalesceWith(
             wheel_event.event)) {
       coalesced_mouse_wheel_events_.push_back(wheel_event);
@@ -458,7 +461,7 @@ void InputRouterImpl::SendSyntheticWheelEventForPinch(
   wheelEvent.wheelTicksX = 0;
   wheelEvent.wheelTicksY =
       pinch_event.event.data.pinchUpdate.scale > 1 ? 1 : -1;
-
+  wheelEvent.canScroll = false;
   SendWheelEvent(QueuedWheelEvent(
       MouseWheelEventWithLatencyInfo(wheelEvent, pinch_event.latency), true));
 }

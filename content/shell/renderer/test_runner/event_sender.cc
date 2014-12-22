@@ -2207,14 +2207,21 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   bool paged = false;
   bool has_precise_scrolling_deltas = false;
   int modifiers = 0;
-  if (!args->PeekNext().IsEmpty()) {
-    args->GetNext(&paged);
-    if (!args->PeekNext().IsEmpty()) {
-      args->GetNext(&has_precise_scrolling_deltas);
-      if (!args->PeekNext().IsEmpty())
-        modifiers = GetKeyModifiersFromV8(args->PeekNext());
-    }
-  }
+  bool can_scroll = true;
+  if (args->PeekNext().IsEmpty())
+    return;
+  args->GetNext(&paged);
+  if (args->PeekNext().IsEmpty())
+    return;
+  args->GetNext(&has_precise_scrolling_deltas);
+  if (args->PeekNext().IsEmpty())
+    return;
+  v8::Handle<v8::Value> value;
+  args->GetNext(&value);
+  modifiers = GetKeyModifiersFromV8(value);
+  if (args->PeekNext().IsEmpty())
+    return;
+  args->GetNext(&can_scroll);
 
   InitMouseEvent(WebInputEvent::MouseWheel,
                  pressed_button_,
@@ -2229,7 +2236,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   event->deltaY = event->wheelTicksY;
   event->scrollByPage = paged;
   event->hasPreciseScrollingDeltas = has_precise_scrolling_deltas;
-
+  event->canScroll = can_scroll;
   if (continuous) {
     event->wheelTicksX /= kScrollbarPixelsPerTick;
     event->wheelTicksY /= kScrollbarPixelsPerTick;

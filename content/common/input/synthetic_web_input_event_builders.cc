@@ -68,6 +68,7 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float dx,
     result.wheelTicksY = dy > 0.0f ? 1.0f : -1.0f;
   result.modifiers = modifiers;
   result.hasPreciseScrollingDeltas = precise;
+  result.canScroll = true;
   return result;
 }
 

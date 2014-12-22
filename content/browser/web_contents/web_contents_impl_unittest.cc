@@ -2476,15 +2476,18 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
-  modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
+  modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey |
+      WebInputEvent::ControlKey;
   event = SyntheticWebMouseWheelEventBuilder::Build(0, 1, modifiers, false);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
-  // But whenever the ctrl modifier is applied, they can increase/decrease zoom.
-  // Except on MacOS where we never want to adjust zoom with mousewheel.
+  // But whenever the ctrl modifier is applied with canScroll=false, they can
+  // increase/decrease zoom. Except on MacOS where we never want to adjust zoom
+  // with mousewheel.
   modifiers = WebInputEvent::ControlKey;
   event = SyntheticWebMouseWheelEventBuilder::Build(0, 1, modifiers, false);
+  event.canScroll = false;
   bool handled = contents()->HandleWheelEvent(event);
 #if defined(OS_MACOSX)
   EXPECT_FALSE(handled);
@@ -2498,6 +2501,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   modifiers = WebInputEvent::ControlKey | WebInputEvent::ShiftKey |
       WebInputEvent::AltKey;
   event = SyntheticWebMouseWheelEventBuilder::Build(2, -5, modifiers, false);
+  event.canScroll = false;
   handled = contents()->HandleWheelEvent(event);
 #if defined(OS_MACOSX)
   EXPECT_FALSE(handled);

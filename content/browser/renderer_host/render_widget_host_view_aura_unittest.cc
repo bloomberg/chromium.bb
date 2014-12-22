@@ -308,6 +308,15 @@ class MockWindowObserver : public aura::WindowObserver {
   MOCK_METHOD2(OnDelegatedFrameDamage, void(aura::Window*, const gfx::Rect&));
 };
 
+const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
+  PickleIterator iter(message);
+  const char* data;
+  int data_length;
+  if (!iter.ReadData(&data, &data_length))
+    return NULL;
+  return reinterpret_cast<const WebInputEvent*>(data);
+}
+
 }  // namespace
 
 class RenderWidgetHostViewAuraTest : public testing::Test {
@@ -386,6 +395,15 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     // destroyed. The correct fix would be to have ObserverListThreadSafe look
     // up the proper message loop every time (see crbug.com/443824.)
     RendererFrameManager::GetInstance()->OnMemoryPressure(level);
+  }
+
+  void SendInputEventACK(WebInputEvent::Type type,
+      InputEventAckState ack_result) {
+    InputHostMsg_HandleInputEvent_ACK_Params ack;
+    ack.type = type;
+    ack.state = ack_result;
+    InputHostMsg_HandleInputEvent_ACK response(0, ack);
+    widget_host_->OnMessageReceived(response);
   }
 
  protected:
@@ -578,15 +596,6 @@ class RenderWidgetHostViewAuraOverscrollTest
                                       blink::WebGestureDevice sourceDevice) {
     SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildFling(
         velocityX, velocityY, sourceDevice));
-  }
-
-  void SendInputEventACK(WebInputEvent::Type type,
-                         InputEventAckState ack_result) {
-    InputHostMsg_HandleInputEvent_ACK_Params ack;
-    ack.type = type;
-    ack.state = ack_result;
-    InputHostMsg_HandleInputEvent_ACK response(0, ack);
-    widget_host_->OnMessageReceived(response);
   }
 
   bool ScrollStateIsContentScrolling() const {
@@ -3069,6 +3078,59 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEvent) {
     EXPECT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
               event->nativeKeyCode);
   }
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  sink_->ClearMessages();
+
+  // Simulates the mouse wheel event with ctrl modifier applied.
+  ui::MouseWheelEvent event(gfx::Vector2d(1, 1),
+                             gfx::Point(), gfx::Point(),
+                             ui::EF_CONTROL_DOWN, 0);
+  view_->OnMouseEvent(&event);
+
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*sink_->GetMessageAt(0));
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  // Check if the canScroll set to false when ctrl-scroll is generated from
+  // mouse wheel event.
+  EXPECT_FALSE(wheel_event->canScroll);
+  sink_->ClearMessages();
+
+  // Ack'ing the outstanding event should flush the pending event queue.
+  SendInputEventACK(blink::WebInputEvent::MouseWheel,
+      INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Simulates the mouse wheel event with no modifier applied.
+  event = ui::MouseWheelEvent(gfx::Vector2d(1, 1), gfx::Point(), gfx::Point(),
+      ui::EF_NONE, 0);
+
+  view_->OnMouseEvent(&event);
+
+  input_event = GetInputEventFromMessage(*sink_->GetMessageAt(0));
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  // Check if the canScroll set to true when no modifier is applied to the
+  // mouse wheel event.
+  EXPECT_TRUE(wheel_event->canScroll);
+  sink_->ClearMessages();
+
+  SendInputEventACK(blink::WebInputEvent::MouseWheel,
+      INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Simulates the scroll event with ctrl modifier applied.
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(),
+      ui::EF_CONTROL_DOWN, 0, 5, 0, 5, 2);
+  view_->OnScrollEvent(&scroll);
+
+  input_event = GetInputEventFromMessage(*sink_->GetMessageAt(0));
+  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  // Check if the canScroll set to true when ctrl-touchpad-scroll is generated
+  // from scroll event.
+  EXPECT_TRUE(wheel_event->canScroll);
 }
 
 }  // namespace content
