@@ -94,7 +94,6 @@ const uint8_t finalizedZapValue = 24;
 // The orphaned zap value must be zero in the lowest bits to allow for using
 // the mark bit when tracing.
 const uint8_t orphanedZapValue = 240;
-const int numberOfPagesToConsiderForCoalescing = 100;
 
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define FILL_ZERO_IF_PRODUCTION(address, size) do { } while (false)
@@ -403,9 +402,6 @@ public:
     bool orphaned() { return !m_threadState; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
-    size_t promptlyFreedSize() { return m_promptlyFreedSize; }
-    void resetPromptlyFreedSize() { m_promptlyFreedSize = 0; }
-    void addToPromptlyFreedSize(size_t size) { m_promptlyFreedSize += size; }
 
 private:
     PageMemory* m_storage;
@@ -415,8 +411,7 @@ private:
     // HeapPage header. We use some of the bits to determine
     // whether the page is part of a terminting thread or
     // if the page is traced after being terminated (orphaned).
-    unsigned m_terminating : 1;
-    unsigned m_promptlyFreedSize : 17; // == blinkPageSizeLog2
+    bool m_terminating;
 };
 
 // Representation of Blink heap pages.
@@ -878,7 +873,7 @@ private:
 
     void sweepNormalPages();
     void sweepLargePages();
-    bool coalesce(size_t);
+    bool coalesce();
 
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
@@ -901,9 +896,8 @@ private:
     // same type go into the correct page pool and thus avoid type confusion.
     int m_index;
 
-    // The promptly freed count contains the number of promptly freed objects
-    // since the last sweep or since it was manually reset to delay coalescing.
-    size_t m_promptlyFreedCount;
+    // The size of promptly freed objects in the heap.
+    size_t m_promptlyFreedSize;
 };
 
 class PLATFORM_EXPORT Heap {
@@ -1366,7 +1360,6 @@ size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
     allocationSize = (allocationSize + allocationMask) & ~allocationMask;
     return allocationSize;
 }
-
 
 template<typename Header>
 inline Address ThreadHeap<Header>::allocateAtAddress(Address headerAddress, size_t allocationSize, const GCInfo* gcInfo)
