@@ -159,6 +159,7 @@ class TileManagerPerfTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
+    pending_layer->SetHasRenderSurface(true);
     pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_root_layer_ = static_cast<FakePictureLayerImpl*>(

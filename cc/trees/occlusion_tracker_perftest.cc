@@ -46,6 +46,7 @@ class OcclusionTrackerPerfTest : public testing::Test {
     host_impl_->InitializeRenderer(FakeOutputSurface::Create3d());
 
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);
+    root_layer->SetHasRenderSurface(true);
     active_tree()->SetRootLayer(root_layer.Pass());
   }
 

@@ -60,6 +60,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7, pile);
     pending_layer->SetDrawsContent(true);
+    pending_layer->SetHasRenderSurface(true);
     pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
