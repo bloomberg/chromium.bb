@@ -65,14 +65,12 @@ class SQLRecoveryTest : public testing::Test {
  public:
   SQLRecoveryTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(db_path()));
   }
 
-  virtual void TearDown() {
-    db_.Close();
-  }
+  void TearDown() override { db_.Close(); }
 
   sql::Connection& db() { return db_; }
 

@@ -90,15 +90,13 @@ class ScopedUmaskSetter {
 
 class SQLConnectionTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     db_path_ = temp_dir_.path().AppendASCII("SQLConnectionTest.db");
     ASSERT_TRUE(db_.Open(db_path_));
   }
 
-  virtual void TearDown() {
-    db_.Close();
-  }
+  void TearDown() override { db_.Close(); }
 
   sql::Connection& db() { return db_; }
   const base::FilePath& db_path() { return db_path_; }

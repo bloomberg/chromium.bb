@@ -12,7 +12,7 @@
 
 class SQLTransactionTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(
         temp_dir_.path().AppendASCII("SQLTransactionTest.db")));
@@ -20,9 +20,7 @@ class SQLTransactionTest : public testing::Test {
     ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   }
 
-  virtual void TearDown() {
-    db_.Close();
-  }
+  void TearDown() override { db_.Close(); }
 
   sql::Connection& db() { return db_; }
 

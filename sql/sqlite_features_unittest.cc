@@ -27,7 +27,7 @@ class SQLiteFeaturesTest : public testing::Test {
  public:
   SQLiteFeaturesTest() : error_(SQLITE_OK) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(temp_dir_.path().AppendASCII("SQLStatementTest.db")));
 
@@ -37,7 +37,7 @@ class SQLiteFeaturesTest : public testing::Test {
                                       &error_, &sql_text_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If any error happened the original sql statement can be found in
     // |sql_text_|.
     EXPECT_EQ(SQLITE_OK, error_);
