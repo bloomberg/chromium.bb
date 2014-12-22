@@ -457,7 +457,7 @@
                        void (T::*func)(P*, TA)) {                             \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, p.a);                                           \
+      (obj->*func)(parameter, get<0>(p));                                     \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
@@ -469,7 +469,7 @@
                        void (T::*func)(P*, TA, TB)) {                         \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, p.a, p.b);                                      \
+      (obj->*func)(parameter, get<0>(p), get<1>(p));                          \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
@@ -481,7 +481,7 @@
                        void (T::*func)(P*, TA, TB, TC)) {                     \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, p.a, p.b, p.c);                                 \
+      (obj->*func)(parameter, get<0>(p), get<1>(p), get<2>(p));               \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
@@ -494,7 +494,7 @@
                        void (T::*func)(P*, TA, TB, TC, TD)) {                 \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, p.a, p.b, p.c, p.d);                            \
+      (obj->*func)(parameter, get<0>(p), get<1>(p), get<2>(p), get<3>(p));    \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
@@ -507,7 +507,8 @@
                        void (T::*func)(P*, TA, TB, TC, TD, TE)) {             \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(parameter, p.a, p.b, p.c, p.d, p.e);                       \
+      (obj->*func)(parameter, get<0>(p), get<1>(p), get<2>(p), get<3>(p),     \
+                   get<4>(p));                                                \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
@@ -817,18 +818,18 @@
 #define IPC_TYPE_OUT_3(t1, t2, t3)          t1* arg6, t2* arg7, t3* arg8
 #define IPC_TYPE_OUT_4(t1, t2, t3, t4)      t1* arg6, t2* arg7, t3* arg8, t4* arg9
 
-#define IPC_TUPLE_IN_0()                    Tuple0
-#define IPC_TUPLE_IN_1(t1)                  Tuple1<t1>
-#define IPC_TUPLE_IN_2(t1, t2)              Tuple2<t1, t2>
-#define IPC_TUPLE_IN_3(t1, t2, t3)          Tuple3<t1, t2, t3>
-#define IPC_TUPLE_IN_4(t1, t2, t3, t4)      Tuple4<t1, t2, t3, t4>
-#define IPC_TUPLE_IN_5(t1, t2, t3, t4, t5)  Tuple5<t1, t2, t3, t4, t5>
+#define IPC_TUPLE_IN_0()                    Tuple<>
+#define IPC_TUPLE_IN_1(t1)                  Tuple<t1>
+#define IPC_TUPLE_IN_2(t1, t2)              Tuple<t1, t2>
+#define IPC_TUPLE_IN_3(t1, t2, t3)          Tuple<t1, t2, t3>
+#define IPC_TUPLE_IN_4(t1, t2, t3, t4)      Tuple<t1, t2, t3, t4>
+#define IPC_TUPLE_IN_5(t1, t2, t3, t4, t5)  Tuple<t1, t2, t3, t4, t5>
 
-#define IPC_TUPLE_OUT_0()                   Tuple0
-#define IPC_TUPLE_OUT_1(t1)                 Tuple1<t1&>
-#define IPC_TUPLE_OUT_2(t1, t2)             Tuple2<t1&, t2&>
-#define IPC_TUPLE_OUT_3(t1, t2, t3)         Tuple3<t1&, t2&, t3&>
-#define IPC_TUPLE_OUT_4(t1, t2, t3, t4)     Tuple4<t1&, t2&, t3&, t4&>
+#define IPC_TUPLE_OUT_0()                   Tuple<>
+#define IPC_TUPLE_OUT_1(t1)                 Tuple<t1&>
+#define IPC_TUPLE_OUT_2(t1, t2)             Tuple<t1&, t2&>
+#define IPC_TUPLE_OUT_3(t1, t2, t3)         Tuple<t1&, t2&, t3&>
+#define IPC_TUPLE_OUT_4(t1, t2, t3, t4)     Tuple<t1&, t2&, t3&, t4&>
 
 #define IPC_NAME_IN_0()                     MakeTuple()
 #define IPC_NAME_IN_1(t1)                   MakeRefTuple(arg1)
