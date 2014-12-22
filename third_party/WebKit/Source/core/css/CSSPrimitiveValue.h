@@ -261,7 +261,7 @@ public:
 
     UnitType primitiveType() const;
 
-    double computeDegrees();
+    double computeDegrees() const;
     double computeSeconds();
 
     /*

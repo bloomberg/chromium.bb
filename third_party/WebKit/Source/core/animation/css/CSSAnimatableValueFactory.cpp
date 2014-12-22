@@ -35,6 +35,7 @@
 #include "core/animation/animatable/AnimatableClipPathOperation.h"
 #include "core/animation/animatable/AnimatableColor.h"
 #include "core/animation/animatable/AnimatableDouble.h"
+#include "core/animation/animatable/AnimatableDoubleAndBool.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableImage.h"
 #include "core/animation/animatable/AnimatableLength.h"
@@ -136,6 +137,11 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBoxAndBool
     return AnimatableLengthBoxAndBool::create(
         createFromLengthBox(lengthBox, style),
         flag);
+}
+
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromDoubleAndBool(double number, const bool flag, const RenderStyle& style)
+{
+    return AnimatableDoubleAndBool::create(number, flag);
 }
 
 inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthPoint(const LengthPoint& lengthPoint, const RenderStyle& style)
@@ -501,6 +507,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromTransformOrigin(style.transformOrigin(), style);
     case CSSPropertyMotionPosition:
         return createFromLength(style.motionPosition(), style);
+    case CSSPropertyMotionRotation:
+        return createFromDoubleAndBool(style.motionRotation(), style.motionRotationType() == MotionRotationAuto, style);
     case CSSPropertyWidows:
         return createFromDouble(style.widows());
     case CSSPropertyWidth:

@@ -8,6 +8,7 @@
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/DefaultStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
+#include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthPoint3DStyleInterpolation.h"
@@ -116,6 +117,13 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyWordSpacing:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+        break;
+    case CSSPropertyMotionRotation: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = DoubleStyleInterpolation::maybeCreateFromMotionRotation(*fromCSSValue, *toCSSValue, property);
+        if (interpolation)
+            return interpolation.release();
+        break;
+    }
     case CSSPropertyVisibility:
         if (VisibilityStyleInterpolation::canCreateFrom(*fromCSSValue) && VisibilityStyleInterpolation::canCreateFrom(*toCSSValue) && (VisibilityStyleInterpolation::isVisible(*fromCSSValue) || VisibilityStyleInterpolation::isVisible(*toCSSValue))) {
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);

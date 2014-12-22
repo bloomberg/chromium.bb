@@ -2744,24 +2744,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
 
         case CSSPropertyMotionRotation: {
             ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-
-            CSSValueID rotationType;
-            switch (style->motionRotationType()) {
-            case MotionRotationAuto:
-                rotationType = CSSValueAuto;
-                break;
-            case MotionRotationReverse:
-                rotationType = CSSValueReverse;
-                break;
-            case MotionRotationFixed:
-                return cssValuePool().createValue(style->motionRotation(), CSSPrimitiveValue::CSS_DEG);
-            default:
-                ASSERT_NOT_REACHED();
-                return nullptr;
-            }
-
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-            list->append(cssValuePool().createIdentifierValue(rotationType));
+            if (style->motionRotationType() == MotionRotationAuto)
+                list->append(cssValuePool().createIdentifierValue(CSSValueAuto));
             list->append(cssValuePool().createValue(style->motionRotation(), CSSPrimitiveValue::CSS_DEG));
             return list.release();
         }

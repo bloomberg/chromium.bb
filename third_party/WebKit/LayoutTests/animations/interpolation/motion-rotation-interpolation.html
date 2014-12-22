@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.target {
+  width: 80px;
+  height: 80px;
+  display: inline-block;
+  background-color: black;
+  margin-right: 5px;
+}
+.replica {
+  background-color: green;
+  margin-right: 15px;
+}
+</style>
+<body>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'motion-rotation',
+  from: '10deg',
+  to: '50deg'
+}, [
+  {at: -0.3, is: '-2deg'},
+  {at: 0, is: '10deg'},
+  {at: 0.3, is: '22deg'},
+  {at: 0.6, is: '34deg'},
+  {at: 1, is: '50deg'},
+  {at: 1.5, is: '70deg'},
+]);
+assertInterpolation({
+  property: 'motion-rotation',
+  from: 'auto 10deg',
+  to: 'auto 50deg'
+}, [
+  {at: -0.3, is: 'auto -2deg'},
+  {at: 0, is: 'auto 10deg'},
+  {at: 0.3, is: 'auto 22deg'},
+  {at: 0.6, is: 'auto 34deg'},
+  {at: 1, is: 'auto 50deg'},
+  {at: 1.5, is: 'auto 70deg'},
+]);
+assertInterpolation({
+  property: 'motion-rotation',
+  from: 'reverse -170deg',
+  to: 'reverse -130deg'
+}, [
+  {at: -0.3, is: 'auto -2deg'},
+  {at: 0, is: 'auto 10deg'},
+  {at: 0.3, is: 'auto 22deg'},
+  {at: 0.6, is: 'auto 34deg'},
+  {at: 1, is: 'auto 50deg'},
+  {at: 1.5, is: 'auto 70deg'},
+]);
+assertInterpolation({
+  property: 'motion-rotation',
+  from: 'auto 10deg',
+  to: 'reverse -130deg'
+}, [
+  {at: -0.3, is: 'auto -2deg'},
+  {at: 0, is: 'auto 10deg'},
+  {at: 0.3, is: 'auto 22deg'},
+  {at: 0.6, is: 'auto 34deg'},
+  {at: 1, is: 'auto 50deg'},
+  {at: 1.5, is: 'auto 70deg'},
+]);
+assertInterpolation({
+  property: 'motion-rotation',
+  from: 'reverse -170deg',
+  to: 'auto 50deg'
+}, [
+  {at: -0.3, is: 'auto -2deg'},
+  {at: 0, is: 'auto 10deg'},
+  {at: 0.3, is: 'auto 22deg'},
+  {at: 0.6, is: 'auto 34deg'},
+  {at: 1, is: 'auto 50deg'},
+  {at: 1.5, is: 'auto 70deg'},
+]);
+assertInterpolation({
+  property: 'motion-rotation',
+  from: 'auto 200deg',
+  to: '300deg'
+}, [
+  {at: -0.3, is: 'auto 200deg'},
+  {at: 0, is: 'auto 200deg'},
+  {at: 0.3, is: 'auto 200deg'},
+  {at: 0.6, is: '300deg'},
+  {at: 1, is: '300deg'},
+  {at: 1.5, is: '300deg'},
+]);
+assertInterpolation({
+  property: 'motion-rotation',
+  from: '300deg',
+  to: 'reverse 20deg'
+}, [
+  {at: -0.3, is: '300deg'},
+  {at: 0, is: '300deg'},
+  {at: 0.3, is: '300deg'},
+  {at: 0.6, is: 'auto 200deg'},
+  {at: 1, is: 'auto 200deg'},
+  {at: 1.5, is: 'auto 200deg'},
+]);
+</script>
+</body>

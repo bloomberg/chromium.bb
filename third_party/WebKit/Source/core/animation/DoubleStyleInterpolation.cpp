@@ -35,11 +35,85 @@ bool DoubleStyleInterpolation::canCreateFrom(const CSSValue& value)
 
 void DoubleStyleInterpolation::apply(StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_id, state, interpolableValueToDouble(m_cachedValue.get(), m_clamp).get());
+    if (m_id != CSSPropertyMotionRotation) {
+        StyleBuilder::applyProperty(m_id, state, interpolableValueToDouble(m_cachedValue.get(), m_clamp).get());
+        return;
+    }
+
+    StyleBuilder::applyProperty(m_id, state, interpolableValueToMotionRotation(m_cachedValue.get(), m_flag).get());
 }
 
 void DoubleStyleInterpolation::trace(Visitor* visitor)
 {
     StyleInterpolation::trace(visitor);
 }
+
+namespace {
+
+bool extractMotionRotation(const CSSValue& value, float* rotation, MotionRotationType* rotationType)
+{
+    *rotation = 0;
+    *rotationType = MotionRotationFixed;
+
+    if (!value.isValueList())
+        return false;
+    const CSSValueList& list = toCSSValueList(value);
+
+    int len = list.length();
+    for (int i = 0; i < len; i++) {
+        const CSSValue* item = list.item(i);
+        if (!item->isPrimitiveValue())
+            return false;
+        const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
+        if (primitiveValue->getValueID() == CSSValueAuto) {
+            *rotationType = MotionRotationAuto;
+        } else if (primitiveValue->getValueID() == CSSValueReverse) {
+            *rotationType = MotionRotationAuto;
+            *rotation += 180;
+        } else if (primitiveValue->isAngle() || primitiveValue->primitiveType() == CSSPrimitiveValue::CSS_DEG) {
+            *rotation += primitiveValue->computeDegrees();
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+} // namespace
+
+PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToMotionRotation(InterpolableValue* value, bool flag)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    if (flag)
+        list->append(CSSPrimitiveValue::createIdentifier(CSSValueAuto));
+    ASSERT(value->isNumber());
+    list->append(CSSPrimitiveValue::create(toInterpolableNumber(value)->value(), CSSPrimitiveValue::CSS_DEG));
+    return list.release();
+}
+
+PassOwnPtrWillBeRawPtr<InterpolableValue> DoubleStyleInterpolation::motionRotationToInterpolableValue(const CSSValue& value)
+{
+    float rotation;
+    MotionRotationType rotationType;
+    extractMotionRotation(value, &rotation, &rotationType);
+
+    return InterpolableNumber::create(rotation);
+}
+
+PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> DoubleStyleInterpolation::maybeCreateFromMotionRotation(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
+{
+    float startRotation, endRotation;
+    MotionRotationType startRotationType, endRotationType;
+
+    if (!extractMotionRotation(start, &startRotation, &startRotationType)
+        || !extractMotionRotation(end, &endRotation, &endRotationType)
+        || startRotationType != endRotationType)
+        return nullptr;
+
+    return adoptRefWillBeNoop(new DoubleStyleInterpolation(
+        motionRotationToInterpolableValue(start),
+        motionRotationToInterpolableValue(end),
+        id, NoClamp, startRotationType == MotionRotationAuto));
+}
+
 }

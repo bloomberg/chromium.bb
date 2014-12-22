@@ -1,0 +1,88 @@
+CSS Animations:
+PASS: motion-rotation from [10deg] to [50deg] was [-2deg] at -0.3
+PASS: motion-rotation from [10deg] to [50deg] was [10deg] at 0
+PASS: motion-rotation from [10deg] to [50deg] was [22deg] at 0.3
+PASS: motion-rotation from [10deg] to [50deg] was [34deg] at 0.6
+PASS: motion-rotation from [10deg] to [50deg] was [50deg] at 1
+PASS: motion-rotation from [10deg] to [50deg] was [70deg] at 1.5
+PASS: motion-rotation from [auto 10deg] to [auto 50deg] was [auto -2deg] at -0.3
+PASS: motion-rotation from [auto 10deg] to [auto 50deg] was [auto 10deg] at 0
+PASS: motion-rotation from [auto 10deg] to [auto 50deg] was [auto 22deg] at 0.3
+PASS: motion-rotation from [auto 10deg] to [auto 50deg] was [auto 34deg] at 0.6
+PASS: motion-rotation from [auto 10deg] to [auto 50deg] was [auto 50deg] at 1
+PASS: motion-rotation from [auto 10deg] to [auto 50deg] was [auto 70deg] at 1.5
+PASS: motion-rotation from [reverse -170deg] to [reverse -130deg] was [auto -2deg] at -0.3
+PASS: motion-rotation from [reverse -170deg] to [reverse -130deg] was [auto 10deg] at 0
+PASS: motion-rotation from [reverse -170deg] to [reverse -130deg] was [auto 22deg] at 0.3
+PASS: motion-rotation from [reverse -170deg] to [reverse -130deg] was [auto 34deg] at 0.6
+PASS: motion-rotation from [reverse -170deg] to [reverse -130deg] was [auto 50deg] at 1
+PASS: motion-rotation from [reverse -170deg] to [reverse -130deg] was [auto 70deg] at 1.5
+PASS: motion-rotation from [auto 10deg] to [reverse -130deg] was [auto -2deg] at -0.3
+PASS: motion-rotation from [auto 10deg] to [reverse -130deg] was [auto 10deg] at 0
+PASS: motion-rotation from [auto 10deg] to [reverse -130deg] was [auto 22deg] at 0.3
+PASS: motion-rotation from [auto 10deg] to [reverse -130deg] was [auto 34deg] at 0.6
+PASS: motion-rotation from [auto 10deg] to [reverse -130deg] was [auto 50deg] at 1
+PASS: motion-rotation from [auto 10deg] to [reverse -130deg] was [auto 70deg] at 1.5
+PASS: motion-rotation from [reverse -170deg] to [auto 50deg] was [auto -2deg] at -0.3
+PASS: motion-rotation from [reverse -170deg] to [auto 50deg] was [auto 10deg] at 0
+PASS: motion-rotation from [reverse -170deg] to [auto 50deg] was [auto 22deg] at 0.3
+PASS: motion-rotation from [reverse -170deg] to [auto 50deg] was [auto 34deg] at 0.6
+PASS: motion-rotation from [reverse -170deg] to [auto 50deg] was [auto 50deg] at 1
+PASS: motion-rotation from [reverse -170deg] to [auto 50deg] was [auto 70deg] at 1.5
+PASS: motion-rotation from [auto 200deg] to [300deg] was [auto 200deg] at -0.3
+PASS: motion-rotation from [auto 200deg] to [300deg] was [auto 200deg] at 0
+PASS: motion-rotation from [auto 200deg] to [300deg] was [auto 200deg] at 0.3
+PASS: motion-rotation from [auto 200deg] to [300deg] was [300deg] at 0.6
+PASS: motion-rotation from [auto 200deg] to [300deg] was [300deg] at 1
+PASS: motion-rotation from [auto 200deg] to [300deg] was [300deg] at 1.5
+PASS: motion-rotation from [300deg] to [reverse 20deg] was [300deg] at -0.3
+PASS: motion-rotation from [300deg] to [reverse 20deg] was [300deg] at 0
+PASS: motion-rotation from [300deg] to [reverse 20deg] was [300deg] at 0.3
+PASS: motion-rotation from [300deg] to [reverse 20deg] was [auto 200deg] at 0.6
+PASS: motion-rotation from [300deg] to [reverse 20deg] was [auto 200deg] at 1
+PASS: motion-rotation from [300deg] to [reverse 20deg] was [auto 200deg] at 1.5
+
+Web Animations API:
+PASS: motionRotation from [10deg] to [50deg] was [-2deg] at -0.3
+PASS: motionRotation from [10deg] to [50deg] was [10deg] at 0
+PASS: motionRotation from [10deg] to [50deg] was [22deg] at 0.3
+PASS: motionRotation from [10deg] to [50deg] was [34deg] at 0.6
+PASS: motionRotation from [10deg] to [50deg] was [50deg] at 1
+PASS: motionRotation from [10deg] to [50deg] was [70deg] at 1.5
+PASS: motionRotation from [auto 10deg] to [auto 50deg] was [auto -2deg] at -0.3
+PASS: motionRotation from [auto 10deg] to [auto 50deg] was [auto 10deg] at 0
+PASS: motionRotation from [auto 10deg] to [auto 50deg] was [auto 22deg] at 0.3
+PASS: motionRotation from [auto 10deg] to [auto 50deg] was [auto 34deg] at 0.6
+PASS: motionRotation from [auto 10deg] to [auto 50deg] was [auto 50deg] at 1
+PASS: motionRotation from [auto 10deg] to [auto 50deg] was [auto 70deg] at 1.5
+PASS: motionRotation from [reverse -170deg] to [reverse -130deg] was [auto -2deg] at -0.3
+PASS: motionRotation from [reverse -170deg] to [reverse -130deg] was [auto 10deg] at 0
+PASS: motionRotation from [reverse -170deg] to [reverse -130deg] was [auto 22deg] at 0.3
+PASS: motionRotation from [reverse -170deg] to [reverse -130deg] was [auto 34deg] at 0.6
+PASS: motionRotation from [reverse -170deg] to [reverse -130deg] was [auto 50deg] at 1
+PASS: motionRotation from [reverse -170deg] to [reverse -130deg] was [auto 70deg] at 1.5
+PASS: motionRotation from [auto 10deg] to [reverse -130deg] was [auto -2deg] at -0.3
+PASS: motionRotation from [auto 10deg] to [reverse -130deg] was [auto 10deg] at 0
+PASS: motionRotation from [auto 10deg] to [reverse -130deg] was [auto 22deg] at 0.3
+PASS: motionRotation from [auto 10deg] to [reverse -130deg] was [auto 34deg] at 0.6
+PASS: motionRotation from [auto 10deg] to [reverse -130deg] was [auto 50deg] at 1
+PASS: motionRotation from [auto 10deg] to [reverse -130deg] was [auto 70deg] at 1.5
+PASS: motionRotation from [reverse -170deg] to [auto 50deg] was [auto -2deg] at -0.3
+PASS: motionRotation from [reverse -170deg] to [auto 50deg] was [auto 10deg] at 0
+PASS: motionRotation from [reverse -170deg] to [auto 50deg] was [auto 22deg] at 0.3
+PASS: motionRotation from [reverse -170deg] to [auto 50deg] was [auto 34deg] at 0.6
+PASS: motionRotation from [reverse -170deg] to [auto 50deg] was [auto 50deg] at 1
+PASS: motionRotation from [reverse -170deg] to [auto 50deg] was [auto 70deg] at 1.5
+PASS: motionRotation from [auto 200deg] to [300deg] was [auto 200deg] at -0.3
+PASS: motionRotation from [auto 200deg] to [300deg] was [auto 200deg] at 0
+PASS: motionRotation from [auto 200deg] to [300deg] was [auto 200deg] at 0.3
+PASS: motionRotation from [auto 200deg] to [300deg] was [300deg] at 0.6
+PASS: motionRotation from [auto 200deg] to [300deg] was [300deg] at 1
+PASS: motionRotation from [auto 200deg] to [300deg] was [300deg] at 1.5
+PASS: motionRotation from [300deg] to [reverse 20deg] was [300deg] at -0.3
+PASS: motionRotation from [300deg] to [reverse 20deg] was [300deg] at 0
+PASS: motionRotation from [300deg] to [reverse 20deg] was [300deg] at 0.3
+PASS: motionRotation from [300deg] to [reverse 20deg] was [auto 200deg] at 0.6
+PASS: motionRotation from [300deg] to [reverse 20deg] was [auto 200deg] at 1
+PASS: motionRotation from [300deg] to [reverse 20deg] was [auto 200deg] at 1.5
+

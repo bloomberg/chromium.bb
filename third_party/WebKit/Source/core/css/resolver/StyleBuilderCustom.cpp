@@ -599,12 +599,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyMotionRotation(StyleResolverSta
         CSSValue* item = list->item(i);
         ASSERT(item->isPrimitiveValue());
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
-        if (primitiveValue->getValueID() == CSSValueAuto)
+        if (primitiveValue->getValueID() == CSSValueAuto) {
             rotationType = MotionRotationAuto;
-        else if (primitiveValue->getValueID() == CSSValueReverse)
-            rotationType = MotionRotationReverse;
-        else
-            rotation = primitiveValue->computeDegrees();
+        } else if (primitiveValue->getValueID() == CSSValueReverse) {
+            rotationType = MotionRotationAuto;
+            rotation += 180;
+        } else {
+            rotation += primitiveValue->computeDegrees();
+        }
     }
 
     state.style()->setMotionRotation(rotation);

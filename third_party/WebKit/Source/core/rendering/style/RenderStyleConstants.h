@@ -431,7 +431,7 @@ enum ETransformStyle3D {
     TransformStyle3DFlat, TransformStyle3DPreserve3D
 };
 
-enum MotionRotationType { MotionRotationAuto, MotionRotationReverse, MotionRotationFixed };
+enum MotionRotationType { MotionRotationAuto, MotionRotationFixed };
 
 enum EBackfaceVisibility {
     BackfaceVisibilityVisible, BackfaceVisibilityHidden

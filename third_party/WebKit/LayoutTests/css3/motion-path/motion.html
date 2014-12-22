@@ -48,8 +48,8 @@ test(function() {
 test(function() {
     assert_equals(getComputedStyle(div4, null).motionPath, 'none');
     assert_equals(getComputedStyle(div4, null).motionPosition, '10px');
-    assert_equals(getComputedStyle(div4, null).motionRotation, 'reverse 90deg');
-    assert_equals(getComputedStyle(div4, null).motion, 'none 10px reverse 90deg');
+    assert_equals(getComputedStyle(div4, null).motionRotation, 'auto 270deg');
+    assert_equals(getComputedStyle(div4, null).motion, 'none 10px auto 270deg');
 }, 'motion property data can be supplied in any order');
 
 test(function() {

@@ -211,7 +211,7 @@ min-width animatable, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode runtime_flag=CSSCompositing, type_name=blink::WebBlendMode, name_for_methods=BlendMode
 motion-path runtime_flag=CSSMotionPath, custom_all
 motion-position runtime_flag=CSSMotionPath, animatable, converter=convertLength
-motion-rotation runtime_flag=CSSMotionPath, custom_all
+motion-rotation runtime_flag=CSSMotionPath, animatable, custom_all
 object-fit type_name=ObjectFit
 object-position animatable, converter=convertLengthPoint
 opacity animatable, type_name=float

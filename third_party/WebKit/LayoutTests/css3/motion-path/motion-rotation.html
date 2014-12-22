@@ -56,8 +56,8 @@ test(function() {
 }, 'motion-rotation auto expands to auto 0deg');
 
 test(function() {
-    assert_equals(getComputedStyle(div3, null).motionRotation, 'reverse 0deg');
-}, 'motion-rotation reverse expands to auto 0deg');
+    assert_equals(getComputedStyle(div3, null).motionRotation, 'auto 180deg');
+}, 'motion-rotation reverse expands to auto 180deg');
 
 test(function() {
     assert_equals(getComputedStyle(div4, null).motionRotation, '180deg');
@@ -72,15 +72,15 @@ test(function() {
 }, 'motion-rotation can be supplied with angle before auto');
 
 test(function() {
-    assert_equals(getComputedStyle(div7, null).motionRotation, 'reverse 720deg');
+    assert_equals(getComputedStyle(div7, null).motionRotation, 'auto 900deg');
 }, 'motion-rotation can be supplied with angle before reverse');
 
 test(function() {
-    assert_equals(getComputedStyle(div8, null).motionRotation, 'reverse 30deg');
+    assert_equals(getComputedStyle(div8, null).motionRotation, 'auto 210deg');
 }, 'motion-rotation is unaffected by child elements');
 
 test(function() {
-    assert_equals(getComputedStyle(div9, null).motionRotation, 'reverse 30deg');
+    assert_equals(getComputedStyle(div9, null).motionRotation, 'auto 210deg');
 }, 'motion-rotation can be explicitly inherited');
 
 test(function() {

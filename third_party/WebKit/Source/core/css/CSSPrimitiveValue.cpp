@@ -539,7 +539,7 @@ double CSSPrimitiveValue::computeSeconds()
     return 0;
 }
 
-double CSSPrimitiveValue::computeDegrees()
+double CSSPrimitiveValue::computeDegrees() const
 {
     ASSERT(isAngle() || (isCalculated() && cssCalcValue()->category() == CalcAngle));
     UnitType currentType = isCalculated() ? cssCalcValue()->expressionNode()->primitiveType() : static_cast<UnitType>(m_primitiveUnitType);
