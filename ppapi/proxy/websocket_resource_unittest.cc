@@ -77,9 +77,9 @@ TEST_F(WebSocketResourceTest, Connect) {
       PpapiHostMsg_WebSocket_Connect::ID, &params, &msg));
   PpapiHostMsg_WebSocket_Connect::Schema::Param p;
   PpapiHostMsg_WebSocket_Connect::Read(&msg, &p);
-  EXPECT_EQ(url, p.a);
-  EXPECT_EQ(protocol0, p.b[0]);
-  EXPECT_EQ(protocol1, p.b[1]);
+  EXPECT_EQ(url, get<0>(p));
+  EXPECT_EQ(protocol0, get<1>(p)[0]);
+  EXPECT_EQ(protocol1, get<1>(p)[1]);
 
   // Synthesize a response.
   ResourceMessageReplyParams reply_params(params.pp_resource(),

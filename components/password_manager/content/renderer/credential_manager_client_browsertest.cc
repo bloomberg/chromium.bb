@@ -52,30 +52,30 @@ class CredentialManagerClientTest : public content::RenderViewTest {
 
     switch (message_id) {
       case CredentialManagerHostMsg_NotifyFailedSignIn::ID: {
-        Tuple2<int, CredentialInfo> param;
+        Tuple<int, CredentialInfo> param;
         CredentialManagerHostMsg_NotifyFailedSignIn::Read(message, &param);
-        request_id = param.a;
+        request_id = get<0>(param);
         break;
       }
 
       case CredentialManagerHostMsg_NotifySignedIn::ID: {
-        Tuple2<int, CredentialInfo> param;
+        Tuple<int, CredentialInfo> param;
         CredentialManagerHostMsg_NotifySignedIn::Read(message, &param);
-        request_id = param.a;
+        request_id = get<0>(param);
         break;
       }
 
       case CredentialManagerHostMsg_NotifySignedOut::ID: {
-        Tuple1<int> param;
+        Tuple<int> param;
         CredentialManagerHostMsg_NotifySignedOut::Read(message, &param);
-        request_id = param.a;
+        request_id = get<0>(param);
         break;
       }
 
       case CredentialManagerHostMsg_RequestCredential::ID: {
-        Tuple3<int, bool, std::vector<GURL> > param;
+        Tuple<int, bool, std::vector<GURL> > param;
         CredentialManagerHostMsg_RequestCredential::Read(message, &param);
-        request_id = param.a;
+        request_id = get<0>(param);
         break;
       }
 

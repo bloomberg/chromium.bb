@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
   SpellCheckMsg_RespondTextCheck::Param params;
   bool ok = SpellCheckMsg_RespondTextCheck::Read(
       target->sent_messages_[0], &params);
-  std::vector<SpellCheckResult> sent_results = params.b;
+  std::vector<SpellCheckResult> sent_results = get<1>(params);
  
   EXPECT_TRUE(ok);
   EXPECT_EQ(1U, sent_results.size());

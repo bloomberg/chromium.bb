@@ -27,8 +27,8 @@ void SetResult(const base::string16& result, ui::win::OpenFileName* ofn) {
 }
 
 void CheckFilters(
-    const std::vector<Tuple2<base::string16, base::string16> >& expected,
-    const std::vector<Tuple2<base::string16, base::string16> >& actual) {
+    const std::vector<Tuple<base::string16, base::string16>>& expected,
+    const std::vector<Tuple<base::string16, base::string16>>& actual) {
   if (expected.size() != actual.size()) {
     ADD_FAILURE() << "filter count mismatch. Got " << actual.size()
                   << " expected " << expected.size() << ".";
@@ -36,8 +36,10 @@ void CheckFilters(
   }
 
   for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(expected[i].a, actual[i].a) << "Mismatch at index " << i;
-    EXPECT_EQ(expected[i].b, actual[i].b) << "Mismatch at index " << i;
+    EXPECT_EQ(get<0>(expected[i]), get<0>(actual[i]))
+        << "Mismatch at index " << i;
+    EXPECT_EQ(get<1>(expected[i]), get<1>(actual[i]))
+        << "Mismatch at index " << i;
   }
 }
 
@@ -201,7 +203,7 @@ TEST(OpenFileNameTest, SetAndGetFilters) {
   const base::string16 kNull(L"\0", 1);
 
   ui::win::OpenFileName ofn(kHwnd, kFlags);
-  std::vector<Tuple2<base::string16, base::string16> > filters;
+  std::vector<Tuple<base::string16, base::string16>> filters;
   ofn.SetFilters(filters);
   EXPECT_FALSE(ofn.GetOPENFILENAME()->lpstrFilter);
   CheckFilters(filters,

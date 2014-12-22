@@ -142,7 +142,7 @@ bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
       reply_msg, &reply_data));
 
   sink().ClearMessages();
-  return reply_data.a;
+  return get<0>(reply_data);
 }
 
 // PluginProxyTestHarness ------------------------------------------------------

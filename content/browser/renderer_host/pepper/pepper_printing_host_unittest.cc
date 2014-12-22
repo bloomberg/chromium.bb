@@ -105,7 +105,7 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
       reply_msg_param;
   ASSERT_TRUE(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply::Read(
       &reply_msg, &reply_msg_param));
-  PP_PrintSettings_Dev actual_settings = reply_msg_param.a;
+  PP_PrintSettings_Dev actual_settings = get<0>(reply_msg_param);
 
   EXPECT_TRUE(PP_RectEqual(expected_settings.printable_area,
                            actual_settings.printable_area));

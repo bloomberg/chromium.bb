@@ -122,10 +122,10 @@ class RequestAutocompleteManagerTest :
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple3<blink::WebFormElement::AutocompleteResult, base::string16, FormData>
+    Tuple<blink::WebFormElement::AutocompleteResult, base::string16, FormData>
         autofill_param;
     AutofillMsg_RequestAutocompleteResult::Read(message, &autofill_param);
-    *result = autofill_param.a;
+    *result = get<0>(autofill_param);
     process()->sink().ClearMessages();
     return true;
   }

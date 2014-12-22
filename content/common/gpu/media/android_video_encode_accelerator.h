@@ -86,7 +86,7 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   // Frames waiting to be passed to the codec, queued until an input buffer is
   // available.  Each element is a tuple of <Frame, key_frame, enqueue_time>.
   typedef std::queue<
-      Tuple3<scoped_refptr<media::VideoFrame>, bool, base::Time> >
+      Tuple<scoped_refptr<media::VideoFrame>, bool, base::Time>>
       PendingFrames;
   PendingFrames pending_frames_;
 

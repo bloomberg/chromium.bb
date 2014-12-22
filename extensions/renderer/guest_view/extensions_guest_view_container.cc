@@ -79,7 +79,7 @@ void ExtensionsGuestViewContainer::AttachRequest::HandleResponse(
     return;
 
   content::RenderView* guest_proxy_render_view =
-      content::RenderView::FromRoutingID(param.b);
+      content::RenderView::FromRoutingID(get<1>(param));
   // TODO(fsamuel): Should we be reporting an error to JavaScript or DCHECKing?
   if (!guest_proxy_render_view)
     return;

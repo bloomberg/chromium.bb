@@ -36,15 +36,15 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   ASSERT_TRUE(message != NULL);
 
   // The tuple also includes a timestamp, which is ignored.
-  Tuple2<FormData, base::TimeTicks> forms;
+  Tuple<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
-  ASSERT_EQ(2U, forms.a.fields.size());
+  ASSERT_EQ(2U, get<0>(forms).fields.size());
 
-  FormFieldData& form_field = forms.a.fields[0];
+  FormFieldData& form_field = get<0>(forms).fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 
-  form_field = forms.a.fields[1];
+  form_field = get<0>(forms).fields[1];
   EXPECT_EQ(WebString("lname"), form_field.name);
   EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
@@ -67,15 +67,15 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   ASSERT_TRUE(message != NULL);
 
   // The tuple also includes a timestamp, which is ignored.
-  Tuple2<FormData, base::TimeTicks> forms;
+  Tuple<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
-  ASSERT_EQ(2U, forms.a.fields.size());
+  ASSERT_EQ(2U, get<0>(forms).fields.size());
 
-  FormFieldData& form_field = forms.a.fields[0];
+  FormFieldData& form_field = get<0>(forms).fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 
-  form_field = forms.a.fields[1];
+  form_field = get<0>(forms).fields[1];
   EXPECT_EQ(WebString("lname"), form_field.name);
   EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
@@ -97,15 +97,15 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   ASSERT_TRUE(message != NULL);
 
   // The tuple also includes a timestamp, which is ignored.
-  Tuple2<FormData, base::TimeTicks> forms;
+  Tuple<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
-  ASSERT_EQ(2U, forms.a.fields.size());
+  ASSERT_EQ(2U, get<0>(forms).fields.size());
 
-  FormFieldData& form_field = forms.a.fields[0];
+  FormFieldData& form_field = get<0>(forms).fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 
-  form_field = forms.a.fields[1];
+  form_field = get<0>(forms).fields[1];
   EXPECT_EQ(WebString("lname"), form_field.name);
   EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
@@ -138,15 +138,15 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   ASSERT_TRUE(message != NULL);
 
   // The tuple also includes a timestamp, which is ignored.
-  Tuple2<FormData, base::TimeTicks> forms;
+  Tuple<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
-  ASSERT_EQ(2U, forms.a.fields.size());
+  ASSERT_EQ(2U, get<0>(forms).fields.size());
 
-  FormFieldData& form_field = forms.a.fields[0];
+  FormFieldData& form_field = get<0>(forms).fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 
-  form_field = forms.a.fields[1];
+  form_field = get<0>(forms).fields[1];
   EXPECT_EQ(WebString("lname"), form_field.name);
   EXPECT_EQ(WebString("Deckard"), form_field.value);
 }

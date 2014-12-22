@@ -22,43 +22,44 @@ class ResourceMessageReplyParams;
 template <class ObjT, class Method>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple0& arg) {
+                                  const Tuple<>& arg) {
   (obj->*method)(params);
 }
 
 template <class ObjT, class Method, class A>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple1<A>& arg) {
-  (obj->*method)(params, arg.a);
+                                  const Tuple<A>& arg) {
+  (obj->*method)(params, get<0>(arg));
 }
 
 template<class ObjT, class Method, class A, class B>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple2<A, B>& arg) {
-  (obj->*method)(params, arg.a, arg.b);
+                                  const Tuple<A, B>& arg) {
+  (obj->*method)(params, get<0>(arg), get<1>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple3<A, B, C>& arg) {
-  (obj->*method)(params, arg.a, arg.b, arg.c);
+                                  const Tuple<A, B, C>& arg) {
+  (obj->*method)(params, get<0>(arg), get<1>(arg), get<2>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple4<A, B, C, D>& arg) {
-  (obj->*method)(params, arg.a, arg.b, arg.c, arg.d);
+                                  const Tuple<A, B, C, D>& arg) {
+  (obj->*method)(params, get<0>(arg), get<1>(arg), get<2>(arg), get<3>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple5<A, B, C, D, E>& arg) {
-  (obj->*method)(params, arg.a, arg.b, arg.c, arg.d, arg.e);
+                                  const Tuple<A, B, C, D, E>& arg) {
+  (obj->*method)(params, get<0>(arg), get<1>(arg), get<2>(arg), get<3>(arg),
+                 get<4>(arg));
 }
 
 // Used to dispatch resource replies. In most cases, you should not call this

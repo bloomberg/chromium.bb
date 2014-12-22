@@ -267,8 +267,8 @@ void SharedWorkerHost::RelayMessage(
     WorkerMsg_Connect::Param param;
     if (!WorkerMsg_Connect::Read(&message, &param))
       return;
-    int sent_message_port_id = param.a;
-    int new_routing_id = param.b;
+    int sent_message_port_id = get<0>(param);
+    int new_routing_id = get<1>(param);
 
     DCHECK(container_render_filter_);
     new_routing_id = container_render_filter_->GetNextRoutingID();

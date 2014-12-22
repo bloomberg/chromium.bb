@@ -303,8 +303,8 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
   ViewHostMsg_SaveImageFromDataURL::Param param1;
   ViewHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(param1.b.length(), image_data_url.length());
-  EXPECT_EQ(param1.b, image_data_url);
+  EXPECT_EQ(get<1>(param1).length(), image_data_url.length());
+  EXPECT_EQ(get<1>(param1), image_data_url);
 
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -319,8 +319,8 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
   ViewHostMsg_SaveImageFromDataURL::Param param2;
   ViewHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(param2.b.length(), large_data_url.length());
-  EXPECT_EQ(param2.b, large_data_url);
+  EXPECT_EQ(get<1>(param2).length(), large_data_url.length());
+  EXPECT_EQ(get<1>(param2), large_data_url);
 
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -386,12 +386,12 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
   FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
                                               &host_nav_params);
-  EXPECT_TRUE(host_nav_params.a.is_post);
+  EXPECT_TRUE(get<0>(host_nav_params).is_post);
 
   // Check post data sent to browser matches
-  EXPECT_TRUE(host_nav_params.a.page_state.IsValid());
+  EXPECT_TRUE(get<0>(host_nav_params).page_state.IsValid());
   scoped_ptr<HistoryEntry> entry =
-      PageStateToHistoryEntry(host_nav_params.a.page_state);
+      PageStateToHistoryEntry(get<0>(host_nav_params).page_state);
   blink::WebHTTPBody body = entry->root().httpBody();
   blink::WebHTTPBody::Element element;
   bool successful = body.elementAt(0, element);
@@ -600,8 +600,8 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ASSERT_TRUE(msg_A);
   ViewHostMsg_UpdateState::Param params;
   ViewHostMsg_UpdateState::Read(msg_A, &params);
-  int page_id_A = params.a;
-  PageState state_A = params.b;
+  int page_id_A = get<0>(params);
+  PageState state_A = get<1>(params);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -657,7 +657,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   FrameHostMsg_DidCommitProvisionalLoad::Param commit_params;
   FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
                                               &commit_params);
-  EXPECT_NE(GURL("swappedout://"), commit_params.a.url);
+  EXPECT_NE(GURL("swappedout://"), get<0>(commit_params).url);
 }
 
 // Verify that security origins are replicated properly to RenderFrameProxies
@@ -716,8 +716,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   ASSERT_TRUE(msg_A);
   ViewHostMsg_UpdateState::Param param;
   ViewHostMsg_UpdateState::Read(msg_A, &param);
-  int page_id_A = param.a;
-  PageState state_A = param.b;
+  int page_id_A = get<0>(param);
+  PageState state_A = get<1>(param);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -730,8 +730,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   ViewHostMsg_UpdateState::Read(msg_B, &param);
-  int page_id_B = param.a;
-  PageState state_B = param.b;
+  int page_id_B = get<0>(param);
+  PageState state_B = get<1>(param);
   EXPECT_EQ(2, page_id_B);
   EXPECT_NE(state_A, state_B);
   render_thread_->sink().ClearMessages();
@@ -745,8 +745,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
   ViewHostMsg_UpdateState::Read(msg_C, &param);
-  int page_id_C = param.a;
-  PageState state_C = param.b;
+  int page_id_C = get<0>(param);
+  PageState state_C = get<1>(param);
   EXPECT_EQ(3, page_id_C);
   EXPECT_NE(state_B, state_C);
   render_thread_->sink().ClearMessages();
@@ -803,8 +803,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
   ViewHostMsg_UpdateState::Read(msg, &param);
-  int page_id = param.a;
-  PageState state = param.b;
+  int page_id = get<0>(param);
+  PageState state = get<1>(param);
   EXPECT_EQ(page_id_C, page_id);
   EXPECT_NE(state_A, state);
   EXPECT_NE(state_B, state);
@@ -831,8 +831,8 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   ASSERT_TRUE(msg_A);
   ViewHostMsg_UpdateState::Param param;
   ViewHostMsg_UpdateState::Read(msg_A, &param);
-  int page_id_A = param.a;
-  PageState state_A = param.b;
+  int page_id_A = get<0>(param);
+  PageState state_A = get<1>(param);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -953,9 +953,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
     ViewHostMsg_TextInputTypeChanged::Param params;
     ViewHostMsg_TextInputTypeChanged::Read(msg, &params);
-    ui::TextInputType type = params.a;
-    ui::TextInputMode input_mode = params.b;
-    bool can_compose_inline = params.c;
+    ui::TextInputType type = get<0>(params);
+    ui::TextInputMode input_mode = get<1>(params);
+    bool can_compose_inline = get<2>(params);
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, type);
     EXPECT_EQ(true, can_compose_inline);
 
@@ -972,8 +972,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
     ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
-    type = params.a;
-    input_mode = params.b;
+    type = get<0>(params);
+    input_mode = get<1>(params);
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
     for (size_t i = 0; i < arraysize(kInputModeTestCases); i++) {
@@ -994,8 +994,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       EXPECT_TRUE(msg != NULL);
       EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
       ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
-      type = params.a;
-      input_mode = params.b;
+      type = get<0>(params);
+      input_mode = get<1>(params);
       EXPECT_EQ(test_case->expected_mode, input_mode);
     }
   }
@@ -2124,7 +2124,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
 
   ViewHostMsg_FocusedNodeChanged::Param params;
   ViewHostMsg_FocusedNodeChanged::Read(msg1, &params);
-  EXPECT_TRUE(params.a);
+  EXPECT_TRUE(get<0>(params));
   render_thread_->sink().ClearMessages();
 
   ExecuteJavaScript("document.getElementById('test2').focus();");
@@ -2132,7 +2132,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
         ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg2);
   ViewHostMsg_FocusedNodeChanged::Read(msg2, &params);
-  EXPECT_TRUE(params.a);
+  EXPECT_TRUE(get<0>(params));
   render_thread_->sink().ClearMessages();
 
   view()->webview()->clearFocusedElement();
@@ -2140,7 +2140,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
         ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg3);
   ViewHostMsg_FocusedNodeChanged::Read(msg3, &params);
-  EXPECT_FALSE(params.a);
+  EXPECT_FALSE(get<0>(params));
   render_thread_->sink().ClearMessages();
 }
 

@@ -74,7 +74,7 @@ class AppShimHostTest : public testing::Test,
     EXPECT_EQ(AppShimMsg_LaunchApp_Done::ID, message->type());
     AppShimMsg_LaunchApp_Done::Param param;
     AppShimMsg_LaunchApp_Done::Read(message, &param);
-    return param.a;
+    return get<0>(param);
   }
 
   void SimulateDisconnect() {

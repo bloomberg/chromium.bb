@@ -189,8 +189,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, params.a);
-  ASSERT_TRUE(params.b);
+  EXPECT_EQ(test_identity, get<0>(params));
+  ASSERT_TRUE(get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
@@ -209,8 +209,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, params.a);
-  ASSERT_FALSE(params.b);
+  EXPECT_EQ(test_identity, get<0>(params));
+  ASSERT_FALSE(get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
@@ -229,8 +229,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, params.a);
-  ASSERT_FALSE(params.b);
+  EXPECT_EQ(test_identity, get<0>(params));
+  ASSERT_FALSE(get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncInactive) {
@@ -250,7 +250,7 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncInactive) {
 
   ChromeViewMsg_HistorySyncCheckResult::Param params;
   ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_FALSE(params.a);
+  ASSERT_FALSE(get<0>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
@@ -268,7 +268,7 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
 
   ChromeViewMsg_HistorySyncCheckResult::Param params;
   ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_TRUE(params.a);
+  ASSERT_TRUE(get<0>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
@@ -286,7 +286,7 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
 
   ChromeViewMsg_HistorySyncCheckResult::Param params;
   ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_FALSE(params.a);
+  ASSERT_FALSE(get<0>(params));
 }
 
 class TabTitleObserver : public content::WebContentsObserver {

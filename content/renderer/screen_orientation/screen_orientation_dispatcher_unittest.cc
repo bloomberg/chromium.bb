@@ -75,9 +75,9 @@ class ScreenOrientationDispatcherTest : public testing::Test {
         ScreenOrientationHostMsg_LockRequest::ID);
     EXPECT_TRUE(msg != NULL);
 
-    Tuple2<blink::WebScreenOrientationLockType,int> params;
+    Tuple<blink::WebScreenOrientationLockType,int> params;
     ScreenOrientationHostMsg_LockRequest::Read(msg, &params);
-    return params.b;
+    return get<1>(params);
   }
 
   IPC::TestSink& sink() {

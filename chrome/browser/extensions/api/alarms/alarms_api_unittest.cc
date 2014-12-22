@@ -284,8 +284,8 @@ TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
   ASSERT_TRUE(warning);
   ExtensionMsg_AddMessageToConsole::Param params;
   ExtensionMsg_AddMessageToConsole::Read(warning, &params);
-  content::ConsoleMessageLevel level = params.a;
-  std::string message = params.b;
+  content::ConsoleMessageLevel level = get<0>(params);
+  std::string message = get<1>(params);
   EXPECT_EQ(content::CONSOLE_MESSAGE_LEVEL_WARNING, level);
   EXPECT_THAT(message, testing::HasSubstr("delay is less than minimum of 1"));
 }

@@ -149,26 +149,26 @@ void ScanParam(const T& param, ScanningResults* results) {
 // The idea is to scan elements in the tuple which require special handling,
 // and write them into the |results| struct.
 template <class A>
-void ScanTuple(const Tuple1<A>& t1, ScanningResults* results) {
-  ScanParam(t1.a, results);
+void ScanTuple(const Tuple<A>& t1, ScanningResults* results) {
+  ScanParam(get<0>(t1), results);
 }
 template <class A, class B>
-void ScanTuple(const Tuple2<A, B>& t1, ScanningResults* results) {
-  ScanParam(t1.a, results);
-  ScanParam(t1.b, results);
+void ScanTuple(const Tuple<A, B>& t1, ScanningResults* results) {
+  ScanParam(get<0>(t1), results);
+  ScanParam(get<1>(t1), results);
 }
 template <class A, class B, class C>
-void ScanTuple(const Tuple3<A, B, C>& t1, ScanningResults* results) {
-  ScanParam(t1.a, results);
-  ScanParam(t1.b, results);
-  ScanParam(t1.c, results);
+void ScanTuple(const Tuple<A, B, C>& t1, ScanningResults* results) {
+  ScanParam(get<0>(t1), results);
+  ScanParam(get<1>(t1), results);
+  ScanParam(get<2>(t1), results);
 }
 template <class A, class B, class C, class D>
-void ScanTuple(const Tuple4<A, B, C, D>& t1, ScanningResults* results) {
-  ScanParam(t1.a, results);
-  ScanParam(t1.b, results);
-  ScanParam(t1.c, results);
-  ScanParam(t1.d, results);
+void ScanTuple(const Tuple<A, B, C, D>& t1, ScanningResults* results) {
+  ScanParam(get<0>(t1), results);
+  ScanParam(get<1>(t1), results);
+  ScanParam(get<2>(t1), results);
+  ScanParam(get<3>(t1), results);
 }
 
 template <class MessageType>

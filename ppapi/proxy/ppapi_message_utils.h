@@ -23,7 +23,7 @@ struct TupleTypeMatch1 {
   static const bool kValue = false;
 };
 template <class A>
-struct TupleTypeMatch1<Tuple1<A>, A> {
+struct TupleTypeMatch1<Tuple<A>, A> {
   static const bool kValue = true;
 };
 
@@ -32,7 +32,7 @@ struct TupleTypeMatch2 {
   static const bool kValue = false;
 };
 template <class A, class B>
-struct TupleTypeMatch2<Tuple2<A, B>, A, B> {
+struct TupleTypeMatch2<Tuple<A, B>, A, B> {
   static const bool kValue = true;
 };
 
@@ -41,7 +41,7 @@ struct TupleTypeMatch3 {
   static const bool kValue = false;
 };
 template <class A, class B, class C>
-struct TupleTypeMatch3<Tuple3<A, B, C>, A, B, C> {
+struct TupleTypeMatch3<Tuple<A, B, C>, A, B, C> {
   static const bool kValue = true;
 };
 
@@ -50,7 +50,7 @@ struct TupleTypeMatch4 {
   static const bool kValue = false;
 };
 template <class A, class B, class C, class D>
-struct TupleTypeMatch4<Tuple4<A, B, C, D>, A, B, C, D> {
+struct TupleTypeMatch4<Tuple<A, B, C, D>, A, B, C, D> {
   static const bool kValue = true;
 };
 
@@ -59,7 +59,7 @@ struct TupleTypeMatch5 {
   static const bool kValue = false;
 };
 template <class A, class B, class C, class D, class E>
-struct TupleTypeMatch5<Tuple5<A, B, C, D, E>, A, B, C, D, E> {
+struct TupleTypeMatch5<Tuple<A, B, C, D, E>, A, B, C, D, E> {
   static const bool kValue = true;
 };
 
@@ -128,4 +128,3 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c, D* d, E* e) {
 }  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPAPI_MESSAGE_UTILS_H_
-

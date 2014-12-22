@@ -132,11 +132,11 @@ void BrowserPluginManager::OnCompositorFrameSwappedPluginUnavailable(
     return;
 
   FrameHostMsg_CompositorFrameSwappedACK_Params params;
-  params.producing_host_id = param.b.producing_host_id;
-  params.producing_route_id = param.b.producing_route_id;
-  params.output_surface_id = param.b.output_surface_id;
+  params.producing_host_id = get<1>(param).producing_host_id;
+  params.producing_route_id = get<1>(param).producing_route_id;
+  params.output_surface_id = get<1>(param).output_surface_id;
   Send(new BrowserPluginHostMsg_CompositorFrameSwappedACK(
-      message.routing_id(), param.a, params));
+      message.routing_id(), get<0>(param), params));
 }
 
 }  // namespace content

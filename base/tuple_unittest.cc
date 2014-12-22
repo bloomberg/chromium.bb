@@ -30,50 +30,50 @@ struct Addz {
 }  // namespace
 
 TEST(TupleTest, Basic) {
-  Tuple0 t0 = MakeTuple();
+  Tuple<> t0 = MakeTuple();
   ALLOW_UNUSED_LOCAL(t0);
-  Tuple1<int> t1(1);
-  Tuple2<int, const char*> t2 = MakeTuple(1, static_cast<const char*>("wee"));
-  Tuple3<int, int, int> t3(1, 2, 3);
-  Tuple4<int, int, int, int*> t4(1, 2, 3, &t1.a);
-  Tuple5<int, int, int, int, int*> t5(1, 2, 3, 4, &t4.a);
-  Tuple6<int, int, int, int, int, int*> t6(1, 2, 3, 4, 5, &t4.a);
+  Tuple<int> t1(1);
+  Tuple<int, const char*> t2 = MakeTuple(1, static_cast<const char*>("wee"));
+  Tuple<int, int, int> t3(1, 2, 3);
+  Tuple<int, int, int, int*> t4(1, 2, 3, &get<0>(t1));
+  Tuple<int, int, int, int, int*> t5(1, 2, 3, 4, &get<0>(t4));
+  Tuple<int, int, int, int, int, int*> t6(1, 2, 3, 4, 5, &get<0>(t4));
 
-  EXPECT_EQ(1, t1.a);
-  EXPECT_EQ(1, t2.a);
-  EXPECT_EQ(1, t3.a);
-  EXPECT_EQ(2, t3.b);
-  EXPECT_EQ(3, t3.c);
-  EXPECT_EQ(1, t4.a);
-  EXPECT_EQ(2, t4.b);
-  EXPECT_EQ(3, t4.c);
-  EXPECT_EQ(1, t5.a);
-  EXPECT_EQ(2, t5.b);
-  EXPECT_EQ(3, t5.c);
-  EXPECT_EQ(4, t5.d);
-  EXPECT_EQ(1, t6.a);
-  EXPECT_EQ(2, t6.b);
-  EXPECT_EQ(3, t6.c);
-  EXPECT_EQ(4, t6.d);
-  EXPECT_EQ(5, t6.e);
+  EXPECT_EQ(1, get<0>(t1));
+  EXPECT_EQ(1, get<0>(t2));
+  EXPECT_EQ(1, get<0>(t3));
+  EXPECT_EQ(2, get<1>(t3));
+  EXPECT_EQ(3, get<2>(t3));
+  EXPECT_EQ(1, get<0>(t4));
+  EXPECT_EQ(2, get<1>(t4));
+  EXPECT_EQ(3, get<2>(t4));
+  EXPECT_EQ(1, get<0>(t5));
+  EXPECT_EQ(2, get<1>(t5));
+  EXPECT_EQ(3, get<2>(t5));
+  EXPECT_EQ(4, get<3>(t5));
+  EXPECT_EQ(1, get<0>(t6));
+  EXPECT_EQ(2, get<1>(t6));
+  EXPECT_EQ(3, get<2>(t6));
+  EXPECT_EQ(4, get<3>(t6));
+  EXPECT_EQ(5, get<4>(t6));
 
-  EXPECT_EQ(1, t1.a);
+  EXPECT_EQ(1, get<0>(t1));
   DispatchToFunction(&DoAdd, t4);
-  EXPECT_EQ(6, t1.a);
+  EXPECT_EQ(6, get<0>(t1));
 
   int res = 0;
   DispatchToFunction(&DoAdd, MakeTuple(9, 8, 7, &res));
   EXPECT_EQ(24, res);
 
   Addy addy;
-  EXPECT_EQ(1, t4.a);
+  EXPECT_EQ(1, get<0>(t4));
   DispatchToMethod(&addy, &Addy::DoAdd, t5);
-  EXPECT_EQ(10, t4.a);
+  EXPECT_EQ(10, get<0>(t4));
 
   Addz addz;
-  EXPECT_EQ(10, t4.a);
+  EXPECT_EQ(10, get<0>(t4));
   DispatchToMethod(&addz, &Addz::DoAdd, t6);
-  EXPECT_EQ(15, t4.a);
+  EXPECT_EQ(15, get<0>(t4));
 }
 
 namespace {
@@ -108,8 +108,8 @@ TEST(TupleTest, Copying) {
   bool res = false;
 
   // Creating the tuple should copy the class to store internally in the tuple.
-  Tuple3<CopyLogger, CopyLogger*, bool*> tuple(logger, &logger, &res);
-  tuple.b = &tuple.a;
+  Tuple<CopyLogger, CopyLogger*, bool*> tuple(logger, &logger, &res);
+  get<1>(tuple) = &get<0>(tuple);
   EXPECT_EQ(2, CopyLogger::TimesConstructed);
   EXPECT_EQ(1, CopyLogger::TimesCopied);
 

@@ -234,7 +234,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, param.b.type);
+  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
   process()->sink().ClearMessages();
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
@@ -254,7 +254,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, param.b.type);
+  EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, get<1>(param).type);
   process()->sink().ClearMessages();
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
@@ -291,7 +291,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   CredentialManagerMsg_RejectCredentialRequest::Param reject_param;
   CredentialManagerMsg_RejectCredentialRequest::Read(message, &reject_param);
   EXPECT_EQ(blink::WebCredentialManagerError::ErrorTypePendingRequest,
-            reject_param.b);
+            get<1>(reject_param));
   EXPECT_FALSE(client_->did_prompt_user_to_choose());
 
   process()->sink().ClearMessages();
@@ -305,8 +305,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param send_param;
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
-  CredentialManagerMsg_SendCredential::Read(message, &send_param);
-  EXPECT_NE(CREDENTIAL_TYPE_EMPTY, send_param.b.type);
+  EXPECT_NE(CREDENTIAL_TYPE_EMPTY, get<1>(send_param).type);
   process()->sink().ClearMessages();
   EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }

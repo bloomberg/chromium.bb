@@ -1176,16 +1176,16 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 // - If true, switch framerate mid-stream.
 class VideoEncodeAcceleratorTest
     : public ::testing::TestWithParam<
-          Tuple7<int, bool, int, bool, bool, bool, bool> > {};
+          Tuple<int, bool, int, bool, bool, bool, bool>> {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
-  size_t num_concurrent_encoders = GetParam().a;
-  const bool save_to_file = GetParam().b;
-  const unsigned int keyframe_period = GetParam().c;
-  const bool force_bitrate = GetParam().d;
-  const bool test_perf = GetParam().e;
-  const bool mid_stream_bitrate_switch = GetParam().f;
-  const bool mid_stream_framerate_switch = GetParam().g;
+  size_t num_concurrent_encoders = get<0>(GetParam());
+  const bool save_to_file = get<1>(GetParam());
+  const unsigned int keyframe_period = get<2>(GetParam());
+  const bool force_bitrate = get<3>(GetParam());
+  const bool test_perf = get<4>(GetParam());
+  const bool mid_stream_bitrate_switch = get<5>(GetParam());
+  const bool mid_stream_framerate_switch = get<6>(GetParam());
 
   ScopedVector<ClientStateNotification<ClientState> > notes;
   ScopedVector<VEAClient> clients;

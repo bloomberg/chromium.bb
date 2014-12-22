@@ -19,7 +19,7 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-typedef std::vector<Tuple2<base::string16, base::string16> >
+typedef std::vector<Tuple<base::string16, base::string16>>
     GetOpenFileNameFilter;
 
 struct ChromeUtilityMsg_GetSaveFileName_Params;

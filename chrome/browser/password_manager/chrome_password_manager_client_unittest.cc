@@ -105,9 +105,9 @@ bool ChromePasswordManagerClientTest::WasLoggingActivationMessageSent(
       process()->sink().GetFirstMessageMatching(kMsgID);
   if (!message)
     return false;
-  Tuple1<bool> param;
+  Tuple<bool> param;
   AutofillMsg_SetLoggingState::Read(message, &param);
-  *activation_flag = param.a;
+  *activation_flag = get<0>(param);
   process()->sink().ClearMessages();
   return true;
 }

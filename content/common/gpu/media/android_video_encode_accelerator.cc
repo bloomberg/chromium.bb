@@ -320,7 +320,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   }
 
   const PendingFrames::value_type& input = pending_frames_.front();
-  bool is_key_frame = input.b;
+  bool is_key_frame = get<1>(input);
   if (is_key_frame) {
     // Ideally MediaCodec would honor BUFFER_FLAG_SYNC_FRAME so we could
     // indicate this in the QueueInputBuffer() call below and guarantee _this_
@@ -328,7 +328,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
     // Instead, we request a key frame "soon".
     media_codec_->RequestKeyFrameSoon();
   }
-  scoped_refptr<VideoFrame> frame = input.a;
+  scoped_refptr<VideoFrame> frame = get<0>(input);
 
   uint8* buffer = NULL;
   size_t capacity = 0;
@@ -364,7 +364,8 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   fake_input_timestamp_ += base::TimeDelta::FromMicroseconds(1);
   status = media_codec_->QueueInputBuffer(
       input_buf_index, NULL, queued_size, fake_input_timestamp_);
-  UMA_HISTOGRAM_TIMES("Media.AVEA.InputQueueTime", base::Time::Now() - input.c);
+  UMA_HISTOGRAM_TIMES("Media.AVEA.InputQueueTime",
+                      base::Time::Now() - get<2>(input));
   RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK,
                     "Failed to QueueInputBuffer: " << status,
                     kPlatformFailureError);

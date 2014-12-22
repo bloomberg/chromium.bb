@@ -90,7 +90,8 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     TupleTypes<ViewHostMsg_ResolveProxy::ReplyParam>::ValueTuple reply_data;
     EXPECT_TRUE(ViewHostMsg_ResolveProxy::ReadReplyParam(&msg, &reply_data));
     DCHECK(!pending_result_.get());
-    pending_result_.reset(new PendingResult(reply_data.a, reply_data.b));
+    pending_result_.reset(
+        new PendingResult(get<0>(reply_data), get<1>(reply_data)));
     test_sink_.ClearMessages();
     return true;
   }

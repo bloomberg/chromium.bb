@@ -419,12 +419,12 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         render_thread_->sink().GetFirstMessageMatching(
             AutofillHostMsg_ShowPasswordSuggestions::ID);
     EXPECT_TRUE(message);
-    Tuple5<int, base::i18n::TextDirection, base::string16, int, gfx::RectF>
+    Tuple<int, base::i18n::TextDirection, base::string16, int, gfx::RectF>
         args;
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
-    EXPECT_EQ(kPasswordFillFormDataId, args.a);
-    EXPECT_EQ(ASCIIToUTF16(username), args.c);
-    EXPECT_EQ(show_all, static_cast<bool>(args.d & autofill::SHOW_ALL));
+    EXPECT_EQ(kPasswordFillFormDataId, get<0>(args));
+    EXPECT_EQ(ASCIIToUTF16(username), get<2>(args));
+    EXPECT_EQ(show_all, static_cast<bool>(get<3>(args) & autofill::SHOW_ALL));
 
     render_thread_->sink().ClearMessages();
   }
@@ -437,11 +437,12 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         render_thread_->sink().GetFirstMessageMatching(
             AutofillHostMsg_PasswordFormSubmitted::ID);
     ASSERT_TRUE(message);
-    Tuple1<autofill::PasswordForm> args;
+    Tuple<autofill::PasswordForm> args;
     AutofillHostMsg_PasswordFormSubmitted::Read(message, &args);
-    EXPECT_EQ(ASCIIToUTF16(username_value), args.a.username_value);
-    EXPECT_EQ(ASCIIToUTF16(password_value), args.a.password_value);
-    EXPECT_EQ(ASCIIToUTF16(new_password_value), args.a.new_password_value);
+    EXPECT_EQ(ASCIIToUTF16(username_value), get<0>(args).username_value);
+    EXPECT_EQ(ASCIIToUTF16(password_value), get<0>(args).password_value);
+    EXPECT_EQ(ASCIIToUTF16(new_password_value),
+              get<0>(args).new_password_value);
   }
 
   base::string16 username1_;
@@ -805,9 +806,9 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
   const IPC::Message* message = render_thread_->sink()
       .GetFirstMessageMatching(AutofillHostMsg_PasswordFormsRendered::ID);
   EXPECT_TRUE(message);
-  Tuple2<std::vector<autofill::PasswordForm>, bool > param;
+  Tuple<std::vector<autofill::PasswordForm>, bool> param;
   AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
-  EXPECT_TRUE(param.a.size());
+  EXPECT_TRUE(get<0>(param).size());
 
   render_thread_->sink().ClearMessages();
   LoadHTML(kEmptyFormHTML);
@@ -815,7 +816,7 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
       AutofillHostMsg_PasswordFormsRendered::ID);
   EXPECT_TRUE(message);
   AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
-  EXPECT_FALSE(param.a.size());
+  EXPECT_FALSE(get<0>(param).size());
 
   render_thread_->sink().ClearMessages();
   LoadHTML(kNonVisibleFormHTML);
@@ -823,7 +824,7 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
       AutofillHostMsg_PasswordFormsRendered::ID);
   EXPECT_TRUE(message);
   AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
-  EXPECT_FALSE(param.a.size());
+  EXPECT_FALSE(get<0>(param).size());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {

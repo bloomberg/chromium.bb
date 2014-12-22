@@ -36,11 +36,11 @@ using blink::WebVector;
 
 namespace autofill {
 
-typedef Tuple5<int,
-               autofill::FormData,
-               autofill::FormFieldData,
-               gfx::RectF,
-               bool> AutofillQueryParam;
+typedef Tuple<int,
+              autofill::FormData,
+              autofill::FormFieldData,
+              gfx::RectF,
+              bool> AutofillQueryParam;
 
 class AutofillRendererTest : public ChromeRenderViewTest {
  public:
@@ -88,7 +88,7 @@ TEST_F(AutofillRendererTest, SendForms) {
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  std::vector<FormData> forms = params.a;
+  std::vector<FormData> forms = get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(4UL, forms[0].fields.size());
 
@@ -151,7 +151,7 @@ TEST_F(AutofillRendererTest, SendForms) {
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  forms = params.a;
+  forms = get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(3UL, forms[0].fields.size());
 
@@ -183,7 +183,7 @@ TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  const std::vector<FormData>& forms = params.a;
+  const std::vector<FormData>& forms = get<0>(params);
   ASSERT_EQ(0UL, forms.size());
 }
 
@@ -218,7 +218,7 @@ TEST_F(AutofillRendererTest, ShowAutofillWarning) {
 
   AutofillQueryParam query_param;
   AutofillHostMsg_QueryFormFieldAutofill::Read(message1, &query_param);
-  EXPECT_FALSE(query_param.e);
+  EXPECT_FALSE(get<4>(query_param));
   render_thread_->sink().ClearMessages();
 
   // Simulate attempting to Autofill the form from the second element, which
@@ -232,7 +232,7 @@ TEST_F(AutofillRendererTest, ShowAutofillWarning) {
   ASSERT_NE(nullptr, message2);
 
   AutofillHostMsg_QueryFormFieldAutofill::Read(message2, &query_param);
-  EXPECT_TRUE(query_param.e);
+  EXPECT_TRUE(get<4>(query_param));
 }
 
 // Regression test for [ http://crbug.com/346010 ].
@@ -264,7 +264,7 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  std::vector<FormData> forms = params.a;
+  std::vector<FormData> forms = get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(7UL, forms[0].fields.size());
 
@@ -277,7 +277,7 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  forms = params.a;
+  forms = get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(9UL, forms[0].fields.size());
 

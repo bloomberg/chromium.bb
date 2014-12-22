@@ -22,43 +22,45 @@ struct HostMessageContext;
 template <class ObjT, class Method>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    Tuple0& arg) {
+                                    Tuple<>& arg) {
   return (obj->*method)(context);
 }
 
 template <class ObjT, class Method, class A>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    Tuple1<A>& arg) {
-  return (obj->*method)(context, arg.a);
+                                    Tuple<A>& arg) {
+  return (obj->*method)(context, get<0>(arg));
 }
 
 template<class ObjT, class Method, class A, class B>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    Tuple2<A, B>& arg) {
-  return (obj->*method)(context, arg.a, arg.b);
+                                    Tuple<A, B>& arg) {
+  return (obj->*method)(context, get<0>(arg), get<1>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    Tuple3<A, B, C>& arg) {
-  return (obj->*method)(context, arg.a, arg.b, arg.c);
+                                    Tuple<A, B, C>& arg) {
+  return (obj->*method)(context, get<0>(arg), get<1>(arg), get<2>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    Tuple4<A, B, C, D>& arg) {
-  return (obj->*method)(context, arg.a, arg.b, arg.c, arg.d);
+                                    Tuple<A, B, C, D>& arg) {
+  return (obj->*method)(context, get<0>(arg), get<1>(arg), get<2>(arg),
+                        get<3>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    Tuple5<A, B, C, D, E>& arg) {
-  return (obj->*method)(context, arg.a, arg.b, arg.c, arg.d, arg.e);
+                                    Tuple<A, B, C, D, E>& arg) {
+  return (obj->*method)(context, get<0>(arg), get<1>(arg), get<2>(arg),
+                        get<3>(arg), get<4>(arg));
 }
 
 // Note that this only works for message with 1 or more parameters. For

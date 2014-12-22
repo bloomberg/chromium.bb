@@ -225,13 +225,13 @@ class NavigationControllerTest
   const GURL GetNavigationURLFromIPC(const IPC::Message* message) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableBrowserSideNavigation)) {
-      Tuple2<CommonNavigationParams, RequestNavigationParams> nav_params;
+      Tuple<CommonNavigationParams, RequestNavigationParams> nav_params;
       FrameMsg_RequestNavigation::Read(message, &nav_params);
-      return nav_params.a.url;
+      return get<0>(nav_params).url;
     }
-    Tuple1<FrameMsg_Navigate_Params> nav_params;
+    Tuple<FrameMsg_Navigate_Params> nav_params;
     FrameMsg_Navigate::Read(message, &nav_params);
-    return nav_params.a.common_params.url;
+    return get<0>(nav_params).common_params.url;
   }
 
  protected:

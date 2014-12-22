@@ -32,8 +32,8 @@ void VerifyStateChangedMessage(int expected_handle_id,
   ServiceWorkerMsg_ServiceWorkerStateChanged::Param param;
   ASSERT_TRUE(ServiceWorkerMsg_ServiceWorkerStateChanged::Read(
       message, &param));
-  EXPECT_EQ(expected_handle_id, param.b);
-  EXPECT_EQ(expected_state, param.c);
+  EXPECT_EQ(expected_handle_id, get<1>(param));
+  EXPECT_EQ(expected_state, get<2>(param));
 }
 
 }  // namespace

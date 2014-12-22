@@ -30,9 +30,9 @@ class TestLogger : public RendererSavePasswordProgressLogger {
     const IPC::Message* message = sink_.GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple1<std::string> param;
+    Tuple<std::string> param;
     AutofillHostMsg_RecordSavePasswordProgress::Read(message, &param);
-    *log = param.a;
+    *log = get<0>(param);
     sink_.ClearMessages();
     return true;
   }

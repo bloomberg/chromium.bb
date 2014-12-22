@@ -34,7 +34,7 @@ class UI_BASE_EXPORT OpenFileName {
 
   // Initializes |lpstrFilter| from the label/pattern pairs in |filters|.
   void SetFilters(
-      const std::vector<Tuple2<base::string16, base::string16> >& filters);
+      const std::vector<Tuple<base::string16, base::string16>>& filters);
 
   // Sets |lpstrInitialDir| and |lpstrFile|.
   void SetInitialSelection(const base::FilePath& initial_directory,
@@ -68,7 +68,7 @@ class UI_BASE_EXPORT OpenFileName {
 
   // Returns a vector of label/pattern pairs built from
   // |openfilename->lpstrFilter|.
-  static std::vector<Tuple2<base::string16, base::string16> > GetFilters(
+  static std::vector<Tuple<base::string16, base::string16>> GetFilters(
       const OPENFILENAME* openfilename);
 
  private:

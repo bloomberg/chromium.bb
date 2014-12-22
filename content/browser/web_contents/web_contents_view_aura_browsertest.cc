@@ -214,8 +214,8 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
     if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
       InputHostMsg_HandleInputEvent_ACK::Param params;
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
-      blink::WebInputEvent::Type type = params.a.type;
-      InputEventAckState ack = params.a.state;
+      blink::WebInputEvent::Type type = get<0>(params).type;
+      InputEventAckState ack = get<0>(params).state;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           base::Bind(&InputEventMessageFilterWaitsForAcks::ReceivedEventAck,
                      this, type, ack));

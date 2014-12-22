@@ -480,7 +480,7 @@ void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
-  page_handler_->OnSwapCompositorFrame(param.b.metadata);
+  page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
 }
 
 void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(

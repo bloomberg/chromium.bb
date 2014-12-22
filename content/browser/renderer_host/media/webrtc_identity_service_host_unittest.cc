@@ -116,10 +116,10 @@ class WebRTCIdentityServiceHostTest : public ::testing::Test {
     IPC::Message ipc = host_->GetLastMessage();
     EXPECT_EQ(ipc.type(), WebRTCIdentityHostMsg_RequestFailed::ID);
 
-    Tuple2<int, int> error_in_message;
+    Tuple<int, int> error_in_message;
     WebRTCIdentityHostMsg_RequestFailed::Read(&ipc, &error_in_message);
-    EXPECT_EQ(FAKE_SEQUENCE_NUMBER, error_in_message.a);
-    EXPECT_EQ(error, error_in_message.b);
+    EXPECT_EQ(FAKE_SEQUENCE_NUMBER, get<0>(error_in_message));
+    EXPECT_EQ(error, get<1>(error_in_message));
   }
 
   void VerifyIdentityReadyMessage(const std::string& cert,
@@ -128,11 +128,11 @@ class WebRTCIdentityServiceHostTest : public ::testing::Test {
     IPC::Message ipc = host_->GetLastMessage();
     EXPECT_EQ(ipc.type(), WebRTCIdentityHostMsg_IdentityReady::ID);
 
-    Tuple3<int, std::string, std::string> identity_in_message;
+    Tuple<int, std::string, std::string> identity_in_message;
     WebRTCIdentityHostMsg_IdentityReady::Read(&ipc, &identity_in_message);
-    EXPECT_EQ(FAKE_SEQUENCE_NUMBER, identity_in_message.a);
-    EXPECT_EQ(cert, identity_in_message.b);
-    EXPECT_EQ(key, identity_in_message.c);
+    EXPECT_EQ(FAKE_SEQUENCE_NUMBER, get<0>(identity_in_message));
+    EXPECT_EQ(cert, get<1>(identity_in_message));
+    EXPECT_EQ(key, get<2>(identity_in_message));
   }
 
  protected:
