@@ -8,8 +8,7 @@
  * @param {!Document} document Document.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
- * @return {!HTMLElement} Ribbon element.
- * @extends {HTMLElement}
+ * @extends {HTMLDivElement}
  * @constructor
  * @suppress {checkStructDictInheritance}
  * @struct
@@ -21,6 +20,7 @@ function Ribbon(document, dataModel, selectionModel) {
   }
 
   this.__proto__ = Ribbon.prototype;
+  this.className = 'ribbon';
 
   /**
    * @type {!cr.ui.ArrayDataModel}
