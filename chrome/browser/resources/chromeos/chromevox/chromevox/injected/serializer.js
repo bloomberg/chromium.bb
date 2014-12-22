@@ -25,6 +25,7 @@ cvox.Serializer = function() { };
 cvox.Serializer.prototype.storeOn = function(store) {
   cvox.ChromeVox.storeOn(store);
   cvox.ChromeVoxEventWatcher.storeOn(store);
+  cvox.ChromeVox.navigationManager.storeOn(store);
 };
 
 /**
@@ -35,4 +36,5 @@ cvox.Serializer.prototype.storeOn = function(store) {
 cvox.Serializer.prototype.readFrom = function(store) {
   cvox.ChromeVox.readFrom(store);
   cvox.ChromeVoxEventWatcher.readFrom(store);
+  cvox.ChromeVox.navigationManager.readFrom(store);
 };

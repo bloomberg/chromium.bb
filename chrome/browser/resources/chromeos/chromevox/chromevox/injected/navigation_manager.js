@@ -43,6 +43,8 @@ cvox.NavigationManager = function() {
   this.addInterframeListener_();
 
   this.reset();
+
+  this.iframeRetries_ = 0;
 };
 
 /**
@@ -65,9 +67,7 @@ cvox.NavigationManager.prototype.storeOn = function(store) {
 cvox.NavigationManager.prototype.readFrom = function(store) {
   this.curSel_.setReversed(store['reversed']);
   this.shifter_.readFrom(store);
-  if (store['keepReading']) {
-    this.startReading(cvox.QueueMode.FLUSH);
-  }
+  this.keepReading_ = store['keepReading'];
 };
 
 /**
@@ -854,6 +854,11 @@ cvox.NavigationManager.prototype.isReading = function() {
 cvox.NavigationManager.prototype.startCallbackReading_ =
     cvox.ChromeVoxEventSuspender.withSuspendedEvents(function(queueMode) {
   this.finishNavCommand('', true, queueMode, goog.bind(function() {
+    if (this.prevReadingSel_ == this.curSel_) {
+      this.stopReading();
+      return;
+    }
+    this.prevReadingSel_ = this.curSel_;
     if (this.next_(true) && this.keepReading_) {
       this.startCallbackReading_(cvox.QueueMode.QUEUE);
     }
@@ -946,12 +951,9 @@ cvox.NavigationManager.prototype.addInterframeListener_ = function() {
       return;
     }
     cvox.ChromeVox.serializer.readFrom(message);
-    if (self.keepReading_) {
-      return;
-    }
+
     cvox.ChromeVoxEventSuspender.withSuspendedEvents(function() {
       window.focus();
-
       if (message['findNext']) {
         var predicateName = message['findNext'];
         var predicate = cvox.DomPredicates[predicateName];
@@ -983,6 +985,9 @@ cvox.NavigationManager.prototype.addInterframeListener_ = function() {
       // Now speak what ended up being selected.
       // TODO(deboer): Some of this could be moved to readFrom
       self.finishNavCommand('', true);
+      if (self.keepReading_) {
+        self.startReading(cvox.QueueMode.FLUSH);
+      }
     })();
   });
 };
@@ -1142,6 +1147,7 @@ cvox.NavigationManager.prototype.tryIframe_ = function(node) {
     };
     cvox.ChromeVox.serializer.storeOn(message);
     cvox.Interframe.sendMessageToParentWindow(message);
+    this.keepReading_ = false;
     return true;
   }
 
@@ -1160,8 +1166,20 @@ cvox.NavigationManager.prototype.tryIframe_ = function(node) {
   if (iframeId == undefined) {
     iframeId = this.nextIframeId;
     this.nextIframeId++;
-    this.iframeIdMap[iframeId] = iframeElement;
-    cvox.Interframe.sendIdToIFrame(iframeId, iframeElement);
+    cvox.Interframe.sendIdToIFrame(iframeId, iframeElement, function() {
+      this.iframeIdMap[iframeId] = iframeElement;
+      this.iframeRetries_ = 0;
+    }.bind(this));
+  }
+
+  // We never received an ack from the iframe.
+  if (!this.iframeIdMap[iframeId]) {
+    this.iframeRetries_++;
+    if (this.iframeRetries_ > 5) {
+      // Give up.
+      this.iframeRetries_ = 0;
+      return false;
+    }
   }
 
   var message = {
@@ -1170,7 +1188,6 @@ cvox.NavigationManager.prototype.tryIframe_ = function(node) {
   };
   cvox.ChromeVox.serializer.storeOn(message);
   cvox.Interframe.sendMessageToIFrame(message, iframeElement);
-
   return true;
 };
 

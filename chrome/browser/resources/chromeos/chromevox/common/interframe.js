@@ -41,6 +41,14 @@ cvox.Interframe.IF_MSG_PREFIX = 'cvox.INTERFRAME:';
 cvox.Interframe.SET_ID = 'cvox.INTERFRAME_SET_ID';
 
 /**
+ * The message used by a child frame to acknowledge an id was set (sent to its
+ * parent frame.
+ * @type {string}
+ * @const
+ */
+cvox.Interframe.ACK_SET_ID = 'cvox.INTERFRAME_ACK_SET_ID';
+
+/**
  * The ID of this window (relative to its parent farme).
  * @type {number|string|undefined}
  */
@@ -52,6 +60,14 @@ cvox.Interframe.id;
  * @type {Array.<function(Object)>}
  */
 cvox.Interframe.listeners = [];
+
+/**
+ * Maps an id to a function which gets called when a frame first sends an ack
+ * for a set id msg.
+ @dict {!Object.<number|string, function()>}
+ * @private
+ */
+cvox.Interframe.idToCallback_ = {};
 
 /**
  * Flag for unit testing. When false, skips over iframe.contentWindow check
@@ -74,6 +90,12 @@ cvox.Interframe.init = function() {
           cvox.ChromeVoxJSON.parse(suffix));
       if (message['command'] == cvox.Interframe.SET_ID) {
         cvox.Interframe.id = message['id'];
+        message['command'] = cvox.Interframe.ACK_SET_ID;
+        cvox.Interframe.sendMessageToParentWindow(message);
+      } else if (message['command'] == cvox.Interframe.ACK_SET_ID) {
+        cvox.Interframe.id = message['id'];
+        var callback = cvox.Interframe.idToCallback_[cvox.Interframe.id];
+        callback();
       }
       for (var i = 0, listener; listener = cvox.Interframe.listeners[i]; i++) {
         listener(message);
@@ -196,8 +218,13 @@ cvox.Interframe.sendMessageToParentWindow = function(message) {
  * @param {number|string} id The ID you want to receive in replies from
  *     this iframe.
  * @param {HTMLIFrameElement} iframe The iframe to assign.
+ * @param {function()=} opt_callback Called when a ack msg arrives from the
+ *frame.
  */
-cvox.Interframe.sendIdToIFrame = function(id, iframe) {
+cvox.Interframe.sendIdToIFrame = function(id, iframe, opt_callback) {
+  if (opt_callback) {
+    cvox.Interframe.idToCallback_[id] = opt_callback;
+  }
   var message = {'command': cvox.Interframe.SET_ID, 'id': id};
   cvox.Interframe.sendMessageToIFrame(message, iframe);
 };
