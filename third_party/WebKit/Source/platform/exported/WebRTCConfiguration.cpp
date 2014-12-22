@@ -35,7 +35,6 @@
 #include "platform/mediastream/RTCConfiguration.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 

@@ -21,7 +21,6 @@
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 
 #include "public/platform/WebGraphicsLayerDebugInfo.h"
-#include "public/platform/WebVector.h"
 #include "wtf/text/CString.h"
 
 namespace blink {

@@ -41,7 +41,6 @@
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebSecurityOrigin.h"
 
