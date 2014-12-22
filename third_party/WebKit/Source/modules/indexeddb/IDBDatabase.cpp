@@ -277,10 +277,21 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptio
     m_metadata.objectStores.remove(objectStoreId);
 }
 
-IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
+IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringOrStringSequenceOrDOMStringList& storeNames, const String& modeString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::transaction");
     Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
+
+    Vector<String> scope;
+    if (storeNames.isString())
+        scope.append(storeNames.getAsString());
+    else if (storeNames.isStringSequence())
+        scope = storeNames.getAsStringSequence();
+    else if (storeNames.isDOMStringList())
+        scope = *storeNames.getAsDOMStringList();
+    else
+        ASSERT_NOT_REACHED();
+
     if (!scope.size()) {
         exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return 0;
@@ -319,13 +330,6 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const Vector<
     m_backend->createTransaction(transactionId, WebIDBDatabaseCallbacksImpl::create(m_databaseCallbacks).leakPtr(), objectStoreIds, mode);
 
     return IDBTransaction::create(scriptState, transactionId, scope, mode, this);
-}
-
-IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const String& storeName, const String& mode, ExceptionState& exceptionState)
-{
-    RefPtrWillBeRawPtr<DOMStringList> storeNames = DOMStringList::create();
-    storeNames->append(storeName);
-    return transaction(scriptState, storeNames, mode, exceptionState);
 }
 
 void IDBDatabase::forceClose()

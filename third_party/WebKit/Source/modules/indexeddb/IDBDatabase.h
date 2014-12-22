@@ -27,6 +27,7 @@
 #define IDBDatabase_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/EventModules.h"
@@ -74,9 +75,7 @@ public:
     PassRefPtrWillBeRawPtr<DOMStringList> objectStoreNames() const;
 
     IDBObjectStore* createObjectStore(const String& name, const IDBObjectStoreParameters& options, ExceptionState& exceptionState) { return createObjectStore(name, IDBKeyPath(options.keyPath()), options.autoIncrement(), exceptionState); }
-    IDBTransaction* transaction(ScriptState* scriptState, PassRefPtrWillBeRawPtr<DOMStringList> scope, const String& mode, ExceptionState& exceptionState) { return transaction(scriptState, *scope, mode, exceptionState); }
-    IDBTransaction* transaction(ScriptState*, const Vector<String>&, const String& mode, ExceptionState&);
-    IDBTransaction* transaction(ScriptState*, const String&, const String& mode, ExceptionState&);
+    IDBTransaction* transaction(ScriptState*, const StringOrStringSequenceOrDOMStringList&, const String& mode, ExceptionState&);
     void deleteObjectStore(const String& name, ExceptionState&);
     void close();
 

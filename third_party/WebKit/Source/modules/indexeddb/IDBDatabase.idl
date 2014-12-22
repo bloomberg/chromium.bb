@@ -42,10 +42,7 @@ enum IDBTransactionMode {
     readonly attribute DOMStringList objectStoreNames;
     [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional IDBObjectStoreParameters options);
     [RaisesException] void deleteObjectStore(DOMString name);
-    // FIXME: should be union type http://crbug.com/240176
-    [CallWith=ScriptState, RaisesException] IDBTransaction transaction(DOMString storeName, optional IDBTransactionMode mode = "readonly");
-    [CallWith=ScriptState, RaisesException] IDBTransaction transaction(sequence<DOMString> storeNames, optional IDBTransactionMode mode = "readonly");
-    [CallWith=ScriptState, RaisesException] IDBTransaction transaction(DOMStringList storeNames, optional IDBTransactionMode mode = "readonly");
+    [CallWith=ScriptState, RaisesException] IDBTransaction transaction((DOMString or sequence<DOMString> or DOMStringList) storeNames, optional IDBTransactionMode mode = "readonly");
     void close();
     attribute EventHandler onabort;
     attribute EventHandler onclose;
