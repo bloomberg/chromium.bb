@@ -63,9 +63,8 @@ class SYNC_EXPORT SyncableService
   // Returns: A default SyncError (IsSet() == false) if no errors were
   //          encountered, and a filled SyncError (IsSet() == true)
   //          otherwise.
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) override = 0;
+  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+                               const SyncChangeList& change_list) override = 0;
 
   // Returns AttachmentStore used by datatype. Attachment store is used by sync
   // when uploading or downloading attachments.

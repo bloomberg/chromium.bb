@@ -34,7 +34,7 @@ class EntityTrackerTest : public ::testing::Test {
     specifics.mutable_preference()->set_value("pref.value");
   }
 
-  virtual ~EntityTrackerTest() {}
+  ~EntityTrackerTest() override {}
 
   const std::string kServerId;
   const std::string kClientTag;

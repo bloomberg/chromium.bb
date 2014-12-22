@@ -184,13 +184,9 @@ TEST(SyncerProtoUtil, NameExtractionTwoNames) {
 
 class SyncerProtoUtilTest : public testing::Test {
  public:
-  virtual void SetUp() {
-    dir_maker_.SetUp();
-  }
+  void SetUp() override { dir_maker_.SetUp(); }
 
-  virtual void TearDown() {
-    dir_maker_.TearDown();
-  }
+  void TearDown() override { dir_maker_.TearDown(); }
 
   syncable::Directory* directory() {
     return dir_maker_.directory();

@@ -17,14 +17,12 @@ namespace syncer {
 
 class GetUpdatePositionTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     dir_maker_.SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
   }
 
-  virtual void TearDown() {
-    dir_maker_.TearDown();
-  }
+  void TearDown() override { dir_maker_.TearDown(); }
 
   syncable::Directory* directory() {
     return dir_maker_.directory();

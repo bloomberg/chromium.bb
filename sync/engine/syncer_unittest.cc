@@ -277,7 +277,7 @@ class SyncerTest : public testing::Test,
             session_.get()));
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     dir_maker_.SetUp();
     mock_server_.reset(new MockConnectionManager(directory(),
                                                  &cancelation_signal_));
@@ -324,7 +324,7 @@ class SyncerTest : public testing::Test,
     mock_server_->SetKeystoreKey("encryption_key");
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     model_type_registry_->UnregisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
     mock_server_.reset();

@@ -199,13 +199,9 @@ int64 MakeServerNode(UserShare* share, ModelType model_type,
 
 class SyncApiTest : public testing::Test {
  public:
-  virtual void SetUp() {
-    test_user_share_.SetUp();
-  }
+  void SetUp() override { test_user_share_.SetUp(); }
 
-  virtual void TearDown() {
-    test_user_share_.TearDown();
-  }
+  void TearDown() override { test_user_share_.TearDown(); }
 
  protected:
   // Create an entry with the given |model_type|, |client_tag| and

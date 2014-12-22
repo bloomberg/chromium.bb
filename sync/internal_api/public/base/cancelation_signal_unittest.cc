@@ -93,7 +93,7 @@ bool BlockingTask::WasStarted() {
 class CancelationSignalTest : public ::testing::Test {
  public:
   CancelationSignalTest();
-  virtual ~CancelationSignalTest();
+  ~CancelationSignalTest() override;
 
   // Starts the blocking task on a background thread.  Does not wait for the
   // task to start.

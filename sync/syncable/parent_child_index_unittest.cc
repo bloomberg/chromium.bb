@@ -21,7 +21,7 @@ static const std::string kCacheGuid = "8HhNIHlEOCGQbIAALr9QEg==";
 
 class ParentChildIndexTest : public testing::Test {
  public:
-  virtual void TearDown() {
+  void TearDown() override {
     // To make memory management easier, we take ownership of all EntryKernels
     // returned by our factory methods and delete them here.
     STLDeleteElements(&owned_entry_kernels_);

@@ -146,7 +146,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
  protected:
   // SetUp() is called before each test case is run.
   // The sqlite3 DB is deleted before each test is run.
-  virtual void SetUp() {
+  void SetUp() override {
     SyncableDirectoryTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_path_ = temp_dir_.path().Append(
@@ -155,7 +155,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     CreateDirectory();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // This also closes file handles.
     dir()->SaveChanges();
     dir().reset();
@@ -545,12 +545,10 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
 
 class SyncableDirectoryManagement : public testing::Test {
  public:
-  virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
+
  protected:
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;

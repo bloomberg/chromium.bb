@@ -47,7 +47,7 @@ class Derived : public Base, public base::SupportsWeakPtr<Derived> {};
 
 class WeakHandleTest : public ::testing::Test {
  protected:
-  virtual void TearDown() {
+  void TearDown() override {
     // Process any last-minute posted tasks.
     PumpLoop();
   }

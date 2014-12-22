@@ -21,7 +21,7 @@ const char kAttachmentData[] = "some data";
 
 class FakeAttachmentUploaderTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     upload_callback_count = 0;
     upload_callback = base::Bind(&FakeAttachmentUploaderTest::Increment,
                                  base::Unretained(this),

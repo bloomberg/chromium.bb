@@ -44,15 +44,11 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
       : ui_worker_(new FakeModelWorker(GROUP_UI)) {
   }
 
-  virtual ~DirectoryUpdateHandlerProcessUpdateTest() {}
+  ~DirectoryUpdateHandlerProcessUpdateTest() override {}
 
-  virtual void SetUp() override {
-    dir_maker_.SetUp();
-  }
+  void SetUp() override { dir_maker_.SetUp(); }
 
-  virtual void TearDown() override {
-    dir_maker_.TearDown();
-  }
+  void TearDown() override { dir_maker_.TearDown(); }
 
   syncable::Directory* dir() {
     return dir_maker_.directory();
@@ -486,7 +482,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         articles_emitter_(ARTICLES, &type_observers_),
         update_handler_map_deleter_(&update_handler_map_) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     dir_maker_.SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
 
@@ -506,9 +502,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
             directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 
-  virtual void TearDown() override {
-    dir_maker_.TearDown();
-  }
+  void TearDown() override { dir_maker_.TearDown(); }
 
   const UpdateCounters& GetBookmarksUpdateCounters() {
     return bookmarks_emitter_.GetUpdateCounters();

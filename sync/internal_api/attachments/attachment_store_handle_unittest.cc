@@ -88,7 +88,7 @@ class AttachmentStoreHandleTest : public testing::Test {
         read_all_metadata_call_count_(0),
         dtor_call_count_(0) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<AttachmentStoreBase> backend(new MockAttachmentStore(
         base::Bind(&AttachmentStoreHandleTest::InitCalled,
                    base::Unretained(this)),

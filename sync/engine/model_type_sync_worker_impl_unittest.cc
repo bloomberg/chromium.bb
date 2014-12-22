@@ -57,7 +57,7 @@ namespace syncer {
 class ModelTypeSyncWorkerImplTest : public ::testing::Test {
  public:
   ModelTypeSyncWorkerImplTest();
-  virtual ~ModelTypeSyncWorkerImplTest();
+  ~ModelTypeSyncWorkerImplTest() override;
 
   // One of these Initialize functions should be called at the beginning of
   // each test.

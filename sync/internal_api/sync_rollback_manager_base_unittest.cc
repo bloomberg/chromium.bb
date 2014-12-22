@@ -33,7 +33,7 @@ class SyncTestRollbackManager : public SyncRollbackManagerBase {
 
 class SyncRollbackManagerBaseTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     SyncManager::InitArgs args;
     args.database_location = base::FilePath(base::FilePath::kCurrentDirectory);
     args.service_url = GURL("https://example.com/");

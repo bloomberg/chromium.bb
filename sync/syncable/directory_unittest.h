@@ -35,10 +35,10 @@ class SyncableDirectoryTest : public testing::Test {
   static const char kDirectoryName[];
 
   SyncableDirectoryTest();
-  virtual ~SyncableDirectoryTest();
+  ~SyncableDirectoryTest() override;
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Destroys any currently opened directory, creates and opens a new one.
   //

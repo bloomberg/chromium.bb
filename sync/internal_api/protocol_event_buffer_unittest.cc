@@ -16,7 +16,7 @@ namespace syncer {
 class ProtocolEventBufferTest : public ::testing::Test {
  public:
   ProtocolEventBufferTest();
-  virtual ~ProtocolEventBufferTest();
+  ~ProtocolEventBufferTest() override;
 
   static scoped_ptr<ProtocolEvent> MakeTestEvent(int64 id);
   static bool HasId(const ProtocolEvent& event, int64 id);

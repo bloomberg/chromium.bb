@@ -20,8 +20,8 @@ namespace syncer {
 class ModelTypeRegistryTest : public ::testing::Test {
  public:
   ModelTypeRegistryTest();
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   ModelTypeRegistry* registry();
 

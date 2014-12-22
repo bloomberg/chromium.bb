@@ -91,7 +91,7 @@ class AttachmentServiceProxyTest : public testing::Test,
  protected:
   AttachmentServiceProxyTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     CalledOnValidThread();
     stub_thread.reset(new base::Thread("attachment service stub thread"));
     stub_thread->Start();
@@ -108,8 +108,7 @@ class AttachmentServiceProxyTest : public testing::Test,
     count_callback_drop = 0;
   }
 
-  virtual void TearDown()
-      override {
+  void TearDown() override {
     // We must take care to call the stub's destructor on the stub_thread
     // because that's the thread to which its WeakPtrs are bound.
     if (stub) {

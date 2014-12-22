@@ -32,9 +32,7 @@ SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
  public:
-  virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
  protected:
   std::string GetUsername() {

@@ -154,8 +154,8 @@ class AttachmentDownloaderImplTest : public testing::Test {
 
   AttachmentDownloaderImplTest() : num_completed_downloads_(0) {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   AttachmentDownloader* downloader() { return attachment_downloader_.get(); }
 

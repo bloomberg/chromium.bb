@@ -194,8 +194,8 @@ class AttachmentUploaderImplTest : public testing::Test,
 
  protected:
   AttachmentUploaderImplTest();
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Run the message loop until UploadDone has been invoked |num_uploads| times.
   void RunAndWaitFor(int num_uploads);

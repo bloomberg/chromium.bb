@@ -120,7 +120,7 @@ class SyncSchedulerTest : public testing::Test {
     MOCK_METHOD1(GetDelay, TimeDelta(const TimeDelta&));
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     dir_maker_.SetUp();
     syncer_ = new testing::StrictMock<MockSyncer>();
     delay_ = NULL;
@@ -172,7 +172,7 @@ class SyncSchedulerTest : public testing::Test {
     return TestTimeouts::action_timeout();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     PumpLoop();
     scheduler_.reset();
     PumpLoop();
@@ -895,14 +895,14 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
 }
 
 class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
-  virtual void SetUp() {
+  void SetUp() override {
     SyncSchedulerTest::SetUp();
     UseMockDelayProvider();
     EXPECT_CALL(*delay(), GetDelay(_))
         .WillRepeatedly(Return(TimeDelta::FromMilliseconds(10)));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     StopSyncScheduler();
     SyncSchedulerTest::TearDown();
   }

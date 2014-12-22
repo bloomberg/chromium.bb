@@ -31,13 +31,13 @@ class SyncHttpBridgeTest : public testing::Test {
         io_thread_("IO thread") {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (fake_default_request_context_getter_) {
       GetIOThreadLoop()->ReleaseSoon(FROM_HERE,
           fake_default_request_context_getter_);

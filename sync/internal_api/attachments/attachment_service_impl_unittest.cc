@@ -176,14 +176,14 @@ class AttachmentServiceImplTest : public testing::Test,
  protected:
   AttachmentServiceImplTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     InitializeAttachmentService(make_scoped_ptr(new MockAttachmentUploader()),
                                 make_scoped_ptr(new MockAttachmentDownloader()),
                                 this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     attachment_service_.reset();
     ASSERT_FALSE(attachment_store_);
     ASSERT_FALSE(attachment_uploader_);

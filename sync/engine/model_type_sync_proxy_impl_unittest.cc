@@ -42,7 +42,7 @@ static const ModelType kModelType = PREFERENCES;
 class ModelTypeSyncProxyImplTest : public ::testing::Test {
  public:
   ModelTypeSyncProxyImplTest();
-  virtual ~ModelTypeSyncProxyImplTest();
+  ~ModelTypeSyncProxyImplTest() override;
 
   // Initialize with no local state.  The type sync proxy will be unable to
   // commit until it receives notification that initial sync has completed.

@@ -23,7 +23,7 @@ class SyncContextProxyImplTest : public ::testing::Test {
       : sync_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         type_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     dir_maker_.SetUp();
     registry_.reset(new ModelTypeRegistry(
         workers_, dir_maker_.directory(), &nudge_handler_));
@@ -31,7 +31,7 @@ class SyncContextProxyImplTest : public ::testing::Test {
         new SyncContextProxyImpl(sync_task_runner_, registry_->AsWeakPtr()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     context_proxy_.reset();
     registry_.reset();
     dir_maker_.TearDown();
