@@ -373,6 +373,15 @@ void AXTable::addChildren()
     RenderTable* table = toRenderTable(m_renderer);
     AXObjectCacheImpl* axCache = axObjectCache();
 
+    // Add caption
+    if (HTMLTableElement* tableElement = toHTMLTableElement(table->node())) {
+        if (HTMLTableCaptionElement* caption = tableElement->caption()) {
+            AXObject* captionObject = axCache->getOrCreate(caption);
+            if (!captionObject->accessibilityIsIgnored())
+                m_children.append(captionObject);
+        }
+    }
+
     // Go through all the available sections to pull out the rows and add them as children.
     table->recalcSectionsIfNeeded();
     RenderTableSection* tableSection = table->topSection();
