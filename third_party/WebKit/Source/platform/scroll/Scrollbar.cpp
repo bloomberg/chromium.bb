@@ -66,6 +66,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     , m_overlapsResizer(false)
     , m_suppressInvalidation(false)
     , m_isAlphaLocked(false)
+    , m_elasticOverscroll(0)
 {
     if (!m_theme)
         m_theme = ScrollbarTheme::theme();

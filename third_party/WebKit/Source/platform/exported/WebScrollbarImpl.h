@@ -58,6 +58,8 @@ public:
     virtual bool isLeftSideVerticalScrollbar() const override;
     virtual bool isAlphaLocked() const override;
     virtual void setIsAlphaLocked(bool) override;
+    virtual float elasticOverscroll() const override;
+    virtual void setElasticOverscroll(float) override;
 
 private:
     explicit WebScrollbarImpl(Scrollbar*);

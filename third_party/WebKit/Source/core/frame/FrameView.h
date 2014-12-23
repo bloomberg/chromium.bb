@@ -167,6 +167,9 @@ public:
     virtual bool rubberBandingOnCompositorThread() const override;
     void setScrollPositionNonProgrammatically(const IntPoint&);
 
+    FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
+    void setElasticOverscroll(const FloatSize&);
+
     // This is different than visibleContentRect() in that it ignores negative (or overly positive)
     // offsets from rubber-banding, and it takes zooming into account.
     LayoutRect viewportConstrainedVisibleContentRect() const;
@@ -800,6 +803,8 @@ private:
 
     int m_scrollbarsAvoidingResizer;
     bool m_scrollbarsSuppressed;
+
+    FloatSize m_elasticOverscroll;
 
     bool m_inUpdateScrollbars;
 

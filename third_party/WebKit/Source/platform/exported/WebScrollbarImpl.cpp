@@ -133,4 +133,14 @@ void WebScrollbarImpl::setIsAlphaLocked(bool flag)
     m_scrollbar->setIsAlphaLocked(flag);
 }
 
+float WebScrollbarImpl::elasticOverscroll() const
+{
+    return m_scrollbar->elasticOverscroll();
+}
+
+void WebScrollbarImpl::setElasticOverscroll(float elasticOverscroll)
+{
+    m_scrollbar->setElasticOverscroll(elasticOverscroll);
+}
+
 } // namespace blink

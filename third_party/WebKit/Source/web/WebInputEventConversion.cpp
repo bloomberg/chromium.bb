@@ -71,17 +71,19 @@ static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point
     float scale = 1;
     IntSize offset;
     IntPoint pinchViewport;
+    FloatSize overscrollOffset;
     if (widget) {
         FrameView* rootView = toFrameView(widget->root());
         if (rootView) {
             scale = rootView->inputEventsScaleFactor();
             offset = rootView->inputEventsOffsetForEmulation();
             pinchViewport = flooredIntPoint(rootView->page()->frameHost().pinchViewport().visibleRect().location());
+            overscrollOffset = rootView->elasticOverscroll();
         }
     }
     return FloatPoint(
-        (point.x() - offset.width()) / scale + pinchViewport.x(),
-        (point.y() - offset.height()) / scale + pinchViewport.y());
+        (point.x() - offset.width()) / scale + pinchViewport.x() + overscrollOffset.width(),
+        (point.y() - offset.height()) / scale + pinchViewport.y() + overscrollOffset.height());
 }
 
 static int toWebEventModifiers(unsigned platformModifiers)

@@ -144,6 +144,9 @@ public:
     virtual bool isAlphaLocked() const override { return m_isAlphaLocked; }
     virtual void setIsAlphaLocked(bool flag) override { m_isAlphaLocked = flag; }
 
+    virtual float elasticOverscroll() const override { return m_elasticOverscroll; }
+    virtual void setElasticOverscroll(float elasticOverscroll) override { m_elasticOverscroll = elasticOverscroll; }
+
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
 
@@ -195,6 +198,8 @@ protected:
     bool m_suppressInvalidation;
 
     bool m_isAlphaLocked;
+
+    float m_elasticOverscroll;
 
 private:
     virtual bool isScrollbar() const override { return true; }

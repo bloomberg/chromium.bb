@@ -86,6 +86,9 @@ public:
     virtual bool isAlphaLocked() const = 0;
     virtual void setIsAlphaLocked(bool) = 0;
 
+    virtual float elasticOverscroll() const = 0;
+    virtual void setElasticOverscroll(float) = 0;
+
 protected:
     virtual ~ScrollbarThemeClient() { }
 };

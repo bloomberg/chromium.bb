@@ -104,6 +104,8 @@ public:
     virtual bool isLeftSideVerticalScrollbar() const = 0;
     virtual bool isAlphaLocked() const { return false; }
     virtual void setIsAlphaLocked(bool) { }
+    virtual float elasticOverscroll() const = 0;
+    virtual void setElasticOverscroll(float) = 0;
 };
 
 } // namespace blink

@@ -363,4 +363,14 @@ bool WebPluginScrollbarImpl::onKeyDown(const WebInputEvent& event)
     return false;
 }
 
+float WebPluginScrollbarImpl::elasticOverscroll() const
+{
+    return m_scrollbar->elasticOverscroll();
+}
+
+void WebPluginScrollbarImpl::setElasticOverscroll(float elasticOverscroll)
+{
+    m_scrollbar->setElasticOverscroll(elasticOverscroll);
+}
+
 } // namespace blink

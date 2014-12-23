@@ -274,11 +274,17 @@ int ScrollbarTheme::thumbLength(ScrollbarThemeClient* scrollbar)
     if (!scrollbar->enabled())
         return 0;
 
+    // It is safe to compute the overhang by adding the result from the main
+    // thread overscroll mode (first) and then adding the result from compositor
+    // thread overscroll (second) because the modes are mutually exclusive (and
+    // determining which mode is in use here will require lots of temporary
+    // plumbing, and the main thread mode is to be deleted).
     float overhang = 0;
     if (scrollbar->currentPos() < 0)
         overhang = -scrollbar->currentPos();
     else if (scrollbar->visibleSize() + scrollbar->currentPos() > scrollbar->totalSize())
         overhang = scrollbar->currentPos() + scrollbar->visibleSize() - scrollbar->totalSize();
+    overhang += fabsf(scrollbar->elasticOverscroll());
     float proportion = 0.0f;
     float totalSize = usedTotalSize(scrollbar);
     if (totalSize > 0.0f) {

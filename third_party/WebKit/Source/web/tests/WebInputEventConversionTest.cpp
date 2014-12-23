@@ -729,6 +729,67 @@ TEST(WebInputEventConversionTest, PinchViewportOffset)
     }
 }
 
+TEST(WebInputEventConversionTest, ElasticOverscroll)
+{
+    const std::string baseURL("http://www.test4.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, 0, setupVirtualViewportPinch);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+
+    FloatSize elasticOverscroll(10, -20);
+    view->setElasticOverscroll(elasticOverscroll);
+
+    // Just elastic overscroll.
+    {
+        WebMouseEvent webMouseEvent;
+        webMouseEvent.type = WebInputEvent::MouseMove;
+        webMouseEvent.x = 10;
+        webMouseEvent.y = 50;
+        webMouseEvent.windowX = 10;
+        webMouseEvent.windowY = 50;
+        webMouseEvent.globalX = 10;
+        webMouseEvent.globalY = 50;
+
+        PlatformMouseEventBuilder platformMouseBuilder(view, webMouseEvent);
+        EXPECT_EQ(webMouseEvent.x + elasticOverscroll.width(), platformMouseBuilder.position().x());
+        EXPECT_EQ(webMouseEvent.y + elasticOverscroll.height(), platformMouseBuilder.position().y());
+        EXPECT_EQ(webMouseEvent.globalX, platformMouseBuilder.globalPosition().x());
+        EXPECT_EQ(webMouseEvent.globalY, platformMouseBuilder.globalPosition().y());
+    }
+
+    // Elastic overscroll and pinch-zoom (this doesn't actually ever happen,
+    // but ensure that if it were to, the overscroll would be applied after the
+    // pinch-zoom).
+    float pageScale = 2;
+    webViewImpl->setPageScaleFactor(pageScale);
+    IntPoint pinchOffset(35, 60);
+    webViewImpl->page()->frameHost().pinchViewport().setLocation(pinchOffset);
+    {
+        WebMouseEvent webMouseEvent;
+        webMouseEvent.type = WebInputEvent::MouseMove;
+        webMouseEvent.x = 10;
+        webMouseEvent.y = 10;
+        webMouseEvent.windowX = 10;
+        webMouseEvent.windowY = 10;
+        webMouseEvent.globalX = 10;
+        webMouseEvent.globalY = 10;
+
+        PlatformMouseEventBuilder platformMouseBuilder(view, webMouseEvent);
+        EXPECT_EQ(webMouseEvent.x / pageScale + pinchOffset.x() + elasticOverscroll.width(), platformMouseBuilder.position().x());
+        EXPECT_EQ(webMouseEvent.y / pageScale + pinchOffset.y() + elasticOverscroll.height(), platformMouseBuilder.position().y());
+        EXPECT_EQ(webMouseEvent.globalX, platformMouseBuilder.globalPosition().x());
+        EXPECT_EQ(webMouseEvent.globalY, platformMouseBuilder.globalPosition().y());
+    }
+}
+
 TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 {
     const std::string baseURL("http://www.test5.com/");
@@ -796,4 +857,5 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         EXPECT_TRUE(platformWheelBuilder.canScroll());
     }
 }
+
 } // anonymous namespace

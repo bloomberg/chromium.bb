@@ -1562,6 +1562,21 @@ void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint
     notifyScrollPositionChanged(newScrollPosition);
 }
 
+void FrameView::setElasticOverscroll(const FloatSize& elasticOverscroll)
+{
+    m_elasticOverscroll = elasticOverscroll;
+    if (m_horizontalScrollbar && m_horizontalScrollbar->elasticOverscroll() != elasticOverscroll.width()) {
+        m_horizontalScrollbar->setElasticOverscroll(elasticOverscroll.width());
+        if (!m_scrollbarsSuppressed)
+            m_horizontalScrollbar->invalidate();
+    }
+    if (m_verticalScrollbar && m_verticalScrollbar->elasticOverscroll() != elasticOverscroll.width()) {
+        m_verticalScrollbar->setElasticOverscroll(elasticOverscroll.width());
+        if (!m_scrollbarsSuppressed)
+            m_verticalScrollbar->invalidate();
+    }
+}
+
 IntSize FrameView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     return scrollbarInclusion == ExcludeScrollbars ? excludeScrollbars(m_layoutSize) : m_layoutSize;

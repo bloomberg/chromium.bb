@@ -4307,7 +4307,10 @@ void WebViewImpl::applyViewportDeltas(
 {
     ASSERT(pinchVirtualViewportEnabled());
 
-    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
+    if (!mainFrameImpl())
+        return;
+    FrameView* frameView = mainFrameImpl()->frameView();
+    if (!frameView)
         return;
 
     setTopControlsContentOffset(m_topControlsContentOffset + topControlsDelta);
@@ -4318,6 +4321,8 @@ void WebViewImpl::applyViewportDeltas(
 
     if (pageScaleDelta != 1)
         m_doubleTapZoomPending = false;
+
+    frameView->setElasticOverscroll(elasticOverscrollDelta + frameView->elasticOverscroll());
 
     IntPoint mainFrameScrollOffset = IntPoint(mainFrame()->scrollOffset());
     mainFrameScrollOffset.move(mainFrameDelta.width, mainFrameDelta.height);
