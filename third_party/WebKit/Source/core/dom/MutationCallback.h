@@ -40,12 +40,14 @@ namespace blink {
 class MutationRecord;
 class MutationObserver;
 
-class MutationCallback {
+class MutationCallback : public NoBaseWillBeGarbageCollectedFinalized<MutationCallback> {
 public:
     virtual ~MutationCallback() { }
 
     virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) = 0;
     virtual ExecutionContext* executionContext() const = 0;
+
+    virtual void trace(Visitor*) { }
 };
 
 }

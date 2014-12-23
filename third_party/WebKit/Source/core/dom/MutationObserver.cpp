@@ -54,13 +54,13 @@ struct MutationObserver::ObserverLessThan {
     }
 };
 
-PassRefPtrWillBeRawPtr<MutationObserver> MutationObserver::create(PassOwnPtr<MutationCallback> callback)
+PassRefPtrWillBeRawPtr<MutationObserver> MutationObserver::create(PassOwnPtrWillBeRawPtr<MutationCallback> callback)
 {
     ASSERT(isMainThread());
     return adoptRefWillBeNoop(new MutationObserver(callback));
 }
 
-MutationObserver::MutationObserver(PassOwnPtr<MutationCallback> callback)
+MutationObserver::MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback> callback)
     : m_callback(callback)
     , m_priority(s_observerPriority++)
 {
@@ -70,7 +70,12 @@ MutationObserver::~MutationObserver()
 {
 #if !ENABLE(OILPAN)
     ASSERT(m_registrations.isEmpty());
+    dispose();
 #endif
+}
+
+void MutationObserver::dispose()
+{
     if (!m_records.isEmpty())
         InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
 }
@@ -271,6 +276,7 @@ void MutationObserver::deliverMutations()
 void MutationObserver::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_callback);
     visitor->trace(m_records);
     visitor->trace(m_registrations);
 #endif

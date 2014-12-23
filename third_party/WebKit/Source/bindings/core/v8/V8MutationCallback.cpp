@@ -45,6 +45,10 @@ V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, v8::Ha
     m_callback.setWeak(this, &setWeakCallback);
 }
 
+V8MutationCallback::~V8MutationCallback()
+{
+}
+
 void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >& mutations, MutationObserver* observer)
 {
     if (!canInvokeCallback())

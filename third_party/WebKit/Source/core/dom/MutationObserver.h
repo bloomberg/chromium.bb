@@ -60,6 +60,9 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationRecordVect
 
 class MutationObserver final : public RefCountedWillBeGarbageCollectedFinalized<MutationObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
+#if ENABLE(OILPAN)
+    USING_PRE_FINALIZER(MutationObserver, dispose);
+#endif
 public:
     enum MutationType {
         ChildList = 1 << 0,
@@ -79,7 +82,7 @@ public:
         CharacterDataOldValue = 1 << 6,
     };
 
-    static PassRefPtrWillBeRawPtr<MutationObserver> create(PassOwnPtr<MutationCallback>);
+    static PassRefPtrWillBeRawPtr<MutationObserver> create(PassOwnPtrWillBeRawPtr<MutationCallback>);
     static void resumeSuspendedObservers();
     static void deliverMutations();
 
@@ -96,15 +99,16 @@ public:
     WillBeHeapHashSet<RawPtrWillBeMember<Node> > getObservedNodes() const;
 
     void trace(Visitor*);
+    void dispose();
 
 private:
     struct ObserverLessThan;
 
-    explicit MutationObserver(PassOwnPtr<MutationCallback>);
+    explicit MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback>);
     void deliver();
     bool shouldBeSuspended() const;
 
-    OwnPtr<MutationCallback> m_callback;
+    OwnPtrWillBeMember<MutationCallback> m_callback;
     MutationRecordVector m_records;
     MutationObserverRegistrationSet m_registrations;
     unsigned m_priority;
