@@ -4322,15 +4322,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_PROMPT_STORE_LINK" desc="Anchor text for link to Chrome Web Store in app or extension installation dialog">
         View details
       </message>
-      <message name="IDS_EXTENSION_PROMPT_OAUTH_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension requests. This is shown during installation.">
-        On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it can:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_OAUTH_REENABLE_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension requests. This is shown when an app is being re-enabled after new permissions have been requested.">
-        On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it can now:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension might request. This is shown when an app requests permissions which are optional.">
-        On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it could:
-      </message>
       <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES_DEFAULT" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing how the number of files. This is shown when an app has persistent access to files. This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_OF_FILES is 11 .. 19.">
         It has permanent access to <ph name="NUMBER_OF_FILES">#<ex>5</ex></ph> files.
       </message>
@@ -4690,9 +4681,6 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
       <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION" desc="Error displayed during installation of a side-loaded app, extension, or theme when the version of the referenced extension does not match the version the developer declared during registration.">
         Expected version "<ph name="EXPECTED_VERSION">$1<ex>2.0</ex></ph>", but version was "<ph name="NEW_ID">$2<ex>1.0</ex></ph>".
-      </message>
-      <message name="IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_FOUND" desc="Error displayed during installation of an extension when an import dependency is not found.">
-        Required extension with ID "<ph name="IMPORT_ID">$1<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>" and minimum version "<ph name="IMPORT_VERSION">$2<ex>1.0</ex></ph>" not found.
       </message>
       <message name="IDS_EXTENSION_INSTALL_DEPENDENCY_OLD_VERSION" desc="Error displayed during installation of an extension when an import dependency is older than the minimum version required.">
         Extension requires "<ph name="IMPORT_NAME">$1<ex>Google Cast API</ex></ph>" with a minimum version "<ph name="IMPORT_VERSION">$2<ex>1.0</ex></ph>", but only version "<ph name="INSTALLED_VERSION">$3<ex>0.9</ex></ph>" is installed.
