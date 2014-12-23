@@ -19,10 +19,13 @@ import re
 import xml.sax.saxutils
 
 
-def _WriteWorkspace(main_gyp, sources_gyp):
+def _WriteWorkspace(main_gyp, sources_gyp, params):
   """ Create a workspace to wrap main and sources gyp paths. """
   (build_file_root, build_file_ext) = os.path.splitext(main_gyp)
   workspace_path = build_file_root + '.xcworkspace'
+  options = params['options']
+  if options.generator_output:
+    workspace_path = os.path.join(options.generator_output, workspace_path)
   try:
     os.makedirs(workspace_path)
   except OSError, e:
@@ -258,5 +261,5 @@ def CreateWrapper(target_list, target_dicts, data, params):
   new_data[sources_gyp]['targets'].append(new_data_target)
 
   # Write workspace to file.
-  _WriteWorkspace(main_gyp, sources_gyp)
+  _WriteWorkspace(main_gyp, sources_gyp, params)
   return (new_target_list, new_target_dicts, new_data)
