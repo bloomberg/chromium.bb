@@ -34,7 +34,7 @@ public:
     {% endif %}
     {% endfor %}
     {# Custom internal fields #}
-    static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*);
 private:
     static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
 };

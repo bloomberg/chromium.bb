@@ -630,7 +630,7 @@ V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signatu
 
 {######################################}
 {% macro install_conditionally_enabled_methods() %}
-void {{v8_class_or_partial}}::installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
+void {{v8_class_or_partial}}::installConditionallyEnabledMethods(v8::Local<v8::Object> prototypeObject, v8::Isolate* isolate)
 {
     {% if is_partial %}
     {{v8_class}}::installConditionallyEnabledMethods(prototypeObject, isolate);
