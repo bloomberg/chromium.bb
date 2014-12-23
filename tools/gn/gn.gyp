@@ -240,6 +240,7 @@
         'substitution_writer_unittest.cc',
         'target_generator_unittest.cc',
         'target_unittest.cc',
+        'template_unittest.cc',
         'test_with_scope.cc',
         'test_with_scope.h',
         'tokenizer_unittest.cc',
