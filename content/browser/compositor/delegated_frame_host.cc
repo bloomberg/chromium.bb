@@ -180,7 +180,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
           output_size,
           color_type,
           callback));
-  request->set_area(src_subrect);
+  if (!src_subrect.IsEmpty())
+    request->set_area(src_subrect);
   client_->RequestCopyOfOutput(request.Pass());
 }
 
@@ -569,9 +570,15 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
     return;
   }
 
+  gfx::Size output_size_in_pixel;
+  if (dst_size_in_pixel.IsEmpty())
+    output_size_in_pixel = result->size();
+  else
+    output_size_in_pixel = dst_size_in_pixel;
+
   if (result->HasTexture()) {
     // GPU-accelerated path
-    PrepareTextureCopyOutputResult(dst_size_in_pixel, color_type,
+    PrepareTextureCopyOutputResult(output_size_in_pixel, color_type,
                                    callback,
                                    result.Pass());
     return;
@@ -579,7 +586,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
 
   DCHECK(result->HasBitmap());
   // Software path
-  PrepareBitmapCopyOutputResult(dst_size_in_pixel, color_type, callback,
+  PrepareBitmapCopyOutputResult(output_size_in_pixel, color_type, callback,
                                 result.Pass());
 }
 
