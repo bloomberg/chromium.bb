@@ -566,11 +566,15 @@ bool EasyUnlockPrivateSetRemoteDevicesFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  base::ListValue devices;
-  for (size_t i = 0; i < params->devices.size(); ++i) {
-    devices.Append(params->devices[i]->ToValue().release());
+  if (params->devices.empty()) {
+    EasyUnlockService::Get(profile)->ClearRemoteDevices();
+  } else {
+    base::ListValue devices;
+    for (size_t i = 0; i < params->devices.size(); ++i) {
+      devices.Append(params->devices[i]->ToValue().release());
+    }
+    EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
   }
-  EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
 
   return true;
 }

@@ -31,8 +31,6 @@ class EasyUnlockCreateKeysOperation {
 
   void Start();
 
-  // The UserContext returned will contain the new key if called after the
-  // operation has completed successfully.
   const UserContext& user_context() const { return user_context_; }
 
  private:

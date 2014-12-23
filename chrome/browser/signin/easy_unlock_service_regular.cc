@@ -94,29 +94,19 @@ void EasyUnlockServiceRegular::OnUserContextFromReauth(
       base::ThreadTaskRunnerHandle::Get().get()));
 
   OpenSetupApp();
-
-  // Use this opportunity to clear the crytohome keys if it was not already
-  // cleared earlier.
-  const base::ListValue* devices = GetRemoteDevices();
-  if (!devices || devices->empty()) {
-    chromeos::EasyUnlockKeyManager* key_manager =
-        chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
-    key_manager->RefreshKeys(
-        user_context, base::ListValue(),
-        base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   EasyUnlockScreenlockStateHandler::NO_PAIRING));
-  }
 }
 
-void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
-    EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
-    bool success) {
-  if (success)
-    SetHardlockStateForUser(GetUserEmail(), state_on_success);
+void EasyUnlockServiceRegular::OnKeysRefreshedForSetDevices(bool success) {
+  // If the keys were refreshed successfully, the hardlock state should be
+  // cleared, so Smart Lock can be used normally. Otherwise, we fall back to
+  // a hardlock state to force the user to type in their credentials again.
+  if (success) {
+    SetHardlockStateForUser(GetUserEmail(),
+                            EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
+  }
 
-  // Even if the refresh keys operation suceeded, we still fetch and check the
-  // cryptohome keys against the keys in local preferences as a sanity check.
+  // Even if the keys refresh suceeded, we still fetch the cryptohome keys as a
+  // sanity check.
   CheckCryptohomeKeysAndMaybeHardlock();
 }
 #endif
@@ -170,30 +160,34 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
     const base::ListValue& devices) {
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
-  if (devices.empty())
-    pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
-  else
-    pairing_update->SetWithoutPathExpansion(kKeyDevices, devices.DeepCopy());
+  pairing_update->SetWithoutPathExpansion(kKeyDevices, devices.DeepCopy());
 
 #if defined(OS_CHROMEOS)
   // TODO(tengs): Investigate if we can determine if the remote devices were set
   // from sync or from the setup app.
-  if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
+  if (short_lived_user_context_ && short_lived_user_context_->user_context() &&
+      !devices.empty()) {
     // We may already have the password cached, so proceed to create the
     // cryptohome keys for sign-in or the system will be hardlocked.
-    chromeos::UserSessionManager::GetInstance()
-        ->GetEasyUnlockKeyManager()
+    chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager()
         ->RefreshKeys(
-            *short_lived_user_context_->user_context(), devices,
-            base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       EasyUnlockScreenlockStateHandler::NO_HARDLOCK));
+            *short_lived_user_context_->user_context(),
+            devices,
+            base::Bind(&EasyUnlockServiceRegular::OnKeysRefreshedForSetDevices,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     CheckCryptohomeKeysAndMaybeHardlock();
   }
 #else
   CheckCryptohomeKeysAndMaybeHardlock();
 #endif
+}
+
+void EasyUnlockServiceRegular::ClearRemoteDevices() {
+  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
+  CheckCryptohomeKeysAndMaybeHardlock();
 }
 
 void EasyUnlockServiceRegular::RunTurnOffFlow() {
@@ -300,7 +294,7 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
     const cryptauth::ToggleEasyUnlockResponse& response) {
   cryptauth_client_.reset();
 
-  SetRemoteDevices(base::ListValue());
+  ClearRemoteDevices();
   SetTurnOffFlowStatus(IDLE);
   ReloadApp();
 }
