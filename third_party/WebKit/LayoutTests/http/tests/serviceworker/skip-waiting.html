@@ -39,7 +39,7 @@ promise_test(function(t) {
     var scope = 'resources/blank.html';
     var url1 = 'resources/empty.js';
     var url2 = 'resources/skip-waiting-worker.js';
-    var frame, frame_sw, oncontrollerchanged;
+    var frame, frame_sw, sw_registration, oncontrollerchanged;
     var saw_controllerchanged = new Promise(function(resolve) {
         oncontrollerchanged = function(e) {
             assert_equals(e.type, 'controllerchange',
@@ -72,12 +72,17 @@ promise_test(function(t) {
           return navigator.serviceWorker.register(url2, {scope: scope});
         })
       .then(function(registration) {
-          return Promise.all([saw_controllerchanged,
-                              fetch_tests_from_worker(registration.installing)]);
+          sw_registration = registration;
+          add_completion_callback(function() {
+              registration.unregister();
+            });
+          return saw_controllerchanged;
         })
       .then(function() {
           frame.remove();
-          return service_worker_unregister_and_done(t, scope);
+          assert_not_equals(sw_registration.active, null,
+                            'Registration active worker should not be null');
+          fetch_tests_from_worker(sw_registration.active);
         });
   }, 'Test skipWaiting while a client is using the registration');
 
