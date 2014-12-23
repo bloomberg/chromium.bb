@@ -15,7 +15,7 @@ class TestRepaintPage(page_module.Page):
     super(TestRepaintPage, self).__init__('file://blank.html',
                                           page_set, base_dir)
 
-  def RunRepaint(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.RepaintContinuously(seconds=2)
 
 

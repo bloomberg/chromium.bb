@@ -14,7 +14,7 @@ def _RepaintContinously(action_runner):
 def _CreatePageClassWithRepaintInteractions(page_cls):
   class DerivedRepaintPage(page_cls):  # pylint: disable=W0232
 
-    def RunRepaintness(self, action_runner):
+    def RunPageInteractions(self, action_runner):
       _RepaintContinously(action_runner)
   return DerivedRepaintPage
 
@@ -28,7 +28,7 @@ class KeyMobileSitesRepaintPage(page_module.Page):
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_mobile_sites_repaint.json'
 
-  def RunRepaintness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     _RepaintContinously(action_runner)
 
 

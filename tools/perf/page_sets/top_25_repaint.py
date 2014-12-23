@@ -17,14 +17,14 @@ class TopRepaintPage(page_module.Page):
     self.archive_data_file = 'data/top_25_repaint.json'
     self.credentials = credentials
 
-  def RunRepaint(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.RepaintContinuously(seconds=5)
 
 
 def _CreatePageClassWithRepaintInteractions(page_cls):
   class DerivedRepaintPage(page_cls):  # pylint: disable=W0232
 
-    def RunRepaint(self, action_runner):
+    def RunPageInteractions(self, action_runner):
       action_runner.RepaintContinuously(seconds=5)
   return DerivedRepaintPage
 
