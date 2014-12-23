@@ -10,6 +10,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/renderer/cast_media_load_deferrer.h"
+#include "chromecast/renderer/cast_render_process_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
 #include "chromecast/renderer/media/cma_media_renderer_factory.h"
 #include "components/dns_prefetch/renderer/prescient_networking_dispatcher.h"
@@ -49,6 +50,8 @@ void CastContentRendererClient::RenderThreadStarted() {
   if (!command_line->HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
 #endif
+
+  cast_observer_.reset(new CastRenderProcessObserver());
 
   prescient_networking_dispatcher_.reset(
       new dns_prefetch::PrescientNetworkingDispatcher());

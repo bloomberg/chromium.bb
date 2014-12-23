@@ -176,6 +176,8 @@
         'renderer/cast_content_renderer_client.h',
         'renderer/cast_media_load_deferrer.cc',
         'renderer/cast_media_load_deferrer.h',
+        'renderer/cast_render_process_observer.cc',
+        'renderer/cast_render_process_observer.h',
         'renderer/key_systems_cast.cc',
         'renderer/key_systems_cast.h',
       ],

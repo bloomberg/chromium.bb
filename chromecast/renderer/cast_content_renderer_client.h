@@ -16,6 +16,7 @@ class PrescientNetworkingDispatcher;
 
 namespace chromecast {
 namespace shell {
+class CastRenderProcessObserver;
 
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
@@ -38,6 +39,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
  private:
   scoped_ptr<dns_prefetch::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
+  scoped_ptr<CastRenderProcessObserver> cast_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentRendererClient);
 };
