@@ -98,7 +98,6 @@ class SSLBlockingPage : public SecurityInterstitialPage {
 
   const int cert_error_;
   const net::SSLInfo ssl_info_;
-  const GURL request_url_;
   // There are two ways for the user to override an interstitial:
   //
   // overridable_) By clicking on "Advanced" and then "Proceed".

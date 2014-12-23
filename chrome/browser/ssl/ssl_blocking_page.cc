@@ -514,7 +514,7 @@ void SSLBlockingPage::PopulateInterstitialStrings(
           SSLErrorInfo::CreateError(
               SSLErrorInfo::NetErrorToErrorType(cert_error_),
               ssl_info_.cert.get(),
-              request_url_);
+              request_url());
       load_time_data->SetString("explanationParagraph", error_info.details());
       load_time_data->SetString(
           "primaryButtonText",
