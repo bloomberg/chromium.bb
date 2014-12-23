@@ -138,14 +138,13 @@ PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, uns
     return base64Data.release();
 }
 
-PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(unsigned minRepeatCount, double minDuration) const
+PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(unsigned minRepeatCount, double minDuration, const FloatRect* clipRect) const
 {
     OwnPtr<GraphicsContextSnapshot::Timings> timings = adoptPtr(new GraphicsContextSnapshot::Timings());
     timings->reserveCapacity(minRepeatCount);
     const SkIRect bounds = m_picture->cullRect().roundOut();
     SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
-    OwnPtr<ProfilingCanvas> canvas = adoptPtr(new ProfilingCanvas(bitmap));
 
     double now = WTF::monotonicallyIncreasingTime();
     double stopTime = now + minDuration;
@@ -154,10 +153,11 @@ PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(un
         Vector<double>* currentTimings = &timings->last();
         if (timings->size() > 1)
             currentTimings->reserveCapacity(timings->begin()->size());
-        if (step)
-            canvas = adoptPtr(new ProfilingCanvas(bitmap));
-        canvas->setTimings(currentTimings);
-        m_picture->playback(canvas.get());
+        ProfilingCanvas canvas(bitmap);
+        if (clipRect)
+            canvas.clipRect(SkRect::MakeXYWH(clipRect->x(), clipRect->y(), clipRect->width(), clipRect->height()));
+        canvas.setTimings(currentTimings);
+        m_picture->playback(&canvas);
         now = WTF::monotonicallyIncreasingTime();
     }
     return timings.release();

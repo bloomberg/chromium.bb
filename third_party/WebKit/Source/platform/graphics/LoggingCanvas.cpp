@@ -79,9 +79,10 @@ AutoLogger::~AutoLogger()
         m_canvas->m_log->pushObject(m_logItem);
 }
 
-LoggingCanvas::LoggingCanvas(int width, int height) : InterceptingCanvas(width, height)
+LoggingCanvas::LoggingCanvas(int width, int height)
+    : InterceptingCanvas(width, height)
+    , m_log(JSONArray::create())
 {
-    m_log = JSONArray::create();
 }
 
 void LoggingCanvas::drawPaint(const SkPaint& paint)

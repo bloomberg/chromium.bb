@@ -422,12 +422,27 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
     *dataURL = url.toString();
 }
 
-void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >& outTimings)
+static bool parseRect(const JSONObject& object, FloatRect* rect)
+{
+    double x = 0, y = 0;
+    double width = 0, height = 0;
+    if (!object.getNumber("x", &x) || !object.getNumber("y", &y) || !object.getNumber("width", &width) || !object.getNumber("width", &height))
+        return false;
+    *rect = FloatRect(x, y, width, height);
+    return true;
+}
+
+void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, const RefPtr<JSONObject>* clipRect, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >& outTimings)
 {
     const GraphicsContextSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<GraphicsContextSnapshot::Timings> timings = snapshot->profile(minRepeatCount ? *minRepeatCount : 1, minDuration ? *minDuration : 0);
+    FloatRect rect;
+    if (clipRect && !parseRect(**clipRect, &rect)) {
+        *errorString = "Invalid argument, missing required field";
+        return;
+    }
+    OwnPtr<GraphicsContextSnapshot::Timings> timings = snapshot->profile(minRepeatCount ? *minRepeatCount : 1, minDuration ? *minDuration : 0, clipRect ? &rect : 0);
     outTimings = TypeBuilder::Array<TypeBuilder::Array<double> >::create();
     for (size_t i = 0; i < timings->size(); ++i) {
         const Vector<double>& row = (*timings)[i];

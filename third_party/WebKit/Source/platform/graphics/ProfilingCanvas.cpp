@@ -57,10 +57,13 @@ AutoStamper::~AutoStamper()
     if (m_profilingCanvas->m_depthCount)
         return;
     double delta = WTF::monotonicallyIncreasingTime() - m_startTime;
-    m_profilingCanvas->m_timings->append(delta);
+    if (m_profilingCanvas->m_timings)
+        m_profilingCanvas->m_timings->append(delta);
 }
 
-ProfilingCanvas::ProfilingCanvas(SkBitmap bitmap) : InterceptingCanvas(bitmap)
+ProfilingCanvas::ProfilingCanvas(SkBitmap bitmap)
+    : InterceptingCanvas(bitmap)
+    , m_timings(nullptr)
 {
 }
 
