@@ -219,7 +219,10 @@ class HotwordNotificationDelegate : public NotificationDelegate {
   // Overridden from NotificationDelegate:
   void ButtonClick(int button_index) override {
     DCHECK_EQ(0, button_index);
+    Click();
+  }
 
+  void Click() override {
     // Launch the hotword audio verification app in the right mode.
     HotwordService::LaunchMode launch_mode =
         HotwordService::HOTWORD_AND_AUDIO_HISTORY;
