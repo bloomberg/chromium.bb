@@ -48,7 +48,10 @@ static const size_t kMaximumTextSizeForAutocomplete = 1000;
 
 // Experiment information
 const char kFillOnAccountSelectFieldTrialName[] = "FillOnAccountSelect";
-const char kFillOnAccountSelectFieldTrialEnabledGroup[] = "Enable";
+const char kFillOnAccountSelectFieldTrialEnabledWithHighlightGroup[] =
+    "EnableWithHighlight";
+const char kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup[] =
+    "EnableWithNoHighlight";
 
 // Maps element names to the actual elements to simplify form filling.
 typedef std::map<base::string16, blink::WebInputElement> FormInputElementMap;
@@ -138,11 +141,35 @@ bool ShouldFillOnAccountSelect() {
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFillOnAccountSelect) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFillOnAccountSelectNoHighlighting)) {
+    return true;
+  }
+
+  return group_name ==
+             kFillOnAccountSelectFieldTrialEnabledWithHighlightGroup ||
+         group_name ==
+             kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup;
+}
+
+bool ShouldHighlightFields() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName(kFillOnAccountSelectFieldTrialName);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableFillOnAccountSelect) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFillOnAccountSelect)) {
     return true;
   }
 
-  return group_name == kFillOnAccountSelectFieldTrialEnabledGroup;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFillOnAccountSelectNoHighlighting)) {
+    return false;
+  }
+
+  return group_name !=
+         kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup;
 }
 
 // Helper to search the given form element for the specified input elements in
@@ -421,19 +448,25 @@ bool FillFormOnPasswordReceived(
   //   (a) The fill-on-account-select flag is not set, and
   //   (b) The username element isn't prefilled
   //
-  // If (a) is false, then just mark the username element as autofilled and
-  // return so the fill step is skipped.
+  // If (a) is false, then just mark the username element as autofilled if the
+  // user is not in the "no highlighting" group and return so the fill step is
+  // skipped.
   //
   // If there is no autocompletable username field, and (a) is false, then the
   // username element cannot be autofilled, but the user should still be able to
   // select to fill the password element, so the password element must be marked
-  // as autofilled and the fill step should also be skipped.
+  // as autofilled and the fill step should also be skipped if the user is not
+  // in the "no highlighting" group.
   //
   // In all other cases, do nothing.
   bool form_has_fillable_username = form_contains_username_field &&
                                     IsElementAutocompletable(username_element);
 
   if (ShouldFillOnAccountSelect()) {
+    if (!ShouldHighlightFields()) {
+      return false;
+    }
+
     if (form_has_fillable_username) {
       username_element.setAutofilled(true);
     } else {

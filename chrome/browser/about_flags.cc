@@ -382,6 +382,16 @@ const Experiment::Choice kSSLVersionMinChoices[] = {
     switches::kSSLVersionTLSv12 },
 };
 
+const Experiment::Choice kFillOnAccountSelectChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    autofill::switches::kDisableFillOnAccountSelect, "" },
+  { IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_HIGHLIGHTING,
+    autofill::switches::kEnableFillOnAccountSelect, "" },
+  { IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_NO_HIGHLIGHTING,
+    autofill::switches::kEnableFillOnAccountSelectNoHighlighting, "" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2084,8 +2094,7 @@ const Experiment kExperiments[] = {
     IDS_FILL_ON_ACCOUNT_SELECT_NAME,
     IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION,
     kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnableFillOnAccountSelect,
-                              autofill::switches::kDisableFillOnAccountSelect)
+    MULTI_VALUE_TYPE(kFillOnAccountSelectChoices)
   },
 
   // NOTE: Adding new command-line switches requires adding corresponding

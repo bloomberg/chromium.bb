@@ -7520,6 +7520,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION" desc="Description of the experiment for the password manager to fill on account selection rather than page load">
         Filling of passwords when an account is explicitly selected by the user rather than autofilling credentials on page load.
       </message>
+      <message name="IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_HIGHLIGHTING" desc="Option to enable fill on account select with field highlighting">
+        Enable with field highlighting
+      </message>
+      <message name="IDS_FLAGS_FILL_ON_ACCOUNT_SELECT_ENABLE_NO_HIGHLIGHTING" desc="Option to enable fill on account select with no field highlighting">
+        Enable with no field highlighting
+      </message>
       <if expr="not is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save password

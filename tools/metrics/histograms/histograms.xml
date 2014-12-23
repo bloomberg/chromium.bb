@@ -49661,6 +49661,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 -->
 
   <summary>Chrome flags that lead to chrome restart on ChromeOS.</summary>
+  <int value="-2143328006"
+      label="enable-fill-on-account-select-no-highlighting"/>
   <int value="-2143113994" label="enable-ephemeral-apps-in-webstore"/>
   <int value="-2137755780" label="enable-reader-mode-toolbar-icon"/>
   <int value="-2132591642" label="enable-input-view"/>

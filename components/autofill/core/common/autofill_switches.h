@@ -16,6 +16,7 @@ extern const char kDisablePasswordGeneration[];
 extern const char kDisableSingleClickAutofill[];
 extern const char kEnableCreditCardScan[];
 extern const char kEnableFillOnAccountSelect[];
+extern const char kEnableFillOnAccountSelectNoHighlighting[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnableSingleClickAutofill[];
 extern const char kEnableWalletCardImport[];
