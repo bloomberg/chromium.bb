@@ -46,6 +46,12 @@ PermissionMenuModel::PermissionMenuModel(
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
   }
 
+  if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    label = l10n_util::GetStringUTF16(
+        IDS_WEBSITE_SETTINGS_MENU_ITEM_ASK);
+    AddCheckItem(CONTENT_SETTING_ASK, label);
+  }
+
   if (permission_.type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
