@@ -11,6 +11,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTheme.h"
@@ -62,8 +63,11 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         paintInfo.context, FloatPoint(paintOffset), style,
         textRenderer.scaledFont(), true);
 
-    if (!m_svgInlineTextBox.textFragments().isEmpty())
-        paintTextFragments(paintInfo, parentRenderer);
+    if (!m_svgInlineTextBox.textFragments().isEmpty()) {
+        RenderDrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox.renderer(), paintInfo.phase, paintInfo.rect);
+        if (!recorder.canUseCachedDrawing())
+            paintTextFragments(paintInfo, parentRenderer);
+    }
 
     if (style->hasOutline() && parentRenderer.isRenderInline())
         InlinePainter(toRenderInline(parentRenderer)).paintOutline(paintInfo, paintOffset);

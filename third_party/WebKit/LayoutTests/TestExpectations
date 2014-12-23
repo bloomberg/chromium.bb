@@ -153,6 +153,23 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
+# Single pixel differences due to precision issues when using a recording context.
+crbug.com/412088 svg/as-background-image/background-image-preserveaspectRatio-support.html [ NeedsRebaseline ]
+crbug.com/412088 svg/as-background-image/svg-as-background-5.html [ NeedsRebaseline ]
+crbug.com/412088 svg/as-image/img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
+crbug.com/412088 fast/backgrounds/size/contain-and-cover.html [ NeedsRebaseline ]
+crbug.com/412088 virtual/slimmingpaint/svg/text/text-align-05-b.svg [ NeedsRebaseline ]
+crbug.com/412088 svg/custom/marker-orient-auto.html [ NeedsRebaseline ]
+
+# These failures need to be investigated.
+crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
+crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/filter.html [ ImageOnlyFailure ]
+crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/clip.html [ ImageOnlyFailure ]
+crbug.com/412088 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ ImageOnlyFailure ]
+crbug.com/412088 virtual/slimmingpaint/svg/text/foreignObject-text-clipping-bug.xml [ ImageOnlyFailure ]
+crbug.com/412088 virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
+crbug.com/412088 virtual/slimmingpaint/svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
+
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 

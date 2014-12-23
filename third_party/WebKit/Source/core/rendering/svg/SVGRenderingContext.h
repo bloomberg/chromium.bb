@@ -25,6 +25,8 @@
 #ifndef SVGRenderingContext_h
 #define SVGRenderingContext_h
 
+#include "core/paint/FloatClipRecorder.h"
+#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/transforms/AffineTransform.h"
 
@@ -90,14 +92,9 @@ private:
     // To properly revert partially successful initializtions in the destructor, we record all successful steps.
     enum RenderingFlags {
         RenderingPrepared = 1,
-        RestoreGraphicsContext = 1 << 1,
-        EndOpacityLayer = 1 << 2,
-        PostApplyResources = 1 << 3,
-        PrepareToRenderSVGContentWasCalled = 1 << 4
+        PostApplyResources = 1 << 1,
+        PrepareToRenderSVGContentWasCalled = 1 << 2
     };
-
-    // List of those flags which require actions during the destructor.
-    const static int ActionsNeeded = RestoreGraphicsContext | EndOpacityLayer | PostApplyResources;
 
     int m_renderingFlags;
     RawPtrWillBeMember<RenderObject> m_object;
@@ -108,6 +105,8 @@ private:
     RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
     RenderSVGResourceClipper::ClipperState m_clipperState;
     RawPtrWillBeMember<RenderSVGResourceMasker> m_masker;
+    OwnPtr<TransparencyRecorder> m_transparencyRecorder;
+    OwnPtr<FloatClipRecorder> m_clipRecorder;
 };
 
 } // namespace blink

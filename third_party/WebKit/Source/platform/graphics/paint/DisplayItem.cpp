@@ -62,6 +62,10 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case ClipNodeImage: return "ClipNodeImage";
     case ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
     case ClipFrameScrollbars: return "ClipFrameScrollbars";
+    case FloatClipForeground: return "FloatClipForeground";
+    case FloatClipSelection: return "FloatClipSelection";
+    case FloatClipSelfOutline: return "FloatClipSelfOutline";
+    case EndFloatClip: return "EndFloatClip";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";
@@ -81,6 +85,7 @@ void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder)
     stringBuilder.append("name: \"");
     stringBuilder.append(name());
     stringBuilder.append("\", ");
+    stringBuilder.append(String::format("client: \"%p\", ", client()));
     if (!clientDebugString().isEmpty()) {
         stringBuilder.append(clientDebugString());
         stringBuilder.append(", ");

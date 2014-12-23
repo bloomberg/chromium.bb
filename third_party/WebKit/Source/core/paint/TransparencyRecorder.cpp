@@ -13,12 +13,11 @@
 
 namespace blink {
 
-TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, const RenderObject* renderer, const WebBlendMode& blendMode, const float opacity)
-    : m_renderer(renderer)
+TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, DisplayItemClient client, const CompositeOperator preTransparencyLayerCompositeOp, const WebBlendMode& preTransparencyLayerBlendMode, const float opacity, const CompositeOperator postTransparencyLayerCompositeOp)
+    : m_client(client)
     , m_graphicsContext(graphicsContext)
 {
-    ASSERT(renderer);
-    OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = BeginTransparencyDisplayItem::create(renderer->displayItemClient(), DisplayItem::BeginTransparency, graphicsContext->compositeOperation(), blendMode, opacity);
+    OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = BeginTransparencyDisplayItem::create(m_client, DisplayItem::BeginTransparency, preTransparencyLayerCompositeOp, preTransparencyLayerBlendMode, opacity, postTransparencyLayerCompositeOp);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(beginTransparencyDisplayItem.release());
@@ -29,7 +28,7 @@ TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, con
 
 TransparencyRecorder::~TransparencyRecorder()
 {
-    OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = EndTransparencyDisplayItem::create(m_renderer->displayItemClient(), DisplayItem::EndTransparency);
+    OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = EndTransparencyDisplayItem::create(m_client, DisplayItem::EndTransparency);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(endTransparencyDisplayItem.release());

@@ -76,7 +76,11 @@ public:
         ColumnRules,
         ClipNodeImage,
         ClipFrameToVisibleContentRect,
-        ClipFrameScrollbars
+        ClipFrameScrollbars,
+        FloatClipForeground,
+        FloatClipSelection,
+        FloatClipSelfOutline,
+        EndFloatClip
     };
 
     // Create a dummy display item which just holds the id but has no display operation.

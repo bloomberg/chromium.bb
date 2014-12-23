@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/PaintInfo.h"
@@ -25,11 +26,14 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 
     PaintInfo childPaintInfo(paintInfo);
     if (hasSelection) {
-        for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
-            if (child->isSVGInlineTextBox())
-                SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
-            else if (child->isSVGInlineFlowBox())
-                SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(childPaintInfo);
+        RenderDrawingRecorder recorder(childPaintInfo.context, m_svgRootInlineBox.renderer(), childPaintInfo.phase, childPaintInfo.rect);
+        if (!recorder.canUseCachedDrawing()) {
+            for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
+                if (child->isSVGInlineTextBox())
+                    SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
+                else if (child->isSVGInlineFlowBox())
+                    SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(childPaintInfo);
+            }
         }
     }
 

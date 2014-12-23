@@ -52,8 +52,11 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         drawSelectionTint = false;
     }
 
-    RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderReplaced, paintInfo.phase, paintRect);
-    if (renderDrawingRecorder.canUseCachedDrawing())
+    // FIXME(crbug.com/444591): Refactor this to not create a drawing recorder for renderers with children.
+    OwnPtr<RenderDrawingRecorder> renderDrawingRecorder;
+    if (!m_renderReplaced.isSVGRoot())
+        renderDrawingRecorder = adoptPtr(new RenderDrawingRecorder(paintInfo.context, m_renderReplaced, paintInfo.phase, paintRect));
+    if (renderDrawingRecorder && renderDrawingRecorder->canUseCachedDrawing())
         return;
 
     bool completelyClippedOut = false;

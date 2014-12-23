@@ -185,6 +185,21 @@
     "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
   },
   {
+    "prefix": "slimmingpaint",
+    "base": "svg/text",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "svg/stroke",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "svg/foreignObject",
+    "args": ["--enable-slimming-paint", "--enable-impl-side-painting"]
+  },
+  {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
     "args": ["--root-layer-scrolls"]

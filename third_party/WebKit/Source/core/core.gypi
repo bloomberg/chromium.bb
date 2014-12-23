@@ -1482,6 +1482,8 @@
             'paint/FileUploadControlPainter.h',
             'paint/FilterPainter.cpp',
             'paint/FilterPainter.h',
+            'paint/FloatClipRecorder.cpp',
+            'paint/FloatClipRecorder.h',
             'paint/FramePainter.cpp',
             'paint/FramePainter.h',
             'paint/GridPainter.cpp',

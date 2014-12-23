@@ -5,7 +5,9 @@
 #include "config.h"
 #include "core/paint/SVGContainerPainter.h"
 
+#include "core/paint/FloatClipRecorder.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
@@ -13,7 +15,6 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGSVGElement.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
@@ -31,13 +32,13 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo childPaintInfo(paintInfo);
+    childPaintInfo.context->save();
     {
-        GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-
+        OwnPtr<FloatClipRecorder> clipRecorder;
         if (m_renderSVGContainer.isSVGViewportContainer() && SVGRenderSupport::isOverflowHidden(&m_renderSVGContainer))
-            paintInfo.context->clip(toRenderSVGViewportContainer(m_renderSVGContainer).viewport());
+            clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), childPaintInfo.phase, toRenderSVGViewportContainer(m_renderSVGContainer).viewport()));
 
-        childPaintInfo.applyTransform(m_renderSVGContainer.localToParentTransform());
+        TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGContainer.displayItemClient(), m_renderSVGContainer.localToParentTransform());
 
         SVGRenderingContext renderingContext;
         bool continueRendering = true;
@@ -52,6 +53,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
                 child->paint(childPaintInfo, IntPoint());
         }
     }
+    childPaintInfo.context->restore();
 
     // FIXME: This really should be drawn from local coordinates, but currently we hack it
     // to avoid our clip killing our outline rect. Thus we translate our

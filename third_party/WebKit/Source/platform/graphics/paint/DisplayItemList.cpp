@@ -144,6 +144,7 @@ void DisplayItemList::showDebugData() const
 
 void DisplayItemList::replay(GraphicsContext* context)
 {
+    updatePaintList();
     for (auto& displayItem : m_paintList)
         displayItem->replay(context);
 }

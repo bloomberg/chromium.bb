@@ -6,6 +6,8 @@
 #include "core/paint/SVGForeignObjectPainter.h"
 
 #include "core/paint/BlockPainter.h"
+#include "core/paint/FloatClipRecorder.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -21,14 +23,15 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 
     PaintInfo childPaintInfo(paintInfo);
     GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-    childPaintInfo.applyTransform(m_renderSVGForeignObject.localTransform());
+    TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGForeignObject.displayItemClient(), m_renderSVGForeignObject.localTransform());
 
     // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
     // because it can be used for clipping.
     m_renderSVGForeignObject.updatePaintInfoRect(childPaintInfo.rect);
 
+    OwnPtr<FloatClipRecorder> clipRecorder;
     if (SVGRenderSupport::isOverflowHidden(&m_renderSVGForeignObject))
-        childPaintInfo.context->clip(m_renderSVGForeignObject.viewportRect());
+        clipRecorder = adoptPtr(new FloatClipRecorder(*childPaintInfo.context, m_renderSVGForeignObject.displayItemClient(), childPaintInfo.phase, m_renderSVGForeignObject.viewportRect()));
 
     SVGRenderingContext renderingContext;
     bool continueRendering = true;

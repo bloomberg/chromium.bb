@@ -217,8 +217,8 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
             m_renderLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
             &paintingInfo, LayoutPoint(), paintFlags));
 
-        transparencyRecorder = adoptPtr(new TransparencyRecorder(context, m_renderLayer.renderer(),
-            m_renderLayer.renderer()->style()->blendMode(), m_renderLayer.renderer()->opacity()));
+        transparencyRecorder = adoptPtr(new TransparencyRecorder(context, m_renderLayer.renderer()->displayItemClient(),
+            context->compositeOperation(), m_renderLayer.renderer()->style()->blendMode(), m_renderLayer.renderer()->opacity(), context->compositeOperation()));
     }
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);

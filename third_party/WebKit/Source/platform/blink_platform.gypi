@@ -648,6 +648,8 @@
       'graphics/paint/DrawingRecorder.h',
       'graphics/paint/FilterDisplayItem.cpp',
       'graphics/paint/FilterDisplayItem.h',
+      'graphics/paint/FloatClipDisplayItem.cpp',
+      'graphics/paint/FloatClipDisplayItem.h',
       'graphics/paint/TransformDisplayItem.cpp',
       'graphics/paint/TransformDisplayItem.h',
       'graphics/paint/TransparencyDisplayItem.cpp',

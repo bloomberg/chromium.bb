@@ -18,7 +18,7 @@ namespace blink {
 
 class PLATFORM_EXPORT BeginTransparencyDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<BeginTransparencyDisplayItem> create(DisplayItemClient client, Type type, const CompositeOperator compositeOperator, const WebBlendMode& blendMode, const float opacity) { return adoptPtr(new BeginTransparencyDisplayItem(client, type, compositeOperator, blendMode, opacity)); }
+    static PassOwnPtr<BeginTransparencyDisplayItem> create(DisplayItemClient client, Type type, const CompositeOperator preTransparencyLayerCompositeOp, const WebBlendMode& preTransparencyLayerBlendMode, const float opacity, const CompositeOperator postTransparencyLayerCompositeOp) { return adoptPtr(new BeginTransparencyDisplayItem(client, type, preTransparencyLayerCompositeOp, preTransparencyLayerBlendMode, opacity, postTransparencyLayerCompositeOp)); }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -29,19 +29,19 @@ private:
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
-    bool hasBlendMode() const { return m_blendMode != WebBlendModeNormal; }
-
 protected:
-    BeginTransparencyDisplayItem(DisplayItemClient client, Type type, const CompositeOperator compositeOperator, const WebBlendMode& blendMode, const float opacity)
+    BeginTransparencyDisplayItem(DisplayItemClient client, Type type, const CompositeOperator preTransparencyLayerCompositeOp, const WebBlendMode& preTransparencyLayerBlendMode, const float opacity, const CompositeOperator postTransparencyLayerCompositeOp)
         : DisplayItem(client, type)
-        , m_compositeOperator(compositeOperator)
-        , m_blendMode(blendMode)
-        , m_opacity(opacity) { }
+        , m_preTransparencyLayerCompositeOp(preTransparencyLayerCompositeOp)
+        , m_preTransparencyLayerBlendMode(preTransparencyLayerBlendMode)
+        , m_opacity(opacity)
+        , m_postTransparencyLayerCompositeOp(postTransparencyLayerCompositeOp) { }
 
 private:
-    const CompositeOperator m_compositeOperator;
-    const WebBlendMode m_blendMode;
+    const CompositeOperator m_preTransparencyLayerCompositeOp;
+    const WebBlendMode m_preTransparencyLayerBlendMode;
     const float m_opacity;
+    const CompositeOperator m_postTransparencyLayerCompositeOp;
 };
 
 class PLATFORM_EXPORT EndTransparencyDisplayItem : public DisplayItem {

@@ -23,10 +23,12 @@
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
 #include "core/dom/ElementTraversal.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGPatternElement.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -161,9 +163,11 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
         contentTransform = tileTransform;
 
     // Draw the content into a Picture.
-    GraphicsContext recordingContext(nullptr, nullptr);
+    OwnPtr<DisplayItemList> displayItemList;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        displayItemList = DisplayItemList::create();
+    GraphicsContext recordingContext(nullptr, displayItemList.get());
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
-    recordingContext.concatCTM(tileTransform);
 
     ASSERT(m_attributes.patternContentElement());
     RenderSVGResourceContainer* patternRenderer =
@@ -172,9 +176,15 @@ PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect&
     ASSERT(!patternRenderer->needsLayout());
 
     SubtreeContentTransformScope contentTransformScope(contentTransform);
-    for (RenderObject* child = patternRenderer->firstChild(); child; child = child->nextSibling())
-        SVGRenderingContext::renderSubtree(&recordingContext, child);
 
+    {
+        TransformRecorder transformRecorder(recordingContext, patternRenderer->displayItemClient(), tileTransform);
+        for (RenderObject* child = patternRenderer->firstChild(); child; child = child->nextSibling())
+            SVGRenderingContext::renderSubtree(&recordingContext, child);
+    }
+
+    if (displayItemList)
+        displayItemList->replay(&recordingContext);
     return recordingContext.endRecording();
 }
 

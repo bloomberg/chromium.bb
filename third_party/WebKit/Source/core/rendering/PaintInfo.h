@@ -81,18 +81,6 @@ struct PaintInfo {
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return paintBehavior & PaintBehaviorRootBackgroundOnly; }
 
-    void applyTransform(const AffineTransform& localToAncestorTransform,
-        GraphicsContextStateSaver* stateSaver = 0)
-    {
-        if (localToAncestorTransform.isIdentity())
-            return;
-
-        if (stateSaver)
-            stateSaver->saveIfNeeded();
-
-        context->concatCTM(localToAncestorTransform);
-    }
-
     DisplayItem::Type displayItemTypeForClipping() const;
 
     const RenderLayerModelObject* paintContainer() const { return m_paintContainer; }

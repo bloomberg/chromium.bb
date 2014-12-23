@@ -6,12 +6,14 @@
 #include "core/paint/SVGRootPainter.h"
 
 #include "core/paint/BoxPainter.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGSVGElement.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -39,18 +41,18 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
             return;
     }
 
-    // Make a copy of the PaintInfo because applyTransform will modify the damage rect.
     PaintInfo childPaintInfo(paintInfo);
     GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
 
     // Apply initial viewport clip.
+    OwnPtr<ClipRecorder> clipRecorder;
     if (m_renderSVGRoot.shouldApplyViewportClip())
-        childPaintInfo.context->clip(pixelSnappedIntRect(m_renderSVGRoot.overflowClipRect(paintOffset)));
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderSVGRoot.displayItemClient(), childPaintInfo.context, childPaintInfo.displayItemTypeForClipping(), pixelSnappedIntRect(m_renderSVGRoot.overflowClipRect(paintOffset))));
 
     // Convert from container offsets (html renderers) to a relative transform (svg renderers).
     // Transform from our paint container's coordinate system to our local coords.
     IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
-    childPaintInfo.applyTransform(AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_renderSVGRoot.localToBorderBoxTransform());
+    TransformRecorder transformRecorder(*childPaintInfo.context, m_renderSVGRoot.displayItemClient(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_renderSVGRoot.localToBorderBoxTransform());
 
     // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
     childPaintInfo.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());
