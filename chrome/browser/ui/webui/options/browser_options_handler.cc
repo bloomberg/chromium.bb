@@ -1190,24 +1190,9 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
           template_url_service_->is_default_search_managed() ||
           template_url_service_->IsExtensionControlledDefaultSearch()));
 
-  if (default_index != -1 && model_urls[default_index]->HasGoogleBaseURLs(
-          template_url_service_->search_terms_data())) {
-    // If the user has chosen Google as the default search provider, make
-    // hotwording as an option available again.
-    HandleRequestHotwordAvailable(nullptr);
-  } else {
-    // If the user has chosen a default search provide other than Google, turn
-    // off hotwording since other providers don't provide that functionality.
-    web_ui()->CallJavascriptFunction(
-        "BrowserOptions.setAllHotwordSectionsVisible",
-        base::FundamentalValue(false));
-    HotwordService* hotword_service =
-        HotwordServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-    if (hotword_service)
-      hotword_service->DisableHotwordPreferences();
-  }
-
   SetupExtensionControlledIndicators();
+
+  HandleRequestHotwordAvailable(nullptr);
 }
 
 void BrowserOptionsHandler::SetDefaultSearchEngine(
@@ -1681,6 +1666,30 @@ void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(
 void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
+
+  bool is_search_provider_google = false;
+  if (template_url_service_) {
+    const TemplateURL* default_url =
+        template_url_service_->GetDefaultSearchProvider();
+    if (default_url && default_url->HasGoogleBaseURLs(
+            template_url_service_->search_terms_data())) {
+      is_search_provider_google = true;
+    }
+  }
+
+  if (!is_search_provider_google) {
+    // If the user has chosen a default search provide other than Google, turn
+    // off hotwording since other providers don't provide that functionality.
+    web_ui()->CallJavascriptFunction(
+        "BrowserOptions.setAllHotwordSectionsVisible",
+        base::FundamentalValue(false));
+    HotwordService* hotword_service =
+        HotwordServiceFactory::GetForProfile(profile);
+    if (hotword_service)
+      hotword_service->DisableHotwordPreferences();
+    return;
+  }
+
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
   if (group != "" && group != "Disabled" &&
       HotwordServiceFactory::IsHotwordAllowed(profile)) {
