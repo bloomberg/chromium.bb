@@ -100,7 +100,9 @@ TEST(WinUtils, IsPipe) {
   pipe_name = L"\\??\\ABCD\\mypipe";
   EXPECT_FALSE(IsPipe(pipe_name));
 
-  pipe_name = L"/??/pipe/mypipe";
+
+  // Written as two strings to prevent trigraph '?' '?' '/'.
+  pipe_name = L"/?" L"?/pipe/mypipe";
   EXPECT_FALSE(IsPipe(pipe_name));
 
   pipe_name = L"\\XX\\pipe\\mypipe";
