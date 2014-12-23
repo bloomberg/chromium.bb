@@ -3,13 +3,13 @@ Tests that removal of property following its disabling works.
 Before disable
 [expanded] 
 element.style  { ()
-font-weight: bold;
+  font-weight: bold;
 
 
 After disable
 [expanded] 
 element.style  { ()
-/-- overloaded --/ /-- disabled --/ /* font-weight: bold; */
+/-- overloaded --/ /-- disabled --/   /* font-weight: bold; */
 
 
 After delete

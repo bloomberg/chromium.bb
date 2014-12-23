@@ -2,20 +2,20 @@ Tests that CSSParser correctly parses declarations with unterminated comments.
 
 [expanded] 
 element.style  { ()
-color: red /* foo: bar;
+  color: red /* foo: bar;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 [expanded] 
 element.style  { ()
-color: green;
+  color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

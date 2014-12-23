@@ -437,8 +437,8 @@ InspectorTest.dumpStyleTreeItem = function(treeItem, prefix, depth)
 {
     // Filter out width and height properties in order to minimize
     // potential diffs.
-    if (!treeItem.listItemElement.textContent.indexOf("width") ||
-        !treeItem.listItemElement.textContent.indexOf("height"))
+    if (!treeItem.listItemElement.textContent.indexOf("  width") ||
+        !treeItem.listItemElement.textContent.indexOf("  height"))
         return;
 
     if (treeItem.listItemElement.classList.contains("inherited"))

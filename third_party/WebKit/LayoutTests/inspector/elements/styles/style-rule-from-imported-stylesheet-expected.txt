@@ -6,12 +6,12 @@ element.style  { ()
 
 [expanded] 
 .square  { (imported-stylesheet.css:1 -> imported-stylesheet.css:1:1)
-background-color: red;
-display: inline-block;
+  background-color: red;
+  display: inline-block;
 
 [expanded] 
 div  { (user agent stylesheet)
-/-- overloaded --/ display: block;
+/-- overloaded --/   display: block;
 
 
 Rules after toggling:
@@ -20,12 +20,12 @@ element.style  { ()
 
 [expanded] 
 .square  { (imported-stylesheet.css:1 -> imported-stylesheet.css:1:1)
-/-- overloaded --/ /-- disabled --/ /* background-color: red; */
-display: inline-block;
+/-- overloaded --/ /-- disabled --/   /* background-color: red; */
+  display: inline-block;
 
 [expanded] 
 div  { (user agent stylesheet)
-/-- overloaded --/ display: block;
+/-- overloaded --/   display: block;
 
 
 

@@ -7,17 +7,17 @@ element.style  { ()
 
 [expanded] 
 h1  { (parse-utf8-bom-main.css:3 -> parse-utf8-bom-main.css:3:1)
-color: red;
+  color: red;
 
 [expanded] 
 h1  { (user agent stylesheet)
-display: block;
-font-size: 2em;
--webkit-margin-before: 0.67em;
--webkit-margin-after: 0.67em;
--webkit-margin-start: 0px;
--webkit-margin-end: 0px;
-font-weight: bold;
+  display: block;
+  font-size: 2em;
+  -webkit-margin-before: 0.67em;
+  -webkit-margin-after: 0.67em;
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
+  font-weight: bold;
 
 
 

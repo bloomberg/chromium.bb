@@ -6,11 +6,11 @@ element.style  { ()
 
 [expanded] 
 #container #inspected  { (selector-line-s…-header.scss:4 -> selector-line-sourcemap-header.scss:4:5)
-color: green;
+  color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

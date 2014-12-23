@@ -3,15 +3,15 @@ Tests that elements panel shows proper inline style locations in the sidebar pan
 
 [expanded] 
 element.style  { ()
-display: none;
+  display: none;
 
 [expanded] 
 .foo  { (styles-source-l…-inline.html:7 -> styles-source-lines-inline.html:7:1)
-color: blue;
+  color: blue;
 
 [expanded] 
 div  { (user agent stylesheet)
-/-- overloaded --/ display: block;
+/-- overloaded --/   display: block;
 
 
 

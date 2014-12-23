@@ -7,11 +7,11 @@ element.style  { ()
 [expanded] 
 media="screen" (styles-edit-property-after-invalid-rule.html)
 #container  { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
-padding: 15px;
+  padding: 15px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 After changing property
@@ -21,11 +21,11 @@ element.style  { ()
 [expanded] 
 media="screen" (styles-edit-property-after-invalid-rule.html)
 #container  { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
-padding: 20px;
+  padding: 20px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

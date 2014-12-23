@@ -5,11 +5,11 @@ element.style  { ()
 
 [expanded] 
 #inspected  { (empty-background-url.css:1 -> empty-background-url.css:1:1)
-background-image: url();
+  background-image: url();
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

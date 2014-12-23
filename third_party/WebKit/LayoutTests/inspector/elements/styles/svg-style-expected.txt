@@ -7,11 +7,11 @@ element.style  { ()
 [expanded] 
 media="all" (svg-style.xhtml)
 rect  { (svg-style.xhtml:38 -> svg-style.xhtml:38:10)
-fill: red;
+  fill: red;
 
 [expanded] 
 *  { (user agent stylesheet)
--webkit-transform-origin: 0px 0px 0px;
+  -webkit-transform-origin: 0px 0px 0px;
 
 
 

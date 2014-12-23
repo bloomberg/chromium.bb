@@ -4,43 +4,43 @@ Text
 === Before selector modification ===
 [expanded] 
 element.style  { ()
-color: red;
+  color: red;
 
 [expanded] 
 #inspected  { (commit-selector.html:4 -> commit-selector.html:4:1)
-/-- overloaded --/ color: green;
+/-- overloaded --/   color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 === After non-affecting selector modification ===
 [expanded] 
 element.style  { ()
-color: red;
+  color: red;
 
 [expanded] 
 hr, #inspected  { (commit-selector.html:4 -> commit-selector.html:4:5)
-/-- overloaded --/ color: green;
+/-- overloaded --/   color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 === After affecting selector modification ===
 [expanded] 
 element.style  { ()
-color: red;
+  color: red;
 
 [expanded] [no-affect] 
 #inspectedChanged  { (commit-selector.html:4 -> commit-selector.html:4:1)
-color: green;
+  color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

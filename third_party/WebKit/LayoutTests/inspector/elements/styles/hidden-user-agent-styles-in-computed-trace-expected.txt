@@ -2,7 +2,7 @@ Tests that user agent styles are shown in the computed trace regardless of the "
 
 WebInspector.settings.showUserAgentStyles = false
 [expanded] 
-display: inline-block;
+  display: inline-block;
     div - inline-block hidden-user-age…d-trace.html:5
     /-- overloaded --/ div - block user agent stylesheet
 
@@ -11,7 +11,7 @@ element.style  { ()
 
 [expanded] 
 div  { (hidden-user-age…d-trace.html:5 -> hidden-user-agent-styles-in-computed-trace.html:5:1)
-display: inline-block;
+  display: inline-block;
 
 
 

@@ -4,16 +4,16 @@ Text
 After adding new rule:
 [expanded] 
 element.style  { ()
-font-size: 12px;
+  font-size: 12px;
 
 [expanded] [no-affect] 
 inspected  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
-color: maroon;
-: ;
+  color: maroon;
+  : ;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

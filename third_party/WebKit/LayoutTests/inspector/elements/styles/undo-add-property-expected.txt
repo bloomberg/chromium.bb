@@ -7,11 +7,11 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-font-weight: bold;
+  font-weight: bold;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After adding property)
@@ -20,12 +20,12 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-font-weight: bold;
-margin-left: 2px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After undo)
@@ -34,11 +34,11 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-font-weight: bold;
+  font-weight: bold;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After redo)
@@ -47,12 +47,12 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-font-weight: bold;
-margin-left: 2px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 === First property ===
@@ -62,12 +62,12 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-font-weight: bold;
-margin-left: 2px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After adding property)
@@ -76,13 +76,13 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-margin-top: 0px;
-font-weight: bold;
-margin-left: 2px;
+  margin-top: 0px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After undo)
@@ -91,12 +91,12 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-font-weight: bold;
-margin-left: 2px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After redo)
@@ -105,13 +105,13 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-margin-top: 0px;
-font-weight: bold;
-margin-left: 2px;
+  margin-top: 0px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 === Middle property ===
@@ -121,13 +121,13 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-margin-top: 0px;
-font-weight: bold;
-margin-left: 2px;
+  margin-top: 0px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After adding property)
@@ -136,14 +136,14 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-margin-top: 0px;
-margin-right: 1px;
-font-weight: bold;
-margin-left: 2px;
+  margin-top: 0px;
+  margin-right: 1px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After undo)
@@ -152,13 +152,13 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-margin-top: 0px;
-font-weight: bold;
-margin-left: 2px;
+  margin-top: 0px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 (After redo)
@@ -167,14 +167,14 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
-margin-top: 0px;
-margin-right: 1px;
-font-weight: bold;
-margin-left: 2px;
+  margin-top: 0px;
+  margin-right: 1px;
+  font-weight: bold;
+  margin-left: 2px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

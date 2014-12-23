@@ -6,15 +6,15 @@ element.style  { ()
 
 [expanded] 
 #container #inspected  { (selector-line.scss:4 -> selector-line.scss:4:5)
-color: green;
+  color: green;
 
 [expanded] 
 #inspected  { (selector-line.html:4 -> selector-line.html:4:1)
-/-- overloaded --/ color: green;
+/-- overloaded --/   color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

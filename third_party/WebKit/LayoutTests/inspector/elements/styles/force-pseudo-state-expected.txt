@@ -8,20 +8,20 @@ element.style  { ()
 
 [expanded] 
 div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
-font-weight: bold;
+  font-weight: bold;
 
 [expanded] 
 div:hover, a:hover  { (force-pseudo-state.html:4 -> force-pseudo-state.html:4:1)
-color: red;
+  color: red;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 ======== Inherited from body#mainBody.main1.main2.mainpage ========
 [expanded] 
 Style Attribute  { ()
-/-- overloaded --/ font-weight: normal;
+/-- overloaded --/   font-weight: normal;
 
 
 - <html> [descendantUserAttributeCounters:[pseudoState=1]]
@@ -38,39 +38,39 @@ element.style  { ()
 
 [expanded] 
 div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
-font-weight: bold;
+  font-weight: bold;
 
 [expanded] 
 div:focus, a:focus  { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
-border: 1px solid green;
-    border-top-color: green;
-    border-top-style: solid;
-    border-top-width: 1px;
-    border-right-color: green;
-    border-right-style: solid;
-    border-right-width: 1px;
-    border-bottom-color: green;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-left-color: green;
-    border-left-style: solid;
-    border-left-width: 1px;
+  border: 1px solid green;
+      border-top-color: green;
+      border-top-style: solid;
+      border-top-width: 1px;
+      border-right-color: green;
+      border-right-style: solid;
+      border-right-width: 1px;
+      border-bottom-color: green;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+      border-left-color: green;
+      border-left-style: solid;
+      border-left-width: 1px;
 
 [expanded] 
 :focus  { (user agent stylesheet)
-outline: -webkit-focus-ring-color auto 5px;
-    outline-color: -webkit-focus-ring-color;
-    outline-style: auto;
-    outline-width: 5px;
+  outline: -webkit-focus-ring-color auto 5px;
+      outline-color: -webkit-focus-ring-color;
+      outline-style: auto;
+      outline-width: 5px;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 ======== Inherited from body#mainBody.main1.main2.mainpage ========
 [expanded] 
 Style Attribute  { ()
-/-- overloaded --/ font-weight: normal;
+/-- overloaded --/   font-weight: normal;
 
 
 - <html> [descendantUserAttributeCounters:[pseudoState=1]]
@@ -87,12 +87,12 @@ element.style  { ()
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 ======== Inherited from body#mainBody.main1.main2.mainpage ========
 [expanded] 
 Style Attribute  { ()
-font-weight: normal;
+  font-weight: normal;
 
 
 - <html>

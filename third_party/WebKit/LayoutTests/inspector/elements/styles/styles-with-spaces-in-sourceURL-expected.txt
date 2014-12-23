@@ -5,11 +5,11 @@ element.style  { ()
 
 [expanded] 
 #inspected  { (style.css:1 -> style.css:1:1)
-background-color: blue;
+  background-color: blue;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 

@@ -6,7 +6,7 @@ element.style  { ()
 
 [expanded] 
 FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:48)
-color: green;
+  color: green;
 
 [expanded] 
 #inspected  { (selector-list.html:10 -> selector-list.html:10:6)
@@ -19,11 +19,11 @@ color: green;
 
 [expanded] 
 FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:48)
-/-- overloaded --/ color: green;
+/-- overloaded --/   color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-display: block;
+  display: block;
 
 
 
