@@ -383,7 +383,7 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin() {
   // DirectShow for any other versions, unless forced via flag. Media Foundation
   // can also be forced if appropriate flag is set and we are in Windows 7 or
   // 8 in non-Metro mode.
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   use_media_foundation_ = (base::win::IsMetroProcess() &&
       !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) ||
      (base::win::GetVersion() >= base::win::VERSION_WIN7 &&

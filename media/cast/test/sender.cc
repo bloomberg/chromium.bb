@@ -249,7 +249,7 @@ void WriteStatsAndDestroySubscribers(
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
   // Load the media module for FFmpeg decoding.
@@ -270,7 +270,7 @@ int main(int argc, char** argv) {
   base::MessageLoopForIO io_message_loop;
 
   // Default parameters.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   std::string remote_ip_address = cmd->GetSwitchValueASCII(kSwitchAddress);
   if (remote_ip_address.empty())
     remote_ip_address = "127.0.0.1";

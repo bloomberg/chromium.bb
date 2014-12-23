@@ -151,9 +151,9 @@ bool FakeAudioInputStream::Open() {
   memset(buffer_.get(), 0, buffer_size_);
   audio_bus_->Zero();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFileForFakeAudioCapture)) {
-    OpenInFileMode(CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFileForFakeAudioCapture)) {
+    OpenInFileMode(base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
         switches::kUseFileForFakeAudioCapture));
   }
 

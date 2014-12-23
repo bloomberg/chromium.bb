@@ -698,7 +698,7 @@ class CastBenchmark {
       threads[i]->Start();
     }
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch("single-run")) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("single-run")) {
       SearchVector a;
       a.bitrate.base = 100.0;
       a.bitrate.grade = 1.0;
@@ -743,7 +743,7 @@ class CastBenchmark {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   media::cast::CastBenchmark benchmark;
   if (getenv("PROFILE_FILE")) {
     std::string profile_file(getenv("PROFILE_FILE"));

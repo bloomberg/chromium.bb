@@ -229,8 +229,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   media::InitializeMediaLibraryForTesting();
 
-  CommandLine::Init(argc, argv);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string filename = command_line->GetSwitchValueASCII("file");
 
   if (filename.empty()) {

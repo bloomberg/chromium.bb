@@ -214,7 +214,7 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
 
 UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_ptr<CommandLine> target_command)
+    scoped_ptr<base::CommandLine> target_command)
     : io_task_runner_(io_task_runner),
       event_handler_(NULL),
       target_command_(target_command.Pass()) {

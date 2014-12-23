@@ -100,7 +100,7 @@ const char kYuvOutputPath[] = "yuv-output";
 
 int GetIntegerSwitchValue(const char* switch_name, int default_value) {
   const std::string as_str =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
   if (as_str.empty())
     return default_value;
   int as_int;
@@ -692,7 +692,7 @@ bool IsModelValid(const NetworkSimulationModel& model) {
 }
 
 NetworkSimulationModel LoadModel(const base::FilePath& model_path) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kNoSimulation)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kNoSimulation)) {
     NetworkSimulationModel model;
     model.set_type(media::cast::proto::NO_SIMULATION);
     return model;
@@ -726,10 +726,10 @@ NetworkSimulationModel LoadModel(const base::FilePath& model_path) {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   base::FilePath media_path = cmd->GetSwitchValuePath(media::cast::kLibDir);
   if (media_path.empty()) {
     if (!PathService::Get(base::DIR_MODULE, &media_path)) {

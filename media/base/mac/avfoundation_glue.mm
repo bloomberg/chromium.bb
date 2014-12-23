@@ -126,7 +126,8 @@ bool IsAVFoundationSupportedHelper() {
     return false;
   }
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // The force-qtkit flag takes precedence over enable-avfoundation.
   if (command_line->HasSwitch(switches::kForceQTKit)) {
     LogCaptureApi(CAPTURE_API_QTKIT_FORCED_BY_FLAG);

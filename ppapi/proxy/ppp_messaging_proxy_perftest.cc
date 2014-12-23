@@ -56,7 +56,7 @@ TEST_F(PppMessagingPerfTest, StringPerformance) {
   int seed = 123;
   int string_count = 1000;
   int max_string_size = 1000000;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line) {
     if (command_line->HasSwitch("seed")) {
       base::StringToInt(command_line->GetSwitchValueASCII("seed"),

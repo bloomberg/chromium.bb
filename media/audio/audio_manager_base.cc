@@ -385,7 +385,7 @@ std::string AudioManagerBase::GetDefaultOutputDeviceID() {
 }
 
 int AudioManagerBase::GetUserBufferSize() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   int buffer_size = 0;
   std::string buffer_size_str(cmd_line->GetSwitchValueASCII(
       switches::kAudioBufferSize));

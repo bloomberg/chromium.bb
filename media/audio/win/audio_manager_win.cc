@@ -112,8 +112,9 @@ static base::string16 GetDeviceAndDriverInfo(HDEVINFO device_info,
 static int NumberOfWaveOutBuffers() {
   // Use the user provided buffer count if provided.
   int buffers = 0;
-  std::string buffers_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kWaveOutBuffers));
+  std::string buffers_str(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWaveOutBuffers));
   if (base::StringToInt(buffers_str, &buffers) && buffers > 0) {
     return buffers;
   }
@@ -258,7 +259,7 @@ void AudioManagerWin::ShowAudioInputSettings() {
   base::FilePath path;
   PathService::Get(base::DIR_SYSTEM, &path);
   path = path.Append(program);
-  CommandLine command_line(path);
+  base::CommandLine command_line(path);
   command_line.AppendArg(argument);
   base::LaunchProcess(command_line, base::LaunchOptions());
 }
@@ -418,7 +419,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   DLOG_IF(ERROR, !core_audio_supported() && !output_device_id.empty())
       << "CoreAudio is required to open non-default devices.";
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = 48000;
   int buffer_size = kFallbackBufferSize;

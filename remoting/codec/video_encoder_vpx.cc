@@ -334,7 +334,8 @@ VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
       active_map_height_(0) {
   if (use_vp9_) {
     // Use I444 colour space, by default, if specified on the command-line.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableI444SwitchName)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            kEnableI444SwitchName)) {
       SetLosslessColor(true);
     }
   }

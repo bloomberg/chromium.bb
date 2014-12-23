@@ -50,7 +50,7 @@ static const char* kInvalidAudioInputDevices[] = {
 // static
 void AudioManagerAlsa::ShowLinuxAudioInputSettings() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
       command_line.SetProgram(base::FilePath("gnome-volume-control"));
@@ -335,9 +335,9 @@ AudioParameters AudioManagerAlsa::GetPreferredOutputStreamParameters(
 AudioOutputStream* AudioManagerAlsa::MakeOutputStream(
     const AudioParameters& params) {
   std::string device_name = AlsaPcmOutputStream::kAutoSelectDevice;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAlsaOutputDevice)) {
-    device_name = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    device_name = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
         switches::kAlsaOutputDevice);
   }
   return new AlsaPcmOutputStream(device_name, params, wrapper_.get(), this);
@@ -347,8 +347,9 @@ AudioInputStream* AudioManagerAlsa::MakeInputStream(
     const AudioParameters& params, const std::string& device_id) {
   std::string device_name = (device_id == AudioManagerBase::kDefaultDeviceId) ?
       AlsaPcmInputStream::kAutoSelectDevice : device_id;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAlsaInputDevice)) {
-    device_name = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAlsaInputDevice)) {
+    device_name = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
         switches::kAlsaInputDevice);
   }
 

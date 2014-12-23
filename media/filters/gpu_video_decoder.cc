@@ -117,7 +117,7 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
   // V4L2VideoDecodeAccelerator.
   base::CPU cpu;
   bool hw_large_video_support =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode) ||
       ((cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 55);
   bool os_large_video_support = true;

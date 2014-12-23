@@ -529,12 +529,11 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
 
   session_attach_timer_.Stop();
 
-  scoped_ptr<CommandLine> target(new CommandLine(desktop_binary));
+  scoped_ptr<base::CommandLine> target(new base::CommandLine(desktop_binary));
   target->AppendSwitchASCII(kProcessTypeSwitchName, kProcessTypeDesktop);
   // Copy the command line switches enabling verbose logging.
-  target->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                           kCopiedSwitchNames,
-                           arraysize(kCopiedSwitchNames));
+  target->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                           kCopiedSwitchNames, arraysize(kCopiedSwitchNames));
 
   // Create a delegate capable of launching a process in a different session.
   scoped_ptr<WtsSessionProcessDelegate> delegate(

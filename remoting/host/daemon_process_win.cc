@@ -214,11 +214,10 @@ void DaemonProcessWin::LaunchNetworkProcess() {
     return;
   }
 
-  scoped_ptr<CommandLine> target(new CommandLine(host_binary));
+  scoped_ptr<base::CommandLine> target(new base::CommandLine(host_binary));
   target->AppendSwitchASCII(kProcessTypeSwitchName, kProcessTypeHost);
-  target->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                           kCopiedSwitchNames,
-                           arraysize(kCopiedSwitchNames));
+  target->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                           kCopiedSwitchNames, arraysize(kCopiedSwitchNames));
 
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
       new UnprivilegedProcessDelegate(io_task_runner(), target.Pass()));

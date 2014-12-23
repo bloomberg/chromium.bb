@@ -158,7 +158,7 @@ static std::string GetDeviceID(IMMDevice* device) {
 
 bool CoreAudioUtil::IsSupported() {
   // It is possible to force usage of WaveXxx APIs by using a command line flag.
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kForceWaveAudio)) {
     DVLOG(1) << "Forcing usage of Windows WaveXxx APIs";
     return false;
@@ -197,7 +197,7 @@ base::TimeDelta CoreAudioUtil::RefererenceTimeToTimeDelta(REFERENCE_TIME time) {
 }
 
 AUDCLNT_SHAREMODE CoreAudioUtil::GetShareMode() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableExclusiveAudio))
     return AUDCLNT_SHAREMODE_EXCLUSIVE;
   return AUDCLNT_SHAREMODE_SHARED;

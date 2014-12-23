@@ -28,7 +28,7 @@ enum LinuxAudioIO {
 
 AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
 #if defined(USE_CRAS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
     return new AudioManagerCras(audio_log_factory);
   }

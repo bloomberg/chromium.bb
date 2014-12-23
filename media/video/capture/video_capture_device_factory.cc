@@ -14,7 +14,8 @@ namespace media {
 // static
 scoped_ptr<VideoCaptureDeviceFactory> VideoCaptureDeviceFactory::CreateFactory(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // Use a Fake or File Video Device Factory if the command line flags are
   // present, otherwise use the normal, platform-dependent, device factory.
   if (command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream)) {

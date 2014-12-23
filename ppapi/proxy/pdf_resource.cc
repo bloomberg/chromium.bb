@@ -28,7 +28,8 @@ namespace {
 std::string GetLocale() {
   // The browser process should have passed the locale to the plugin via the
   // --lang command line flag.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   const std::string& lang = parsed_command_line.GetSwitchValueASCII("lang");
   DCHECK(!lang.empty());
   return lang;

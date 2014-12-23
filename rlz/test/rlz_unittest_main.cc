@@ -18,7 +18,7 @@
 
 int main(int argc, char **argv) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   testing::InitGoogleMock(&argc, argv);
   testing::InitGoogleTest(&argc, argv);

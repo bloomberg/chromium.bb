@@ -29,7 +29,7 @@ InputBuilder::InputBuilder(const std::string& title,
 InputBuilder::~InputBuilder() {}
 
 std::string InputBuilder::GetStringInput() const {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnablePromptsSwitch))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kEnablePromptsSwitch))
     return default_value_;
 
   printf("\n%s\n", title_.c_str());

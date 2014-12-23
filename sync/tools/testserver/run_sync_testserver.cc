@@ -38,7 +38,7 @@ static bool RunSyncTest(
     return false;
   }
 
-  CommandLine python_command(CommandLine::NO_PROGRAM);
+  base::CommandLine python_command(base::CommandLine::NO_PROGRAM);
   if (!GetPythonCommand(&python_command)) {
     LOG(ERROR) << "Could not get python runtime command.";
     return false;
@@ -56,7 +56,7 @@ static bool RunSyncTest(
 // |port|. Returns true if a port was provided and false otherwise.
 static bool GetPortFromSwitch(const std::string& switch_name, uint16* port) {
   DCHECK(port != NULL) << "|port| is NULL";
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   int port_int = 0;
   if (command_line->HasSwitch(switch_name)) {
     std::string port_str = command_line->GetSwitchValueASCII(switch_name);
@@ -73,8 +73,8 @@ int main(int argc, const char* argv[]) {
   base::MessageLoopForIO message_loop;
 
   // Process command line
-  CommandLine::Init(argc, argv);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;

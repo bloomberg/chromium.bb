@@ -255,9 +255,8 @@ void LogUnrecoverableErrorContext() {
 }
 
 notifier::NotifierOptions ParseNotifierOptions(
-    const CommandLine& command_line,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        request_context_getter) {
+    const base::CommandLine& command_line,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
   notifier::NotifierOptions notifier_options;
   notifier_options.request_context_getter = request_context_getter;
   notifier_options.auth_mechanism = "X-OAUTH2";
@@ -293,7 +292,7 @@ int SyncClientMain(int argc, char* argv[]) {
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   base::AtExitManager exit_manager;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
@@ -305,7 +304,8 @@ int SyncClientMain(int argc, char* argv[]) {
   io_thread.StartWithOptions(options);
 
   // Parse command line.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   SyncCredentials credentials;
   credentials.email = command_line.GetSwitchValueASCII(kEmailSwitch);
   credentials.sync_token = command_line.GetSwitchValueASCII(kTokenSwitch);

@@ -14,7 +14,7 @@ namespace media {
 
 class VideoCaptureDeviceFactoryMacTest : public testing::Test {
   virtual void SetUp() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableAVFoundation);
   }
 };

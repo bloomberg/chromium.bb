@@ -45,7 +45,7 @@ class WtsSessionProcessDelegate::Core
       public IPC::Listener {
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-       scoped_ptr<CommandLine> target,
+       scoped_ptr<base::CommandLine> target,
        bool launch_elevated,
        const std::string& channel_security);
 
@@ -133,7 +133,7 @@ class WtsSessionProcessDelegate::Core
   base::win::ScopedHandle session_token_;
 
   // Command line of the launched process.
-  scoped_ptr<CommandLine> target_command_;
+  scoped_ptr<base::CommandLine> target_command_;
 
   // The handle of the worker process, if launched.
   base::win::ScopedHandle worker_process_;
@@ -143,7 +143,7 @@ class WtsSessionProcessDelegate::Core
 
 WtsSessionProcessDelegate::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_ptr<CommandLine> target_command,
+    scoped_ptr<base::CommandLine> target_command,
     bool launch_elevated,
     const std::string& channel_security)
     : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -530,7 +530,7 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
 
 WtsSessionProcessDelegate::WtsSessionProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_ptr<CommandLine> target_command,
+    scoped_ptr<base::CommandLine> target_command,
     bool launch_elevated,
     const std::string& channel_security) {
   core_ = new Core(io_task_runner,

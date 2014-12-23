@@ -540,7 +540,7 @@ class NaivePlayer : public InProcessReceiver,
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
   scoped_refptr<media::cast::CastEnvironment> cast_environment(

@@ -18,7 +18,7 @@ const char kFileVideoCaptureDeviceName[] =
 // Inspects the command line and retrieves the file path parameter.
 base::FilePath GetFilePathFromCommandLine() {
   base::FilePath command_line_file_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kUseFileForFakeVideoCapture);
   CHECK(!command_line_file_path.empty());
   return command_line_file_path;

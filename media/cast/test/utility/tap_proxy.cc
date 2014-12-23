@@ -266,7 +266,7 @@ int tun_alloc(char *dev, int flags) {
 
 int main(int argc, char **argv) {
   base::AtExitManager exit_manager;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
   if (argc < 4) {

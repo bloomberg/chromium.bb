@@ -894,7 +894,7 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   }
 
   // Allow offering of VP9 encoding to be overridden by the command-line.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
     enable_vp9_ = true;
   } else {
     config.GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
@@ -902,10 +902,10 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
 
   // Allow the command-line to override the size of the frame recorder buffer.
   int frame_recorder_buffer_kb = 0;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kFrameRecorderBufferKbName)) {
     std::string switch_value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             kFrameRecorderBufferKbName);
     base::StringToInt(switch_value, &frame_recorder_buffer_kb);
   } else {

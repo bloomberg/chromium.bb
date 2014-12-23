@@ -50,7 +50,7 @@ static bool ContainsString(const std::string& original,
 static bool Initialize(int verbosity_level) {
   if (verbosity_level != kDefaultVerbosity) {
     // Update the command line with specified verbosity level for this file.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     std::ostringstream value_stream;
     value_stream << "logging_unittest=" << verbosity_level;
     const std::string& value = value_stream.str();

@@ -38,7 +38,7 @@ scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
   // TODO(xhwang/ddorwin): Pass the security level from key system.
   MediaDrmBridge::SecurityLevel security_level =
       MediaDrmBridge::SECURITY_LEVEL_3;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMediaDrmEnableNonCompositing)) {
     security_level = MediaDrmBridge::SECURITY_LEVEL_1;
   }

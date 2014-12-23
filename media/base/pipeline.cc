@@ -685,7 +685,7 @@ void Pipeline::RunEndedCallbackIfNeeded() {
 scoped_ptr<TextRenderer> Pipeline::CreateTextRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kEnableInbandTextTracks))
     return scoped_ptr<media::TextRenderer>();
 
