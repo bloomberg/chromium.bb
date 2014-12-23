@@ -15,7 +15,7 @@ function test()
         InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffRebuild, true);
         var stylesPane = WebInspector.panels.elements.sidebarPanes.styles;
         for (var i = 0; i < UPDATE_COUNT; ++i)
-            stylesPane.update(stylesPane.node, true);
+            stylesPane.setNode(stylesPane.node());
 
         InspectorTest.runAfterPendingDispatches(completeCallback);
     }
