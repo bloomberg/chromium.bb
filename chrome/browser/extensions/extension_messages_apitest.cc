@@ -306,7 +306,8 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     return extension;
   }
 
-  scoped_refptr<const Extension> LoadChromiumConnectableApp() {
+  scoped_refptr<const Extension> LoadChromiumConnectableApp(
+      bool with_event_handlers = true) {
     scoped_refptr<const Extension> extension =
         LoadExtensionIntoDir(&web_connectable_dir_,
                              "{"
@@ -321,7 +322,8 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
                              "  \"manifest_version\": 2,"
                              "  \"name\": \"app_connectable\","
                              "  \"version\": \"1.0\""
-                             "}");
+                             "}",
+                             with_event_handlers);
     CHECK(extension.get());
     return extension;
   }
@@ -382,26 +384,33 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
  private:
   scoped_refptr<const Extension> LoadExtensionIntoDir(
       TestExtensionDir* dir,
-      const std::string& manifest) {
+      const std::string& manifest,
+      bool with_event_handlers = true) {
     dir->WriteManifest(manifest);
-    dir->WriteFile(FILE_PATH_LITERAL("background.js"),
-                   base::StringPrintf(
-        "function maybeClose(message) {\n"
-        "  if (message.indexOf('%s') >= 0)\n"
-        "    window.setTimeout(function() { window.close() }, 0);\n"
-        "}\n"
-        "chrome.runtime.onMessageExternal.addListener(\n"
-        "    function(message, sender, reply) {\n"
-        "  reply({ message: message, sender: sender });\n"
-        "  maybeClose(message);\n"
-        "});\n"
-        "chrome.runtime.onConnectExternal.addListener(function(port) {\n"
-        "  port.onMessage.addListener(function(message) {\n"
-        "    port.postMessage({ message: message, sender: port.sender });\n"
-        "    maybeClose(message);\n"
-        "  });\n"
-        "});\n",
-                   close_background_message()));
+    if (with_event_handlers) {
+      dir->WriteFile(
+          FILE_PATH_LITERAL("background.js"),
+          base::StringPrintf(
+              "function maybeClose(message) {\n"
+              "  if (message.indexOf('%s') >= 0)\n"
+              "    window.setTimeout(function() { window.close() }, 0);\n"
+              "}\n"
+              "chrome.runtime.onMessageExternal.addListener(\n"
+              "    function(message, sender, reply) {\n"
+              "  reply({ message: message, sender: sender });\n"
+              "  maybeClose(message);\n"
+              "});\n"
+              "chrome.runtime.onConnectExternal.addListener(function(port) {\n"
+              "  port.onMessage.addListener(function(message) {\n"
+              "    port.postMessage({ message: message, sender: port.sender "
+              "});\n"
+              "    maybeClose(message);\n"
+              "  });\n"
+              "});\n",
+              close_background_message()));
+    } else {
+      dir->WriteFile(FILE_PATH_LITERAL("background.js"), "");
+    }
     return LoadExtension(dir->unpacked_path());
   }
 
@@ -733,6 +742,36 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(
       OK,
       CanConnectAndSendMessagesToFrame(incognito_frame, extension.get(), NULL));
+}
+
+// Tests connection from incognito tabs when the extension doesn't have an event
+// handler for the connection event.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       FromIncognitoNoEventHandlerInApp) {
+  InitializeTestServer();
+
+  scoped_refptr<const Extension> app = LoadChromiumConnectableApp(false);
+  ASSERT_TRUE(app->is_platform_app());
+
+  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
+      profile()->GetOffTheRecordProfile(), chromium_org_url());
+  content::RenderFrameHost* incognito_frame =
+      incognito_browser->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetMainFrame();
+
+  {
+    IncognitoConnectability::ScopedAlertTracker alert_tracker(
+        IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
+
+    // No connection because incognito-enabled hasn't been set for the app, and
+    // the app hasn't installed event handlers.
+    EXPECT_EQ(
+        COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+        CanConnectAndSendMessagesToFrame(incognito_frame, app.get(), NULL));
+    // No dialog should have been shown.
+    EXPECT_EQ(0, alert_tracker.GetAndResetAlertCount());
+  }
 }
 
 // Tests connection from incognito tabs when the user accepts the connection

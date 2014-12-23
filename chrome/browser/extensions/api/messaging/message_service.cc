@@ -30,6 +30,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -343,8 +344,25 @@ void MessageService::OpenChannelToExtension(
     //   enabling in incognito. In practice this means platform apps only.
     if (!is_web_connection || IncognitoInfo::IsSplitMode(target_extension) ||
         target_extension->can_be_incognito_enabled()) {
-      DispatchOnDisconnect(source, receiver_port_id,
-                           kReceivingEndDoesntExistError);
+      OnOpenChannelAllowed(params.Pass(), false);
+      return;
+    }
+
+    // If the target extension isn't even listening for connect/message events,
+    // there is no need to go any further and the connection should be
+    // rejected without showing a prompt. See http://crbug.com/442497
+    EventRouter* event_router = EventRouter::Get(context);
+    const char* const events[] = {"runtime.onConnectExternal",
+                                  "runtime.onMessageExternal",
+                                  "extension.onRequestExternal",
+                                  nullptr};
+    bool has_event_listener = false;
+    for (const char* const* event = events; *event; event++) {
+      has_event_listener |=
+          event_router->ExtensionHasEventListener(target_extension_id, *event);
+    }
+    if (!has_event_listener) {
+      OnOpenChannelAllowed(params.Pass(), false);
       return;
     }
 

@@ -203,9 +203,6 @@
         "name": "onRequestExternal",
         "deprecated": "Please use $(ref:runtime.onMessageExternal).",
         "type": "function",
-        "options": {
-          "unmanaged": true
-        },
         "description": "Fired when a request is sent from another extension.",
         "parameters": [
           {"name": "request", "type": "any", "optional": true, "description": "The request sent by the calling script."},
