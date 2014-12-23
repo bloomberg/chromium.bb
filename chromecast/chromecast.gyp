@@ -18,6 +18,11 @@
     ],
   },
   'targets': [
+    # TODO(gunsch): Remove these fake targets once they're either added or no
+    # longer referenced from internal code.
+    {'target_name': 'cast_media_audio', 'type': 'none'},
+    {'target_name': 'cast_port_impl', 'type': 'none'},
+
     {
       'target_name': 'cast_base',
       'type': '<(component)',
