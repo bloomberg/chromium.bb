@@ -51,7 +51,7 @@ class HistogramSnapshotManagerTest : public testing::Test {
   HistogramSnapshotManagerTest()
       : histogram_snapshot_manager_(&histogram_flattener_delta_recorder_) {}
 
-  virtual ~HistogramSnapshotManagerTest() {}
+  ~HistogramSnapshotManagerTest() override {}
 
   StatisticsRecorder statistics_recorder_;
   HistogramFlattenerDeltaRecorder histogram_flattener_delta_recorder_;

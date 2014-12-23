@@ -36,10 +36,10 @@ class MockPrefService : public TestingPrefServiceSimple {
 class PrefChangeRegistrarTest : public testing::Test {
  public:
   PrefChangeRegistrarTest() {}
-  virtual ~PrefChangeRegistrarTest() {}
+  ~PrefChangeRegistrarTest() override {}
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   base::Closure observer() const {
     return base::Bind(&base::DoNothing);

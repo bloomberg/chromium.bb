@@ -43,9 +43,7 @@ class WatchdogCounter : public Watchdog {
 
 class WatchdogTest : public testing::Test {
  public:
-  virtual void SetUp() override {
-    Watchdog::ResetStaticData();
-  }
+  void SetUp() override { Watchdog::ResetStaticData(); }
 };
 
 }  // namespace

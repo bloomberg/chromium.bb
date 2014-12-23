@@ -37,7 +37,7 @@ class OverlayUserPrefStoreTest : public testing::Test {
     overlay_->RegisterOverlayPref(mapped_overlay_key, mapped_underlay_key);
   }
 
-  virtual ~OverlayUserPrefStoreTest() {}
+  ~OverlayUserPrefStoreTest() override {}
 
   scoped_refptr<TestingPrefStore> underlay_;
   scoped_refptr<OverlayUserPrefStore> overlay_;

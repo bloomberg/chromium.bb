@@ -24,15 +24,13 @@ namespace base {
 
 class HistogramTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
   }
 
-  virtual void TearDown() {
-    UninitializeStatisticsRecorder();
-  }
+  void TearDown() override { UninitializeStatisticsRecorder(); }
 
   void InitializeStatisticsRecorder() {
     statistics_recorder_ = new StatisticsRecorder();

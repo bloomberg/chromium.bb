@@ -34,7 +34,7 @@ class TrackedObjectsTest : public testing::Test {
     ThreadData::now_function_is_time_ = true;
   }
 
-  virtual ~TrackedObjectsTest() {
+  ~TrackedObjectsTest() override {
     // We should not need to leak any structures we create, since we are
     // single threaded, and carefully accounting for items.
     ThreadData::ShutdownSingleThreadedCleanup(false);

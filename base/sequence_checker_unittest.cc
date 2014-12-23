@@ -56,14 +56,12 @@ class SequenceCheckerTest : public testing::Test {
  public:
   SequenceCheckerTest() : other_thread_("sequence_checker_test_other_thread") {}
 
-  virtual ~SequenceCheckerTest() {}
-
-  virtual void SetUp() override {
+  void SetUp() override {
     other_thread_.Start();
     ResetPool();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     other_thread_.Stop();
     pool()->Shutdown();
   }

@@ -82,7 +82,7 @@ bool SuccessfulWriteObserver::GetAndResetObservationState() {
 class ImportantFileWriterTest : public testing::Test {
  public:
   ImportantFileWriterTest() { }
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("test-file");
   }

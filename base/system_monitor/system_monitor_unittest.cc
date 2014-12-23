@@ -19,7 +19,6 @@ class SystemMonitorTest : public testing::Test {
   SystemMonitorTest() {
     system_monitor_.reset(new SystemMonitor);
   }
-  virtual ~SystemMonitorTest() {}
 
   MessageLoop message_loop_;
   scoped_ptr<SystemMonitor> system_monitor_;

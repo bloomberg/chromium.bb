@@ -66,8 +66,7 @@ class CallbackTest : public ::testing::Test {
         callback_b_(new FakeBindState2()) {
   }
 
-  virtual ~CallbackTest() {
-  }
+  ~CallbackTest() override {}
 
  protected:
   Callback<void(void)> callback_a_;

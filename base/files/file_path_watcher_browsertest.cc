@@ -143,10 +143,10 @@ class FilePathWatcherTest : public testing::Test {
   FilePathWatcherTest()
       : file_thread_("FilePathWatcherTest") {}
 
-  virtual ~FilePathWatcherTest() {}
+  ~FilePathWatcherTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a separate file thread in order to test proper thread usage.
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(file_thread_.StartWithOptions(options));
@@ -154,9 +154,7 @@ class FilePathWatcherTest : public testing::Test {
     collector_ = new NotificationCollector();
   }
 
-  virtual void TearDown() override {
-    RunLoop().RunUntilIdle();
-  }
+  void TearDown() override { RunLoop().RunUntilIdle(); }
 
   void DeleteDelegateOnFileThread(TestDelegate* delegate) {
     file_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, delegate);

@@ -85,7 +85,7 @@ class PrefObserverMock : public PrefObserver {
 // Test fixture class.
 class PrefNotifierTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     pref_service_.registry()->RegisterBooleanPref(kChangedPref, true);
     pref_service_.registry()->RegisterBooleanPref(kUnchangedPref, true);
   }

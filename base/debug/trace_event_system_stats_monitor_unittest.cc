@@ -20,7 +20,7 @@ namespace debug {
 class TraceSystemStatsMonitorTest : public testing::Test {
  public:
   TraceSystemStatsMonitorTest() {}
-  virtual ~TraceSystemStatsMonitorTest() {}
+  ~TraceSystemStatsMonitorTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TraceSystemStatsMonitorTest);

@@ -18,14 +18,14 @@ std::map<std::string, std::string>* key_values_ = NULL;
 
 class CrashLoggingTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     key_values_ = new std::map<std::string, std::string>;
     base::debug::SetCrashKeyReportingFunctions(
         &CrashLoggingTest::SetKeyValue,
         &CrashLoggingTest::ClearKeyValue);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     base::debug::ResetCrashLoggingForTesting();
 
     delete key_values_;

@@ -22,9 +22,7 @@ class HistogramBaseTest : public testing::Test {
     ResetStatisticsRecorder();
   }
 
-  virtual ~HistogramBaseTest() {
-    delete statistics_recorder_;
-  }
+  ~HistogramBaseTest() override { delete statistics_recorder_; }
 
   void ResetStatisticsRecorder() {
     delete statistics_recorder_;

@@ -48,15 +48,7 @@ struct UTF8TestData {
 
 // file_util winds up using autoreleased objects on the Mac, so this needs
 // to be a PlatformTest
-class FilePathTest : public PlatformTest {
- protected:
-  virtual void SetUp() override {
-    PlatformTest::SetUp();
-  }
-  virtual void TearDown() override {
-    PlatformTest::TearDown();
-  }
-};
+typedef PlatformTest FilePathTest;
 
 TEST_F(FilePathTest, DirName) {
   const struct UnaryTestData cases[] = {

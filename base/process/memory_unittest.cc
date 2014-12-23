@@ -182,13 +182,9 @@ class OutOfMemoryTest : public testing::Test {
   }
 
 #if defined(USE_TCMALLOC)
-  virtual void SetUp() override {
-    tc_set_new_mode(1);
-  }
+  void SetUp() override { tc_set_new_mode(1); }
 
-  virtual void TearDown() override {
-    tc_set_new_mode(0);
-  }
+  void TearDown() override { tc_set_new_mode(0); }
 #endif  // defined(USE_TCMALLOC)
 
  protected:
@@ -390,7 +386,7 @@ class OutOfMemoryHandledTest : public OutOfMemoryTest {
   static const size_t kSafeCallocSize = 128;
   static const size_t kSafeCallocItems = 4;
 
-  virtual void SetUp() {
+  void SetUp() override {
     OutOfMemoryTest::SetUp();
 
     // We enable termination on OOM - just as Chrome does at early

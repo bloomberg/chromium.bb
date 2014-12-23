@@ -21,9 +21,7 @@ class TraceEventSyntheticDelayTest : public testing::Test,
                                      public TraceEventSyntheticDelayClock {
  public:
   TraceEventSyntheticDelayTest() {}
-  virtual ~TraceEventSyntheticDelayTest() {
-    ResetTraceEventSyntheticDelays();
-  }
+  ~TraceEventSyntheticDelayTest() override { ResetTraceEventSyntheticDelays(); }
 
   // TraceEventSyntheticDelayClock implementation.
   base::TimeTicks Now() override {

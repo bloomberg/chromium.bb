@@ -98,7 +98,7 @@ const char kDefaultValue[] = "default:default";
 
 class PrefValueStoreTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Create TestingPrefStores.
     CreateManagedPrefs();
     CreateSupervisedUserPrefs();

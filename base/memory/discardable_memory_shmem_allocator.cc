@@ -17,8 +17,8 @@ class DiscardableMemoryShmemAllocatorImpl
     : public DiscardableMemoryShmemAllocator {
  public:
   // Overridden from DiscardableMemoryShmemAllocator:
-  virtual scoped_ptr<DiscardableSharedMemory>
-  AllocateLockedDiscardableSharedMemory(size_t size) override {
+  scoped_ptr<DiscardableSharedMemory> AllocateLockedDiscardableSharedMemory(
+      size_t size) override {
     scoped_ptr<DiscardableSharedMemory> memory(new DiscardableSharedMemory);
     if (!memory->CreateAndMap(size))
       return scoped_ptr<DiscardableSharedMemory>();

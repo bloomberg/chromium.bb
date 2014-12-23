@@ -153,7 +153,7 @@ class SingletonTest : public testing::Test {
  public:
   SingletonTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     non_leak_called_ = false;
     leaky_called_ = false;
     static_called_ = false;

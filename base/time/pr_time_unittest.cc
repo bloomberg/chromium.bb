@@ -25,7 +25,7 @@ PRTime comparison_time_2 = INT64_C(1373275692441381);   // represented as GMT
 // tested by comparing them to a known time in the local zone.
 class PRTimeTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Use mktime to get a time_t, and turn it into a PRTime by converting
     // seconds to microseconds.  Use 15th Oct 2007 12:45:00 local.  This
     // must be a time guaranteed to be outside of a DST fallback hour in

@@ -21,9 +21,9 @@ class MessagePumpLibeventTest : public testing::Test {
   MessagePumpLibeventTest()
       : ui_loop_(MessageLoop::TYPE_UI),
         io_thread_("MessagePumpLibeventTestIOThread") {}
-  virtual ~MessagePumpLibeventTest() {}
+  ~MessagePumpLibeventTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     Thread::Options options(MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(io_thread_.StartWithOptions(options));
     ASSERT_EQ(MessageLoop::TYPE_IO, io_thread_.message_loop()->type());
@@ -31,7 +31,7 @@ class MessagePumpLibeventTest : public testing::Test {
     ASSERT_EQ(0, ret);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (IGNORE_EINTR(close(pipefds_[0])) < 0)
       PLOG(ERROR) << "close";
     if (IGNORE_EINTR(close(pipefds_[1])) < 0)

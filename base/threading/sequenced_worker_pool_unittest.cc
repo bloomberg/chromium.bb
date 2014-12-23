@@ -183,13 +183,7 @@ class SequencedWorkerPoolTest : public testing::Test {
     ResetPool();
   }
 
-  virtual ~SequencedWorkerPoolTest() {}
-
-  virtual void SetUp() override {}
-
-  virtual void TearDown() override {
-    pool()->Shutdown();
-  }
+  void TearDown() override { pool()->Shutdown(); }
 
   const scoped_refptr<SequencedWorkerPool>& pool() {
     return pool_owner_->pool();

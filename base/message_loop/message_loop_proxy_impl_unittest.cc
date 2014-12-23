@@ -38,14 +38,14 @@ class MessageLoopProxyImplTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     io_thread_.reset(new Thread("MessageLoopProxyImplTest_IO"));
     file_thread_.reset(new Thread("MessageLoopProxyImplTest_File"));
     io_thread_->Start();
     file_thread_->Start();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     io_thread_->Stop();
     file_thread_->Stop();
   }

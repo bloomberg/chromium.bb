@@ -15,7 +15,7 @@ class PowerMonitorTest : public testing::Test {
     power_monitor_.reset(new PowerMonitor(
         scoped_ptr<PowerMonitorSource>(power_monitor_source_)));
   }
-  virtual ~PowerMonitorTest() {};
+  ~PowerMonitorTest() override{};
 
   PowerMonitorTestSource* source() { return power_monitor_source_; }
   PowerMonitor* monitor() { return power_monitor_.get(); }

@@ -23,7 +23,7 @@ namespace debug {
 class TraceMemoryTest : public testing::Test {
  public:
   TraceMemoryTest() {}
-  virtual ~TraceMemoryTest() {}
+  ~TraceMemoryTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TraceMemoryTest);

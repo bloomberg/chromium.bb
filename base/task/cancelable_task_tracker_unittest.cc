@@ -25,7 +25,7 @@ namespace {
 
 class CancelableTaskTrackerTest : public testing::Test {
  protected:
-  virtual ~CancelableTaskTrackerTest() { RunCurrentLoopUntilIdle(); }
+  ~CancelableTaskTrackerTest() override { RunCurrentLoopUntilIdle(); }
 
   void RunCurrentLoopUntilIdle() {
     RunLoop run_loop;
@@ -346,8 +346,6 @@ class CancelableTaskTrackerDeathTest : public CancelableTaskTrackerTest {
     // The default style "fast" does not support multi-threaded tests.
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   }
-
-  virtual ~CancelableTaskTrackerDeathTest() {}
 };
 
 // Duplicated from base/threading/thread_checker.h so that we can be

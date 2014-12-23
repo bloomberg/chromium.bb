@@ -16,10 +16,10 @@ using testing::Mock;
 class ScopedUserPrefUpdateTest : public testing::Test {
  public:
   ScopedUserPrefUpdateTest() : observer_(&prefs_) {}
-  virtual ~ScopedUserPrefUpdateTest() {}
+  ~ScopedUserPrefUpdateTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     prefs_.registry()->RegisterDictionaryPref(kPref);
     registrar_.Init(&prefs_);
     registrar_.Add(kPref, observer_.GetCallback());
