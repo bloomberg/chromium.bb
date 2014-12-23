@@ -572,6 +572,17 @@ class CBuildBotTest(cros_test_lib.TestCase):
         self.assertFalse(config.chrome_binhost_only and config.hw_tests,
                          msg % build_name)
 
+  def testExternalConfigsDoNotUseInternalFeatures(self):
+    """External configs should not use chrome_internal, or official.xml."""
+    msg = ('%s is not internal, so should not use chrome_internal, or an '
+           'internal manifest')
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if not config['internal']:
+        self.assertFalse('chrome_internal' in config['useflags'],
+                         msg % build_name)
+        self.assertNotEqual(config.get('manifest'),
+                            constants.OFFICIAL_MANIFEST,
+                            msg % build_name)
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
