@@ -5,10 +5,11 @@
 // Content settings API test
 // Run with browser_tests --gtest_filter=ExtensionApiTest.DataReductionProxy
 
-var drp = chrome.dataReductionProxy;
+var dataReductionProxy = chrome.dataReductionProxy;
+var privatePreferences = chrome.preferencesPrivate;
 chrome.test.runTests([
   function getDrpPrefs() {
-    drp.spdyProxyEnabled.get({}, chrome.test.callbackPass(
+    dataReductionProxy.spdyProxyEnabled.get({}, chrome.test.callbackPass(
         function(result) {
           chrome.test.assertEq(
               {
@@ -17,8 +18,8 @@ chrome.test.runTests([
               },
               result);
     }));
-    drp.dataReductionDailyContentLength.get({}, chrome.test.callbackPass(
-        function(result) {
+    dataReductionProxy.dataReductionDailyContentLength.get({},
+        chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
                 'value': [],
@@ -26,8 +27,8 @@ chrome.test.runTests([
               },
               result);
     }));
-    drp.dataReductionDailyReceivedLength.get({}, chrome.test.callbackPass(
-        function(result) {
+    dataReductionProxy.dataReductionDailyReceivedLength.get({},
+        chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
                 'value': [],
@@ -35,26 +36,25 @@ chrome.test.runTests([
               },
               result);
     }));
-    drp.dataReductionUpdateDailyLengths.get({}, chrome.test.callbackPass(
-        function(result) {
+    privatePreferences.dataReductionUpdateDailyLengths.get({},
+        chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
-                'value': false,
-                'levelOfControl': 'controllable_by_this_extension'
+                'value': false
               },
               result);
     }));
   },
   function updateDailyLengths() {
-    drp.dataReductionDailyContentLength.onChange.addListener(
+    dataReductionProxy.dataReductionDailyContentLength.onChange.addListener(
         confirmDailyContentLength);
-    drp.dataReductionDailyReceivedLength.onChange.addListener(
+    dataReductionProxy.dataReductionDailyReceivedLength.onChange.addListener(
         confirmRecievedLength);
 
     // Trigger calls to confirmDailyContentLength.onChange and
     // dataReductionDailyReceivedLength.onChange listeners.
-    drp.spdyProxyEnabled.set({ 'value': true });
-    drp.dataReductionUpdateDailyLengths.set({'value': true});
+    dataReductionProxy.spdyProxyEnabled.set({ 'value': true });
+    privatePreferences.dataReductionUpdateDailyLengths.set({'value': true});
 
     // Helper methods.
     var expectedDailyLengths = [];
@@ -62,7 +62,7 @@ chrome.test.runTests([
       expectedDailyLengths[i] = '0';
     }
     function confirmRecievedLength() {
-      drp.dataReductionDailyReceivedLength.get({},
+      dataReductionProxy.dataReductionDailyReceivedLength.get({},
           chrome.test.callbackPass(function(result) {
             chrome.test.assertEq(
                 {
@@ -71,14 +71,30 @@ chrome.test.runTests([
                 },
                 result);
       }));
+      privatePreferences.dataReductionUpdateDailyLengths.get({},
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertEq(
+              {
+                'value': false
+              },
+              result);
+      }));
     }
     function confirmDailyContentLength() {
-      drp.dataReductionDailyContentLength.get({},
+      dataReductionProxy.dataReductionDailyContentLength.get({},
         chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
                 'value': expectedDailyLengths ,
                 'levelOfControl': 'controllable_by_this_extension'
+              },
+              result);
+      }));
+      privatePreferences.dataReductionUpdateDailyLengths.get({},
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertEq(
+              {
+                'value': false
               },
               result);
       }));
