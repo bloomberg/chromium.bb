@@ -1891,7 +1891,7 @@ internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
   paladin_builder_name='x86-mario nowithdebug-paladin',
 )
 
-pre_cq = internal_paladin.derive(
+pre_cq = paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   build_packages_in_background=True,
   pre_cq=True,
