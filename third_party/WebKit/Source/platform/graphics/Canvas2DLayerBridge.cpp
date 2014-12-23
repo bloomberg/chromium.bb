@@ -435,17 +435,31 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
     bool contextLost = !m_isSurfaceValid || m_contextProvider->context3d()->isContextLost();
-    ASSERT(nameEquals(m_mailboxes.last().m_mailbox, mailbox)); // Expect FIFO behavior
     ASSERT(m_mailboxes.last().m_parentLayerBridge.get() == this);
 
+    // Mailboxes are typically released in FIFO order, so we iterate
+    // from the end of m_mailboxes.
+    auto releasedMailboxInfo = m_mailboxes.end();
+    auto firstMailbox = m_mailboxes.begin();
+    bool found = false;
+    while (releasedMailboxInfo != firstMailbox) {
+        --releasedMailboxInfo;
+        if (nameEquals(releasedMailboxInfo->m_mailbox, mailbox)) {
+            found = true;
+            break;
+        }
+    }
+    ASSERT(found);
+    if (!found)
+        return;
 
     if (!contextLost) {
         // Invalidate texture state in case the compositor altered it since the copy-on-write.
-        if (m_mailboxes.last().m_image) {
+        if (releasedMailboxInfo->m_image) {
             if (mailbox.syncPoint) {
                 context()->waitSyncPoint(mailbox.syncPoint);
             }
-            GrTexture* texture = m_mailboxes.last().m_image->getTexture();
+            GrTexture* texture = releasedMailboxInfo->m_image->getTexture();
             if (texture) {
                 if (lostResource) {
                     texture->abandon();
@@ -463,12 +477,12 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
         selfRef = this;
     }
 
-    // The call to remove last will
+    // The destruction of 'releasedMailboxInfo' will:
     // 1) Release the self reference held by the mailboxInfo, which may trigger
     //    the self-destruction of this Canvas2DLayerBridge
     // 2) Release the SkImage, which will return the texture to skia's scratch
     //    texture pool.
-    m_mailboxes.removeLast();
+    m_mailboxes.remove(releasedMailboxInfo);
 
     Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
 }
