@@ -4,8 +4,10 @@
 
 """For all the benchmarks that set options, test that the options are valid."""
 
+import logging
 import os
 import unittest
+from collections import defaultdict
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import browser_options
@@ -18,6 +20,11 @@ def _GetPerfDir(*subdirs):
   return os.path.join(perf_dir, *subdirs)
 
 
+def _GetAllPerfBenchmarks():
+  return discover.DiscoverClasses(
+      _GetPerfDir('benchmarks'), _GetPerfDir(), benchmark_module.Benchmark,
+      index_by_class_name=True).values()
+
 def _BenchmarkOptionsTestGenerator(benchmark):
   def testBenchmarkOptions(self):  # pylint: disable=W0613
     """Invalid options will raise benchmark.InvalidOptionsError."""
@@ -29,12 +36,22 @@ def _BenchmarkOptionsTestGenerator(benchmark):
   return testBenchmarkOptions
 
 
+class TestNoBenchmarkNamesDuplication(unittest.TestCase):
+  def runTest(self):
+    all_benchmarks = _GetAllPerfBenchmarks()
+    names_to_benchmarks = defaultdict(list)
+    for b in all_benchmarks:
+      names_to_benchmarks[b.Name()].append(b)
+    for n in names_to_benchmarks:
+      self.assertEquals(1, len(names_to_benchmarks[n]),
+                        'Multiple benchmarks with the same name %s are '
+                        'found: %s' % (n, str(names_to_benchmarks[n])))
+
+
 def _AddBenchmarkOptionsTests(suite):
   # Using |index_by_class_name=True| allows returning multiple benchmarks
   # from a module.
-  all_benchmarks = discover.DiscoverClasses(
-      _GetPerfDir('benchmarks'), _GetPerfDir(), benchmark_module.Benchmark,
-      index_by_class_name=True).values()
+  all_benchmarks = _GetAllPerfBenchmarks()
   for benchmark in all_benchmarks:
     if not benchmark.options:
       # No need to test benchmarks that have not defined options.
@@ -44,6 +61,7 @@ def _AddBenchmarkOptionsTests(suite):
     setattr(BenchmarkOptionsTest, benchmark.Name(),
             _BenchmarkOptionsTestGenerator(benchmark))
     suite.addTest(BenchmarkOptionsTest(benchmark.Name()))
+  suite.addTest(TestNoBenchmarkNamesDuplication())
 
 
 def load_tests(_, _2, _3):
