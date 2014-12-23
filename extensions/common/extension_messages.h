@@ -554,11 +554,16 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_CreateMimeHandlerViewGuestACK,
                      int /* element_instance_id */)
 
+// Once a MimeHandlerView guest's JavaScript onload function has been called,
+// this IPC is sent to the container to notify it.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted,
+                     int /* element_instance_id */)
+
 // Once a RenderView proxy has been created for the guest in the embedder render
 // process, this IPC informs the embedder of the proxy's routing ID.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_GuestAttached,
-                    int /* element_instance_id */,
-                    int /* source_routing_id */)
+                     int /* element_instance_id */,
+                     int /* source_routing_id */)
 
 // This IPC tells the browser process to detach the provided
 // |element_instance_id| from a GuestViewBase if it is attached to one.

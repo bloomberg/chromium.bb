@@ -22,9 +22,10 @@ GuestViewContainer::~GuestViewContainer() {}
 // static.
 bool GuestViewContainer::HandlesMessage(const IPC::Message& msg) {
   switch (msg.type()) {
+    case ExtensionMsg_CreateMimeHandlerViewGuestACK::ID:
     case ExtensionMsg_GuestAttached::ID:
     case ExtensionMsg_GuestDetached::ID:
-    case ExtensionMsg_CreateMimeHandlerViewGuestACK::ID:
+    case ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted::ID:
       return true;
     default:
       return false;

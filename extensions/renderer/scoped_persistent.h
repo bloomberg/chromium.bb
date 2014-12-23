@@ -19,14 +19,20 @@ class ScopedPersistent {
 
   explicit ScopedPersistent(v8::Handle<T> handle) { reset(handle); }
 
+  ScopedPersistent(v8::Isolate* isolate, v8::Handle<T> handle) {
+    reset(isolate, handle);
+  }
+
   ~ScopedPersistent() { reset(); }
 
-  void reset(v8::Handle<T> handle) {
+  void reset(v8::Isolate* isolate, v8::Handle<T> handle) {
     if (!handle.IsEmpty())
-      handle_.Reset(GetIsolate(handle), handle);
+      handle_.Reset(isolate, handle);
     else
       reset();
   }
+
+  void reset(v8::Handle<T> handle) { reset(GetIsolate(handle), handle); }
 
   void reset() { handle_.Reset(); }
 

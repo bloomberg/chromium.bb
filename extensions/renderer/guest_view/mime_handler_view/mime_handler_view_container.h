@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
 #define EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_CONTAINER_H_
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/guest_view/guest_view_container.h"
 #include "extensions/renderer/scoped_persistent.h"
@@ -64,6 +65,7 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
   void OnGuestAttached(int element_instance_id,
                        int guest_proxy_routing_id);
+  void OnMimeHandlerViewGuestOnLoadCompleted(int element_instance_id);
 
   void CreateMimeHandlerViewGuest();
 
@@ -88,6 +90,15 @@ class MimeHandlerViewContainer : public GuestViewContainer,
 
   // The scriptable object that backs the plugin.
   ScopedPersistent<v8::Object> scriptable_object_;
+
+  // Pending postMessage messages that need to be sent to the guest. These are
+  // queued while the guest is loading and once it is fully loaded they are
+  // delivered so that messages aren't lost.
+  std::vector<linked_ptr<ScopedPersistent<v8::Value>>> pending_messages_;
+
+  // True if the guest page has fully loaded and its JavaScript onload function
+  // has been called.
+  bool guest_loaded_;
 
   base::WeakPtrFactory<MimeHandlerViewContainer> weak_factory_;
 

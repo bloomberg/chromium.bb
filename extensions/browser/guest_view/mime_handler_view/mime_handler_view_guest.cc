@@ -202,6 +202,12 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
   return true;
 }
 
+void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
+  embedder_web_contents()->Send(
+      new ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted(
+          element_instance_id()));
+}
+
 bool MimeHandlerViewGuest::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewGuest, message)

@@ -211,6 +211,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns the instance ID of this GuestViewBase.
   int guest_instance_id() const { return guest_instance_id_; }
 
+  // Returns the instance ID of the GuestViewBase's element.
+  int element_instance_id() const { return element_instance_id_; }
+
   // Returns the extension ID of the embedder.
   const std::string& owner_extension_id() const {
     return owner_extension_id_;

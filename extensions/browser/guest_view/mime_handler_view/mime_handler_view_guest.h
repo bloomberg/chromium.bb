@@ -59,6 +59,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   bool SaveFrame(const GURL& url, const content::Referrer& referrer) override;
 
   // content::WebContentsObserver implementation.
+  void DocumentOnLoadCompletedInMainFrame() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:

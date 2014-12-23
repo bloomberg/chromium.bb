@@ -81,6 +81,7 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
       mime_type_(mime_type),
       original_url_(original_url),
       guest_proxy_routing_id_(-1),
+      guest_loaded_(false),
       weak_factory_(this) {
   DCHECK(!mime_type_.empty());
   is_embedded_ = !render_frame->GetWebFrame()->document().isPluginDocument();
@@ -121,6 +122,8 @@ bool MimeHandlerViewContainer::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_CreateMimeHandlerViewGuestACK,
                         OnCreateMimeHandlerViewGuestACK)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GuestAttached, OnGuestAttached)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_MimeHandlerViewGuestOnLoadCompleted,
+                        OnMimeHandlerViewGuestOnLoadCompleted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -153,6 +156,13 @@ void MimeHandlerViewContainer::didFinishLoading(
 
 void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
                                            v8::Handle<v8::Value> message) {
+  if (!guest_loaded_) {
+    linked_ptr<ScopedPersistent<v8::Value>> scoped_persistent(
+        new ScopedPersistent<v8::Value>(isolate, message));
+    pending_messages_.push_back(scoped_persistent);
+    return;
+  }
+
   content::RenderView* guest_proxy_render_view =
       content::RenderView::FromRoutingID(guest_proxy_routing_id_);
   if (!guest_proxy_render_view)
@@ -191,6 +201,26 @@ void MimeHandlerViewContainer::OnGuestAttached(int /* unused */,
   // Save the RenderView routing ID of the guest here so it can be used to route
   // PostMessage calls.
   guest_proxy_routing_id_ = guest_proxy_routing_id;
+}
+
+void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
+    int /* unused */) {
+  guest_loaded_ = true;
+  if (pending_messages_.empty())
+    return;
+
+  // Now that the guest has loaded, flush any unsent messages.
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  if (!frame)
+    return;
+
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(frame->mainWorldScriptContext());
+  for (const auto& pending_message : pending_messages_)
+    PostMessage(isolate, pending_message->NewHandle(isolate));
+
+  pending_messages_.clear();
 }
 
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
