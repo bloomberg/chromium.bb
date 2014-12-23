@@ -64,7 +64,8 @@ void CastServiceSimple::StartInternal() {
   gfx::Size initial_size(1280, 720);
 
   window_.reset(new CastContentWindow);
-  web_contents_ = window_->Create(initial_size, browser_context());
+  web_contents_ = window_->CreateWebContents(initial_size, browser_context());
+  window_->CreateWindowTree(initial_size, web_contents_.get());
 
   web_contents_->GetController().LoadURL(GetStartupURL(),
                                          content::Referrer(),

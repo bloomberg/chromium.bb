@@ -30,8 +30,11 @@ class CastContentWindow {
   // Removes the window from the screen.
   ~CastContentWindow();
 
-  // Create a window with the given size.
-  scoped_ptr<content::WebContents> Create(
+  // Create a window with the given size for |web_contents|.
+  void CreateWindowTree(const gfx::Size& initial_size,
+                        content::WebContents* web_contents);
+
+  scoped_ptr<content::WebContents> CreateWebContents(
       const gfx::Size& initial_size,
       content::BrowserContext* browser_context);
 

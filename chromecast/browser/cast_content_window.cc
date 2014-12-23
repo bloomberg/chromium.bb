@@ -59,9 +59,9 @@ CastContentWindow::~CastContentWindow() {
 #endif
 }
 
-scoped_ptr<content::WebContents> CastContentWindow::Create(
+void CastContentWindow::CreateWindowTree(
     const gfx::Size& initial_size,
-    content::BrowserContext* browser_context) {
+    content::WebContents* web_contents) {
 #if defined(USE_AURA)
   // Aura initialization
   // TODO(lcwu): We only need a minimal implementation of gfx::Screen
@@ -84,15 +84,7 @@ scoped_ptr<content::WebContents> CastContentWindow::Create(
   window_tree_host_->window()->SetLayoutManager(
       new CastFillLayout(window_tree_host_->window()));
   window_tree_host_->Show();
-#endif
 
-  content::WebContents::CreateParams create_params(browser_context, NULL);
-  create_params.routing_id = MSG_ROUTING_NONE;
-  create_params.initial_size = initial_size;
-  content::WebContents* web_contents = content::WebContents::Create(
-      create_params);
-
-#if defined(USE_AURA)
   // Add and show content's view/window
   aura::Window* content_window = web_contents->GetNativeView();
   aura::Window* parent = window_tree_host_->window();
@@ -101,6 +93,16 @@ scoped_ptr<content::WebContents> CastContentWindow::Create(
   }
   content_window->Show();
 #endif
+}
+
+scoped_ptr<content::WebContents> CastContentWindow::CreateWebContents(
+    const gfx::Size& initial_size,
+    content::BrowserContext* browser_context) {
+  content::WebContents::CreateParams create_params(browser_context, NULL);
+  create_params.routing_id = MSG_ROUTING_NONE;
+  create_params.initial_size = initial_size;
+  content::WebContents* web_contents = content::WebContents::Create(
+      create_params);
 
   return make_scoped_ptr(web_contents);
 }
