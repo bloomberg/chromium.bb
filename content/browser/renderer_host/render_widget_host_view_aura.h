@@ -228,7 +228,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidStopFlinging() override;
 
 #if defined(OS_WIN)
-  void SetLegacyRenderWidgetHostHWND(LegacyRenderWidgetHostHWND* legacy_hwnd);
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
   virtual gfx::NativeViewId GetParentForWindowlessPlugin() const override;
@@ -328,6 +327,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Updates the cursor clip region. Used for mouse locking.
   void UpdateMouseLockRegion();
+
+  // Notification that the LegacyRenderWidgetHostHWND was destroyed.
+  void OnLegacyWindowDestroyed();
 #endif
 
   void DisambiguationPopupRendered(const SkBitmap& result,
@@ -596,7 +598,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // for accessibility, as the container for windowless plugins like
   // Flash/Silverlight, etc and for legacy drivers for trackpoints/trackpads,
   // etc.
+  // The LegacyRenderWidgetHostHWND instance is created during the first call
+  // to RenderWidgetHostViewAura::InternalSetBounds. The instance is destroyed
+  // when the LegacyRenderWidgetHostHWND hwnd is destroyed.
   content::LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND_;
+
+  // Set to true if the legacy_render_widget_host_HWND_ instance was destroyed
+  // by Windows. This could happen if the browser window was destroyed by
+  // DestroyWindow for e.g. This flag helps ensure that we don't try to create
+  // the LegacyRenderWidgetHostHWND instance again as that would be a futile
+  // exercise.
+  bool legacy_window_destroyed_;
 #endif
 
   bool has_snapped_to_boundary_;

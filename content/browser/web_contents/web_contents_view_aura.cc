@@ -67,16 +67,9 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
-
-#if defined(OS_WIN)
-#include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/browser_accessibility_win.h"
-#include "ui/base/win/hidden_window.h"
-#endif
 
 namespace content {
 WebContentsView* CreateWebContentsView(
@@ -647,10 +640,6 @@ class WebContentsViewAura::WindowObserver
 #if defined(OS_WIN)
       if (!window->GetRootWindow()->HasObserver(this))
         window->GetRootWindow()->AddObserver(this);
-      if (view_->legacy_hwnd_) {
-        view_->legacy_hwnd_->UpdateParent(
-            window->GetHost()->GetAcceleratedWidget());
-      }
 #endif
     }
   }
@@ -670,9 +659,6 @@ class WebContentsViewAura::WindowObserver
           root_children[i]->RemoveObserver(this);
         }
       }
-
-      if (view_->legacy_hwnd_)
-        view_->legacy_hwnd_->UpdateParent(ui::GetHiddenWindow());
 #endif
     }
   }
@@ -744,8 +730,7 @@ class WebContentsViewAura::WindowObserver
 WebContentsViewAura::WebContentsViewAura(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate)
-    : WebContentsObserver(web_contents),
-      web_contents_(web_contents),
+    : web_contents_(web_contents),
       delegate_(delegate),
       current_drag_op_(blink::WebDragOperationNone),
       drag_dest_delegate_(NULL),
@@ -1031,10 +1016,6 @@ void WebContentsViewAura::SizeContents(const gfx::Size& size) {
   if (bounds.size() != size) {
     bounds.set_size(size);
     window_->SetBounds(bounds);
-#if defined(OS_WIN)
-    if (legacy_hwnd_)
-      legacy_hwnd_->SetBounds(window_->GetBoundsInRootWindow());
-#endif
   } else {
     // Our size matches what we want but the renderers size may not match.
     // Pretend we were resized so that the renderers size is updated too.
@@ -1131,14 +1112,6 @@ void WebContentsViewAura::CreateView(
   // platforms as well.
   if (delegate_)
     drag_dest_delegate_ = delegate_->GetDragDestDelegate();
-
-#if defined(OS_WIN)
-  if (context && context->GetHost()) {
-    HWND parent_hwnd = context->GetHost()->GetAcceleratedWidget();
-    CHECK(parent_hwnd);
-    legacy_hwnd_.reset(LegacyRenderWidgetHostHWND::Create(parent_hwnd, this));
-  }
-#endif
 }
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
@@ -1179,24 +1152,12 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
   }
 
   AttachTouchEditableToRenderView();
-
-#if defined(OS_WIN)
-  if (legacy_hwnd_)
-    view->SetLegacyRenderWidgetHostHWND(legacy_hwnd_.get());
-#endif
-
   return view;
 }
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  RenderWidgetHostViewAura* view =
-      new RenderWidgetHostViewAura(render_widget_host, false);
-#if defined(OS_WIN)
-  if (legacy_hwnd_)
-    view->SetLegacyRenderWidgetHostHWND(legacy_hwnd_.get());
-#endif
-  return view;
+  return new RenderWidgetHostViewAura(render_widget_host, false);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {
@@ -1472,17 +1433,6 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
       window_->children()[i]->SetBounds(bounds);
     }
   }
-
-#if defined(OS_WIN)
-  if (!legacy_hwnd_ && window_ && window_->GetHost()) {
-    HWND parent_hwnd = window_->GetHost()->GetAcceleratedWidget();
-    CHECK(parent_hwnd);
-    legacy_hwnd_.reset(LegacyRenderWidgetHostHWND::Create(parent_hwnd, this));
-  }
-
-  if (legacy_hwnd_)
-    legacy_hwnd_->SetBounds(window_->GetBoundsInRootWindow());
-#endif
 }
 
 gfx::NativeCursor WebContentsViewAura::GetCursor(const gfx::Point& point) {
@@ -1657,12 +1607,6 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ConvertFromWeb(current_drag_op_);
 }
 
-void WebContentsViewAura::RenderProcessGone(base::TerminationStatus status) {
-#if defined(OS_WIN)
-  UpdateLegacyHwndVisibility();
-#endif
-}
-
 void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
                                                     bool visible) {
   // Ignore any visibility changes in the hierarchy below.
@@ -1693,42 +1637,6 @@ void WebContentsViewAura::UpdateWebContentsVisibility(bool visible) {
     if (web_contents_->should_normally_be_visible())
       web_contents_->WasHidden();
   }
-
-#if defined(OS_WIN)
-  UpdateLegacyHwndVisibility();
-#endif
 }
-
-#if defined(OS_WIN)
-void WebContentsViewAura::UpdateLegacyHwndVisibility() {
-  if (!legacy_hwnd_)
-    return;
-
-  bool visible = (window_->IsVisible() &&
-                  web_contents_->GetRenderWidgetHostView());
-
-  if (visible && GetNativeView() && GetNativeView()->GetHost()) {
-    legacy_hwnd_->UpdateParent(
-        GetNativeView()->GetHost()->GetAcceleratedWidget());
-    legacy_hwnd_->SetBounds(window_->GetBoundsInRootWindow());
-    legacy_hwnd_->Show();
-  } else {
-    // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
-    // hidden window on the same lines as Windowed plugin windows.
-    legacy_hwnd_->UpdateParent(ui::GetHiddenWindow());
-    legacy_hwnd_->Hide();
-  }
-}
-
-gfx::NativeViewAccessible
-WebContentsViewAura::GetNativeViewAccessible() {
-  BrowserAccessibilityManager* manager =
-      web_contents_->GetRootBrowserAccessibilityManager();
-  if (!manager)
-    return nullptr;
-
-  return manager->GetRoot()->ToBrowserAccessibilityWin();
-}
-#endif
 
 }  // namespace content

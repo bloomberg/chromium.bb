@@ -13,16 +13,10 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/wm/public/drag_drop_delegate.h"
-
-#if defined(OS_WIN)
-#include "content/browser/renderer_host/legacy_render_widget_host_win.h"
-#include "content/browser/renderer_host/legacy_render_widget_host_win_delegate.h"
-#endif
 
 namespace aura {
 class Window;
@@ -43,22 +37,14 @@ class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
 
-#if defined(OS_WIN)
-class LegacyRenderWidgetHostHWND;
-#endif
-
 class WebContentsViewAura
     : public WebContentsView,
-#if defined(OS_WIN)
-      public LegacyRenderWidgetHostHWNDDelegate,
-#endif
       public RenderViewHostDelegateView,
       public OverscrollControllerDelegate,
       public ui::ImplicitAnimationObserver,
       public aura::WindowDelegate,
       public aura::client::DragDropDelegate,
-      public aura::WindowObserver,
-      public WebContentsObserver {
+      public aura::WindowObserver {
  public:
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
@@ -198,21 +184,11 @@ class WebContentsViewAura
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
-  // Overridden from WebContentsObserver:
-  void RenderProcessGone(base::TerminationStatus status) override;
-
   // Overridden from aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // Update the web contents visiblity.
   void UpdateWebContentsVisibility(bool visible);
-
-#if defined(OS_WIN)
-  // Overridden from LegacyRenderWidgetHostHWNDDelegate:
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
-
-  void UpdateLegacyHwndVisibility();
-#endif
 
   scoped_ptr<aura::Window> window_;
 
@@ -256,14 +232,6 @@ class WebContentsViewAura
 
   scoped_ptr<TouchEditableImplAura> touch_editable_;
   scoped_ptr<GestureNavSimple> gesture_nav_simple_;
-
-#if defined(OS_WIN)
-  // The LegacyRenderWidgetHostHWND class provides a dummy HWND which is used
-  // for accessibility, as the container for windowless plugins like
-  // Flash/Silverlight, etc and for legacy drivers for trackpoints/trackpads,
-  // etc.
-  scoped_ptr<LegacyRenderWidgetHostHWND> legacy_hwnd_;
-#endif
 
   // On Windows we can run into problems if resources get released within the
   // initialization phase while the content (and its dimensions) are not known.

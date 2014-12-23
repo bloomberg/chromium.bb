@@ -7,7 +7,8 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
-#include "content/browser/renderer_host/legacy_render_widget_host_win_delegate.h"
+#include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -21,44 +22,40 @@
 
 namespace content {
 
-namespace {
-
 // A custom MSAA object id used to determine if a screen reader or some
 // other client is listening on MSAA events - if so, we enable full web
 // accessibility support.
 const int kIdScreenReaderHoneyPot = 1;
 
-}  // namespace
-
-LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
-  if (::IsWindow(hwnd()))
-    ::DestroyWindow(hwnd());
-}
-
 // static
 LegacyRenderWidgetHostHWND* LegacyRenderWidgetHostHWND::Create(
-    HWND parent,
-    LegacyRenderWidgetHostHWNDDelegate* delegate) {
+    HWND parent) {
+  // content_unittests passes in the desktop window as the parent. We allow
+  // the LegacyRenderWidgetHostHWND instance to be created in this case for
+  // these tests to pass.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableLegacyIntermediateWindow)) {
+          switches::kDisableLegacyIntermediateWindow) ||
+      (!GetWindowEventTarget(parent) && parent != ::GetDesktopWindow()))
     return nullptr;
-  }
 
   LegacyRenderWidgetHostHWND* legacy_window_instance =
-      new LegacyRenderWidgetHostHWND(parent, delegate);
-  // If we failed to create the child, return NULL.
+      new LegacyRenderWidgetHostHWND(parent);
+  // If we failed to create the child, or if the switch to disable the legacy
+  // window is passed in, then return NULL.
   if (!::IsWindow(legacy_window_instance->hwnd())) {
     delete legacy_window_instance;
-    return nullptr;
+    return NULL;
   }
   legacy_window_instance->Init();
   return legacy_window_instance;
 }
 
-void LegacyRenderWidgetHostHWND::UpdateParent(HWND parent) {
-  if (!::IsWindow(hwnd()))
-    return;
+void LegacyRenderWidgetHostHWND::Destroy() {
+  if (::IsWindow(hwnd()))
+    ::DestroyWindow(hwnd());
+}
 
+void LegacyRenderWidgetHostHWND::UpdateParent(HWND parent) {
   ::SetParent(hwnd(), parent);
   // If the new parent is the desktop Window, then we disable the child window
   // to ensure that it does not receive any input events. It should not because
@@ -71,49 +68,49 @@ void LegacyRenderWidgetHostHWND::UpdateParent(HWND parent) {
 }
 
 HWND LegacyRenderWidgetHostHWND::GetParent() {
-  if (!::IsWindow(hwnd()))
-    return NULL;
-
   return ::GetParent(hwnd());
 }
 
 void LegacyRenderWidgetHostHWND::Show() {
-  if (::IsWindow(hwnd()))
-    ::ShowWindow(hwnd(), SW_SHOW);
+  ::ShowWindow(hwnd(), SW_SHOW);
 }
 
 void LegacyRenderWidgetHostHWND::Hide() {
-  if (::IsWindow(hwnd()))
-    ::ShowWindow(hwnd(), SW_HIDE);
+  ::ShowWindow(hwnd(), SW_HIDE);
 }
 
 void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
-  if (!::IsWindow(hwnd()))
-    return;
-
   gfx::Rect bounds_in_pixel = gfx::win::DIPToScreenRect(bounds);
   ::SetWindowPos(hwnd(), NULL, bounds_in_pixel.x(), bounds_in_pixel.y(),
                  bounds_in_pixel.width(), bounds_in_pixel.height(),
                  SWP_NOREDRAW);
 }
 
-LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(
-    HWND parent,
-    LegacyRenderWidgetHostHWNDDelegate* delegate)
+void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
+  if (host_) {
+    host_->OnLegacyWindowDestroyed();
+    host_ = NULL;
+  }
+  delete this;
+}
+
+LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(HWND parent)
     : mouse_tracking_enabled_(false),
-      delegate_(delegate) {
-  DCHECK(delegate_);
+      host_(NULL) {
   RECT rect = {0};
   Base::Create(parent, rect, L"Chrome Legacy Window",
                WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                WS_EX_TRANSPARENT);
 }
 
+LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
+  DCHECK(!::IsWindow(hwnd()));
+}
+
 bool LegacyRenderWidgetHostHWND::Init() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      ui::AreTouchEventsEnabled()) {
+      ui::AreTouchEventsEnabled())
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
-  }
 
   HRESULT hr = ::CreateStdAccessibleObject(
       hwnd(), OBJID_WINDOW, IID_IAccessible,
@@ -157,16 +154,24 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     return static_cast<LRESULT>(0L);
   }
 
-  if (OBJID_CLIENT != obj_id)
+  if (OBJID_CLIENT != obj_id || !host_)
     return static_cast<LRESULT>(0L);
 
-  base::win::ScopedComPtr<IAccessible> native_accessible(
-      delegate_->GetNativeViewAccessible());
-  if (!native_accessible.get())
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
+      host_->GetRenderWidgetHost());
+  if (!rwhi)
     return static_cast<LRESULT>(0L);
 
+  BrowserAccessibilityManagerWin* manager =
+      static_cast<BrowserAccessibilityManagerWin*>(
+          rwhi->GetRootBrowserAccessibilityManager());
+  if (!manager)
+    return static_cast<LRESULT>(0L);
+
+  base::win::ScopedComPtr<IAccessible> root(
+      manager->GetRoot()->ToBrowserAccessibilityWin());
   return LresultFromObject(IID_IAccessible, w_param,
-      static_cast<IAccessible*>(native_accessible.Detach()));
+      static_cast<IAccessible*>(root.Detach()));
 }
 
 // We send keyboard/mouse/touch messages to the parent window via SendMessage.
