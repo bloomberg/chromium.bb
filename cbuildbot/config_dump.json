@@ -234,6 +234,26 @@
         "trybot_list": true,
         "usepkg_build_packages": false
     },
+    "amd64-generic-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "amd64-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "important": true,
+        "manifest_version": true,
+        "name": "amd64-generic-grouped-pre-cq",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "amd64-generic-incremental": {
         "boards": [
             "amd64-generic"
@@ -13405,6 +13425,70 @@
         "vm_tests": [
             "smoke_suite"
         ]
+    },
+    "external-mixed-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "child_configs": [
+            {
+                "archive": false,
+                "boards": [
+                    "x86-generic"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "binary",
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "cpe_export": false,
+                "debug_symbols": false,
+                "description": "Verifies compilation, building an image, and unit tests if supported.",
+                "grouped": true,
+                "important": true,
+                "manifest_version": true,
+                "name": "x86-generic-grouped-pre-cq",
+                "pre_cq": true,
+                "trybot_list": true,
+                "upload_standalone_images": false,
+                "vm_tests": []
+            },
+            {
+                "archive": false,
+                "boards": [
+                    "amd64-generic"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "binary",
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "cpe_export": false,
+                "debug_symbols": false,
+                "description": "Verifies compilation, building an image, and unit tests if supported.",
+                "grouped": true,
+                "important": true,
+                "manifest_version": true,
+                "name": "amd64-generic-grouped-pre-cq",
+                "pre_cq": true,
+                "trybot_list": true,
+                "upload_standalone_images": false,
+                "vm_tests": []
+            }
+        ],
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "important": true,
+        "manifest_version": true,
+        "name": "external-mixed-pre-cq",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "vm_tests": []
     },
     "falco-chrome-pfq": {
         "boards": [
@@ -49380,6 +49464,26 @@
         "prebuilts": "public",
         "trybot_list": true,
         "usepkg_build_packages": false
+    },
+    "x86-generic-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "important": true,
+        "manifest_version": true,
+        "name": "x86-generic-grouped-pre-cq",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "vm_tests": []
     },
     "x86-generic-incremental": {
         "boards": [

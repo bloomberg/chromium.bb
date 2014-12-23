@@ -2262,6 +2262,13 @@ _config.add_group('mixed-c-pre-cq',
                                  _base_configs['duck']),
 )
 
+_config.add_group('external-mixed-pre-cq',
+  no_vmtest_pre_cq.add_config('x86-generic-grouped-pre-cq',
+                              _base_configs['x86-generic']),
+  no_vmtest_pre_cq.add_config('amd64-generic-grouped-pre-cq',
+                              _base_configs['amd64-generic'])
+)
+
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
 # configs. Remove this config when no active CL has been screened
 # with this config.
