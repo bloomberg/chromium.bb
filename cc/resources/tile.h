@@ -156,7 +156,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   bool HasRasterTask() const { return !!raster_task_.get(); }
 
-  TileManager* tile_manager_;
   scoped_refptr<RasterSource> raster_source_;
   gfx::Size size_;
   gfx::Rect content_rect_;
@@ -169,11 +168,11 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   int layer_id_;
   int source_frame_number_;
   int flags_;
-  bool is_shared_;
   int tiling_i_index_;
   int tiling_j_index_;
-  bool required_for_activation_;
-  bool required_for_draw_;
+  bool is_shared_ : 1;
+  bool required_for_activation_ : 1;
+  bool required_for_draw_ : 1;
 
   Id id_;
   static Id s_next_id_;
