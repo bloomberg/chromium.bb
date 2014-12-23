@@ -327,6 +327,14 @@ void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
     return;
   }
 
+  // Release all keys before injecting text event. This is necessary to avoid
+  // any interference with the currently pressed keys. E.g. if Shift is pressed
+  // when TextEvent is received.
+  for (int key : pressed_keys_) {
+    XTestFakeKeyEvent(display_, key, False, CurrentTime);
+  }
+  pressed_keys_.clear();
+
   const std::string text = event.text();
   for (int32 index = 0; index < static_cast<int32>(text.size()); ++index) {
     uint32_t code_point;
