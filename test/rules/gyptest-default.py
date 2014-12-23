@@ -12,7 +12,9 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-test.run_gyp('actions.gyp', chdir='src')
+test.run_gyp('actions.gyp',
+             '-G', 'xcode_ninja_target_pattern=^pull_in_all_actions$',
+             chdir='src')
 
 test.relocate('src', 'relocate/src')
 

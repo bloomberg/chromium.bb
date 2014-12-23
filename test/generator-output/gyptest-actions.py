@@ -13,12 +13,16 @@ import TestGyp
 # Android doesn't support --generator-output.
 test = TestGyp.TestGyp(formats=['!android'])
 
+# Bug: xcode-ninja doesn't respect --generator-output
+# cf. https://code.google.com/p/gyp/issues/detail?id=442
+if test.format == 'xcode-ninja':
+  test.skip_test()
+
 # All the generated files should go under 'gypfiles'. The source directory
 # ('actions') should be untouched.
 test.writable(test.workpath('actions'), False)
 test.run_gyp('actions.gyp',
              '--generator-output=' + test.workpath('gypfiles'),
-             '-G', 'xcode_ninja_target_pattern=^pull_in_all_actions$',
              chdir='actions')
 
 test.writable(test.workpath('actions'), True)

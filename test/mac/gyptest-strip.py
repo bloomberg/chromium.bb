@@ -41,7 +41,8 @@ if sys.platform == 'darwin':
   # with Xcode 5.0 or higher, take this additional symbol into consideration
   # for unstripped builds (it is stripped by all strip commands).
   expected_extra_symbol_count = 0
-  if test.format == 'ninja' and TestMac.Xcode.Version() >= '0500':
+  if test.format in ['ninja', 'xcode-ninja'] \
+      and TestMac.Xcode.Version() >= '0500':
     expected_extra_symbol_count = 1
 
   # The actual numbers here are not interesting, they just need to be the same

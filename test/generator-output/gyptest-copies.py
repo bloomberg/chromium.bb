@@ -14,6 +14,11 @@ import TestGyp
 # Android doesn't support --generator-output.
 test = TestGyp.TestGyp(formats=['!android'])
 
+# Bug: xcode-ninja doesn't respect --generator-output
+# cf. https://code.google.com/p/gyp/issues/detail?id=442
+if test.format == 'xcode-ninja':
+  test.skip_test()
+
 test.writable(test.workpath('copies'), False)
 
 test.run_gyp('copies.gyp',

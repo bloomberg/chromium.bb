@@ -27,7 +27,7 @@ test = TestGyp.TestGyp(formats=['ninja'])
 # Note that we can't just pass format=['ninja-some_toolchain'] to the
 # constructor above, because then this test wouldn't be recognized as a ninja
 # format test.
-test.formats = ['ninja-some_flavor']
+test.formats = ['ninja-my_flavor' if f == 'ninja' else f for f in test.formats]
 
 gyp_file = 'make_global_settings.gyp'
 
@@ -36,7 +36,8 @@ test.run_gyp(gyp_file,
              # my_readelf.py, and the python executable.
              '-Dworkdir=%s' % test.workdir,
              '-Dpython=%s' % sys.executable)
-test.build(gyp_file, arguments=['-v'])
+test.build(gyp_file,
+           arguments=['-v'] if test.format == 'ninja-my_flavor' else [])
 
 expected = ['MY_CC', 'MY_CXX']
 test.must_contain_all_lines(test.stdout(), expected)

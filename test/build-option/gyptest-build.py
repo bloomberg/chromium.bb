@@ -19,6 +19,11 @@ if test.format == 'android':
   # https://code.google.com/p/gyp/issues/detail?id=436
   test.skip_test(message='Test fails on android. Fix and reenable.\n')
 
+if test.format == 'xcode-ninja':
+  # The xcode-ninja generator doesn't support --build
+  # cf. https://code.google.com/p/gyp/issues/detail?id=453
+  test.skip_test()
+
 test.run_gyp('hello.gyp', '--build=Default')
 
 test.run_built_executable('hello', stdout="Hello, world!\n")

@@ -289,6 +289,10 @@ class TestGypBase(TestCommon.TestCommon):
     # TODO: if extra_args contains a '--build' flag
     # we really want that to only apply to the last format (self.format).
     run_args.extend(self.extra_args)
+    # Default xcode_ninja_target_pattern to ^.*$ to fix xcode-ninja tests
+    xcode_ninja_target_pattern = kw.pop('xcode_ninja_target_pattern', '.*')
+    run_args.extend(
+      ['-G', 'xcode_ninja_target_pattern=%s' % xcode_ninja_target_pattern])
     run_args.extend(args)
     return self.run(program=self.gyp, arguments=run_args, **kw)
 
@@ -1325,6 +1329,74 @@ class TestGypXcode(TestGypBase):
     return self.workpath(*result)
 
 
+class TestGypXcodeNinja(TestGypXcode):
+  """
+  Subclass for testing the GYP Xcode Ninja generator.
+  """
+  format = 'xcode-ninja'
+
+  def initialize_build_tool(self):
+    super(TestGypXcodeNinja, self).initialize_build_tool()
+    # When using '--build', make sure ninja is first in the format list.
+    self.formats.insert(0, 'ninja')
+
+  def build(self, gyp_file, target=None, **kw):
+    """
+    Runs an xcodebuild using the .xcodeproj generated from the specified
+    gyp_file.
+    """
+    build_config = self.configuration
+    if build_config and build_config.endswith(('-iphoneos',
+                                               '-iphonesimulator')):
+      build_config, sdk = self.configuration.split('-')
+      kw['arguments'] = kw.get('arguments', []) + ['-sdk', sdk]
+
+    with self._build_configuration(build_config):
+      return super(TestGypXcodeNinja, self).build(
+        gyp_file.replace('.gyp', '.ninja.gyp'), target, **kw)
+
+  @contextmanager
+  def _build_configuration(self, build_config):
+    config = self.configuration
+    self.configuration = build_config
+    try:
+      yield
+    finally:
+      self.configuration = config
+
+  def built_file_path(self, name, type=None, **kw):
+    result = []
+    chdir = kw.get('chdir')
+    if chdir:
+      result.append(chdir)
+    result.append('out')
+    result.append(self.configuration_dirname())
+    subdir = kw.get('subdir')
+    if subdir and type != self.SHARED_LIB:
+      result.append(subdir)
+    result.append(self.built_file_basename(name, type, **kw))
+    return self.workpath(*result)
+
+  def up_to_date(self, gyp_file, target=None, **kw):
+    result = self.build(gyp_file, target, **kw)
+    if not result:
+      stdout = self.stdout()
+      if 'ninja: no work to do' not in stdout:
+        self.report_not_up_to_date()
+        self.fail_test()
+    return result
+
+  def run_built_executable(self, name, *args, **kw):
+    """
+    Runs an executable built by xcodebuild + ninja.
+    """
+    configuration = self.configuration_dirname()
+    os.environ['DYLD_LIBRARY_PATH'] = os.path.join('out', configuration)
+    # Enclosing the name in a list avoids prepending the original dir.
+    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
+    return self.run(program=program, *args, **kw)
+
+
 format_class_list = [
   TestGypGypd,
   TestGypAndroid,
@@ -1334,6 +1406,7 @@ format_class_list = [
   TestGypMSVSNinja,
   TestGypNinja,
   TestGypXcode,
+  TestGypXcodeNinja,
 ]
 
 def TestGyp(*args, **kw):

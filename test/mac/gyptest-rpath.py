@@ -20,6 +20,7 @@ if sys.platform == 'darwin':
 
   CHDIR = 'rpath'
   test.run_gyp('test.gyp', chdir=CHDIR)
+
   test.build('test.gyp', test.ALL, chdir=CHDIR)
 
   def GetRpaths(p):

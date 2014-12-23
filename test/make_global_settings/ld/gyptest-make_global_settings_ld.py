@@ -17,7 +17,7 @@ def resolve_path(test, path):
     return None
   elif test.format == 'make':
     return '$(abspath %s)' % path
-  elif test.format == 'ninja':
+  elif test.format in ['ninja', 'xcode-ninja']:
     return os.path.join('..', '..', path)
   else:
     test.fail_test()
@@ -36,14 +36,14 @@ def verify_ld_target(test, ld=None, rel_path=False):
       # break existing projects.
       test.must_not_contain('Makefile', 'LD ?= ')
       return
-    elif test.format == 'ninja':
+    elif test.format in ['ninja', 'xcode-ninja']:
       if sys.platform == 'win32':
         ld_expected = 'link.exe'
       else:
         ld_expected = '$cc'
   if test.format == 'make':
     test.must_contain('Makefile', 'LD ?= %s' % ld_expected)
-  elif test.format == 'ninja':
+  elif test.format in ['ninja', 'xcode-ninja']:
     test.must_contain('out/Default/build.ninja', 'ld = %s' % ld_expected)
   else:
     test.fail_test()
@@ -62,14 +62,14 @@ def verify_ld_host(test, ld=None, rel_path=False):
       # break existing projects.
       test.must_not_contain('Makefile', 'LD.host ?= ')
       return
-    elif test.format == 'ninja':
+    elif test.format in ['ninja', 'xcode-ninja']:
       if sys.platform == 'win32':
         ld_expected = '$ld'
       else:
         ld_expected = '$cc_host'
   if test.format == 'make':
     test.must_contain('Makefile', 'LD.host ?= %s' % ld_expected)
-  elif test.format == 'ninja':
+  elif test.format in ['ninja', 'xcode-ninja']:
     test.must_contain('out/Default/build.ninja', 'ld_host = %s' % ld_expected)
   else:
     test.fail_test()

@@ -13,7 +13,8 @@ import TestGyp
 
 test = TestGyp.TestGyp(formats=['ninja'])
 
-test.run_gyp('test.gyp')
+# Reset xcode_ninja_target_pattern to its default for this test.
+test.run_gyp('test.gyp', '-G', 'xcode_ninja_target_pattern=^$')
 
 # Check for both \r and \n to cover both windows and linux.
 test.must_not_contain('out/Default/build.ninja', 'build empty_target: phony\r')

@@ -17,7 +17,7 @@ def resolve_path(test, path):
     return None
   elif test.format == 'make':
     return '$(abspath %s)' % path
-  elif test.format == 'ninja':
+  elif test.format in ['ninja', 'xcode-ninja']:
     return os.path.join('..', '..', path)
   else:
     test.fail_test()
@@ -36,14 +36,14 @@ def verify_ar_target(test, ar=None, rel_path=False):
       # break existing projects.
       test.must_not_contain('Makefile', 'AR ?= ')
       return
-    elif test.format == 'ninja':
+    elif test.format in ['ninja', 'xcode-ninja']:
       if sys.platform == 'win32':
         ar_expected = 'lib.exe'
       else:
         ar_expected = 'ar'
   if test.format == 'make':
     test.must_contain('Makefile', 'AR ?= %s' % ar_expected)
-  elif test.format == 'ninja':
+  elif test.format in ['ninja', 'xcode-ninja']:
     test.must_contain('out/Default/build.ninja', 'ar = %s' % ar_expected)
   else:
     test.fail_test()
@@ -59,7 +59,7 @@ def verify_ar_host(test, ar=None, rel_path=False):
     ar_expected = 'ar'
   if test.format == 'make':
     test.must_contain('Makefile', 'AR.host ?= %s' % ar_expected)
-  elif test.format == 'ninja':
+  elif test.format in ['ninja', 'xcode-ninja']:
     test.must_contain('out/Default/build.ninja', 'ar_host = %s' % ar_expected)
   else:
     test.fail_test()

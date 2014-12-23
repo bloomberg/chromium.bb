@@ -59,6 +59,7 @@ if sys.platform == 'darwin':
     ]
 
     test.run_gyp('test-archs-multiarch.gyp', chdir='archs')
+
     for target in targets:
       test.build('test-archs-multiarch.gyp', target=target, chdir='archs')
 

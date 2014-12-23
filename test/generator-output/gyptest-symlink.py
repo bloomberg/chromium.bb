@@ -18,6 +18,11 @@ test = TestGyp.TestGyp(formats=['!android'])
 if not hasattr(os, 'symlink'):
   test.skip_test('Missing os.symlink -- skipping test.\n')
 
+# Bug: xcode-ninja doesn't respect --generator-output
+# cf. https://code.google.com/p/gyp/issues/detail?id=442
+if test.format == 'xcode-ninja':
+  test.skip_test()
+
 test.writable(test.workpath('src'), False)
 
 test.writable(test.workpath('src/subdir2/deeper/build'), True)

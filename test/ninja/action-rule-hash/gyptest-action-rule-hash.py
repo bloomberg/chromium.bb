@@ -14,6 +14,11 @@ import sys
 import TestGyp
 
 test = TestGyp.TestGyp(formats=['ninja'])
+# The xcode-ninja generator handles gypfiles which are not at the
+# project root incorrectly.
+# cf. https://code.google.com/p/gyp/issues/detail?id=460
+if test.format == 'xcode-ninja':
+  test.skip_test()
 
 test.run_gyp('subdir/action-rule-hash.gyp')
 test.build('subdir/action-rule-hash.gyp', test.ALL)

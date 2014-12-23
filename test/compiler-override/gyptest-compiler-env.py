@@ -37,7 +37,9 @@ test = TestGyp.TestGyp(formats=['ninja', 'make'])
 
 def TestTargetOveride():
   expected = ['my_cc.py', 'my_cxx.py', 'FOO' ]
-  if test.format != 'ninja':  # ninja just uses $CC / $CXX as linker.
+
+  # ninja just uses $CC / $CXX as linker.
+  if test.format not in ['ninja', 'xcode-ninja']:
     expected.append('FOO_LINK')
 
   # Check that CC, CXX and LD set target compiler
@@ -104,6 +106,5 @@ def TestHostOveride():
 
 TestTargetOveride()
 TestTargetOverideCompilerOnly()
-TestHostOveride()
 
 test.pass_test()

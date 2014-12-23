@@ -44,7 +44,7 @@ test = TestGyp.TestGyp(formats=['ninja'])
 # Note that we can't just pass format=['ninja-some_toolchain'] to the
 # constructor above, because then this test wouldn't be recognized as a ninja
 # format test.
-test.formats = ['ninja-some_flavor']
+test.formats = ['ninja-my_flavor' if f == 'ninja' else f for f in test.formats]
 
 
 def TestTargetOverideSharedLib():
