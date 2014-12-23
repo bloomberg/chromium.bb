@@ -48,7 +48,7 @@ void V8GCForContextDispose::notifyContextDisposed(bool isMainFrame)
 {
     m_didDisposeContextForMainFrame = isMainFrame;
     m_lastContextDisposalTime = WTF::currentTime();
-    V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification();
+    V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification(!isMainFrame);
     if (m_pseudoIdleTimer.isActive())
         m_pseudoIdleTimer.stop();
 }
