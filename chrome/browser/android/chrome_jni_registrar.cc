@@ -14,6 +14,7 @@
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/dev_tools_server.h"
@@ -170,6 +171,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"IntentHelper", RegisterIntentHelper},
     {"JavascriptAppModalDialog",
      JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog},
+    {"LayerTitleCache", chrome::android::RegisterLayerTitleCache},
     {"LogoBridge", RegisterLogoBridge},
     {"MostVisitedSites", MostVisitedSites::Register},
     {"NativeInfoBar", RegisterNativeInfoBar},

@@ -23,6 +23,11 @@
 
     <!-- TabSwitcher - The minimum distance from the edge to commit a side swap. -->
     <dimen name="swipe_commit_distance">120dp</dimen>
+    
+    <!-- Tab title -->
+    <dimen name="border_texture_title_fade">24dp</dimen>                    <!-- 40px hdpi -->
+    <dimen name="tab_title_favicon_start_padding">10dp</dimen>
+    <dimen name="tab_title_favicon_end_padding">7dp</dimen>
 
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">258dp</dimen>
