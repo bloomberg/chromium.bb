@@ -13,11 +13,9 @@
 namespace blink {
 
 class PresentationSession final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<PresentationSession>
-    , public EventTargetWithInlineData
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>
     , public ContextLifecycleObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<PresentationSession>);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationSession);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PresentationSession* create(ExecutionContext*);

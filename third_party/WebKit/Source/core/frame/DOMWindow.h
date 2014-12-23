@@ -39,10 +39,9 @@ class StyleMedia;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 
-class DOMWindow : public RefCountedWillBeGarbageCollectedFinalized<DOMWindow>, public EventTargetWithInlineData, public DOMWindowBase64 {
+class DOMWindow : public EventTargetWithInlineData, public RefCountedWillBeNoBase<DOMWindow>, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(DOMWindow);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindow);
 public:
     // RefCountedWillBeGarbageCollectedFinalized overrides:
     void trace(Visitor* visitor) override

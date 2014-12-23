@@ -48,10 +48,9 @@ class GenericEventQueue;
 class WebSourceBuffer;
 
 class MediaSource final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaSource>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>
     , public HTMLMediaSource
-    , public ActiveDOMObject
-    , public EventTargetWithInlineData {
+    , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaSource>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);

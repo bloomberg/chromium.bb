@@ -487,7 +487,7 @@ String FileReader::stringResult()
 void FileReader::trace(Visitor* visitor)
 {
     visitor->trace(m_error);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>::trace(visitor);
 }
 
 } // namespace blink

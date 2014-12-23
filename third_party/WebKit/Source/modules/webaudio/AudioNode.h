@@ -49,10 +49,9 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-class AudioNode : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<AudioNode>, public EventTargetWithInlineData {
+class AudioNode : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode> {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioNode>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioNode);
 public:
     enum { ProcessingSizeInFrames = 128 };
 

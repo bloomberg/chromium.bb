@@ -44,9 +44,8 @@ namespace blink {
 class ExecutionContext;
 class InputMethodController;
 
-class InputMethodContext final : public NoBaseWillBeGarbageCollectedFinalized<InputMethodContext>, public EventTargetWithInlineData {
+class InputMethodContext final : public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InputMethodContext);
 public:
     static PassOwnPtrWillBeRawPtr<InputMethodContext> create(HTMLElement*);
     virtual ~InputMethodContext();

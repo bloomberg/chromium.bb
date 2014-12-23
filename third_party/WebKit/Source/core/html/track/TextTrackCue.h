@@ -41,10 +41,9 @@ namespace blink {
 
 class TextTrack;
 
-class TextTrackCue : public RefCountedWillBeGarbageCollectedFinalized<TextTrackCue>, public EventTargetWithInlineData {
+class TextTrackCue : public EventTargetWithInlineData, public RefCountedWillBeNoBase<TextTrackCue> {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TextTrackCue);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackCue);
 public:
     static const AtomicString& cueShadowPseudoId()
     {

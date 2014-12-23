@@ -46,7 +46,16 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter final : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebFileWriterClient {
+class FileWriter final
+#if ENABLE(OILPAN)
+    : public EventTargetWithInlineData
+    , public FileWriterBase
+#else
+    : public FileWriterBase
+    , public EventTargetWithInlineData
+#endif
+    , public ActiveDOMObject
+    , public WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileWriterBase>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);

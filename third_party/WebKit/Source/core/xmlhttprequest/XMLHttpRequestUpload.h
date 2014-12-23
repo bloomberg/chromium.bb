@@ -41,9 +41,8 @@ namespace blink {
 class ExecutionContext;
 class XMLHttpRequest;
 
-class XMLHttpRequestUpload final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
+class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequestUpload);
 public:
     static PassOwnPtrWillBeRawPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)
     {

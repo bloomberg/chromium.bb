@@ -168,7 +168,7 @@ void RTCDTMFSender::trace(Visitor* visitor)
 {
     visitor->trace(m_track);
     visitor->trace(m_scheduledEvents);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<RTCDTMFSender>::trace(visitor);
 }
 
 } // namespace blink

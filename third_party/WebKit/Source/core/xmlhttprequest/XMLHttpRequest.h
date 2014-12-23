@@ -60,15 +60,15 @@ class XMLHttpRequestUpload;
 typedef int ExceptionCode;
 
 class XMLHttpRequest final
-    : public RefCountedWillBeGarbageCollectedFinalized<XMLHttpRequest>
-    , public XMLHttpRequestEventTarget
+    : public XMLHttpRequestEventTarget
+    , public RefCountedWillBeNoBase<XMLHttpRequest>
     , private ThreadableLoaderClient
     , public DocumentParserClient
     , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);
     virtual ~XMLHttpRequest();

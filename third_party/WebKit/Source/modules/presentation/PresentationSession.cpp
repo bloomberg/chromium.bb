@@ -36,7 +36,7 @@ ExecutionContext* PresentationSession::executionContext() const
 
 void PresentationSession::trace(Visitor* visitor)
 {
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>::trace(visitor);
 }
 
 void PresentationSession::postMessage(const String& message)

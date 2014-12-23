@@ -42,7 +42,7 @@ ExecutionContext* Presentation::executionContext() const
 void Presentation::trace(Visitor* visitor)
 {
     visitor->trace(m_session);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
 }
 
 PresentationSession* Presentation::session() const

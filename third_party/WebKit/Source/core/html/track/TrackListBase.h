@@ -14,9 +14,8 @@
 namespace blink {
 
 template<class T>
-class TrackListBase : public RefCountedWillBeGarbageCollectedFinalized<TrackListBase<T>>, public EventTargetWithInlineData {
+class TrackListBase : public EventTargetWithInlineData, public RefCountedWillBeNoBase<TrackListBase<T>> {
     REFCOUNTED_EVENT_TARGET(TrackListBase);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TrackListBase);
 public:
     explicit TrackListBase(HTMLMediaElement* mediaElement)
         : m_mediaElement(mediaElement)

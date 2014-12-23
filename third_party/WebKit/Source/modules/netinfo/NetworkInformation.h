@@ -15,13 +15,11 @@ namespace blink {
 class ExecutionContext;
 
 class NetworkInformation final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<NetworkInformation>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<NetworkInformation>
     , public ActiveDOMObject
-    , public EventTargetWithInlineData
     , public NetworkStateNotifier::NetworkStateObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<NetworkInformation>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
 public:
     static NetworkInformation* create(ExecutionContext*);
     virtual ~NetworkInformation();

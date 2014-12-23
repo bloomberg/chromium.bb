@@ -69,7 +69,7 @@ ExecutionContext* MIDIPort::executionContext() const
 void MIDIPort::trace(Visitor* visitor)
 {
     visitor->trace(m_access);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>::trace(visitor);
 }
 
 } // namespace blink

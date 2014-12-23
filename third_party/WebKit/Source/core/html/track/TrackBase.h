@@ -35,7 +35,7 @@ namespace blink {
 
 class HTMLMediaElement;
 
-class TrackBase : public RefCountedWillBeGarbageCollectedFinalized<TrackBase> {
+class TrackBase : public WillBeGarbageCollectedMixin, public RefCountedWillBeNoBase<TrackBase> {
 public:
     virtual ~TrackBase();
 

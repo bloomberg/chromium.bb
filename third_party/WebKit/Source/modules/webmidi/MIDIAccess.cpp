@@ -178,7 +178,7 @@ void MIDIAccess::trace(Visitor* visitor)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>::trace(visitor);
 }
 
 } // namespace blink

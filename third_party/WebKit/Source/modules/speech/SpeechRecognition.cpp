@@ -201,7 +201,7 @@ void SpeechRecognition::trace(Visitor* visitor)
     visitor->trace(m_controller);
 #endif
     visitor->trace(m_finalResults);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>::trace(visitor);
 }
 
 } // namespace blink

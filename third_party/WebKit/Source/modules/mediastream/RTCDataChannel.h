@@ -43,12 +43,10 @@ class WebRTCPeerConnectionHandler;
 struct WebRTCDataChannelInit;
 
 class RTCDataChannel final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDataChannel>
-    , public EventTargetWithInlineData
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>
     , public WebRTCDataChannelHandlerClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDataChannel>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
 public:
     static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<WebRTCDataChannelHandler>);
     static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, WebRTCPeerConnectionHandler*, const String& label, const WebRTCDataChannelInit&, ExceptionState&);

@@ -1104,7 +1104,7 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_suspendResolvers);
     visitor->trace(m_liveNodes);
     visitor->trace(m_liveAudioSummingJunctions);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>::trace(visitor);
 }
 
 void AudioContext::addChangedChannelCountMode(AudioNode* node)

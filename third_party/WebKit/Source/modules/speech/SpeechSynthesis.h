@@ -39,7 +39,7 @@ namespace blink {
 class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
-class SpeechSynthesis final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class SpeechSynthesis final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ContextLifecycleObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesis>);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);

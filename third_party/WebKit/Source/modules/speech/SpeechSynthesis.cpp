@@ -238,7 +238,7 @@ void SpeechSynthesis::trace(Visitor* visitor)
     visitor->trace(m_voiceList);
     visitor->trace(m_utteranceQueue);
     PlatformSpeechSynthesizerClient::trace(visitor);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesis>::trace(visitor);
 }
 
 } // namespace blink

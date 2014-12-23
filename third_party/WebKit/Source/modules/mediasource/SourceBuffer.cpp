@@ -765,7 +765,7 @@ void SourceBuffer::trace(Visitor* visitor)
     visitor->trace(m_stream);
     visitor->trace(m_trackDefaults);
     visitor->trace(m_asyncEventQueue);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<SourceBuffer>::trace(visitor);
 }
 
 } // namespace blink

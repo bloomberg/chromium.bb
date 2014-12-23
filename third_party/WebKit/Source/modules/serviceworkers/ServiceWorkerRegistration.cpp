@@ -157,7 +157,7 @@ void ServiceWorkerRegistration::trace(Visitor* visitor)
     visitor->trace(m_installing);
     visitor->trace(m_waiting);
     visitor->trace(m_active);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>::trace(visitor);
     HeapSupplementable<ServiceWorkerRegistration>::trace(visitor);
 }
 

@@ -39,7 +39,7 @@ namespace blink {
 
 class WebFileWriter;
 
-class FileWriterBase : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<FileWriterBase> {
+class FileWriterBase : public RefCountedGarbageCollectedWillBeNoBase<FileWriterBase>, public WillBeGarbageCollectedMixin {
 public:
     virtual ~FileWriterBase();
     void initialize(PassOwnPtr<WebFileWriter>, long long length);

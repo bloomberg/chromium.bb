@@ -42,12 +42,12 @@ namespace blink {
 class AnimationTimeline;
 class ExceptionState;
 
-class AnimationPlayer final : public RefCountedWillBeGarbageCollectedFinalized<AnimationPlayer>
-    , public ActiveDOMObject
-    , public EventTargetWithInlineData {
+class AnimationPlayer final
+    : public EventTargetWithInlineData
+    , public RefCountedWillBeNoBase<AnimationPlayer>
+    , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AnimationPlayer);
 public:
     enum AnimationPlayState {
         Idle,

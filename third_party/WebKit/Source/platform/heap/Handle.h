@@ -747,6 +747,13 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
 
+template<typename T>
+class DummyBase {
+public:
+    DummyBase() { }
+    ~DummyBase() { }
+};
+
 // CPP-defined type names for the transition period where we want to
 // support both reference counting and garbage collection based on a
 // compile-time flag.
@@ -770,6 +777,8 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RefCountedWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
 #define RefCountedWillBeRefCountedGarbageCollected blink::RefCountedGarbageCollected
 #define RefCountedGarbageCollectedWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
+#define RefCountedWillBeNoBase blink::DummyBase
+#define RefCountedGarbageCollectedWillBeNoBase blink::DummyBase
 #define ThreadSafeRefCountedWillBeGarbageCollected blink::GarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
 #define PersistentWillBeMember blink::Member
@@ -841,18 +850,13 @@ template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 
 #else // !ENABLE(OILPAN)
 
-template<typename T>
-class DummyBase {
-public:
-    DummyBase() { }
-    ~DummyBase() { }
-};
-
 #define PassRefPtrWillBeRawPtr WTF::PassRefPtr
 #define RefCountedWillBeGarbageCollected WTF::RefCounted
 #define RefCountedWillBeGarbageCollectedFinalized WTF::RefCounted
 #define RefCountedWillBeRefCountedGarbageCollected WTF::RefCounted
 #define RefCountedGarbageCollectedWillBeGarbageCollectedFinalized blink::RefCountedGarbageCollected
+#define RefCountedWillBeNoBase WTF::RefCounted
+#define RefCountedGarbageCollectedWillBeNoBase blink::RefCountedGarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
 #define PersistentWillBeMember blink::Persistent

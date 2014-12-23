@@ -43,7 +43,7 @@ class TextTrackList;
 class VTTRegion;
 class VTTRegionList;
 
-class TextTrack : public TrackBase, public EventTargetWithInlineData {
+class TextTrack : public EventTargetWithInlineData, public TrackBase {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TrackBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrack);

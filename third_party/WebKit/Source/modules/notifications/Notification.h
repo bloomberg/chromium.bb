@@ -49,10 +49,9 @@ class NotificationOptions;
 class NotificationPermissionCallback;
 struct WebNotificationData;
 
-class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ActiveDOMObject, public EventTargetWithInlineData, public WebNotificationDelegate {
+class Notification : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveDOMObject, public WebNotificationDelegate {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
 public:
     // Used for JavaScript instantiations of the Notification object. Will automatically schedule for
     // the notification to be displayed to the user.

@@ -248,7 +248,7 @@ ExecutionContext* MediaStreamTrack::executionContext() const
 void MediaStreamTrack::trace(Visitor* visitor)
 {
     visitor->trace(m_registeredMediaStreams);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>::trace(visitor);
 }
 
 } // namespace blink

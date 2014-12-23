@@ -24,9 +24,8 @@ class ScriptState;
 class WebServiceWorkerProvider;
 
 class ServiceWorkerRegistration final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ServiceWorkerRegistration>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>
     , public ActiveDOMObject
-    , public EventTargetWithInlineData
     , public WebServiceWorkerRegistrationProxy
     , public HeapSupplementable<ServiceWorkerRegistration> {
     DEFINE_WRAPPERTYPEINFO();

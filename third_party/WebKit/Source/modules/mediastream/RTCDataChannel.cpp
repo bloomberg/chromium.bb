@@ -336,7 +336,7 @@ void RTCDataChannel::trace(Visitor* visitor)
 {
     visitor->trace(m_scheduledEvents);
     visitor->registerWeakMembers<RTCDataChannel, &RTCDataChannel::clearWeakMembers>(this);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>::trace(visitor);
 }
 
 } // namespace blink

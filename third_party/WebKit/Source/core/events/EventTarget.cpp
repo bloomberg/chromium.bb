@@ -417,4 +417,24 @@ void EventTarget::removeAllEventListeners()
     }
 }
 
+#if ENABLE(OILPAN)
+void EventTarget::mark(Visitor* visitor) const
+{
+    if (Node* node = const_cast<EventTarget*>(this)->toNode())
+        DefaultTraceTrait<Node>::mark(visitor, node);
+    else
+        DefaultTraceTrait<EventTarget>::mark(visitor, this);
+}
+
+#if ENABLE(ASSERT)
+void EventTarget::checkGCInfo() const
+{
+    if (Node* node = const_cast<EventTarget*>(this)->toNode())
+        DefaultTraceTrait<Node>::checkGCInfo(node);
+    else
+        DefaultTraceTrait<EventTarget>::checkGCInfo(this);
+}
+#endif // ENABLE(ASSERT)
+#endif // ENABLE(OILPAN)
+
 } // namespace blink

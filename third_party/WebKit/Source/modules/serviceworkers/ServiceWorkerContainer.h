@@ -53,13 +53,11 @@ class WebServiceWorkerProvider;
 class WebServiceWorkerRegistration;
 
 class ServiceWorkerContainer final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ServiceWorkerContainer>
-    , public EventTargetWithInlineData
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerContainer>
     , public ContextLifecycleObserver
     , public WebServiceWorkerProviderClient {
     DEFINE_WRAPPERTYPEINFO();
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<ServiceWorkerContainer>);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 public:
     static ServiceWorkerContainer* create(ExecutionContext*);
     ~ServiceWorkerContainer();

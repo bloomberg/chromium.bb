@@ -22,8 +22,7 @@ class ScriptState;
 class ScreenOrientationController;
 
 class ScreenOrientation final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>
-    , public EventTargetWithInlineData
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<ScreenOrientation>
     , public DOMWindowProperty {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>);
     DEFINE_WRAPPERTYPEINFO();

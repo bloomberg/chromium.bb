@@ -120,7 +120,7 @@ void IDBTransaction::trace(Visitor* visitor)
     visitor->trace(m_objectStoreMap);
     visitor->trace(m_deletedObjectStores);
     visitor->trace(m_objectStoreCleanupMap);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<IDBTransaction>::trace(visitor);
 }
 
 void IDBTransaction::setError(DOMError* error)

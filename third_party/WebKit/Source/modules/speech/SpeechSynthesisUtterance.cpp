@@ -73,7 +73,7 @@ void SpeechSynthesisUtterance::trace(Visitor* visitor)
 {
     visitor->trace(m_platformUtterance);
     visitor->trace(m_voice);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesisUtterance>::trace(visitor);
 }
 
 } // namespace blink

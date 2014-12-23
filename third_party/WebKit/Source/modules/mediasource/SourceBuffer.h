@@ -53,10 +53,13 @@ class Stream;
 class TimeRanges;
 class WebSourceBuffer;
 
-class SourceBuffer final : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient, public WebSourceBufferClient {
+class SourceBuffer final
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<SourceBuffer>
+    , public ActiveDOMObject
+    , public FileReaderLoaderClient
+    , public WebSourceBufferClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBuffer>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
 public:
     static SourceBuffer* create(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
     static const AtomicString& segmentsKeyword();

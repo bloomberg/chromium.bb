@@ -327,8 +327,8 @@ void FileWriter::trace(Visitor* visitor)
 {
     visitor->trace(m_error);
     visitor->trace(m_blobBeingWritten);
-    FileWriterBase::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
+    FileWriterBase::trace(visitor);
 }
 
 } // namespace blink

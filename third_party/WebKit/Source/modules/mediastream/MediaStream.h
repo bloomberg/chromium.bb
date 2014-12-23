@@ -38,14 +38,12 @@ namespace blink {
 class ExceptionState;
 
 class MediaStream final
-    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStream>
     , public URLRegistrable
     , public MediaStreamDescriptorClient
-    , public EventTargetWithInlineData
     , public ContextLifecycleObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
 public:
     static MediaStream* create(ExecutionContext*);
     static MediaStream* create(ExecutionContext*, MediaStream*);

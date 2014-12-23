@@ -813,7 +813,7 @@ void RTCPeerConnection::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_scheduledEvents);
 #endif
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>::trace(visitor);
 }
 
 } // namespace blink
