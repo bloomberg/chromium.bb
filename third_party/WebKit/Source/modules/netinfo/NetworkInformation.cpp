@@ -148,4 +148,9 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
 {
 }
 
+void NetworkInformation::trace(Visitor* visitor)
+{
+    RefCountedGarbageCollectedEventTargetWithInlineData<NetworkInformation>::trace(visitor);
+}
+
 } // namespace blink

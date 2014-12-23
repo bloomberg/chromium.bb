@@ -89,6 +89,8 @@ public:
 
     virtual bool hasPendingActivity() const override;
 
+    virtual void trace(Visitor*) override;
+
 private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 

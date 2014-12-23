@@ -104,6 +104,8 @@ public:
     // A port gets neutered when it is transferred to a new owner via postMessage().
     bool isNeutered() const { return !m_entangledChannel; }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit MessagePort(ExecutionContext&);
 

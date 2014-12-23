@@ -434,4 +434,9 @@ PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
     return event.release();
 }
 
+void EventSource::trace(Visitor* visitor)
+{
+    EventTargetWithInlineData::trace(visitor);
+}
+
 } // namespace blink

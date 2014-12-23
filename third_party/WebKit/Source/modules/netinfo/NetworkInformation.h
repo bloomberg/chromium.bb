@@ -39,6 +39,8 @@ public:
     virtual bool hasPendingActivity() const override;
     virtual void stop() override;
 
+    virtual void trace(Visitor*) override;
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange);
 
 private:

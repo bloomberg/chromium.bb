@@ -99,6 +99,8 @@ public:
     virtual void stop() override;
     virtual bool hasPendingActivity() const override;
 
+    virtual void trace(Visitor*) override;
+
 private:
     Notification(const String& title, ExecutionContext*);
 

@@ -254,4 +254,9 @@ bool Notification::hasPendingActivity() const
     return m_state == NotificationStateShowing || m_asyncRunner.isActive();
 }
 
+void Notification::trace(Visitor* visitor)
+{
+    RefCountedGarbageCollectedEventTargetWithInlineData<Notification>::trace(visitor);
+}
+
 } // namespace blink
