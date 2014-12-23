@@ -17,6 +17,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
+from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cgroups
@@ -382,6 +383,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
                      return_value='foo.txt')
     self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
 
+    self.archive_stage = None
     self.suite_config = None
     self.suite = None
 
@@ -390,6 +392,9 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
   def _Prepare(self, bot_id=None, **kwargs):
     super(AUTestStageTest, self)._Prepare(bot_id, **kwargs)
 
+    self._run.GetArchive().SetupArchivePath()
+    self.archive_stage = artifact_stages.ArchiveStage(self._run,
+                                                      self._current_board)
     self.suite_config = self.GetHWTestSuite()
     self.suite = self.suite_config.suite
 
@@ -401,9 +406,13 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
         self._run, self._current_board, self.suite_config)
 
   def testPerformStage(self):
-    """Tests that we correctly launch the AU tests.."""
+    """Tests that we correctly generate a tarball and archive it."""
     stage = self.ConstructStage()
     stage.PerformStage()
+    cmd = ['site_utils/autoupdate/full_release_test.py', '--npo', '--dump',
+           '--archive_url', self.archive_stage.upload_url,
+           self.archive_stage.release_tag, self._current_board]
+    self.assertCommandContains(cmd)
     # pylint: disable=W0212
     self.assertCommandContains([commands._AUTOTEST_RPC_CLIENT, self.suite])
 

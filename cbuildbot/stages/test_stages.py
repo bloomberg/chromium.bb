@@ -252,7 +252,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     lab_status.CheckLabStatus(self._current_board)
 
   def PerformStage(self):
-    # Wait for UploadTestArtifacts to generate the payloads.
+    # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('payloads_generated', pretty_name='payloads'):
       cros_build_lib.PrintBuildbotStepWarnings('missing payloads')
       cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
@@ -286,13 +286,19 @@ class AUTestStage(HWTestStage):
 
   def PerformStage(self):
     """Wait for payloads to be staged and uploads its au control files."""
-    # Wait for UploadTestArtifacts to generate the payloads and test tarballs.
+    # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('delta_payloads_generated',
                             pretty_name='delta payloads'):
       cros_build_lib.PrintBuildbotStepWarnings('missing delta payloads')
       cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
                              'failed. See UploadTestArtifacts for details.')
       return
+
+    with osutils.TempDir() as tempdir:
+      tarball = commands.BuildAUTestTarball(
+          self._build_root, self._current_board, tempdir,
+          self.version, self.upload_url)
+      self.UploadArtifact(tarball)
 
     super(AUTestStage, self).PerformStage()
 

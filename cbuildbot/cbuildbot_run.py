@@ -160,8 +160,8 @@ class RunAttributes(object):
       'breakpad_symbols_generated', # Set by DebugSymbolsStage.
       'debug_tarball_generated',    # Set by DebugSymbolsStage.
       'images_generated',           # Set by BuildImageStage.
-      'payloads_generated',         # Set by UploadTestArtifacts.
-      'delta_payloads_generated',   # Set by UploadTestArtifacts.
+      'payloads_generated',         # Set by UploadHWTestArtifacts.
+      'delta_payloads_generated',   # Set by UploadHWTestArtifacts.
       'instruction_urls_per_channel', # Set by ArchiveStage
       'success',                    # Set by cbuildbot.py:Builder
       'packages_under_test',        # Set by BuildPackagesStage.

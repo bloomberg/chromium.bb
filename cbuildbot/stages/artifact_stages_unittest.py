@@ -477,7 +477,6 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase):
 
   def setUp(self):
     self._release_tag = None
-    self.archive_stage = None
 
     self.StartPatcher(BuilderRunMock())
     osutils.SafeMakedirs(os.path.join(self.build_root, 'chroot', 'tmp'))
@@ -553,16 +552,9 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase):
           side_effect=_SimUpdateStatefulPayload)
 
     with parallel_unittest.ParallelMock():
-      self._run.GetArchive().SetupArchivePath()
-      self.archive_stage = artifact_stages.ArchiveStage(self._run,
-                                                        self._current_board)
       with self.RunStageWithConfig(mock_configurator=_HookRunCommand) as rc:
         if self._run.config.upload_hw_test_artifacts:
           self.assertNotEqual(rc.call_count, 0)
-          cmd = ['site_utils/autoupdate/full_release_test.py', '--npo',
-                 '--dump', '--archive_url', self.archive_stage.upload_url,
-                 self.archive_stage.release_tag, self._current_board]
-          self.assertTrue(rc.CommandContains(cmd))
         else:
           self.assertEqual(rc.call_count, 0)
 
