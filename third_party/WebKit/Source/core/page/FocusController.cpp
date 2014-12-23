@@ -725,8 +725,14 @@ void FocusController::setActive(bool active)
     m_isActive = active;
 
     Frame* frame = focusedOrMainFrame();
-    if (frame->isLocalFrame())
+    if (frame->isLocalFrame()) {
+        // Invalidate all custom scrollbars because they support the CSS
+        // window-active attribute. This should be applied to the entire page so
+        // we invalidate from the root FrameView instead of just the focused.
+        if (FrameView* view = toLocalFrame(frame)->localFrameRoot()->document()->view())
+            view->invalidateAllCustomScrollbarsOnActiveChanged();
         toLocalFrame(frame)->selection().pageActivationChanged();
+    }
 }
 
 static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& current, FocusCandidate& candidate, FocusCandidate& closest)

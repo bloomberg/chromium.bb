@@ -1464,11 +1464,6 @@ void FrameSelection::focusedOrActiveStateChanged()
     bool activeAndFocused = isFocusedAndActive();
 
     RefPtrWillBeRawPtr<Document> document = m_frame->document();
-    // Invalidate All CustomScrollbars as CustomScrollbars supports
-    // CSS window-active attribute.
-    if (FrameView* view = document->view())
-        view->invalidateAllCustomScrollbarsOnActiveChanged();
-
     document->updateRenderTreeIfNeeded();
 
     // Because RenderObject::selectionBackgroundColor() and
