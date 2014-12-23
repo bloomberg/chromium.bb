@@ -456,6 +456,8 @@ void Scheduler::BeginRetroFrame() {
   TRACE_EVENT0("cc", "Scheduler::BeginRetroFrame");
   DCHECK(!settings_.using_synchronous_renderer_compositor);
   DCHECK(begin_retro_frame_posted_);
+  DCHECK_EQ(state_machine_.begin_impl_frame_state(),
+            SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   begin_retro_frame_posted_ = false;
 
   // If there aren't any retroactive BeginFrames, then we've lost the
