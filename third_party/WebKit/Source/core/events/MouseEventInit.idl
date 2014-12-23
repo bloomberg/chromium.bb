@@ -1,0 +1,20 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://www.w3.org/TR/DOM-Level-3-Events/#interface-MouseEvent
+// Note: this event init is somewhat different from the spec for compatibility reason.
+
+dictionary MouseEventInit : SharedKeyboardAndMouseEventInit {
+    long screenX = 0;
+    long screenY = 0;
+    long clientX = 0;
+    long clientY = 0;
+    unsigned short button = 0;
+    unsigned short buttons = 0;
+    EventTarget? relatedTarget = null;
+
+    // Non-standard
+    long movementX = 0;
+    long movementY = 0;
+};

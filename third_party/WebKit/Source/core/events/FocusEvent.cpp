@@ -31,11 +31,6 @@
 
 namespace blink {
 
-FocusEventInit::FocusEventInit()
-    : relatedTarget(nullptr)
-{
-}
-
 const AtomicString& FocusEvent::interfaceName() const
 {
     return EventNames::FocusEvent;
@@ -58,8 +53,9 @@ FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable
 
 FocusEvent::FocusEvent(const AtomicString& type, const FocusEventInit& initializer)
     : UIEvent(type, initializer)
-    , m_relatedTarget(initializer.relatedTarget)
 {
+    if (initializer.hasRelatedTarget())
+        m_relatedTarget = initializer.relatedTarget();
 }
 
 void FocusEvent::trace(Visitor* visitor)

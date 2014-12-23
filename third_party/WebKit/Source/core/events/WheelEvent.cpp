@@ -30,16 +30,6 @@
 
 namespace blink {
 
-WheelEventInit::WheelEventInit()
-    : deltaX(0)
-    , deltaY(0)
-    , deltaZ(0)
-    , wheelDeltaX(0)
-    , wheelDeltaY(0)
-    , deltaMode(WheelEvent::DOM_DELTA_PIXEL)
-{
-}
-
 WheelEvent::WheelEvent()
     : m_deltaX(0)
     , m_deltaY(0)
@@ -51,11 +41,11 @@ WheelEvent::WheelEvent()
 
 WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializer)
     : MouseEvent(type, initializer)
-    , m_wheelDelta(initializer.wheelDeltaX ? initializer.wheelDeltaX : -initializer.deltaX, initializer.wheelDeltaY ? initializer.wheelDeltaY : -initializer.deltaY)
-    , m_deltaX(initializer.deltaX ? initializer.deltaX : -initializer.wheelDeltaX)
-    , m_deltaY(initializer.deltaY ? initializer.deltaY : -initializer.wheelDeltaY)
-    , m_deltaZ(initializer.deltaZ)
-    , m_deltaMode(initializer.deltaMode)
+    , m_wheelDelta(initializer.wheelDeltaX() ? initializer.wheelDeltaX() : -initializer.deltaX(), initializer.wheelDeltaY() ? initializer.wheelDeltaY() : -initializer.deltaY())
+    , m_deltaX(initializer.deltaX() ? initializer.deltaX() : -initializer.wheelDeltaX())
+    , m_deltaY(initializer.deltaY() ? initializer.deltaY() : -initializer.wheelDeltaY())
+    , m_deltaZ(initializer.deltaZ())
+    , m_deltaMode(initializer.deltaMode())
     , m_canScroll(true)
 {
 }

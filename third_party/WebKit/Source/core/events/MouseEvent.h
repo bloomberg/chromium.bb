@@ -25,6 +25,7 @@
 #define MouseEvent_h
 
 #include "core/events/EventDispatchMediator.h"
+#include "core/events/MouseEventInit.h"
 #include "core/events/MouseRelatedEvent.h"
 #include "platform/PlatformMouseEvent.h"
 
@@ -32,22 +33,6 @@ namespace blink {
 
 class DataTransfer;
 class EventDispatcher;
-
-struct MouseEventInit : public UIEventInit {
-    MouseEventInit();
-
-    int screenX;
-    int screenY;
-    int clientX;
-    int clientY;
-    bool ctrlKey;
-    bool altKey;
-    bool shiftKey;
-    bool metaKey;
-    unsigned short button;
-    unsigned short buttons;
-    RefPtrWillBeMember<EventTarget> relatedTarget;
-};
 
 class MouseEvent : public MouseRelatedEvent {
     DEFINE_WRAPPERTYPEINFO();

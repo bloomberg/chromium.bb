@@ -25,24 +25,13 @@
 #define KeyboardEvent_h
 
 #include "core/events/EventDispatchMediator.h"
+#include "core/events/KeyboardEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 
 namespace blink {
 
 class EventDispatcher;
 class PlatformKeyboardEvent;
-
-struct KeyboardEventInit : public UIEventInit {
-    KeyboardEventInit();
-
-    String keyIdentifier;
-    unsigned location;
-    bool ctrlKey;
-    bool altKey;
-    bool shiftKey;
-    bool metaKey;
-    bool repeat;
-};
 
 class KeyboardEvent final : public UIEventWithKeyState {
     DEFINE_WRAPPERTYPEINFO();

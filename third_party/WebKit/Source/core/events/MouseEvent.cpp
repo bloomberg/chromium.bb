@@ -30,21 +30,6 @@
 
 namespace blink {
 
-MouseEventInit::MouseEventInit()
-    : screenX(0)
-    , screenY(0)
-    , clientX(0)
-    , clientY(0)
-    , ctrlKey(false)
-    , altKey(false)
-    , shiftKey(false)
-    , metaKey(false)
-    , button(0)
-    , buttons(0)
-    , relatedTarget(nullptr)
-{
-}
-
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, const MouseEventInit& initializer)
 {
     return adoptRefWillBeNoop(new MouseEvent(type, initializer));
@@ -110,17 +95,17 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
 }
 
 MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& initializer)
-    : MouseRelatedEvent(eventType, initializer.bubbles, initializer.cancelable, initializer.view, initializer.detail, IntPoint(initializer.screenX, initializer.screenY),
+    : MouseRelatedEvent(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), IntPoint(initializer.screenX(), initializer.screenY()),
         IntPoint(0 /* pageX */, 0 /* pageY */),
         IntPoint(0 /* movementX */, 0 /* movementY */),
-        initializer.ctrlKey, initializer.altKey, initializer.shiftKey, initializer.metaKey, false /* isSimulated */)
-    , m_button(initializer.button == (unsigned short)-1 ? 0 : initializer.button)
-    , m_buttons(initializer.buttons)
-    , m_buttonDown(initializer.button != (unsigned short)-1)
-    , m_relatedTarget(initializer.relatedTarget)
+        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), false /* isSimulated */)
+    , m_button(initializer.button() == (unsigned short)-1 ? 0 : initializer.button())
+    , m_buttons(initializer.buttons())
+    , m_buttonDown(initializer.button() != (unsigned short)-1)
+    , m_relatedTarget(initializer.relatedTarget())
     , m_dataTransfer(nullptr)
 {
-    initCoordinates(IntPoint(initializer.clientX, initializer.clientY));
+    initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
 }
 
 MouseEvent::~MouseEvent()

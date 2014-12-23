@@ -28,15 +28,10 @@
 #define CompositionEvent_h
 
 #include "core/editing/CompositionUnderline.h"
+#include "core/events/CompositionEventInit.h"
 #include "core/events/UIEvent.h"
 
 namespace blink {
-
-struct CompositionEventInit : UIEventInit {
-    CompositionEventInit();
-
-    String data;
-};
 
 class CompositionEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();

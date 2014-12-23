@@ -19,22 +19,24 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.w3.org/TR/DOM-Level-3-Events/#interface-WheelEvent
+
 // Introduced in DOM Level 3:
 [
-    EventConstructor,
+    Constructor(DOMString type, optional WheelEventInit eventInitDict),
 ] interface WheelEvent : MouseEvent {
     // DeltaModeCode
     const unsigned long              DOM_DELTA_PIXEL = 0x00;
     const unsigned long              DOM_DELTA_LINE  = 0x01;
     const unsigned long              DOM_DELTA_PAGE  = 0x02;
 
-    [InitializedByEventConstructor] readonly attribute double deltaX;
-    [InitializedByEventConstructor] readonly attribute double deltaY;
-    [InitializedByEventConstructor] readonly attribute double deltaZ;
-    [InitializedByEventConstructor] readonly attribute unsigned long deltaMode;
+    readonly attribute double deltaX;
+    readonly attribute double deltaY;
+    readonly attribute double deltaZ;
+    readonly attribute unsigned long deltaMode;
 
     // Non-standard API.
-    [InitializedByEventConstructor, MeasureAs=WheelEventWheelDeltaX] readonly attribute long wheelDeltaX;
-    [InitializedByEventConstructor, MeasureAs=WheelEventWheelDeltaY] readonly attribute long wheelDeltaY;
+    [MeasureAs=WheelEventWheelDeltaX] readonly attribute long wheelDeltaX;
+    [MeasureAs=WheelEventWheelDeltaY] readonly attribute long wheelDeltaY;
     [MeasureAs=WheelEventWheelDelta] readonly attribute long wheelDelta;
 };

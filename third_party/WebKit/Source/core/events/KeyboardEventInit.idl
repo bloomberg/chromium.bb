@@ -1,0 +1,13 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://www.w3.org/TR/DOM-Level-3-Events/#interface-KeyboardEvent
+// Note: this event init is somewhat different from the spec for compatibility reason.
+
+dictionary KeyboardEventInit : SharedKeyboardAndMouseEventInit {
+    DOMString keyIdentifier = "";
+    unsigned long location = 0;
+    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] unsigned long keyLocation = 0; // Deprecated.
+    boolean repeat = false;
+};

@@ -27,22 +27,12 @@
 
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/WheelEventInit.h"
 #include "platform/geometry/FloatPoint.h"
 
 namespace blink {
 
 class PlatformWheelEvent;
-
-struct WheelEventInit : public MouseEventInit {
-    WheelEventInit();
-
-    double deltaX;
-    double deltaY;
-    double deltaZ;
-    int wheelDeltaX; // Deprecated.
-    int wheelDeltaY; // Deprecated.
-    unsigned deltaMode;
-};
 
 class WheelEvent final : public MouseEvent {
     DEFINE_WRAPPERTYPEINFO();

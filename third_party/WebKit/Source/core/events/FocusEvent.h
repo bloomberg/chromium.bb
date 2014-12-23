@@ -27,15 +27,10 @@
 #define FocusEvent_h
 
 #include "core/events/EventTarget.h"
+#include "core/events/FocusEventInit.h"
 #include "core/events/UIEvent.h"
 
 namespace blink {
-
-struct FocusEventInit : public UIEventInit {
-    FocusEventInit();
-
-    RefPtrWillBeMember<EventTarget> relatedTarget;
-};
 
 class FocusEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();

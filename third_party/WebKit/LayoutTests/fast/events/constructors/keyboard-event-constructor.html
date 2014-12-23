@@ -60,7 +60,7 @@ shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: 'koakuma'
 shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: '' }).keyIdentifier", "");
 
 // Non-strings.
-shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: undefined }).keyIdentifier", "undefined");
+shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: undefined }).keyIdentifier", "");
 shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: null }).keyIdentifier", "null");
 shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: false }).keyIdentifier", "false");
 shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: true }).keyIdentifier", "true");

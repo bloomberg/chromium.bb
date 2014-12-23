@@ -23,11 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/DOM-Level-3-Events/#interface-CompositionEvent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional CompositionEventInit eventInitDict),
 ] interface CompositionEvent : UIEvent {
 
-    [InitializedByEventConstructor] readonly attribute DOMString data;
+    readonly attribute DOMString data;
 
     [RuntimeEnabled=IMEAPI] readonly attribute long activeSegmentStart;
     [RuntimeEnabled=IMEAPI] readonly attribute long activeSegmentEnd;

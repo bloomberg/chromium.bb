@@ -29,10 +29,6 @@
 
 namespace blink {
 
-CompositionEventInit::CompositionEventInit()
-{
-}
-
 CompositionEvent::CompositionEvent()
     : m_activeSegmentStart(0)
     , m_activeSegmentEnd(0)
@@ -51,10 +47,11 @@ CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtrWillBeRaw
 
 CompositionEvent::CompositionEvent(const AtomicString& type, const CompositionEventInit& initializer)
     : UIEvent(type, initializer)
-    , m_data(initializer.data)
     , m_activeSegmentStart(0)
     , m_activeSegmentEnd(0)
 {
+    if (initializer.hasData())
+        m_data = initializer.data();
     initializeSegments();
 }
 

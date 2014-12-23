@@ -1,0 +1,16 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://www.w3.org/TR/DOM-Level-3-Events/#interface-WheelEvent
+
+dictionary WheelEventInit : MouseEventInit {
+    double deltaX = 0.0;
+    double deltaY = 0.0;
+    double deltaZ = 0.0;
+    unsigned long deltaMode = 0;
+
+    // Non-standard. Deprecated.
+    long wheelDeltaX = 0;
+    long wheelDeltaY = 0;
+};

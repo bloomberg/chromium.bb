@@ -19,21 +19,21 @@
  */
 
 [
-    EventConstructor,
+    Constructor(DOMString type, optional KeyboardEventInit eventInitDict)
 ] interface KeyboardEvent : UIEvent {
     const unsigned long DOM_KEY_LOCATION_STANDARD = 0x00;
     const unsigned long DOM_KEY_LOCATION_LEFT     = 0x01;
     const unsigned long DOM_KEY_LOCATION_RIGHT    = 0x02;
     const unsigned long DOM_KEY_LOCATION_NUMPAD   = 0x03;
 
-    [InitializedByEventConstructor] readonly attribute DOMString        keyIdentifier;
-    [InitializedByEventConstructor] readonly attribute unsigned long    location;
-    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation, InitializedByEventConstructor] readonly attribute unsigned long keyLocation; // Deprecated.
-    [InitializedByEventConstructor] readonly attribute boolean          ctrlKey;
-    [InitializedByEventConstructor] readonly attribute boolean          shiftKey;
-    [InitializedByEventConstructor] readonly attribute boolean          altKey;
-    [InitializedByEventConstructor] readonly attribute boolean          metaKey;
-    [InitializedByEventConstructor] readonly attribute boolean          repeat;
+    readonly attribute DOMString        keyIdentifier;
+    readonly attribute unsigned long    location;
+    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] readonly attribute unsigned long keyLocation; // Deprecated.
+    readonly attribute boolean          ctrlKey;
+    readonly attribute boolean          shiftKey;
+    readonly attribute boolean          altKey;
+    readonly attribute boolean          metaKey;
+    readonly attribute boolean          repeat;
 
     boolean getModifierState(DOMString keyArgument);
 
