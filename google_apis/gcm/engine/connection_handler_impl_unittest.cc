@@ -106,7 +106,7 @@ std::string BuildDataMessage(const std::string& from,
 class GCMConnectionHandlerImplTest : public testing::Test {
  public:
   GCMConnectionHandlerImplTest();
-  virtual ~GCMConnectionHandlerImplTest();
+  ~GCMConnectionHandlerImplTest() override;
 
   net::StreamSocket* BuildSocket(const ReadList& read_list,
                                  const WriteList& write_list);

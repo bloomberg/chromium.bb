@@ -57,7 +57,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 class UnregistrationRequestTest : public testing::Test {
  public:
   UnregistrationRequestTest();
-  virtual ~UnregistrationRequestTest();
+  ~UnregistrationRequestTest() override;
 
   void UnregistrationCallback(UnregistrationRequest::Status status);
 

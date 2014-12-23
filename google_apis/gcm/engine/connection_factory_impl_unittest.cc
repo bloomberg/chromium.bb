@@ -262,7 +262,7 @@ class ConnectionFactoryImplTest
       public ConnectionFactory::ConnectionListener {
  public:
   ConnectionFactoryImplTest();
-  virtual ~ConnectionFactoryImplTest();
+  ~ConnectionFactoryImplTest() override;
 
   TestConnectionFactoryImpl* factory() { return &factory_; }
   GURL& connected_server() { return connected_server_; }

@@ -46,7 +46,7 @@ void AddSettingsToResponse(
 class GServicesSettingsTest : public testing::Test {
  public:
   GServicesSettingsTest();
-  virtual ~GServicesSettingsTest();
+  ~GServicesSettingsTest() override;
 
   void CheckAllSetToDefault();
 

@@ -89,9 +89,9 @@ class TestMCSClient : public MCSClient {
 class MCSClientTest : public testing::Test {
  public:
   MCSClientTest();
-  virtual ~MCSClientTest();
+  ~MCSClientTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void BuildMCSClient();
   void InitializeClient();

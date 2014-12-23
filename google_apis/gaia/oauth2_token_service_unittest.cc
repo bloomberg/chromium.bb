@@ -92,14 +92,14 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 
 class OAuth2TokenServiceTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     oauth2_service_.reset(
         new TestOAuth2TokenService(new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())));
     account_id_ = "test_user@gmail.com";
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Makes sure that all the clean up tasks are run.
     base::RunLoop().RunUntilIdle();
   }

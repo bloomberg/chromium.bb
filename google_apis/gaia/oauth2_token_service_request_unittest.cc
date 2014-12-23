@@ -147,8 +147,8 @@ void MockOAuth2TokenService::InvalidateOAuth2Token(
 
 class OAuth2TokenServiceRequestTest : public testing::Test {
  public:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   class Provider : public OAuth2TokenServiceRequest::TokenServiceProvider {

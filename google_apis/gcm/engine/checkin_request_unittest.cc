@@ -67,7 +67,7 @@ class CheckinRequestTest : public testing::Test {
   };
 
   CheckinRequestTest();
-  virtual ~CheckinRequestTest();
+  ~CheckinRequestTest() override;
 
   void FetcherCallback(
       const checkin_proto::AndroidCheckinResponse& response);

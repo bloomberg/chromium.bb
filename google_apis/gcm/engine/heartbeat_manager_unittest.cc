@@ -46,7 +46,7 @@ void TestHeartbeatManager::TriggerMissedHeartbeatCheck() {
 class HeartbeatManagerTest : public testing::Test {
  public:
   HeartbeatManagerTest();
-  virtual ~HeartbeatManagerTest() {}
+  ~HeartbeatManagerTest() override {}
 
   TestHeartbeatManager* manager() const { return manager_.get(); }
   int heartbeats_sent() const { return heartbeats_sent_; }

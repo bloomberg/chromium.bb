@@ -264,10 +264,9 @@ class IdentityAccountTrackerTest : public testing::Test {
  public:
   IdentityAccountTrackerTest() {}
 
-  virtual ~IdentityAccountTrackerTest() {}
+  ~IdentityAccountTrackerTest() override {}
 
-  virtual void SetUp() override {
-
+  void SetUp() override {
     fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
 
     fake_identity_provider_.reset(
@@ -280,7 +279,7 @@ class IdentityAccountTrackerTest : public testing::Test {
     account_tracker_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     account_tracker_->RemoveObserver(&observer_);
     account_tracker_->Shutdown();
   }

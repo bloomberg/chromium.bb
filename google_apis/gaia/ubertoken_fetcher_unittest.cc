@@ -46,7 +46,7 @@ class MockUbertokenConsumer : public UbertokenConsumer {
 
 class UbertokenFetcherTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
     fetcher_.reset(new UbertokenFetcher(&token_service_,
@@ -55,9 +55,7 @@ class UbertokenFetcherTest : public testing::Test {
                                         request_context_getter_.get()));
   }
 
-  virtual void TearDown() override {
-    fetcher_.reset();
-  }
+  void TearDown() override { fetcher_.reset(); }
 
  protected:
   base::MessageLoop message_loop_;

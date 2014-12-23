@@ -43,7 +43,7 @@ const uint64 kDeviceToken = 55;
 class GCMStoreImplTest : public testing::Test {
  public:
   GCMStoreImplTest();
-  virtual ~GCMStoreImplTest();
+  ~GCMStoreImplTest() override;
 
   scoped_ptr<GCMStore> BuildGCMStore();
 

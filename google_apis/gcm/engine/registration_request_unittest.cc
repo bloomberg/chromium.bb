@@ -59,7 +59,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 class RegistrationRequestTest : public testing::Test {
  public:
   RegistrationRequestTest();
-  virtual ~RegistrationRequestTest();
+  ~RegistrationRequestTest() override;
 
   void RegistrationCallback(RegistrationRequest::Status status,
                             const std::string& registration_id);

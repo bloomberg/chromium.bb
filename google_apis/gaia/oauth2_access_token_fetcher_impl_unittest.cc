@@ -90,7 +90,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual ~OAuth2AccessTokenFetcherImplTest() {}
+  ~OAuth2AccessTokenFetcherImplTest() override {}
 
   virtual TestURLFetcher* SetupGetAccessToken(bool fetch_succeeds,
                                               int response_code,

@@ -29,7 +29,7 @@ const int kWriteDataSize = arraysize(kWriteData) - 1;
 class GCMSocketStreamTest : public testing::Test {
  public:
   GCMSocketStreamTest();
-  virtual ~GCMSocketStreamTest();
+  ~GCMSocketStreamTest() override;
 
   // Build a socket with the expected reads and writes.
   void BuildSocket(const ReadList& read_list, const WriteList& write_list);

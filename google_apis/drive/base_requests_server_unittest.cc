@@ -33,7 +33,7 @@ class BaseRequestsServerTest : public testing::Test {
   BaseRequestsServerTest() {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     request_context_getter_ = new net::TestURLRequestContextGetter(

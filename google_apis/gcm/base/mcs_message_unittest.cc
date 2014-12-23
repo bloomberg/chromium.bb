@@ -18,7 +18,8 @@ const uint64 kSecret = 54321;
 class MCSMessageTest : public testing::Test {
  public:
   MCSMessageTest();
-  virtual ~MCSMessageTest();
+  ~MCSMessageTest() override;
+
  private:
   base::MessageLoop message_loop_;
 };
