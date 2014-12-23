@@ -32,7 +32,7 @@ class MockSubscriptionRefSetObserver : public SubscriptionRefSet::Observer {
 class ValuebufferManagerTest : public GpuServiceTest {
  public:
   ValuebufferManagerTest() {}
-  ~ValuebufferManagerTest() {}
+  ~ValuebufferManagerTest() override {}
 
   void SetUp() override {
     GpuServiceTest::SetUp();
