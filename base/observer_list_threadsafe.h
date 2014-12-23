@@ -167,40 +167,22 @@ class ObserverListThreadSafe
   // Note, these calls are effectively asynchronous.  You cannot assume
   // that at the completion of the Notify call that all Observers have
   // been Notified.  The notification may still be pending delivery.
-  template <class Method>
-  void Notify(Method m) {
-    UnboundMethod<ObserverType, Method, Tuple<>> method(m, MakeTuple());
-    Notify<Method, Tuple<>>(method);
-  }
+  template <class Method, class... Params>
+  void Notify(Method m, const Params&... params) {
+    UnboundMethod<ObserverType, Method, Tuple<Params...>> method(
+        m, MakeTuple(params...));
 
-  template <class Method, class A>
-  void Notify(Method m, const A& a) {
-    UnboundMethod<ObserverType, Method, Tuple<A> > method(m, MakeTuple(a));
-    Notify<Method, Tuple<A> >(method);
+    base::AutoLock lock(list_lock_);
+    for (const auto& entry : observer_lists_) {
+      ObserverListContext* context = entry.second;
+      context->loop->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &ObserverListThreadSafe<ObserverType>::template NotifyWrapper<
+                  Method, Tuple<Params...>>,
+              this, context, method));
+    }
   }
-
-  template <class Method, class A, class B>
-  void Notify(Method m, const A& a, const B& b) {
-    UnboundMethod<ObserverType, Method, Tuple<A, B> > method(
-        m, MakeTuple(a, b));
-    Notify<Method, Tuple<A, B> >(method);
-  }
-
-  template <class Method, class A, class B, class C>
-  void Notify(Method m, const A& a, const B& b, const C& c) {
-    UnboundMethod<ObserverType, Method, Tuple<A, B, C> > method(
-        m, MakeTuple(a, b, c));
-    Notify<Method, Tuple<A, B, C> >(method);
-  }
-
-  template <class Method, class A, class B, class C, class D>
-  void Notify(Method m, const A& a, const B& b, const C& c, const D& d) {
-    UnboundMethod<ObserverType, Method, Tuple<A, B, C, D> > method(
-        m, MakeTuple(a, b, c, d));
-    Notify<Method, Tuple<A, B, C, D> >(method);
-  }
-
-  // TODO(mbelshe):  Add more wrappers for Notify() with more arguments.
 
  private:
   // See comment above ObserverListThreadSafeTraits' definition.
@@ -220,19 +202,6 @@ class ObserverListThreadSafe
 
   ~ObserverListThreadSafe() {
     STLDeleteValues(&observer_lists_);
-  }
-
-  template <class Method, class Params>
-  void Notify(const UnboundMethod<ObserverType, Method, Params>& method) {
-    base::AutoLock lock(list_lock_);
-    typename ObserversListMap::iterator it;
-    for (it = observer_lists_.begin(); it != observer_lists_.end(); ++it) {
-      ObserverListContext* context = (*it).second;
-      context->loop->PostTask(
-          FROM_HERE,
-          base::Bind(&ObserverListThreadSafe<ObserverType>::
-              template NotifyWrapper<Method, Params>, this, context, method));
-    }
   }
 
   // Wrapper which is called to fire the notifications for each thread's
