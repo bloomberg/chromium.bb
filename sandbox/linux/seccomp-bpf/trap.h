@@ -26,9 +26,9 @@ namespace sandbox {
 //   true. Threads are incompatible with the seccomp sandbox anyway.
 class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
  public:
-  virtual uint16_t Add(TrapFnc fnc, const void* aux, bool safe) override;
+  uint16_t Add(TrapFnc fnc, const void* aux, bool safe) override;
 
-  virtual bool EnableUnsafeTraps() override;
+  bool EnableUnsafeTraps() override;
 
   // Registry returns the trap registry used by Trap's SIGSYS handler,
   // creating it if necessary.

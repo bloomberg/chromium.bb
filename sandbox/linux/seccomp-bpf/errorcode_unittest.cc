@@ -21,9 +21,9 @@ namespace {
 class DummyPolicy : public bpf_dsl::Policy {
  public:
   DummyPolicy() {}
-  virtual ~DummyPolicy() {}
+  ~DummyPolicy() override {}
 
-  virtual bpf_dsl::ResultExpr EvaluateSyscall(int sysno) const override {
+  bpf_dsl::ResultExpr EvaluateSyscall(int sysno) const override {
     return bpf_dsl::Allow();
   }
 

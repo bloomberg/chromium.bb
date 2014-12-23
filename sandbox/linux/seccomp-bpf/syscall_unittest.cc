@@ -108,9 +108,9 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
 class CopyAllArgsOnUnamePolicy : public bpf_dsl::Policy {
  public:
   explicit CopyAllArgsOnUnamePolicy(std::vector<uint64_t>* aux) : aux_(aux) {}
-  virtual ~CopyAllArgsOnUnamePolicy() {}
+  ~CopyAllArgsOnUnamePolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_uname) {
       return Trap(CopySyscallArgsToAux, aux_);
