@@ -26,7 +26,7 @@
 #ifndef CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
 #define CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
 
-typedef std::vector<Tuple2<SkBitmap, base::FilePath> > DecodedImages;
+typedef std::vector<Tuple<SkBitmap, base::FilePath>> DecodedImages;
 
 #endif  // CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
 
@@ -38,9 +38,9 @@ IPC_STRUCT_TRAITS_END()
 
 #if defined(OS_WIN)
 
-// A vector of filters, each being a Tuple2 containing a display string (i.e.
+// A vector of filters, each being a Tuple containing a display string (i.e.
 // "Text Files") and a filter pattern (i.e. "*.txt").
-typedef std::vector<Tuple2<base::string16, base::string16> >
+typedef std::vector<Tuple<base::string16, base::string16>>
     GetOpenFileNameFilter;
 
 IPC_STRUCT_BEGIN(ChromeUtilityMsg_GetSaveFileName_Params)
