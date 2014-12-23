@@ -151,6 +151,15 @@ void CastMetricsHelper::LogMediaPause() {
       sdk_version_));
 }
 
+void CastMetricsHelper::LogTimeToFirstPaint() {
+  MAKE_SURE_THREAD(LogTimeToFirstPaint);
+  base::TimeDelta launch_time = base::TimeTicks::Now() - app_start_time_;
+  const std::string uma_name(GetMetricsNameWithAppName("Startup",
+                                                       "TimeToFirstPaint"));
+  LogMediumTimeHistogramEvent(uma_name, launch_time);
+  LOG(INFO) << uma_name << " is " << launch_time.InSecondsF() << " seconds.";
+}
+
 void CastMetricsHelper::LogTimeToDisplayVideo() {
   if (!new_startup_time_) {  // For faster check.
     return;

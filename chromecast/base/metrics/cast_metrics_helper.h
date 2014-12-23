@@ -76,6 +76,9 @@ class CastMetricsHelper {
   // This is used as an in-place replacement of content::RecordComputedAction().
   virtual void RecordSimpleAction(const std::string& action);
 
+  // Logs UMA record of the time the app made its first paint.
+  virtual void LogTimeToFirstPaint();
+
   // Logs UMA record of the elapsed time from the app launch
   // to the time first video frame is displayed.
   virtual void LogTimeToDisplayVideo();
