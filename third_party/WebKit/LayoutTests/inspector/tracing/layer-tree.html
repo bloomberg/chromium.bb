@@ -16,21 +16,7 @@ function doActions(callback)
     var style = document.createElement("style");
     style.textContent = ".layer { transform: translateZ(10px); opacity: 0.8; }";
     document.head.appendChild(style);
-
-    if (!window.testRunner) {
-        callback();
-        return;
-    }
-    var pendingFrames = 3;
-    makeFrame();
-    function makeFrame()
-    {
-        if (!--pendingFrames) {
-            callback();
-            return;
-        }
-        testRunner.displayAsyncThen(requestAnimationFrame.bind(window, makeFrame));
-    }
+    generateFrames(3, callback);
 }
 
 function test()

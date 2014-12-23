@@ -287,6 +287,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int layerTreeId);
 };
 
+class InspectorBeginFrameEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(int frameId);
+};
+
 } // namespace blink
 
 

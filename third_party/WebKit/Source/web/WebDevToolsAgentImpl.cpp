@@ -271,7 +271,7 @@ void WebDevToolsAgentImpl::continueProgram()
 
 void WebDevToolsAgentImpl::didBeginFrame(int frameId)
 {
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "BeginMainThreadFrame", "layerTreeId", m_layerTreeId);
+    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "BeginMainThreadFrame", "layerTreeId", m_layerTreeId, "data", InspectorBeginFrameEvent::data(frameId));
     if (InspectorController* ic = inspectorController())
         ic->didBeginFrame(frameId);
 }

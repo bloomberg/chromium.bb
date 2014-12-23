@@ -394,3 +394,21 @@ InspectorTest.FakeFileReader.prototype = {
 };
 
 };
+
+function generateFrames(count, callback)
+{
+    if (!window.testRunner) {
+        callback();
+        return;
+    }
+    makeFrame();
+    function makeFrame()
+    {
+        document.body.style.backgroundColor = count & 1 ? "rgb(200, 200, 200)" : "rgb(240, 240, 240)";
+        if (!--count) {
+            callback();
+            return;
+        }
+        testRunner.displayAsyncThen(requestAnimationFrame.bind(window, makeFrame));
+    }
+}
