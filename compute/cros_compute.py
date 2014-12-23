@@ -26,10 +26,14 @@ TARGETS = (
 
 # Supported operations.
 OPERATIONS = {
-    'instances': ('create', 'delete', 'list', 'ssh'),
-    'images': ('create', 'delete', 'list'),
-    'disks': ('list'),
+    'instances': ('create', 'delete', 'list', 'ssh',),
+    'images': ('create', 'delete', 'list',),
+    'disks': ('list',),
 }
+
+# All supported operations.
+ALL_OPERATIONS = set(cros_build_lib.iflatten_instance(OPERATIONS.values()))
+
 
 
 def BotifyInstance(instance, project, zone):
@@ -192,7 +196,8 @@ def main(argv):
   parser.add_argument(
       'target', choices=TARGETS, help='Operation target')
   parser.add_argument(
-      'operation', type=str, help='Operation type')
+      'operation', type=str, choices=ALL_OPERATIONS,
+      help='Operation type. Valid operations depend on target.')
   parser.add_argument(
       '--project', type=str, default=compute_configs.PROJECT,
       help='Project name')
