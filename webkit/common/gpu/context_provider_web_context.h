@@ -17,7 +17,7 @@ class ContextProviderWebContext : public cc::ContextProvider {
   virtual blink::WebGraphicsContext3D* WebContext3D() = 0;
 
  protected:
-  virtual ~ContextProviderWebContext() {}
+  ~ContextProviderWebContext() override {}
 };
 
 }  // namespace gpu

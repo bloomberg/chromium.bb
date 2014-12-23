@@ -30,20 +30,20 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   static scoped_refptr<ContextProviderInProcess> CreateOffscreen(
       bool lose_context_when_out_of_memory);
 
-  virtual blink::WebGraphicsContext3D* WebContext3D() override;
+  blink::WebGraphicsContext3D* WebContext3D() override;
 
-  virtual bool BindToCurrentThread() override;
-  virtual Capabilities ContextCapabilities() override;
-  virtual ::gpu::gles2::GLES2Interface* ContextGL() override;
-  virtual ::gpu::ContextSupport* ContextSupport() override;
-  virtual class GrContext* GrContext() override;
-  virtual bool IsContextLost() override;
-  virtual void VerifyContexts() override;
-  virtual void DeleteCachedResources() override;
-  virtual bool DestroyedOnMainThread() override;
-  virtual void SetLostContextCallback(
+  bool BindToCurrentThread() override;
+  Capabilities ContextCapabilities() override;
+  ::gpu::gles2::GLES2Interface* ContextGL() override;
+  ::gpu::ContextSupport* ContextSupport() override;
+  class GrContext* GrContext() override;
+  bool IsContextLost() override;
+  void VerifyContexts() override;
+  void DeleteCachedResources() override;
+  bool DestroyedOnMainThread() override;
+  void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
-  virtual void SetMemoryPolicyChangedCallback(
+  void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
       override;
 
@@ -51,7 +51,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   ContextProviderInProcess(
       scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
       const std::string& debug_name);
-  virtual ~ContextProviderInProcess();
+  ~ContextProviderInProcess() override;
 
   void OnLostContext();
 
