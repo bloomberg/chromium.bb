@@ -2830,11 +2830,14 @@ static_assert(offsetof(GetActiveAttrib, result_shm_id) == 16,
 static_assert(offsetof(GetActiveAttrib, result_shm_offset) == 20,
               "offset of GetActiveAttrib result_shm_offset should be 20");
 static_assert(offsetof(GetActiveAttrib::Result, success) == 0,
-              "offset of GetActiveAttrib Result success should be 0");
+              "offset of GetActiveAttrib Result success should be "
+              "0");
 static_assert(offsetof(GetActiveAttrib::Result, size) == 4,
-              "offset of GetActiveAttrib Result size should be 4");
+              "offset of GetActiveAttrib Result size should be "
+              "4");
 static_assert(offsetof(GetActiveAttrib::Result, type) == 8,
-              "offset of GetActiveAttrib Result type should be 8");
+              "offset of GetActiveAttrib Result type should be "
+              "8");
 
 struct GetActiveUniform {
   typedef GetActiveUniform ValueType;
@@ -2901,11 +2904,14 @@ static_assert(offsetof(GetActiveUniform, result_shm_id) == 16,
 static_assert(offsetof(GetActiveUniform, result_shm_offset) == 20,
               "offset of GetActiveUniform result_shm_offset should be 20");
 static_assert(offsetof(GetActiveUniform::Result, success) == 0,
-              "offset of GetActiveUniform Result success should be 0");
+              "offset of GetActiveUniform Result success should be "
+              "0");
 static_assert(offsetof(GetActiveUniform::Result, size) == 4,
-              "offset of GetActiveUniform Result size should be 4");
+              "offset of GetActiveUniform Result size should be "
+              "4");
 static_assert(offsetof(GetActiveUniform::Result, type) == 8,
-              "offset of GetActiveUniform Result type should be 8");
+              "offset of GetActiveUniform Result type should be "
+              "8");
 
 struct GetAttachedShaders {
   typedef GetAttachedShaders ValueType;
@@ -3799,16 +3805,17 @@ static_assert(
     offsetof(GetShaderPrecisionFormat, result_shm_offset) == 16,
     "offset of GetShaderPrecisionFormat result_shm_offset should be 16");
 static_assert(offsetof(GetShaderPrecisionFormat::Result, success) == 0,
-              "offset of GetShaderPrecisionFormat Result success should be 0");
-static_assert(
-    offsetof(GetShaderPrecisionFormat::Result, min_range) == 4,
-    "offset of GetShaderPrecisionFormat Result min_range should be 4");
-static_assert(
-    offsetof(GetShaderPrecisionFormat::Result, max_range) == 8,
-    "offset of GetShaderPrecisionFormat Result max_range should be 8");
-static_assert(
-    offsetof(GetShaderPrecisionFormat::Result, precision) == 12,
-    "offset of GetShaderPrecisionFormat Result precision should be 12");
+              "offset of GetShaderPrecisionFormat Result success should be "
+              "0");
+static_assert(offsetof(GetShaderPrecisionFormat::Result, min_range) == 4,
+              "offset of GetShaderPrecisionFormat Result min_range should be "
+              "4");
+static_assert(offsetof(GetShaderPrecisionFormat::Result, max_range) == 8,
+              "offset of GetShaderPrecisionFormat Result max_range should be "
+              "8");
+static_assert(offsetof(GetShaderPrecisionFormat::Result, precision) == 12,
+              "offset of GetShaderPrecisionFormat Result precision should be "
+              "12");
 
 struct GetShaderSource {
   typedef GetShaderSource ValueType;
@@ -9697,15 +9704,15 @@ static_assert(offsetof(GetProgramInfoCHROMIUM, program) == 4,
               "offset of GetProgramInfoCHROMIUM program should be 4");
 static_assert(offsetof(GetProgramInfoCHROMIUM, bucket_id) == 8,
               "offset of GetProgramInfoCHROMIUM bucket_id should be 8");
-static_assert(
-    offsetof(GetProgramInfoCHROMIUM::Result, link_status) == 0,
-    "offset of GetProgramInfoCHROMIUM Result link_status should be 0");
-static_assert(
-    offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
-    "offset of GetProgramInfoCHROMIUM Result num_attribs should be 4");
-static_assert(
-    offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
-    "offset of GetProgramInfoCHROMIUM Result num_uniforms should be 8");
+static_assert(offsetof(GetProgramInfoCHROMIUM::Result, link_status) == 0,
+              "offset of GetProgramInfoCHROMIUM Result link_status should be "
+              "0");
+static_assert(offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
+              "offset of GetProgramInfoCHROMIUM Result num_attribs should be "
+              "4");
+static_assert(offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
+              "offset of GetProgramInfoCHROMIUM Result num_uniforms should be "
+              "8");
 
 struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;

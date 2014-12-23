@@ -177,25 +177,25 @@ VISIT_GL_CALL(FramebufferTexture2D,
                GLint level),
               (target, attachment, textarget, texture, level))
 VISIT_GL_CALL(FrontFace, void, (GLenum mode), (mode))
-VISIT_GL_CALL(GenBuffers, void, (GLsizei n, GLuint * buffers), (n, buffers))
+VISIT_GL_CALL(GenBuffers, void, (GLsizei n, GLuint* buffers), (n, buffers))
 VISIT_GL_CALL(GenerateMipmap, void, (GLenum target), (target))
 VISIT_GL_CALL(GenFramebuffers,
               void,
-              (GLsizei n, GLuint * framebuffers),
+              (GLsizei n, GLuint* framebuffers),
               (n, framebuffers))
 VISIT_GL_CALL(GenRenderbuffers,
               void,
-              (GLsizei n, GLuint * renderbuffers),
+              (GLsizei n, GLuint* renderbuffers),
               (n, renderbuffers))
-VISIT_GL_CALL(GenTextures, void, (GLsizei n, GLuint * textures), (n, textures))
+VISIT_GL_CALL(GenTextures, void, (GLsizei n, GLuint* textures), (n, textures))
 VISIT_GL_CALL(GetActiveAttrib,
               void,
               (GLuint program,
                GLuint index,
                GLsizei bufsize,
-               GLsizei * length,
-               GLint * size,
-               GLenum * type,
+               GLsizei* length,
+               GLint* size,
+               GLenum* type,
                char* name),
               (program, index, bufsize, length, size, type, name))
 VISIT_GL_CALL(GetActiveUniform,
@@ -203,15 +203,15 @@ VISIT_GL_CALL(GetActiveUniform,
               (GLuint program,
                GLuint index,
                GLsizei bufsize,
-               GLsizei * length,
-               GLint * size,
-               GLenum * type,
+               GLsizei* length,
+               GLint* size,
+               GLenum* type,
                char* name),
               (program, index, bufsize, length, size, type, name))
 VISIT_GL_CALL(
     GetAttachedShaders,
     void,
-    (GLuint program, GLsizei maxcount, GLsizei * count, GLuint * shaders),
+    (GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders),
     (program, maxcount, count, shaders))
 VISIT_GL_CALL(GetAttribLocation,
               GLint,
@@ -219,71 +219,64 @@ VISIT_GL_CALL(GetAttribLocation,
               (program, name))
 VISIT_GL_CALL(GetBooleanv,
               void,
-              (GLenum pname, GLboolean * params),
+              (GLenum pname, GLboolean* params),
               (pname, params))
 VISIT_GL_CALL(GetBufferParameteriv,
               void,
-              (GLenum target, GLenum pname, GLint * params),
+              (GLenum target, GLenum pname, GLint* params),
               (target, pname, params))
 VISIT_GL_CALL(GetError, GLenum, (), ())
-VISIT_GL_CALL(GetFloatv,
-              void,
-              (GLenum pname, GLfloat * params),
-              (pname, params))
+VISIT_GL_CALL(GetFloatv, void, (GLenum pname, GLfloat* params), (pname, params))
 VISIT_GL_CALL(GetFramebufferAttachmentParameteriv,
               void,
-              (GLenum target, GLenum attachment, GLenum pname, GLint * params),
+              (GLenum target, GLenum attachment, GLenum pname, GLint* params),
               (target, attachment, pname, params))
-VISIT_GL_CALL(GetIntegerv,
-              void,
-              (GLenum pname, GLint * params),
-              (pname, params))
+VISIT_GL_CALL(GetIntegerv, void, (GLenum pname, GLint* params), (pname, params))
 VISIT_GL_CALL(GetProgramiv,
               void,
-              (GLuint program, GLenum pname, GLint * params),
+              (GLuint program, GLenum pname, GLint* params),
               (program, pname, params))
-VISIT_GL_CALL(
-    GetProgramInfoLog,
-    void,
-    (GLuint program, GLsizei bufsize, GLsizei * length, char* infolog),
-    (program, bufsize, length, infolog))
+VISIT_GL_CALL(GetProgramInfoLog,
+              void,
+              (GLuint program, GLsizei bufsize, GLsizei* length, char* infolog),
+              (program, bufsize, length, infolog))
 VISIT_GL_CALL(GetRenderbufferParameteriv,
               void,
-              (GLenum target, GLenum pname, GLint * params),
+              (GLenum target, GLenum pname, GLint* params),
               (target, pname, params))
 VISIT_GL_CALL(GetShaderiv,
               void,
-              (GLuint shader, GLenum pname, GLint * params),
+              (GLuint shader, GLenum pname, GLint* params),
               (shader, pname, params))
 VISIT_GL_CALL(GetShaderInfoLog,
               void,
-              (GLuint shader, GLsizei bufsize, GLsizei * length, char* infolog),
+              (GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog),
               (shader, bufsize, length, infolog))
 VISIT_GL_CALL(
     GetShaderPrecisionFormat,
     void,
-    (GLenum shadertype, GLenum precisiontype, GLint * range, GLint * precision),
+    (GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision),
     (shadertype, precisiontype, range, precision))
 VISIT_GL_CALL(GetShaderSource,
               void,
-              (GLuint shader, GLsizei bufsize, GLsizei * length, char* source),
+              (GLuint shader, GLsizei bufsize, GLsizei* length, char* source),
               (shader, bufsize, length, source))
 VISIT_GL_CALL(GetString, const GLubyte*, (GLenum name), (name))
 VISIT_GL_CALL(GetTexParameterfv,
               void,
-              (GLenum target, GLenum pname, GLfloat * params),
+              (GLenum target, GLenum pname, GLfloat* params),
               (target, pname, params))
 VISIT_GL_CALL(GetTexParameteriv,
               void,
-              (GLenum target, GLenum pname, GLint * params),
+              (GLenum target, GLenum pname, GLint* params),
               (target, pname, params))
 VISIT_GL_CALL(GetUniformfv,
               void,
-              (GLuint program, GLint location, GLfloat * params),
+              (GLuint program, GLint location, GLfloat* params),
               (program, location, params))
 VISIT_GL_CALL(GetUniformiv,
               void,
-              (GLuint program, GLint location, GLint * params),
+              (GLuint program, GLint location, GLint* params),
               (program, location, params))
 VISIT_GL_CALL(GetUniformLocation,
               GLint,
@@ -291,11 +284,11 @@ VISIT_GL_CALL(GetUniformLocation,
               (program, name))
 VISIT_GL_CALL(GetVertexAttribfv,
               void,
-              (GLuint index, GLenum pname, GLfloat * params),
+              (GLuint index, GLenum pname, GLfloat* params),
               (index, pname, params))
 VISIT_GL_CALL(GetVertexAttribiv,
               void,
-              (GLuint index, GLenum pname, GLint * params),
+              (GLuint index, GLenum pname, GLint* params),
               (index, pname, params))
 VISIT_GL_CALL(GetVertexAttribPointerv,
               void,
