@@ -71,30 +71,45 @@ TEST_F(JSONWebKeyTest, GenerateJWKSet) {
   const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                           0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
 
-  EXPECT_EQ("{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}",
-            GenerateJWKSet(data1, arraysize(data1), data1, arraysize(data1)));
   EXPECT_EQ(
-      "{\"keys\":[{\"k\":\"AQIDBA\",\"kid\":\"AQIDBA\",\"kty\":\"oct\"}]}",
+      "{\"keys\":[{\"alg\":\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":"
+      "\"oct\"}]}",
+      GenerateJWKSet(data1, arraysize(data1), data1, arraysize(data1)));
+  EXPECT_EQ(
+      "{\"keys\":[{\"alg\":\"A128KW\",\"k\":\"AQIDBA\",\"kid\":\"AQIDBA\","
+      "\"kty\":\"oct\"}]}",
       GenerateJWKSet(data2, arraysize(data2), data2, arraysize(data2)));
-  EXPECT_EQ("{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQIDBA\",\"kty\":\"oct\"}]}",
-            GenerateJWKSet(data1, arraysize(data1), data2, arraysize(data2)));
-  EXPECT_EQ("{\"keys\":[{\"k\":\"AQIDBA\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}",
-            GenerateJWKSet(data2, arraysize(data2), data1, arraysize(data1)));
   EXPECT_EQ(
-      "{\"keys\":[{\"k\":\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kid\":"
+      "{\"keys\":[{\"alg\":\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQIDBA\",\"kty\":"
+      "\"oct\"}]}",
+      GenerateJWKSet(data1, arraysize(data1), data2, arraysize(data2)));
+  EXPECT_EQ(
+      "{\"keys\":[{\"alg\":\"A128KW\",\"k\":\"AQIDBA\",\"kid\":\"AQI\",\"kty\":"
+      "\"oct\"}]}",
+      GenerateJWKSet(data2, arraysize(data2), data1, arraysize(data1)));
+  EXPECT_EQ(
+      "{\"keys\":[{\"alg\":\"A128KW\",\"k\":\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kid\":"
       "\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kty\":\"oct\"}]}",
       GenerateJWKSet(data3, arraysize(data3), data3, arraysize(data3)));
 }
 
-TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
-  // Try a simple JWK key (i.e. not in a set)
-  const std::string kJwkSimple =
+TEST_F(JSONWebKeyTest, ExtractValidJWKKeys) {
+  // Try an empty 'keys' dictionary.
+  ExtractJWKKeysAndExpect("{ \"keys\": [] }", true, 0);
+
+  // Try a key list with one entry.
+  const std::string kJwksOneEntry =
       "{"
-      "  \"kty\": \"oct\","
-      "  \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
-      "  \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
+      "    }"
+      "  ]"
       "}";
-  ExtractJWKKeysAndExpect(kJwkSimple, false, 0);
+  ExtractJWKKeysAndExpect(kJwksOneEntry, true, 1);
 
   // Try a key list with multiple entries.
   const std::string kJwksMultipleEntries =
@@ -102,11 +117,13 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
       "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
       "      \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
       "    },"
       "    {"
       "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
       "      \"kid\": \"JCUmJygpKissLS4vMA\","
       "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA\""
       "    }"
@@ -120,6 +137,38 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "\"kid\":\"AAECAwQFBgcICQoLDA0ODxAREhM\",\"k\":\"GawgguFyGrWKav7AX4VKUg"
       "\",\"foo\":\"bar\"}]}\n\n";
   ExtractJWKKeysAndExpect(kJwksNoSpaces, true, 1);
+
+  // Try a list with multiple keys with the same kid.
+  const std::string kJwksDuplicateKids =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"JCUmJygpKissLS4vMA\","
+      "      \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
+      "    },"
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"JCUmJygpKissLS4vMA\","
+      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksDuplicateKids, true, 2);
+}
+
+TEST_F(JSONWebKeyTest, ExtractInvalidJWKKeys) {
+  // Try a simple JWK key (i.e. not in a set)
+  const std::string kJwkSimple =
+      "{"
+      "  \"kty\": \"oct\","
+      "  \"alg\": \"A128KW\","
+      "  \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "  \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
+      "}";
+  ExtractJWKKeysAndExpect(kJwkSimple, false, 0);
 
   // Try some non-ASCII characters.
   ExtractJWKKeysAndExpect(
@@ -143,9 +192,6 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
   // Try an empty dictionary.
   ExtractJWKKeysAndExpect("{ }", false, 0);
 
-  // Try an empty 'keys' dictionary.
-  ExtractJWKKeysAndExpect("{ \"keys\": [] }", true, 0);
-
   // Try with 'keys' not a dictionary.
   ExtractJWKKeysAndExpect("{ \"keys\":\"1\" }", false, 0);
 
@@ -158,6 +204,7 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
       "      \"kid\": \"AAECAw\","
       "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw==\""
       "    }"
@@ -171,6 +218,7 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
       "      \"kid\": \"AAECAw==\","
       "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
       "    }"
@@ -184,6 +232,7 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
       "      \"kid\": \"!@#$%^&*()\","
       "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
       "    }"
@@ -197,56 +246,155 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
       "      \"kid\": \"\","
       "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
       "    }"
       "  ]"
       "}";
   ExtractJWKKeysAndExpect(kJwksWithEmptyKeyId, false, 0);
+}
 
-  // Try a list with multiple keys with the same kid.
-  const std::string kJwksDuplicateKids =
+TEST_F(JSONWebKeyTest, KeyType) {
+  // Valid key type.
+  const std::string kJwksWithValidKeyType =
       "{"
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
-      "      \"kid\": \"JCUmJygpKissLS4vMA\","
-      "      \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
-      "    },"
-      "    {"
-      "      \"kty\": \"oct\","
-      "      \"kid\": \"JCUmJygpKissLS4vMA\","
-      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA\""
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
       "    }"
       "  ]"
       "}";
-  ExtractJWKKeysAndExpect(kJwksDuplicateKids, true, 2);
+  ExtractJWKKeysAndExpect(kJwksWithValidKeyType, true, 1);
+
+  // Empty key type.
+  const std::string kJwksWithEmptyKeyType =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithEmptyKeyType, false, 0);
+
+  // Key type is case sensitive.
+  const std::string kJwksWithUppercaseKeyType =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"OCT\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithUppercaseKeyType, false, 0);
+
+  // Wrong key type.
+  const std::string kJwksWithWrongKeyType =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"RSA\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithWrongKeyType, false, 0);
+}
+
+TEST_F(JSONWebKeyTest, Alg) {
+  // Valid alg.
+  const std::string kJwksWithValidAlg =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"A128KW\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithValidAlg, true, 1);
+
+  // Empty alg.
+  const std::string kJwksWithEmptyAlg =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithEmptyAlg, false, 0);
+
+  // Alg is case sensitive.
+  const std::string kJwksWithLowercaseAlg =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"a128kw\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithLowercaseAlg, false, 0);
+
+  // Wrong alg.
+  const std::string kJwksWithWrongAlg =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"alg\": \"RS256\","
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  ExtractJWKKeysAndExpect(kJwksWithWrongAlg, false, 0);
 }
 
 TEST_F(JSONWebKeyTest, SessionType) {
   ExtractSessionTypeAndExpect(
-      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}",
-      true,
-      MediaKeys::TEMPORARY_SESSION);
+      "{\"keys\":[{\"alg\": "
+      "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}",
+      true, MediaKeys::TEMPORARY_SESSION);
   ExtractSessionTypeAndExpect(
-      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "{\"keys\":[{\"alg\": "
+      "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"temporary\"}",
-      true,
-      MediaKeys::TEMPORARY_SESSION);
+      true, MediaKeys::TEMPORARY_SESSION);
   ExtractSessionTypeAndExpect(
-      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "{\"keys\":[{\"alg\": "
+      "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"persistent\"}",
-      true,
-      MediaKeys::PERSISTENT_SESSION);
+      true, MediaKeys::PERSISTENT_SESSION);
   ExtractSessionTypeAndExpect(
-      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "{\"keys\":[{\"alg\": "
+      "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"unknown\"}",
-      false,
-      MediaKeys::TEMPORARY_SESSION);
+      false, MediaKeys::TEMPORARY_SESSION);
   ExtractSessionTypeAndExpect(
-      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":3}",
-      false,
-      MediaKeys::TEMPORARY_SESSION);
+      "{\"keys\":[{\"alg\": "
+      "\"A128KW\",\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":3}",
+      false, MediaKeys::TEMPORARY_SESSION);
 }
 
 TEST_F(JSONWebKeyTest, CreateLicense) {

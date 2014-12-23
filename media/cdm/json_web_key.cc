@@ -17,7 +17,9 @@ namespace media {
 
 const char kKeysTag[] = "keys";
 const char kKeyTypeTag[] = "kty";
-const char kSymmetricKeyValue[] = "oct";
+const char kKeyTypeOct[] = "oct";  // Octet sequence.
+const char kAlgTag[] = "alg";
+const char kAlgA128KW[] = "A128KW";  // AES key wrap using a 128-bit key.
 const char kKeyTag[] = "k";
 const char kKeyIdTag[] = "kid";
 const char kKeyIdsTag[] = "kids";
@@ -44,8 +46,10 @@ static std::string EncodeBase64(const uint8* input, int input_length) {
 // Decodes an unpadded base64 string. Returns empty string on error.
 static std::string DecodeBase64(const std::string& encoded_text) {
   // EME spec doesn't allow padding characters.
-  if (encoded_text.find_first_of(kBase64Padding) != std::string::npos)
+  if (encoded_text.find_first_of(kBase64Padding) != std::string::npos) {
+    DVLOG(1) << "Padding characters not allowed: " << encoded_text;
     return std::string();
+  }
 
   // Since base::Base64Decode() requires padding characters, add them so length
   // of |encoded_text| is exactly a multiple of 4.
@@ -55,8 +59,10 @@ static std::string DecodeBase64(const std::string& encoded_text) {
     modified_text.append(4 - num_last_grouping_chars, kBase64Padding);
 
   std::string decoded_text;
-  if (!base::Base64Decode(modified_text, &decoded_text))
+  if (!base::Base64Decode(modified_text, &decoded_text)) {
+    DVLOG(1) << "Base64 decoding failed on: " << modified_text;
     return std::string();
+  }
 
   return decoded_text;
 }
@@ -69,7 +75,8 @@ std::string GenerateJWKSet(const uint8* key, int key_length,
 
   // Create the JWK, and wrap it into a JWK Set.
   scoped_ptr<base::DictionaryValue> jwk(new base::DictionaryValue());
-  jwk->SetString(kKeyTypeTag, kSymmetricKeyValue);
+  jwk->SetString(kKeyTypeTag, kKeyTypeOct);
+  jwk->SetString(kAlgTag, kAlgA128KW);
   jwk->SetString(kKeyTag, key_base64);
   jwk->SetString(kKeyIdTag, key_id_base64);
   scoped_ptr<base::ListValue> list(new base::ListValue());
@@ -88,10 +95,15 @@ std::string GenerateJWKSet(const uint8* key, int key_length,
 // to the id/value pair and returns true on success.
 static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
                                 KeyIdAndKeyPair* jwk_key) {
-  // Have found a JWK, start by checking that it is a symmetric key.
   std::string type;
-  if (!jwk.GetString(kKeyTypeTag, &type) || type != kSymmetricKeyValue) {
-    DVLOG(1) << "JWK is not a symmetric key";
+  if (!jwk.GetString(kKeyTypeTag, &type) || type != kKeyTypeOct) {
+    DVLOG(1) << "Missing or invalid '" << kKeyTypeTag << "': " << type;
+    return false;
+  }
+
+  std::string alg;
+  if (!jwk.GetString(kAlgTag, &alg) || alg != kAlgA128KW) {
+    DVLOG(1) << "Missing or invalid '" << kAlgTag << "': " << alg;
     return false;
   }
 
@@ -128,12 +140,16 @@ static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
 bool ExtractKeysFromJWKSet(const std::string& jwk_set,
                            KeyIdAndKeyPairs* keys,
                            MediaKeys::SessionType* session_type) {
-  if (!base::IsStringASCII(jwk_set))
+  if (!base::IsStringASCII(jwk_set)) {
+    DVLOG(1) << "Non ASCII JWK Set: " << jwk_set;
     return false;
+  }
 
   scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(jwk_set));
-  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY)
+  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY) {
+    DVLOG(1) << "Not valid JSON: " << jwk_set << ", root: " << root.get();
     return false;
+  }
 
   // Locate the set from the dictionary.
   base::DictionaryValue* dictionary =
@@ -221,12 +237,16 @@ bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8>& license,
   const std::string license_as_str(
       reinterpret_cast<const char*>(!license.empty() ? &license[0] : NULL),
       license.size());
-  if (!base::IsStringASCII(license_as_str))
+  if (!base::IsStringASCII(license_as_str)) {
+    DVLOG(1) << "Non ASCII license: " << license_as_str;
     return false;
+  }
 
   scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(license_as_str));
-  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY)
+  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY) {
+    DVLOG(1) << "Not valid JSON: " << license_as_str;
     return false;
+  }
 
   // Locate the set from the dictionary.
   base::DictionaryValue* dictionary =

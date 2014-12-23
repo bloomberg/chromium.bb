@@ -293,21 +293,21 @@ void AesDecryptor::UpdateSession(const std::string& web_session_id,
   SessionType session_type = MediaKeys::TEMPORARY_SESSION;
   if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type)) {
     promise->reject(
-        INVALID_ACCESS_ERROR, 0, "response is not a valid JSON Web Key Set.");
+        INVALID_ACCESS_ERROR, 0, "Response is not a valid JSON Web Key Set.");
     return;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
     promise->reject(
-        INVALID_ACCESS_ERROR, 0, "response does not contain any keys.");
+        INVALID_ACCESS_ERROR, 0, "Response does not contain any keys.");
     return;
   }
 
   for (KeyIdAndKeyPairs::iterator it = keys.begin(); it != keys.end(); ++it) {
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
-      DVLOG(1) << "Invalid key length: " << key_string.length();
+      DVLOG(1) << "Invalid key length: " << it->second.length();
       promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid key length.");
       return;
     }

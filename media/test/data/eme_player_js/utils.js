@@ -56,7 +56,7 @@ Utils.createJWKData = function(keyId, key) {
 
   // Creates a JWK from raw key ID and key.
   function createJWK(keyId, key) {
-    var jwk = '{"kty":"oct","kid":"';
+    var jwk = '{"kty":"oct","alg":"A128KW","kid":"';
     jwk += base64Encode(keyId);
     jwk += '","k":"';
     jwk += base64Encode(key);
