@@ -84,6 +84,10 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // turns it off via the settings menu.
   void OnHotwordSearchEnabledChanged(const std::string& pref_name);
 
+  // Handles enabling/disabling the hotword notification when the user
+  // changes the always on search settings.
+  void OnHotwordAlwaysOnSearchEnabledChanged(const std::string& pref_name);
+
   // Called to handle the hotword session from |client|.
   void RequestHotwordSession(HotwordClient* client);
   void StopHotwordSession(HotwordClient* client);

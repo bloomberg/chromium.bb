@@ -331,7 +331,11 @@ HotwordService::HotwordService(Profile* profile)
   pref_registrar_.Add(
       prefs::kHotwordSearchEnabled,
       base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
-                 base::Unretained(this)));
+      base::Unretained(this)));
+  pref_registrar_.Add(
+      prefs::kHotwordAlwaysOnSearchEnabled,
+      base::Bind(&HotwordService::OnHotwordAlwaysOnSearchEnabledChanged,
+      base::Unretained(this)));
 
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -770,6 +774,16 @@ void HotwordService::OnHotwordSearchEnabledChanged(
     EnableHotwordExtension(extension_service);
   else
     DisableHotwordExtension(extension_service);
+}
+
+void HotwordService::OnHotwordAlwaysOnSearchEnabledChanged(
+    const std::string& pref_name) {
+  // If the pref for always on has been changed in some way, that means that
+  // the user is aware of always on (either from settings or another source)
+  // so they don't need to be shown the notification.
+  profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnNotificationSeen,
+                                   true);
+  pref_registrar_.Remove(prefs::kHotwordAlwaysOnSearchEnabled);
 }
 
 void HotwordService::RequestHotwordSession(HotwordClient* client) {
