@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

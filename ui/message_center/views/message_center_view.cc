@@ -15,7 +15,7 @@
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center.h"

@@ -6,7 +6,7 @@
 
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/screen.h"
 
 namespace wm {

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_H_
 #define CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_H_
 
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/rect.h"
 
 namespace chromeos {

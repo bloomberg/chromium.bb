@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/rect.h"
 
 using ash::DisplayManager;

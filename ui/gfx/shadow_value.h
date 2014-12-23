@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/point.h"
 
 namespace gfx {
 

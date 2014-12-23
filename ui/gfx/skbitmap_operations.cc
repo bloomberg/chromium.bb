@@ -4,8 +4,8 @@
 
 #include "ui/gfx/skbitmap_operations.h"
 
-#include <algorithm>
 #include <string.h>
+#include <algorithm>
 
 #include "base/logging.h"
 #include "skia/ext/refptr.h"
@@ -15,8 +15,8 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/size.h"
 
 // static

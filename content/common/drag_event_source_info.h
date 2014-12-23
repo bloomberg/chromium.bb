@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace content {
 

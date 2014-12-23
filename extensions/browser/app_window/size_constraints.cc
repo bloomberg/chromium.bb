@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace extensions {
 

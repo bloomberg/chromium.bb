@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point3_f.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/rect.h"
 
 namespace gfx {

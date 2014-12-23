@@ -10,7 +10,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 

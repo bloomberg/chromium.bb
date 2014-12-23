@@ -12,7 +12,7 @@
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ui {
 

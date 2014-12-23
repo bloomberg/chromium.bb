@@ -5,7 +5,7 @@
 #include "ui/views/controls/focusable_border.h"
 
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 

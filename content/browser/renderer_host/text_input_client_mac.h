@@ -12,7 +12,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PANELS_X11_PANEL_RESIZER_H_
 
 #include "ui/events/event_handler.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace aura {
 class Window;

@@ -9,7 +9,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/base/touch/touch_editing_controller.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/touchui/touch_editing_menu.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 PanelMouseWatcher::PanelMouseWatcher() {
 }

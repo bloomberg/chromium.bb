@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/rect.h"
 
 class PanelManager;

@@ -11,7 +11,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/base_window.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;

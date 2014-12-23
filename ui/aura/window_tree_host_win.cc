@@ -16,7 +16,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/platform_window/win/win_window.h"

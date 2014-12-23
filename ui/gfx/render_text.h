@@ -21,7 +21,7 @@
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/selection_model.h"

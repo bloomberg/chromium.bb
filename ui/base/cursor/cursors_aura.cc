@@ -6,8 +6,8 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/point.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace ui {

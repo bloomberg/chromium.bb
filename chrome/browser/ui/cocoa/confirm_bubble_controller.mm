@@ -8,8 +8,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 #import "chrome/browser/ui/confirm_bubble_model.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/point.h"
 
 @implementation ConfirmBubbleController
 

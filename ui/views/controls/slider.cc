@@ -18,7 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"

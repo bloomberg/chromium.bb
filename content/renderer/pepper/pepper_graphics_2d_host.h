@@ -16,7 +16,7 @@
 #include "ppapi/host/resource_host.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "ui/events/latency_info.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/size.h"
 
 namespace cc {

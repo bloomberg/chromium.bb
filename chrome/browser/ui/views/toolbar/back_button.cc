@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar/back_button.h"
 
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 

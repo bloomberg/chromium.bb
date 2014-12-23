@@ -11,8 +11,8 @@
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 #include "ui/wm/wm_export.h"
 

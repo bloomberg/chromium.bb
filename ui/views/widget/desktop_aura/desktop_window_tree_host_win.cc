@@ -16,7 +16,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/win/shell.h"
 #include "ui/compositor/compositor_constants.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"

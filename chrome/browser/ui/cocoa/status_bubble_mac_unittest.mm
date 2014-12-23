@@ -15,7 +15,7 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
 using base::UTF8ToUTF16;

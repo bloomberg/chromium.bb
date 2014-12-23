@@ -6,8 +6,8 @@
 #define UI_BASE_TOUCH_SELECTION_BOUND_H_
 
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point_f.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace cc {
 struct ViewportSelectionBound;

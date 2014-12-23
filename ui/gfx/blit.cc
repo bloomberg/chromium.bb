@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 

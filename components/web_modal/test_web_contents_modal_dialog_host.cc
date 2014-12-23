@@ -4,7 +4,7 @@
 
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace web_modal {
 

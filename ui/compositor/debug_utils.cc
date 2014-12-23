@@ -14,9 +14,9 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/transform.h"
 
 using base::UTF8ToWide;

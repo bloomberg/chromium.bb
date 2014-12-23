@@ -6,8 +6,8 @@
 
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
-#include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <X11/Xlib.h>
 #endif
 
 #include <cmath>
@@ -20,9 +20,9 @@
 #include "ui/events/keycodes/dom3/dom_key.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
-#include "ui/gfx/point3_f.h"
-#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 

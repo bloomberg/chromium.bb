@@ -5,7 +5,7 @@
 #include "ui/wm/core/coordinate_conversion.h"
 
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace wm {
 

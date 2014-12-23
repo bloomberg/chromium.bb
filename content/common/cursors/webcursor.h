@@ -11,8 +11,8 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
 #if defined(USE_AURA)

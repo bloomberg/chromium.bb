@@ -11,7 +11,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ui {
 class ContextFactory;

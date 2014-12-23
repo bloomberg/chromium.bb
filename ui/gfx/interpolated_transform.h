@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point3_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 

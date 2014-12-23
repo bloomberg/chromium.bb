@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace {

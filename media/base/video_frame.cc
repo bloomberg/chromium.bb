@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 #if !defined(MEDIA_FOR_CAST_IOS)
 #include "third_party/skia/include/core/SkBitmap.h"

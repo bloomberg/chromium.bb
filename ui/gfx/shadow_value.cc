@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/strings/stringprintf.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace gfx {
 

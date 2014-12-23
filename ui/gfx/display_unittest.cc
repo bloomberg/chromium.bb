@@ -5,7 +5,7 @@
 #include "ui/gfx/display.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace {
 

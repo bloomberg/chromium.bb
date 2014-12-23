@@ -18,8 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 

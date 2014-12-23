@@ -9,8 +9,8 @@
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 
 namespace ui {
 

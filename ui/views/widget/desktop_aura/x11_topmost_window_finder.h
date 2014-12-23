@@ -8,7 +8,7 @@
 #include <set>
 
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/views_export.h"
 
 namespace aura {

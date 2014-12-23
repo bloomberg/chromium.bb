@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 class Browser;
 class FindBarBridge;

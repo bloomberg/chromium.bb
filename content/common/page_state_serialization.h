@@ -11,8 +11,8 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point_f.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "url/gurl.h"
 
 namespace content {

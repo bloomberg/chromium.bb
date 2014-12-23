@@ -8,8 +8,8 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/icon_util.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/menu/menu_runner.h"
 

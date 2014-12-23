@@ -11,7 +11,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "jni/ContextMenuHelper_jni.h"
 #include "jni/ContextMenuParams_jni.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;

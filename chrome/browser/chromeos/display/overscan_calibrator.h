@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {

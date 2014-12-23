@@ -12,7 +12,7 @@
 #include "grit/theme_resources.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-#import "ui/gfx/point.h"
+#import "ui/gfx/geometry/point.h"
 
 namespace {
 

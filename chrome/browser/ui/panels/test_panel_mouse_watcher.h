@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 // Test mouse watcher for simulating mouse movements in tests.
 class TestPanelMouseWatcher : public PanelMouseWatcher {

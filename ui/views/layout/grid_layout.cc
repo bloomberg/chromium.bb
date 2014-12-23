@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"

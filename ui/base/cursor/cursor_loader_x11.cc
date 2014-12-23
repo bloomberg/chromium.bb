@@ -5,16 +5,16 @@
 #include "ui/base/cursor/cursor_loader_x11.h"
 
 #include <float.h>
-#include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#include <X11/Xlib.h>
 
 #include "base/logging.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"

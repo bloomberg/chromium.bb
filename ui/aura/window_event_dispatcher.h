@@ -24,8 +24,8 @@
 #include "ui/events/event_targeter.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 
 namespace gfx {
 class Size;

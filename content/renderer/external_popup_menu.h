@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebExternalPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace blink {
 class WebExternalPopupMenuClient;

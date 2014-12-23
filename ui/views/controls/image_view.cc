@@ -9,7 +9,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/insets.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/painter.h"
 
 namespace views {

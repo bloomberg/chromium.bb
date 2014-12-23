@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 
 #include "base/logging.h"
-#include "ui/gfx/point_f.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace content {
 namespace {

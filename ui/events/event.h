@@ -17,8 +17,8 @@
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/latency_info.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace gfx {
 class Transform;

@@ -47,7 +47,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;

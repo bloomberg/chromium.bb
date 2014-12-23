@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TOUCHUI_TOUCH_EDITING_MENU_H_
 #define UI_VIEWS_TOUCHUI_TOUCH_EDITING_MENU_H_
 
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/views_export.h"

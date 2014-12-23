@@ -8,7 +8,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
 class Browser;

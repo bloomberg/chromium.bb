@@ -4,7 +4,7 @@
 
 #include "ui/views/rect_based_targeting_utils.h"
 
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/rect.h"
 
 namespace views {

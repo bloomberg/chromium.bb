@@ -10,7 +10,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
-#include "ui/gfx/point_f.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace cc {
 

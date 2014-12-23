@@ -20,7 +20,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #endif
 
 namespace content {

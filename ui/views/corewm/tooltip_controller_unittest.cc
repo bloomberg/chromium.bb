@@ -15,7 +15,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/gfx/text_elider.h"

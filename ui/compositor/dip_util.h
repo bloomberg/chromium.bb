@@ -5,9 +5,9 @@
 #ifndef UI_COMPOSITOR_DIP_UTIL_H_
 #define UI_COMPOSITOR_DIP_UTIL_H_
 
-#include "ui/compositor/compositor_export.h"
 #include "base/basictypes.h"
-#include "ui/gfx/point_f.h"
+#include "ui/compositor/compositor_export.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace gfx {
 class Point;

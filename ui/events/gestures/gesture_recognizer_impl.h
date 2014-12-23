@@ -14,7 +14,7 @@
 #include "ui/events/events_export.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ui {
 class GestureConsumer;

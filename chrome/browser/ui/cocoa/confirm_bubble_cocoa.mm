@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/point.h"
 
 // The width for the message text. We break lines so the specified message fits
 // into this width.

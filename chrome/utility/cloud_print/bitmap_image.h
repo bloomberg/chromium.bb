@@ -6,7 +6,7 @@
 #define CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/size.h"
 
 namespace cloud_print {
