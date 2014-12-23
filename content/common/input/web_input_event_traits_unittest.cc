@@ -51,17 +51,6 @@ class WebInputEventTraitsTest : public testing::Test {
     event.y = y;
     return event;
   }
-
-  static WebMouseWheelEvent CreateMouseWheel(float deltaX,
-                                             float deltaY,
-                                             bool canScroll) {
-    WebMouseWheelEvent event;
-    event.type = WebInputEvent::MouseWheel;
-    event.deltaX = deltaX;
-    event.deltaY = deltaY;
-    event.canScroll = canScroll;
-    return event;
-  }
 };
 
 TEST_F(WebInputEventTraitsTest, TouchEventCoalescing) {
@@ -171,31 +160,6 @@ TEST_F(WebInputEventTraitsTest, PinchEventCoalescing) {
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch1));
   WebInputEventTraits::Coalesce(pinch0, &pinch1);
   EXPECT_EQ(numeric_limits<float>::max(), pinch1.data.pinchUpdate.scale);
-}
-
-TEST_F(WebInputEventTraitsTest, WebMouseWheelEventCoalescing) {
-  WebMouseWheelEvent mouseWheel0 =
-      CreateMouseWheel(1, 1, true);
-  WebMouseWheelEvent mouseWheel1 =
-      CreateMouseWheel(2, 2, true);
-
-  // WebMouseWheelEvent objects with same values except different deltaX and
-  // deltaY should coalesce.
-  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(mouseWheel0, mouseWheel1));
-
-  mouseWheel0 = CreateMouseWheel(1, 1, true);
-  mouseWheel1 = CreateMouseWheel(1, 1, false);
-
-  // WebMouseWheelEvent objects with different canScroll values should not
-  // coalesce.
-  EXPECT_FALSE(WebInputEventTraits::CanCoalesce(mouseWheel0, mouseWheel1));
-
-  // WebMouseWheelEvent objects with different modifiers should not coalesce.
-  mouseWheel0 = CreateMouseWheel(1, 1, true);
-  mouseWheel1 = CreateMouseWheel(1, 1, true);
-  mouseWheel0.modifiers = blink::WebInputEvent::ControlKey;
-  mouseWheel1.modifiers = blink::WebInputEvent::ShiftKey;
-  EXPECT_FALSE(WebInputEventTraits::CanCoalesce(mouseWheel0, mouseWheel1));
 }
 
 // Very basic smoke test to ensure stringification doesn't explode.

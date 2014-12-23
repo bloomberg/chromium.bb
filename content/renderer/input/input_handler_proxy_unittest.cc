@@ -288,12 +288,12 @@ TEST_F(InputHandlerProxyTest, MouseWheelByPageMainThread) {
   testing::Mock::VerifyAndClearExpectations(&mock_client_);
 }
 
-TEST_F(InputHandlerProxyTest, MouseWheelWithCtrlNotScroll) {
+TEST_F(InputHandlerProxyTest, MouseWheelWithCtrl) {
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
   WebMouseWheelEvent wheel;
   wheel.type = WebInputEvent::MouseWheel;
   wheel.modifiers = WebInputEvent::ControlKey;
-  wheel.canScroll = false;
+
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
   testing::Mock::VerifyAndClearExpectations(&mock_client_);
 }

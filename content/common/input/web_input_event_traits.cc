@@ -58,7 +58,7 @@ void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
                 " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
-                " Phase: (%d, %d)\n CanRubberband: (%d, %d)\n CanScroll: %d\n}",
+                " Phase: (%d, %d)\n CanRubberband: (%d, %d)\n}",
                 event.deltaX,
                 event.deltaY,
                 event.wheelTicksX,
@@ -70,8 +70,7 @@ void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
                 event.phase,
                 event.momentumPhase,
                 event.canRubberbandLeft,
-                event.canRubberbandRight,
-                event.canScroll);
+                event.canRubberbandRight);
 }
 
 void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
@@ -150,8 +149,7 @@ bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
          event.phase == event_to_coalesce.phase &&
          event.momentumPhase == event_to_coalesce.momentumPhase &&
          event.hasPreciseScrollingDeltas ==
-             event_to_coalesce.hasPreciseScrollingDeltas &&
-         event.canScroll == event_to_coalesce.canScroll;
+             event_to_coalesce.hasPreciseScrollingDeltas;
 }
 
 float GetUnacceleratedDelta(float accelerated_delta, float acceleration_ratio) {
