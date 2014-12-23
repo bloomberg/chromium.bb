@@ -81,7 +81,7 @@ class SANDBOX_EXPORT CodeGen {
   void Compile(Node head, Program* program);
 
  private:
-  using MemoKey = Tuple<uint16_t, uint32_t, Node, Node>;
+  using MemoKey = Tuple4<uint16_t, uint32_t, Node, Node>;
   struct MemoKeyLess {
     bool operator()(const MemoKey& lhs, const MemoKey& rhs) const;
   };
