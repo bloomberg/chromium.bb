@@ -272,13 +272,9 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
-  // TODO(chirantan): Default this to on when we are ready to launch.
-  registry->RegisterIntegerPref(
-      prefs::kWakeOnWiFiEnabled,
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWakeOnPackets)
-          ? WakeOnWifiManager::WAKE_ON_PACKET_AND_SSID
-          : WakeOnWifiManager::WAKE_ON_NONE,
+  registry->RegisterBooleanPref(
+      prefs::kWakeOnWifiSsid,
+      true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Mobile plan notifications default to on.
@@ -358,7 +354,7 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 
-  wake_on_wifi_enabled_.Init(prefs::kWakeOnWiFiEnabled, prefs, callback);
+  wake_on_wifi_ssid_.Init(prefs::kWakeOnWifiSsid, prefs, callback);
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -573,13 +569,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       UpdateAutoRepeatRate();
   }
 
-  if (user_is_primary_ && (reason != REASON_PREF_CHANGED ||
-                           pref_name == prefs::kWakeOnWiFiEnabled)) {
-    WakeOnWifiManager::Get()->OnPreferenceChanged(
-        static_cast<WakeOnWifiManager::WakeOnWifiFeature>(
-            wake_on_wifi_enabled_.GetValue()));
-  }
-
   if (reason == REASON_INITIALIZATION)
     SetInputMethodList();
 
@@ -606,6 +595,17 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     system::InputDeviceSettings::Get()->UpdateTouchpadSettings(
         touchpad_settings);
     system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
+  }
+
+  if (user_is_primary_ && (reason != REASON_PREF_CHANGED ||
+                           pref_name == prefs::kWakeOnWifiSsid)) {
+    int features = wake_on_wifi_ssid_.GetValue() ?
+        WakeOnWifiManager::WAKE_ON_SSID : WakeOnWifiManager::WAKE_ON_NONE;
+    // The flag enables wake on packets but doesn't update a preference.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWakeOnPackets))
+      features |= WakeOnWifiManager::WAKE_ON_PACKET;
+    WakeOnWifiManager::Get()->OnPreferenceChanged(
+        static_cast<WakeOnWifiManager::WakeOnWifiFeature>(features));
   }
 }
 

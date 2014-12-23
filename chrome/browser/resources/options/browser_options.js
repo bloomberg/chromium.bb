@@ -463,6 +463,10 @@ cr.define('options', function() {
             true,
             metric);
       };
+      if (loadTimeData.valueExists('showWakeOnWifi') &&
+          loadTimeData.getBoolean('showWakeOnWifi')) {
+        $('wake-on-wifi').hidden = false;
+      }
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {

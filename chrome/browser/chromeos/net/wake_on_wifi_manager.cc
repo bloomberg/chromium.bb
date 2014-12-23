@@ -7,16 +7,17 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_device_handler.h"
@@ -53,6 +54,9 @@ std::string WakeOnWifiFeatureToString(
       return kWakeOnPacketAndSsid;
     case WakeOnWifiManager::INVALID:
       return std::string();
+    case WakeOnWifiManager::NOT_SUPPORTED:
+      NOTREACHED();
+      return std::string();
   }
 
   NOTREACHED() << "Unknown wake on wifi feature: " << feature;
@@ -60,8 +64,7 @@ std::string WakeOnWifiFeatureToString(
 }
 
 bool IsWakeOnPacketEnabled(WakeOnWifiManager::WakeOnWifiFeature feature) {
-  return feature == WakeOnWifiManager::WAKE_ON_PACKET ||
-         feature == WakeOnWifiManager::WAKE_ON_PACKET_AND_SSID;
+  return feature & WakeOnWifiManager::WAKE_ON_PACKET;
 }
 
 // Weak pointer.  This class is owned by ChromeBrowserMainPartsChromeos.
@@ -137,7 +140,8 @@ WakeOnWifiManager* WakeOnWifiManager::Get() {
 }
 
 WakeOnWifiManager::WakeOnWifiManager()
-    : current_feature_(WakeOnWifiManager::INVALID) {
+    : current_feature_(WakeOnWifiManager::INVALID),
+      weak_ptr_factory_(this) {
   // This class must be constructed before any users are logged in, i.e., before
   // any profiles are created or added to the ProfileManager.  Additionally,
   // IsUserLoggedIn always returns true when we are not running on a Chrome OS
@@ -161,6 +165,21 @@ WakeOnWifiManager::WakeOnWifiManager()
       ->RemoveAllWifiWakeOnPacketConnections(
           base::Bind(&base::DoNothing),
           network_handler::ErrorCallback());
+
+  if (!switches::WakeOnWifiEnabled())
+    return;
+
+  const DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
+          NetworkTypePattern::WiFi());
+  if (!device)
+    return;
+  // Get device properties to check whether wake-on-wifi is supported.
+  NetworkHandler::Get()->network_device_handler()->GetDeviceProperties(
+      device->path(),
+      base::Bind(&WakeOnWifiManager::GetDevicePropertiesCallback,
+                 weak_ptr_factory_.GetWeakPtr()),
+      network_handler::ErrorCallback());
 }
 
 WakeOnWifiManager::~WakeOnWifiManager() {
@@ -172,6 +191,10 @@ WakeOnWifiManager::~WakeOnWifiManager() {
 void WakeOnWifiManager::OnPreferenceChanged(
     WakeOnWifiManager::WakeOnWifiFeature feature) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (current_feature_ == NOT_SUPPORTED)
+    return;
+  if (!switches::WakeOnWifiEnabled())
+    feature = WAKE_ON_NONE;
   if (feature == current_feature_)
     return;
 
@@ -199,6 +222,23 @@ void WakeOnWifiManager::OnPreferenceChanged(
     gcm::GCMProfileServiceFactory::GetForProfile(profile)
         ->driver()
         ->WakeFromSuspendForHeartbeat(wake_from_suspend);
+  }
+}
+
+bool WakeOnWifiManager::WakeOnWifiSupported() {
+  return current_feature_ != NOT_SUPPORTED && current_feature_ != INVALID;
+}
+
+void WakeOnWifiManager::GetDevicePropertiesCallback(
+    const std::string& device_path,
+    const base::DictionaryValue& properties) {
+  if (!properties.HasKey(shill::kWakeOnWiFiFeaturesEnabledProperty))
+    return;
+  std::string enabled;
+  if (properties.GetString(shill::kWakeOnWiFiFeaturesEnabledProperty,
+                           &enabled) &&
+      enabled == shill::kWakeOnWiFiFeaturesEnabledNotSupported) {
+    current_feature_ = NOT_SUPPORTED;
   }
 }
 

@@ -9537,6 +9537,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_WakeOnWifiSsid_Disable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Disable Wake on Wi-Fi SSID</description>
+</action>
+
+<action name="Options_WakeOnWifiSsid_Enable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Enable Wake on Wi-Fi SSID</description>
+</action>
+
 <action name="Options_WhitelistedUser_Add">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Users: Add a whitelisted user</description>

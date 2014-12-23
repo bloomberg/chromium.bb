@@ -481,6 +481,22 @@
           </label>
         </div>
       </div>
+<if expr="chromeos">
+      <div id="wake-on-wifi" hidden
+          class="checkbox controlled-setting-with-label">
+        <label>
+          <input id="wake-on-wifi-checkbox" type="checkbox"
+              metric="Options_WakeOnWifiSsid"
+              pref="settings.internet.wake_on_wifi_ssid">
+          <span>
+            <span i18n-content="wakeOnWifiLabel"></span>
+            <span id="wake-on-wifi-indicator"
+                class="controlled-setting-indicator"
+                pref="settings.internet.wake_on_wifi_ssid"></span>
+          </span>
+        </label>
+      </div>
+</if>
     </div>
   </section>
 <if expr="chromeos">

@@ -1943,6 +1943,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to set the primary mouse button to the right button.">
     Swap primary mouse button
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for enabling quickly reconnecting to known Wi-Fi SSIDs.">
+    Keep Wi-Fi on during sleep
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
     Disable Bluetooth
   </message>

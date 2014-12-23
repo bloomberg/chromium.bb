@@ -110,6 +110,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
+#include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
@@ -371,6 +372,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "themes", IDS_THEMES_GROUP_NAME },
 #endif
     { "themesReset", IDS_THEMES_RESET_BUTTON },
+#if defined(OS_CHROMEOS)
+    { "wakeOnWifiLabel", IDS_OPTIONS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION },
+#endif
     { "accessibilityTitle",
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityFeaturesLink",
@@ -662,6 +666,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                          switches::kEnableWebsiteSettingsManager));
 
   values->SetBoolean("usingNewProfilesUI", switches::IsNewAvatarMenu());
+
+#if defined(OS_CHROMEOS)
+  values->SetBoolean(
+      "showWakeOnWifi",
+      chromeos::WakeOnWifiManager::Get()->WakeOnWifiSupported() &&
+      chromeos::switches::WakeOnWifiEnabled());
+#endif
 }
 
 #if defined(ENABLE_PRINT_PREVIEW)

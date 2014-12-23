@@ -7,10 +7,15 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace chromeos {
 
@@ -23,11 +28,12 @@ namespace chromeos {
 class WakeOnWifiManager : public content::NotificationObserver {
  public:
   enum WakeOnWifiFeature {
-    WAKE_ON_NONE            = 0,
-    WAKE_ON_PACKET          = 1,
-    WAKE_ON_SSID            = 2,
-    WAKE_ON_PACKET_AND_SSID = 3,
-    INVALID                 = 4,
+    WAKE_ON_NONE            = 0x00,
+    WAKE_ON_PACKET          = 0x01,
+    WAKE_ON_SSID            = 0x02,
+    WAKE_ON_PACKET_AND_SSID = 0x03,
+    NOT_SUPPORTED           = 0x04,
+    INVALID                 = 0x08,
   };
 
   static WakeOnWifiManager* Get();
@@ -38,6 +44,14 @@ class WakeOnWifiManager : public content::NotificationObserver {
   // Should be called whenever the primary user changes their preference for the
   // wake-on-wifi features that should be enabled.
   void OnPreferenceChanged(WakeOnWifiFeature feature);
+
+  // Returns true if wake-on-wifi features are supported. Returns false if we
+  // have not yet determined whether wake-on-wifi features are supported.
+  bool WakeOnWifiSupported();
+
+  // Callback for getting the Wi-Fi device properties.
+  void GetDevicePropertiesCallback(const std::string& device_path,
+                                   const base::DictionaryValue& properties);
 
   // content::NotificationObserver override.
   void Observe(int type,
@@ -55,6 +69,8 @@ class WakeOnWifiManager : public content::NotificationObserver {
       connection_observers_;
 
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<WakeOnWifiManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeOnWifiManager);
 };

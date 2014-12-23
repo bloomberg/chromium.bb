@@ -4,6 +4,8 @@
 
 #include "chromeos/chromeos_switches.h"
 
+#include "base/command_line.h"
+
 namespace chromeos {
 namespace switches {
 
@@ -76,6 +78,9 @@ const char kDisableRollbackOption[] = "disable-rollback-option";
 
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
+
+// Disables wake on wifi features.
+const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 
 // Disables notifications about captive portals in session.
 const char kDisableNetworkPortalNotification[] =
@@ -278,6 +283,11 @@ const char kArtifactsDir[] = "artifacts-dir";
 // Bypass proxy for captive portal authorization.
 const char kEnableCaptivePortalBypassProxy[] =
     "enable-captive-portal-bypass-proxy";
+
+bool WakeOnWifiEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableWakeOnWifi);
+}
 
 }  // namespace switches
 }  // namespace chromeos
