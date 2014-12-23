@@ -11,6 +11,9 @@ msw@chromium.org
 per-file display*=oshima@chromium.org
 per-file screen*=oshima@chromium.org
 
+# Font-rendering configuration.
+per-file font_render_params*=derat@chromium.org
+
 # Transform, interpolated transform and transform util.
 per-file transform*=vollick@chromium.org
 per-file interpolated_transform*=vollick@chromium.org

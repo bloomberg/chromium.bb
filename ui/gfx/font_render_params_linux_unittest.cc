@@ -47,7 +47,8 @@ class TestFontDelegate : public LinuxFontDelegate {
 };
 
 // Loads the first system font defined by fontconfig_util_linux.h with a base
-// filename of |basename|. Case is ignored.
+// filename of |basename|. Case is ignored. FcFontMatch() requires there to be
+// at least one font present.
 bool LoadSystemFont(const std::string& basename) {
   for (size_t i = 0; i < kNumSystemFontsForFontconfig; ++i) {
     base::FilePath path(gfx::kSystemFontsForFontconfig[i]);
@@ -89,21 +90,24 @@ TEST_F(FontRenderParamsTest, Default) {
   ASSERT_TRUE(LoadSystemFont("arial.ttf"));
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
+      // Specify the desired defaults via a font match rather than a pattern
+      // match (since this is the style generally used in /etc/fonts/conf.d).
+      kFontconfigMatchFontHeader +
       CreateFontconfigEditStanza("antialias", "bool", "true") +
       CreateFontconfigEditStanza("autohint", "bool", "true") +
       CreateFontconfigEditStanza("hinting", "bool", "true") +
       CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
       CreateFontconfigEditStanza("rgba", "const", "rgb") +
       kFontconfigMatchFooter +
-      // Add a font match for Arial; it shouldn't be used when querying for
-      // default settings: http://crbug.com/421247
+      // Add a font match for Arial. Since it specifies a family, it shouldn't
+      // take effect when querying default settings.
       kFontconfigMatchFontHeader +
       CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
       CreateFontconfigEditStanza("antialias", "bool", "true") +
       CreateFontconfigEditStanza("autohint", "bool", "false") +
       CreateFontconfigEditStanza("hinting", "bool", "true") +
       CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+      CreateFontconfigEditStanza("rgba", "const", "none") +
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
