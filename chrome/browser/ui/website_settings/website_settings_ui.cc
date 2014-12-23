@@ -21,7 +21,7 @@ const int kPermissionButtonTextIDPolicyManaged[] = {
     kInvalidResourceID,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_POLICY,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_POLICY,
-    IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_POLICY,
+    kInvalidResourceID,
     kInvalidResourceID,
     kInvalidResourceID};
 static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
@@ -48,7 +48,7 @@ const int kPermissionButtonTextIDUserManaged[] = {
     kInvalidResourceID,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_USER,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_USER,
-    IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_USER,
+    kInvalidResourceID,
     kInvalidResourceID,
     kInvalidResourceID};
 static_assert(arraysize(kPermissionButtonTextIDUserManaged) ==
