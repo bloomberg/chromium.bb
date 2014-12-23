@@ -175,7 +175,8 @@ void ReduceLarge(FieldElement* out, LargeFieldElement* inptr) {
 
 // TODO(wez): Remove this when crbug.com/439566 is fixed.
 #if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC optimize("tree-vectorize")
+// Reenable "tree-vectorize" optimization if it got disabled for ReduceLarge.
+#pragma GCC reset_options
 #endif
 
 // Mul computes *out = a*b
