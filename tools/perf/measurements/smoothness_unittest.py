@@ -143,6 +143,14 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(1, len(jank_count))
     self.assertGreater(jank_count[0].GetRepresentativeNumber(), -1)
 
+    max_frame_delay = results.FindAllPageSpecificValuesNamed('max_frame_delay')
+    self.assertEquals(1, len(max_frame_delay))
+    self.assertGreater(max_frame_delay[0].GetRepresentativeNumber, 0)
+
+    frame_lengths = results.FindAllPageSpecificValuesNamed('frame_lengths')
+    self.assertEquals(1, len(frame_lengths))
+    self.assertGreater(frame_lengths[0].GetRepresentativeNumber, 0)
+
   @decorators.Disabled('mac', 'chromeos')  # http://crbug.com/403903
   def testSmoothnessForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
