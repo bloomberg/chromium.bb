@@ -12,7 +12,7 @@ namespace content {
 class FakeRendererScheduler : public RendererScheduler {
  public:
   FakeRendererScheduler();
-  virtual ~FakeRendererScheduler();
+  ~FakeRendererScheduler() override;
 
   // RendererScheduler implementation.
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;

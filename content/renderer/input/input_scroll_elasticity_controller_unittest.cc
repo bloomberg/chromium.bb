@@ -29,7 +29,7 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
         pinned_pos_x_(false),
         pinned_neg_y_(false),
         pinned_pos_y_(false) {}
-  virtual ~MockScrollElasticityHelper() {}
+  ~MockScrollElasticityHelper() override {}
 
   // cc::ScrollElasticityHelper implementation:
   gfx::Vector2dF StretchAmount() override { return stretch_amount_; }
@@ -78,7 +78,7 @@ class ScrollElasticityControllerTest : public testing::Test {
       : controller_(&helper_),
         input_event_count_(0),
         current_time_(base::TimeTicks::FromInternalValue(100000000ull)) {}
-  virtual ~ScrollElasticityControllerTest() {}
+  ~ScrollElasticityControllerTest() override {}
 
   void SendMouseWheelEvent(
       Phase phase,

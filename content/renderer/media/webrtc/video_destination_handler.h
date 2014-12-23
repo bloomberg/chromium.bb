@@ -45,8 +45,8 @@ class CONTENT_EXPORT PpFrameWriter
 
   // FrameWriterInterface implementation.
   // This method will be called by the Pepper host from render thread.
-  virtual void PutFrame(PPB_ImageData_Impl* image_data,
-                        int64 time_stamp_ns) override;
+  void PutFrame(PPB_ImageData_Impl* image_data, int64 time_stamp_ns) override;
+
  protected:
   // MediaStreamVideoSource implementation.
   void GetCurrentSupportedFormats(

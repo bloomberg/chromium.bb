@@ -29,7 +29,7 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
       std::vector<uint32>* supported_message_classes) const override;
 
  protected:
-  virtual ~ResourceSchedulingFilter();
+  ~ResourceSchedulingFilter() override;
 
   void DispatchMessage(const IPC::Message& message);
 

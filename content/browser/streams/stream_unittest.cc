@@ -111,7 +111,7 @@ class TestStreamObserver : public StreamRegisterObserver {
     registry->SetRegisterObserver(url, this);
   }
   ~TestStreamObserver() override { registry_->RemoveRegisterObserver(url_); }
-  virtual void OnStreamRegistered(Stream* stream) override {
+  void OnStreamRegistered(Stream* stream) override {
     registered_ = true;
     stream_ = stream;
   }

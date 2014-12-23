@@ -61,7 +61,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
  public:
   PeerConnectionDependencyFactory(
       P2PSocketDispatcher* p2p_socket_dispatcher);
-  virtual ~PeerConnectionDependencyFactory();
+  ~PeerConnectionDependencyFactory() override;
 
   // Create a RTCPeerConnectionHandler object that implements the
   // WebKit WebRTCPeerConnectionHandler interface.
@@ -167,7 +167,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // Implement base::MessageLoop::DestructionObserver.
   // This makes sure the libjingle PeerConnectionFactory is released before
   // the renderer message loop is destroyed.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.

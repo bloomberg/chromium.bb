@@ -1452,7 +1452,7 @@ class RenderWidgetHostInitialSizeTest : public RenderWidgetHostTest {
   RenderWidgetHostInitialSizeTest()
       : RenderWidgetHostTest(), initial_size_(200, 100) {}
 
-  virtual void ConfigureView(TestView* view) override {
+  void ConfigureView(TestView* view) override {
     view->set_bounds(gfx::Rect(initial_size_));
   }
 

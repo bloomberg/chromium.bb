@@ -47,15 +47,13 @@ class DelayableBackend : public disk_cache::Backend {
       : backend_(backend.Pass()), delay_open_(false) {}
 
   // disk_cache::Backend overrides
-  virtual net::CacheType GetCacheType() const override {
+  net::CacheType GetCacheType() const override {
     return backend_->GetCacheType();
   }
-  virtual int32 GetEntryCount() const override {
-    return backend_->GetEntryCount();
-  }
-  virtual int OpenEntry(const std::string& key,
-                        disk_cache::Entry** entry,
-                        const CompletionCallback& callback) override {
+  int32 GetEntryCount() const override { return backend_->GetEntryCount(); }
+  int OpenEntry(const std::string& key,
+                disk_cache::Entry** entry,
+                const CompletionCallback& callback) override {
     if (delay_open_) {
       open_entry_callback_ =
           base::Bind(&DelayableBackend::OpenEntryDelayedImpl,
@@ -65,35 +63,35 @@ class DelayableBackend : public disk_cache::Backend {
 
     return backend_->OpenEntry(key, entry, callback);
   }
-  virtual int CreateEntry(const std::string& key,
-                          disk_cache::Entry** entry,
-                          const CompletionCallback& callback) override {
+  int CreateEntry(const std::string& key,
+                  disk_cache::Entry** entry,
+                  const CompletionCallback& callback) override {
     return backend_->CreateEntry(key, entry, callback);
   }
-  virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) override {
+  int DoomEntry(const std::string& key,
+                const CompletionCallback& callback) override {
     return backend_->DoomEntry(key, callback);
   }
-  virtual int DoomAllEntries(const CompletionCallback& callback) override {
+  int DoomAllEntries(const CompletionCallback& callback) override {
     return backend_->DoomAllEntries(callback);
   }
-  virtual int DoomEntriesBetween(base::Time initial_time,
-                                 base::Time end_time,
-                                 const CompletionCallback& callback) override {
+  int DoomEntriesBetween(base::Time initial_time,
+                         base::Time end_time,
+                         const CompletionCallback& callback) override {
     return backend_->DoomEntriesBetween(initial_time, end_time, callback);
   }
-  virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) override {
+  int DoomEntriesSince(base::Time initial_time,
+                       const CompletionCallback& callback) override {
     return backend_->DoomEntriesSince(initial_time, callback);
   }
-  virtual scoped_ptr<Iterator> CreateIterator() override {
+  scoped_ptr<Iterator> CreateIterator() override {
     return backend_->CreateIterator();
   }
-  virtual void GetStats(
+  void GetStats(
       std::vector<std::pair<std::string, std::string>>* stats) override {
     return backend_->GetStats(stats);
   }
-  virtual void OnExternalCacheHit(const std::string& key) override {
+  void OnExternalCacheHit(const std::string& key) override {
     return backend_->OnExternalCacheHit(key);
   }
 
@@ -137,7 +135,7 @@ class TestServiceWorkerCache : public ServiceWorkerCache {
                            blob_context),
         delay_backend_creation_(false) {}
 
-  virtual void CreateBackend(const ErrorCallback& callback) override {
+  void CreateBackend(const ErrorCallback& callback) override {
     backend_creation_callback_ = callback;
     if (delay_backend_creation_)
       return;
@@ -162,7 +160,7 @@ class TestServiceWorkerCache : public ServiceWorkerCache {
   }
 
  private:
-  virtual ~TestServiceWorkerCache() override {}
+  ~TestServiceWorkerCache() override {}
 
   bool delay_backend_creation_;
   ErrorCallback backend_creation_callback_;

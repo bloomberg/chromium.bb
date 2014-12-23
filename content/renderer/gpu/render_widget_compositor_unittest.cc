@@ -94,7 +94,7 @@ class RenderWidgetOutputSurface : public TestRenderWidget {
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) override;
 
  protected:
-  ~RenderWidgetOutputSurface() {}
+  ~RenderWidgetOutputSurface() override {}
 
  private:
   RenderWidgetCompositorOutputSurface* compositor_;

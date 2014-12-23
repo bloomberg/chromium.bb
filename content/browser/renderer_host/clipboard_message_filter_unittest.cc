@@ -25,7 +25,7 @@ class ClipboardMessageFilterTest : public ::testing::Test {
     filter_->set_peer_pid_for_testing(base::GetCurrentProcId());
   }
 
-  virtual ~ClipboardMessageFilterTest() override {
+  ~ClipboardMessageFilterTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 

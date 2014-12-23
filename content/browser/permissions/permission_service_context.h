@@ -25,7 +25,7 @@ class PermissionServiceContext : public WebContentsObserver {
  public:
   explicit PermissionServiceContext(RenderFrameHost* render_frame_host);
   explicit PermissionServiceContext(RenderProcessHost* render_process_host);
-  virtual ~PermissionServiceContext();
+  ~PermissionServiceContext() override;
 
   void CreateService(mojo::InterfaceRequest<PermissionService> request);
 

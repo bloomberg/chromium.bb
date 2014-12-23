@@ -179,7 +179,7 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
   ServiceWorkerFailToStartTest()
       : ServiceWorkerVersionTest() {}
 
-  virtual scoped_ptr<MessageReceiver> GetMessageReceiver() override {
+  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
     return make_scoped_ptr(new MessageReceiverDisallowStart());
   }
 

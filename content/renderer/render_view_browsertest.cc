@@ -2289,7 +2289,7 @@ class RenderViewImplInitialSizeTest : public RenderViewImplTest {
       : RenderViewImplTest(), initial_size_(200, 100) {}
 
  protected:
-  virtual scoped_ptr<ViewMsg_Resize_Params> InitialSizeParams() override {
+  scoped_ptr<ViewMsg_Resize_Params> InitialSizeParams() override {
     scoped_ptr<ViewMsg_Resize_Params> initial_size_params(
         new ViewMsg_Resize_Params());
     initial_size_params->new_size = initial_size_;

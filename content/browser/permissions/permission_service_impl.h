@@ -23,7 +23,7 @@ namespace content {
 // WebContents for example.
 class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
  public:
-  virtual ~PermissionServiceImpl();
+  ~PermissionServiceImpl() override;
 
   // Clear pending permissions associated with a given frame and request the
   // browser to cancel the permission requests.

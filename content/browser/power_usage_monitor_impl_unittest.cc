@@ -60,7 +60,7 @@ class SystemInterfaceForTest : public PowerUsageMonitor::SystemInterface {
 
 class PowerUsageMonitorTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     monitor_.reset(new PowerUsageMonitor);
     // PowerUsageMonitor assumes ownership.
     scoped_ptr<SystemInterfaceForTest> test_interface(

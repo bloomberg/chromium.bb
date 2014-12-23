@@ -32,7 +32,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   virtual void Detach() = 0;
 
   // Sends a message to the agent.
-  virtual void DispatchProtocolMessage(const std::string& message) = 0;
+  void DispatchProtocolMessage(const std::string& message) override = 0;
 
   // Opens the inspector for this host.
   void Inspect(BrowserContext* browser_context);

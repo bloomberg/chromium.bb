@@ -47,10 +47,10 @@ class CONTENT_EXPORT CompositorForwardingMessageFilter
   void RemoveHandlerOnCompositorThread(int routing_id, const Handler& handler);
 
   // MessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~CompositorForwardingMessageFilter();
+  ~CompositorForwardingMessageFilter() override;
 
  private:
   void ProcessMessageOnCompositorThread(const IPC::Message& message);

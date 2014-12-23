@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 route_id) override;
 
   // Overridden from GpuMemoryBufferFactoryHost:
-  virtual bool IsGpuMemoryBufferConfigurationSupported(
+  bool IsGpuMemoryBufferConfigurationSupported(
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage) override;
   void CreateGpuMemoryBuffer(

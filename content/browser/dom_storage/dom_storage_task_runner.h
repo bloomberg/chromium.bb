@@ -36,10 +36,9 @@ class CONTENT_EXPORT DOMStorageTaskRunner
 
   // The PostTask() and PostDelayedTask() methods defined by TaskRunner
   // post shutdown-blocking tasks on the primary sequence.
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) = 0;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override = 0;
 
   // Posts a shutdown blocking task to |sequence_id|.
   virtual bool PostShutdownBlockingTask(

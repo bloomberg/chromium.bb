@@ -189,10 +189,9 @@ class PpFrameWriterProxy : public FrameWriterInterface {
     DCHECK(writer_ != NULL);
   }
 
-  virtual ~PpFrameWriterProxy() {}
+  ~PpFrameWriterProxy() override {}
 
-  virtual void PutFrame(PPB_ImageData_Impl* image_data,
-                        int64 time_stamp_ns) override {
+  void PutFrame(PPB_ImageData_Impl* image_data, int64 time_stamp_ns) override {
     writer_->PutFrame(image_data, time_stamp_ns);
   }
 

@@ -28,11 +28,11 @@ class CompositorExternalBeginFrameSource
       CompositorForwardingMessageFilter* filter,
       IPC::SyncMessageFilter* sync_message_filter,
       int routing_id);
-  virtual ~CompositorExternalBeginFrameSource();
+  ~CompositorExternalBeginFrameSource() override;
 
   // cc::BeginFrameSourceMixIn implementation.
-  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
-  virtual void SetClientReady() override;
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
+  void SetClientReady() override;
 
  private:
   class CompositorExternalBeginFrameSourceProxy

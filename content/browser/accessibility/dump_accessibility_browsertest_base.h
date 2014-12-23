@@ -20,7 +20,7 @@ namespace content {
 class DumpAccessibilityTestBase : public ContentBrowserTest {
  public:
   DumpAccessibilityTestBase();
-  virtual ~DumpAccessibilityTestBase();
+  ~DumpAccessibilityTestBase() override;
 
   // Given a path to an HTML file relative to the test directory,
   // loads the HTML, loads the accessibility tree, calls Dump(), then

@@ -46,7 +46,7 @@ class TestNavigationURLLoader
   int redirect_count() { return redirect_count_; }
 
  private:
-  ~TestNavigationURLLoader();
+  ~TestNavigationURLLoader() override;
 
   CommonNavigationParams common_params_;
   scoped_ptr<NavigationRequestInfo> request_info_;
