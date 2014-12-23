@@ -34,7 +34,7 @@ public:
 
     ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
     {
-        if (m_fetchManager.isStopped()) {
+        if (m_fetchManager->isStopped()) {
             exceptionState.throwTypeError("The global scope is shutting down.");
             return ScriptPromise();
         }
@@ -42,43 +42,56 @@ public:
         // "Let |r| be the associated request of the result of invoking the
         // initial value of Request as constructor with |input| and |init| as
         // arguments. If this throws an exception, reject |p| with it."
-        Request* r = Request::create(m_stopDetector.executionContext(), input, init, exceptionState);
+        Request* r = Request::create(m_stopDetector->executionContext(), input, init, exceptionState);
         if (exceptionState.hadException())
             return ScriptPromise();
-        return m_fetchManager.fetch(scriptState, r->request());
+        return m_fetchManager->fetch(scriptState, r->request());
     }
 
     void trace(Visitor* visitor) override
     {
+        visitor->trace(m_fetchManager);
+        visitor->trace(m_stopDetector);
         WillBeHeapSupplement<T>::trace(visitor);
     }
 
 private:
-    class StopDetector : public ActiveDOMObject {
+    class StopDetector final : public NoBaseWillBeGarbageCollectedFinalized<StopDetector>, public ActiveDOMObject {
     public:
+        static PassOwnPtrWillBeRawPtr<StopDetector> create(ExecutionContext* executionContext, FetchManager* fetchManager)
+        {
+            return adoptPtrWillBeNoop(new StopDetector(executionContext, fetchManager));
+        }
+
+        void stop() override { m_fetchManager->stop(); }
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(m_fetchManager);
+        }
+
+    private:
         StopDetector(ExecutionContext* executionContext, FetchManager* fetchManager)
             : ActiveDOMObject(executionContext)
             , m_fetchManager(fetchManager)
         {
             suspendIfNeeded();
         }
-        void stop() override { m_fetchManager->stop(); }
 
-    private:
         // Having a raw pointer is safe, because |m_fetchManager| is owned by
         // the owner of this object.
-        FetchManager* m_fetchManager;
+        GC_PLUGIN_IGNORE("crbug.com/444740") RawPtrWillBeMember<FetchManager> m_fetchManager;
     };
 
     explicit GlobalFetchImpl(ExecutionContext* executionContext)
-        : m_fetchManager(executionContext)
-        , m_stopDetector(executionContext, &m_fetchManager)
+        : m_fetchManager(FetchManager::create(executionContext))
+        , m_stopDetector(StopDetector::create(executionContext, m_fetchManager.get()))
     {
     }
     static const char* name() { return "GlobalFetch"; }
 
-    FetchManager m_fetchManager;
-    StopDetector m_stopDetector;
+    OwnPtrWillBeMember<FetchManager> m_fetchManager;
+    OwnPtrWillBeMember<StopDetector> m_stopDetector;
 };
 
 } // namespace

@@ -15,21 +15,27 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class FetchManager {
+class FetchManager final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager> {
 public:
-    FetchManager(ExecutionContext*);
+    static PassOwnPtrWillBeRawPtr<FetchManager> create(ExecutionContext* executionContext)
+    {
+        return adoptPtrWillBeNoop(new FetchManager(executionContext));
+    }
     ~FetchManager();
     ScriptPromise fetch(ScriptState*, const FetchRequestData*);
     void stop();
     bool isStopped() const { return m_isStopped; }
 
+    void trace(Visitor*);
+
 private:
     class Loader;
 
+    explicit FetchManager(ExecutionContext*);
     // Removes loader from |m_loaders|.
     void onLoaderFinished(Loader*);
 
-    ExecutionContext* m_executionContext;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
     HashSet<OwnPtr<Loader> > m_loaders;
     bool m_isStopped;
 };

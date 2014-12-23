@@ -383,4 +383,9 @@ void FetchManager::onLoaderFinished(Loader* loader)
     OwnPtr<Loader> p = m_loaders.take(loader);
 }
 
+void FetchManager::trace(Visitor* visitor)
+{
+    visitor->trace(m_executionContext);
+}
+
 } // namespace blink
