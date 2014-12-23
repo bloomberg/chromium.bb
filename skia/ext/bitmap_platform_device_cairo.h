@@ -65,7 +65,7 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   //
   // This object takes ownership of @cairo.
   BitmapPlatformDevice(const SkBitmap& other, cairo_t* cairo);
-  virtual ~BitmapPlatformDevice();
+  ~BitmapPlatformDevice() override;
 
   // Constructs a device with size |width| * |height| with contents initialized
   // to zero. |is_opaque| should be set if the caller knows the bitmap will be
@@ -84,15 +84,15 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
                                       uint8_t* data);
 
   // Overridden from SkBaseDevice:
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&) override;
+  void setMatrixClip(const SkMatrix& transform,
+                     const SkRegion& region,
+                     const SkClipStack&) override;
 
   // Overridden from PlatformDevice:
-  virtual cairo_t* BeginPlatformPaint() override;
+  cairo_t* BeginPlatformPaint() override;
 
  protected:
-  virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info)
-    override;
+  SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info) override;
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

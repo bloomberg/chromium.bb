@@ -47,7 +47,15 @@ class TestDiscardableShader : public SkShader {
 
   void flatten(SkWriteBuffer&) const override {}
 
-  SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestDiscardableShader);
+  // Manual expansion of SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS to
+  // satisfy Chrome's style checker, since Skia isn't ready to make the C++11
+  // leap yet.
+ private:
+  static SkFlattenable* CreateProc(SkReadBuffer&);
+  friend class SkPrivateEffectInitializer;
+
+ public:
+  Factory getFactory() const override { return CreateProc; }
 
  private:
   SkBitmap bitmap_;
