@@ -26,9 +26,9 @@ TEST(Functions, Defined) {
 
   // Define a value that's itself a scope value.
   const char kDef[] = "def";  // Defined variable name.
-  setup.scope()->SetValue(kDef,
-      Value(NULL, scoped_ptr<Scope>(new Scope(setup.scope()))),
-      NULL);
+  setup.scope()->SetValue(
+      kDef, Value(nullptr, scoped_ptr<Scope>(new Scope(setup.scope()))),
+      nullptr);
 
   // Test the defined identifier.
   Token defined_token(Location(), Token::IDENTIFIER, kDef);

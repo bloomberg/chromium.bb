@@ -20,7 +20,7 @@ class GetTargetOutputsTest : public testing::Test {
   Value GetTargetOutputs(const std::string& name, Err* err) {
     FunctionCallNode function;
     std::vector<Value> args;
-    args.push_back(Value(NULL, name));
+    args.push_back(Value(nullptr, name));
     return functions::RunGetTargetOutputs(setup_.scope(), &function, args, err);
   }
 

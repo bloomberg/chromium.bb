@@ -25,7 +25,7 @@ class MockLoader : public Loader {
   void ToolchainLoaded(const Toolchain* toolchain) override {}
   Label GetDefaultToolchain() const override { return Label(); }
   const Settings* GetToolchainSettings(const Label& label) const override {
-    return NULL;
+    return nullptr;
   }
 
   bool HasLoadedNone() const {

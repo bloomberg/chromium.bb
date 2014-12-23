@@ -12,7 +12,7 @@ Value::Value()
     : type_(NONE),
       boolean_value_(false),
       int_value_(0),
-      origin_(NULL) {
+      origin_(nullptr) {
 }
 
 Value::Value(const ParseNode* origin, Type t)

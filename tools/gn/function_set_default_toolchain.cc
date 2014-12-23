@@ -57,7 +57,7 @@ Value RunSetDefaultToolchain(Scope* scope,
   // When the loader is expecting the default toolchain to be set, it will set
   // this key on the scope to point to the destination.
   Label* default_toolchain_dest = static_cast<Label*>(
-      scope->GetProperty(Loader::kDefaultToolchainKey, NULL));
+      scope->GetProperty(Loader::kDefaultToolchainKey, nullptr));
   if (!default_toolchain_dest)
     return Value();
 

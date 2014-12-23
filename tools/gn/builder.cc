@@ -110,16 +110,16 @@ void Builder::ItemDefined(scoped_ptr<Item> item) {
 const Item* Builder::GetItem(const Label& label) const {
   const BuilderRecord* record = GetRecord(label);
   if (!record)
-    return NULL;
+    return nullptr;
   return record->item();
 }
 
 const Toolchain* Builder::GetToolchain(const Label& label) const {
   const BuilderRecord* record = GetRecord(label);
   if (!record)
-    return NULL;
+    return nullptr;
   if (!record->item())
-    return NULL;
+    return nullptr;
   return record->item()->AsToolchain();
 }
 
@@ -150,7 +150,7 @@ const BuilderRecord* Builder::GetRecord(const Label& label) const {
 BuilderRecord* Builder::GetRecord(const Label& label) {
   RecordMap::iterator found = records_.find(label);
   if (found == records_.end())
-    return NULL;
+    return nullptr;
   return found->second;
 }
 
@@ -276,7 +276,7 @@ BuilderRecord* Builder::GetOrCreateRecordOfType(const Label& label,
       err->AppendSubErr(Err(record->originally_referenced_from(),
                             std::string()));
     }
-    return NULL;
+    return nullptr;
   }
 
   return record;
@@ -291,14 +291,14 @@ BuilderRecord* Builder::GetResolvedRecordOfType(const Label& label,
     *err = Err(origin, "Item not found",
         "\"" + label.GetUserVisibleName(false) + "\" doesn't\n"
         "refer to an existent thing.");
-    return NULL;
+    return nullptr;
   }
 
   const Item* item = record->item();
   if (!item) {
     *err = Err(origin, "Item not resolved.",
         "\"" + label.GetUserVisibleName(false) + "\" hasn't been resolved.\n");
-    return NULL;
+    return nullptr;
   }
 
   if (!BuilderRecord::IsItemOfType(item, type)) {
@@ -307,7 +307,7 @@ BuilderRecord* Builder::GetResolvedRecordOfType(const Label& label,
         "\"" + label.GetUserVisibleName(false) + "\" refers to a " +
         item->GetItemTypeName() + " instead of a " +
         BuilderRecord::GetNameForType(type) + ".");
-    return NULL;
+    return nullptr;
   }
   return record;
 }

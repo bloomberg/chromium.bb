@@ -45,42 +45,42 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
 };
 
 const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
-  NULL,  // SUBSTITUTION_LITERAL
+    nullptr,  // SUBSTITUTION_LITERAL
 
-  "in",  // SUBSTITUTION_SOURCE
-  "out",  // SUBSTITUTION_OUTPUT
+    "in",   // SUBSTITUTION_SOURCE
+    "out",  // SUBSTITUTION_OUTPUT
 
-  "source_name_part",  // SUBSTITUTION_NAME_PART
-  "source_file_part",  // SUBSTITUTION_FILE_PART
-  "source_dir",  // SUBSTITUTION_SOURCE_DIR
-  "source_root_relative_dir",  // SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR
-  "source_gen_dir",  // SUBSTITUTION_SOURCE_GEN_DIR
-  "source_out_dir",  // SUBSTITUTION_SOURCE_OUT_DIR
+    "source_name_part",          // SUBSTITUTION_NAME_PART
+    "source_file_part",          // SUBSTITUTION_FILE_PART
+    "source_dir",                // SUBSTITUTION_SOURCE_DIR
+    "source_root_relative_dir",  // SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR
+    "source_gen_dir",            // SUBSTITUTION_SOURCE_GEN_DIR
+    "source_out_dir",            // SUBSTITUTION_SOURCE_OUT_DIR
 
-  "label",  // SUBSTITUTION_LABEL
-  "root_gen_dir",  // SUBSTITUTION_ROOT_GEN_DIR
-  "root_out_dir",  // SUBSTITUTION_ROOT_OUT_DIR
-  "target_gen_dir",  // SUBSTITUTION_TARGET_GEN_DIR
-  "target_out_dir",  // SUBSTITUTION_TARGET_OUT_DIR
-  "target_output_name",  // SUBSTITUTION_TARGET_OUTPUT_NAME
+    "label",               // SUBSTITUTION_LABEL
+    "root_gen_dir",        // SUBSTITUTION_ROOT_GEN_DIR
+    "root_out_dir",        // SUBSTITUTION_ROOT_OUT_DIR
+    "target_gen_dir",      // SUBSTITUTION_TARGET_GEN_DIR
+    "target_out_dir",      // SUBSTITUTION_TARGET_OUT_DIR
+    "target_output_name",  // SUBSTITUTION_TARGET_OUTPUT_NAME
 
-  "cflags",  // SUBSTITUTION_CFLAGS
-  "cflags_c",  // SUBSTITUTION_CFLAGS_C
-  "cflags_cc",  // SUBSTITUTION_CFLAGS_CC
-  "cflags_objc",  // SUBSTITUTION_CFLAGS_OBJC
-  "cflags_objcc",  // SUBSTITUTION_CFLAGS_OBJCC
-  "defines",  // SUBSTITUTION_DEFINES
-  "include_dirs",  // SUBSTITUTION_INCLUDE_DIRS
+    "cflags",        // SUBSTITUTION_CFLAGS
+    "cflags_c",      // SUBSTITUTION_CFLAGS_C
+    "cflags_cc",     // SUBSTITUTION_CFLAGS_CC
+    "cflags_objc",   // SUBSTITUTION_CFLAGS_OBJC
+    "cflags_objcc",  // SUBSTITUTION_CFLAGS_OBJCC
+    "defines",       // SUBSTITUTION_DEFINES
+    "include_dirs",  // SUBSTITUTION_INCLUDE_DIRS
 
-  // LINKER_INPUTS expands to the same Ninja var as SUBSTITUTION_SOURCE. These
-  // are used in different contexts and are named differently to keep things
-  // clear, but they both expand to the "set of input files" for a build rule.
-  "in",  // SUBSTITUTION_LINKER_INPUTS
-  "in_newline",  // SUBSTITUTION_LINKER_INPUTS_NEWLINE
-  "ldflags",  // SUBSTITUTION_LDFLAGS
-  "libs",  // SUBSTITUTION_LIBS
-  "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
-  "solibs",  // SUBSTITUTION_SOLIBS
+    // LINKER_INPUTS expands to the same Ninja var as SUBSTITUTION_SOURCE. These
+    // are used in different contexts and are named differently to keep things
+    // clear, but they both expand to the "set of input files" for a build rule.
+    "in",                // SUBSTITUTION_LINKER_INPUTS
+    "in_newline",        // SUBSTITUTION_LINKER_INPUTS_NEWLINE
+    "ldflags",           // SUBSTITUTION_LDFLAGS
+    "libs",              // SUBSTITUTION_LIBS
+    "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
+    "solibs",            // SUBSTITUTION_SOLIBS
 };
 
 SubstitutionBits::SubstitutionBits() : used() {

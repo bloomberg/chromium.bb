@@ -11,7 +11,7 @@ namespace {
 void ParsePattern(const std::string& s, std::vector<Pattern::Subrange>* out) {
   // Set when the last subrange is a literal so we can just append when we
   // find another literal.
-  Pattern::Subrange* last_literal = NULL;
+  Pattern::Subrange* last_literal = nullptr;
 
   for (size_t i = 0; i < s.size(); i++) {
     if (s[i] == '*') {
@@ -19,13 +19,13 @@ void ParsePattern(const std::string& s, std::vector<Pattern::Subrange>* out) {
       if (out->size() == 0 ||
           (*out)[out->size() - 1].type != Pattern::Subrange::ANYTHING)
         out->push_back(Pattern::Subrange(Pattern::Subrange::ANYTHING));
-      last_literal = NULL;
+      last_literal = nullptr;
     } else if (s[i] == '\\') {
       if (i < s.size() - 1 && s[i + 1] == 'b') {
         // "\b" means path boundary.
         i++;
         out->push_back(Pattern::Subrange(Pattern::Subrange::PATH_BOUNDARY));
-        last_literal = NULL;
+        last_literal = nullptr;
       } else {
         // Backslash + anything else means that literal char.
         if (!last_literal) {

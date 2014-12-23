@@ -39,7 +39,7 @@ TEST(Operators, SourcesAppend) {
 
   // Set up "sources" with an empty list.
   const char sources[] = "sources";
-  setup.scope()->SetValue(sources, Value(NULL, Value::LIST), NULL);
+  setup.scope()->SetValue(sources, Value(nullptr, Value::LIST), nullptr);
 
   // Set up the operator.
   BinaryOpNode node;
@@ -102,7 +102,7 @@ TEST(Operators, ListAppend) {
 
   // Set up "foo" with an empty list.
   const char foo[] = "foo";
-  setup.scope()->SetValue(foo, Value(NULL, Value::LIST), NULL);
+  setup.scope()->SetValue(foo, Value(nullptr, Value::LIST), nullptr);
 
   // Set up the operator.
   BinaryOpNode node;

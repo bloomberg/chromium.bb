@@ -38,17 +38,17 @@ ParseNode::ParseNode() {
 ParseNode::~ParseNode() {
 }
 
-const AccessorNode* ParseNode::AsAccessor() const { return NULL; }
-const BinaryOpNode* ParseNode::AsBinaryOp() const { return NULL; }
-const BlockCommentNode* ParseNode::AsBlockComment() const { return NULL; }
-const BlockNode* ParseNode::AsBlock() const { return NULL; }
-const ConditionNode* ParseNode::AsConditionNode() const { return NULL; }
-const EndNode* ParseNode::AsEnd() const { return NULL; }
-const FunctionCallNode* ParseNode::AsFunctionCall() const { return NULL; }
-const IdentifierNode* ParseNode::AsIdentifier() const { return NULL; }
-const ListNode* ParseNode::AsList() const { return NULL; }
-const LiteralNode* ParseNode::AsLiteral() const { return NULL; }
-const UnaryOpNode* ParseNode::AsUnaryOp() const { return NULL; }
+const AccessorNode* ParseNode::AsAccessor() const { return nullptr; }
+const BinaryOpNode* ParseNode::AsBinaryOp() const { return nullptr; }
+const BlockCommentNode* ParseNode::AsBlockComment() const { return nullptr; }
+const BlockNode* ParseNode::AsBlock() const { return nullptr; }
+const ConditionNode* ParseNode::AsConditionNode() const { return nullptr; }
+const EndNode* ParseNode::AsEnd() const { return nullptr; }
+const FunctionCallNode* ParseNode::AsFunctionCall() const { return nullptr; }
+const IdentifierNode* ParseNode::AsIdentifier() const { return nullptr; }
+const ListNode* ParseNode::AsList() const { return nullptr; }
+const LiteralNode* ParseNode::AsLiteral() const { return nullptr; }
+const UnaryOpNode* ParseNode::AsUnaryOp() const { return nullptr; }
 
 Comments* ParseNode::comments_mutable() {
   if (!comments_)
@@ -160,7 +160,7 @@ Value AccessorNode::ExecuteScopeAccess(Scope* scope, Err* err) const {
   // not legal to const cast it away since the root scope will be in readonly
   // mode and being accessed from multiple threads without locking.) So this
   // code handles both cases.
-  const Value* result = NULL;
+  const Value* result = nullptr;
 
   // Look up the value in the scope named by "base_".
   Value* mutable_base_value = scope->GetMutableValue(base_.value(), true);

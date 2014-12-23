@@ -325,7 +325,7 @@ int Printer::CurrentColumn() const {
 
 int Printer::CurrentLine() const {
   int count = 1;
-  for (const char* p = output_.c_str(); (p = strchr(p, '\n')) != NULL;) {
+  for (const char* p = output_.c_str(); (p = strchr(p, '\n')) != nullptr;) {
     ++count;
     ++p;
   }
@@ -555,7 +555,7 @@ int Printer::Expr(const ParseNode* root,
       Print(" else ");
       // If it's a block it's a bare 'else', otherwise it's an 'else if'. See
       // ConditionNode::Execute.
-      bool is_else_if = condition->if_false()->AsBlock() == NULL;
+      bool is_else_if = condition->if_false()->AsBlock() == nullptr;
       if (is_else_if) {
         Expr(condition->if_false(), kPrecedenceLowest, std::string());
       } else {
@@ -897,9 +897,9 @@ std::string ReadStdin() {
   char buffer[kBufferSize];
   std::string result;
   while (true) {
-    char* input = NULL;
+    char* input = nullptr;
     input = fgets(buffer, kBufferSize, stdin);
-    if (input == NULL && feof(stdin))
+    if (input == nullptr && feof(stdin))
       return result;
     int length = static_cast<int>(strlen(buffer));
     if (length == 0)

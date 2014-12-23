@@ -286,8 +286,8 @@ TEST(Scope, GetMutableValue) {
 
 TEST(Scope, RemovePrivateIdentifiers) {
   TestWithScope setup;
-  setup.scope()->SetValue("a", Value(NULL, true), NULL);
-  setup.scope()->SetValue("_b", Value(NULL, true), NULL);
+  setup.scope()->SetValue("a", Value(nullptr, true), nullptr);
+  setup.scope()->SetValue("_b", Value(nullptr, true), nullptr);
 
   setup.scope()->RemovePrivateIdentifiers();
   EXPECT_TRUE(setup.scope()->GetValue("a"));

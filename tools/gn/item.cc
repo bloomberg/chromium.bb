@@ -8,20 +8,30 @@
 #include "tools/gn/settings.h"
 
 Item::Item(const Settings* settings, const Label& label)
-    : settings_(settings),
-      label_(label),
-      defined_from_(NULL) {
+    : settings_(settings), label_(label), defined_from_(nullptr) {
 }
 
 Item::~Item() {
 }
 
-Config* Item::AsConfig() { return NULL; }
-const Config* Item::AsConfig() const { return NULL; }
-Target* Item::AsTarget() { return NULL; }
-const Target* Item::AsTarget() const { return NULL; }
-Toolchain* Item::AsToolchain() { return NULL; }
-const Toolchain* Item::AsToolchain() const { return NULL; }
+Config* Item::AsConfig() {
+  return nullptr;
+}
+const Config* Item::AsConfig() const {
+  return nullptr;
+}
+Target* Item::AsTarget() {
+  return nullptr;
+}
+const Target* Item::AsTarget() const {
+  return nullptr;
+}
+Toolchain* Item::AsToolchain() {
+  return nullptr;
+}
+const Toolchain* Item::AsToolchain() const {
+  return nullptr;
+}
 
 std::string Item::GetItemTypeName() const {
   if (AsConfig())

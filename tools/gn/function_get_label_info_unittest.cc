@@ -19,8 +19,8 @@ class GetLabelInfoTest : public testing::Test {
     FunctionCallNode function;
 
     std::vector<Value> args;
-    args.push_back(Value(NULL, label));
-    args.push_back(Value(NULL, what));
+    args.push_back(Value(nullptr, label));
+    args.push_back(Value(nullptr, what));
 
     Err err;
     Value result = functions::RunGetLabelInfo(setup_.scope(), &function,

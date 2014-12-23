@@ -14,9 +14,9 @@
 namespace commands {
 
 CommandInfo::CommandInfo()
-    : help_short(NULL),
-      help(NULL),
-      runner(NULL) {
+    : help_short(nullptr),
+      help(nullptr),
+      runner(nullptr) {
 }
 
 CommandInfo::CommandInfo(const char* in_help_short,
@@ -54,21 +54,21 @@ const Target* ResolveTargetFromCommandLineString(
     const std::string& label_string) {
   // Need to resolve the label after we know the default toolchain.
   Label default_toolchain = setup->loader()->default_toolchain_label();
-  Value arg_value(NULL, label_string);
+  Value arg_value(nullptr, label_string);
   Err err;
   Label label = Label::Resolve(SourceDirForCurrentDirectory(
                                    setup->build_settings().root_path()),
                                default_toolchain, arg_value, &err);
   if (err.has_error()) {
     err.PrintToStdout();
-    return NULL;
+    return nullptr;
   }
 
   const Item* item = setup->builder()->GetItem(label);
   if (!item) {
     Err(Location(), "Label not found.",
         label.GetUserVisibleName(false) + " not found.").PrintToStdout();
-    return NULL;
+    return nullptr;
   }
 
   const Target* target = item->AsTarget();
@@ -77,7 +77,7 @@ const Target* ResolveTargetFromCommandLineString(
         "The \"" + label.GetUserVisibleName(false) + "\" thing\n"
         "is not a target. Somebody should probably implement this command for "
         "other\nitem types.");
-    return NULL;
+    return nullptr;
   }
 
   return target;
@@ -88,7 +88,7 @@ bool ResolveTargetsFromCommandLinePattern(
     const std::string& label_pattern,
     bool all_toolchains,
     std::vector<const Target*>* matches) {
-  Value pattern_value(NULL, label_pattern);
+  Value pattern_value(nullptr, label_pattern);
 
   Err err;
   LabelPattern pattern = LabelPattern::GetPattern(

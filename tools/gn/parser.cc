@@ -44,40 +44,40 @@ enum Precedence {
 
 // Indexed by Token::Type.
 ParserHelper Parser::expressions_[] = {
-  {NULL, NULL, -1},                                             // INVALID
-  {&Parser::Literal, NULL, -1},                                 // INTEGER
-  {&Parser::Literal, NULL, -1},                                 // STRING
-  {&Parser::Literal, NULL, -1},                                 // TRUE_TOKEN
-  {&Parser::Literal, NULL, -1},                                 // FALSE_TOKEN
-  {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // EQUAL
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_SUM},              // PLUS
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_SUM},              // MINUS
-  {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // PLUS_EQUALS
-  {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // MINUS_EQUALS
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_EQUALITY},         // EQUAL_EQUAL
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_EQUALITY},         // NOT_EQUAL
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // LESS_EQUAL
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // GREATER_EQUAL
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // LESS_THAN
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // GREATER_THAN
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_AND},              // BOOLEAN_AND
-  {NULL, &Parser::BinaryOperator, PRECEDENCE_OR},               // BOOLEAN_OR
-  {&Parser::Not, NULL, -1},                                     // BANG
-  {NULL, &Parser::DotOperator, PRECEDENCE_DOT},                 // DOT
-  {&Parser::Group, NULL, -1},                                   // LEFT_PAREN
-  {NULL, NULL, -1},                                             // RIGHT_PAREN
-  {&Parser::List, &Parser::Subscript, PRECEDENCE_CALL},         // LEFT_BRACKET
-  {NULL, NULL, -1},                                             // RIGHT_BRACKET
-  {NULL, NULL, -1},                                             // LEFT_BRACE
-  {NULL, NULL, -1},                                             // RIGHT_BRACE
-  {NULL, NULL, -1},                                             // IF
-  {NULL, NULL, -1},                                             // ELSE
-  {&Parser::Name, &Parser::IdentifierOrCall, PRECEDENCE_CALL},  // IDENTIFIER
-  {NULL, NULL, -1},                                             // COMMA
-  {NULL, NULL, -1},                   // UNCLASSIFIED_COMMENT
-  {NULL, NULL, -1},                   // LINE_COMMENT
-  {NULL, NULL, -1},                   // SUFFIX_COMMENT
-  {&Parser::BlockComment, NULL, -1},  // BLOCK_COMMENT
+    {nullptr, nullptr, -1},                                   // INVALID
+    {&Parser::Literal, nullptr, -1},                          // INTEGER
+    {&Parser::Literal, nullptr, -1},                          // STRING
+    {&Parser::Literal, nullptr, -1},                          // TRUE_TOKEN
+    {&Parser::Literal, nullptr, -1},                          // FALSE_TOKEN
+    {nullptr, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},    // EQUAL
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_SUM},       // PLUS
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_SUM},       // MINUS
+    {nullptr, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},    // PLUS_EQUALS
+    {nullptr, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},    // MINUS_EQUALS
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_EQUALITY},  // EQUAL_EQUAL
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_EQUALITY},  // NOT_EQUAL
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_RELATION},  // LESS_EQUAL
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_RELATION},  // GREATER_EQUAL
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_RELATION},  // LESS_THAN
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_RELATION},  // GREATER_THAN
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_AND},       // BOOLEAN_AND
+    {nullptr, &Parser::BinaryOperator, PRECEDENCE_OR},        // BOOLEAN_OR
+    {&Parser::Not, nullptr, -1},                              // BANG
+    {nullptr, &Parser::DotOperator, PRECEDENCE_DOT},          // DOT
+    {&Parser::Group, nullptr, -1},                            // LEFT_PAREN
+    {nullptr, nullptr, -1},                                   // RIGHT_PAREN
+    {&Parser::List, &Parser::Subscript, PRECEDENCE_CALL},     // LEFT_BRACKET
+    {nullptr, nullptr, -1},                                   // RIGHT_BRACKET
+    {nullptr, nullptr, -1},                                   // LEFT_BRACE
+    {nullptr, nullptr, -1},                                   // RIGHT_BRACE
+    {nullptr, nullptr, -1},                                   // IF
+    {nullptr, nullptr, -1},                                   // ELSE
+    {&Parser::Name, &Parser::IdentifierOrCall, PRECEDENCE_CALL},  // IDENTIFIER
+    {nullptr, nullptr, -1},                                       // COMMA
+    {nullptr, nullptr, -1},                // UNCLASSIFIED_COMMENT
+    {nullptr, nullptr, -1},                // LINE_COMMENT
+    {nullptr, nullptr, -1},                // SUFFIX_COMMENT
+    {&Parser::BlockComment, nullptr, -1},  // BLOCK_COMMENT
 };
 
 Parser::Parser(const std::vector<Token>& tokens, Err* err)
@@ -195,7 +195,7 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
   Token token = Consume();
   PrefixFunc prefix = expressions_[token.type()].prefix;
 
-  if (prefix == NULL) {
+  if (prefix == nullptr) {
     *err_ = Err(token,
                 std::string("Unexpected token '") + token.value().as_string() +
                     std::string("'"));
@@ -210,7 +210,7 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
          precedence <= expressions_[cur_token().type()].precedence) {
     token = Consume();
     InfixFunc infix = expressions_[token.type()].infix;
-    if (infix == NULL) {
+    if (infix == nullptr) {
       *err_ = Err(token,
                   std::string("Unexpected token '") +
                       token.value().as_string() + std::string("'"));
@@ -321,7 +321,7 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
 
 scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
                                          Token token) {
-  if (left->AsIdentifier() == NULL) {
+  if (left->AsIdentifier() == nullptr) {
     *err_ = Err(left.get(), "Left-hand side of assignment must be identifier.");
     return scoped_ptr<ParseNode>();
   }
@@ -337,7 +337,7 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
                                         Token token) {
   // TODO: Maybe support more complex expressions like a[0][0]. This would
   // require work on the evaluator too.
-  if (left->AsIdentifier() == NULL) {
+  if (left->AsIdentifier() == nullptr) {
     *err_ = Err(left.get(), "May only subscript identifiers.",
         "The thing on the left hand side of the [] must be an identifier\n"
         "and not an expression. If you need this, you'll have to assign the\n"
@@ -354,7 +354,7 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
 
 scoped_ptr<ParseNode> Parser::DotOperator(scoped_ptr<ParseNode> left,
                                           Token token) {
-  if (left->AsIdentifier() == NULL) {
+  if (left->AsIdentifier() == nullptr) {
     *err_ = Err(left.get(), "May only use \".\" for identifiers.",
         "The thing on the left hand side of the dot must be an identifier\n"
         "and not an expression. If you need this, you'll have to assign the\n"

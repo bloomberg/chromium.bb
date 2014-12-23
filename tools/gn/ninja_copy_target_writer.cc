@@ -25,23 +25,23 @@ NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
 void NinjaCopyTargetWriter::Run() {
   const Tool* copy_tool = target_->toolchain()->GetTool(Toolchain::TYPE_COPY);
   if (!copy_tool) {
-    g_scheduler->FailWithError(Err(NULL,
-        "Copy tool not defined",
+    g_scheduler->FailWithError(Err(
+        nullptr, "Copy tool not defined",
         "The toolchain " +
-        target_->toolchain()->label().GetUserVisibleName(false) +
-        "\n used by target " + target_->label().GetUserVisibleName(false) +
-        "\n doesn't define a \"copy\" tool."));
+            target_->toolchain()->label().GetUserVisibleName(false) +
+            "\n used by target " + target_->label().GetUserVisibleName(false) +
+            "\n doesn't define a \"copy\" tool."));
     return;
   }
 
   const Tool* stamp_tool = target_->toolchain()->GetTool(Toolchain::TYPE_STAMP);
   if (!stamp_tool) {
-    g_scheduler->FailWithError(Err(NULL,
-        "Copy tool not defined",
+    g_scheduler->FailWithError(Err(
+        nullptr, "Copy tool not defined",
         "The toolchain " +
-        target_->toolchain()->label().GetUserVisibleName(false) +
-        "\n used by target " + target_->label().GetUserVisibleName(false) +
-        "\n doesn't define a \"stamp\" tool."));
+            target_->toolchain()->label().GetUserVisibleName(false) +
+            "\n used by target " + target_->label().GetUserVisibleName(false) +
+            "\n doesn't define a \"stamp\" tool."));
     return;
   }
 

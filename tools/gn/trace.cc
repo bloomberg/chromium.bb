@@ -42,10 +42,10 @@ class TraceLog {
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };
 
-TraceLog* trace_log = NULL;
+TraceLog* trace_log = nullptr;
 
 struct Coalesced {
-  Coalesced() : name_ptr(NULL), total_duration(0.0), count(0) {}
+  Coalesced() : name_ptr(nullptr), total_duration(0.0), count(0) {}
 
   const std::string* name_ptr;  // Pointer to a string with the name in it.
   double total_duration;
@@ -120,8 +120,7 @@ TraceItem::~TraceItem() {
 }
 
 ScopedTrace::ScopedTrace(TraceItem::Type t, const std::string& name)
-    : item_(NULL),
-      done_(false) {
+    : item_(nullptr), done_(false) {
   if (trace_log) {
     item_ = new TraceItem(t, name, base::PlatformThread::CurrentId());
     item_->set_begin(base::TimeTicks::HighResNow());
@@ -129,8 +128,7 @@ ScopedTrace::ScopedTrace(TraceItem::Type t, const std::string& name)
 }
 
 ScopedTrace::ScopedTrace(TraceItem::Type t, const Label& label)
-    : item_(NULL),
-      done_(false) {
+    : item_(nullptr), done_(false) {
   if (trace_log) {
     item_ = new TraceItem(t, label.GetUserVisibleName(false),
                           base::PlatformThread::CurrentId());

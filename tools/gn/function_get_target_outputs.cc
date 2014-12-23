@@ -86,7 +86,7 @@ Value RunGetTargetOutputs(Scope* scope,
   // Find the referenced target. The targets previously encountered in this
   // scope will have been stashed in the item collector (they'll be dispatched
   // when this file is done running) so we can look through them.
-  const Target* target = NULL;
+  const Target* target = nullptr;
   Scope::ItemVector* collector = scope->GetItemCollector();
   if (!collector) {
     *err = Err(function, "No targets defined in this context.");

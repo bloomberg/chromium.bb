@@ -303,7 +303,7 @@ Value RunToolchain(Scope* scope,
   Scope block_scope(scope);
   block_scope.SetProperty(&kToolchainPropertyKey, toolchain.get());
   block->ExecuteBlockInScope(&block_scope, err);
-  block_scope.SetProperty(&kToolchainPropertyKey, NULL);
+  block_scope.SetProperty(&kToolchainPropertyKey, nullptr);
   if (err->has_error())
     return Value();
 
@@ -722,7 +722,7 @@ Value RunTool(Scope* scope,
   // Find the toolchain definition we're executing inside of. The toolchain
   // function will set a property pointing to it that we'll pick up.
   Toolchain* toolchain = reinterpret_cast<Toolchain*>(
-      scope->GetProperty(&kToolchainPropertyKey, NULL));
+      scope->GetProperty(&kToolchainPropertyKey, nullptr));
   if (!toolchain) {
     *err = Err(function->function(), "tool() called outside of toolchain().",
         "The tool() function can only be used inside a toolchain() "
@@ -748,8 +748,8 @@ Value RunTool(Scope* scope,
   // Figure out which validator to use for the substitution pattern for this
   // tool type. There are different validators for the "outputs" than for the
   // rest of the strings.
-  bool (*subst_validator)(SubstitutionType) = NULL;
-  bool (*subst_output_validator)(SubstitutionType) = NULL;
+  bool (*subst_validator)(SubstitutionType) = nullptr;
+  bool (*subst_output_validator)(SubstitutionType) = nullptr;
   if (IsCompilerTool(tool_type)) {
     subst_validator = &IsValidCompilerSubstitution;
     subst_output_validator = &IsValidCompilerOutputsSubstitution;
@@ -889,7 +889,7 @@ Value RunToolchainArgs(Scope* scope,
   // Find the toolchain definition we're executing inside of. The toolchain
   // function will set a property pointing to it that we'll pick up.
   Toolchain* toolchain = reinterpret_cast<Toolchain*>(
-      scope->GetProperty(&kToolchainPropertyKey, NULL));
+      scope->GetProperty(&kToolchainPropertyKey, nullptr));
   if (!toolchain) {
     *err = Err(function->function(),
                "toolchain_args() called outside of toolchain().",

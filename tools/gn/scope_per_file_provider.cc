@@ -41,12 +41,13 @@ const Value* ScopePerFileProvider::GetProgrammaticValue(
     if (ident == variables::kTargetOutDir)
       return GetTargetOutDir();
   }
-  return NULL;
+  return nullptr;
 }
 
 const Value* ScopePerFileProvider::GetCurrentToolchain() {
   if (!current_toolchain_) {
-    current_toolchain_.reset(new Value(NULL,
+    current_toolchain_.reset(new Value(
+        nullptr,
         scope_->settings()->toolchain_label().GetUserVisibleName(false)));
   }
   return current_toolchain_.get();
@@ -54,7 +55,8 @@ const Value* ScopePerFileProvider::GetCurrentToolchain() {
 
 const Value* ScopePerFileProvider::GetDefaultToolchain() {
   if (!default_toolchain_) {
-    default_toolchain_.reset(new Value(NULL,
+    default_toolchain_.reset(new Value(
+        nullptr,
         scope_->settings()->default_toolchain_label().GetUserVisibleName(
             false)));
   }
@@ -63,7 +65,8 @@ const Value* ScopePerFileProvider::GetDefaultToolchain() {
 
 const Value* ScopePerFileProvider::GetPythonPath() {
   if (!python_path_) {
-    python_path_.reset(new Value(NULL,
+    python_path_.reset(new Value(
+        nullptr,
         FilePathToUTF8(scope_->settings()->build_settings()->python_path())));
   }
   return python_path_.get();
@@ -71,15 +74,17 @@ const Value* ScopePerFileProvider::GetPythonPath() {
 
 const Value* ScopePerFileProvider::GetRootBuildDir() {
   if (!root_build_dir_) {
-    root_build_dir_.reset(new Value(NULL, DirectoryWithNoLastSlash(
-        scope_->settings()->build_settings()->build_dir())));
+    root_build_dir_.reset(new Value(
+        nullptr, DirectoryWithNoLastSlash(
+                     scope_->settings()->build_settings()->build_dir())));
   }
   return root_build_dir_.get();
 }
 
 const Value* ScopePerFileProvider::GetRootGenDir() {
   if (!root_gen_dir_) {
-    root_gen_dir_.reset(new Value(NULL,
+    root_gen_dir_.reset(new Value(
+        nullptr,
         DirectoryWithNoLastSlash(GetToolchainGenDir(scope_->settings()))));
   }
   return root_gen_dir_.get();
@@ -87,7 +92,8 @@ const Value* ScopePerFileProvider::GetRootGenDir() {
 
 const Value* ScopePerFileProvider::GetRootOutDir() {
   if (!root_out_dir_) {
-    root_out_dir_.reset(new Value(NULL,
+    root_out_dir_.reset(new Value(
+        nullptr,
         DirectoryWithNoLastSlash(GetToolchainOutputDir(scope_->settings()))));
   }
   return root_out_dir_.get();
@@ -95,16 +101,16 @@ const Value* ScopePerFileProvider::GetRootOutDir() {
 
 const Value* ScopePerFileProvider::GetTargetGenDir() {
   if (!target_gen_dir_) {
-    target_gen_dir_.reset(new Value(NULL,
-        DirectoryWithNoLastSlash(GetCurrentGenDir(scope_))));
+    target_gen_dir_.reset(
+        new Value(nullptr, DirectoryWithNoLastSlash(GetCurrentGenDir(scope_))));
   }
   return target_gen_dir_.get();
 }
 
 const Value* ScopePerFileProvider::GetTargetOutDir() {
   if (!target_out_dir_) {
-    target_out_dir_.reset(new Value(NULL,
-        DirectoryWithNoLastSlash(GetCurrentOutputDir(scope_))));
+    target_out_dir_.reset(new Value(
+        nullptr, DirectoryWithNoLastSlash(GetCurrentOutputDir(scope_))));
   }
   return target_out_dir_.get();
 }

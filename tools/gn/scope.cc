@@ -26,27 +26,27 @@ bool IsPrivateVar(const base::StringPiece& name) {
 }  // namespace
 
 Scope::Scope(const Settings* settings)
-    : const_containing_(NULL),
-      mutable_containing_(NULL),
+    : const_containing_(nullptr),
+      mutable_containing_(nullptr),
       settings_(settings),
       mode_flags_(0),
-      item_collector_(NULL) {
+      item_collector_(nullptr) {
 }
 
 Scope::Scope(Scope* parent)
-    : const_containing_(NULL),
+    : const_containing_(nullptr),
       mutable_containing_(parent),
       settings_(parent->settings()),
       mode_flags_(0),
-      item_collector_(NULL) {
+      item_collector_(nullptr) {
 }
 
 Scope::Scope(const Scope* parent)
     : const_containing_(parent),
-      mutable_containing_(NULL),
+      mutable_containing_(nullptr),
       settings_(parent->settings()),
       mode_flags_(0),
-      item_collector_(NULL) {
+      item_collector_(nullptr) {
 }
 
 Scope::~Scope() {
@@ -75,7 +75,7 @@ const Value* Scope::GetValue(const base::StringPiece& ident,
     return const_containing_->GetValue(ident);
   if (mutable_containing_)
     return mutable_containing_->GetValue(ident, counts_as_used);
-  return NULL;
+  return nullptr;
 }
 
 Value* Scope::GetMutableValue(const base::StringPiece& ident,
@@ -91,7 +91,7 @@ Value* Scope::GetMutableValue(const base::StringPiece& ident,
   // Search in the parent mutable scope, but not const one.
   if (mutable_containing_)
     return mutable_containing_->GetMutableValue(ident, counts_as_used);
-  return NULL;
+  return nullptr;
 }
 
 Value* Scope::GetValueForcedToCurrentScope(const base::StringPiece& ident,
@@ -108,7 +108,7 @@ Value* Scope::GetValueForcedToCurrentScope(const base::StringPiece& ident,
       return SetValue(ident, *in_containing, set_node);
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 const Value* Scope::GetValue(const base::StringPiece& ident) const {
@@ -117,7 +117,7 @@ const Value* Scope::GetValue(const base::StringPiece& ident) const {
     return &found->second.value;
   if (containing())
     return containing()->GetValue(ident);
-  return NULL;
+  return nullptr;
 }
 
 Value* Scope::SetValue(const base::StringPiece& ident,
@@ -163,7 +163,7 @@ const Template* Scope::GetTemplate(const std::string& name) const {
     return found->second.get();
   if (containing())
     return containing()->GetTemplate(name);
-  return NULL;
+  return nullptr;
 }
 
 void Scope::MarkUsed(const base::StringPiece& ident) {
@@ -353,14 +353,15 @@ scoped_ptr<Scope> Scope::MakeClosure() const {
 
   // Add in our variables and we're done.
   Err err;
-  NonRecursiveMergeTo(result.get(), options, NULL, "<SHOULDN'T HAPPEN>", &err);
+  NonRecursiveMergeTo(result.get(), options, nullptr, "<SHOULDN'T HAPPEN>",
+                      &err);
   DCHECK(!err.has_error());
   return result.Pass();
 }
 
 Scope* Scope::MakeTargetDefaults(const std::string& target_type) {
   if (GetTargetDefaults(target_type))
-    return NULL;
+    return nullptr;
 
   Scope** dest = &target_defaults_[target_type];
   if (*dest) {
@@ -377,7 +378,7 @@ const Scope* Scope::GetTargetDefaults(const std::string& target_type) const {
     return found->second;
   if (containing())
     return containing()->GetTargetDefaults(target_type);
-  return NULL;
+  return nullptr;
 }
 
 const PatternList* Scope::GetSourcesAssignmentFilter() const {
@@ -385,7 +386,7 @@ const PatternList* Scope::GetSourcesAssignmentFilter() const {
     return sources_assignment_filter_.get();
   if (containing())
     return containing()->GetSourcesAssignmentFilter();
-  return NULL;
+  return nullptr;
 }
 
 void Scope::SetProcessingBuildConfig() {
@@ -437,7 +438,7 @@ Scope::ItemVector* Scope::GetItemCollector() {
     return item_collector_;
   if (mutable_containing())
     return mutable_containing()->GetItemCollector();
-  return NULL;
+  return nullptr;
 }
 
 void Scope::SetProperty(const void* key, void* value) {
@@ -458,7 +459,7 @@ void* Scope::GetProperty(const void* key, const Scope** found_on_scope) const {
   }
   if (containing())
     return containing()->GetProperty(key, found_on_scope);
-  return NULL;
+  return nullptr;
 }
 
 void Scope::AddProvider(ProgrammaticProvider* p) {

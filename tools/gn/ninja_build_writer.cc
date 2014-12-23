@@ -64,7 +64,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
         i->first != switches::kRoot &&
         i->first != switches::kArgs) {
       std::string escaped_value =
-          EscapeString(FilePathToUTF8(i->second), escape_shell, NULL);
+          EscapeString(FilePathToUTF8(i->second), escape_shell, nullptr);
       cmdline.AppendSwitchASCII(i->first, escaped_value);
     }
   }
@@ -289,7 +289,7 @@ void NinjaBuildWriter::WritePhonyRule(const Target* target,
   ninja_escape.mode = ESCAPE_NINJA;
 
   // Escape for special chars Ninja will handle.
-  std::string escaped = EscapeString(phony_name, ninja_escape, NULL);
+  std::string escaped = EscapeString(phony_name, ninja_escape, nullptr);
 
   out_ << "build " << escaped << ": phony ";
   path_output_.WriteFile(out_, target_file);

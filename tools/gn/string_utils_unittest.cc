@@ -13,10 +13,10 @@
 namespace {
 
 bool CheckExpansionCase(const char* input, const char* expected, bool success) {
-  Scope scope(static_cast<const Settings*>(NULL));
+  Scope scope(static_cast<const Settings*>(nullptr));
   int64 one = 1;
-  scope.SetValue("one", Value(NULL, one), NULL);
-  scope.SetValue("onestring", Value(NULL, "one"), NULL);
+  scope.SetValue("one", Value(nullptr, one), nullptr);
+  scope.SetValue("onestring", Value(nullptr, "one"), nullptr);
 
   // Construct the string token, which includes the quotes.
   std::string literal_string;
@@ -25,7 +25,7 @@ bool CheckExpansionCase(const char* input, const char* expected, bool success) {
   literal_string.push_back('"');
   Token literal(Location(), Token::STRING, literal_string);
 
-  Value result(NULL, Value::STRING);
+  Value result(nullptr, Value::STRING);
   Err err;
   bool ret = ExpandStringLiteral(&scope, literal, &result, &err);
 
@@ -53,12 +53,12 @@ TEST(StringUtils, ExpandStringLiteral) {
   EXPECT_TRUE(CheckExpansionCase("$onestring${one}$one", "one11", true));
 
   // Errors
-  EXPECT_TRUE(CheckExpansionCase("hello #$", NULL, false));
-  EXPECT_TRUE(CheckExpansionCase("hello #$%", NULL, false));
-  EXPECT_TRUE(CheckExpansionCase("hello #${", NULL, false));
-  EXPECT_TRUE(CheckExpansionCase("hello #${}", NULL, false));
-  EXPECT_TRUE(CheckExpansionCase("hello #$nonexistant", NULL, false));
-  EXPECT_TRUE(CheckExpansionCase("hello #${unterminated", NULL, false));
+  EXPECT_TRUE(CheckExpansionCase("hello #$", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hello #$%", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hello #${", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hello #${}", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hello #$nonexistant", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hello #${unterminated", nullptr, false));
 
   // Unknown backslash values aren't special.
   EXPECT_TRUE(CheckExpansionCase("\\", "\\", true));

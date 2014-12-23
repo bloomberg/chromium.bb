@@ -70,7 +70,7 @@ Target::Target(const Settings* settings, const Label& label)
       complete_static_lib_(false),
       testonly_(false),
       hard_dep_(false),
-      toolchain_(NULL) {
+      toolchain_(nullptr) {
 }
 
 Target::~Target() {

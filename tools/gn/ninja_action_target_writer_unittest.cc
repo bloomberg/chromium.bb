@@ -294,7 +294,7 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
 
   SubstitutionPattern depfile;
   ASSERT_TRUE(
-      depfile.Parse("//out/Debug/gen/{{source_name_part}}.d", NULL, &err));
+      depfile.Parse("//out/Debug/gen/{{source_name_part}}.d", nullptr, &err));
   target.action_values().set_depfile(depfile);
 
   target.action_values().args() = SubstitutionList::MakeForTest(

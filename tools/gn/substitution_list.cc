@@ -59,7 +59,7 @@ SubstitutionList SubstitutionList::MakeForTest(
 
   Err err;
   SubstitutionList result;
-  result.Parse(input_strings, NULL, &err);
+  result.Parse(input_strings, nullptr, &err);
   return result;
 }
 

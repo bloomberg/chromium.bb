@@ -13,7 +13,7 @@ namespace {
 void SetCommandForTool(const std::string& cmd, Tool* tool) {
   Err err;
   SubstitutionPattern command;
-  command.Parse(cmd, NULL, &err);
+  command.Parse(cmd, nullptr, &err);
   CHECK(!err.has_error())
       << "Couldn't parse \"" << cmd << "\", " << "got " << err.message();
   tool->set_command(command);

@@ -422,7 +422,7 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
 }
 
 void NormalizePath(std::string* path) {
-  char* pathbuf = path->empty() ? NULL : &(*path)[0];
+  char* pathbuf = path->empty() ? nullptr : &(*path)[0];
 
   // top_index is the first character we can modify in the path. Anything
   // before this indicates where the path is relative to.

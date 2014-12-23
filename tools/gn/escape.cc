@@ -200,7 +200,7 @@ void EscapeStringToStream(std::ostream& out,
                           const base::StringPiece& str,
                           const EscapeOptions& options) {
   base::StackString<256> escaped;
-  EscapeStringToString(str, options, &escaped.container(), NULL);
+  EscapeStringToString(str, options, &escaped.container(), nullptr);
   if (!escaped->empty())
     out.write(escaped->data(), escaped->size());
 }

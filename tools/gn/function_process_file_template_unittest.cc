@@ -11,16 +11,16 @@ TEST(FunctionProcessFileTemplates, SingleString) {
 
   std::vector<Value> args;
 
-  Value sources(NULL, Value::LIST);
-  sources.list_value().push_back(Value(NULL, "//src/foo.txt"));
+  Value sources(nullptr, Value::LIST);
+  sources.list_value().push_back(Value(nullptr, "//src/foo.txt"));
   args.push_back(sources);
 
-  Value expansion(NULL, "1234{{source_name_part}}5678");
+  Value expansion(nullptr, "1234{{source_name_part}}5678");
   args.push_back(expansion);
 
   Err err;
-  Value result = functions::RunProcessFileTemplate(
-      setup.scope(), NULL, args, &err);
+  Value result =
+      functions::RunProcessFileTemplate(setup.scope(), nullptr, args, &err);
   EXPECT_FALSE(err.has_error());
 
   ASSERT_TRUE(result.type() == Value::LIST);
@@ -34,21 +34,21 @@ TEST(FunctionProcessFileTemplates, MultipleStrings) {
 
   std::vector<Value> args;
 
-  Value sources(NULL, Value::LIST);
-  sources.list_value().push_back(Value(NULL, "//src/one.txt"));
-  sources.list_value().push_back(Value(NULL, "//src/two.txt"));
+  Value sources(nullptr, Value::LIST);
+  sources.list_value().push_back(Value(nullptr, "//src/one.txt"));
+  sources.list_value().push_back(Value(nullptr, "//src/two.txt"));
   args.push_back(sources);
 
-  Value expansions(NULL, Value::LIST);
+  Value expansions(nullptr, Value::LIST);
   expansions.list_value().push_back(
-      Value(NULL, "1234{{source_name_part}}5678"));
+      Value(nullptr, "1234{{source_name_part}}5678"));
   expansions.list_value().push_back(
-      Value(NULL, "ABCD{{source_file_part}}EFGH"));
+      Value(nullptr, "ABCD{{source_file_part}}EFGH"));
   args.push_back(expansions);
 
   Err err;
-  Value result = functions::RunProcessFileTemplate(
-      setup.scope(), NULL, args, &err);
+  Value result =
+      functions::RunProcessFileTemplate(setup.scope(), nullptr, args, &err);
   EXPECT_FALSE(err.has_error());
 
   ASSERT_TRUE(result.type() == Value::LIST);

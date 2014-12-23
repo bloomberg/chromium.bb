@@ -10,7 +10,7 @@
 #include "tools/gn/standard_out.h"
 #include "tools/gn/switches.h"
 
-Scheduler* g_scheduler = NULL;
+Scheduler* g_scheduler = nullptr;
 
 namespace {
 
@@ -39,7 +39,7 @@ Scheduler::Scheduler()
 Scheduler::~Scheduler() {
   if (!has_been_shutdown_)
     pool_->Shutdown();
-  g_scheduler = NULL;
+  g_scheduler = nullptr;
 }
 
 bool Scheduler::Run() {

@@ -161,7 +161,7 @@ const ParseNode* InputFileManager::SyncLoadFile(
     Err* err) {
   base::AutoLock lock(lock_);
 
-  InputFileData* data = NULL;
+  InputFileData* data = nullptr;
   InputFileMap::iterator found = input_files_.find(file_name);
   if (found == input_files_.end()) {
     // Haven't seen this file yet, start loading right now.
@@ -171,7 +171,7 @@ const ParseNode* InputFileManager::SyncLoadFile(
 
     base::AutoUnlock unlock(lock_);
     if (!LoadFile(origin, build_settings, file_name, &data->file, err))
-      return NULL;
+      return nullptr;
   } else {
     // This file has either been loaded or is pending loading.
     data = found->second;
@@ -198,7 +198,7 @@ const ParseNode* InputFileManager::SyncLoadFile(
           "synchronously.\nThis is a class 2 misdemeanor: a single input file "
           "must be loaded the same way\neach time to avoid blowing my tiny, "
           "tiny mind.");
-      return NULL;
+      return nullptr;
     }
 
     if (!data->loaded) {

@@ -67,7 +67,7 @@ Value Template::Invoke(Scope* scope,
   // if we instead create a value and then set the scope on it, the copy can
   // be avoided.
   const char kInvoker[] = "invoker";
-  template_scope.SetValue(kInvoker, Value(NULL, scoped_ptr<Scope>()),
+  template_scope.SetValue(kInvoker, Value(nullptr, scoped_ptr<Scope>()),
                           invocation);
   Value* invoker_value = template_scope.GetMutableValue(kInvoker, false);
   invoker_value->SetScopeValue(invocation_scope.Pass());

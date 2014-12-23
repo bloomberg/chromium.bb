@@ -20,7 +20,7 @@ Scope* UncachedImport(const Settings* settings,
   const ParseNode* node = g_scheduler->input_file_manager()->SyncLoadFile(
       node_for_err->GetRange(), settings->build_settings(), file, err);
   if (!node)
-    return NULL;
+    return nullptr;
   const BlockNode* block = node->AsBlock();
   CHECK(block);
 
@@ -35,7 +35,7 @@ Scope* UncachedImport(const Settings* settings,
   scope->SetProcessingImport();
   block->ExecuteBlockInScope(scope.get(), err);
   if (err->has_error())
-    return NULL;
+    return nullptr;
   scope->ClearProcessingImport();
 
   return scope.release();
@@ -56,7 +56,7 @@ bool ImportManager::DoImport(const SourceFile& file,
                              Err* err) {
   // See if we have a cached import, but be careful to actually do the scope
   // copying outside of the lock.
-  const Scope* imported_scope = NULL;
+  const Scope* imported_scope = nullptr;
   {
     base::AutoLock lock(lock_);
     ImportMap::const_iterator found = imports_.find(file);

@@ -9,7 +9,7 @@
 #include "tools/gn/input_file.h"
 
 Location::Location()
-    : file_(NULL),
+    : file_(nullptr),
       line_number_(-1),
       char_offset_(-1) {
 }

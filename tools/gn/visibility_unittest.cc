@@ -9,10 +9,10 @@
 #include "tools/gn/visibility.h"
 
 TEST(Visibility, CanSeeMe) {
-  Value list(NULL, Value::LIST);
-  list.list_value().push_back(Value(NULL, "//rec/*"));  // Recursive.
-  list.list_value().push_back(Value(NULL, "//dir:*"));  // One dir.
-  list.list_value().push_back(Value(NULL, "//my:name"));  // Exact match.
+  Value list(nullptr, Value::LIST);
+  list.list_value().push_back(Value(nullptr, "//rec/*"));    // Recursive.
+  list.list_value().push_back(Value(nullptr, "//dir:*"));    // One dir.
+  list.list_value().push_back(Value(nullptr, "//my:name"));  // Exact match.
 
   Err err;
   Visibility vis;
@@ -34,8 +34,8 @@ TEST(Visibility, Public) {
   Err err;
   Visibility vis;
 
-  Value list(NULL, Value::LIST);
-  list.list_value().push_back(Value(NULL, "*"));
+  Value list(nullptr, Value::LIST);
+  list.list_value().push_back(Value(nullptr, "*"));
   ASSERT_TRUE(vis.Set(SourceDir("//"), list, &err));
 
   EXPECT_TRUE(vis.CanSeeMe(Label(SourceDir("//random/"), "thing")));
@@ -45,7 +45,7 @@ TEST(Visibility, Public) {
 TEST(Visibility, Private) {
   Err err;
   Visibility vis;
-  ASSERT_TRUE(vis.Set(SourceDir("//"), Value(NULL, Value::LIST), &err));
+  ASSERT_TRUE(vis.Set(SourceDir("//"), Value(nullptr, Value::LIST), &err));
 
   EXPECT_FALSE(vis.CanSeeMe(Label(SourceDir("//random/"), "thing")));
   EXPECT_FALSE(vis.CanSeeMe(Label(SourceDir("//"), "")));

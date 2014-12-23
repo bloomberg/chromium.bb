@@ -9,7 +9,7 @@
 TEST(SubstitutionPattern, ParseLiteral) {
   SubstitutionPattern pattern;
   Err err;
-  EXPECT_TRUE(pattern.Parse("This is a literal", NULL, &err));
+  EXPECT_TRUE(pattern.Parse("This is a literal", nullptr, &err));
   EXPECT_FALSE(err.has_error());
   ASSERT_EQ(1u, pattern.ranges().size());
   EXPECT_EQ(SUBSTITUTION_LITERAL, pattern.ranges()[0].type);
@@ -20,7 +20,7 @@ TEST(SubstitutionPattern, ParseComplex) {
   SubstitutionPattern pattern;
   Err err;
   EXPECT_TRUE(pattern.Parse(
-      "AA{{source}}{{source_name_part}}BB{{source_file_part}}", NULL, &err));
+      "AA{{source}}{{source_name_part}}BB{{source_file_part}}", nullptr, &err));
   EXPECT_FALSE(err.has_error());
   ASSERT_EQ(5u, pattern.ranges().size());
 
@@ -36,14 +36,14 @@ TEST(SubstitutionPattern, ParseComplex) {
 TEST(SubstitutionPattern, ParseErrors) {
   SubstitutionPattern pattern;
   Err err;
-  EXPECT_FALSE(pattern.Parse("AA{{source", NULL, &err));
+  EXPECT_FALSE(pattern.Parse("AA{{source", nullptr, &err));
   EXPECT_TRUE(err.has_error());
 
   err = Err();
-  EXPECT_FALSE(pattern.Parse("{{source_of_evil}}", NULL, &err));
+  EXPECT_FALSE(pattern.Parse("{{source_of_evil}}", nullptr, &err));
   EXPECT_TRUE(err.has_error());
 
   err = Err();
-  EXPECT_FALSE(pattern.Parse("{{source{{source}}", NULL, &err));
+  EXPECT_FALSE(pattern.Parse("{{source{{source}}", nullptr, &err));
   EXPECT_TRUE(err.has_error());
 }

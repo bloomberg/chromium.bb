@@ -15,9 +15,9 @@ std::string RebaseOne(Scope* scope,
                       const char* to_dir,
                       const char* from_dir) {
   std::vector<Value> args;
-  args.push_back(Value(NULL, input));
-  args.push_back(Value(NULL, to_dir));
-  args.push_back(Value(NULL, from_dir));
+  args.push_back(Value(nullptr, input));
+  args.push_back(Value(nullptr, to_dir));
+  args.push_back(Value(nullptr, from_dir));
 
   Err err;
   FunctionCallNode function;
@@ -138,11 +138,11 @@ TEST(RebasePath, List) {
   setup.scope()->set_source_dir(SourceDir("//tools/gn/"));
 
   std::vector<Value> args;
-  args.push_back(Value(NULL, Value::LIST));
-  args[0].list_value().push_back(Value(NULL, "foo.txt"));
-  args[0].list_value().push_back(Value(NULL, "bar.txt"));
-  args.push_back(Value(NULL, "//out/Debug/"));
-  args.push_back(Value(NULL, "."));
+  args.push_back(Value(nullptr, Value::LIST));
+  args[0].list_value().push_back(Value(nullptr, "foo.txt"));
+  args[0].list_value().push_back(Value(nullptr, "bar.txt"));
+  args.push_back(Value(nullptr, "//out/Debug/"));
+  args.push_back(Value(nullptr, "."));
 
   Err err;
   FunctionCallNode function;

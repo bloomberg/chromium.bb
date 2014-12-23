@@ -68,7 +68,7 @@ TEST(Label, Resolve) {
 
     std::string location, name;
     Err err;
-    Value v(NULL, Value::STRING);
+    Value v(nullptr, Value::STRING);
     v.string_value() = cur.str;
     Label result =
         Label::Resolve(SourceDir(cur.cur_dir), default_toolchain, v, &err);

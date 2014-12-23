@@ -177,9 +177,9 @@ bool Resolve(const SourceDir& current_dir,
       *out_toolchain_name = current_toolchain.name();
       return true;
     } else {
-      return Resolve(current_dir, current_toolchain,
-                     original_value, toolchain_piece,
-                     out_toolchain_dir, out_toolchain_name, NULL, NULL, err);
+      return Resolve(current_dir, current_toolchain, original_value,
+                     toolchain_piece, out_toolchain_dir, out_toolchain_name,
+                     nullptr, nullptr, err);
     }
   }
   return true;

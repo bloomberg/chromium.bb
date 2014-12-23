@@ -97,25 +97,25 @@ TEST(FilesystemUtils, EnsureStringIsInOutputDir) {
 
   // Some outside.
   Err err;
-  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//foo", NULL, &err));
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//foo", nullptr, &err));
   EXPECT_TRUE(err.has_error());
   err = Err();
-  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//out/Debugit", NULL,
-                                         &err));
+  EXPECT_FALSE(
+      EnsureStringIsInOutputDir(output_dir, "//out/Debugit", nullptr, &err));
   EXPECT_TRUE(err.has_error());
 
   // Some inside.
   err = Err();
-  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/", NULL,
-                                        &err));
+  EXPECT_TRUE(
+      EnsureStringIsInOutputDir(output_dir, "//out/Debug/", nullptr, &err));
   EXPECT_FALSE(err.has_error());
-  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/foo", NULL,
-                                        &err));
+  EXPECT_TRUE(
+      EnsureStringIsInOutputDir(output_dir, "//out/Debug/foo", nullptr, &err));
   EXPECT_FALSE(err.has_error());
 
   // Pattern but no template expansions are allowed.
   EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "{{source_gen_dir}}",
-                                         NULL, &err));
+                                         nullptr, &err));
   EXPECT_TRUE(err.has_error());
 }
 

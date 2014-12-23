@@ -205,7 +205,7 @@ bool ExecProcess(const CommandLine& cmdline,
 
         for (size_t i = 0; i < argv.size(); i++)
           argv_cstr[i] = const_cast<char*>(argv[i].c_str());
-        argv_cstr[argv.size()] = NULL;
+        argv_cstr[argv.size()] = nullptr;
         execvp(argv_cstr[0], argv_cstr.get());
         _exit(127);
       }
@@ -225,10 +225,7 @@ bool ExecProcess(const CommandLine& cmdline,
           FD_SET(err_read.get(), &read_fds);
           int res =
               HANDLE_EINTR(select(std::max(out_read.get(), err_read.get()) + 1,
-                                  &read_fds,
-                                  NULL,
-                                  NULL,
-                                  NULL));
+                                  &read_fds, nullptr, nullptr, nullptr));
           if (res <= 0)
             break;
           if (FD_ISSET(out_read.get(), &read_fds))

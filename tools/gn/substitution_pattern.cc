@@ -23,7 +23,7 @@ SubstitutionPattern::Subrange::Subrange(SubstitutionType t,
 SubstitutionPattern::Subrange::~Subrange() {
 }
 
-SubstitutionPattern::SubstitutionPattern() : origin_(NULL) {
+SubstitutionPattern::SubstitutionPattern() : origin_(nullptr) {
 }
 
 SubstitutionPattern::~SubstitutionPattern() {
@@ -95,7 +95,7 @@ bool SubstitutionPattern::Parse(const std::string& str,
 SubstitutionPattern SubstitutionPattern::MakeForTest(const char* str) {
   Err err;
   SubstitutionPattern pattern;
-  CHECK(pattern.Parse(str, NULL, &err)) << err.message();
+  CHECK(pattern.Parse(str, nullptr, &err)) << err.message();
   return pattern;
 }
 

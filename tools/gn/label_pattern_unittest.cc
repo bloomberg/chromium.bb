@@ -61,7 +61,7 @@ TEST(LabelPattern, PatternParse) {
     const PatternCase& cur = cases[i];
     Err err;
     LabelPattern result =
-        LabelPattern::GetPattern(current_dir, Value(NULL, cur.input), &err);
+        LabelPattern::GetPattern(current_dir, Value(nullptr, cur.input), &err);
 
     EXPECT_EQ(cur.success, !err.has_error()) << i << " " << cur.input;
     EXPECT_EQ(cur.type, result.type()) << i << " " << cur.input;

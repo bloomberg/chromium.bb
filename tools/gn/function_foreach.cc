@@ -67,7 +67,7 @@ Value RunForEach(Scope* scope,
 
   // Extract the list, avoid a copy if it's an identifier (common case).
   Value value_storage_for_exec;  // Backing for list_value when we need to exec.
-  const Value* list_value = NULL;
+  const Value* list_value = nullptr;
   const IdentifierNode* list_identifier = args_vector[1]->AsIdentifier();
   if (list_identifier) {
     list_value = scope->GetValue(list_identifier->value().value(), true);

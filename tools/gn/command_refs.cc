@@ -324,12 +324,12 @@ int RunRefs(const std::vector<std::string>& args) {
   if (tree) {
     // Output dependency tree.
     if (files) {
-      Err(NULL, "--files option can't be used with --tree option.")
+      Err(nullptr, "--files option can't be used with --tree option.")
           .PrintToStdout();
       return 1;
     }
     if (query.size() != 1) {
-      Err(NULL, "Query matches more than one target.",
+      Err(nullptr, "Query matches more than one target.",
           "--tree only supports a single target as input.").PrintToStdout();
       return 1;
     }
@@ -337,9 +337,9 @@ int RunRefs(const std::vector<std::string>& args) {
       // Recursively print all targets.
       for (const auto& cur_query : query) {
         if (is_file_input)
-          RecursivePrintTarget(dep_map, cur_query, NULL, 0);
+          RecursivePrintTarget(dep_map, cur_query, nullptr, 0);
         else
-          RecursivePrintTargetDeps(dep_map, cur_query, NULL, 0);
+          RecursivePrintTargetDeps(dep_map, cur_query, nullptr, 0);
       }
     } else {
       // Recursively print unique targets.

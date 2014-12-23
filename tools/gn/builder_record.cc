@@ -9,7 +9,7 @@
 BuilderRecord::BuilderRecord(ItemType type, const Label& label)
     : type_(type),
       label_(label),
-      originally_referenced_from_(NULL),
+      originally_referenced_from_(nullptr),
       should_generate_(false),
       resolved_(false) {
 }

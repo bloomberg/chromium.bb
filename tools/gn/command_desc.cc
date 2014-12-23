@@ -112,7 +112,7 @@ void PrintDeps(const Target* target, bool display_header) {
 
     if (cmdline->HasSwitch("all")) {
       // Show all tree deps with no eliding.
-      RecursivePrintDeps(target, toolchain_label, NULL, 1);
+      RecursivePrintDeps(target, toolchain_label, nullptr, 1);
     } else {
       // Don't recurse into duplicates.
       std::set<const Target*> seen_targets;
