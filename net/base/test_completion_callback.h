@@ -85,7 +85,7 @@ class TestClosure
   using internal::TestCompletionCallbackBaseInternal::WaitForResult;
 
   TestClosure();
-  virtual ~TestClosure() override;
+  ~TestClosure() override;
 
   const base::Closure& closure() const { return closure_; }
 
@@ -105,7 +105,7 @@ typedef internal::TestCompletionCallbackTemplate<int64>
 class TestCompletionCallback : public TestCompletionCallbackBase {
  public:
   TestCompletionCallback();
-  virtual ~TestCompletionCallback() override;
+  ~TestCompletionCallback() override;
 
   const CompletionCallback& callback() const { return callback_; }
 
@@ -118,7 +118,7 @@ class TestCompletionCallback : public TestCompletionCallbackBase {
 class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
  public:
   TestInt64CompletionCallback();
-  virtual ~TestInt64CompletionCallback() override;
+  ~TestInt64CompletionCallback() override;
 
   const Int64CompletionCallback& callback() const { return callback_; }
 
@@ -132,7 +132,7 @@ class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
 class ReleaseBufferCompletionCallback: public TestCompletionCallback {
  public:
   explicit ReleaseBufferCompletionCallback(IOBuffer* buffer);
-  virtual ~ReleaseBufferCompletionCallback() override;
+  ~ReleaseBufferCompletionCallback() override;
 
  private:
   void SetResult(int result) override;

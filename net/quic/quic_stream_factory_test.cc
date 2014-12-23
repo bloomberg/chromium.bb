@@ -106,31 +106,31 @@ class MockQuicServerInfo : public QuicServerInfo {
  public:
   MockQuicServerInfo(const QuicServerId& server_id)
       : QuicServerInfo(server_id) {}
-  virtual ~MockQuicServerInfo() {}
+  ~MockQuicServerInfo() override {}
 
-  virtual void Start() override {};
+  void Start() override {}
 
-  virtual int WaitForDataReady(const CompletionCallback& callback) override {
+  int WaitForDataReady(const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual void CancelWaitForDataReadyCallback() override {}
+  void CancelWaitForDataReadyCallback() override {}
 
-  virtual bool IsDataReady() override { return false; }
+  bool IsDataReady() override { return false; }
 
-  virtual bool IsReadyToPersist() override { return false; }
+  bool IsReadyToPersist() override { return false; }
 
-  virtual void Persist() override {};
+  void Persist() override {}
 
-  virtual void OnExternalCacheHit() override {};
+  void OnExternalCacheHit() override {}
 };
 
 class MockQuicServerInfoFactory : public QuicServerInfoFactory {
  public:
   MockQuicServerInfoFactory() {}
-  virtual ~MockQuicServerInfoFactory() {}
+  ~MockQuicServerInfoFactory() override {}
 
-  virtual QuicServerInfo* GetForServer(const QuicServerId& server_id) override {
+  QuicServerInfo* GetForServer(const QuicServerId& server_id) override {
     return new MockQuicServerInfo(server_id);
   }
 };

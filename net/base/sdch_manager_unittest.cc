@@ -65,7 +65,7 @@ class SdchManagerTest : public testing::Test {
     default_https_support_ = sdch_manager_->secure_scheme_supported();
   }
 
-  virtual ~SdchManagerTest() {}
+  ~SdchManagerTest() override {}
 
   SdchManager* sdch_manager() { return sdch_manager_.get(); }
 

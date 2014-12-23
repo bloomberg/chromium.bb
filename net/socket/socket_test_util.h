@@ -293,7 +293,7 @@ class DynamicSocketDataProvider : public SocketDataProvider {
 
   // SocketDataProvider implementation.
   MockRead GetNextRead() override;
-  virtual MockWriteResult OnWrite(const std::string& data) = 0;
+  MockWriteResult OnWrite(const std::string& data) override = 0;
   void Reset() override;
 
  protected:
@@ -682,17 +682,17 @@ class MockClientSocket : public SSLClientSocket {
   explicit MockClientSocket(const BoundNetLog& net_log);
 
   // Socket implementation.
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) = 0;
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) = 0;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override = 0;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override = 0;
   int SetReceiveBufferSize(int32 size) override;
   int SetSendBufferSize(int32 size) override;
 
   // StreamSocket implementation.
-  virtual int Connect(const CompletionCallback& callback) = 0;
+  int Connect(const CompletionCallback& callback) override = 0;
   void Disconnect() override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;

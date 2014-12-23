@@ -28,7 +28,7 @@ class URLRequest;
 
 class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
  public:
-  virtual ~NetworkDelegateImpl() {}
+  ~NetworkDelegateImpl() override {}
 
  private:
   // This is the interface for subclasses of NetworkDelegate to implement. These

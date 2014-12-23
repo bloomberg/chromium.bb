@@ -40,55 +40,50 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   // NetworkDelegate implementation:
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
-                         GURL* new_url) final override;
+                         GURL* new_url) final;
   void OnResolveProxy(const GURL& url,
                       int load_flags,
                       const ProxyService& proxy_service,
-                      ProxyInfo* result) final override;
-  void OnProxyFallback(const ProxyServer& bad_proxy,
-                       int net_error) final override;
+                      ProxyInfo* result) final;
+  void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) final;
   int OnBeforeSendHeaders(URLRequest* request,
                           const CompletionCallback& callback,
-                          HttpRequestHeaders* headers) final override;
+                          HttpRequestHeaders* headers) final;
   void OnBeforeSendProxyHeaders(URLRequest* request,
                                 const ProxyInfo& proxy_info,
-                                HttpRequestHeaders* headers) final override;
+                                HttpRequestHeaders* headers) final;
   void OnSendHeaders(URLRequest* request,
-                     const HttpRequestHeaders& headers) final override;
+                     const HttpRequestHeaders& headers) final;
   int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url) final override;
-  void OnBeforeRedirect(URLRequest* request,
-                        const GURL& new_location) final override;
-  void OnResponseStarted(URLRequest* request) final override;
-  void OnRawBytesRead(const URLRequest& request, int bytes_read) final override;
-  void OnCompleted(URLRequest* request, bool started) final override;
-  void OnURLRequestDestroyed(URLRequest* request) final override;
-  void OnPACScriptError(int line_number,
-                        const base::string16& error) final override;
-  AuthRequiredResponse OnAuthRequired(
-      URLRequest* request,
-      const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
-      AuthCredentials* credentials) final override;
+      GURL* allowed_unsafe_redirect_url) final;
+  void OnBeforeRedirect(URLRequest* request, const GURL& new_location) final;
+  void OnResponseStarted(URLRequest* request) final;
+  void OnRawBytesRead(const URLRequest& request, int bytes_read) final;
+  void OnCompleted(URLRequest* request, bool started) final;
+  void OnURLRequestDestroyed(URLRequest* request) final;
+  void OnPACScriptError(int line_number, const base::string16& error) final;
+  AuthRequiredResponse OnAuthRequired(URLRequest* request,
+                                      const AuthChallengeInfo& auth_info,
+                                      const AuthCallback& callback,
+                                      AuthCredentials* credentials) final;
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list) final override;
+                       const CookieList& cookie_list) final;
   bool OnCanSetCookie(const URLRequest& request,
                       const std::string& cookie_line,
-                      CookieOptions* options) final override;
+                      CookieOptions* options) final;
   bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& path) const final override;
-  bool OnCanThrottleRequest(const URLRequest& request) const final override;
-  bool OnCanEnablePrivacyMode(
-      const GURL& url,
-      const GURL& first_party_for_cookies) const final override;
+                       const base::FilePath& path) const final;
+  bool OnCanThrottleRequest(const URLRequest& request) const final;
+  bool OnCanEnablePrivacyMode(const GURL& url,
+                              const GURL& first_party_for_cookies) const final;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
-      const GURL& referrer_url) const final override;
+      const GURL& referrer_url) const final;
 
  protected:
   virtual void OnBeforeURLRequestInternal(URLRequest* request,

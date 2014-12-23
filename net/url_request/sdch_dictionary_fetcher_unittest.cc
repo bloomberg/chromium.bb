@@ -94,7 +94,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
                    base::Unretained(this))));
   }
 
-  ~SdchDictionaryFetcherTest() {
+  ~SdchDictionaryFetcherTest() override {
     URLRequestSpecifiedResponseJob::RemoveUrlHandler();
   }
 

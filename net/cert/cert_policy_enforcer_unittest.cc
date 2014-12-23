@@ -46,7 +46,7 @@ class DummyEVCertsWhitelist : public ct::EVCertsWhitelist {
 
 class CertPolicyEnforcerTest : public ::testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     policy_enforcer_.reset(new CertPolicyEnforcer(true));
 
     std::string der_test_cert(ct::GetDerEncodedX509Cert());

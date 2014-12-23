@@ -618,7 +618,7 @@ class URLRequestTest : public PlatformTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     SetUpFactory();
     default_context_.set_job_factory(job_factory_.get());
     default_context_.Init();
