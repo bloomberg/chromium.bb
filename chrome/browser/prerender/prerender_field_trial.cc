@@ -105,14 +105,14 @@ void SetupPrerenderFieldTrial() {
     const FieldTrial::Probability release_experiment_no_use_probability = 0;
     const FieldTrial::Probability
         release_experiment_match_complete_probability = 10;
-    COMPILE_ASSERT(
+    static_assert(
         release_prerender_enabled_probability +
         release_control_probability +
         release_experiment_multi_prerender_probability +
         release_experiment_15min_ttl_probability +
         release_experiment_no_use_probability +
         release_experiment_match_complete_probability == divisor,
-        release_experiment_probabilities_must_equal_divisor);
+        "release experiment probabilities must equal divisor");
 
     control_probability = release_control_probability;
     experiment_multi_prerender_probability =
@@ -132,13 +132,13 @@ void SetupPrerenderFieldTrial() {
     const FieldTrial::Probability dev_experiment_no_use_probability = 100;
     const FieldTrial::Probability
         dev_experiment_match_complete_probability = 200;
-    COMPILE_ASSERT(dev_prerender_enabled_probability +
-                   dev_control_probability +
-                   dev_experiment_multi_prerender_probability +
-                   dev_experiment_15min_ttl_probability +
-                   dev_experiment_no_use_probability +
-                   dev_experiment_match_complete_probability == divisor,
-                   dev_experiment_probabilities_must_equal_divisor);
+    static_assert(dev_prerender_enabled_probability +
+                  dev_control_probability +
+                  dev_experiment_multi_prerender_probability +
+                  dev_experiment_15min_ttl_probability +
+                  dev_experiment_no_use_probability +
+                  dev_experiment_match_complete_probability == divisor,
+                  "dev experiment probabilities must equal divisor");
 
     control_probability = dev_control_probability;
     experiment_multi_prerender_probability =

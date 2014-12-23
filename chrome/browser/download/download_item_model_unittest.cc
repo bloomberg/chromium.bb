@@ -31,7 +31,7 @@ using ::testing::_;
 namespace {
 
 // Create a char array that has as many elements as there are download
-// interrupt reasons. We can then use that in a COMPILE_ASSERT to make sure
+// interrupt reasons. We can then use that in a static_assert to make sure
 // that all the interrupt reason codes are accounted for. The reason codes are
 // unfortunately sparse, making this necessary.
 char kInterruptReasonCounter[] = {
@@ -170,8 +170,8 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
       "Failed - Crash" },
   };
-  COMPILE_ASSERT(kInterruptReasonCount == arraysize(kTestCases),
-                 interrupt_reason_mismatch);
+  static_assert(kInterruptReasonCount == arraysize(kTestCases),
+                "interrupt reason mismatch");
 
   SetupDownloadItemDefaults();
   for (unsigned i = 0; i < arraysize(kTestCases); ++i) {
@@ -246,8 +246,8 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
       "foo.bar\nCrash" },
   };
-  COMPILE_ASSERT(kInterruptReasonCount == arraysize(kTestCases),
-                 interrupt_reason_mismatch);
+  static_assert(kInterruptReasonCount == arraysize(kTestCases),
+                "interrupt reason mismatch");
 
   // Large tooltip width. Should be large enough to accommodate the entire
   // tooltip without truncation.

@@ -195,8 +195,8 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_FULLSCREEN,                   // Event WINDOW_CHANGE
     },
   };
-  COMPILE_ASSERT(sizeof(transition_table_data) == sizeof(transition_table_),
-                 transition_table_incorrect_size);
+  static_assert(sizeof(transition_table_data) == sizeof(transition_table_),
+                "transition_table has unexpected size");
   memcpy(transition_table_, transition_table_data,
          sizeof(transition_table_data));
 

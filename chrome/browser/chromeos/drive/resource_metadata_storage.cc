@@ -242,9 +242,9 @@ bool ResourceMetadataStorage::Iterator::HasError() const {
 bool ResourceMetadataStorage::UpgradeOldDB(
     const base::FilePath& directory_path) {
   base::ThreadRestrictions::AssertIOAllowed();
-  COMPILE_ASSERT(
+  static_assert(
       kDBVersion == 13,
-      db_version_and_this_function_should_be_updated_at_the_same_time);
+      "database version and this function must be updated at the same time");
 
   const base::FilePath resource_map_path =
       directory_path.Append(kResourceMapDBName);

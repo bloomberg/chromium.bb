@@ -42,13 +42,13 @@ const char* const scheme_name[] = { "*error*",
                                     "ftp",
                                     "socks" };
 
-COMPILE_ASSERT(SCHEME_MAX == SCHEME_FALLBACK,
-               SCHEME_MAX_must_equal_SCHEME_FALLBACK);
-COMPILE_ASSERT(arraysize(field_name) == SCHEME_MAX + 1,
-               field_name_array_is_wrong_size);
-COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
-               scheme_name_array_is_wrong_size);
-COMPILE_ASSERT(SCHEME_ALL == 0, singleProxy_must_be_first_option);
+static_assert(SCHEME_MAX == SCHEME_FALLBACK,
+              "SCHEME_MAX is incorrect");
+static_assert(arraysize(field_name) == SCHEME_MAX + 1,
+              "field_name array size is incorrect");
+static_assert(arraysize(scheme_name) == SCHEME_MAX + 1,
+              "scheme_name array size is incorrect");
+static_assert(SCHEME_ALL == 0, "SCHEME_ALL must be the first value");
 
 }  // namespace proxy_api_constants
 }  // namespace extensions

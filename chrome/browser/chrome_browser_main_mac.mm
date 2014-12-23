@@ -141,8 +141,8 @@ void RecordCatSixtyFour() {
   // some headroom and then leave it alone. See UMA_HISTOGRAM_ENUMERATION in
   // base/metrics/histogram.h.
   const int kMaxCatsAndSixtyFours = 32;
-  COMPILE_ASSERT(kMaxCatsAndSixtyFours >= CAT_SIXTY_FOUR_MAX,
-                 CatSixtyFour_enum_grew_too_large);
+  static_assert(kMaxCatsAndSixtyFours >= CAT_SIXTY_FOUR_MAX,
+                "kMaxCatsAndSixtyFours is too large");
 
   UMA_HISTOGRAM_ENUMERATION("OSX.CatSixtyFour",
                             cat_sixty_four,

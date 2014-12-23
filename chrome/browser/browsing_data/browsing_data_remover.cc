@@ -273,11 +273,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
   // If this fires, we added a new BrowsingDataHelper::OriginSetMask without
   // updating the user metrics above.
-  COMPILE_ASSERT(
+  static_assert(
       BrowsingDataHelper::ALL == (BrowsingDataHelper::UNPROTECTED_WEB |
                                   BrowsingDataHelper::PROTECTED_WEB |
                                   BrowsingDataHelper::EXTENSION),
-      forgotten_to_add_origin_mask_type);
+      "OriginSetMask has been updated without updating user metrics");
 
   if ((remove_mask & REMOVE_HISTORY) && may_delete_history) {
     HistoryService* history_service = HistoryServiceFactory::GetForProfile(

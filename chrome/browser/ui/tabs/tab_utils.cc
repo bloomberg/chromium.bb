@@ -62,8 +62,8 @@ double TabRecordingIndicatorAnimation::GetCurrentValue() const {
 scoped_ptr<TabRecordingIndicatorAnimation>
 TabRecordingIndicatorAnimation::Create() {
   MultiAnimation::Parts parts;
-  COMPILE_ASSERT(kCaptureIndicatorThrobCycles % 2 != 0,
-                 must_be_odd_so_animation_finishes_in_showing_state);
+  static_assert(kCaptureIndicatorThrobCycles % 2 != 0,
+        "odd number of cycles required so animation finishes in showing state");
   for (int i = 0; i < kCaptureIndicatorThrobCycles; ++i) {
     parts.push_back(MultiAnimation::Part(
         i % 2 ? kIndicatorFadeOutDurationMs : kIndicatorFadeInDurationMs,

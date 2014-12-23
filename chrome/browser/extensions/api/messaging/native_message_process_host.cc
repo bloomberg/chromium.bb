@@ -153,7 +153,8 @@ void NativeMessageProcessHost::OnMessage(const std::string& json) {
       new net::IOBufferWithSize(json.size() + kMessageHeaderSize);
 
   // Copy size and content of the message to the buffer.
-  COMPILE_ASSERT(sizeof(uint32) == kMessageHeaderSize, incorrect_header_size);
+  static_assert(sizeof(uint32) == kMessageHeaderSize,
+                "kMessageHeaderSize is incorrect");
   *reinterpret_cast<uint32*>(buffer->data()) = json.size();
   memcpy(buffer->data() + kMessageHeaderSize, json.data(), json.size());
 

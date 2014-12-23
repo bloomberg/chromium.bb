@@ -53,8 +53,8 @@ const TestNameInfo kTestNameInfo[] = {
     // Add new entries in the same order as DiagnosticsTestId.
 };
 
-COMPILE_ASSERT(arraysize(kTestNameInfo) == DIAGNOSTICS_TEST_ID_COUNT,
-               diagnostics_test_info_mismatch);
+static_assert(arraysize(kTestNameInfo) == DIAGNOSTICS_TEST_ID_COUNT,
+              "diagnostics test info mismatch");
 
 const TestNameInfo* FindTestInfo(DiagnosticsTestId id) {
   DCHECK(id < DIAGNOSTICS_TEST_ID_COUNT);

@@ -121,8 +121,8 @@ IncidentType GetIncidentType(
     return VARIATIONS_SEED_SIGNATURE;
 
   // Add detection for new incident types here.
-  COMPILE_ASSERT(VARIATIONS_SEED_SIGNATURE + 1 == NUM_INCIDENT_TYPES,
-                 add_support_for_new_types);
+  static_assert(VARIATIONS_SEED_SIGNATURE + 1 == NUM_INCIDENT_TYPES,
+                "support for new types must be added");
   NOTREACHED();
   return NUM_INCIDENT_TYPES;
 }

@@ -60,10 +60,10 @@ bool ShouldStartPrerender(const uint32 rel_types) {
   return false;
 }
 
-COMPILE_ASSERT(PrerenderRelTypePrerender == 0x1,
-               RelTypeHistogramEnum_must_match_PrerenderRelType);
-COMPILE_ASSERT(PrerenderRelTypeNext == 0x2,
-               RelTypeHistogramEnum_must_match_PrerenderRelType);
+static_assert(PrerenderRelTypePrerender == 0x1,
+              "RelTypeHistogrameEnum must match PrerenderRelType");
+static_assert(PrerenderRelTypeNext == 0x2,
+              "RelTypeHistogramEnum must match PrerenderRelType");
 enum RelTypeHistogramEnum {
   RelTypeHistogramEnumNone = 0,
   RelTypeHistogramEnumPrerender = PrerenderRelTypePrerender,

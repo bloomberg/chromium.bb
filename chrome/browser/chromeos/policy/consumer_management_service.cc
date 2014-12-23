@@ -32,9 +32,9 @@ const char* const kStatusString[] = {
   "StatusUnenrolling",
 };
 
-COMPILE_ASSERT(
+static_assert(
     arraysize(kStatusString) == policy::ConsumerManagementService::STATUS_LAST,
-    "invalid kStatusString array size.");
+    "invalid kStatusString array size");
 
 }  // namespace
 

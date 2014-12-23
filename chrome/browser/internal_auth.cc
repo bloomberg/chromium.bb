@@ -37,10 +37,11 @@ const int kVerificationWindowTicks = 2000;
 const int kGenerationWindowTicks = 20;
 
 // Makes no sense to compare other way round.
-COMPILE_ASSERT(kGenerationWindowTicks <= kVerificationWindowTicks,
-    makes_no_sense_to_have_generation_window_larger_than_verification_one);
+static_assert(kGenerationWindowTicks <= kVerificationWindowTicks,
+    "generation window should not be larger than the verification window");
 // We are not optimized for high value of kGenerationWindowTicks.
-COMPILE_ASSERT(kGenerationWindowTicks < 30, too_large_generation_window);
+static_assert(kGenerationWindowTicks < 30,
+    "generation window should not be too large");
 
 // Regenerate key after this number of ticks.
 const int kKeyRegenerationSoftTicks = 500000;
@@ -99,8 +100,8 @@ bool IsVarSane(const std::string& var) {
       "abcdefghijklmnopqrstuvwxyz"
       "0123456789"
       "_";
-  COMPILE_ASSERT(
-      sizeof(kAllowedChars) == 26 + 26 + 10 + 1 + 1, some_mess_with_chars);
+  static_assert(
+      sizeof(kAllowedChars) == 26 + 26 + 10 + 1 + 1, "some mess with chars");
   // We must not allow kItemSeparator in anything used as an input to construct
   // message to sign.
   DCHECK(std::find(kAllowedChars, kAllowedChars + arraysize(kAllowedChars),

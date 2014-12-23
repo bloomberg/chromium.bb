@@ -1859,9 +1859,10 @@ const float kDeviceScaleFactorExpectations[] = {
   1.0f,
 };
 
-COMPILE_ASSERT(
+static_assert(
     arraysize(kDragPoints) == arraysize(kDeviceScaleFactorExpectations),
-    kDragPoints_and_kDeviceScaleFactorExpectations_must_have_same_size);
+    "kDragPoints and kDeviceScaleFactorExpectations must have the same "
+    "number of elements");
 
 // Drags tab to |kDragPoints[index]|, then calls the next step function.
 void CursorDeviceScaleFactorStep(

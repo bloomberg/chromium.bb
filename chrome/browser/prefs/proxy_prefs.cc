@@ -19,8 +19,8 @@ const char* kProxyModeNames[] = { kDirectProxyModeName,
                                   kFixedServersProxyModeName,
                                   kSystemProxyModeName };
 
-COMPILE_ASSERT(arraysize(kProxyModeNames) == kModeCount,
-               kProxyModeNames_must_have_size_of_NUM_MODES);
+static_assert(arraysize(kProxyModeNames) == kModeCount,
+              "kProxyModeNames must have kModeCount elements");
 
 }  // namespace
 

@@ -65,8 +65,8 @@ const char* kFinalStatusNames[] = {
   "Navigation Intercepted",
   "Max",
 };
-COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
-               PrerenderFinalStatus_name_count_mismatch);
+static_assert(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
+              "status name count mismatch");
 
 }  // namespace
 

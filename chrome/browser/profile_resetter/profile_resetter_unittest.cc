@@ -967,8 +967,8 @@ TEST_F(ProfileResetterTest, FeedbackSerializationTest) {
   // Let it enumerate shortcuts on the FILE thread.
   base::MessageLoop::current()->RunUntilIdle();
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
-                 expand_this_test);
+  static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+                "this test needs to be expanded");
   for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
        ++field_mask) {
     std::string report = SerializeSettingsReport(nonorganic_snap, field_mask);

@@ -603,8 +603,9 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
     &raw,
     &raw,
   };
-  COMPILE_ASSERT(arraysize(kPath) == arraysize(kExpected),
-                 the_arrays_kPath_and_kExpected_need_to_be_the_same_size);
+  static_assert(arraysize(kPath) == arraysize(kExpected),
+                "kPath and kExpected arrays should have the same number "
+                "of elements");
   // Header.
   const char kMultipart[] = "multipart/form-data; boundary=" kBoundary;
 #undef kBoundary

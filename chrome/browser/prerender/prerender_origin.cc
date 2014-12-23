@@ -28,8 +28,8 @@ const char* kOriginNames[] = {
   "Link Rel Next",
   "Max",
 };
-COMPILE_ASSERT(arraysize(kOriginNames) == ORIGIN_MAX + 1,
-               PrerenderOrigin_name_count_mismatch);
+static_assert(arraysize(kOriginNames) == ORIGIN_MAX + 1,
+              "prerender origin name count mismatch");
 
 }  // namespace
 

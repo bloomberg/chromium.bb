@@ -223,8 +223,9 @@ InstalledBubbleContent::InstalledBubbleContent(
     }
     default: {
       // When adding a new bubble type, the flavor needs to be set.
-      COMPILE_ASSERT(ExtensionInstalledBubble::GENERIC == 3,
-                     kBubbleTypeEnumHasChangedButNotThisSwitchStatement);
+      static_assert(ExtensionInstalledBubble::GENERIC == 3,
+          "kBubbleType enum has changed, this switch statement must "
+          "be updateed");
       break;
     }
   }

@@ -959,8 +959,8 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
   // is that ui::DataPack removes this same check.
 #if defined(__BYTE_ORDER)
   // Linux check
-  COMPILE_ASSERT(__BYTE_ORDER == __LITTLE_ENDIAN,
-                 datapack_assumes_little_endian);
+  static_assert(__BYTE_ORDER == __LITTLE_ENDIAN,
+                "datapack assumes little endian");
 #elif defined(__BIG_ENDIAN__)
   // Mac check
   #error DataPack assumes little endian

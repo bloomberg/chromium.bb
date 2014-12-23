@@ -52,8 +52,8 @@ class ProfileResetter : public base::NonThreadSafe,
   // Bit vector for Resettable enum.
   typedef uint32 ResettableFlags;
 
-  COMPILE_ASSERT(sizeof(ResettableFlags) == sizeof(Resettable),
-                 type_ResettableFlags_doesnt_match_Resettable);
+  static_assert(sizeof(ResettableFlags) == sizeof(Resettable),
+                "ResettableFlags should be the same size as Resettable");
 
   explicit ProfileResetter(Profile* profile);
   ~ProfileResetter() override;

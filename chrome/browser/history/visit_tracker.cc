@@ -13,8 +13,8 @@ namespace history {
 // the data rather than constantly shuffle stuff around in the vector.
 static const size_t kMaxItemsInTransitionList = 96;
 static const size_t kResizeBigTransitionListTo = 64;
-COMPILE_ASSERT(kResizeBigTransitionListTo < kMaxItemsInTransitionList,
-               max_items_must_be_larger_than_resize_to);
+static_assert(kResizeBigTransitionListTo < kMaxItemsInTransitionList,
+              "maxium number of items must be larger than we are resizing to");
 
 VisitTracker::VisitTracker() {
 }

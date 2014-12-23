@@ -644,10 +644,12 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   };
   // Which rules should match in subsequent test iterations.
   const char* const matchingRuleIds[] = { kRuleId1, kRuleId2 };
-  COMPILE_ASSERT(arraysize(urls) == arraysize(firstPartyUrls),
-                 urls_and_firstPartyUrls_need_to_have_the_same_size);
-  COMPILE_ASSERT(arraysize(urls) == arraysize(matchingRuleIds),
-                 urls_and_matchingRuleIds_need_to_have_the_same_size);
+  static_assert(arraysize(urls) == arraysize(firstPartyUrls),
+                "urls and firstPartyUrls must have the same number "
+                "of elements");
+  static_assert(arraysize(urls) == arraysize(matchingRuleIds),
+                "urls and matchingRuleIds must have the same number "
+                "of elements");
   net::TestURLRequestContext context;
 
   for (size_t i = 0; i < arraysize(matchingRuleIds); ++i) {

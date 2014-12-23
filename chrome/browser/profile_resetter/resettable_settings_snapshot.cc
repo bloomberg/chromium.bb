@@ -126,8 +126,8 @@ int ResettableSettingsSnapshot::FindDifferentFields(
   if (shortcuts_ != snapshot.shortcuts_)
     bit_mask |= SHORTCUTS;
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
-                 add_new_field_here);
+  static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+                "new field needs to be added here");
 
   return bit_mask;
 }
@@ -211,8 +211,8 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
     dict.Set(kShortcuts, list);
   }
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
-                 serialize_new_field_here);
+  static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+                "new field needs to be serialized here");
 
   std::string json;
   base::JSONWriter::Write(&dict, &json);

@@ -51,7 +51,8 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
   // relative delays that are shorter than we'll honor.
   if (create_info.delay_in_minutes.get()) {
     if (*create_info.delay_in_minutes < kReleaseDelayMinimum) {
-      COMPILE_ASSERT(kReleaseDelayMinimum == 1, update_warning_message_below);
+      static_assert(kReleaseDelayMinimum == 1,
+                    "warning message must be updated");
       if (Manifest::IsUnpackedLocation(extension->location()))
         warnings->push_back(ErrorUtils::FormatErrorMessage(
             "Alarm delay is less than minimum of 1 minutes."
@@ -67,7 +68,8 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
   }
   if (create_info.period_in_minutes.get()) {
     if (*create_info.period_in_minutes < kReleaseDelayMinimum) {
-      COMPILE_ASSERT(kReleaseDelayMinimum == 1, update_warning_message_below);
+      static_assert(kReleaseDelayMinimum == 1,
+                    "warning message must be updated");
       if (Manifest::IsUnpackedLocation(extension->location()))
         warnings->push_back(ErrorUtils::FormatErrorMessage(
             "Alarm period is less than minimum of 1 minutes."

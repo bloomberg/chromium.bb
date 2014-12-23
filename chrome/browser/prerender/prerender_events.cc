@@ -38,8 +38,8 @@ const char* kEventNames[] = {
   "Max",
 };
 
-COMPILE_ASSERT(arraysize(kEventNames) == PRERENDER_EVENT_MAX + 1,
-               PrerenderEvent_name_count_mismatch);
+static_assert(arraysize(kEventNames) == PRERENDER_EVENT_MAX + 1,
+              "kEventNames array size is incorrect");
 
 }  // namespace
 

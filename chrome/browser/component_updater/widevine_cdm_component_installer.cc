@@ -83,8 +83,8 @@ const char kWidevineCdmArch[] =
 // All values that are lists are delimited by commas. No trailing commas.
 // For example, "1,2,4".
 const char kCdmValueDelimiter = ',';
-COMPILE_ASSERT(kCdmValueDelimiter == kCdmSupportedCodecsValueDelimiter,
-               cdm_delimiters_do_not_match);
+static_assert(kCdmValueDelimiter == kCdmSupportedCodecsValueDelimiter,
+              "cdm delimiters must match");
 // The following entries are required.
 //  Interface versions are lists of integers (e.g. "1" or "1,2,4").
 //  These are checked in this file before registering the CDM.

@@ -44,9 +44,9 @@ const float kConfidenceCutoff[] = {
   0.5f
 };
 
-COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
-               predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
-               ConfidenceCutoff_count_mismatch);
+static_assert(arraysize(kConfidenceCutoff) ==
+              predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
+              "kConfidenceCutoff count should match LAST_PREDICT_ACTION");
 
 const size_t kMinimumUserTextLength = 1;
 const int kMinimumNumberOfHits = 3;

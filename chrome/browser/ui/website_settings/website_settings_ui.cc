@@ -24,9 +24,9 @@ const int kPermissionButtonTextIDPolicyManaged[] = {
     kInvalidResourceID,
     kInvalidResourceID,
     kInvalidResourceID};
-COMPILE_ASSERT(arraysize(kPermissionButtonTextIDPolicyManaged) ==
-               CONTENT_SETTING_NUM_SETTINGS,
-               button_text_id_array_size_incorrect);
+static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
+              CONTENT_SETTING_NUM_SETTINGS,
+              "kPermissionButtonTextIDPolicyManaged array size is incorrect");
 
 // The resource id's for the strings that are displayed on the permissions
 // button if the permission setting is managed by an extension.
@@ -37,9 +37,10 @@ const int kPermissionButtonTextIDExtensionManaged[] = {
     kInvalidResourceID,
     kInvalidResourceID,
     kInvalidResourceID};
-COMPILE_ASSERT(arraysize(kPermissionButtonTextIDExtensionManaged) ==
-               CONTENT_SETTING_NUM_SETTINGS,
-               button_text_id_array_size_incorrect);
+static_assert(arraysize(kPermissionButtonTextIDExtensionManaged) ==
+              CONTENT_SETTING_NUM_SETTINGS,
+              "kPermissionButtonTextIDExtensionManaged array size is "
+              "incorrect");
 
 // The resource id's for the strings that are displayed on the permissions
 // button if the permission setting is managed by the user.
@@ -50,9 +51,9 @@ const int kPermissionButtonTextIDUserManaged[] = {
     kInvalidResourceID,
     kInvalidResourceID,
     kInvalidResourceID};
-COMPILE_ASSERT(arraysize(kPermissionButtonTextIDUserManaged) ==
-               CONTENT_SETTING_NUM_SETTINGS,
-               button_text_id_array_size_incorrect);
+static_assert(arraysize(kPermissionButtonTextIDUserManaged) ==
+              CONTENT_SETTING_NUM_SETTINGS,
+              "kPermissionButtonTextIDUserManaged array size is incorrect");
 
 // The resource id's for the strings that are displayed on the permissions
 // button if the permission setting is the global default setting.
@@ -63,9 +64,9 @@ const int kPermissionButtonTextIDDefaultSetting[] = {
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_DEFAULT,
     kInvalidResourceID,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT};
-COMPILE_ASSERT(arraysize(kPermissionButtonTextIDDefaultSetting) ==
-               CONTENT_SETTING_NUM_SETTINGS,
-               button_text_id_array_size_incorrect);
+static_assert(arraysize(kPermissionButtonTextIDDefaultSetting) ==
+              CONTENT_SETTING_NUM_SETTINGS,
+              "kPermissionButtonTextIDDefaultSetting array size is incorrect");
 
 }  // namespace
 

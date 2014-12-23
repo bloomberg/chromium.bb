@@ -139,10 +139,10 @@ bool RelaunchAppWithHelper(const std::string& helper,
   // Make sure kRelauncherSyncFD is a safe value. base::LaunchProcess will
   // preserve these three FDs in forked processes, so kRelauncherSyncFD should
   // not conflict with them.
-  COMPILE_ASSERT(kRelauncherSyncFD != STDIN_FILENO &&
-                 kRelauncherSyncFD != STDOUT_FILENO &&
-                 kRelauncherSyncFD != STDERR_FILENO,
-                 kRelauncherSyncFD_must_not_conflict_with_stdio_fds);
+  static_assert(kRelauncherSyncFD != STDIN_FILENO &&
+                kRelauncherSyncFD != STDOUT_FILENO &&
+                kRelauncherSyncFD != STDERR_FILENO,
+                "kRelauncherSyncFD must not conflict with stdio fds");
 
   base::FileHandleMappingVector fd_map;
   fd_map.push_back(std::make_pair(pipe_write_fd.get(), kRelauncherSyncFD));

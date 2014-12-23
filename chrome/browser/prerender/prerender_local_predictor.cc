@@ -307,14 +307,14 @@ bool IsLogOutURL(const GURL& url) {
 }
 
 int64 URLHashToInt64(const unsigned char* data) {
-  COMPILE_ASSERT(kURLHashSize < sizeof(int64), url_hash_must_fit_in_int64);
+  static_assert(kURLHashSize < sizeof(int64), "url hash must fit in int64");
   int64 value = 0;
   memcpy(&value, data, kURLHashSize);
   return value;
 }
 
 int64 GetInt64URLHashForURL(const GURL& url) {
-  COMPILE_ASSERT(kURLHashSize < sizeof(int64), url_hash_must_fit_in_int64);
+  static_assert(kURLHashSize < sizeof(int64), "url hash must fit in int64");
   scoped_ptr<crypto::SecureHash> hash(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   int64 hash_value = 0;

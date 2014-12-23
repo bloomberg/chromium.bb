@@ -21,12 +21,12 @@ using typed_urls_helper::GetTypedUrlsFromClient;
 static const int kNumUrls = 163;
 // This compile assert basically asserts that kNumUrls is right in the
 // middle between two multiples of kDefaultMaxCommitBatchSize.
-COMPILE_ASSERT(
+static_assert(
     ((kNumUrls % syncer::kDefaultMaxCommitBatchSize) >=
      (syncer::kDefaultMaxCommitBatchSize / 2)) &&
     ((kNumUrls % syncer::kDefaultMaxCommitBatchSize) <=
      ((syncer::kDefaultMaxCommitBatchSize + 1) / 2)),
-    kNumUrlsShouldBeBetweenTwoMultiplesOfkDefaultMaxCommitBatchSize);
+    "kNumUrls should be between two multiples of kDefaultMaxCommitBatchSize");
 
 class TypedUrlsSyncPerfTest : public SyncTest {
  public:
