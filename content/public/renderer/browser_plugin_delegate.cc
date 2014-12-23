@@ -4,10 +4,17 @@
 
 #include "content/public/renderer/browser_plugin_delegate.h"
 
+#include "v8/include/v8.h"
+
 namespace content {
 
 bool BrowserPluginDelegate::OnMessageReceived(const IPC::Message& message) {
   return false;
+}
+
+v8::Local<v8::Object> BrowserPluginDelegate::V8ScriptableObject(
+    v8::Isolate* isolate) {
+  return v8::Local<v8::Object>();
 }
 
 }  // namespace content

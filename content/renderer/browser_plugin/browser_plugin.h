@@ -78,6 +78,8 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual blink::WebPluginContainer* container() const override;
   virtual bool initialize(blink::WebPluginContainer* container) override;
   virtual void destroy() override;
+  virtual v8::Local<v8::Object> v8ScriptableObject(
+      v8::Isolate* isolate) override;
   virtual bool supportsKeyboardFocus() const override;
   virtual bool supportsEditCommands() const override;
   virtual bool supportsInputMethod() const override;

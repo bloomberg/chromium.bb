@@ -374,6 +374,10 @@ void BrowserPlugin::destroy() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
+v8::Local<v8::Object> BrowserPlugin::v8ScriptableObject(v8::Isolate* isolate) {
+  return delegate_->V8ScriptableObject(isolate);
+}
+
 bool BrowserPlugin::supportsKeyboardFocus() const {
   return true;
 }
