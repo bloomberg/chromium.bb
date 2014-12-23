@@ -551,11 +551,23 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
+// Fails on linux debug: http://crbug.com/444827.
+#if defined(OS_LINUX)
+#define MAYBE_Playback_VP9Video_WebM DISABLED_Playback_VP9Video_WebM
+#else
+#define MAYBE_Playback_VP9Video_WebM Playback_VP9Video_WebM
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VP9Video_WebM) {
   TestSimplePlayback("bear-320x240-v-vp9_enc-v.webm", kWebMVP9VideoOnly);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
+// Fails on linux debug: http://crbug.com/444827.
+#if defined(OS_LINUX)
+#define MAYBE_Playback_AudioOnly_WebM_Opus DISABLED_Playback_AudioOnly_WebM_Opus
+#else
+#define MAYBE_Playback_AudioOnly_WebM_Opus Playback_AudioOnly_WebM_Opus
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_AudioOnly_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-a_enc-a.webm", kWebMAudioOnly);
 }
 
@@ -583,7 +595,13 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
   TestConfigChange();
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
+// Fails on linux debug: http://crbug.com/444827.
+#if defined(OS_LINUX)
+#define MAYBE_FrameSizeChangeVideo DISABLED_FrameSizeChangeVideo
+#else
+#define MAYBE_FrameSizeChangeVideo FrameSizeChangeVideo
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_FrameSizeChangeVideo) {
   // Times out on Windows XP. http://crbug.com/171937
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
