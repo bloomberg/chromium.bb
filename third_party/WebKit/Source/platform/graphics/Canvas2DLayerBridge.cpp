@@ -441,17 +441,14 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
     // from the end of m_mailboxes.
     auto releasedMailboxInfo = m_mailboxes.end();
     auto firstMailbox = m_mailboxes.begin();
-    bool found = false;
+
     while (releasedMailboxInfo != firstMailbox) {
         --releasedMailboxInfo;
         if (nameEquals(releasedMailboxInfo->m_mailbox, mailbox)) {
-            found = true;
             break;
         }
+        ASSERT(releasedMailboxInfo != firstMailbox); // Reached last entry without finding a match, should never happen.
     }
-    ASSERT(found);
-    if (!found)
-        return;
 
     if (!contextLost) {
         // Invalidate texture state in case the compositor altered it since the copy-on-write.
