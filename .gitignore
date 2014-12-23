@@ -1,7 +1,5 @@
 *.pyc
 clang_format/script/
-libc++/trunk
-libc++abi/trunk
 linux*/gn
 linux*/clang-format
 mac/gn
