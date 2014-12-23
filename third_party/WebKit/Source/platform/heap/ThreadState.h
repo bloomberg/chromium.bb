@@ -573,9 +573,8 @@ public:
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
-    BaseHeapPage* contains(Address address) { return pageFromAddress(address); }
-    BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
-    BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
+    BaseHeapPage* findPageFromAddress(Address);
+    BaseHeapPage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
 #endif
 
     // List of persistent roots allocated on the given thread.
@@ -688,13 +687,6 @@ private:
     }
 
     void runScheduledGC(StackState);
-
-#if ENABLE(ASSERT)
-    // Finds the Blink HeapPage in this thread-specific heap
-    // corresponding to a given address. Return nullptr if the address is
-    // not contained in any of the pages.
-    BaseHeapPage* pageFromAddress(Address);
-#endif
 
     // When ThreadState is detaching from non-main thread its
     // heap is expected to be empty (because it is going away).

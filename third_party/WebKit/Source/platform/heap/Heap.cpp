@@ -768,7 +768,7 @@ static bool isLargeObjectAligned(LargeObject<Header>* largeObject, Address addre
 }
 
 template<typename Header>
-BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
+BaseHeapPage* ThreadHeap<Header>::findPageFromAddress(Address address)
 {
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
         if (page->contains(address))
@@ -890,7 +890,7 @@ bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
         ASAN_UNPOISON_MEMORY_REGION(header->payloadEnd(), expandSize);
         FILL_ZERO_IF_NOT_PRODUCTION(header->payloadEnd(), expandSize);
         header->setSize(allocationSize);
-        ASSERT(pageFromAddress(header->payloadEnd() - 1));
+        ASSERT(findPageFromAddress(header->payloadEnd() - 1));
         return true;
     }
     return false;
@@ -913,7 +913,7 @@ void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
         ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
         HeapObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) HeapObjectHeader(shrinkSize);
         freedHeader->markPromptlyFreed();
-        ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == pageFromAddress(reinterpret_cast<Address>(header)));
+        ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == findPageFromAddress(reinterpret_cast<Address>(header)));
         m_promptlyFreedSize += shrinkSize;
         header->setSize(allocationSize);
     }
@@ -929,7 +929,7 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
     size_t size = header->size();
     size_t payloadSize = header->payloadSize();
     ASSERT(size > 0);
-    ASSERT(pageFromObject(address) == pageFromAddress(address));
+    ASSERT(pageFromObject(address) == findPageFromAddress(address));
 
     {
         ThreadState::SweepForbiddenScope forbiddenScope(m_threadState);
@@ -1044,10 +1044,10 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     Address headerAddress = largeObjectAddress + sizeof(LargeObject<Header>) + headerPadding<Header>();
     memset(headerAddress, 0, size);
     Header* header = new (NotNull, headerAddress) Header(size, gcInfo);
-    header->checkHeader();
     Address result = headerAddress + sizeof(*header);
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
     LargeObject<Header>* largeObject = new (largeObjectAddress) LargeObject<Header>(pageMemory, gcInfo, threadState());
+    header->checkHeader();
 
     // Poison the object header and allocationGranularity bytes after the object
     ASAN_POISON_MEMORY_REGION(header, sizeof(*header));
@@ -2194,11 +2194,11 @@ void Heap::doShutdown()
 }
 
 #if ENABLE(ASSERT)
-BaseHeapPage* Heap::contains(Address address)
+BaseHeapPage* Heap::findPageFromAddress(Address address)
 {
     ASSERT(ThreadState::current()->isInGC());
     for (ThreadState* state : ThreadState::attachedThreads()) {
-        if (BaseHeapPage* page = state->contains(address))
+        if (BaseHeapPage* page = state->findPageFromAddress(address))
             return page;
     }
     return nullptr;
@@ -2206,7 +2206,7 @@ BaseHeapPage* Heap::contains(Address address)
 
 bool Heap::containedInHeapOrOrphanedPage(void* object)
 {
-    return contains(object) || orphanedPagePool()->contains(object);
+    return findPageFromAddress(object) || orphanedPagePool()->contains(object);
 }
 #endif
 
@@ -2333,10 +2333,8 @@ void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback
 
 void Heap::pushWeakPointerCallback(void* closure, void* object, WeakPointerCallback callback)
 {
-    ASSERT(Heap::contains(object));
     BaseHeapPage* page = pageFromObject(object);
     ASSERT(!page->orphaned());
-    ASSERT(Heap::contains(object) == page);
     ThreadState* state = page->threadState();
     state->pushWeakPointerCallback(closure, callback);
 }

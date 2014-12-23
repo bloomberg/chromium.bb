@@ -1758,11 +1758,11 @@ TEST(HeapTest, MarkTest)
     {
         Bar::s_live = 0;
         Persistent<Bar> bar = Bar::create();
-        ASSERT(ThreadState::current()->contains(bar));
+        ASSERT(ThreadState::current()->findPageFromAddress(bar));
         EXPECT_EQ(1u, Bar::s_live);
         {
             Foo* foo = Foo::create(bar);
-            ASSERT(ThreadState::current()->contains(foo));
+            ASSERT(ThreadState::current()->findPageFromAddress(foo));
             EXPECT_EQ(2u, Bar::s_live);
             EXPECT_TRUE(reinterpret_cast<Address>(foo) != reinterpret_cast<Address>(bar.get()));
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
@@ -1782,14 +1782,14 @@ TEST(HeapTest, DeepTest)
     Bar::s_live = 0;
     {
         Bar* bar = Bar::create();
-        ASSERT(ThreadState::current()->contains(bar));
+        ASSERT(ThreadState::current()->findPageFromAddress(bar));
         Foo* foo = Foo::create(bar);
-        ASSERT(ThreadState::current()->contains(foo));
+        ASSERT(ThreadState::current()->findPageFromAddress(foo));
         EXPECT_EQ(2u, Bar::s_live);
         for (unsigned i = 0; i < depth; i++) {
             Foo* foo2 = Foo::create(foo);
             foo = foo2;
-            ASSERT(ThreadState::current()->contains(foo));
+            ASSERT(ThreadState::current()->findPageFromAddress(foo));
         }
         EXPECT_EQ(depth + 2, Bar::s_live);
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
@@ -1932,8 +1932,8 @@ TEST(HeapTest, LargeHeapObjects)
     {
         int slack = 8; // LargeHeapObject points to an IntWrapper that is also allocated.
         Persistent<LargeHeapObject> object = LargeHeapObject::create();
-        ASSERT(ThreadState::current()->contains(object));
-        ASSERT(ThreadState::current()->contains(reinterpret_cast<char*>(object.get()) + sizeof(LargeHeapObject) - 1));
+        ASSERT(ThreadState::current()->findPageFromAddress(object));
+        ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<char*>(object.get()) + sizeof(LargeHeapObject) - 1));
 #if ENABLE(GC_PROFILE_MARKING)
         const GCInfo* info = ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()));
         EXPECT_NE(reinterpret_cast<const GCInfo*>(0), info);

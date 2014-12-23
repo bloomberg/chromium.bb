@@ -512,16 +512,6 @@ protected:
     friend class ThreadHeap<Header>;
 };
 
-// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
-// pages are aligned at blinkPageBase plus an OS page size.
-// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
-// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
-PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
-{
-    Address address = reinterpret_cast<Address>(const_cast<void*>(object));
-    return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
-}
-
 // Large allocations are allocated as separate objects and linked in a list.
 //
 // In order to use the same memory allocation routines for everything allocated
@@ -729,7 +719,7 @@ public:
     // Find the page in this thread heap containing the given
     // address.  Returns 0 if the address is not contained in any
     // page in this thread heap.
-    virtual BaseHeapPage* pageFromAddress(Address) = 0;
+    virtual BaseHeapPage* findPageFromAddress(Address) = 0;
 #endif
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfoOfLargeObject(Address) = 0;
@@ -794,7 +784,7 @@ public:
     virtual void cleanupPages() override;
 
 #if ENABLE(ASSERT)
-    virtual BaseHeapPage* pageFromAddress(Address) override;
+    virtual BaseHeapPage* findPageFromAddress(Address) override;
 #endif
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfoOfLargeObject(Address) override;
@@ -819,8 +809,8 @@ public:
 
     void addToFreeList(Address address, size_t size)
     {
-        ASSERT(pageFromAddress(address));
-        ASSERT(pageFromAddress(address + size - 1));
+        ASSERT(findPageFromAddress(address));
+        ASSERT(findPageFromAddress(address + size - 1));
         m_freeList.addToFreeList(address, size);
     }
 
@@ -848,7 +838,7 @@ private:
     bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
     void setAllocationPoint(Address point, size_t size)
     {
-        ASSERT(!point || pageFromAddress(point));
+        ASSERT(!point || findPageFromAddress(point));
         ASSERT(size <= HeapPage<Header>::payloadSize());
         if (hasCurrentAllocationArea())
             addToFreeList(currentAllocationPoint(), remainingAllocationSize());
@@ -906,9 +896,8 @@ public:
     static void doShutdown();
 
 #if ENABLE(ASSERT)
-    static BaseHeapPage* contains(Address);
-    static BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
-    static BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
+    static BaseHeapPage* findPageFromAddress(Address);
+    static BaseHeapPage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
     static bool containedInHeapOrOrphanedPage(void*);
 #endif
 
@@ -1177,7 +1166,7 @@ public:
     void ref()
     {
         if (UNLIKELY(!m_refCount)) {
-            ASSERT(ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(reinterpret_cast<Address>(this)));
+            ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<Address>(this)));
             makeKeepAlive();
         }
         ++m_refCount;
@@ -1276,6 +1265,18 @@ private:
 #define GC_PLUGIN_IGNORE(bug)
 #endif
 
+// Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
+// pages are aligned at blinkPageBase plus an OS page size.
+// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
+// typed heaps.  This is only exported to enable tests in HeapTest.cpp.
+PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
+{
+    Address address = reinterpret_cast<Address>(const_cast<void*>(object));
+    BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
+    ASSERT(page->contains(address));
+    return page;
+}
+
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {
@@ -1370,7 +1371,7 @@ inline Address ThreadHeap<Header>::allocateAtAddress(Address headerAddress, size
     // Unpoison the memory used for the object (payload).
     ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(Header));
     FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(Header));
-    ASSERT(pageFromAddress(headerAddress + allocationSize - 1));
+    ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
     return result;
 }
 

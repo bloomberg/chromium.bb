@@ -278,7 +278,7 @@ private:
     // inspecting the heap of running threads.
 #define ASSERT_IS_VALID_PERSISTENT_POINTER(pointer) \
     bool isGlobalPersistent = WTF::IsSubclass<RootsAccessor, GlobalPersistents>::value; \
-    ASSERT(!pointer || isGlobalPersistent || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(pointer))
+    ASSERT(!pointer || isGlobalPersistent || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->findPageFromAddress(pointer))
 #else
 #define ASSERT_IS_VALID_PERSISTENT_POINTER(pointer)
 #endif
