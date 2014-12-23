@@ -6,11 +6,14 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "media/blink/webencryptedmediaclient_impl.h"
+#include "media/cdm/default_cdm_factory.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
@@ -100,11 +103,12 @@ HTMLDocument::HTMLDocument(
     WebMediaPlayerFactory* web_media_player_factory)
     : response_(response.Pass()),
       shell_(shell),
-      web_view_(NULL),
-      root_(NULL),
+      web_view_(nullptr),
+      root_(nullptr),
       view_manager_client_factory_(shell_, this),
       compositor_thread_(compositor_thread),
-      web_media_player_factory_(web_media_player_factory) {
+      web_media_player_factory_(web_media_player_factory),
+      web_encrypted_media_client_(nullptr) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
@@ -196,8 +200,7 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
-  return web_media_player_factory_->CreateMediaPlayer(frame, url, client,
-                                                      shell_);
+  return createMediaPlayer(frame, url, client, nullptr);
 }
 
 blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
@@ -205,7 +208,8 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  return createMediaPlayer(frame, url, client);
+  return web_media_player_factory_->CreateMediaPlayer(frame, url, client,
+                                                      initial_cdm, shell_);
 }
 
 blink::WebFrame* HTMLDocument::createChildFrame(
@@ -259,6 +263,14 @@ void HTMLDocument::didNavigateWithinPage(
     const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
   navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
+}
+
+blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
+  if (!web_encrypted_media_client_) {
+    web_encrypted_media_client_ = new media::WebEncryptedMediaClientImpl(
+        make_scoped_ptr(new media::DefaultCdmFactory()));
+  }
+  return web_encrypted_media_client_;
 }
 
 void HTMLDocument::OnViewBoundsChanged(View* view,

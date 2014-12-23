@@ -28,6 +28,10 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace media {
+class WebEncryptedMediaClientImpl;
+}
+
 namespace mojo {
 class ViewManager;
 class View;
@@ -97,6 +101,7 @@ class HTMLDocument : public blink::WebViewClient,
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
+  virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
 
   // ViewManagerDelegate methods:
   void OnEmbed(
@@ -130,6 +135,9 @@ class HTMLDocument : public blink::WebViewClient,
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
   WebMediaPlayerFactory* web_media_player_factory_;
+
+  // EncryptedMediaClient attached to this frame; lazily initialized.
+  media::WebEncryptedMediaClientImpl* web_encrypted_media_client_;
 
   // HTMLDocument owns these pointers.
   std::set<AxProviderImpl*> ax_provider_impls_;

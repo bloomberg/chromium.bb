@@ -17,6 +17,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
+class WebContentDecryptionModule;
 class WebMediaPlayer;
 class WebLocalFrame;
 class WebURL;
@@ -44,10 +45,12 @@ class WebMediaPlayerFactory {
       bool enable_mojo_media_renderer);
   ~WebMediaPlayerFactory();
 
-  blink::WebMediaPlayer* CreateMediaPlayer(blink::WebLocalFrame* frame,
-                                           const blink::WebURL& url,
-                                           blink::WebMediaPlayerClient* client,
-                                           mojo::Shell* shell);
+  blink::WebMediaPlayer* CreateMediaPlayer(
+      blink::WebLocalFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client,
+      blink::WebContentDecryptionModule* initial_cdm,
+      mojo::Shell* shell);
 
  private:
   const media::AudioHardwareConfig& GetAudioHardwareConfig();

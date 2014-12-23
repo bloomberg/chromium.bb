@@ -22,6 +22,7 @@
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 #if !defined(COMPONENT_BUILD)
 #include "base/i18n/icu_util.h"
@@ -47,6 +48,9 @@ namespace html_viewer {
 // Enable MediaRenderer in media pipeline instead of using the internal
 // media::Renderer implementation.
 const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
+
+// Enables support for Encrypted Media Extensions (e.g. MediaKeys).
+const char kEnableEncryptedMedia[] = "enable-encrypted-media";
 
 class HTMLViewer;
 
@@ -173,6 +177,9 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 
     bool enable_mojo_media_renderer =
         command_line->HasSwitch(kEnableMojoMediaRenderer);
+
+    if (command_line->HasSwitch(kEnableEncryptedMedia))
+      blink::WebRuntimeFeatures::enableEncryptedMedia(true);
 
     compositor_thread_.Start();
     web_media_player_factory_.reset(new WebMediaPlayerFactory(

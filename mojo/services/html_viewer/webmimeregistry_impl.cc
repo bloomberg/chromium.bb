@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "media/base/key_systems.h"
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -104,8 +105,24 @@ bool WebMimeRegistryImpl::supportsEncryptedMediaMIMEType(
     const blink::WebString& key_system,
     const blink::WebString& mime_type,
     const blink::WebString& codecs) {
-  NOTIMPLEMENTED();
-  return false;
+  // Only supports ASCII parameters.
+  if (!base::IsStringASCII(key_system) || !base::IsStringASCII(mime_type) ||
+      !base::IsStringASCII(codecs)) {
+    return false;
+  }
+
+  if (key_system.isEmpty())
+    return false;
+
+  const std::string mime_type_ascii = base::UTF16ToASCII(mime_type);
+
+  std::vector<std::string> codec_vector;
+  bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
+  net::ParseCodecString(base::UTF16ToASCII(codecs), &codec_vector,
+                        strip_suffix);
+
+  return media::IsSupportedKeySystemWithMediaMimeType(
+      mime_type_ascii, codec_vector, base::UTF16ToASCII(key_system));
 }
 
 blink::WebMimeRegistry::SupportsType
