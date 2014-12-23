@@ -24,52 +24,42 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
  public:
   MockScrollElasticityHelper()
       : set_stretch_amount_count_(0),
-        request_animate_count_(0),
-        pinned_neg_x_(false),
-        pinned_pos_x_(false),
-        pinned_neg_y_(false),
-        pinned_pos_y_(false) {}
+        request_animate_count_(0) {}
   ~MockScrollElasticityHelper() override {}
 
   // cc::ScrollElasticityHelper implementation:
-  gfx::Vector2dF StretchAmount() override { return stretch_amount_; }
+  gfx::Vector2dF StretchAmount() const override { return stretch_amount_; }
   void SetStretchAmount(const gfx::Vector2dF& stretch_amount) override {
     set_stretch_amount_count_ += 1;
     stretch_amount_ = stretch_amount;
   }
-  bool PinnedInDirection(const gfx::Vector2dF& direction) override {
-    if (pinned_neg_x_ && direction.x() < 0)
-      return true;
-    if (pinned_pos_x_ && direction.x() > 0)
-      return true;
-    if (pinned_neg_y_ && direction.y() < 0)
-      return true;
-    if (pinned_pos_y_ && direction.y() > 0)
-      return true;
-    return false;
+  gfx::ScrollOffset ScrollOffset() const override { return scroll_offset_; }
+  gfx::ScrollOffset MaxScrollOffset() const override {
+    return max_scroll_offset_;
   }
-  bool CanScrollHorizontally() override { return true; }
-  bool CanScrollVertically() override { return true; }
+  void ScrollBy(const gfx::Vector2dF& delta) override {
+    scroll_offset_ += gfx::ScrollOffset(delta);
+  }
   void RequestAnimate() override { request_animate_count_ += 1; }
 
   // Counters for number of times functions were called.
   int request_animate_count() const { return request_animate_count_; }
   int set_stretch_amount_count() const { return set_stretch_amount_count_; }
-  void SetPinned(bool neg_x, bool pos_x, bool neg_y, bool pos_y) {
-    pinned_neg_x_ = neg_x;
-    pinned_pos_x_ = pos_x;
-    pinned_neg_y_ = neg_y;
-    pinned_pos_y_ = pos_y;
+
+  void SetScrollOffsetAndMaxScrollOffset(
+      const gfx::ScrollOffset& scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset) {
+    scroll_offset_ = scroll_offset;
+    max_scroll_offset_ = max_scroll_offset;
   }
 
  private:
   gfx::Vector2dF stretch_amount_;
   int set_stretch_amount_count_;
   int request_animate_count_;
-  bool pinned_neg_x_;
-  bool pinned_pos_x_;
-  bool pinned_neg_y_;
-  bool pinned_pos_y_;
+
+  gfx::ScrollOffset scroll_offset_;
+  gfx::ScrollOffset max_scroll_offset_;
 };
 
 class ScrollElasticityControllerTest : public testing::Test {
@@ -120,7 +110,8 @@ class ScrollElasticityControllerTest : public testing::Test {
 // Verify that stretching only occurs in one axis at a time, and that it
 // is biased to the Y axis.
 TEST_F(ScrollElasticityControllerTest, Axis) {
-  helper_.SetPinned(true, true, true, true);
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
+                                            gfx::ScrollOffset(0, 0));
 
   // If we push equally in the X and Y directions, we should see a stretch only
   // in the Y direction.
@@ -156,7 +147,8 @@ TEST_F(ScrollElasticityControllerTest, MinimumDeltaBeforeStretch) {
   // We should not start stretching while we are not pinned in the direction
   // of the scroll (even if there is an overscroll delta). We have to wait for
   // the regular scroll to eat all of the events.
-  helper_.SetPinned(false, false, false, false);
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
+                                            gfx::ScrollOffset(10, 10));
   SendMouseWheelEvent(PhaseMayBegin, PhaseNone);
   SendMouseWheelEvent(PhaseBegan, PhaseNone);
   SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
@@ -168,7 +160,8 @@ TEST_F(ScrollElasticityControllerTest, MinimumDeltaBeforeStretch) {
   // Now pin the -X and +Y direction. The first event will not generate a
   // stretch
   // because it is below the delta threshold of 10.
-  helper_.SetPinned(true, false, false, true);
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 10),
+                                            gfx::ScrollOffset(10, 10));
   SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, 10),
                       gfx::Vector2dF(0, 8));
   EXPECT_EQ(0, helper_.set_stretch_amount_count());
@@ -207,7 +200,8 @@ TEST_F(ScrollElasticityControllerTest, MinimumDeltaBeforeStretch) {
 TEST_F(ScrollElasticityControllerTest, MomentumAnimate) {
   // Do an active scroll, then switch to the momentum phase and scroll for a
   // bit.
-  helper_.SetPinned(false, false, false, false);
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
+                                            gfx::ScrollOffset(10, 10));
   SendMouseWheelEvent(PhaseBegan, PhaseNone);
   SendMouseWheelEvent(PhaseChanged, PhaseNone, gfx::Vector2dF(0, -80),
                       gfx::Vector2dF(0, 0));
@@ -227,7 +221,8 @@ TEST_F(ScrollElasticityControllerTest, MomentumAnimate) {
 
   // Hit the -Y edge and overscroll slightly, but not enough to go over the
   // threshold to cause a stretch.
-  helper_.SetPinned(false, false, true, false);
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 0),
+                                            gfx::ScrollOffset(10, 10));
   SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
                       gfx::Vector2dF(0, -8));
   EXPECT_EQ(0, helper_.set_stretch_amount_count());
@@ -293,6 +288,43 @@ TEST_F(ScrollElasticityControllerTest, MomentumAnimate) {
   TickCurrentTimeAndAnimate();
   EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
   EXPECT_EQ(animate_count, helper_.request_animate_count());
+}
+
+// Verify that an stretch opposing a scroll is correctly resolved.
+TEST_F(ScrollElasticityControllerTest, ReconcileStretchAndScroll) {
+  SendMouseWheelEvent(PhaseBegan, PhaseNone);
+
+  // Verify completely knocking out the scroll in the -Y direction.
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
+                                            gfx::ScrollOffset(10, 10));
+  helper_.SetStretchAmount(gfx::Vector2dF(0, -10));
+  controller_.ReconcileStretchAndScroll();
+  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, -5));
+  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(5, 0));
+
+  // Verify partially knocking out the scroll in the -Y direction.
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 8),
+                                            gfx::ScrollOffset(10, 10));
+  helper_.SetStretchAmount(gfx::Vector2dF(0, -5));
+  controller_.ReconcileStretchAndScroll();
+  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
+  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(5, 3));
+
+  // Verify completely knocking out the scroll in the +X direction.
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(5, 5),
+                                            gfx::ScrollOffset(10, 10));
+  helper_.SetStretchAmount(gfx::Vector2dF(10, 0));
+  controller_.ReconcileStretchAndScroll();
+  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(5, 0));
+  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(10, 5));
+
+  // Verify partially knocking out the scroll in the +X and +Y directions.
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(2, 3),
+                                            gfx::ScrollOffset(10, 10));
+  helper_.SetStretchAmount(gfx::Vector2dF(5, 5));
+  controller_.ReconcileStretchAndScroll();
+  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
+  EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(7, 8));
 }
 
 }  // namespace

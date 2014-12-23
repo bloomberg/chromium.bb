@@ -1106,6 +1106,13 @@ class ThreadCheckingInputHandlerClient : public InputHandlerClient {
     *received_stop_flinging_ = true;
   }
 
+  void ReconcileElasticOverscrollAndRootScroll() override {
+    if (!task_runner_->BelongsToCurrentThread()) {
+      ADD_FAILURE() << "ReconcileElasticOverscrollAndRootScroll called on "
+                    << "wrong thread";
+    }
+  }
+
  private:
   base::SingleThreadTaskRunner* task_runner_;
   bool* received_stop_flinging_;

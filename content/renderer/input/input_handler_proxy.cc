@@ -752,6 +752,11 @@ void InputHandlerProxy::MainThreadHasStoppedFlinging() {
   client_->DidStopFlinging();
 }
 
+void InputHandlerProxy::ReconcileElasticOverscrollAndRootScroll() {
+  if (scroll_elasticity_controller_)
+    scroll_elasticity_controller_->ReconcileStretchAndScroll();
+}
+
 void InputHandlerProxy::HandleOverscroll(
     const gfx::Point& causal_event_viewport_point,
     const cc::InputHandlerScrollResult& scroll_result) {

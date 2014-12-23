@@ -1054,6 +1054,9 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                "LayerTreeHostImpl::PrepareToDraw",
                "SourceFrameNumber",
                active_tree_->source_frame_number());
+  if (input_handler_client_)
+    input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
+
   // This will cause NotifyTileStateChanged() to be called for any visible tiles
   // that completed, which will add damage to the frame for them so they appear
   // as part of the current frame being drawn.

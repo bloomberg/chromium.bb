@@ -6,7 +6,9 @@
 
 #include <math.h>
 
+#include "base/bind.h"
 #include "cc/input/input_handler.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 // InputScrollElasticityController is based on
 // WebKit/Source/platform/mac/InputScrollElasticityController.mm
@@ -46,9 +48,16 @@ const float kRubberbandStiffness = 20;
 const float kRubberbandAmplitude = 0.31f;
 const float kRubberbandPeriod = 1.6f;
 
-gfx::Vector2dF StretchAmountForTimeDelta(const gfx::Vector2dF& initial_position,
-                                         const gfx::Vector2dF& initial_velocity,
-                                         float elapsed_time) {
+// For these functions which compute the stretch amount, always return a
+// rounded value, instead of a floating-point value. The reason for this is
+// that Blink's scrolling can become erratic with fractional scroll amounts (in
+// particular, if you have a scroll offset of 0.5, Blink will never actually
+// bring that value back to 0, which breaks the logic used to determine if a
+// layer is pinned in a direction).
+
+gfx::Vector2d StretchAmountForTimeDelta(const gfx::Vector2dF& initial_position,
+                                        const gfx::Vector2dF& initial_velocity,
+                                        float elapsed_time) {
   // Compute the stretch amount at a given time after some initial conditions.
   // Do this by first computing an intermediary position given the initial
   // position, initial velocity, time elapsed, and no external forces. Then
@@ -59,26 +68,30 @@ gfx::Vector2dF StretchAmountForTimeDelta(const gfx::Vector2dF& initial_position,
   float critical_dampening_factor =
       expf((-elapsed_time * kRubberbandStiffness) / period);
 
-  return gfx::ScaleVector2d(
+  return gfx::ToRoundedVector2d(gfx::ScaleVector2d(
       initial_position +
           gfx::ScaleVector2d(initial_velocity, elapsed_time * amplitude),
-      critical_dampening_factor);
+      critical_dampening_factor));
 }
 
-gfx::Vector2dF StretchAmountForReboundDelta(const gfx::Vector2dF& delta) {
+gfx::Vector2d StretchAmountForReboundDelta(const gfx::Vector2dF& delta) {
   float stiffness = std::max(kRubberbandStiffness, 1.0f);
-  return gfx::ScaleVector2d(delta, 1.0f / stiffness);
+  return gfx::ToRoundedVector2d(gfx::ScaleVector2d(delta, 1.0f / stiffness));
 }
 
-gfx::Vector2dF StretchScrollForceForStretchAmount(const gfx::Vector2dF& delta) {
-  return gfx::ScaleVector2d(delta, kRubberbandStiffness);
+gfx::Vector2d StretchScrollForceForStretchAmount(const gfx::Vector2dF& delta) {
+  return gfx::ToRoundedVector2d(
+      gfx::ScaleVector2d(delta, kRubberbandStiffness));
 }
 
 }  // namespace
 
 InputScrollElasticityController::InputScrollElasticityController(
     cc::ScrollElasticityHelper* helper)
-    : helper_(helper), state_(kStateInactive), weak_factory_(this) {
+    : helper_(helper),
+      state_(kStateInactive),
+      momentum_animation_reset_at_next_frame_(false),
+      weak_factory_(this) {
 }
 
 InputScrollElasticityController::~InputScrollElasticityController() {
@@ -181,12 +194,9 @@ void InputScrollElasticityController::Overscroll(
     adjusted_overscroll_delta.set_y(0);
 
   // Don't allow overscrolling in a direction where scrolling is possible.
-  if (!helper_->PinnedInDirection(
-          gfx::Vector2dF(adjusted_overscroll_delta.x(), 0))) {
+  if (!PinnedHorizontally(adjusted_overscroll_delta.x()))
     adjusted_overscroll_delta.set_x(0);
-  }
-  if (!helper_->PinnedInDirection(
-          gfx::Vector2dF(0, adjusted_overscroll_delta.y()))) {
+  if (!PinnedVertically(adjusted_overscroll_delta.y())) {
     adjusted_overscroll_delta.set_y(0);
   }
 
@@ -235,6 +245,7 @@ void InputScrollElasticityController::EnterStateMomentumAnimated(
   momentum_animation_start_time_ = triggering_event_timestamp;
   momentum_animation_initial_stretch_ = helper_->StretchAmount();
   momentum_animation_initial_velocity_ = scroll_velocity;
+  momentum_animation_reset_at_next_frame_ = false;
 
   // Similarly to the logic in Overscroll, prefer vertical scrolling to
   // horizontal scrolling.
@@ -242,10 +253,10 @@ void InputScrollElasticityController::EnterStateMomentumAnimated(
       fabsf(momentum_animation_initial_velocity_.x()))
     momentum_animation_initial_velocity_.set_x(0);
 
-  if (!helper_->CanScrollHorizontally())
+  if (!CanScrollHorizontally())
     momentum_animation_initial_velocity_.set_x(0);
 
-  if (!helper_->CanScrollVertically())
+  if (!CanScrollVertically())
     momentum_animation_initial_velocity_.set_y(0);
 
   helper_->RequestAnimate();
@@ -254,6 +265,13 @@ void InputScrollElasticityController::EnterStateMomentumAnimated(
 void InputScrollElasticityController::Animate(base::TimeTicks time) {
   if (state_ != kStateMomentumAnimated)
     return;
+
+  if (momentum_animation_reset_at_next_frame_) {
+    momentum_animation_start_time_ = time;
+    momentum_animation_initial_stretch_ = helper_->StretchAmount();
+    momentum_animation_initial_velocity_ = gfx::Vector2dF();
+    momentum_animation_reset_at_next_frame_ = false;
+  }
 
   float time_delta =
       std::max((time - momentum_animation_start_time_).InSecondsF(), 0.0);
@@ -275,7 +293,7 @@ void InputScrollElasticityController::Animate(base::TimeTicks time) {
   // If we are not pinned in the direction of the delta, then the delta is only
   // allowed to decrease the existing stretch -- it cannot increase a stretch
   // until it is pinned.
-  if (!helper_->PinnedInDirection(gfx::Vector2dF(stretch_delta.x(), 0))) {
+  if (!PinnedHorizontally(stretch_delta.x())) {
     if (stretch_delta.x() > 0 && old_stretch_amount.x() < 0)
       stretch_delta.set_x(std::min(stretch_delta.x(), -old_stretch_amount.x()));
     else if (stretch_delta.x() < 0 && old_stretch_amount.x() > 0)
@@ -283,7 +301,7 @@ void InputScrollElasticityController::Animate(base::TimeTicks time) {
     else
       stretch_delta.set_x(0);
   }
-  if (!helper_->PinnedInDirection(gfx::Vector2dF(0, stretch_delta.y()))) {
+  if (!PinnedVertically(stretch_delta.y())) {
     if (stretch_delta.y() > 0 && old_stretch_amount.y() < 0)
       stretch_delta.set_y(std::min(stretch_delta.y(), -old_stretch_amount.y()));
     else if (stretch_delta.y() < 0 && old_stretch_amount.y() > 0)
@@ -297,6 +315,90 @@ void InputScrollElasticityController::Animate(base::TimeTicks time) {
       StretchScrollForceForStretchAmount(new_stretch_amount);
   helper_->SetStretchAmount(new_stretch_amount);
   helper_->RequestAnimate();
+}
+
+bool InputScrollElasticityController::PinnedHorizontally(
+    float direction) const {
+  gfx::ScrollOffset scroll_offset = helper_->ScrollOffset();
+  gfx::ScrollOffset max_scroll_offset = helper_->MaxScrollOffset();
+  if (direction < 0)
+    return scroll_offset.x() <= 0;
+  if (direction > 0)
+    return scroll_offset.x() >= max_scroll_offset.x();
+  return false;
+}
+
+bool InputScrollElasticityController::PinnedVertically(float direction) const {
+  gfx::ScrollOffset scroll_offset = helper_->ScrollOffset();
+  gfx::ScrollOffset max_scroll_offset = helper_->MaxScrollOffset();
+  if (direction < 0)
+    return scroll_offset.y() <= 0;
+  if (direction > 0)
+    return scroll_offset.y() >= max_scroll_offset.y();
+  return false;
+}
+
+bool InputScrollElasticityController::CanScrollHorizontally() const {
+  return helper_->MaxScrollOffset().x() > 0;
+}
+
+bool InputScrollElasticityController::CanScrollVertically() const {
+  return helper_->MaxScrollOffset().y() > 0;
+}
+
+void InputScrollElasticityController::ReconcileStretchAndScroll() {
+  gfx::Vector2dF stretch = helper_->StretchAmount();
+  if (stretch.IsZero())
+    return;
+
+  gfx::ScrollOffset scroll_offset = helper_->ScrollOffset();
+  gfx::ScrollOffset max_scroll_offset = helper_->MaxScrollOffset();
+
+  // Compute stretch_adjustment which will be added to |stretch| and subtracted
+  // from the |scroll_offset|.
+  gfx::Vector2dF stretch_adjustment;
+  if (stretch.x() < 0 && scroll_offset.x() > 0) {
+    stretch_adjustment.set_x(
+        std::min(-stretch.x(), static_cast<float>(scroll_offset.x())));
+  }
+  if (stretch.x() > 0 && scroll_offset.x() < max_scroll_offset.x()) {
+    stretch_adjustment.set_x(std::max(
+        -stretch.x(),
+        static_cast<float>(scroll_offset.x() - max_scroll_offset.x())));
+  }
+  if (stretch.y() < 0 && scroll_offset.y() > 0) {
+    stretch_adjustment.set_y(
+        std::min(-stretch.y(), static_cast<float>(scroll_offset.y())));
+  }
+  if (stretch.y() > 0 && scroll_offset.y() < max_scroll_offset.y()) {
+    stretch_adjustment.set_y(std::max(
+        -stretch.y(),
+        static_cast<float>(scroll_offset.y() - max_scroll_offset.y())));
+  }
+
+  if (stretch_adjustment.IsZero())
+    return;
+
+  gfx::Vector2dF new_stretch_amount = stretch + stretch_adjustment;
+  helper_->ScrollBy(-stretch_adjustment);
+  helper_->SetStretchAmount(new_stretch_amount);
+
+  // Update the internal state for the active scroll or animation to avoid
+  // discontinuities.
+  switch (state_) {
+    case kStateActiveScroll:
+      stretch_scroll_force_ =
+          StretchScrollForceForStretchAmount(new_stretch_amount);
+      break;
+    case kStateMomentumAnimated:
+      momentum_animation_reset_at_next_frame_ = true;
+      break;
+    default:
+      // These cases should not be hit because the stretch must be zero in the
+      // Inactive and MomentumScroll states.
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace content

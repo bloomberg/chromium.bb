@@ -2130,8 +2130,8 @@ static void CalculateDrawPropertiesInternal(
       data_for_children.in_subtree_of_page_scale_application_layer = true;
     }
     if (layer == globals.elastic_overscroll_application_layer) {
-      data_for_children.parent_matrix.Translate(globals.elastic_overscroll.x(),
-                                                globals.elastic_overscroll.y());
+      data_for_children.parent_matrix.Translate(
+          -globals.elastic_overscroll.x(), -globals.elastic_overscroll.y());
     }
 
     // Flatten to 2D if the layer doesn't preserve 3D.

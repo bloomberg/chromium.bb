@@ -61,6 +61,8 @@ class CONTENT_EXPORT InputScrollElasticityController {
       const cc::InputHandlerScrollResult& scroll_result);
   void Animate(base::TimeTicks time);
 
+  void ReconcileStretchAndScroll();
+
  private:
   enum State {
     // The initial state, during which the overscroll amount is zero and
@@ -94,6 +96,16 @@ class CONTENT_EXPORT InputScrollElasticityController {
       const base::TimeTicks& triggering_event_timestamp);
   void EnterStateInactive();
 
+  // Returns true if |direction| is pointing in a direction in which it is not
+  // possible to scroll any farther horizontally (or vertically). It is only in
+  // this circumstance that an overscroll in that direction may begin.
+  bool PinnedHorizontally(float direction) const;
+  bool PinnedVertically(float direction) const;
+  // Whether or not the content of the page is scrollable horizontaly (or
+  // vertically).
+  bool CanScrollHorizontally() const;
+  bool CanScrollVertically() const;
+
   cc::ScrollElasticityHelper* helper_;
   State state_;
 
@@ -110,8 +122,9 @@ class CONTENT_EXPORT InputScrollElasticityController {
   gfx::Vector2dF scroll_velocity;
   base::TimeTicks last_scroll_event_timestamp_;
 
-  // The force of the rubber-band spring. This is reset to zero only when in
-  // the Inactive state.
+  // The force of the rubber-band spring. This is equal to the cumulative sum
+  // of all overscroll offsets since entering a non-Inactive state. This is
+  // reset to zero only when entering the Inactive state.
   gfx::Vector2dF stretch_scroll_force_;
 
   // Momentum animation state. This state is valid only while the state is
@@ -119,6 +132,12 @@ class CONTENT_EXPORT InputScrollElasticityController {
   base::TimeTicks momentum_animation_start_time_;
   gfx::Vector2dF momentum_animation_initial_stretch_;
   gfx::Vector2dF momentum_animation_initial_velocity_;
+
+  // This is set in response to a scroll (most likely programmatic) occuring
+  // while animating the momentum phase. In this case, re-set the initial
+  // velocity, stretch, and start time at the next frame (this is the same
+  // behavior as would happen if the scroll were caused by an active scroll).
+  bool momentum_animation_reset_at_next_frame_;
 
   base::WeakPtrFactory<InputScrollElasticityController> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(InputScrollElasticityController);

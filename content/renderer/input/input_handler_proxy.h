@@ -51,6 +51,7 @@ class CONTENT_EXPORT InputHandlerProxy
   void WillShutdown() override;
   void Animate(base::TimeTicks time) override;
   void MainThreadHasStoppedFlinging() override;
+  void ReconcileElasticOverscrollAndRootScroll() override;
 
   // blink::WebGestureCurveTarget implementation.
   virtual bool scrollBy(const blink::WebFloatSize& offset,

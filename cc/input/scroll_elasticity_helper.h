@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
@@ -52,18 +53,14 @@ class CC_EXPORT ScrollElasticityHelper {
   virtual ~ScrollElasticityHelper() {}
 
   // The amount that the view is stretched past the normal allowable bounds.
-  virtual gfx::Vector2dF StretchAmount() = 0;
+  virtual gfx::Vector2dF StretchAmount() const = 0;
   virtual void SetStretchAmount(const gfx::Vector2dF& stretch_amount) = 0;
-  // Returns true if either component of |direction| is pointing in a direction
-  // in which it is not possible to scroll any farther. It is only in this
-  // circumstance that an overscroll in that direction may begin.
-  // TODO(ccameron): Note that it is possible for a scroll to occur against a
-  // previous over-scroll. Such a scroll needs to first cancel out the
-  // over-scroll, and only then may it start scrolling away from the edge.
-  virtual bool PinnedInDirection(const gfx::Vector2dF& direction) = 0;
-  // Whether or not the content of the page is scrollable in each direction.
-  virtual bool CanScrollHorizontally() = 0;
-  virtual bool CanScrollVertically() = 0;
+
+  // Functions for the scrolling of the root scroll layer.
+  virtual gfx::ScrollOffset ScrollOffset() const = 0;
+  virtual gfx::ScrollOffset MaxScrollOffset() const = 0;
+  virtual void ScrollBy(const gfx::Vector2dF& delta) = 0;
+
   // Request that the controller have its Animate method called for the next
   // frame.
   virtual void RequestAnimate() = 0;
