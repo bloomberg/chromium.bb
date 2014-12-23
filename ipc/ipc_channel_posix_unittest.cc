@@ -109,8 +109,8 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
   static const std::string GetChannelDirName();
 
  protected:
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   scoped_ptr<base::MessageLoopForIO> message_loop_;

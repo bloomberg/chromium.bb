@@ -178,7 +178,7 @@ class IPC_EXPORT Channel : public Sender {
   //
   // |message| must be allocated using operator new.  This object will be
   // deleted once the contents of the Message have been sent.
-  virtual bool Send(Message* message) override = 0;
+  bool Send(Message* message) override = 0;
 
   // NaCl in Non-SFI mode runs on Linux directly, and the following functions
   // compiled on Linux are also needed. Please see also comments in

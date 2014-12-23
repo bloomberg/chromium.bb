@@ -232,9 +232,9 @@ class MessageCountFilter : public IPC::MessageFilter {
 class IPCChannelProxyTest : public IPCTestBase {
  public:
   IPCChannelProxyTest() {}
-  virtual ~IPCChannelProxyTest() {}
+  ~IPCChannelProxyTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     IPCTestBase::SetUp();
 
     Init("ChannelProxyClient");
@@ -250,7 +250,7 @@ class IPCChannelProxyTest : public IPCTestBase {
     ASSERT_TRUE(StartClient());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     DestroyChannelProxy();
     thread_.reset();
     listener_.reset();
