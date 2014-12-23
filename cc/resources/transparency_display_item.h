@@ -19,7 +19,7 @@ namespace cc {
 
 class CC_EXPORT TransparencyDisplayItem : public DisplayItem {
  public:
-  virtual ~TransparencyDisplayItem();
+  ~TransparencyDisplayItem() override;
 
   static scoped_ptr<TransparencyDisplayItem> Create(
       float opacity,
@@ -43,7 +43,7 @@ class CC_EXPORT TransparencyDisplayItem : public DisplayItem {
 
 class CC_EXPORT EndTransparencyDisplayItem : public DisplayItem {
  public:
-  virtual ~EndTransparencyDisplayItem();
+  ~EndTransparencyDisplayItem() override;
 
   static scoped_ptr<EndTransparencyDisplayItem> Create() {
     return make_scoped_ptr(new EndTransparencyDisplayItem());

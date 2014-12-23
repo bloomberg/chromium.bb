@@ -5672,7 +5672,7 @@ class LCDTextTest
     : public LayerTreeHostCommonTestBase,
       public testing::TestWithParam<LCDTextTestParam> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     can_use_lcd_text_ = std::tr1::get<0>(GetParam());
     layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
 

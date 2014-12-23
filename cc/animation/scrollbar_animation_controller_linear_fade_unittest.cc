@@ -30,7 +30,7 @@ class ScrollbarAnimationControllerLinearFadeTest
   void SetNeedsScrollbarAnimationFrame() override { needs_frame_count_++; }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     const int kThumbThickness = 10;
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;

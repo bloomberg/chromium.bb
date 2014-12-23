@@ -15,7 +15,7 @@ namespace cc {
 class DelegatingRendererTest : public LayerTreeTest {
  public:
   DelegatingRendererTest() : LayerTreeTest(), output_surface_(NULL) {}
-  virtual ~DelegatingRendererTest() {}
+  ~DelegatingRendererTest() override {}
 
   scoped_ptr<OutputSurface> CreateOutputSurface() override {
     scoped_ptr<FakeOutputSurface> output_surface =

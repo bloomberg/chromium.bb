@@ -29,7 +29,7 @@ class ScrollbarAnimationControllerThinningTest
   void SetNeedsScrollbarAnimationFrame() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
     clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);

@@ -59,7 +59,7 @@ class FakeSchedulerClient : public SchedulerClient {
    public:
     explicit FakeExternalBeginFrameSource(FakeSchedulerClient* client)
         : client_(client) {}
-    virtual ~FakeExternalBeginFrameSource() {}
+    ~FakeExternalBeginFrameSource() override {}
 
     void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
       if (needs_begin_frames) {

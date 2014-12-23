@@ -76,7 +76,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
 class PictureLayerTilingIteratorTest : public testing::Test {
  public:
   PictureLayerTilingIteratorTest() {}
-  virtual ~PictureLayerTilingIteratorTest() {}
+  ~PictureLayerTilingIteratorTest() override {}
 
   void Initialize(const gfx::Size& tile_size,
                   float contents_scale,

@@ -43,7 +43,7 @@ class SurfaceFactoryTest : public testing::Test {
     factory_.Create(surface_id_);
   }
 
-  virtual ~SurfaceFactoryTest() {
+  ~SurfaceFactoryTest() override {
     if (!surface_id_.is_null())
       factory_.Destroy(surface_id_);
   }

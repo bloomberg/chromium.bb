@@ -19,7 +19,7 @@ namespace cc {
 
 class CC_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
-  virtual ~DrawingDisplayItem();
+  ~DrawingDisplayItem() override;
 
   static scoped_ptr<DrawingDisplayItem> Create(skia::RefPtr<SkPicture> picture,
                                                gfx::PointF location) {

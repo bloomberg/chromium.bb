@@ -86,8 +86,7 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.SetViewportSize(gfx::Size(10000, 10000));
   }
 
-  virtual ~PictureLayerImplTest() {
-  }
+  ~PictureLayerImplTest() override {}
 
   void SetUp() override { InitializeRenderer(); }
 

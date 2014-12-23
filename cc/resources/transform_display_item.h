@@ -17,7 +17,7 @@ namespace cc {
 
 class CC_EXPORT TransformDisplayItem : public DisplayItem {
  public:
-  virtual ~TransformDisplayItem();
+  ~TransformDisplayItem() override;
 
   static scoped_ptr<TransformDisplayItem> Create(
       const gfx::Transform& transform) {
@@ -39,7 +39,7 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
 
 class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
  public:
-  virtual ~EndTransformDisplayItem();
+  ~EndTransformDisplayItem() override;
 
   static scoped_ptr<EndTransformDisplayItem> Create() {
     return make_scoped_ptr(new EndTransformDisplayItem());

@@ -119,7 +119,7 @@ class TiledLayerTest : public testing::Test {
         new FakeLayerTreeHostImpl(proxy_, shared_bitmap_manager_.get()));
   }
 
-  virtual ~TiledLayerTest() {
+  ~TiledLayerTest() override {
     ResourceManagerClearAllMemory(resource_manager_.get(),
                                   resource_provider_.get());
 

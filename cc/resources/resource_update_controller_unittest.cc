@@ -66,7 +66,7 @@ class ResourceUpdateControllerTest : public Test {
         num_total_uploads_(0),
         num_total_flushes_(0) {}
 
-  virtual ~ResourceUpdateControllerTest() {
+  ~ResourceUpdateControllerTest() override {
     DebugScopedSetImplThreadAndMainThreadBlocked
     impl_thread_and_main_thread_blocked(&proxy_);
     resource_manager_->ClearAllMemory(resource_provider_.get());
@@ -106,7 +106,7 @@ class ResourceUpdateControllerTest : public Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     bitmap_.allocN32Pixels(300, 150);
 
     for (int i = 0; i < 4; i++) {

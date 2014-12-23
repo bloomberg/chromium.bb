@@ -257,7 +257,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
 
 class SingleOverlayOnTopTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     provider_ = TestContextProvider::Create();
     output_surface_.reset(new OverlayOutputSurface(provider_));
     EXPECT_TRUE(output_surface_->BindToClient(&client_));

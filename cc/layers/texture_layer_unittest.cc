@@ -176,14 +176,14 @@ class TextureLayerTest : public testing::Test {
         test_data_(&shared_bitmap_manager_) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
     layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
 
@@ -303,7 +303,7 @@ class TestMailboxHolder : public TextureLayer::TextureMailboxHolder {
 
 class TextureLayerWithMailboxTest : public TextureLayerTest {
  protected:
-  virtual void TearDown() {
+  void TearDown() override {
     Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
     EXPECT_CALL(test_data_.mock_callback_,
                 Release(test_data_.mailbox_name1_,
@@ -929,7 +929,7 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
       : fake_client_(
           FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     TextureLayerTest::SetUp();
     layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
     EXPECT_TRUE(host_impl_.InitializeRenderer(FakeOutputSurface::Create3d()));

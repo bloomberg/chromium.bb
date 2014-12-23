@@ -28,7 +28,7 @@ namespace cc {
 class ProxyTest : public LayerTreeTest {
  protected:
   ProxyTest() {}
-  virtual ~ProxyTest() {}
+  ~ProxyTest() override {}
 
   void Run(bool threaded, bool impl_side_painting) {
     // We don't need to care about delegating mode.
@@ -67,7 +67,7 @@ class ProxyTestScheduledActionsBasic : public ProxyTest {
 
   ProxyTestScheduledActionsBasic() : action_phase_(0) {
   }
-  virtual ~ProxyTestScheduledActionsBasic() {}
+  ~ProxyTestScheduledActionsBasic() override {}
 
  private:
   int action_phase_;
@@ -80,7 +80,7 @@ PROXY_TEST_SCHEDULED_ACTION(ProxyTestScheduledActionsBasic);
 class ThreadProxyTest : public ProxyTest {
  protected:
   ThreadProxyTest() {}
-  virtual ~ThreadProxyTest() {}
+  ~ThreadProxyTest() override {}
 
   const ThreadProxy::MainThreadOnly& ThreadProxyMainOnly() const {
     DCHECK(proxy());
@@ -101,7 +101,7 @@ class ThreadProxyTest : public ProxyTest {
 class ThreadProxyTestSetNeedsCommit : public ThreadProxyTest {
  protected:
   ThreadProxyTestSetNeedsCommit() {}
-  virtual ~ThreadProxyTestSetNeedsCommit() {}
+  ~ThreadProxyTestSetNeedsCommit() override {}
 
   void BeginTest() override {
     EXPECT_FALSE(ThreadProxyMainOnly().commit_requested);

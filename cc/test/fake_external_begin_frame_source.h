@@ -15,7 +15,7 @@ class FakeExternalBeginFrameSource
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
   explicit FakeExternalBeginFrameSource(double refresh_rate);
-  virtual ~FakeExternalBeginFrameSource();
+  ~FakeExternalBeginFrameSource() override;
 
   bool is_ready() const { return is_ready_; }
 

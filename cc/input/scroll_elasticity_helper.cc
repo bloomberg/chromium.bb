@@ -13,7 +13,7 @@ namespace cc {
 class ScrollElasticityHelperImpl : public ScrollElasticityHelper {
  public:
   explicit ScrollElasticityHelperImpl(LayerTreeHostImpl* layer_tree_host_impl);
-  virtual ~ScrollElasticityHelperImpl();
+  ~ScrollElasticityHelperImpl() override;
 
   // The amount that the view is stretched past the normal allowable bounds.
   // The "overhang" amount.

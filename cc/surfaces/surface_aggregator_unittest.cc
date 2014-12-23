@@ -69,13 +69,13 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  public:
   SurfaceAggregatorValidSurfaceTest() : allocator_(1u), child_allocator_(2u) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     SurfaceAggregatorTest::SetUp();
     root_surface_id_ = allocator_.GenerateId();
     factory_.Create(root_surface_id_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     factory_.Destroy(root_surface_id_);
     SurfaceAggregatorTest::TearDown();
   }
@@ -1220,7 +1220,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
 
 class SurfaceAggregatorWithResourcesTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     output_surface_ = FakeOutputSurface::CreateSoftware(
         make_scoped_ptr(new SoftwareOutputDevice));
     output_surface_->BindToClient(&output_surface_client_);

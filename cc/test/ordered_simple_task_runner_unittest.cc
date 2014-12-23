@@ -59,7 +59,7 @@ class OrderedSimpleTaskRunnerTest : public testing::Test {
       : now_src_(TestNowSource::Create(base::TimeTicks())) {
     task_runner_ = new OrderedSimpleTaskRunner(now_src_, true);
   }
-  virtual ~OrderedSimpleTaskRunnerTest() {}
+  ~OrderedSimpleTaskRunnerTest() override {}
 
  protected:
   std::string executed_tasks_;

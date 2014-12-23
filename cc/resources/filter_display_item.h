@@ -19,7 +19,7 @@ namespace cc {
 
 class CC_EXPORT FilterDisplayItem : public DisplayItem {
  public:
-  virtual ~FilterDisplayItem();
+  ~FilterDisplayItem() override;
 
   static scoped_ptr<FilterDisplayItem> Create(
       skia::RefPtr<SkImageFilter> filter,
@@ -43,7 +43,7 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
 
 class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
  public:
-  virtual ~EndFilterDisplayItem();
+  ~EndFilterDisplayItem() override;
 
   static scoped_ptr<EndFilterDisplayItem> Create() {
     return make_scoped_ptr(new EndFilterDisplayItem());

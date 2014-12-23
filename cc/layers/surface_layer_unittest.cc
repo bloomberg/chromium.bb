@@ -29,12 +29,12 @@ class SurfaceLayerTest : public testing::Test {
             FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
     layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (layer_tree_host_) {
       layer_tree_host_->SetRootLayer(nullptr);
       layer_tree_host_ = nullptr;

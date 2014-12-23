@@ -27,7 +27,7 @@ class TestSharedBitmapManager;
 class PixelTest : public testing::Test, RendererClient {
  protected:
   PixelTest();
-  virtual ~PixelTest();
+  ~PixelTest() override;
 
   bool RunPixelTest(RenderPassList* pass_list,
                     const base::FilePath& ref_file,

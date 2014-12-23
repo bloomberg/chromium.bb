@@ -34,11 +34,11 @@ class NinePatchLayerTest : public testing::Test {
   NinePatchLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 

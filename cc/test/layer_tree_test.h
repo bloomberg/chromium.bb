@@ -132,7 +132,7 @@ class TimeoutTask;
 // thread, but be aware that ending the test is an asynchronous process.
 class LayerTreeTest : public testing::Test, public TestHooks {
  public:
-  virtual ~LayerTreeTest();
+  ~LayerTreeTest() override;
 
   virtual void EndTest();
   void EndTestAfterDelayMs(int delay_milliseconds);

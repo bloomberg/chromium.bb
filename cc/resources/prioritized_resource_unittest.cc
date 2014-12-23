@@ -37,7 +37,7 @@ class PrioritizedResourceTest : public testing::Test {
                                                   1);
   }
 
-  virtual ~PrioritizedResourceTest() {
+  ~PrioritizedResourceTest() override {
     DebugScopedSetImplThread impl_thread(&proxy_);
     resource_provider_ = nullptr;
   }
