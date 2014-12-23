@@ -539,6 +539,8 @@ def _RunBisectionScript(
              'on Windows XP platform. Please refer to crbug.com/330900.')
       path_to_goma = None
     cmd.append('--use_goma')
+    cmd.append('--goma_dir')
+    cmd.append(os.path.abspath(path_to_goma))
 
   if path_to_extra_src:
     cmd.extend(['--extra_src', path_to_extra_src])
