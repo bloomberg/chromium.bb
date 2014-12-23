@@ -7,9 +7,14 @@
 
 #include "cc/base/cc_export.h"
 
+namespace gfx {
+class ScrollOffset;
+class Transform;
+}
+
 namespace cc {
 
-class ScrollOffset;
+class FilterOperations;
 
 class CC_EXPORT LayerAnimationValueObserver {
  public:

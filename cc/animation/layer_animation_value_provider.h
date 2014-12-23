@@ -7,9 +7,11 @@
 
 #include "cc/base/cc_export.h"
 
-namespace cc {
-
+namespace gfx {
 class ScrollOffset;
+}
+
+namespace cc {
 
 // A LayerAnimationValueProvider is used for determining the starting value
 // for animations that start at their 'current' value rather than at a
