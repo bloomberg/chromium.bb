@@ -120,7 +120,7 @@ function base64Encode(data)
 // |keyId| and |key| are expected to be ArrayBufferViews, not base64-encoded.
 function createJWK(keyId, key)
 {
-    var jwk = '{"kty":"oct","kid":"';
+    var jwk = '{"kty":"oct","alg":"A128KW","kid":"';
     // FIXME: Should use base64URLEncoding.
     jwk += base64Encode(keyId);
     jwk += '","k":"';
