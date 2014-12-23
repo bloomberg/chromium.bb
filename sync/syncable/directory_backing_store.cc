@@ -1548,9 +1548,11 @@ bool DirectoryBackingStore::VerifyReferenceIntegrity(
   for (Directory::MetahandlesMap::const_iterator it = handles_map->begin();
        it != handles_map->end(); ++it) {
     EntryKernel* entry = it->second;
-    bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
-    if (!parent_exists) {
-      return false;
+    if (!entry->ref(PARENT_ID).IsNull()) {
+      bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
+      if (!parent_exists) {
+        return false;
+      }
     }
   }
   return is_ok;

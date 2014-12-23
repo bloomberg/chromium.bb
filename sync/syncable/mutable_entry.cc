@@ -227,10 +227,14 @@ void MutableEntry::PutUniquePosition(const UniquePosition& value) {
 }
 
 bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
-  MutableEntry predecessor(write_transaction(), GET_BY_ID, predecessor_id);
-  if (!predecessor.good())
-    return false;
-  dir()->PutPredecessor(kernel_, predecessor.kernel_);
+  if (predecessor_id.IsNull()) {
+    dir()->PutPredecessor(kernel_, NULL);
+  } else {
+    MutableEntry predecessor(write_transaction(), GET_BY_ID, predecessor_id);
+    if (!predecessor.good())
+      return false;
+    dir()->PutPredecessor(kernel_, predecessor.kernel_);
+  }
   return true;
 }
 

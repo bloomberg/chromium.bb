@@ -112,7 +112,7 @@ bool VerifyDataTypeEncryptionForTest(
   while (!to_visit.empty()) {
     id_string = to_visit.front();
     to_visit.pop();
-    if (id_string.IsRoot())
+    if (id_string.IsNull())
       continue;
 
     Entry child(trans, GET_BY_ID, id_string);

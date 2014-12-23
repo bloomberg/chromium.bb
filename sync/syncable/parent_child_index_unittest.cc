@@ -49,9 +49,8 @@ class ParentChildIndexTest : public testing::Test {
     root->put(BASE_VERSION, -1);
     root->put(SERVER_VERSION, 0);
     root->put(IS_DIR, true);
-    root->put(ID, syncable::Id());
-    root->put(PARENT_ID, syncable::Id());
-    root->put(SERVER_PARENT_ID, syncable::Id());
+    root->put(ID, syncable::Id::GetRoot());
+    root->put(PARENT_ID, syncable::Id::GetRoot());
 
     owned_entry_kernels_.push_back(root);
     return root;
@@ -65,8 +64,7 @@ class ParentChildIndexTest : public testing::Test {
     folder->put(SERVER_VERSION, 9);
     folder->put(IS_DIR, true);
     folder->put(ID, GetBookmarkRootId());
-    folder->put(SERVER_PARENT_ID, syncable::Id());
-    folder->put(PARENT_ID, syncable::Id());
+    folder->put(PARENT_ID, syncable::Id::GetRoot());
     folder->put(UNIQUE_SERVER_TAG, "google_chrome_bookmarks");
 
     owned_entry_kernels_.push_back(folder);
@@ -82,7 +80,6 @@ class ParentChildIndexTest : public testing::Test {
     bm->put(IS_DIR, is_dir);
     bm->put(ID, GetBookmarkId(n));
     bm->put(PARENT_ID, GetBookmarkRootId());
-    bm->put(SERVER_PARENT_ID, GetBookmarkRootId());
 
     bm->put(UNIQUE_BOOKMARK_TAG,
             syncable::GenerateSyncableBookmarkHash(kCacheGuid,
@@ -104,8 +101,7 @@ class ParentChildIndexTest : public testing::Test {
     item->put(SERVER_VERSION, 10);
     item->put(IS_DIR, false);
     item->put(ID, GetClientUniqueId(n));
-    item->put(PARENT_ID, syncable::Id());
-    item->put(SERVER_PARENT_ID, syncable::Id());
+    item->put(PARENT_ID, syncable::Id::GetRoot());
     item->put(UNIQUE_CLIENT_TAG, base::IntToString(n));
 
     owned_entry_kernels_.push_back(item);
@@ -302,7 +298,7 @@ TEST_F(ParentChildIndexTest, UnorderedChildren) {
   index_.Insert(u1);
   index_.Insert(u2);
 
-  const OrderedChildSet* children = index_.GetChildren(syncable::Id());
+  const OrderedChildSet* children = index_.GetChildren(syncable::Id::GetRoot());
   EXPECT_EQ(children->count(u1), 1UL);
   EXPECT_EQ(children->count(u2), 1UL);
   EXPECT_EQ(children->size(), 2UL);

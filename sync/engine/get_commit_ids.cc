@@ -349,7 +349,7 @@ void Traversal::AddItemThenPredecessors(
     return;  // Deleted items have no predecessors.
 
   syncable::Id prev_id = item.GetPredecessorId();
-  while (!prev_id.IsRoot()) {
+  while (!prev_id.IsNull()) {
     syncable::Entry prev(trans_, syncable::GET_BY_ID, prev_id);
     CHECK(prev.good()) << "Bad id when walking predecessors.";
     if (!prev.GetIsUnsynced()) {

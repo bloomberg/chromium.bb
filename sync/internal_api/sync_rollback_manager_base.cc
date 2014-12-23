@@ -270,7 +270,7 @@ bool SyncRollbackManagerBase::InitTypeRootNode(ModelType type) {
   if (!entry.good())
     return false;
 
-  entry.PutParentId(syncable::Id());
+  entry.PutParentId(syncable::Id::GetRoot());
   entry.PutBaseVersion(1);
   entry.PutUniqueServerTag(ModelTypeToRootTag(type));
   entry.PutNonUniqueName(ModelTypeToString(type));

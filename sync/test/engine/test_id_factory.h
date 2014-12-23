@@ -20,9 +20,7 @@ class TestIdFactory {
   ~TestIdFactory() {}
 
   // Get the root ID.
-  static syncable::Id root() {
-    return syncable::Id();
-  }
+  static syncable::Id root() { return syncable::Id::GetRoot(); }
 
   // Make an ID from a number.  If the number is zero, return the root ID.
   // If the number is positive, create a server ID based on the value.  If

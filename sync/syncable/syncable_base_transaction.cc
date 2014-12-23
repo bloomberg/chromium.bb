@@ -12,7 +12,7 @@ namespace syncable {
 
 // static
 Id BaseTransaction::root_id() {
-  return Id();
+  return Id::GetRoot();
 }
 
 Directory* BaseTransaction::directory() const {

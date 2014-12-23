@@ -1192,6 +1192,7 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       trans))
         return false;
       int safety_count = handles.size() + 1;
+      // TODO(stanisc): handle items with Null parentid
       while (!parentid.IsRoot()) {
         Entry parent(trans, GET_BY_ID, parentid);
         if (!SyncAssert(parent.good(), FROM_HERE,
@@ -1392,13 +1393,13 @@ void Directory::PutPredecessor(EntryKernel* e, EntryKernel* predecessor) {
 
   if (!siblings) {
     // This parent currently has no other children.
-    DCHECK(predecessor->ref(ID).IsRoot());
+    DCHECK(predecessor == NULL);
     UniquePosition pos = UniquePosition::InitialPosition(suffix);
     e->put(UNIQUE_POSITION, pos);
     return;
   }
 
-  if (predecessor->ref(ID).IsRoot()) {
+  if (predecessor == NULL) {
     // We have at least one sibling, and we're inserting to the left of them.
     UniquePosition successor_pos = (*siblings->begin())->ref(UNIQUE_POSITION);
 

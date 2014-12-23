@@ -1349,7 +1349,7 @@ TEST_F(SyncableDirectoryTest, ChildrenOps) {
     Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
     ASSERT_TRUE(root.good());
     EXPECT_FALSE(dir()->HasChildren(&rtrans, rtrans.root_id()));
-    EXPECT_TRUE(root.GetFirstChildId().IsRoot());
+    EXPECT_TRUE(root.GetFirstChildId().IsNull());
   }
 
   {
@@ -1392,7 +1392,7 @@ TEST_F(SyncableDirectoryTest, ChildrenOps) {
     Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
     ASSERT_TRUE(root.good());
     EXPECT_FALSE(dir()->HasChildren(&rtrans, rtrans.root_id()));
-    EXPECT_TRUE(root.GetFirstChildId().IsRoot());
+    EXPECT_TRUE(root.GetFirstChildId().IsNull());
   }
 
   dir()->SaveChanges();

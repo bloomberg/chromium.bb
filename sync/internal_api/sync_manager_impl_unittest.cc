@@ -155,7 +155,10 @@ int64 MakeServerNodeForType(UserShare* share,
   entry.PutBaseVersion(1);
   entry.PutServerVersion(1);
   entry.PutIsUnappliedUpdate(false);
-  entry.PutServerParentId(syncable::GetNullId());
+  // TODO(stanisc): setting parent ID might be unnecessary once
+  // empty parent ID is supported.
+  entry.PutParentId(syncable::Id::GetRoot());
+  entry.PutServerParentId(syncable::Id::GetRoot());
   entry.PutServerIsDir(true);
   entry.PutIsDir(true);
   entry.PutServerSpecifics(specifics);

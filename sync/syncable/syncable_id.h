@@ -43,9 +43,7 @@ SYNC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out, const Id& id);
 // 3. s<server provided opaque id> for items that the server knows about.
 class SYNC_EXPORT Id {
  public:
-  // This constructor will be handy even when we move away from int64s, just
-  // for unit tests.
-  inline Id() : s_("r") { }
+  inline Id() {}
   inline Id(const Id& that) {
     Copy(that);
   }
@@ -63,14 +61,8 @@ class SYNC_EXPORT Id {
     return s_[0] == 's' || s_ == "r";
   }
 
-  // TODO(sync): We could use null here, but to ease conversion we use "r".
-  // fix this, this is madness :)
-  inline bool IsNull() const {
-    return IsRoot();
-  }
-  inline void Clear() {
-    s_ = "r";
-  }
+  inline bool IsNull() const { return s_.empty(); }
+  inline void Clear() { s_.clear(); }
   inline int compare(const Id& that) const {
     return s_.compare(that.s_);
   }
@@ -112,6 +104,9 @@ class SYNC_EXPORT Id {
   // computing lower bounds on std::sets that are ordered by operator<.
   static Id GetLeastIdForLexicographicComparison();
 
+  // Gets root ID.
+  static Id GetRoot();
+
  private:
   friend scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement);
   friend void BindFields(const EntryKernel& entry,
@@ -123,8 +118,6 @@ class SYNC_EXPORT Id {
 
   std::string s_;
 };
-
-SYNC_EXPORT_PRIVATE Id GetNullId();
 
 }  // namespace syncable
 }  // namespace syncer

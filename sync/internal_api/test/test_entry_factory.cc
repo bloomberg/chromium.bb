@@ -76,7 +76,7 @@ int64 TestEntryFactory::CreateUnappliedNewItem(
   entry.PutServerVersion(GetNextRevision());
   entry.PutIsUnappliedUpdate(true);
   entry.PutServerNonUniqueName(item_id);
-  entry.PutServerParentId(syncable::GetNullId());
+  entry.PutServerParentId(syncable::Id::GetRoot());
   entry.PutServerIsDir(is_unique);
   entry.PutServerSpecifics(specifics);
   if (is_unique) { // For top-level nodes.

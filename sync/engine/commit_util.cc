@@ -150,11 +150,11 @@ void BuildCommitItem(
   // TODO(nick): With the server keeping track of the primary sync parent,
   // it should not be necessary to provide the old_parent_id: the version
   // number should suffice.
-  if (new_parent_id != meta_entry.GetServerParentId() &&
+  Id server_parent_id = meta_entry.GetServerParentId();
+  if (new_parent_id != server_parent_id && !server_parent_id.IsNull() &&
       0 != meta_entry.GetBaseVersion() &&
       syncable::CHANGES_VERSION != meta_entry.GetBaseVersion()) {
-    sync_entry->set_old_parent_id(
-        SyncableIdToProto(meta_entry.GetServerParentId()));
+    sync_entry->set_old_parent_id(SyncableIdToProto(server_parent_id));
   }
 
   int64 version = meta_entry.GetBaseVersion();
@@ -184,7 +184,7 @@ void BuildCommitItem(
       // for legacy reasons.  See comments in sync.proto for more information.
       const Id& prev_id = meta_entry.GetPredecessorId();
       string prev_id_string =
-          prev_id.IsRoot() ? string() : prev_id.GetServerId();
+          prev_id.IsNull() ? string() : prev_id.GetServerId();
       sync_entry->set_insert_after_item_id(prev_id_string);
       sync_entry->set_position_in_parent(
           meta_entry.GetUniquePosition().ToInt64());

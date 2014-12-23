@@ -29,6 +29,7 @@
 
 namespace syncer {
 
+using syncable::Id;
 using syncable::UNITTEST;
 
 static const int64 kDefaultVersion = 1000;
@@ -79,7 +80,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   bool EntryExists(const std::string& id) {
     syncable::ReadTransaction trans(FROM_HERE, dir());
     syncable::Entry e(&trans, syncable::GET_BY_ID,
-                      syncable::Id::CreateFromServerId(id));
+                      Id::CreateFromServerId(id));
     return e.good() && !e.GetIsDel();
   }
 
@@ -132,13 +133,13 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
   sessions::StatusController status;
 
   // Add a bookmark item to the update message.
-  std::string root = syncable::GetNullId().GetServerId();
-  syncable::Id server_id = syncable::Id::CreateFromServerId("b1");
+  std::string root = Id::GetRoot().GetServerId();
+  Id server_id = Id::CreateFromServerId("b1");
   scoped_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, BOOKMARKS);
   e->set_originator_cache_guid(
       std::string(kCacheGuid, arraysize(kCacheGuid)-1));
-  syncable::Id client_id = syncable::Id::CreateFromClientString("-2");
+  Id client_id = Id::CreateFromClientString("-2");
   e->set_originator_client_item_id(client_id.GetServerId());
   e->set_position_in_parent(0);
 
@@ -171,8 +172,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   sessions::StatusController status;
 
   // Create an update that mimics the bookmark root.
-  syncable::Id server_id = syncable::Id::CreateFromServerId("xyz");
-  std::string root = syncable::GetNullId().GetServerId();
+  Id server_id = Id::CreateFromServerId("xyz");
+  std::string root = Id::GetRoot().GetServerId();
   scoped_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, BOOKMARKS);
   e->set_server_defined_unique_tag("google_chrome_bookmarks");
@@ -205,8 +206,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
 
-  std::string root = syncable::GetNullId().GetServerId();
-  syncable::Id server_id = syncable::Id::CreateFromServerId("xyz");
+  std::string root = Id::GetRoot().GetServerId();
+  Id server_id = Id::CreateFromServerId("xyz");
   scoped_ptr<sync_pb::SyncEntity> e =
       CreateUpdate(SyncableIdToProto(server_id), root, AUTOFILL);
   e->set_server_defined_unique_tag("9PGRuKdX5sHyGMB17CvYTXuC43I=");
@@ -267,20 +268,19 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   context.set_version(1);
 
   scoped_ptr<sync_pb::SyncEntity> type_root =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("root")),
-                   syncable::GetNullId().GetServerId(),
-                   SYNCED_NOTIFICATIONS);
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("root")),
+                   Id::GetRoot().GetServerId(), SYNCED_NOTIFICATIONS);
   type_root->set_server_defined_unique_tag(
       ModelTypeToRootTag(SYNCED_NOTIFICATIONS));
   type_root->set_folder(true);
 
   scoped_ptr<sync_pb::SyncEntity> e1 =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e1")),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")),
                    type_root->id_string(),
                    SYNCED_NOTIFICATIONS);
 
   scoped_ptr<sync_pb::SyncEntity> e2 =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e2")),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")),
                    type_root->id_string(),
                    SYNCED_NOTIFICATIONS);
   e2->set_version(kDefaultVersion + 100);
@@ -331,14 +331,13 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   old_context.set_data_type_id(field_number);
 
   scoped_ptr<sync_pb::SyncEntity> type_root =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("root")),
-                   syncable::GetNullId().GetServerId(),
-                   SYNCED_NOTIFICATIONS);
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("root")),
+                   Id::GetRoot().GetServerId(), SYNCED_NOTIFICATIONS);
   type_root->set_server_defined_unique_tag(
       ModelTypeToRootTag(SYNCED_NOTIFICATIONS));
   type_root->set_folder(true);
   scoped_ptr<sync_pb::SyncEntity> e1 =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e1")),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")),
                    type_root->id_string(),
                    SYNCED_NOTIFICATIONS);
 
@@ -369,7 +368,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   new_context.set_data_type_id(field_number);
 
   scoped_ptr<sync_pb::SyncEntity> e2 =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e2")),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e2")),
                    type_root->id_string(),
                    SYNCED_NOTIFICATIONS);
   updates.clear();
@@ -412,14 +411,13 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   context.set_version(1);
 
   scoped_ptr<sync_pb::SyncEntity> type_root =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("root")),
-                   syncable::GetNullId().GetServerId(),
-                   ARTICLES);
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("root")),
+                   Id::GetRoot().GetServerId(), ARTICLES);
   type_root->set_server_defined_unique_tag(ModelTypeToRootTag(ARTICLES));
   type_root->set_folder(true);
 
   scoped_ptr<sync_pb::SyncEntity> e1 =
-      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e1")),
+      CreateUpdate(SyncableIdToProto(Id::CreateFromServerId("e1")),
                    type_root->id_string(),
                    ARTICLES);
   sync_pb::AttachmentIdProto* attachment_id = e1->add_attachment_id();
@@ -441,7 +439,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
     syncable::ReadTransaction trans(FROM_HERE, dir());
     syncable::Entry e(&trans,
                       syncable::GET_BY_ID,
-                      syncable::Id::CreateFromServerId(e1->id_string()));
+                      Id::CreateFromServerId(e1->id_string()));
 
     // See that the attachment_metadata is correct.
     sync_pb::AttachmentMetadata attachment_metadata = e.GetAttachmentMetadata();
@@ -569,7 +567,7 @@ sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
   sessions::StatusController status;
 
-  std::string root_server_id = syncable::GetNullId().GetServerId();
+  std::string root_server_id = Id::GetRoot().GetServerId();
   int64 parent_handle =
       entry_factory()->CreateUnappliedNewBookmarkItemWithParent(
           "parent", DefaultBookmarkSpecifics(), root_server_id);
@@ -607,7 +605,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
        BookmarkChildrenBeforeParent) {
   // Start with some bookmarks whose parents are unknown.
-  std::string root_server_id = syncable::GetNullId().GetServerId();
+  std::string root_server_id = Id::GetRoot().GetServerId();
   int64 a_handle = entry_factory()->CreateUnappliedNewBookmarkItemWithParent(
       "a_child_created_first", DefaultBookmarkSpecifics(), "parent");
   int64 x_handle = entry_factory()->CreateUnappliedNewBookmarkItemWithParent(
@@ -784,7 +782,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   // Create a locally deleted parent item.
   int64 parent_handle;
   entry_factory()->CreateUnsyncedItem(
-      syncable::Id::CreateFromServerId("parent"), TestIdFactory::root(),
+      Id::CreateFromServerId("parent"), TestIdFactory::root(),
       "parent", true, BOOKMARKS, &parent_handle);
   {
     syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
@@ -897,7 +895,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
 // fail due to hierarchy conflicts.  Others should succeed.
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
   // See what happens when there's a mixture of good and bad updates.
-  std::string root_server_id = syncable::GetNullId().GetServerId();
+  std::string root_server_id = Id::GetRoot().GetServerId();
   int64 u1_handle = entry_factory()->CreateUnappliedNewItemWithParent(
       "first_unknown_item", DefaultBookmarkSpecifics(), "unknown_parent");
   int64 k1_handle = entry_factory()->CreateUnappliedNewItemWithParent(
@@ -988,7 +986,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
   AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
-  std::string root_server_id = syncable::GetNullId().GetServerId();
+  std::string root_server_id = Id::GetRoot().GetServerId();
   int64 folder_handle = entry_factory()->CreateUnappliedNewItemWithParent(
       "folder",
       encrypted_bookmark,

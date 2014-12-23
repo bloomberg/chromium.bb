@@ -247,6 +247,7 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
         ProtoTimeToTime(TimeToProtoTime(value));
   }
   inline void put(IdField field, const Id& value) {
+    DCHECK(!value.IsNull());
     id_fields[field - ID_FIELDS_BEGIN] = value;
   }
   inline void put(BaseVersion field, int64 value) {

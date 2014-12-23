@@ -4679,7 +4679,7 @@ TEST_F(SyncerBookmarksTest, LocalDeleteRemoteChangeConflict) {
 
   // Trigger a getupdates that modifies the bookmark. The update should  be
   // clobbered by the local delete.
-  mock_server_->AddUpdateBookmark(GetServerId(), Id(), "dummy", 10, 10,
+  mock_server_->AddUpdateBookmark(GetServerId(), Id::GetRoot(), "dummy", 10, 10,
                                   local_cache_guid(), local_id_.GetServerId());
 
   SyncShareNudge();

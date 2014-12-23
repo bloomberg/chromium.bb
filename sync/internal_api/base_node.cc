@@ -177,21 +177,21 @@ bool BaseNode::HasChildren() const {
 
 int64 BaseNode::GetPredecessorId() const {
   syncable::Id id_string = GetEntry()->GetPredecessorId();
-  if (id_string.IsRoot())
+  if (id_string.IsNull())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }
 
 int64 BaseNode::GetSuccessorId() const {
   syncable::Id id_string = GetEntry()->GetSuccessorId();
-  if (id_string.IsRoot())
+  if (id_string.IsNull())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }
 
 int64 BaseNode::GetFirstChildId() const {
   syncable::Id id_string = GetEntry()->GetFirstChildId();
-  if (id_string.IsRoot())
+  if (id_string.IsNull())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }

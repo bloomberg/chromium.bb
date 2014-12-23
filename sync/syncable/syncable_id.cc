@@ -6,6 +6,7 @@
 
 #include <iosfwd>
 
+#include "base/logging.h"
 #include "base/values.h"
 
 using std::ostream;
@@ -26,6 +27,7 @@ base::StringValue* Id::ToValue() const {
 string Id::GetServerId() const {
   // Currently root is the string "0". We need to decide on a true value.
   // "" would be convenient here, as the IsRoot call would not be needed.
+  DCHECK(!IsNull());
   if (IsRoot())
     return "0";
   return s_.substr(1);
@@ -49,6 +51,12 @@ Id Id::CreateFromClientString(const string& local_id) {
   return id;
 }
 
+Id Id::GetRoot() {
+  Id id;
+  id.s_ = "r";
+  return id;
+}
+
 Id Id::GetLexicographicSuccessor() const {
   // The successor of a string is given by appending the least
   // character in the alphabet.
@@ -62,10 +70,6 @@ Id Id::GetLeastIdForLexicographicComparison() {
   Id id;
   id.s_.clear();
   return id;
-}
-
-Id GetNullId() {
-  return Id();  // Currently == root.
 }
 
 }  // namespace syncable
