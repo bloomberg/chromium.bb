@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_function.h"
@@ -82,6 +83,57 @@ class SendResponseDelegate
 namespace extensions {
 
 namespace api_test_utils {
+
+base::DictionaryValue* ParseDictionary(const std::string& data) {
+  base::Value* result = ParseJSON(data);
+  base::DictionaryValue* dict = NULL;
+  result->GetAsDictionary(&dict);
+  return dict;
+}
+
+bool GetBoolean(const base::DictionaryValue* val, const std::string& key) {
+  bool result = false;
+  if (!val->GetBoolean(key, &result))
+    ADD_FAILURE() << key << " does not exist or is not a boolean.";
+  return result;
+}
+
+int GetInteger(const base::DictionaryValue* val, const std::string& key) {
+  int result = 0;
+  if (!val->GetInteger(key, &result))
+    ADD_FAILURE() << key << " does not exist or is not an integer.";
+  return result;
+}
+
+std::string GetString(const base::DictionaryValue* val,
+                      const std::string& key) {
+  std::string result;
+  if (!val->GetString(key, &result))
+    ADD_FAILURE() << key << " does not exist or is not a string.";
+  return result;
+}
+
+scoped_refptr<Extension> CreateExtension(
+    Manifest::Location location,
+    base::DictionaryValue* test_extension_value,
+    const std::string& id_input) {
+  std::string error;
+  const base::FilePath test_extension_path;
+  std::string id;
+  if (!id_input.empty())
+    id = crx_file::id_util::GenerateId(id_input);
+  scoped_refptr<Extension> extension(
+      Extension::Create(test_extension_path, location, *test_extension_value,
+                        Extension::NO_FLAGS, id, &error));
+  EXPECT_TRUE(error.empty()) << "Could not parse test extension " << error;
+  return extension;
+}
+
+scoped_refptr<Extension> CreateExtension(
+    base::DictionaryValue* test_extension_value) {
+  return CreateExtension(Manifest::INTERNAL, test_extension_value,
+                         std::string());
+}
 
 base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,

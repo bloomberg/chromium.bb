@@ -7,11 +7,14 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "extensions/common/manifest.h"
 
 class UIThreadExtensionFunction;
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
 }
@@ -21,6 +24,7 @@ class BrowserContext;
 }
 
 namespace extensions {
+class Extension;
 class ExtensionFunctionDispatcher;
 
 // TODO(yoz): crbug.com/394840: Remove duplicate functionality in
@@ -31,6 +35,27 @@ class ExtensionFunctionDispatcher;
 namespace api_test_utils {
 
 enum RunFunctionFlags { NONE = 0, INCLUDE_INCOGNITO = 1 << 0 };
+
+// Parse JSON and return as the specified type, or NULL if the JSON is invalid
+// or not the specified type.
+base::DictionaryValue* ParseDictionary(const std::string& data);
+
+// Get |key| from |val| as the specified type. If |key| does not exist, or is
+// not of the specified type, adds a failure to the current test and returns
+// false, 0, empty string, etc.
+bool GetBoolean(const base::DictionaryValue* val, const std::string& key);
+int GetInteger(const base::DictionaryValue* val, const std::string& key);
+std::string GetString(const base::DictionaryValue* val, const std::string& key);
+
+// Creates an extension instance with a specified extension value that can be
+// attached to an ExtensionFunction before running.
+scoped_refptr<extensions::Extension> CreateExtension(
+    base::DictionaryValue* test_extension_value);
+
+scoped_refptr<extensions::Extension> CreateExtension(
+    extensions::Manifest::Location location,
+    base::DictionaryValue* test_extension_value,
+    const std::string& id_input);
 
 // Run |function| with |args| and return the result. Adds an error to the
 // current test if |function| returns an error. Takes ownership of
@@ -94,7 +119,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags);
 
-}  // namespace function_test_utils
+}  // namespace api_test_utils
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_TEST_UTILS_H_

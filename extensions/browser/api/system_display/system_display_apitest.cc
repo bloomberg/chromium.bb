@@ -4,21 +4,14 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/system_display/system_display_api.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/common/api/system_display.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/display/screen_ash.h"
-#include "ash/shell.h"
-#endif
-
-namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
@@ -26,38 +19,6 @@ using core_api::system_display::Bounds;
 using core_api::system_display::DisplayUnitInfo;
 using gfx::Screen;
 
-#if defined(OS_CHROMEOS)
-class MockScreen : public ash::ScreenAsh {
- public:
-  MockScreen() {
-    for (int i = 0; i < 4; i++) {
-      gfx::Rect bounds(0, 0, 1280, 720);
-      gfx::Rect work_area(0, 0, 960, 720);
-      gfx::Display display(i, bounds);
-      display.set_work_area(work_area);
-      displays_.push_back(display);
-    }
-  }
-  virtual ~MockScreen() {}
-
- protected:
-  // Overridden from gfx::Screen:
-  virtual int GetNumDisplays() const override {
-    return displays_.size();
-  }
-  virtual std::vector<gfx::Display> GetAllDisplays() const override {
-    return displays_;
-  }
-  virtual gfx::Display GetPrimaryDisplay() const override {
-    return displays_[0];
-  }
-
- private:
-  std::vector<gfx::Display> displays_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockScreen);
-};
-#else
 class MockScreen : public Screen {
  public:
   MockScreen() {
@@ -80,7 +41,9 @@ class MockScreen : public Screen {
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return gfx::NativeWindow();
   }
-  int GetNumDisplays() const override { return displays_.size(); }
+  int GetNumDisplays() const override {
+    return static_cast<int>(displays_.size());
+  }
   std::vector<gfx::Display> GetAllDisplays() const override {
     return displays_;
   }
@@ -102,7 +65,6 @@ class MockScreen : public Screen {
 
   DISALLOW_COPY_AND_ASSIGN(MockScreen);
 };
-#endif
 
 class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
@@ -126,9 +88,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     return set_info_value_.Pass();
   }
 
-  std::string GetSetInfoDisplayId() const {
-    return set_info_display_id_;
-  }
+  std::string GetSetInfoDisplayId() const { return set_info_display_id_; }
 
  private:
   // Update the content of the |unit| obtained for |display| using
@@ -160,27 +120,19 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   DISALLOW_COPY_AND_ASSIGN(MockDisplayInfoProvider);
 };
 
-class SystemDisplayApiTest: public ExtensionApiTest {
+class SystemDisplayApiTest : public ShellApiTest {
  public:
-  SystemDisplayApiTest() : provider_(new MockDisplayInfoProvider),
-                           screen_(new MockScreen) {}
+  SystemDisplayApiTest()
+      : provider_(new MockDisplayInfoProvider), screen_(new MockScreen) {}
 
   ~SystemDisplayApiTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    ShellApiTest::SetUpOnMainThread();
     ANNOTATE_LEAKING_OBJECT_PTR(
         gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
     DisplayInfoProvider::InitializeForTesting(provider_.get());
-  }
-
-  void TearDownOnMainThread() override {
-#if defined(OS_CHROMEOS)
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                   ash::Shell::GetScreen());
-#endif
-    ExtensionApiTest::TearDownOnMainThread();
   }
 
  protected:
@@ -192,20 +144,20 @@ class SystemDisplayApiTest: public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, GetDisplay) {
-  ASSERT_TRUE(RunPlatformAppTest("system/display")) << message_;
+  ASSERT_TRUE(RunAppTest("system/display")) << message_;
 }
 
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
-  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction>
-      set_info_function(new SystemDisplaySetDisplayPropertiesFunction());
+  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction> set_info_function(
+      new SystemDisplaySetDisplayPropertiesFunction());
 
   set_info_function->set_has_callback(true);
 
-  EXPECT_EQ("Function available only on ChromeOS.",
-            utils::RunFunctionAndReturnError(set_info_function.get(),
-                                             "[\"display_id\", {}]",
-                                             browser()));
+  EXPECT_EQ(
+      "Function available only on ChromeOS.",
+      api_test_utils::RunFunctionAndReturnError(
+          set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
   scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
   EXPECT_FALSE(set_info);
@@ -214,56 +166,58 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(utils::ParseDictionary(
-      "{\n"
-      "  \"name\": \"Test\",\n"
-      "  \"version\": \"1.0\",\n"
-      "  \"app\": {\n"
-      "    \"background\": {\n"
-      "      \"scripts\": [\"background.js\"]\n"
-      "    }\n"
-      "  }\n"
-      "}"));
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary(
+          "{\n"
+          "  \"name\": \"Test\",\n"
+          "  \"version\": \"1.0\",\n"
+          "  \"app\": {\n"
+          "    \"background\": {\n"
+          "      \"scripts\": [\"background.js\"]\n"
+          "    }\n"
+          "  }\n"
+          "}"));
   scoped_refptr<Extension> test_extension(
-      utils::CreateExtension(test_extension_value.get()));
+      api_test_utils::CreateExtension(test_extension_value.get()));
 
-  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction>
-      set_info_function(new SystemDisplaySetDisplayPropertiesFunction());
+  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction> set_info_function(
+      new SystemDisplaySetDisplayPropertiesFunction());
 
   set_info_function->set_extension(test_extension.get());
   set_info_function->set_has_callback(true);
 
-  EXPECT_EQ("The extension needs to be kiosk enabled to use the function.",
-            utils::RunFunctionAndReturnError(set_info_function.get(),
-                                             "[\"display_id\", {}]",
-                                             browser()));
+  EXPECT_EQ(
+      "The extension needs to be kiosk enabled to use the function.",
+      api_test_utils::RunFunctionAndReturnError(
+          set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
   scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
   EXPECT_FALSE(set_info);
 }
 
 IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(utils::ParseDictionary(
-      "{\n"
-      "  \"name\": \"Test\",\n"
-      "  \"version\": \"1.0\",\n"
-      "  \"app\": {\n"
-      "    \"background\": {\n"
-      "      \"scripts\": [\"background.js\"]\n"
-      "    }\n"
-      "  },\n"
-      "  \"kiosk_enabled\": true\n"
-      "}"));
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary(
+          "{\n"
+          "  \"name\": \"Test\",\n"
+          "  \"version\": \"1.0\",\n"
+          "  \"app\": {\n"
+          "    \"background\": {\n"
+          "      \"scripts\": [\"background.js\"]\n"
+          "    }\n"
+          "  },\n"
+          "  \"kiosk_enabled\": true\n"
+          "}"));
   scoped_refptr<Extension> test_extension(
-      utils::CreateExtension(test_extension_value.get()));
+      api_test_utils::CreateExtension(test_extension_value.get()));
 
-  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction>
-      set_info_function(new SystemDisplaySetDisplayPropertiesFunction());
+  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction> set_info_function(
+      new SystemDisplaySetDisplayPropertiesFunction());
 
   set_info_function->set_has_callback(true);
   set_info_function->set_extension(test_extension.get());
 
-  ASSERT_TRUE(utils::RunFunction(
+  ASSERT_TRUE(api_test_utils::RunFunction(
       set_info_function.get(),
       "[\"display_id\", {\n"
       "  \"isPrimary\": true,\n"
@@ -273,23 +227,22 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
       "  \"rotation\": 90,\n"
       "  \"overscan\": {\"left\": 1, \"top\": 2, \"right\": 3, \"bottom\": 4}\n"
       "}]",
-      browser(),
-      utils::NONE));
+      browser_context()));
 
   scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
   ASSERT_TRUE(set_info);
-  EXPECT_TRUE(utils::GetBoolean(set_info.get(), "isPrimary"));
+  EXPECT_TRUE(api_test_utils::GetBoolean(set_info.get(), "isPrimary"));
   EXPECT_EQ("mirroringId",
-            utils::GetString(set_info.get(), "mirroringSourceId"));
-  EXPECT_EQ(100, utils::GetInteger(set_info.get(), "boundsOriginX"));
-  EXPECT_EQ(200, utils::GetInteger(set_info.get(), "boundsOriginY"));
-  EXPECT_EQ(90, utils::GetInteger(set_info.get(), "rotation"));
+            api_test_utils::GetString(set_info.get(), "mirroringSourceId"));
+  EXPECT_EQ(100, api_test_utils::GetInteger(set_info.get(), "boundsOriginX"));
+  EXPECT_EQ(200, api_test_utils::GetInteger(set_info.get(), "boundsOriginY"));
+  EXPECT_EQ(90, api_test_utils::GetInteger(set_info.get(), "rotation"));
   base::DictionaryValue* overscan;
   ASSERT_TRUE(set_info->GetDictionary("overscan", &overscan));
-  EXPECT_EQ(1, utils::GetInteger(overscan, "left"));
-  EXPECT_EQ(2, utils::GetInteger(overscan, "top"));
-  EXPECT_EQ(3, utils::GetInteger(overscan, "right"));
-  EXPECT_EQ(4, utils::GetInteger(overscan, "bottom"));
+  EXPECT_EQ(1, api_test_utils::GetInteger(overscan, "left"));
+  EXPECT_EQ(2, api_test_utils::GetInteger(overscan, "top"));
+  EXPECT_EQ(3, api_test_utils::GetInteger(overscan, "right"));
+  EXPECT_EQ(4, api_test_utils::GetInteger(overscan, "bottom"));
 
   EXPECT_EQ("display_id", provider_->GetSetInfoDisplayId());
 }

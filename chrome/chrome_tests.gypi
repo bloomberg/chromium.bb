@@ -335,7 +335,6 @@
       'browser/extensions/api/sync_file_system/sync_file_system_browsertest.cc',
       'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
       'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
-      'browser/extensions/api/system_display/system_display_apitest.cc',
       'browser/extensions/api/system_private/system_private_apitest.cc',
       'browser/extensions/api/tab_capture/tab_capture_apitest.cc',
       'browser/extensions/api/tabs/tabs_test.cc',

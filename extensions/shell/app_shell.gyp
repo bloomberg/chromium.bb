@@ -315,6 +315,7 @@
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
         '../browser/api/sockets_udp/sockets_udp_apitest.cc',
         '../browser/api/system_cpu/system_cpu_apitest.cc',
+        '../browser/api/system_display/system_display_apitest.cc',
         '../browser/api/system_memory/system_memory_apitest.cc',
         '../browser/api/system_network/system_network_apitest.cc',
         '../browser/api/system_storage/storage_api_test_util.cc',
