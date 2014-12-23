@@ -125,7 +125,7 @@ def run_gsutil(force_version, fallback, target, args):
   else:
     gsutil_bin = fallback
   cmd = [sys.executable, gsutil_bin] + args
-  call(cmd)
+  os.execv(cmd[0], cmd)
 
 
 def parse_args():
