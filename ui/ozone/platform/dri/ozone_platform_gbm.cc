@@ -196,7 +196,7 @@ class OzonePlatformGbm : public OzonePlatform {
 }  // namespace
 
 OzonePlatform* CreateOzonePlatformGbm() {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   return new OzonePlatformGbm(cmd->HasSwitch(switches::kOzoneUseSurfaceless));
 }
 

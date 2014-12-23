@@ -128,7 +128,7 @@ Value RunExecScript(Scope* scope,
 
   // Make the command line.
   const base::FilePath& python_path = build_settings->python_path();
-  CommandLine cmdline(python_path);
+  base::CommandLine cmdline(python_path);
   cmdline.AppendArgPath(script_path);
 
   if (args.size() >= 2) {

@@ -28,13 +28,15 @@ const char kUIShowPaintRects[] = "ui-show-paint-rects";
 namespace ui {
 
 bool IsUIImplSidePaintingEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   return command_line.HasSwitch(switches::kUIEnableImplSidePainting);
 }
 
 bool IsUIZeroCopyEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   return command_line.HasSwitch(switches::kUIEnableZeroCopy);
 }

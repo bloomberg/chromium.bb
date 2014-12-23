@@ -427,7 +427,7 @@ void MessageListView::DoUpdateIfPossible() {
   }
 
   if (top_down_ ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval))
     AnimateNotificationsBelowTarget();
   else

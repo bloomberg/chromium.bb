@@ -33,11 +33,11 @@ void CloseFileDescriptor(int fd) {
 
 namespace tools {
 
-bool HasHelpSwitch(const CommandLine& command_line) {
+bool HasHelpSwitch(const base::CommandLine& command_line) {
   return command_line.HasSwitch("h") || command_line.HasSwitch("help");
 }
 
-bool HasNoSpawnDaemonSwitch(const CommandLine& command_line) {
+bool HasNoSpawnDaemonSwitch(const base::CommandLine& command_line) {
   return command_line.HasSwitch(kNoSpawnDaemon);
 }
 

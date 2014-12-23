@@ -92,7 +92,7 @@ int RunCheck(const std::vector<std::string>& args) {
     }
   }
 
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool force = cmdline->HasSwitch("force");
 
   if (!CheckPublicHeaders(&setup->build_settings(), all_targets,

@@ -85,7 +85,7 @@ int InitMetro() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return 1;
   // Initialize the command line.
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   // Initialize the logging system.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;

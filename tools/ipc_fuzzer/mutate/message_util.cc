@@ -73,9 +73,9 @@ bool MessageMatches(const IPC::Message* msg, const RE2& pattern) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  CommandLine::StringVector args = cmd->GetArgs();
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = cmd->GetArgs();
 
   if (args.size() < 1 || args.size() > 2 || cmd->HasSwitch(kHelpSwitch)) {
     usage();

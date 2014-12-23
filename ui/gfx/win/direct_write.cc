@@ -64,9 +64,9 @@ void MaybeInitializeDirectWrite() {
   tried_dwrite_initialize = true;
 
   if (!ShouldUseDirectWrite() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDirectWriteForUI) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHarfBuzzRenderText)) {
     return;
   }

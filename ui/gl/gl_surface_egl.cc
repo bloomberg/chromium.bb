@@ -313,7 +313,7 @@ static const EGLint kDisplayAttribsWarp[] {
 // static
 EGLDisplay GLSurfaceEGL::GetPlatformDisplay(
     EGLNativeDisplayType native_display) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp)) {
     // Check for availability of WARP via ANGLE extension.
     bool supports_warp = false;
     const char* no_display_extensions = eglQueryString(EGL_NO_DISPLAY,

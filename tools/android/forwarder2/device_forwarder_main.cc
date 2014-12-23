@@ -139,9 +139,9 @@ class ClientDelegate : public Daemon::ClientDelegate {
 };
 
 int RunDeviceForwarder(int argc, char** argv) {
-  CommandLine::Init(argc, argv);  // Needed by logging.
-  const bool kill_server = CommandLine::ForCurrentProcess()->HasSwitch(
-      "kill-server");
+  base::CommandLine::Init(argc, argv);  // Needed by logging.
+  const bool kill_server =
+      base::CommandLine::ForCurrentProcess()->HasSwitch("kill-server");
   if ((kill_server && argc != 2) || (!kill_server && argc != 1)) {
     std::cerr << "Usage: device_forwarder [--kill-server]" << std::endl;
     return 1;

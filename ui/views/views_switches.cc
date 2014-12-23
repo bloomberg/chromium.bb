@@ -27,8 +27,8 @@ const char kEnableTransparentVisuals[] = "enable-transparent-visuals";
 
 bool IsRectBasedTargetingEnabled() {
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(kDisableViewsRectBasedTargeting);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableViewsRectBasedTargeting);
 #else
   return false;
 #endif

@@ -670,7 +670,7 @@ class GestureRecognizerWithSwitchTest : public GestureRecognizerTest {
 
   void SetUp() override {
     GestureRecognizerTest::SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kCompensateForUnstablePinchZoom);
     ui::GestureConfiguration::GetInstance()->set_min_pinch_update_span_delta(5);
   }

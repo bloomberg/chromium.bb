@@ -132,7 +132,7 @@ void ToggleTouchEventLogging(bool enable) {
 #if defined(OS_CHROMEOS)
   if (!base::SysInfo::IsRunningOnChromeOS())
     return;
-  CommandLine command(
+  base::CommandLine command(
       base::FilePath("/opt/google/touchscreen/toggle_touch_event_logging"));
   if (enable)
     command.AppendArg("1");

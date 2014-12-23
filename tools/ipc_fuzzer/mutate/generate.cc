@@ -1285,9 +1285,9 @@ static const char kCountSwitch[] = "count";
 static const char kHelpSwitch[] = "help";
 
 int GenerateMain(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  CommandLine::StringVector args = cmd->GetArgs();
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = cmd->GetArgs();
 
   if (args.size() != 1 || cmd->HasSwitch(kHelpSwitch)) {
     std::cerr << "Usage: ipc_fuzzer_generate [--help] [--count=n] outfile\n";

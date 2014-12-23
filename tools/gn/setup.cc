@@ -202,7 +202,7 @@ bool CommonSetup::RunPostMessageLoop() {
   }
 
   // Write out tracing and timing if requested.
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (cmdline->HasSwitch(switches::kTime))
     PrintLongHelp(SummarizeTraces());
   if (cmdline->HasSwitch(switches::kTracelog))
@@ -231,7 +231,7 @@ Setup::~Setup() {
 }
 
 bool Setup::DoSetup(const std::string& build_dir, bool force_create) {
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
 
   scheduler_.set_verbose_logging(cmdline->HasSwitch(switches::kVerbose));
   if (cmdline->HasSwitch(switches::kTime) ||
@@ -282,7 +282,7 @@ SourceFile Setup::GetBuildArgFile() const {
   return SourceFile(build_settings_.build_dir().value() + kBuildArgFileName);
 }
 
-bool Setup::FillArguments(const CommandLine& cmdline) {
+bool Setup::FillArguments(const base::CommandLine& cmdline) {
   // Use the args on the command line if specified, and save them. Do this even
   // if the list is empty (this means clear any defaults).
   if (cmdline.HasSwitch(switches::kArgs)) {
@@ -397,7 +397,7 @@ bool Setup::SaveArgsToFile() {
   return true;
 }
 
-bool Setup::FillSourceDir(const CommandLine& cmdline) {
+bool Setup::FillSourceDir(const base::CommandLine& cmdline) {
   // Find the .gn file.
   base::FilePath root_path;
 
@@ -542,7 +542,7 @@ bool Setup::RunConfigFile() {
   return true;
 }
 
-bool Setup::FillOtherConfig(const CommandLine& cmdline) {
+bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
   Err err;
 
   // Secondary source path, read from the config file if present.

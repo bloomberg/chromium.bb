@@ -26,7 +26,7 @@
 namespace internal {
 
 #if defined(OS_WIN)
-bool ExecProcess(const CommandLine& cmdline,
+bool ExecProcess(const base::CommandLine& cmdline,
                  const base::FilePath& startup_dir,
                  std::string* std_out,
                  std::string* std_err,
@@ -138,7 +138,7 @@ bool ReadFromPipe(int fd, std::string* output) {
   return true;
 }
 
-bool ExecProcess(const CommandLine& cmdline,
+bool ExecProcess(const base::CommandLine& cmdline,
                  const base::FilePath& startup_dir,
                  std::string* std_out,
                  std::string* std_err,

@@ -40,9 +40,10 @@ const char kEnableSyncAppList[] = "enable-sync-app-list";
 
 bool IsAppListSyncEnabled() {
 #if defined(TOOLKIT_VIEWS)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableSyncAppList);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableSyncAppList);
 #else
-  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList);
 #endif
 }
 
@@ -66,17 +67,19 @@ bool IsVoiceSearchEnabled() {
 
 bool IsAppInfoEnabled() {
 #if defined(TOOLKIT_VIEWS)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableAppInfo);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableAppInfo);
 #else
   return false;
 #endif
 }
 
 bool IsExperimentalAppListEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableExperimentalAppList))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableExperimentalAppList))
     return true;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableExperimentalAppList))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableExperimentalAppList))
     return false;
 
 #if defined(OS_CHROMEOS)
@@ -87,18 +90,19 @@ bool IsExperimentalAppListEnabled() {
 }
 
 bool IsCenteredAppListEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableCenteredAppList) ||
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kEnableCenteredAppList) ||
          IsExperimentalAppListEnabled();
 }
 
 bool ShouldNotDismissOnBlur() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableAppListDismissOnBlur);
 }
 
 bool IsDriveAppsInAppListEnabled() {
 #if defined(OS_CHROMEOS)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableDriveAppsInAppList);
 #else
   return false;

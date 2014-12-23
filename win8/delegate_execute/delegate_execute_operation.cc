@@ -20,7 +20,7 @@ DelegateExecuteOperation::DelegateExecuteOperation()
 DelegateExecuteOperation::~DelegateExecuteOperation() {
 }
 
-bool DelegateExecuteOperation::Init(const CommandLine* cmd_line) {
+bool DelegateExecuteOperation::Init(const base::CommandLine* cmd_line) {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     base::FilePath shortcut(
         cmd_line->GetSwitchValuePath(switches::kRelaunchShortcut));

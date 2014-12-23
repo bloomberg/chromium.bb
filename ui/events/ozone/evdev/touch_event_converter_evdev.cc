@@ -40,10 +40,9 @@ struct TouchCalibration {
 
 void GetTouchCalibration(TouchCalibration* cal) {
   std::vector<std::string> parts;
-  if (Tokenize(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  if (Tokenize(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                    switches::kTouchCalibration),
-               ",",
-               &parts) >= 4) {
+               ",", &parts) >= 4) {
     if (!base::StringToInt(parts[0], &cal->bezel_left))
       DLOG(ERROR) << "Incorrect left border calibration value passed.";
     if (!base::StringToInt(parts[1], &cal->bezel_right))

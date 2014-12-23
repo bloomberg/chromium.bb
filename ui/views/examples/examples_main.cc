@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
   ui::ScopedOleInitializer ole_initializer_;
 #endif
 
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   base::AtExitManager at_exit;
 

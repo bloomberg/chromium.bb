@@ -377,8 +377,8 @@ int main(int argc, char** argv) {
   printf("Android device to host TCP forwarder\n");
   printf("Like 'adb forward' but in the reverse direction\n");
 
-  CommandLine command_line(argc, argv);
-  CommandLine::StringVector server_args = command_line.GetArgs();
+  base::CommandLine command_line(argc, argv);
+  base::CommandLine::StringVector server_args = command_line.GetArgs();
   if (tools::HasHelpSwitch(command_line) || server_args.empty()) {
     tools::ShowHelp(
         argv[0],

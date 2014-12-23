@@ -162,7 +162,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       LoadD3DXLibrary(module_path, kD3DCompiler);
 
       base::FilePath gles_path;
-      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
       bool using_swift_shader =
           command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader";
       if (using_swift_shader) {

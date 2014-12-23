@@ -71,7 +71,7 @@ bool SupportsShadow() {
 #if defined(OS_WIN)
   // Shadows are not supported on Windows without Aero Glass.
   if (!ui::win::IsAeroGlassEnabled() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableDwmComposition)) {
     return false;
   }

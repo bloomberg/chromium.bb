@@ -33,7 +33,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   DemoWindow() : widget_(gfx::kNullAcceleratedWidget) {
     int width = kTestWindowWidth;
     int height = kTestWindowHeight;
-    sscanf(CommandLine::ForCurrentProcess()
+    sscanf(base::CommandLine::ForCurrentProcess()
                ->GetSwitchValueASCII(kWindowSize)
                .c_str(),
            "%dx%d", &width, &height);
@@ -53,9 +53,9 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   gfx::Size GetSize() { return platform_window_->GetBounds().size(); }
 
   void Start() {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableGpu) &&
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableGpu) &&
         gfx::GLSurface::InitializeOneOff() && StartInProcessGpu()) {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kOzoneUseSurfaceless)) {
         renderer_.reset(
             new ui::SurfacelessGlRenderer(GetAcceleratedWidget(), GetSize()));
@@ -119,7 +119,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 };
 
 int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
 
   // Build UI thread message loop. This is used by platform

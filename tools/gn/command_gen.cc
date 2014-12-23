@@ -78,7 +78,7 @@ int RunGen(const std::vector<std::string>& args) {
   if (!setup->DoSetup(args[0], true))
     return 1;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kSwitchCheck))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchCheck))
     setup->set_check_public_headers(true);
 
   // Cause the load to also generate the ninja files for each target. We wrap
@@ -103,7 +103,7 @@ int RunGen(const std::vector<std::string>& args) {
 
   base::TimeDelta elapsed_time = timer.Elapsed();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
     OutputString("Done. ", DECORATION_GREEN);
 
     std::string stats = "Wrote " +

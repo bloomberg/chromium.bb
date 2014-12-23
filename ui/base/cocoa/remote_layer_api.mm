@@ -18,7 +18,7 @@ bool RemoteLayerAPISupported() {
     return false;
 
   bool disabled_at_command_line =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRemoteCoreAnimation);
   if (disabled_at_command_line)
     return false;

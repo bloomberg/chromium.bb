@@ -16,10 +16,11 @@ namespace {
 // Returns the name of the platform to use (value of --ozone-platform flag).
 std::string GetPlatformName() {
   // The first platform is the default.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kOzonePlatform) &&
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOzonePlatform) &&
       kPlatformCount > 0)
     return kPlatformNames[0];
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kOzonePlatform);
 }
 

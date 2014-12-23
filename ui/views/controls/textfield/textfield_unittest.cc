@@ -1921,7 +1921,7 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
   const gfx::Point kStringPoint(GetCursorPositionX(9), 0);
 
   // Enable touch-drag-drop to make long press effective.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
 
   // Create a long press event in the selected region should start a drag.
@@ -1968,7 +1968,7 @@ class TextfieldTouchSelectionTest : public TextfieldTest {
   // TextfieldTest:
   void SetUp() override {
     TextfieldTest::SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchEditing);
   }
 
@@ -2042,7 +2042,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionAndDraggingTest) {
 
   // After disabling touch drag drop, long pressing again in the selection
   // region should not do anything.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableTouchDragDrop);
   ASSERT_FALSE(switches::IsTouchDragDropEnabled());
   GestureEventForTest long_press_3(

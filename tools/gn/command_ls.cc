@@ -70,7 +70,7 @@ int RunLs(const std::vector<std::string>& args) {
   if (!setup->DoSetup(args[0], false) || !setup->Run())
     return 1;
 
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool all_toolchains = cmdline->HasSwitch("all-toolchains");
 
   // Find matching targets.

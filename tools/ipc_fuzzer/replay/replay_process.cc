@@ -28,10 +28,10 @@ ReplayProcess::~ReplayProcess() {
 }
 
 bool ReplayProcess::Initialize(int argc, const char** argv) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIpcFuzzerTestcase)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIpcFuzzerTestcase)) {
     LOG(ERROR) << "This binary shouldn't be executed directly, "
                << "please use tools/ipc_fuzzer/play_testcase.py";
     return false;
@@ -52,7 +52,7 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
 
 void ReplayProcess::OpenChannel() {
   std::string channel_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
 
   channel_ = IPC::ChannelProxy::Create(channel_name,
@@ -62,8 +62,9 @@ void ReplayProcess::OpenChannel() {
 }
 
 bool ReplayProcess::OpenTestcase() {
-  base::FilePath path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-      switches::kIpcFuzzerTestcase);
+  base::FilePath path =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kIpcFuzzerTestcase);
   return MessageFile::Read(path, &messages_);
 }
 

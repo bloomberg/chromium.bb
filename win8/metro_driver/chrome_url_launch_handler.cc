@@ -108,8 +108,9 @@ base::string16 ChromeUrlLaunchHandler::GetUrlFromLaunchArgs(
   }
   base::string16 dummy_command_line(L"dummy.exe ");
   dummy_command_line.append(launch_args);
-  CommandLine command_line = CommandLine::FromString(dummy_command_line);
-  CommandLine::StringVector args = command_line.GetArgs();
+  base::CommandLine command_line =
+      base::CommandLine::FromString(dummy_command_line);
+  base::CommandLine::StringVector args = command_line.GetArgs();
   if (args.size() > 0)
     return args[0];
 

@@ -24,7 +24,7 @@ namespace ui {
 ui::ContextFactory* InitializeContextFactoryForTests(bool enable_pixel_output) {
   DCHECK(!g_implicit_factory) <<
       "ContextFactory for tests already initialized.";
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
     enable_pixel_output = true;
   if (enable_pixel_output)

@@ -37,7 +37,7 @@ bool GLSurface::InitializeOneOff() {
   GetAllowedGLImplementations(&allowed_impls);
   DCHECK(!allowed_impls.empty());
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
 
   // The default implementation is always the first one in list.
   GLImplementation impl = allowed_impls[0];
@@ -108,7 +108,8 @@ void GLSurface::InitializeOneOffForTests() {
 
   // We usually use OSMesa as this works on all bots. The command line can
   // override this behaviour to use hardware GL.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGpuInTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseGpuInTests))
     use_osmesa = false;
 
 #if defined(OS_ANDROID)
@@ -124,7 +125,7 @@ void GLSurface::InitializeOneOffForTests() {
   if (use_osmesa)
     impl = kGLImplementationOSMesaGL;
 
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
       << "kUseGL has not effect in tests";
 
   bool fallback_to_osmesa = false;
@@ -137,7 +138,7 @@ void GLSurface::InitializeOneOffForTests() {
 
 // static
 void GLSurface::InitializeOneOffWithMockBindingsForTests() {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
       << "kUseGL has not effect in tests";
 
   // This method may be called multiple times in the same process to set up

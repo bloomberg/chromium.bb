@@ -287,7 +287,7 @@ int RunRefs(const std::vector<std::string>& args) {
     return 1;
   }
 
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool tree = cmdline->HasSwitch("tree");
   bool all = cmdline->HasSwitch("all");
   bool all_toolchains = cmdline->HasSwitch("all-toolchains");

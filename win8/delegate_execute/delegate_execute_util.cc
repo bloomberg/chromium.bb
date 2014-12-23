@@ -9,8 +9,8 @@
 
 namespace delegate_execute {
 
-CommandLine CommandLineFromParameters(const wchar_t* params) {
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+base::CommandLine CommandLineFromParameters(const wchar_t* params) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
   if (params) {
     base::string16 command_string(L"noprogram.exe ");
@@ -22,10 +22,10 @@ CommandLine CommandLineFromParameters(const wchar_t* params) {
   return command_line;
 }
 
-CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
-                                  const CommandLine& params,
-                                  const base::string16& argument) {
-  CommandLine chrome_cmd(params);
+base::CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
+                                        const base::CommandLine& params,
+                                        const base::string16& argument) {
+  base::CommandLine chrome_cmd(params);
   chrome_cmd.SetProgram(chrome_exe);
 
   if (!argument.empty())
@@ -38,7 +38,7 @@ base::string16 ParametersFromSwitch(const char* a_switch) {
   if (!a_switch)
     return base::string16();
 
-  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
 
   cmd_line.AppendSwitch(a_switch);
 

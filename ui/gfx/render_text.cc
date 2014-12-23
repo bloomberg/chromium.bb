@@ -399,18 +399,21 @@ RenderText::~RenderText() {
 
 RenderText* RenderText::CreateInstance() {
 #if defined(OS_MACOSX)
-  static const bool use_harfbuzz = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableHarfBuzzRenderText);
+  static const bool use_harfbuzz =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHarfBuzzRenderText);
 #else
-  static const bool use_harfbuzz = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableHarfBuzzRenderText);
+  static const bool use_harfbuzz =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHarfBuzzRenderText);
 #endif
   return use_harfbuzz ? new RenderTextHarfBuzz : CreateNativeInstance();
 }
 
 RenderText* RenderText::CreateInstanceForEditing() {
-  static const bool use_harfbuzz = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableHarfBuzzRenderText);
+  static const bool use_harfbuzz =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHarfBuzzRenderText);
   return use_harfbuzz ? new RenderTextHarfBuzz : CreateNativeInstance();
 }
 

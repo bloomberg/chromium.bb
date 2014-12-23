@@ -65,7 +65,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       return InitializeStaticGLBindingsOSMesaGL();
     case kGLImplementationDesktopGL: {
       base::NativeLibrary library = NULL;
-      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
 
       if (command_line->HasSwitch(switches::kTestGLLib))
         library = LoadLibraryAndPrintError(

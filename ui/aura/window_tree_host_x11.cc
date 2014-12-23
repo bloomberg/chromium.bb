@@ -116,10 +116,9 @@ class TouchEventCalibrate : public ui::PlatformEventObserver {
     if (ui::PlatformEventSource::GetInstance())
       ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
     std::vector<std::string> parts;
-    if (Tokenize(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    if (Tokenize(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                      switches::kTouchCalibration),
-                 ",",
-                 &parts) >= 4) {
+                 ",", &parts) >= 4) {
       if (!base::StringToInt(parts[0], &left_))
         DLOG(ERROR) << "Incorrect left border calibration value passed.";
       if (!base::StringToInt(parts[1], &right_))

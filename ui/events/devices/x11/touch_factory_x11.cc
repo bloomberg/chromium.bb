@@ -39,7 +39,7 @@ TouchFactory::TouchFactory()
   XDisplay* display = gfx::GetXDisplay();
   UpdateDeviceList(display);
 
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   touch_events_disabled_ = cmdline->HasSwitch(switches::kTouchEvents) &&
       cmdline->GetSwitchValueASCII(switches::kTouchEvents) ==
           switches::kTouchEventsDisabled;
@@ -59,7 +59,7 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
   // This is primarily used for testing/debugging touch-event processing when a
   // touch-device isn't available.
   std::string touch_devices =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTouchDevices);
 
   if (!touch_devices.empty()) {

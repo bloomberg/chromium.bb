@@ -160,7 +160,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
 
 OverlayCandidatesOzone* GbmSurfaceFactory::GetOverlayCandidates(
     gfx::AcceleratedWidget w) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kOzoneTestSingleOverlaySupport))
     return new SingleOverlay();
   return NULL;

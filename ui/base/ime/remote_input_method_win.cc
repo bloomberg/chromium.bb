@@ -384,8 +384,8 @@ bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget) {
   if (!process_handle.IsValid())
     return false;
   return base::win::IsProcessImmersive(process_handle.Get()) ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kViewerConnect);
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kViewerConnect);
 }
 
 RemoteInputMethodPrivateWin::RemoteInputMethodPrivateWin() {}

@@ -233,7 +233,7 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     // flag.
     params.subpixel_positioning =
         actual_query.for_web_contents
-            ? CommandLine::ForCurrentProcess()->HasSwitch(
+            ? base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kEnableWebkitTextSubpixelPositioning)
             : IsBrowserTextSubpixelPositioningEnabled(actual_query);
 

@@ -73,7 +73,8 @@ void GpuSwitchingManager::ForceUseOfDiscreteGpu() {
 
 bool GpuSwitchingManager::SupportsDualGpus() {
   if (!supports_dual_gpus_set_) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     bool flag = false;
     if (command_line.HasSwitch(switches::kSupportsDualGpus)) {
       // GPU process, flag is passed down from browser process.

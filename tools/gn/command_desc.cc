@@ -102,7 +102,7 @@ void RecursivePrintDeps(const Target* target,
 }
 
 void PrintDeps(const Target* target, bool display_header) {
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   Label toolchain_label = target->label().GetToolchainLabel();
 
   // Tree mode is separate.
@@ -407,7 +407,8 @@ template<typename T> void OutputRecursiveTargetConfig(
     const Target* target,
     const char* header_name,
     const std::vector<T>& (ConfigValues::* getter)() const) {
-  bool display_blame = CommandLine::ForCurrentProcess()->HasSwitch("blame");
+  bool display_blame =
+      base::CommandLine::ForCurrentProcess()->HasSwitch("blame");
 
   DescValueWriter<T> writer;
   std::ostringstream out;

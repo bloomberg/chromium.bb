@@ -353,8 +353,9 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 }
 
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableD3D11) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp))
     return GetDC(NULL);
   return EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
 }

@@ -1034,10 +1034,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // use the ARGB visual. Otherwise, just use our parent's visual.
   Visual* visual = CopyFromParent;
   int depth = CopyFromParent;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTransparentVisuals) &&
-      XGetSelectionOwner(xdisplay_,
-                         atom_cache_.GetAtom("_NET_WM_CM_S0")) != None) {
+      XGetSelectionOwner(xdisplay_, atom_cache_.GetAtom("_NET_WM_CM_S0")) !=
+          None) {
     Visual* rgba_visual = GetARGBVisual();
     if (rgba_visual) {
       visual = rgba_visual;

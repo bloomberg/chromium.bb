@@ -33,7 +33,7 @@ const wchar_t kDelegateExecuteCLSID[] =
     L"{FC0064A6-D1DE-4A83-92D2-5BB4EEBB70B5}";
 
 void InitializeCommandLineDefaultValues() {
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
   if (!command_line.HasSwitch(win8::test::kTestAppUserModelId))
     command_line.AppendSwitchNative(win8::test::kTestAppUserModelId,
@@ -80,7 +80,7 @@ class TestDelegateExecuteModule
 
     registrar->AddReplacement(L"DELEGATE_EXECUTE_CLSID", kDelegateExecuteCLSID);
 
-    CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
     registrar->AddReplacement(L"APP_USER_MODEL_ID",
                               command_line.GetSwitchValueNative(
@@ -129,7 +129,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("FC0064A6-D1DE-4A83-92D2-5BB4EEBB70B5")
 
 extern "C" int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int nShowCmd) {
   base::AtExitManager exit_manager;
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   InitializeCommandLineDefaultValues();
 
   HRESULT ret_code = _AtlModule.WinMain(nShowCmd);

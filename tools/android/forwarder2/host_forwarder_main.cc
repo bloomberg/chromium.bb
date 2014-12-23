@@ -406,8 +406,8 @@ int PortToInt(const std::string& s) {
 }
 
 int RunHostForwarder(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   bool kill_server = false;
 
   Pickle pickle;

@@ -62,7 +62,7 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
 DisplaySnapshot_Params CreateSnapshotFromCommandLine() {
   DisplaySnapshot_Params display_param;
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   std::string spec =
       cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayBounds);
   std::string physical_spec =

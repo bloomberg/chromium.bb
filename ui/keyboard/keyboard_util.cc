@@ -105,7 +105,7 @@ bool IsKeyboardEnabled() {
   if (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED)
     return false;
   // Check if any of the flags are enabled.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableVirtualKeyboard) ||
          g_touch_keyboard_enabled ||
          (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED);
@@ -127,8 +127,8 @@ bool IsKeyboardOverscrollEnabled() {
         KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableVirtualKeyboardOverscroll)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableVirtualKeyboardOverscroll)) {
     return false;
   }
   return true;
@@ -143,17 +143,19 @@ void SetKeyboardShowOverride(KeyboardShowOverride override) {
 }
 
 bool IsInputViewEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableInputView))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInputView))
     return true;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableInputView))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInputView))
     return false;
   // Default value if no command line flags specified.
   return true;
 }
 
 bool IsExperimentalInputViewEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExperimentalInputViewFeatures)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalInputViewFeatures)) {
     return true;
   }
   return false;

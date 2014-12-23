@@ -144,8 +144,8 @@ bool IsAeroGlassEnabled() {
   // user can specify this command line switch to mimic the behavior.  In this
   // mode, cross-HWND transparency is not supported and various types of
   // widgets fallback to more simplified rendering behavior.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDwmComposition))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDwmComposition))
     return false;
 
   // Technically Aero glass works in Vista but we want to put XP and Vista

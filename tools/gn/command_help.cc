@@ -105,7 +105,7 @@ int RunHelp(const std::vector<std::string>& args) {
     // If no argument is specified, check for switches to allow things like
     // "gn help --args" for help on the args switch.
     const base::CommandLine::SwitchMap& switches =
-        CommandLine::ForCurrentProcess()->GetSwitches();
+        base::CommandLine::ForCurrentProcess()->GetSwitches();
     if (switches.empty()) {
       // Still nothing, show help overview.
       PrintToplevelHelp();

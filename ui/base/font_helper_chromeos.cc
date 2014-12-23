@@ -10,8 +10,8 @@
 namespace ui {
 
 void ReplaceNotoSansWithRobotoIfEnabled(std::string* font_family) {
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableRobotoFontUI)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRobotoFontUI)) {
     static const char kNotoSansUI[] = "Noto Sans UI";
     static const size_t kNotoSansUILen = arraysize(kNotoSansUI) - 1;
     std::string::size_type noto_position = font_family->find(kNotoSansUI);

@@ -22,10 +22,11 @@ void ClearCacheForFile(const base::FilePath& path) {
 }
 
 int main(int argc, const char* argv[]) {
-  CommandLine::Init(argc, argv);
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool should_recurse = parsed_command_line.HasSwitch("recurse");
-  const CommandLine::StringVector& args = parsed_command_line.GetArgs();
+  const base::CommandLine::StringVector& args = parsed_command_line.GetArgs();
 
   if (args.size() < 1) {
     printf("USAGE: %s [--recurse] <files or directories>\n", argv[0]);

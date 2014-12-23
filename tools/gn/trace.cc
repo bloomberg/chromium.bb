@@ -145,7 +145,7 @@ void ScopedTrace::SetToolchain(const Label& label) {
     item_->set_toolchain(label.GetUserVisibleName(false));
 }
 
-void ScopedTrace::SetCommandLine(const CommandLine& cmdline) {
+void ScopedTrace::SetCommandLine(const base::CommandLine& cmdline) {
   if (item_)
     item_->set_cmdline(FilePathToUTF8(cmdline.GetArgumentsString()));
 }

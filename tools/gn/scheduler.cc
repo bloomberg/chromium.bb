@@ -16,7 +16,8 @@ namespace {
 
 int GetThreadCount() {
   std::string thread_count =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kThreads);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kThreads);
 
   int result;
   if (thread_count.empty() || !base::StringToInt(thread_count, &result))

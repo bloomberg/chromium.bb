@@ -50,7 +50,7 @@ bool RegisterTestDefaultBrowser() {
   }
 
   // Perform the registration by invoking test_registrar.exe.
-  CommandLine register_command(registrar);
+  base::CommandLine register_command(registrar);
   register_command.AppendArg("/RegServer");
 
   base::Process register_process =

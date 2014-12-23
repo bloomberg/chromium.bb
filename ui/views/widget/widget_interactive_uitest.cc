@@ -759,7 +759,8 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
 
 // Test that touch selection quick menu is not activated when opened.
 TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchEditing);
 #if defined(OS_WIN)
   views_delegate().set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)

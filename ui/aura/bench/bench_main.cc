@@ -158,7 +158,7 @@ class WebGLBench : public BenchCompositorObserver {
         compositor_(compositor),
         fbo_(0),
         do_draw_(true) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     do_draw_ = !command_line->HasSwitch("disable-draw");
 
     std::string webgl_size = command_line->GetSwitchValueASCII("webgl-size");
@@ -263,7 +263,7 @@ class SoftwareScrollBench : public BenchCompositorObserver {
         compositor_(compositor) {
     compositor->AddObserver(this);
     layer_->set_draw(
-        !CommandLine::ForCurrentProcess()->HasSwitch("disable-draw"));
+        !base::CommandLine::ForCurrentProcess()->HasSwitch("disable-draw"));
   }
 
   ~SoftwareScrollBench() override { compositor_->RemoveObserver(this); }
@@ -284,7 +284,7 @@ class SoftwareScrollBench : public BenchCompositorObserver {
 }  // namespace
 
 int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   base::AtExitManager exit_manager;
 
@@ -329,7 +329,7 @@ int main(int argc, char** argv) {
 
   Layer content_layer(ui::LAYER_NOT_DRAWN);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool force = command_line->HasSwitch("force-render-surface");
   content_layer.SetForceRenderSurface(force);
   gfx::Rect bounds(window.bounds().size());

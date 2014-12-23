@@ -91,7 +91,7 @@ bool LaunchChromeBrowserProcess() {
     return false;
   }
 
-  CommandLine cl(chrome_exe_path);
+  base::CommandLine cl(chrome_exe_path);
 
   // Prevent a Chrome window from showing up on the desktop.
   cl.AppendSwitch(switches::kSilentLaunch);
@@ -167,7 +167,7 @@ bool CommandExecuteImpl::path_provider_initialized_ = false;
 // mode again.
 //
 CommandExecuteImpl::CommandExecuteImpl()
-    : parameters_(CommandLine::NO_PROGRAM),
+    : parameters_(base::CommandLine::NO_PROGRAM),
       launch_scheme_(INTERNET_SCHEME_DEFAULT),
       integrity_level_(base::INTEGRITY_UNKNOWN) {
   memset(&start_info_, 0, sizeof(start_info_));
@@ -391,9 +391,8 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
       break;
   }
 
-  CommandLine chrome(
-      delegate_execute::MakeChromeCommandLine(chrome_exe_, parameters_,
-                                              display_name));
+  base::CommandLine chrome(delegate_execute::MakeChromeCommandLine(
+      chrome_exe_, parameters_, display_name));
   base::string16 command_line(chrome.GetCommandLineString());
 
   AtlTrace("Formatted command line is %ls\n", command_line.c_str());
@@ -454,11 +453,11 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
   if (parameters_.HasSwitch(switches::kForceImmersive)) {
     launch_mode = ECHUIM_IMMERSIVE;
     launch_mode_determined = true;
-    parameters_ = CommandLine(CommandLine::NO_PROGRAM);
+    parameters_ = base::CommandLine(base::CommandLine::NO_PROGRAM);
   } else if (parameters_.HasSwitch(switches::kForceDesktop)) {
     launch_mode = ECHUIM_DESKTOP;
     launch_mode_determined = true;
-    parameters_ = CommandLine(CommandLine::NO_PROGRAM);
+    parameters_ = base::CommandLine(base::CommandLine::NO_PROGRAM);
   }
 
   base::win::RegKey reg_key;

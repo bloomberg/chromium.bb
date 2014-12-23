@@ -21,8 +21,8 @@
 
 namespace {
 
-std::vector<std::string> GetArgs(const CommandLine& cmdline) {
-  CommandLine::StringVector in_args = cmdline.GetArgs();
+std::vector<std::string> GetArgs(const base::CommandLine& cmdline) {
+  base::CommandLine::StringVector in_args = cmdline.GetArgs();
 #if defined(OS_WIN)
   std::vector<std::string> out_args;
   for (const auto& arg : in_args)
@@ -38,11 +38,11 @@ std::vector<std::string> GetArgs(const CommandLine& cmdline) {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
 #if defined(OS_WIN)
-  CommandLine::set_slash_is_not_a_switch();
+  base::CommandLine::set_slash_is_not_a_switch();
 #endif
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
-  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   std::vector<std::string> args = GetArgs(cmdline);
 
   std::string command;

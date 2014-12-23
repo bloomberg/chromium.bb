@@ -28,7 +28,7 @@ const wchar_t kDefaultProtocol[] = L"http";
 extern "C"
 int wmain(int argc, wchar_t* argv[]) {
   // Initialize the commandline singleton from the environment.
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
   logging::LoggingSettings settings;
@@ -38,7 +38,7 @@ int wmain(int argc, wchar_t* argv[]) {
 
   ui::win::CreateATLModuleIfNeeded();
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::string16 protocol(command_line->GetSwitchValueNative(kSwitchProtocol));
   if (protocol.empty())
     protocol = kDefaultProtocol;

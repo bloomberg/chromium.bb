@@ -70,7 +70,7 @@ InProcessContextFactory::InProcessContextFactory()
       << "gfx::GLSurface::InitializeOneOffForTests()";
 
 #if defined(OS_CHROMEOS)
-  bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
+  bool use_thread = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUIDisableThreadedCompositing);
 #else
   bool use_thread = false;

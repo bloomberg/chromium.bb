@@ -301,8 +301,8 @@ void InitializeStaticGLBindingsGL() {
   }
   g_real_gl->Initialize(&g_driver_gl);
   g_gl = g_real_gl;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceTracing)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUServiceTracing)) {
     g_gl = g_trace_gl;
   }
   SetGLToRealGLApi();

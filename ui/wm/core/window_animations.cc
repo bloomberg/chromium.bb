@@ -653,7 +653,7 @@ bool WindowAnimationsDisabled(aura::Window* window) {
     return true;
 
   // Animations can be disabled globally for testing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWindowAnimationsDisabled))
     return true;
 

@@ -126,7 +126,7 @@ static void RunTests(JNIEnv* env,
 
   // Command line initialized basically, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ChromeTestActivity" };
-  CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
+  base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
 
   // Set the application context in base.
   base::android::ScopedJavaLocalRef<jobject> scoped_context(
@@ -151,9 +151,10 @@ static void RunTests(JNIEnv* env,
   int argc = ArgsToArgv(args, &argv);
 
   // Fully initialize command line with arguments.
-  CommandLine::ForCurrentProcess()->AppendArguments(
-      CommandLine(argc, &argv[0]), false);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine::ForCurrentProcess()->AppendArguments(
+      base::CommandLine(argc, &argv[0]), false);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   base::FilePath files_dir(
       base::android::ConvertJavaStringToUTF8(env, jfiles_dir));

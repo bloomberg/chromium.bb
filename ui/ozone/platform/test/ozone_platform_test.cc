@@ -95,7 +95,7 @@ class OzonePlatformTest : public OzonePlatform {
 }  // namespace
 
 OzonePlatform* CreateOzonePlatformTest() {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   base::FilePath location;
   if (cmd->HasSwitch(switches::kOzoneDumpFile))
     location = cmd->GetSwitchValuePath(switches::kOzoneDumpFile);

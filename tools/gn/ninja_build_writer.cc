@@ -35,7 +35,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   base::FilePath executable;
   PathService::Get(base::FILE_EXE, &executable);
 
-  CommandLine cmdline(executable.NormalizePathSeparatorsTo('/'));
+  base::CommandLine cmdline(executable.NormalizePathSeparatorsTo('/'));
   cmdline.AppendArg("gen");
   cmdline.AppendArg(build_settings->build_dir().value());
   cmdline.AppendSwitchPath(std::string("--") + switches::kRoot,
@@ -52,9 +52,10 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   escape_shell.inhibit_quoting = true;
 #endif
 
-  const CommandLine& our_cmdline = *CommandLine::ForCurrentProcess();
-  const CommandLine::SwitchMap& switches = our_cmdline.GetSwitches();
-  for (CommandLine::SwitchMap::const_iterator i = switches.begin();
+  const base::CommandLine& our_cmdline =
+      *base::CommandLine::ForCurrentProcess();
+  const base::CommandLine::SwitchMap& switches = our_cmdline.GetSwitches();
+  for (base::CommandLine::SwitchMap::const_iterator i = switches.begin();
        i != switches.end(); ++i) {
     // Only write arguments we haven't already written. Always skip "args"
     // since those will have been written to the file and will be used

@@ -108,7 +108,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
  protected:
   void EnsureFoldersEnabled() {
     // Folders require AppList sync to be enabled.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSyncAppList);
   }
 
