@@ -27,15 +27,13 @@ using AsyncCallStackVector = WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>,
 
 class AsyncCallChain final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallChain> {
 public:
-    AsyncCallChain() { }
-    explicit AsyncCallChain(const AsyncCallChain& t) : m_callStacks(t.m_callStacks) { }
+    static PassRefPtrWillBeRawPtr<AsyncCallChain> create(PassRefPtrWillBeRawPtr<AsyncCallStack>, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength);
     ~AsyncCallChain();
     const AsyncCallStackVector& callStacks() const { return m_callStacks; }
     void trace(Visitor*);
 
 private:
-    friend class InspectorDebuggerAgent;
-    void ensureMaxAsyncCallChainDepth(unsigned maxDepth);
+    AsyncCallChain(PassRefPtrWillBeRawPtr<AsyncCallStack>, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength);
 
     AsyncCallStackVector m_callStacks;
 };

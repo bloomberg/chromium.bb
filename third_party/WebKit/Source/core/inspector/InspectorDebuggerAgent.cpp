@@ -1098,8 +1098,6 @@ void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promis
 
 const AsyncCallChain* InspectorDebuggerAgent::currentAsyncCallChain() const
 {
-    if (m_currentAsyncCallChain)
-        m_currentAsyncCallChain->ensureMaxAsyncCallChainDepth(m_maxAsyncCallStackDepth);
     return m_currentAsyncCallChain.get();
 }
 
@@ -1109,12 +1107,11 @@ PassRefPtrWillBeRawPtr<AsyncCallChain> InspectorDebuggerAgent::createAsyncCallCh
     if (callFrames.isEmpty()) {
         if (!m_currentAsyncCallChain)
             return nullptr;
-        didCreateAsyncCallChain(m_currentAsyncCallChain.get());
-        return m_currentAsyncCallChain; // Propogate async call stack chain.
+        RefPtrWillBeRawPtr<AsyncCallChain> chain = AsyncCallChain::create(nullptr, m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
+        didCreateAsyncCallChain(chain.get());
+        return chain.release(); // Propagate async call stack chain.
     }
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallChain());
-    chain->ensureMaxAsyncCallChainDepth(m_maxAsyncCallStackDepth - 1);
-    chain->m_callStacks.prepend(adoptRefWillBeNoop(new AsyncCallStack(description, callFrames)));
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = AsyncCallChain::create(adoptRefWillBeNoop(new AsyncCallStack(description, callFrames)), m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
     didCreateAsyncCallChain(chain.get());
     return chain.release();
 }

@@ -24,14 +24,24 @@ AsyncCallStack::~AsyncCallStack()
 {
 }
 
-AsyncCallChain::~AsyncCallChain()
+PassRefPtrWillBeRawPtr<AsyncCallChain> AsyncCallChain::create(PassRefPtrWillBeRawPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
 {
+    return adoptRefWillBeNoop(new AsyncCallChain(stack, prevChain, asyncCallChainMaxLength));
 }
 
-void AsyncCallChain::ensureMaxAsyncCallChainDepth(unsigned maxDepth)
+AsyncCallChain::AsyncCallChain(PassRefPtrWillBeRawPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
 {
-    while (m_callStacks.size() > maxDepth)
-        m_callStacks.removeLast();
+    if (stack)
+        m_callStacks.append(stack);
+    if (prevChain) {
+        const AsyncCallStackVector& other = prevChain->m_callStacks;
+        for (size_t i = 0; i < other.size() && m_callStacks.size() < asyncCallChainMaxLength; i++)
+            m_callStacks.append(other[i]);
+    }
+}
+
+AsyncCallChain::~AsyncCallChain()
+{
 }
 
 } // namespace blink
