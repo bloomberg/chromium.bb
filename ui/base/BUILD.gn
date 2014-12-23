@@ -641,10 +641,7 @@ component("base") {
   }
 
   if (is_android && is_android_webview_build) {
-    deps += [
-      #TODO(GYP): port this component to GN.
-      #"//ui/android:ui_java",
-    ]
+    deps += [ "//ui/android:ui_java" ]
   }
 
   if (is_android && !use_aura) {
