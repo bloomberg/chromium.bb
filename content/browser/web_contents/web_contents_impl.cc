@@ -222,11 +222,13 @@ WebContents* WebContents::CreateWithSessionStorage(
   return new_contents;
 }
 
-void WebContentsImpl::AddCreatedCallback(const CreatedCallback& callback) {
+void WebContentsImpl::FriendZone::AddCreatedCallbackForTesting(
+    const CreatedCallback& callback) {
   g_created_callbacks.Get().push_back(callback);
 }
 
-void WebContentsImpl::RemoveCreatedCallback(const CreatedCallback& callback) {
+void WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(
+    const CreatedCallback& callback) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
     if (g_created_callbacks.Get().at(i).Equals(callback)) {
       g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);
@@ -333,8 +335,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       audio_stream_monitor_(this),
       virtual_keyboard_requested_(false),
       loading_weak_factory_(this) {
-  for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
-    g_created_callbacks.Get().at(i).Run(this);
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
                  base::Unretained(this)));
@@ -1206,6 +1206,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // a RenderWidgetHostViewGuest. That is, |view_->CreateView| above.
   if (browser_plugin_guest_)
     browser_plugin_guest_->Init();
+
+  for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
+    g_created_callbacks.Get().at(i).Run(this);
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {

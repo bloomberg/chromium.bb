@@ -30,6 +30,7 @@ class ScopedOleInitializer;
 namespace content {
 
 class BrowserContext;
+class ContentBrowserSanityChecker;
 class MockRenderProcessHost;
 class MockRenderProcessHostFactory;
 class NavigationController;
@@ -226,6 +227,8 @@ class RenderViewHostTestHarness : public testing::Test {
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 
  private:
+  scoped_ptr<ContentBrowserSanityChecker> sanity_checker_;
+
   scoped_ptr<BrowserContext> browser_context_;
 
   scoped_ptr<WebContents> contents_;

@@ -17,11 +17,13 @@
     'test_support_content_sources': [
       'public/test/async_file_test_helper.cc',
       'public/test/async_file_test_helper.h',
+      'public/test/browser_test.h',
       'public/test/browser_test_base.cc',
       'public/test/browser_test_base.h',
-      'public/test/browser_test.h',
       'public/test/browser_test_utils.cc',
       'public/test/browser_test_utils.h',
+      'public/test/content_browser_sanity_checker.cc',
+      'public/test/content_browser_sanity_checker.h',
       'public/test/content_test_suite_base.cc',
       'public/test/content_test_suite_base.h',
       'public/test/download_test_observer.cc',
@@ -86,6 +88,8 @@
       'public/test/test_utils.h',
       'public/test/unittest_test_suite.cc',
       'public/test/unittest_test_suite.h',
+      'public/test/web_contents_observer_sanity_checker.cc',
+      'public/test/web_contents_observer_sanity_checker.h',
       'public/test/web_contents_tester.cc',
       'public/test/web_contents_tester.h',
       # TODO(phajdan.jr): All of those files should live in content/test (if

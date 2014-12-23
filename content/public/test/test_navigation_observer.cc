@@ -92,11 +92,13 @@ void TestNavigationObserver::Wait() {
 }
 
 void TestNavigationObserver::StartWatchingNewWebContents() {
-  WebContentsImpl::AddCreatedCallback(web_contents_created_callback_);
+  WebContentsImpl::FriendZone::AddCreatedCallbackForTesting(
+      web_contents_created_callback_);
 }
 
 void TestNavigationObserver::StopWatchingNewWebContents() {
-  WebContentsImpl::RemoveCreatedCallback(web_contents_created_callback_);
+  WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(
+      web_contents_created_callback_);
 }
 
 void TestNavigationObserver::RegisterAsObserver(WebContents* web_contents) {

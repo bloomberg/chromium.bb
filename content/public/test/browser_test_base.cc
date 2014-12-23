@@ -12,12 +12,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
-#include "content/public/app/content_main.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/test/content_browser_sanity_checker.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
@@ -248,6 +249,9 @@ void BrowserTestBase::SetUp() {
   rule_based_resolver_->AddSimulatedFailure("wpad");
   net::ScopedDefaultHostResolverProc scoped_local_host_resolver_proc(
       rule_based_resolver_.get());
+
+  ContentBrowserSanityChecker scoped_enable_sanity_checks;
+
   SetUpInProcessBrowserTestFixture();
 
   base::Closure* ui_task =

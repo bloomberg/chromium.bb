@@ -136,11 +136,13 @@ WebContentsAddedObserver::WebContentsAddedObserver()
               &WebContentsAddedObserver::WebContentsCreated,
               base::Unretained(this))),
       web_contents_(NULL) {
-  WebContentsImpl::AddCreatedCallback(web_contents_created_callback_);
+  WebContentsImpl::FriendZone::AddCreatedCallbackForTesting(
+      web_contents_created_callback_);
 }
 
 WebContentsAddedObserver::~WebContentsAddedObserver() {
-  WebContentsImpl::RemoveCreatedCallback(web_contents_created_callback_);
+  WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(
+      web_contents_created_callback_);
 }
 
 void WebContentsAddedObserver::WebContentsCreated(WebContents* web_contents) {
