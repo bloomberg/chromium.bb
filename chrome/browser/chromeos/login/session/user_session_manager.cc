@@ -1286,7 +1286,7 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
 
 void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
   // Skip key update because FakeCryptohomeClient always return success
-  // and RemoveKey op expects a failure to stop. As a result, some tests would
+  // and RefreshKeys op expects a failure to stop. As a result, some tests would
   // timeout.
   // TODO(xiyuan): Revisit this when adding tests.
   if (!base::SysInfo::IsRunningOnChromeOS())
@@ -1312,23 +1312,16 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
         EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
   }
 
+  base::ListValue empty_list;
+  if (!device_list)
+    device_list = &empty_list;
+
   EasyUnlockKeyManager* key_manager = GetEasyUnlockKeyManager();
   running_easy_unlock_key_ops_ = true;
-  if (device_list) {
-    key_manager->RefreshKeys(
-        user_context,
-        *device_list,
-        base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
-                   AsWeakPtr(),
-                   user_context.GetUserID()));
-  } else {
-    key_manager->RemoveKeys(
-        user_context,
-        0,
-        base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
-                   AsWeakPtr(),
-                   user_context.GetUserID()));
-  }
+  key_manager->RefreshKeys(
+      user_context, *device_list,
+      base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished, AsWeakPtr(),
+                 user_context.GetUserID()));
 }
 
 void UserSessionManager::AttemptRestart(Profile* profile) {

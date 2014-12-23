@@ -138,10 +138,6 @@ void EasyUnlockServiceSignin::SetRemoteDevices(
   NOTREACHED();
 }
 
-void EasyUnlockServiceSignin::ClearRemoteDevices() {
-  NOTREACHED();
-}
-
 void EasyUnlockServiceSignin::RunTurnOffFlow() {
   NOTREACHED();
 }
