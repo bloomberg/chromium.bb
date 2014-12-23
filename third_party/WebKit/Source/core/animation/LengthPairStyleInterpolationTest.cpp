@@ -59,19 +59,19 @@ TEST_F(LengthPairStyleInterpolationTest, ZeroTest)
     RefPtrWillBeRawPtr<CSSPrimitiveValue> secondPc = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
     RefPtrWillBeRawPtr<Pair> pairPc = Pair::create(firstPc, secondPc, Pair::KeepIdenticalValues);
     RefPtrWillBeRawPtr<CSSValue> value2 = roundTrip(CSSPrimitiveValue::create(pairPc.release()), ValueRangeNonNegative);
-    testPrimitiveValue(value2, 0, 0, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value2, 0, 0, CSSPrimitiveValue::CSS_PERCENTAGE);
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> firstEms = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> secondEms = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS);
     RefPtrWillBeRawPtr<Pair> pairEms = Pair::create(firstEms, secondEms, Pair::KeepIdenticalValues);
     RefPtrWillBeRawPtr<CSSValue> value3 = roundTrip(CSSPrimitiveValue::create(pairEms.release()), ValueRangeNonNegative);
-    testPrimitiveValue(value3, 0, 0, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value3, 0, 0, CSSPrimitiveValue::CSS_EMS);
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> firstPcNeg = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> secondPcNeg = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
     RefPtrWillBeRawPtr<Pair> pairPcNeg = Pair::create(firstPcNeg, secondPcNeg, Pair::KeepIdenticalValues);
     RefPtrWillBeRawPtr<CSSValue> value4 = roundTrip(CSSPrimitiveValue::create(pairPcNeg.release()), ValueRangeAll);
-    testPrimitiveValue(value4, 0, 0, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value4, 0, 0, CSSPrimitiveValue::CSS_PERCENTAGE);
 }
 
 TEST_F(LengthPairStyleInterpolationTest, MultipleValueTest)

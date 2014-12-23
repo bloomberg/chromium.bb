@@ -65,7 +65,7 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroLengthBox)
     rectEms->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
 
     value = roundTrip(CSSPrimitiveValue::create(rectEms.release()));
-    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::CSS_PX);
+    testPrimitiveValue(value, 0, 0, 0, 0, CSSPrimitiveValue::CSS_EMS);
 }
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBox)

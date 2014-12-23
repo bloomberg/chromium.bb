@@ -253,10 +253,10 @@ public:
         return 0;
     }
 
-    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const override
+    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, CSSLengthTypeArray& lengthTypeArray, double multiplier) const override
     {
         ASSERT(category() != CalcNumber);
-        m_value->accumulateLengthArray(lengthArray, multiplier);
+        m_value->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier);
     }
 
     virtual bool equals(const CSSCalcExpressionNode& other) const override
@@ -449,27 +449,27 @@ public:
         return evaluate(leftValue, rightValue);
     }
 
-    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const override
+    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, CSSLengthTypeArray& lengthTypeArray, double multiplier) const override
     {
         switch (m_operator) {
         case CalcAdd:
-            m_leftSide->accumulateLengthArray(lengthArray, multiplier);
-            m_rightSide->accumulateLengthArray(lengthArray, multiplier);
+            m_leftSide->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier);
+            m_rightSide->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier);
             break;
         case CalcSubtract:
-            m_leftSide->accumulateLengthArray(lengthArray, multiplier);
-            m_rightSide->accumulateLengthArray(lengthArray, -multiplier);
+            m_leftSide->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier);
+            m_rightSide->accumulateLengthArray(lengthArray, lengthTypeArray, -multiplier);
             break;
         case CalcMultiply:
             ASSERT((m_leftSide->category() == CalcNumber) != (m_rightSide->category() == CalcNumber));
             if (m_leftSide->category() == CalcNumber)
-                m_rightSide->accumulateLengthArray(lengthArray, multiplier * m_leftSide->doubleValue());
+                m_rightSide->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier * m_leftSide->doubleValue());
             else
-                m_leftSide->accumulateLengthArray(lengthArray, multiplier * m_rightSide->doubleValue());
+                m_leftSide->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier * m_rightSide->doubleValue());
             break;
         case CalcDivide:
             ASSERT(m_rightSide->category() == CalcNumber);
-            m_leftSide->accumulateLengthArray(lengthArray, multiplier / m_rightSide->doubleValue());
+            m_leftSide->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier / m_rightSide->doubleValue());
             break;
         default:
             ASSERT_NOT_REACHED();

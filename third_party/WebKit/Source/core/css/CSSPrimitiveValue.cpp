@@ -665,18 +665,29 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
     return result * conversionData.zoom();
 }
 
-void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, CSSLengthTypeArray& lengthTypeArray, double multiplier) const
 {
     ASSERT(lengthArray.size() == LengthUnitTypeCount);
 
     if (m_primitiveUnitType == CSS_CALC) {
-        cssCalcValue()->accumulateLengthArray(lengthArray, multiplier);
+        cssCalcValue()->accumulateLengthArray(lengthArray, lengthTypeArray, multiplier);
         return;
     }
 
     LengthUnitType lengthType;
-    if (unitTypeToLengthUnitType(static_cast<UnitType>(m_primitiveUnitType), lengthType))
+    if (unitTypeToLengthUnitType(static_cast<UnitType>(m_primitiveUnitType), lengthType)) {
         lengthArray.at(lengthType) += m_value.num * conversionToCanonicalUnitsScaleFactor(static_cast<UnitType>(m_primitiveUnitType)) * multiplier;
+        lengthTypeArray.set(lengthType);
+    }
+}
+
+void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+{
+    CSSLengthTypeArray lengthTypeArray;
+    lengthTypeArray.resize(CSSPrimitiveValue::LengthUnitTypeCount);
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i)
+        lengthTypeArray.clear(i);
+    return CSSPrimitiveValue::accumulateLengthArray(lengthArray, lengthTypeArray, multiplier);
 }
 
 double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(UnitType unitType)
