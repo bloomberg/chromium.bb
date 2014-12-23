@@ -222,8 +222,8 @@ void BrowserCdmManager::OnCreateSession(
   }
 
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kDisableInfobarForProtectedMediaIdentifier)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInfobarForProtectedMediaIdentifier)) {
     CreateSessionIfPermitted(
         render_frame_id, cdm_id, session_id, mime_type, init_data, true);
     return;

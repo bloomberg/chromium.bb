@@ -106,7 +106,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   SetThemeEngine(NULL);
 #endif
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableFileCookies);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableFileCookies);
 
   // Test shell always exposes the GC.
   std::string flags("--expose-gc");

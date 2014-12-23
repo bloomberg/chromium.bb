@@ -202,21 +202,23 @@ WebKitTestController* WebKitTestController::Get() {
 WebKitTestController::WebKitTestController()
     : main_window_(NULL),
       test_phase_(BETWEEN_TESTS),
-      is_leak_detection_enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLeakDetection)),
+      is_leak_detection_enabled_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableLeakDetection)),
       crash_when_leak_found_(false) {
   CHECK(!instance_);
   instance_ = this;
 
   if (is_leak_detection_enabled_) {
     std::string switchValue =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableLeakDetection);
     crash_when_leak_found_ = switchValue == switches::kCrashOnFailure;
   }
 
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEncodeBinary))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEncodeBinary))
     printer_->set_encode_binary_data(true);
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_CREATED,
@@ -335,7 +337,7 @@ void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   } else {
     ApplyLayoutTestDefaultPreferences(prefs);
     if (is_compositing_test_) {
-      CommandLine& command_line = *CommandLine::ForCurrentProcess();
+      base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
       if (!command_line.HasSwitch(switches::kDisableGpu))
         prefs->accelerated_2d_canvas_enabled = true;
       prefs->mock_scrollbars_enabled = true;
@@ -496,8 +498,9 @@ void WebKitTestController::SendTestConfiguration() {
   params.temp_path = temp_path_;
   params.test_url = test_url_;
   params.enable_pixel_dumping = enable_pixel_dumping_;
-  params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowExternalPages);
+  params.allow_external_pages =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowExternalPages);
   params.expected_pixel_hash = expected_pixel_hash_;
   params.initial_size = initial_size_;
   render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
@@ -530,8 +533,8 @@ void WebKitTestController::OnImageDump(
     std::vector<unsigned char> png;
 
     bool discard_transparency = true;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableOverlayFullscreenVideo))
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableOverlayFullscreenVideo))
       discard_transparency = false;
 
     std::vector<gfx::PNGCodec::Comment> comments;

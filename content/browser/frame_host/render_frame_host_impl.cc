@@ -1007,7 +1007,7 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
 void RenderFrameHostImpl::OnBeginNavigation(
     const FrameHostMsg_BeginNavigation_Params& params,
     const CommonNavigationParams& common_params) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   frame_tree_node()->navigator()->OnBeginNavigation(
       frame_tree_node(), params, common_params);

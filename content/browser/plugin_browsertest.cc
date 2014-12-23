@@ -49,7 +49,7 @@ class PluginTest : public ContentBrowserTest {
  protected:
   PluginTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Some NPAPI tests schedule garbage collection to force object tear-down.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
 

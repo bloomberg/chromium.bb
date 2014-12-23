@@ -238,9 +238,9 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, LightTest) {
   GURL test_url = GetTestUrl("device_sensors", "device_light_test.html");
 
   // TODO(riju): remove command line args when the feature goes stable.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures)) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
@@ -273,9 +273,9 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   fetcher_->SetSensorDataAvailable(false);
 
   // TODO(riju): remove command line args when the feature goes stable.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures)) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 

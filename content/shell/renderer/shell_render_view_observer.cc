@@ -25,12 +25,12 @@ ShellRenderViewObserver::~ShellRenderViewObserver() {
 
 void ShellRenderViewObserver::DidClearWindowObject(
     blink::WebLocalFrame* frame) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExposeInternalsForTesting)) {
     blink::WebTestingSupport::injectInternalsObject(frame);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExposeIpcEcho)) {
     RenderView* view = render_view();
     if (!ipc_echo_)

@@ -95,7 +95,8 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 void ShellWebContentsViewDelegate::ShowContextMenu(
     RenderFrameHost* render_frame_host,
     const ContextMenuParams& params) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     return;
 
   params_ = params;

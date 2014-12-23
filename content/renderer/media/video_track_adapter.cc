@@ -145,7 +145,7 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
   CHECK_NE(0, max_aspect_ratio_);
 
   const std::string max_fps_str =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWebRtcMaxCaptureFramerate);
   if (!max_fps_str.empty()) {
     double value;

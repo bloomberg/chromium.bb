@@ -153,9 +153,9 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     // Assume this is set by the content test launcher.
-    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+    ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeUIForMediaStream));
-    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+    ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
   }
 

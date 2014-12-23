@@ -26,7 +26,7 @@ scoped_ptr<RendererScheduler> RendererScheduler::Create() {
   return make_scoped_ptr(new NullRendererScheduler());
 #endif
 
-  CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableBlinkScheduler)) {
     return make_scoped_ptr(new NullRendererScheduler());
   } else {

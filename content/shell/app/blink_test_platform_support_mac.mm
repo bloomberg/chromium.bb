@@ -87,7 +87,7 @@ bool BlinkTestPlatformInitialize() {
   base::FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
   plugins_dir = plugins_dir.AppendASCII("../../../plugins");
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   command_line.AppendSwitchPath(switches::kExtraPluginDir, plugins_dir);
 
   return true;

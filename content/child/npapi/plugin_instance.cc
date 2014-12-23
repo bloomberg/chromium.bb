@@ -560,7 +560,7 @@ void PluginInstance::RequestRead(NPStream* stream, NPByteRange* range_list) {
       // is called on it.
       plugin_stream->set_seekable(true);
 
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableDirectNPAPIRequests)) {
         pending_range_requests_[++next_range_request_id_] = plugin_stream;
         webplugin_->InitiateHTTPRangeRequest(

@@ -23,16 +23,17 @@
 
 namespace content {
 
-void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void WebRtcContentBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   // Assume this is set by the content test launcher.
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFakeUIForMediaStream));
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFakeDeviceForMediaStream));
 
   // Always include loopback interface in network list, in case the test device
   // doesn't have other interfaces available.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowLoopbackInPeerConnection);
 }
 

@@ -163,7 +163,7 @@ class NavigationURLLoaderTest : public testing::Test {
     request_context->set_job_factory(&job_factory_);
 
     // NavigationURLLoader is only used for browser-side navigations.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableBrowserSideNavigation);
   }
 

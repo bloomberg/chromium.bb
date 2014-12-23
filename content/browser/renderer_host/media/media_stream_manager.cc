@@ -473,7 +473,7 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                         bool user_gesture) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "GenerateStream()";
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
     UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy>());
   }
@@ -1593,8 +1593,8 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   io_loop_ = base::MessageLoop::current();
   io_loop_->AddDestructionObserver(this);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeDeviceForMediaStream)) {
     audio_input_device_manager()->UseFakeDevice();
   }
 

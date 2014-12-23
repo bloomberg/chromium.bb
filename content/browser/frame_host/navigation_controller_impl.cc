@@ -655,7 +655,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   if (HandleDebugURL(params.url, params.transition_type)) {
     // If Telemetry is running, allow the URL load to proceed as if it's
     // unhandled, otherwise Telemetry can't tell if Navigation completed.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             cc::switches::kEnableGpuBenchmarking))
       return;
   }

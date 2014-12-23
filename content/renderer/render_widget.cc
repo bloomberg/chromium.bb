@@ -944,7 +944,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
 #endif
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool use_software = fallback;
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
@@ -2207,7 +2208,7 @@ void RenderWidget::ObserveWheelEventOnAndResult(
     bool event_processed) {
   bool observe_wheel_event = false;
 #if defined(OS_MACOSX)
-  observe_wheel_event = CommandLine::ForCurrentProcess()->HasSwitch(
+  observe_wheel_event = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableThreadedEventHandlingMac);
 #endif
   if (!observe_wheel_event)
@@ -2285,7 +2286,7 @@ scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderWidget::CreateGraphicsContext3D() {
   if (!webwidget_)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuCompositing))
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   if (!RenderThreadImpl::current())

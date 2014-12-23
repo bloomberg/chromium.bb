@@ -30,7 +30,7 @@ TestInterfaces::TestInterfaces()
       test_runner_(new TestRunner(this)),
       delegate_(0) {
   blink::setLayoutTestMode(true);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFontAntialiasing))
     blink::setFontAntialiasingEnabledForTest(true);
 

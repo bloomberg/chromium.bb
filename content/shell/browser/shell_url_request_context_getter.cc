@@ -106,7 +106,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!url_request_context_) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
 
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_);

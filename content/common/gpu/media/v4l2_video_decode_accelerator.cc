@@ -1673,7 +1673,7 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   memset(&format, 0, sizeof(format));
   format.type                              = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   format.fmt.pix_mp.pixelformat            = pixelformat;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
     format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor4k;
   else

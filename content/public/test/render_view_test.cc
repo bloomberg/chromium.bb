@@ -163,7 +163,7 @@ void RenderViewTest::SetUp() {
 #if defined(OS_MACOSX)
   autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
 #endif
-  command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
+  command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();

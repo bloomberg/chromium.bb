@@ -1438,7 +1438,7 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
     }
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFileCookies)) {
     cookie_monster->SetEnableFileScheme(true);
   }

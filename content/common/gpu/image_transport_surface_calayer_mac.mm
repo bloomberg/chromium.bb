@@ -94,16 +94,16 @@ namespace content {
 
 CALayerStorageProvider::CALayerStorageProvider(
     ImageTransportSurfaceFBO* transport_surface)
-        : transport_surface_(transport_surface),
-          gpu_vsync_disabled_(CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableGpuVsync)),
-          throttling_disabled_(false),
-          has_pending_draw_(false),
-          can_draw_returned_false_count_(0),
-          fbo_texture_(0),
-          fbo_scale_factor_(1),
-          recreate_layer_after_gpu_switch_(false),
-          pending_draw_weak_factory_(this) {
+    : transport_surface_(transport_surface),
+      gpu_vsync_disabled_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync)),
+      throttling_disabled_(false),
+      has_pending_draw_(false),
+      can_draw_returned_false_count_(0),
+      fbo_texture_(0),
+      fbo_scale_factor_(1),
+      recreate_layer_after_gpu_switch_(false),
+      pending_draw_weak_factory_(this) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 

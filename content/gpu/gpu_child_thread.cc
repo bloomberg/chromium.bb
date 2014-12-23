@@ -68,9 +68,10 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
-  DCHECK(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU));
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kInProcessGPU));
 #if !defined(OS_ANDROID)
   // For single process and in-process GPU mode, we need to load and
   // initialize the GL implementation and locate the GL entry points here.
@@ -185,7 +186,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 #if defined(OS_WIN)
   // GPU full info collection should only happen on un-sandboxed GPU process
   // or single process/in-process gpu mode on Windows.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch(switches::kDisableGpuSandbox) ||
          in_browser_process_);
 #endif  // OS_WIN

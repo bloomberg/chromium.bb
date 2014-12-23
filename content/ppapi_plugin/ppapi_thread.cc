@@ -100,11 +100,10 @@ namespace content {
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
-PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
+PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
       connect_instance_func_(NULL),
-      local_pp_module_(
-          base::RandInt(0, std::numeric_limits<PP_Module>::max())),
+      local_pp_module_(base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
   ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
   globals->SetPluginProxyDelegate(this);
@@ -199,7 +198,7 @@ IPC::Sender* PpapiThread::GetBrowserSender() {
 }
 
 std::string PpapiThread::GetUILanguage() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->GetSwitchValueASCII(switches::kLang);
 }
 

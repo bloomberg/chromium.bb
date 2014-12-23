@@ -290,8 +290,8 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
     }
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kBlockCrossSiteDocuments))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBlockCrossSiteDocuments))
     is_blocked = false;
 
   if (is_blocked) {

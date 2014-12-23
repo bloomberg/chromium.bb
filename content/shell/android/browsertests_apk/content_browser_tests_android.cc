@@ -58,7 +58,7 @@ static void RunTests(JNIEnv* env,
                      jobject app_context) {
   // Command line basic initialization, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ContentBrowserTestsActivity" };
-  CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
+  base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
 
   // Set the application context in base.
   base::android::ScopedJavaLocalRef<jobject> scoped_context(
@@ -73,8 +73,8 @@ static void RunTests(JNIEnv* env,
   int argc = ArgsToArgv(args, &argv);
 
   // Fully initialize command line with arguments.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendArguments(CommandLine(argc, &argv[0]), false);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendArguments(base::CommandLine(argc, &argv[0]), false);
 
   // Append required switches.
   command_line->AppendSwitch(content::kSingleProcessTestsFlag);

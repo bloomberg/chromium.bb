@@ -66,7 +66,7 @@ scoped_ptr<StreamHandle> MakeEmptyStream() {
 }
 
 void EnableBrowserSideNavigation() {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBrowserSideNavigation);
 }
 

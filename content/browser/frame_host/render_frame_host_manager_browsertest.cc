@@ -1429,7 +1429,7 @@ class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {
  public:
   RFHMProcessPerTabTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kProcessPerTab);
   }
 };
@@ -1518,7 +1518,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
 // in between WebUI and regular page.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ForceSwapAfterWebUIBindings) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kProcessPerTab);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kProcessPerTab);
   ASSERT_TRUE(test_server()->Start());
 
   const GURL web_ui_url(std::string(kChromeUIScheme) + "://" +

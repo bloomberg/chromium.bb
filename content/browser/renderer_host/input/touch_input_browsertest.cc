@@ -159,7 +159,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
     host->GetProcess()->AddFilter(filter_.get());
   }
 
-  void SetUpCommandLine(CommandLine* cmd) override {
+  void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
   }

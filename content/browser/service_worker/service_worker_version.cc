@@ -434,7 +434,7 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableServiceWorkerSync)) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
@@ -465,7 +465,7 @@ void ServiceWorkerVersion::DispatchNotificationClickEvent(
     const PlatformNotificationData& notification_data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
@@ -498,7 +498,7 @@ void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
                                              const std::string& data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
@@ -530,7 +530,7 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
     const blink::WebCircularGeofencingRegion& region) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
@@ -565,7 +565,7 @@ void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
     const CrossOriginServiceWorkerClient& client) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT, false);
     return;

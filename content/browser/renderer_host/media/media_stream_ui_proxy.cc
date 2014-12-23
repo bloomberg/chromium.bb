@@ -268,8 +268,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
 
   response_callback_ = response_callback;
 
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kUseFakeUIForMediaStream) == "deny") {
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseFakeUIForMediaStream) == "deny") {
     // Immediately deny the request.
     BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -332,8 +332,8 @@ void FakeMediaStreamUIProxy::CheckAccess(
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
 
   bool have_access = false;
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kUseFakeUIForMediaStream) != "deny") {
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseFakeUIForMediaStream) != "deny") {
     have_access =
         type == MEDIA_DEVICE_AUDIO_CAPTURE ? mic_access_ : camera_access_;
   }

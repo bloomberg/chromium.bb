@@ -204,7 +204,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
       load_observer.Wait();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Use --site-per-process to force process swaps for cross-site transfers.
     command_line->AppendSwitch(switches::kSitePerProcess);
   }

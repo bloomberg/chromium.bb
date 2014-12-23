@@ -63,7 +63,7 @@ void SkiaPreCacheFont(const LOGFONT& logfont) {
 
 // Main function for starting the PPAPI plugin process.
 int PpapiPluginMain(const MainFunctionParams& parameters) {
-  const CommandLine& command_line = parameters.command_line;
+  const base::CommandLine& command_line = parameters.command_line;
 
 #if defined(OS_WIN)
   g_target_services = parameters.sandbox_info->target_services;

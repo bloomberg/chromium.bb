@@ -134,8 +134,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
 }
 
 void AppCacheURLRequestJob::BeginExecutableHandlerDelivery() {
-  DCHECK(CommandLine::ForCurrentProcess()->
-            HasSwitch(kEnableExecutableHandlers));
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableExecutableHandlers));
   if (!storage_->service()->handler_factory()) {
     BeginErrorDelivery("missing handler factory");
     return;

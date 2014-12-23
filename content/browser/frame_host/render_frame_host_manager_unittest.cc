@@ -1830,7 +1830,8 @@ TEST_F(RenderFrameHostManagerTest,
 // Test that a pending RenderFrameHost in a non-root frame tree node is properly
 // deleted when the node is detached. Motivated by http://crbug.com/441357
 TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSitePerProcess);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSitePerProcess);
 
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://webkit.org/");

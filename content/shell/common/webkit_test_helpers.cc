@@ -55,7 +55,8 @@ void ExportLayoutTestSpecificPreferences(const TestPreferences& from,
 // of the defaults are controlled via command line flags which are
 // automatically set for layout tests.
 void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   prefs->allow_universal_access_from_file_urls = true;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
@@ -111,7 +112,8 @@ base::FilePath GetWebKitRootDirFilePath() {
 
 std::vector<std::string> GetSideloadFontFiles() {
   std::vector<std::string> files;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRegisterFontFiles)) {
     base::SplitString(
         command_line.GetSwitchValueASCII(switches::kRegisterFontFiles),

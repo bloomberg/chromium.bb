@@ -66,12 +66,11 @@ using blink::WebSize;
 namespace content {
 namespace {
 
-bool GetSwitchValueAsInt(
-    const CommandLine& command_line,
-    const std::string& switch_string,
-    int min_value,
-    int max_value,
-    int* result) {
+bool GetSwitchValueAsInt(const base::CommandLine& command_line,
+                         const std::string& switch_string,
+                         int min_value,
+                         int max_value,
+                         int* result) {
   std::string string_value = command_line.GetSwitchValueASCII(switch_string);
   int int_value;
   if (base::StringToInt(string_value, &int_value) &&
@@ -174,7 +173,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       compositor_deps_(compositor_deps),
       send_v8_idle_notification_after_commit_(true),
       weak_factory_(this) {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
 
   if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
     send_v8_idle_notification_after_commit_ = true;
@@ -183,7 +182,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
 }
 
 void RenderWidgetCompositor::Initialize() {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
 

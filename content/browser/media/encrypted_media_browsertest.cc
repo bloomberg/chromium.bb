@@ -129,7 +129,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
   }
 
 #if defined(OS_ANDROID)
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
   }

@@ -197,7 +197,7 @@ bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
 }
 
 void BrowserMessageFilter::BadMessageReceived() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
     return;
 

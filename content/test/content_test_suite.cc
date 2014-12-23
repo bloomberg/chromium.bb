@@ -125,10 +125,10 @@ void ContentTestSuite::Initialize() {
   media::InitializeMediaLibraryForTesting();
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTestChildProcess)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestChildProcess)) {
     gfx::GLSurface::InitializeOneOffForTests();
-    gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
+    gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   }
 #endif
   testing::TestEventListeners& listeners =

@@ -32,18 +32,18 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
 bool ShellContentRendererClient::IsPluginAllowedToUseCompositorAPI(
     const GURL& url) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePepperTesting);
 }
 
 bool ShellContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
     const GURL& url) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePepperTesting);
 }
 
 bool ShellContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePepperTesting);
 }
 

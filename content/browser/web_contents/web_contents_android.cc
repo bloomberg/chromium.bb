@@ -154,7 +154,7 @@ void WebContentsAndroid::ResumeResponseDeferredAtStart(JNIEnv* env,
 void WebContentsAndroid::SetHasPendingNavigationTransitionForTesting(
     JNIEnv* env,
     jobject obj) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
   RenderFrameHost* frame =
       static_cast<WebContentsImpl*>(web_contents_)->GetMainFrame();

@@ -37,8 +37,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       parent_(NULL) {}
 
 FrameTreeNode::~FrameTreeNode() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
     navigator_->CancelNavigation(this);
   }
 }

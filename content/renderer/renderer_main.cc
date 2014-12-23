@@ -57,7 +57,8 @@ namespace content {
 namespace {
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
-static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
+static void HandleRendererErrorTestParameters(
+    const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kWaitForDebugger))
     base::debug::WaitForDebugger(60, true);
 
@@ -104,7 +105,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
-  const CommandLine& parsed_command_line = parameters.command_line;
+  const base::CommandLine& parsed_command_line = parameters.command_line;
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;

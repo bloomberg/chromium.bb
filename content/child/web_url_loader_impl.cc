@@ -437,7 +437,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // contains the body of the response. The request has already been made by the
   // browser.
   if (stream_override_.get()) {
-    CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation));
     DCHECK(!sync_load_response);
     DCHECK_NE(WebURLRequest::FrameTypeNone, request.frameType());
@@ -447,8 +447,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   // PlzNavigate: the only navigation requests going through the WebURLLoader
   // are the ones created by CommitNavigation.
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation) ||
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableBrowserSideNavigation) ||
          stream_override_.get() ||
          request.frameType() == WebURLRequest::FrameTypeNone);
 
@@ -587,7 +587,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   // PlzNavigate: during navigations, the ResourceResponse has already been
   // received on the browser side, and has been passed down to the renderer.
   if (stream_override_.get()) {
-    CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation));
     info = stream_override_->response;
   }

@@ -259,7 +259,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     controller->SetScreenshotManager(screenshot_manager_);
   }
 
-  void SetUpCommandLine(CommandLine* cmd) override {
+  void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
   }

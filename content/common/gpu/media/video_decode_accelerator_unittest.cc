@@ -1423,7 +1423,7 @@ int main(int argc, char **argv) {
   DCHECK(cmd_line);
 
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
-  for (CommandLine::SwitchMap::const_iterator it = switches.begin();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first == "test_video_data") {
       content::g_test_video_data = it->second.c_str();

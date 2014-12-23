@@ -171,7 +171,7 @@ CONTENT_EXPORT extern const char kHttpsScheme[];
 CONTENT_EXPORT extern const char kHttpGETMethod[];
 CONTENT_EXPORT extern const char kHttpHEADMethod[];
 
-// CommandLine flag to turn this experimental feature on.
+// base::CommandLine flag to turn this experimental feature on.
 CONTENT_EXPORT extern const char kEnableExecutableHandlers[];
 
 CONTENT_EXPORT bool IsSchemeSupportedForAppCache(const GURL& url);

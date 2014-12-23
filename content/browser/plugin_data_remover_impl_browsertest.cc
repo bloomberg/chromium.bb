@@ -28,7 +28,7 @@ class PluginDataRemoverTest : public ContentBrowserTest {
     base::MessageLoop::current()->Quit();
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_MACOSX)
     base::FilePath browser_directory;
     PathService::Get(base::DIR_MODULE, &browser_directory);

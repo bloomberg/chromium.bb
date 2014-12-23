@@ -451,7 +451,8 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
   // Note: a non-dumpable process can't be debugged. To debug sandbox-related
   // issues, one can specify --allow-sandbox-debugging to let the process be
   // dumpable.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
     prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
     if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0)) {

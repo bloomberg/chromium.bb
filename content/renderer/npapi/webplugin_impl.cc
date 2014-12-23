@@ -1219,7 +1219,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   if (!delegate_)
     return;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDirectNPAPIRequests)) {
     // We got here either because the plugin called GetURL/PostURL, or because
     // we're fetching the data for an embed tag. If we're in multi-process mode,

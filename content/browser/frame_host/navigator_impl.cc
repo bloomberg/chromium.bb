@@ -392,8 +392,8 @@ bool NavigatorImpl::NavigateToEntry(
       render_frame_host->frame_tree_node()->render_manager();
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
     navigation_data_.reset(new NavigationMetricsData(
         navigation_start, entry.GetURL(), entry.restore_type()));
     return RequestNavigation(render_frame_host->frame_tree_node(),
@@ -482,8 +482,8 @@ void NavigatorImpl::DidNavigate(
   // PlzNavigate
   // The navigation request has been committed so the browser process doesn't
   // need to care about it anymore.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
     navigation_request_map_.erase(
         render_frame_host->frame_tree_node()->frame_tree_node_id());
   }
@@ -737,7 +737,7 @@ void NavigatorImpl::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
     const FrameHostMsg_BeginNavigation_Params& params,
     const CommonNavigationParams& common_params) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
 
@@ -786,7 +786,7 @@ void NavigatorImpl::OnBeginNavigation(
 void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
                                      ResourceResponse* response,
                                      scoped_ptr<StreamHandle> body) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
 
   // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
@@ -817,7 +817,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
 
 // PlzNavigate
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   navigation_request_map_.erase(frame_tree_node->frame_tree_node_id());
 }
@@ -872,7 +872,7 @@ bool NavigatorImpl::RequestNavigation(
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
     base::TimeTicks navigation_start) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
   int64 frame_tree_node_id = frame_tree_node->frame_tree_node_id();

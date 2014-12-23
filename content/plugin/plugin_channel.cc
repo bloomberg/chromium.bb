@@ -243,7 +243,8 @@ PluginChannel::PluginChannel()
       filter_(new MessageFilter()),
       npp_(new struct _NPP) {
   set_send_unblocking_only_during_unblock_dispatch();
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 
   // Register |npp_| as the default owner for any object we receive via IPC,
@@ -315,7 +316,7 @@ void PluginChannel::OnClearSiteData(const std::string& site,
                                     uint64 flags,
                                     uint64 max_age) {
   bool success = false;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);
   scoped_refptr<PluginLib> plugin_lib(PluginLib::CreatePluginLib(path));
   if (plugin_lib.get()) {

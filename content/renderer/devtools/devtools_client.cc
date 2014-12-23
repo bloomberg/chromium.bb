@@ -24,7 +24,8 @@ namespace content {
 
 DevToolsClient::DevToolsClient(RenderFrame* main_render_frame)
     : RenderFrameObserver(main_render_frame) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   web_tools_frontend_.reset(WebDevToolsFrontend::create(
       main_render_frame->GetRenderView()->GetWebView(), this,
       base::ASCIIToUTF16(command_line.GetSwitchValueASCII(switches::kLang))));

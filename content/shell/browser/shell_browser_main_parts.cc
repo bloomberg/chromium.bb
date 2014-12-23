@@ -47,10 +47,10 @@ namespace content {
 namespace {
 
 GURL GetStartupURL() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kContentBrowserTest))
     return GURL();
-  const CommandLine::StringVector& args = command_line->GetArgs();
+  const base::CommandLine::StringVector& args = command_line->GetArgs();
 
 #if defined(OS_ANDROID)
   // Delay renderer creation on Android until surface is ready.
@@ -129,10 +129,10 @@ void ShellBrowserMainParts::InitializeMessageLoopContext() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     base::FilePath crash_dumps_dir =
-        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir);
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
   }

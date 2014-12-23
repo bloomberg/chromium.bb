@@ -64,7 +64,7 @@ bool g_swap_processes_for_redirect = false;
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kCrashDumpsDir);
   {
     ANNOTATE_SCOPED_MEMORY_LEAK;
@@ -76,7 +76,7 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
   }
 }
 
-int GetCrashSignalFD(const CommandLine& command_line) {
+int GetCrashSignalFD(const base::CommandLine& command_line) {
   if (!breakpad::IsCrashReporterEnabled())
     return -1;
 
@@ -137,16 +137,17 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  shell_browser_main_parts_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)
-          ? new LayoutTestBrowserMainParts(parameters)
-          : new ShellBrowserMainParts(parameters);
+  shell_browser_main_parts_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                  switches::kDumpRenderTree)
+                                  ? new LayoutTestBrowserMainParts(parameters)
+                                  : new ShellBrowserMainParts(parameters);
   return shell_browser_main_parts_;
 }
 
 void ShellContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kExposeIpcEcho))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposeIpcEcho))
     host->AddFilter(new IPCEchoMessageFilter());
 }
 
@@ -198,42 +199,46 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
-    CommandLine* command_line, int child_process_id) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    base::CommandLine* command_line,
+    int child_process_id) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     command_line->AppendSwitch(switches::kDumpRenderTree);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFontAntialiasing))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFontAntialiasing))
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kExposeInternalsForTesting))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposeInternalsForTesting))
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kExposeIpcEcho))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposeIpcEcho))
     command_line->AppendSwitch(switches::kExposeIpcEcho);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStableReleaseMode))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStableReleaseMode))
     command_line->AppendSwitch(switches::kStableReleaseMode);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     command_line->AppendSwitch(switches::kEnableCrashReporter);
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kCrashDumpsDir)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCrashDumpsDir)) {
     command_line->AppendSwitchPath(
         switches::kCrashDumpsDir,
-        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir));
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLeakDetection)) {
     command_line->AppendSwitchASCII(
         switches::kEnableLeakDetection,
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableLeakDetection));
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kRegisterFontFiles)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRegisterFontFiles)) {
     command_line->AppendSwitchASCII(
         switches::kRegisterFontFiles,
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kRegisterFontFiles));
   }
 }
@@ -242,14 +247,16 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* render_view_host,
     const GURL& url,
     WebPreferences* prefs) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->OverrideWebkitPrefs(prefs);
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
   resource_dispatcher_host_delegate_.reset(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree)
           ? new LayoutTestResourceDispatcherHostDelegate
           : new ShellResourceDispatcherHostDelegate);
   ResourceDispatcherHost::Get()->SetDelegate(
@@ -297,7 +304,7 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     int child_process_id,
     FileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)

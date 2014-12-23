@@ -20,7 +20,7 @@ WebPluginAcceleratedSurfaceProxy* WebPluginAcceleratedSurfaceProxy::Create(
     gfx::GpuPreference gpu_preference) {
   // This code path shouldn't be taken if CA plugins are disabled
   // because the CA drawing model shouldn't be advertised.
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableCoreAnimationPlugins));
 
   AcceleratedSurface* surface = new AcceleratedSurface;

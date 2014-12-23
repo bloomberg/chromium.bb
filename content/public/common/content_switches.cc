@@ -987,7 +987,7 @@ const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
 bool IsWin32kRendererLockdownEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("Win32kLockdown");
-  const base::CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(kEnableWin32kRendererLockDown))
     return true;
   if (cmd_line->HasSwitch(kDisableWin32kRendererLockDown))

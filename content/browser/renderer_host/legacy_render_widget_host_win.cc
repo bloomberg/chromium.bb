@@ -39,7 +39,7 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
 LegacyRenderWidgetHostHWND* LegacyRenderWidgetHostHWND::Create(
     HWND parent,
     LegacyRenderWidgetHostHWNDDelegate* delegate) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLegacyIntermediateWindow)) {
     return nullptr;
   }

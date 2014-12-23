@@ -42,7 +42,7 @@ class CloseTrackingDelegate : public WebContentsDelegate {
 
 class OpenedByDOMTest : public ContentBrowserTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Use --site-per-process to force process swaps on cross-site navigations.
     command_line->AppendSwitch(switches::kSitePerProcess);
   }

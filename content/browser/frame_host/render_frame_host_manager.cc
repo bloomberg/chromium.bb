@@ -545,7 +545,8 @@ void RenderFrameHostManager::SwapOutOldFrame(
   old_render_frame_host->SwapOut(proxy, true);
 
   bool is_main_frame = frame_tree_node_->IsMainFrame();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess) &&
       !is_main_frame) {
     // In --site-per-process, subframes delete their RFH rather than storing it
     // in the proxy.  Schedule it for deletion once the SwapOutACK comes in.
@@ -625,7 +626,7 @@ void RenderFrameHostManager::ResetProxyHosts() {
 RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       const GURL& url,
       ui::PageTransition transition) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   // TODO(clamy): When we handle renderer initiated navigations, make sure not
   // to use a different process for subframes if --site-per-process is not
@@ -712,9 +713,10 @@ bool RenderFrameHostManager::ShouldTransitionCrossSite() {
   // in swapped_out_hosts_.
   // True if we are using process-per-site-instance (default) or
   // process-per-site (kProcessPerSite).
-  return
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kProcessPerTab);
 }
 
 bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
@@ -880,9 +882,9 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   // NOTE: This can be removed once we have a way to transition between
   //       RenderViews in response to a link click.
   //
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
-      ui::PageTransitionCoreTypeIs(
-          transition, ui::PAGE_TRANSITION_GENERATED)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kProcessPerSite) &&
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) {
     return current_instance;
   }
 
@@ -1019,7 +1021,8 @@ const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
   // TODO(creis): Remove this when we can check the FrameNavigationEntry's url.
   // See http://crbug.com/369654
   if (!frame_tree_node_->IsMainFrame() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
     return frame_tree_node_->current_url();
 
   // If there is no last non-interstitial entry (and current_instance already
@@ -1067,7 +1070,7 @@ int RenderFrameHostManager::CreateOpenerRenderViewsIfNeeded(
   if (new_instance->IsRelatedSiteInstance(old_instance)) {
     opener_route_id =
         delegate_->CreateOpenerRenderViewsForRenderManager(new_instance);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSitePerProcess)) {
       // Ensure that the frame tree has RenderFrameProxyHosts for the new
       // SiteInstance in all nodes except the current one.
@@ -1401,7 +1404,8 @@ void RenderFrameHostManager::CommitPending() {
   // the proxy.
   SwapOutOldFrame(old_render_frame_host.Pass());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess) &&
       !is_main_frame) {
     // If this is a subframe, it should have a CrossProcessFrameConnector
     // created already.  Use it to link the new RFH's view to the proxy that
@@ -1531,8 +1535,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // PlzNavigate: There is no notion of transfer navigations, and the old
     // renderer before unload handler has already run at that point, so return
     // here.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserSideNavigation)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
       return pending_render_frame_host_.get();
     }
 

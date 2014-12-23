@@ -40,7 +40,7 @@ bool IsSavableURL(const GURL& url) {
 #if defined(OS_ANDROID)
 void SetMaxURLChars(size_t max_chars) {
   // Check that it is not used by a multiprocesses embedder
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   CHECK(cmd->HasSwitch(switches::kSingleProcess));
   g_max_url_size = max_chars;
 }

@@ -389,7 +389,8 @@ static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
 
 static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
                                        float device_scale_factor) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
     return false;
   if (command_line.HasSwitch(switches::kEnablePreferCompositingToLCDText))
@@ -693,7 +694,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
@@ -2078,8 +2080,9 @@ void RenderViewImpl::initializeLayerTreeView() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Development flag because many events are still unhandled on Mac.
   // http://crbug.com/138003
-  use_threaded_event_handling = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableThreadedEventHandlingMac);
+  use_threaded_event_handling =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedEventHandlingMac);
 #endif
   if (use_threaded_event_handling) {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -2294,7 +2297,8 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
   return navigation_state;
 }
 
-void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
+void RenderViewImpl::ProcessViewLayoutFlags(
+    const base::CommandLine& command_line) {
   bool enable_viewport =
       command_line.HasSwitch(switches::kEnableViewport) ||
       command_line.HasSwitch(switches::kEnableViewportMeta);
@@ -2322,7 +2326,8 @@ void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
     StatsCollectionController::Install(frame);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame);

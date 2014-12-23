@@ -43,7 +43,7 @@ class GinBrowserTest : public RenderViewTest {
   ~GinBrowserTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kJavaScriptFlags, "--expose_gc");
 
     RenderViewTest::SetUp();

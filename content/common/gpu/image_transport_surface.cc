@@ -145,7 +145,8 @@ void ImageTransportHelper::SetSwapInterval(gfx::GLContext* context) {
     return;
   }
 #endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync))
     context->ForceSwapIntervalZero(true);
   else
     context->SetSwapInterval(1);

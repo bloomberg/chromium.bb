@@ -135,7 +135,7 @@ PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
 }
 
 std::string HostGlobals::GetCmdLine() {
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kPpapiFlashArgs);
 }
 

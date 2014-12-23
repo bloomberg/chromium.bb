@@ -278,8 +278,8 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
   if (add_to_share_group)
     share_group_->AddContextLocked(this);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGpuClientTracing)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuClientTracing)) {
     trace_gl_.reset(new gpu::gles2::GLES2TraceImplementation(GetGLInterface()));
     setGLInterface(trace_gl_.get());
   }

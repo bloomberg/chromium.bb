@@ -719,7 +719,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(stream_override.Pass());
   request.setExtraData(extra_data);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBrowserSideNavigation);
 
   client()->loader()->loadAsynchronously(request, client());

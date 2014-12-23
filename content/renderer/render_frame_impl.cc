@@ -1107,8 +1107,8 @@ void RenderFrameImpl::OnSwapOut(
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
-  bool is_site_per_process =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
+  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
   bool is_main_frame = !frame_->parent();
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
@@ -3735,7 +3735,7 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
 void RenderFrameImpl::OnRequestNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params,
@@ -3751,7 +3751,7 @@ void RenderFrameImpl::OnCommitNavigation(
     const GURL& stream_url,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params) {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   bool is_reload = false;
   bool is_history_navigation = commit_params.page_state.IsValid();
@@ -3817,7 +3817,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
 
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(info.frame,
                                                            info.urlRequest));
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   bool is_subframe = !!info.frame->parent();
 
@@ -4015,8 +4016,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   }
 
   // PlzNavigate: send the request to the browser if needed.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation) &&
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
       info.urlRequest.checkForBrowserSideNavigation()) {
     BeginNavigation(&info.urlRequest);
     return blink::WebNavigationPolicyIgnore;
@@ -4137,7 +4138,8 @@ void RenderFrameImpl::InitializeUserMediaClient() {
     return;
 
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebRTC))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebRTC))
     return;
 #endif
 

@@ -160,8 +160,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
-  force_use_overlay_embedded_video_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kForceUseOverlayEmbeddedVideo);
+  force_use_overlay_embedded_video_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceUseOverlayEmbeddedVideo);
   if (force_use_overlay_embedded_video_ ||
     player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
     // Defer stream texture creation until we are sure it's necessary.

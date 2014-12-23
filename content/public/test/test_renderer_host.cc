@@ -197,14 +197,14 @@ void RenderViewHostTestHarness::SetUp() {
 
   SetContents(CreateTestWebContents());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     BrowserSideNavigationSetUp();
   }
 }
 
 void RenderViewHostTestHarness::TearDown() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     BrowserSideNavigationTearDown();
   }

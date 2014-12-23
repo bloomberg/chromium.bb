@@ -49,7 +49,8 @@ RenderProcessImpl::RenderProcessImpl()
                                static_cast<int>(optimize_flag.size()));
   }
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
     std::string flags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));

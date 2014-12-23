@@ -16,7 +16,7 @@ class TransitionRequestManagerTest : public testing::Test {
  public:
   TransitionRequestManagerTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 

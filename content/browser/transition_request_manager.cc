@@ -139,10 +139,10 @@ bool TransitionRequestManager::TransitionRequestData::FindEntry(
     TransitionLayerData* transition_data) {
   DCHECK(!allowed_entries_.empty());
   CHECK(transition_data);
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalWebPlatformFeatures) ||
-            base::FieldTrialList::FindFullName("NavigationTransitions") ==
-                "Enabled");
+        base::FieldTrialList::FindFullName("NavigationTransitions") ==
+            "Enabled");
 
   for (const AllowedEntry& allowed_entry : allowed_entries_) {
     // Note: This is a small subset of the CSP source-list standard; once the

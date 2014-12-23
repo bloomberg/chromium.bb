@@ -262,7 +262,7 @@ class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
  public:
   IndexedDBBrowserTestWithGCExposed() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
@@ -737,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
 
 class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
   }
 };

@@ -114,8 +114,8 @@ void IpcNetworkManager::OnNetworkListChanged(
   UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
                            ipv6_interfaces);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowLoopbackInPeerConnection)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowLoopbackInPeerConnection)) {
     std::string name_v4("loopback_ipv4");
     rtc::IPAddress ip_address_v4(INADDR_LOOPBACK);
     rtc::Network* network_v4 = new rtc::Network(

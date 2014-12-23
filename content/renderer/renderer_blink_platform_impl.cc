@@ -316,7 +316,8 @@ bool RendererBlinkPlatformImpl::sandboxEnabled() {
   // case, we have no other choice.  Platform.h discourages using
   // this switch unless absolutely necessary, so hopefully we won't end up
   // with too many code paths being different in single-process mode.
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess);
 }
 
 unsigned long long RendererBlinkPlatformImpl::visitedLinkHash(

@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
 
 class ContentBrowserTestSanityTest : public ContentBrowserTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     if (std::string(test_info->name()) == "SingleProcess")

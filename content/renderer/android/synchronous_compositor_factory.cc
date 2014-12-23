@@ -20,7 +20,8 @@ void SynchronousCompositorFactory::SetInstance(
   DCHECK(g_instance == NULL);
 
   // This feature only makes sense in single process mode.
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess));
 
   g_instance = instance;
 }

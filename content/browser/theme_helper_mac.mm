@@ -53,7 +53,8 @@ suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
   // In single-process mode, renderers will catch these notifications
   // themselves and listening for them here may trigger the DCHECK in Observe().
   if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)] &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(behaviorPrefsChanged:)

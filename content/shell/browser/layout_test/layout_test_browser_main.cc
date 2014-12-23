@@ -92,7 +92,7 @@ GURL GetURLForLayoutTest(const std::string& test_name,
   return test_url;
 }
 
-bool GetNextTest(const CommandLine::StringVector& args,
+bool GetNextTest(const base::CommandLine::StringVector& args,
                  size_t* position,
                  std::string* test) {
   if (*position >= args.size())
@@ -157,7 +157,8 @@ int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
     test_controller.SetTempPath(temp_path);
   }
   std::string test_string;
-  CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
+  base::CommandLine::StringVector args =
+      base::CommandLine::ForCurrentProcess()->GetArgs();
   size_t command_line_position = 0;
   bool ran_at_least_once = false;
 
@@ -194,7 +195,7 @@ int LayoutTestBrowserMain(
 
   CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
   CHECK(!browser_context_path_for_layout_tests.path().MaybeAsASCII().empty());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kContentShellDataPath,
       browser_context_path_for_layout_tests.path().MaybeAsASCII());
 
@@ -209,7 +210,7 @@ int LayoutTestBrowserMain(
   if (exit_code >= 0)
     return exit_code;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCheckLayoutTestSysDeps)) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());

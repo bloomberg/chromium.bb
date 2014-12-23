@@ -17,7 +17,7 @@ using blink::WebTouchEvent;
 namespace content {
 
 InputEventStreamValidator::InputEventStreamValidator()
-    : enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
+    : enabled_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kValidateInputEventStream)) {
 }
 

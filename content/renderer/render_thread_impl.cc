@@ -333,7 +333,7 @@ void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
 }
 
 bool ShouldUseMojoChannel() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableRendererMojoChannel) ||
          IPC::ChannelMojo::ShouldBeUsed();
 }
@@ -376,8 +376,8 @@ RenderThreadImpl::HistogramCustomizer::~HistogramCustomizer() {}
 
 void RenderThreadImpl::HistogramCustomizer::RenderViewNavigatedToHost(
     const std::string& host, size_t view_count) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHistogramCustomizer)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHistogramCustomizer)) {
     return;
   }
   // Check if all RenderViews are displaying a page from the same host. If there
@@ -516,7 +516,8 @@ void RenderThreadImpl::Init() {
 
   InitSkiaEventTracer();
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   is_impl_side_painting_enabled_ =
       command_line.HasSwitch(switches::kEnableImplSidePainting);
@@ -819,7 +820,8 @@ IPC::SyncChannel* RenderThreadImpl::GetChannel() {
 std::string RenderThreadImpl::GetLocale() {
   // The browser process should have passed the locale to the renderer via the
   // --lang command line flag.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   const std::string& lang =
       parsed_command_line.GetSwitchValueASCII(switches::kLang);
   DCHECK(!lang.empty());
@@ -926,7 +928,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (blink_platform_impl_)
     return;
 
-const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
   if (command_line.HasSwitch(switches::kEnableVtune))
@@ -1186,7 +1189,7 @@ RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
   scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       GetMediaThreadTaskRunner();
@@ -1540,8 +1543,8 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client) {
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableWebRTC))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebRTC))
     return NULL;
 #endif
 

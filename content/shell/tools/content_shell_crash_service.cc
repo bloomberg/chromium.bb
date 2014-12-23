@@ -17,7 +17,7 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
   // Manages the destruction of singletons.
   base::AtExitManager exit_manager;
 
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
 
   // Logging to stderr.
   logging::LoggingSettings settings;

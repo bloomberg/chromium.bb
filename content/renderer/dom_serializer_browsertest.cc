@@ -170,7 +170,7 @@ class DomSerializerTests : public ContentBrowserTest,
     : serialized_(false),
       local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
     // Don't want to try to create a GPU process.

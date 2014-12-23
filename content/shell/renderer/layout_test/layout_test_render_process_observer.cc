@@ -63,8 +63,8 @@ void LayoutTestRenderProcessObserver::WebKitInitialized() {
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-    switches::kStableReleaseMode)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStableReleaseMode)) {
     WebRuntimeFeatures::enableTestOnlyFeatures(true);
   }
 

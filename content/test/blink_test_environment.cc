@@ -46,7 +46,8 @@ void EnableBlinkPlatformLogChannels(const std::string& channels) {
 }
 
 void ParseBlinkCommandLineArgumentsForUnitTests() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   EnableBlinkPlatformLogChannels(
       command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
 }

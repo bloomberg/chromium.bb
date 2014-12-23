@@ -70,7 +70,7 @@ PluginThread::PluginThread()
     : preloaded_plugin_module_(NULL),
       forcefully_terminate_plugin_process_(false) {
   base::FilePath plugin_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kPluginPath);
 
   lazy_tls.Pointer()->Set(this);

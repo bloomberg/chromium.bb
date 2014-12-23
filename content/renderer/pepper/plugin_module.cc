@@ -327,7 +327,7 @@ const void* InternalGetInterface(const char* name) {
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     if (strcmp(name, PPB_TESTING_PRIVATE_INTERFACE) == 0)
       return &testing_interface;

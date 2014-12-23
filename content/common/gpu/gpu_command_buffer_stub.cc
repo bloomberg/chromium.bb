@@ -570,8 +570,8 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGPUServiceLogging)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUServiceLogging)) {
     decoder_->set_log_commands(true);
   }
 

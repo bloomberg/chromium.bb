@@ -84,7 +84,8 @@ Shell::Shell(WebContents* web_contents)
       window_(NULL),
       url_edit_view_(NULL),
       headless_(false) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDumpRenderTree))
     headless_ = true;
   windows_.push_back(this);
@@ -125,7 +126,8 @@ Shell* Shell::CreateShell(WebContents* web_contents,
 
   shell->PlatformResizeSubViews();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree)) {
     web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
     web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
@@ -215,7 +217,8 @@ void Shell::AddNewContents(WebContents* source,
                            bool user_gesture,
                            bool* was_blocked) {
   CreateShell(new_contents, AdjustWindowSize(initial_pos.size()));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     NotifyDoneForwarder::CreateForWebContents(new_contents);
 }
 
@@ -309,7 +312,8 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
 #if defined(OS_ANDROID)
   PlatformToggleFullscreenModeForTab(web_contents, enter_fullscreen);
 #endif
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     return;
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
@@ -350,7 +354,8 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
   if (!dialog_manager_) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     dialog_manager_.reset(command_line.HasSwitch(switches::kDumpRenderTree)
         ? new LayoutTestJavaScriptDialogManager
         : new ShellJavaScriptDialogManager);
@@ -363,11 +368,13 @@ bool Shell::AddMessageToConsole(WebContents* source,
                                 const base::string16& message,
                                 int32 line_no,
                                 const base::string16& source_id) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDumpRenderTree);
 }
 
 void Shell::RendererUnresponsive(WebContents* source) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->RendererUnresponsive();
 }
@@ -381,7 +388,8 @@ void Shell::DeactivateContents(WebContents* contents) {
 }
 
 void Shell::WorkerCrashed(WebContents* source) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->WorkerCrashed();
 }
@@ -404,7 +412,7 @@ void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
 void Shell::InnerShowDevTools(const std::string& settings,
                               const std::string& frontend_url) {
   if (!devtools_frontend_) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDumpRenderTree)) {
       devtools_frontend_ = LayoutTestDevToolsFrontend::Show(
           web_contents(), settings, frontend_url);

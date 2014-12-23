@@ -23,8 +23,9 @@ base::DictionaryValue* GetShellConstants(const std::string& app_name) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("name", app_name);
-  dict->SetString("command_line",
-                  CommandLine::ForCurrentProcess()->GetCommandLineString());
+  dict->SetString(
+      "command_line",
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
 
   constants_dict->Set("clientInfo", dict);
 
@@ -34,7 +35,8 @@ base::DictionaryValue* GetShellConstants(const std::string& app_name) {
 }  // namespace
 
 ShellNetLog::ShellNetLog(const std::string& app_name) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
     base::FilePath log_path =

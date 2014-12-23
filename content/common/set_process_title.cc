@@ -70,7 +70,8 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
   }
 #endif  // defined(OS_LINUX)
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   for (size_t i = 1; i < command_line->argv().size(); ++i) {
     if (!title.empty())
       title += " ";

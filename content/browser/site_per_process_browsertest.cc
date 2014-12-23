@@ -240,7 +240,8 @@ bool SitePerProcessBrowserTest::NavigateIframeToURL(Shell* window,
   return true;
 }
 
-void SitePerProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void SitePerProcessBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
 };
 

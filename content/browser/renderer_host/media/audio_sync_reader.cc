@@ -39,7 +39,7 @@ namespace content {
 AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
                                  const media::AudioParameters& params)
     : shared_memory_(shared_memory),
-      mute_audio_(CommandLine::ForCurrentProcess()->HasSwitch(
+      mute_audio_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMuteAudio)),
       packet_size_(shared_memory_->requested_size()),
       renderer_callback_count_(0),

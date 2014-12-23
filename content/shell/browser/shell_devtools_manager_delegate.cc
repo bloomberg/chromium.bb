@@ -83,7 +83,8 @@ class TCPServerSocketFactory
 
 scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>
 CreateSocketFactory() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
   std::string socket_name = "content_shell_devtools_remote";
   if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {

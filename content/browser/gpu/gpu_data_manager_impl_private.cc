@@ -412,7 +412,7 @@ void GpuDataManagerImplPrivate::RegisterSwiftShaderPath(
 
 bool GpuDataManagerImplPrivate::ShouldUseWarp() const {
   return use_warp_ ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp);
+         base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp);
 }
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
@@ -846,7 +846,7 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(
 }
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuCompositing))
     return false;
   if (ShouldUseWarp())
@@ -1015,9 +1015,9 @@ void GpuDataManagerImplPrivate::EnableWarpIfNecessary() {
     return;
   // We should only use WARP if we are unable to use the regular GPU for
   // compositing, and if we in Metro mode.
-  use_warp_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kViewerConnect) &&
-      !CanUseGpuBrowserCompositor();
+  use_warp_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kViewerConnect) &&
+              !CanUseGpuBrowserCompositor();
 #endif
 }
 

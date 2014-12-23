@@ -103,7 +103,7 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   }
 
   bool AdjustChildProcessCommandLine(
-      CommandLine* command_line,
+      base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) override {
     command_line->AppendSwitchPath(switches::kContentShellDataPath,
                                    temp_data_dir);

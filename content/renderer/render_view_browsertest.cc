@@ -665,7 +665,8 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
 TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // This test should only run with --site-per-process, since origin
   // replication only happens in that mode.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
     return;
 
   LoadHTML(

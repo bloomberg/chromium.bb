@@ -175,7 +175,8 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
     return;
   }
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   base::FilePath path =
       command_line.GetSwitchValuePath(switches::kPluginPath);
 

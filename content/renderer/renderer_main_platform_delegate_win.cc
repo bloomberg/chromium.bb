@@ -73,7 +73,7 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
-  const CommandLine& command_line = parameters_.command_line;
+  const base::CommandLine& command_line = parameters_.command_line;
 
   // Be mindful of what resources you acquire here. They can be used by
   // malicious code if the renderer gets compromised.

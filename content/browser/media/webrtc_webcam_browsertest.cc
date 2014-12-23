@@ -28,7 +28,7 @@ bool IsUseFakeDeviceForMediaStream(const base::CommandLine::StringType& arg) {
 }
 
 void RemoveFakeDeviceFromCommandLine(base::CommandLine* command_line) {
-  CommandLine::StringVector argv = command_line->argv();
+  base::CommandLine::StringVector argv = command_line->argv();
   argv.erase(std::remove_if(argv.begin(), argv.end(),
                             IsUseFakeDeviceForMediaStream),
              argv.end());

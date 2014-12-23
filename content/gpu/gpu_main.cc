@@ -69,8 +69,8 @@ namespace content {
 namespace {
 
 void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
-                               const CommandLine& command_line);
-bool WarmUpSandbox(const CommandLine& command_line);
+                               const base::CommandLine& command_line);
+bool WarmUpSandbox(const base::CommandLine& command_line);
 
 #if !defined(OS_MACOSX)
 bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info);
@@ -108,7 +108,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventGpuProcessSortIndex);
 
-  const CommandLine& command_line = parameters.command_line;
+  const base::CommandLine& command_line = parameters.command_line;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
     ChildProcess::WaitForDebugger("Gpu");
   }
@@ -277,7 +277,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       // on systems where vendor_id/device_id aren't available.
       if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
         gpu::ApplyGpuDriverBugWorkarounds(
-            gpu_info, const_cast<CommandLine*>(&command_line));
+            gpu_info, const_cast<base::CommandLine*>(&command_line));
       }
 #endif
 
@@ -372,7 +372,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 namespace {
 
 void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
-                               const CommandLine& command_line) {
+                               const base::CommandLine& command_line) {
   DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
          command_line.HasSwitch(switches::kGpuDeviceID) &&
          command_line.HasSwitch(switches::kGpuDriverVersion));
@@ -391,7 +391,7 @@ void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
   GetContentClient()->SetGpuInfo(gpu_info);
 }
 
-bool WarmUpSandbox(const CommandLine& command_line) {
+bool WarmUpSandbox(const base::CommandLine& command_line) {
   {
     TRACE_EVENT0("gpu", "Warm up rand");
     // Warm up the random subsystem, which needs to be done pre-sandbox on all

@@ -137,7 +137,7 @@ class RenderViewBrowserTest : public ContentBrowserTest {
  public:
   RenderViewBrowserTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // This method is needed to allow interaction with in-process renderer
     // and use of a test ContentRendererClient.
     command_line->AppendSwitch(switches::kSingleProcess);

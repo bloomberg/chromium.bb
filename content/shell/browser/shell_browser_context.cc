@@ -64,7 +64,7 @@ ShellBrowserContext::~ShellBrowserContext() {
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors))
     ignore_certificate_errors_ = true;
   if (cmd_line->HasSwitch(switches::kContentShellDataPath)) {

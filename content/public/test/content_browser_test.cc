@@ -61,7 +61,7 @@ ContentBrowserTest::~ContentBrowserTest() {
 }
 
 void ContentBrowserTest::SetUp() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kContentBrowserTest);
 
   SetUpCommandLine(command_line);
@@ -116,7 +116,8 @@ void ContentBrowserTest::TearDown() {
 }
 
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDumpRenderTree)) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];
   }

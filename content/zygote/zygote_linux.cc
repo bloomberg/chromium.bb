@@ -533,9 +533,9 @@ base::ProcessId Zygote::ReadArgsAndFork(PickleIterator iter,
     base::GlobalDescriptors::GetInstance()->Reset(mapping);
 
     // Reset the process-wide command line to our new command line.
-    CommandLine::Reset();
-    CommandLine::Init(0, NULL);
-    CommandLine::ForCurrentProcess()->InitFromArgv(args);
+    base::CommandLine::Reset();
+    base::CommandLine::Init(0, NULL);
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(args);
 
     // Update the process title. The argv was already cached by the call to
     // SetProcessTitleFromCommandLine in ChromeMain, so we can pass NULL here
