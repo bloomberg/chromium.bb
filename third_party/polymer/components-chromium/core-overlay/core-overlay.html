@@ -5,10 +5,9 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<link rel="import" href="../polymer/polymer.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-transition/core-transition.html">
+<link rel="import" href="../core-resizable/core-resizable.html">
 <link rel="import" href="core-key-helper.html">
 <link rel="import" href="core-overlay-layer.html">
 
@@ -48,10 +47,15 @@ presses the escape key. This behavior can be turned off via the
     </core-overlay>
 
 `core-overlay` will automatically size and position itself according to the 
-following rules. If the target's style.top and style.left are unset, the 
-target will be centered. The size of the target is constrained to be no larger
-than the window dimensions. The `margin` property specifies the extra amount
-of space that should be reserved around the overlay. This can be used to ensure
+following rules. The overlay's size is constrained such that it does not
+overflow the screen. This is done by setting maxHeight/maxWidth on the 
+`sizingTarget`. If the `sizingTarget` already has a setting for one of these
+properties, it will not be overridden. The overlay should
+be positioned via css or imperatively using the `core-overlay-position` event.
+If the overlay is not positioned vertically via setting `top` or `bottom`, it
+will be centered vertically. The same is true horizontally via a setting to 
+`left` or `right`. In addition, css `margin` can be used to provide some space
+around the overlay. This can be used to ensure
 that, for example, a drop shadow is always visible around the overlay.
 
 @group Core Elements
@@ -65,7 +69,30 @@ Fired when the `core-overlay`'s `opened` property changes.
 @param {Object} detail
 @param {Object} detail.opened the opened state
 -->
+<!--
+Fired when the `core-overlay` has completely opened.
 
+@event core-overlay-open-completed
+-->
+<!--
+Fired when the `core-overlay` has completely closed.
+
+@event core-overlay-close-completed
+-->
+<!--
+Fired when the `core-overlay` needs to position itself. Optionally, implement
+in order to position an overlay via code. If the overlay was not otherwise
+positioned, it's important to indicate how the overlay has been positioned by
+setting the `dimensions.position` object. For example, if the overlay has been
+positioned via setting `right` and `top`, set dimensions.position to an
+object like this: `{v: 'top', h: 'right'}`.
+
+@event core-overlay-position
+@param {Object} detail
+@param {Object} detail.target the overlay target
+@param {Object} detail.sizingTarget the overlay sizing target
+@param {Object} detail.opened the opened state
+-->
 <style>
   .core-overlay-backdrop {
     position: fixed;
@@ -83,7 +110,7 @@ Fired when the `core-overlay`'s `opened` property changes.
   }
 </style>
 
-<polymer-element name="core-overlay" assetpath="">
+</head><body><polymer-element name="core-overlay" assetpath="">
 
 </polymer-element>
-<script src="core-overlay-extracted.js"></script>
+<script src="core-overlay-extracted.js"></script></body></html>

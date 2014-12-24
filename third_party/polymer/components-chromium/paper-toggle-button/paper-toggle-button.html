@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
 by tapping or by dragging the swtich.
 
@@ -56,24 +54,22 @@ To change the bar color for unchecked state:
 @group Paper Elements
 @element paper-toggle-button
 @homepage github.io
--->
+--><html><head><link rel="import" href="../paper-radio-button/paper-radio-button.html">
 
-<link rel="import" href="../paper-radio-button/paper-radio-button.html">
-
-<polymer-element name="paper-toggle-button" attributes="checked" role="button" aria-pressed="false" tabindex="0" assetpath="">
+</head><body><polymer-element name="paper-toggle-button" attributes="checked disabled" role="button" aria-pressed="false" tabindex="0" assetpath="">
 <template>
 
   <link rel="stylesheet" href="paper-toggle-button.css">
 
-  <div id="toggleContainer">
+  <div id="toggleContainer" disabled?="{{disabled}}">
   
     <div id="toggleBar" checked?="{{checked}}"></div>
   
-    <paper-radio-button id="toggleRadio" toggles="" checked="{{checked}}" on-trackstart="{{trackStart}}" on-trackx="{{trackx}}" on-trackend="{{trackEnd}}"></paper-radio-button>
+    <paper-radio-button id="toggleRadio" toggles="" checked="{{checked}}" on-change="{{changeAction}}" on-core-change="{{stopPropagation}}" on-trackstart="{{trackStart}}" on-trackx="{{trackx}}" on-trackend="{{trackEnd}}"></paper-radio-button>
     
   </div>
 
 </template>
 
 </polymer-element>
-<script src="paper-toggle-button-extracted.js"></script>
+<script src="paper-toggle-button-extracted.js"></script></body></html>

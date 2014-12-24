@@ -164,7 +164,7 @@ Polymer('core-style', {
       this.styleElement._cssText = cssText;
       if (window.ShadowDOMPolyfill) {
         this.styleElement.textContent = cssText;
-        cssText = Platform.ShadowCSS.shimStyle(this.styleElement,
+        cssText = WebComponents.ShadowCSS.shimStyle(this.styleElement,
             this.getScopeSelector());
       }
       this.styleElement.textContent = cssText;
@@ -232,7 +232,7 @@ Polymer('core-style', {
       if (host) {
         var typeExtension = host.hasAttribute('is');
         var name = typeExtension ? host.getAttribute('is') : host.localName;
-        selector = Platform.ShadowCSS.makeScopeSelector(name, 
+        selector = WebComponents.ShadowCSS.makeScopeSelector(name, 
             typeExtension);
       }
       this._scopeSelector = selector;

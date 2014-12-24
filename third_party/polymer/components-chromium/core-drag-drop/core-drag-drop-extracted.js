@@ -1,4 +1,6 @@
 
+(function() {
+  var avatar;
 
   Polymer('core-drag-drop', {
 
@@ -7,10 +9,11 @@
     },
 
     ready: function() {
-      if (!this.__proto__.avatar) {
-        this.__proto__.avatar = document.createElement('core-drag-avatar');
-        document.body.appendChild(this.avatar);
+      if (!avatar) {
+        avatar = document.createElement('core-drag-avatar');
+        document.body.appendChild(avatar);
       }
+      this.avatar = avatar;
       this.dragging = false;
     },
 
@@ -78,3 +81,4 @@
 
   });
 
+})();

@@ -5,72 +5,60 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-<!--
-/**
- * @module Polymer Core Elements
- */
-/**
- * core-menu-button is a core-icon-button with a drop down menu
- * that allows the user to select an option. The drop down menu is styled with
- * an arrow pointing to the button, and can be positioned to the top or the
- * bottom of the button with the valign property. The valign property aligns
- * the menu to the left or right edge of the button.
- *
- * Example:
- *
- *     <core-menu-button selected="0">
- *       <core-item icon="settings" label="Settings"></core-item>
- *       <core-item icon="dialog" label="Dialog"></core-item>
- *       <core-item icon="search" label="Search"></core-item>
- *     </core-menu-button>
- *
- * @class core-menu-button
- */
--->
-<link href="../polymer/polymer.html" rel="import">
-<link href="../core-icon-button/core-icon-button.html" rel="import">
-<link href="../core-menu/core-menu.html" rel="import">
-<link href="../core-overlay/core-overlay.html" rel="import">
+--><!--
 
-<polymer-element name="core-menu-button" attributes="icon label src selected opened halign valign valueattr multi inlineMenu" assetpath="">
-  <template>
-    <link rel="stylesheet" href="core-menu-button.css">
-    <core-overlay target="{{$.overlay}}" opened="{{opened}}" layered?="{{!inlineMenu}}"></core-overlay>
-    <core-icon-button id="button" on-tap="{{toggle}}" src="{{src}}" icon="{{icon}}" active="{{opened}}"><span>{{label}}</span></core-icon-button>
-    <div id="overlay" halign="{{halign}}" valign="{{valign}}">
-      <style>
-        #overlay {
-          position: absolute;
-          left: 0px;
-          top: 40px;
-          padding: 8px;
-          background: #fff;
-          border: 1px solid #ccc;
-          border-radius: 3px;
-          /* overlay styling must be complete */
-          font-size: 1rem;
-        }
+`core-menu-button` works together with a button and `core-dropdown` to implement
+an button that displays a drop-down when tapped on.
 
-        core-menu {
-          margin: 0;
-        }
+The child element with the class `dropdown` will be used as the drop-down
+menu. It should be a `core-dropdown` or other overlay element.
 
-        #overlay[halign=right] {
-          left: auto;
-          right: 0px;
-        }
+Example:
 
-        #overlay[valign=top] {
-          top: auto;
-          bottom: 40px;
-        }
-      </style>
-      <core-menu id="menu" selected="{{selected}}" selecteditem="{{selectedItem}}" selectedclass="{{selectedClass}}" valueattr="{{valueattr}}" multi="{{multi}}" on-core-select="{{closeAction}}">
-        <content select="*"></content>
-      </core-menu>
-    </div>
-  </template>
-  
+    <core-menu-button>
+        <core-icon-button icon="menu"></core-icon-button>
+        <core-dropdown class="dropdown" layered>
+            <core-menu>
+                <core-item>Share</core-item>
+                <core-item>Settings</core-item>
+                <core-item>Help</core-item>
+            </core-menu>
+        </core-dropdown>
+    </core-menu-button>
+
+@module Polymer Core Elements
+@element core-menu-button
+@extends core-dropdown-base
+@status beta
+@homepage github.io
+--><html><head><link href="../polymer/polymer.html" rel="import">
+<link href="../core-a11y-keys/core-a11y-keys.html" rel="import">
+<link href="../core-dropdown/core-dropdown-base.html" rel="import">
+
+</head><body><polymer-element name="core-menu-button" extends="core-dropdown-base" relative="" assetpath="">
+<template>
+
+  <style>
+    :host {
+      display: inline-block;
+    }
+
+    :host([disabled]) {
+      pointer-events: none;
+      color: #a8a8a8;
+    }
+
+    polyfill-next-selector { content: ':host([disabled]) *'; }
+    :host([disabled]) ::content * {
+      pointer-events: none;
+    }
+  </style>
+
+  <core-a11y-keys target="{{}}" keys="enter space" on-keys-pressed="{{toggleOverlay}}"></core-a11y-keys>
+
+  <content></content>
+
+</template>
+
 </polymer-element>
-<script src="core-menu-button-extracted.js"></script>
+<script src="core-menu-button-extracted.js"></script></body></html>

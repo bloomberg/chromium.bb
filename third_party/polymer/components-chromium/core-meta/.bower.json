@@ -2,17 +2,17 @@
   "name": "core-meta",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#>=0.3.0 <1.0.0"
+    "polymer": "Polymer/polymer#^0.5.0"
   },
+  "version": "0.5.2",
   "homepage": "https://github.com/Polymer/core-meta",
-  "version": "0.3.5",
-  "_release": "0.3.5",
+  "_release": "0.5.2",
   "_resolution": {
     "type": "version",
-    "tag": "0.3.5",
-    "commit": "4d2a4cf723403a6ee0575e3863be843648db32ec"
+    "tag": "0.5.2",
+    "commit": "d16e6c42ed1a4a2b3ada1d978859c85bdcedb79f"
   },
   "_source": "git://github.com/Polymer/core-meta.git",
-  "_target": "0.3.5",
+  "_target": "0.5.2",
   "_originalSource": "Polymer/core-meta"
 }

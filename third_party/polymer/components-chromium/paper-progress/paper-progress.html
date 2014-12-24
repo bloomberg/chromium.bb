@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 The progress bars are for situations where the percentage completed can be 
 determined. They give users a quick sense of how much longer an operation 
 will take.
@@ -47,11 +45,9 @@ To change the progress bar background color:
 @element paper-progress
 @extends core-range
 @homepage github.io
--->
+--><html><head><link rel="import" href="../core-range/core-range.html">
 
-<link rel="import" href="../core-range/core-range.html">
-
-<polymer-element name="paper-progress" extends="core-range" attributes="secondaryProgress" assetpath="">
+</head><body><polymer-element name="paper-progress" extends="core-range" attributes="secondaryProgress indeterminate" assetpath="">
 
   <template>
   
@@ -59,8 +55,8 @@ To change the progress bar background color:
   
     <div id="progressContainer" role="progressbar" aria-valuenow="{{value}}" aria-valuemin="{{min}}" aria-valuemax="{{max}}">
     
-      <div id="secondaryProgress" style="width: {{secondaryRatio}}%;"></div>
-      <div id="activeProgress" style="width: {{ratio}}%;"></div>
+      <div id="secondaryProgress" fit=""></div>
+      <div id="activeProgress" fit=""></div>
       
     </div>
     
@@ -69,4 +65,4 @@ To change the progress bar background color:
   
   
 </polymer-element>
-<script src="paper-progress-extracted.js"></script>
+<script src="paper-progress-extracted.js"></script></body></html>

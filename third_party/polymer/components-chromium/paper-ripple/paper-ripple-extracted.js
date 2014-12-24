@@ -7,7 +7,7 @@
     // INK EQUATIONS
     //
     function waveRadiusFn(touchDownMs, touchUpMs, anim) {
-      // Convert from ms to s.
+      // Convert from ms to s
       var touchDown = touchDownMs / 1000;
       var touchUp = touchUpMs / 1000;
       var totalElapsed = touchDown + touchUp;
@@ -48,34 +48,39 @@
     // Determines whether the wave should be completely removed.
     function waveDidFinish(wave, radius, anim) {
       var waveOpacity = waveOpacityFn(wave.tDown, wave.tUp, anim);
+
       // If the wave opacity is 0 and the radius exceeds the bounds
       // of the element, then this is finished.
-      if (waveOpacity < 0.01 && radius >= Math.min(wave.maxRadius, waveMaxRadius)) {
-        return true;
-      }
-      return false;
+      return waveOpacity < 0.01 && radius >= Math.min(wave.maxRadius, waveMaxRadius);
     };
 
     function waveAtMaximum(wave, radius, anim) {
       var waveOpacity = waveOpacityFn(wave.tDown, wave.tUp, anim);
-      if (waveOpacity >= anim.initialOpacity && radius >= Math.min(wave.maxRadius, waveMaxRadius)) {
-        return true;
-      }
-      return false;
+
+      return waveOpacity >= anim.initialOpacity && radius >= Math.min(wave.maxRadius, waveMaxRadius);
     }
 
     //
     // DRAWING
     //
-    function drawRipple(ctx, x, y, radius, innerColor, outerColor) {
-      if (outerColor) {
-        ctx.fillStyle = outerColor;
-        ctx.fillRect(0,0,ctx.canvas.width, ctx.canvas.height);
+    function drawRipple(ctx, x, y, radius, innerAlpha, outerAlpha) {
+      // Only animate opacity and transform
+      if (outerAlpha !== undefined) {
+        ctx.bg.style.opacity = outerAlpha;
       }
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = innerColor;
-      ctx.fill();
+      ctx.wave.style.opacity = innerAlpha;
+
+      var s = radius / (ctx.containerSize / 2);
+      var dx = x - (ctx.containerWidth / 2);
+      var dy = y - (ctx.containerHeight / 2);
+
+      ctx.wc.style.webkitTransform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
+      ctx.wc.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
+
+      // 2d transform for safari because of border-radius and overflow:hidden clipping bug.
+      // https://bugs.webkit.org/show_bug.cgi?id=98538
+      ctx.wave.style.webkitTransform = 'scale(' + s + ',' + s + ')';
+      ctx.wave.style.transform = 'scale3d(' + s + ',' + s + ',1)';
     }
 
     //
@@ -85,7 +90,23 @@
       var elementStyle = window.getComputedStyle(elem);
       var fgColor = elementStyle.color;
 
+      var inner = document.createElement('div');
+      inner.style.backgroundColor = fgColor;
+      inner.classList.add('wave');
+
+      var outer = document.createElement('div');
+      outer.classList.add('wave-container');
+      outer.appendChild(inner);
+
+      var container = elem.$.waves;
+      container.appendChild(outer);
+
+      elem.$.bg.style.backgroundColor = fgColor;
+
       var wave = {
+        bg: elem.$.bg,
+        wc: outer,
+        wave: inner,
         waveColor: fgColor,
         maxRadius: 0,
         isMouseDown: false,
@@ -101,6 +122,8 @@
       if (scope.waves) {
         var pos = scope.waves.indexOf(wave);
         scope.waves.splice(pos, 1);
+        // FIXME cache nodes
+        wave.wc.remove();
       }
     };
 
@@ -162,37 +185,12 @@
         up: 'upAction'
       },
 
-      attached: function() {
-        // create the canvas element manually becase ios
-        // does not render the canvas element if it is not created in the
-        // main document (component templates are created in a
-        // different document). See:
-        // https://bugs.webkit.org/show_bug.cgi?id=109073.
-        if (!this.$.canvas) {
-          var canvas = document.createElement('canvas');
-          canvas.id = 'canvas';
-          this.shadowRoot.appendChild(canvas);
-          this.$.canvas = canvas;
-        }
-      },
-
       ready: function() {
         this.waves = [];
       },
 
-      setupCanvas: function() {
-        this.$.canvas.setAttribute('width', this.$.canvas.clientWidth * this.pixelDensity + "px");
-        this.$.canvas.setAttribute('height', this.$.canvas.clientHeight * this.pixelDensity + "px");
-        var ctx = this.$.canvas.getContext('2d');
-        ctx.scale(this.pixelDensity, this.pixelDensity);
-        if (!this._loop) {
-          this._loop = this.animate.bind(this, ctx);
-        }
-      },
-
       downAction: function(e) {
-        this.setupCanvas();
-        var wave = createWave(this.$.canvas);
+        var wave = createWave(this);
 
         this.cancelled = false;
         wave.isMouseDown = true;
@@ -201,9 +199,9 @@
         wave.mouseUpStart = 0.0;
         wave.mouseDownStart = now();
 
-        var width = this.$.canvas.width / 2; // Retina canvas
-        var height = this.$.canvas.height / 2;
         var rect = this.getBoundingClientRect();
+        var width = rect.width;
+        var height = rect.height;
         var touchX = e.x - rect.left;
         var touchY = e.y - rect.top;
 
@@ -214,9 +212,26 @@
           wave.slideDistance = dist(wave.startPosition, wave.endPosition);
         }
         wave.containerSize = Math.max(width, height);
+        wave.containerWidth = width;
+        wave.containerHeight = height;
         wave.maxRadius = distanceFromPointToFurthestCorner(wave.startPosition, {w: width, h: height});
+
+        // The wave is circular so constrain its container to 1:1
+        wave.wc.style.top = (wave.containerHeight - wave.containerSize) / 2 + 'px';
+        wave.wc.style.left = (wave.containerWidth - wave.containerSize) / 2 + 'px';
+        wave.wc.style.width = wave.containerSize + 'px';
+        wave.wc.style.height = wave.containerSize + 'px';
+
         this.waves.push(wave);
-        requestAnimationFrame(this._loop);
+
+        if (!this._loop) {
+          this._loop = this.animate.bind(this, {
+            width: width,
+            height: height
+          });
+          requestAnimationFrame(this._loop);
+        }
+        // else there is already a rAF
       },
 
       upAction: function() {
@@ -241,9 +256,6 @@
       animate: function(ctx) {
         var shouldRenderNextFrame = false;
 
-        // Clear the canvas
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
         var deleteTheseWaves = [];
         // The oldest wave's touch down duration
         var longestTouchDownDuration = 0;
@@ -254,8 +266,8 @@
         var anim = {
           initialOpacity: this.initialOpacity,
           opacityDecayVelocity: this.opacityDecayVelocity,
-          height: ctx.canvas.height,
-          width: ctx.canvas.width
+          height: ctx.height,
+          width: ctx.width
         }
 
         for (var i = 0; i < this.waves.length; i++) {
@@ -287,7 +299,7 @@
           // Ripple gravitational pull to the center of the canvas.
           if (wave.endPosition) {
 
-            // This translates from the origin to the center of the view  based on the max dimension of  
+            // This translates from the origin to the center of the view  based on the max dimension of
             var translateFraction = Math.min(1, radius / wave.containerSize * 2 / Math.sqrt(2) );
 
             x += translateFraction * (wave.endPosition.x - wave.startPosition.x);
@@ -302,13 +314,14 @@
           }
 
           // Draw the ripple.
-          drawRipple(ctx, x, y, radius, waveColor, bgFillColor);
+          drawRipple(wave, x, y, radius, waveAlpha, bgFillAlpha);
 
           // Determine whether there is any more rendering to be done.
           var maximumWave = waveAtMaximum(wave, radius, anim);
           var waveDissipated = waveDidFinish(wave, radius, anim);
           var shouldKeepWave = !waveDissipated || maximumWave;
-          var shouldRenderWaveAgain = !waveDissipated && !maximumWave;
+          // keep rendering dissipating wave when at maximum radius on upAction
+          var shouldRenderWaveAgain = wave.mouseUpStart ? !waveDissipated : !maximumWave;
           shouldRenderNextFrame = shouldRenderNextFrame || shouldRenderWaveAgain;
           if (!shouldKeepWave || this.cancelled) {
             deleteTheseWaves.push(wave);
@@ -324,11 +337,11 @@
           removeWaveFromScope(this, wave);
         }
 
-        if (!this.waves.length) {
-          // If there is nothing to draw, clear any drawn waves now because
-          // we're not going to get another requestAnimationFrame any more.
-          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        if (!this.waves.length && this._loop) {
+          // clear the background color
+          this.$.bg.style.backgroundColor = null;
           this._loop = null;
+          this.fire('core-transitionend');
         }
       }
 

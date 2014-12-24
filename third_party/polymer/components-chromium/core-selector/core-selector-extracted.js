@@ -85,6 +85,8 @@
       /**
        * Returns the currently selected element. In multi-selection this returns
        * an array of selected elements.
+       * Note that you should not use this to set the selection. Instead use
+       * `selected`.
        * 
        * @attribute selectedItem
        * @type Object
@@ -95,6 +97,8 @@
       /**
        * In single selection, this returns the model associated with the
        * selected element.
+       * Note that you should not use this to set the selection. Instead use 
+       * `selected`.
        * 
        * @attribute selectedModel
        * @type Object
@@ -104,12 +108,34 @@
 
       /**
        * In single selection, this returns the selected index.
+       * Note that you should not use this to set the selection. Instead use
+       * `selected`.
        *
        * @attribute selectedIndex
        * @type number
        * @default -1
        */
       selectedIndex: -1,
+
+      /**
+       * Nodes with local name that are in the list will not be included 
+       * in the selection items.  In the following example, `items` returns four
+       * `core-item`'s and doesn't include `h3` and `hr`.
+       *
+       *     <core-selector excludedLocalNames="h3 hr">
+       *       <h3>Header</h3>
+       *       <core-item>Item1</core-item>
+       *       <core-item>Item2</core-item>
+       *       <hr>
+       *       <core-item>Item3</core-item>
+       *       <core-item>Item4</core-item>
+       *     </core-selector>
+       *
+       * @attribute excludedLocalNames
+       * @type string
+       * @default ''
+       */
+      excludedLocalNames: '',
 
       /**
        * The target element that contains items.  If this is not set 
@@ -123,7 +149,8 @@
 
       /**
        * This can be used to query nodes from the target node to be used for 
-       * selection items.  Note this only works if the 'target' property is set.
+       * selection items.  Note this only works if `target` is set
+       * and is not `core-selector` itself.
        *
        * Example:
        *
@@ -161,14 +188,27 @@
        */
       notap: false,
 
+      defaultExcludedLocalNames: 'template',
+      
+      observe: {
+        'selected multi': 'selectedChanged'
+      },
+
       ready: function() {
         this.activateListener = this.activateHandler.bind(this);
+        this.itemFilter = this.filterItem.bind(this);
+        this.excludedLocalNamesChanged();
         this.observer = new MutationObserver(this.updateSelected.bind(this));
         if (!this.target) {
           this.target = this;
         }
       },
 
+      /**
+       * Returns an array of all items.
+       *
+       * @property items
+       */
       get items() {
         if (!this.target) {
           return [];
@@ -176,9 +216,22 @@
         var nodes = this.target !== this ? (this.itemsSelector ? 
             this.target.querySelectorAll(this.itemsSelector) : 
                 this.target.children) : this.$.items.getDistributedNodes();
-        return Array.prototype.filter.call(nodes || [], function(n) {
-          return n && n.localName !== 'template';
-        });
+        return Array.prototype.filter.call(nodes, this.itemFilter);
+      },
+
+      filterItem: function(node) {
+        return !this._excludedNames[node.localName];
+      },
+
+      excludedLocalNamesChanged: function() {
+        this._excludedNames = {};
+        var s = this.defaultExcludedLocalNames;
+        if (this.excludedLocalNames) {
+          s += ' ' + this.excludedLocalNames;
+        }
+        s.split(/\s+/g).forEach(function(n) {
+          this._excludedNames[n] = 1;
+        }, this);
       },
 
       targetChanged: function(old) {
@@ -202,20 +255,31 @@
         Polymer.removeEventListener(node, this.activateEvent, this.activateListener);
       },
 
+      /**
+       * Returns the selected item(s). If the `multi` property is true,
+       * this will return an array, otherwise it will return 
+       * the selected item or undefined if there is no selection.
+       */
       get selection() {
         return this.$.selection.getSelection();
       },
 
       selectedChanged: function() {
-        this.updateSelected();
+        // TODO(ffu): Right now this is the only way to know that the `selected`
+        // is an array and was mutated, as opposed to newly assigned.
+        if (arguments.length === 1) {
+          this.processSplices(arguments[0]);
+        } else {
+          this.updateSelected();
+        }
       },
-
+      
       updateSelected: function() {
         this.validateSelected();
         if (this.multi) {
-          this.clearSelection();
+          this.clearSelection(this.selected)
           this.selected && this.selected.forEach(function(s) {
-            this.valueToSelection(s);
+            this.setValueSelected(s, true)
           }, this);
         } else {
           this.valueToSelection(this.selected);
@@ -225,27 +289,46 @@
       validateSelected: function() {
         // convert to an array for multi-selection
         if (this.multi && !Array.isArray(this.selected) && 
-            this.selected !== null && this.selected !== undefined) {
+            this.selected != null) {
           this.selected = [this.selected];
+        // use the first selected in the array for single-selection
+        } else if (!this.multi && Array.isArray(this.selected)) {
+          var s = this.selected[0];
+          this.clearSelection([s]);
+          this.selected = s;
+        }
+      },
+      
+      processSplices: function(splices) {
+        for (var i = 0, splice; splice = splices[i]; i++) {
+          for (var j = 0; j < splice.removed.length; j++) {
+            this.setValueSelected(splice.removed[j], false);
+          }
+          for (var j = 0; j < splice.addedCount; j++) {
+            this.setValueSelected(this.selected[splice.index + j], true);
+          }
         }
       },
 
-      clearSelection: function() {
-        if (this.multi) {
-          this.selection.slice().forEach(function(s) {
-            this.$.selection.setItemSelected(s, false);
-          }, this);
-        } else {
-          this.$.selection.setItemSelected(this.selection, false);
-        }
-        this.selectedItem = null;
-        this.$.selection.clear();
+      clearSelection: function(excludes) {
+        this.$.selection.selection.slice().forEach(function(item) {
+          var v = this.valueForNode(item) || this.items.indexOf(item);
+          if (!excludes || excludes.indexOf(v) < 0) {
+            this.$.selection.setItemSelected(item, false);
+          }
+        }, this);
       },
 
       valueToSelection: function(value) {
-        var item = (value === null || value === undefined) ? 
-            null : this.items[this.valueToIndex(value)];
+        var item = this.valueToItem(value);
         this.$.selection.select(item);
+      },
+      
+      setValueSelected: function(value, isSelected) {
+        var item = this.valueToItem(value);
+        if (isSelected ^ this.$.selection.isSelected(item)) {
+          this.$.selection.setItemSelected(item, isSelected);
+        }
       },
 
       updateSelectedItem: function() {
@@ -261,6 +344,11 @@
         }
         this.selectedIndex = this.selectedItem ? 
             parseInt(this.valueToIndex(this.selected)) : -1;
+      },
+      
+      valueToItem: function(value) {
+        return (value === null || value === undefined) ? 
+            null : this.items[this.valueToIndex(value)];
       },
 
       valueToIndex: function(value) {
@@ -330,7 +418,6 @@
         } else {
           this.selected.push(value);
         }
-        this.valueToSelection(value);
       },
 
       findDistributedTarget: function(target, nodes) {
@@ -343,6 +430,43 @@
           }
           target = target.parentNode;
         }
+      },
+      
+      selectIndex: function(index) {
+        var item = this.items[index];
+        if (item) {
+          this.selected = this.valueForNode(item) || index;
+          return item;
+        }
+      },
+      
+      /**
+       * Selects the previous item. This should be used in single selection only.
+       *
+       * @method selectPrevious
+       * @param {boolean} wrapped if true and it is already at the first item,
+       *                  wrap to the end
+       * @returns the previous item or undefined if there is none
+       */
+      selectPrevious: function(wrapped) {
+        var i = wrapped && !this.selectedIndex ? 
+            this.items.length - 1 : this.selectedIndex - 1;
+        return this.selectIndex(i);
+      },
+      
+      /**
+       * Selects the next item.  This should be used in single selection only.
+       *
+       * @method selectNext
+       * @param {boolean} wrapped if true and it is already at the last item,
+       *                  wrap to the front
+       * @returns the next item or undefined if there is none
+       */
+      selectNext: function(wrapped) {
+        var i = wrapped && this.selectedIndex >= this.items.length - 1 ? 
+            0 : this.selectedIndex + 1;
+        return this.selectIndex(i);
       }
+      
     });
   

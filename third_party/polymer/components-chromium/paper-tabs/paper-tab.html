@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `paper-tab` is styled to look like a tab.  It should be used in conjunction with
 `paper-tabs`.
 
@@ -30,23 +28,17 @@ To change the ink color:
 @group Paper Elements
 @element paper-tab
 @homepage github.io
--->
+--><html><head><link rel="import" href="../paper-ripple/paper-ripple.html">
 
-<link rel="import" href="../paper-ripple/paper-ripple.html">
-
-<polymer-element name="paper-tab" attributes="noink" role="tab" assetpath="">
+</head><body><polymer-element name="paper-tab" attributes="noink" role="tab" inline="" flex="" center-center="" horizontal="" layout="" assetpath="">
 <template>
 
   <link rel="stylesheet" href="paper-tab.css">
   
-  <div id="tabContainer" center-justified="" center="" horizontal="" layout="">
-  
-    <div class="tab-content"><content></content></div>
-    <paper-ripple id="ink" initialopacity="0.95" opacitydecayvelocity="0.98"></paper-ripple>
-    
-  </div>
+  <div class="tab-content" flex="" auto="" center-center="" horizontal="" layout=""><content></content></div>
+  <paper-ripple id="ink" initialopacity="0.95" opacitydecayvelocity="0.98"></paper-ripple>
   
 </template>
 
 </polymer-element>
-<script src="paper-tab-extracted.js"></script>
+<script src="paper-tab-extracted.js"></script></body></html>

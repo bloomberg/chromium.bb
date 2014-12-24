@@ -3,9 +3,15 @@
   Polymer('paper-radio-button', {
     
     /**
-     * Fired when the checked state changes.
+     * Fired when the checked state changes due to user interaction.
      *
      * @event change
+     */
+     
+    /**
+     * Fired when the checked state changes.
+     *
+     * @event core-change
      */
     
     publish: {
@@ -53,8 +59,14 @@
     },
     
     tap: function() {
+      if (this.disabled) {
+        return;
+      }
+      var old = this.checked;
       this.toggle();
-      this.fire('paper-radio-button-activate');
+      if (this.checked !== old) {
+        this.fire('change');
+      }
     },
     
     toggle: function() {
@@ -64,7 +76,7 @@
     checkedChanged: function() {
       this.$.onRadio.classList.toggle('fill', this.checked);
       this.setAttribute('aria-checked', this.checked ? 'true': 'false');
-      this.fire('change');
+      this.fire('core-change');
     },
     
     labelChanged: function() {

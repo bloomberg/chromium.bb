@@ -1,0 +1,20 @@
+diff --git a/components/polymer/polymer.js b/components/polymer/polymer.js
+index 2d3b692..2c0aa96 100644
+--- a/components/polymer/polymer.js
++++ b/components/polymer/polymer.js
+@@ -10028,7 +10028,6 @@ scope.styleResolver = styleResolver;
+         // stamp template
+         // which includes parsing and applying MDV bindings before being
+         // inserted (to avoid {{}} in attribute values)
+-        // e.g. to prevent <img src="images/{{icon}}"> from generating a 404.
+         var dom = this.instanceTemplate(template);
+         // append to shadow dom
+         root.appendChild(dom);
+@@ -10050,7 +10049,6 @@ scope.styleResolver = styleResolver;
+         // stamp template
+         // which includes parsing and applying MDV bindings before being
+         // inserted (to avoid {{}} in attribute values)
+-        // e.g. to prevent <img src="images/{{icon}}"> from generating a 404.
+         var dom = this.instanceTemplate(template);
+         // append to shadow dom
+         if (refNode) {

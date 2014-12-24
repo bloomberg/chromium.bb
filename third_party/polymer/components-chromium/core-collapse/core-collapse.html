@@ -5,16 +5,14 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `core-collapse` creates a collapsible block of content.  By default, the content
-will be collapsed.  Use `opened` to show/hide the content.
+will be collapsed.  Use `opened` or `toggle()` to show/hide the content.
 
     <button on-click="{{toggle}}">toggle collapse</button>
     
     <core-collapse id="collapse">
-      ...
+      Content goes here...
     </core-collapse>
     
     ...
@@ -22,16 +20,31 @@ will be collapsed.  Use `opened` to show/hide the content.
     toggle: function() {
       this.$.collapse.toggle();
     }
+    
+`core-collapse` adjusts the height/width of the collapsible element to show/hide
+the content.  So avoid putting padding/margin/border on the collapsible directly,
+and instead put a div inside and style that.
+
+    <style>
+      .collapse-content {
+        padding: 15px;
+        border: 1px solid #dedede;
+      }
+    </style>
+
+    <core-collapse>
+      <div class="collapse-content">
+        Content goes here...
+      </div>
+    </core-collapse>
 
 @group Polymer Core Elements
 @element core-collapse
--->
-
-<link rel="import" href="../polymer/polymer.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
 
 <link rel="stylesheet" href="core-collapse.css" shim-shadowdom="">
 
-<polymer-element name="core-collapse" attributes="target horizontal opened duration fixedSize" assetpath="">
+</head><body><polymer-element name="core-collapse" attributes="target horizontal opened duration fixedSize allowOverflow" assetpath="">
 <template>
 
   <content></content>
@@ -39,4 +52,4 @@ will be collapsed.  Use `opened` to show/hide the content.
 </template>
 
 </polymer-element>
-<script src="core-collapse-extracted.js"></script>
+<script src="core-collapse-extracted.js"></script></body></html>

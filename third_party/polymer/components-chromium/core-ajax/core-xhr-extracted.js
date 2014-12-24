@@ -63,6 +63,7 @@
       bodyMethods: {
         POST: 1,
         PUT: 1,
+        PATCH: 1,
         DELETE: 1
       },
 

@@ -1,0 +1,48 @@
+<!--
+    @license
+    Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><!--
+`<core-label>` provides a version of the `<label>` element that works with Custom Elements as well as native elements.
+
+All text in the `core-label` will be applied to the target element as a screen-reader accessible description.
+
+There are two ways to use `core-label` to target an element:
+
+1. place an element inside core-label with the `for` attribute:
+
+        <core-label>
+          Context for the Button
+          <paper-button for>button</paper-button>
+        </core-label>
+
+2. Set the `for` attribute on the `core-label` element to point to a target element in the same scope with a query
+string:
+
+        <core-label for=".foo">
+          Context for the button witht the "foo" class"
+        </core-label>
+        <paper-button class="foo">Far away button</paper-button>
+
+All taps on the `core-label` will be forwarded to the "target" element.
+
+@group Core Elements
+@element core-label
+@homepage github.io
+--><html><head><link rel="import" href="../polymer/polymer.html">
+
+<!-- Native <label> has cursor: default -->
+<style>
+  html /deep/ core-label {
+    cursor: default;
+  }
+</style>
+
+</head><body><polymer-element name="core-label" assetpath="">
+  
+</polymer-element>
+<script src="core-label-extracted.js"></script></body></html>

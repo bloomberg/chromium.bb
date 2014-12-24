@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `paper-radio-group` allows user to select only one radio button from a set.
 Checking one radio button that belongs to a radio group unchecks any 
 previously checked radio button within the same group. Use
@@ -28,14 +26,16 @@ information about `paper-radio-button`.
 @element paper-radio-group
 @extends core-selector
 @homepage github.io
--->
-
+--><html><head><link rel="import" href="../core-a11y-keys/core-a11y-keys.html">
 <link rel="import" href="../core-selector/core-selector.html">
 <link rel="import" href="../paper-radio-button/paper-radio-button.html">
 
-<polymer-element name="paper-radio-group" extends="core-selector" role="radiogroup" assetpath="">
+</head><body><polymer-element name="paper-radio-group" extends="core-selector" role="radiogroup" assetpath="">
 
   <template>
+
+    <core-a11y-keys target="{{}}" keys="up left" on-keys-pressed="{{selectPrevious}}"></core-a11y-keys>
+    <core-a11y-keys target="{{}}" keys="down right" on-keys-pressed="{{selectNext}}"></core-a11y-keys>
   
     <style>
     
@@ -57,4 +57,4 @@ information about `paper-radio-button`.
   
   
 </polymer-element>
-<script src="paper-radio-group-extracted.js"></script>
+<script src="paper-radio-group-extracted.js"></script></body></html>

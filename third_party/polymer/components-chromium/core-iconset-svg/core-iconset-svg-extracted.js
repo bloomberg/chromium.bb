@@ -23,7 +23,7 @@
       },
 
       iconById: function(id) {
-        return this._icons[id] || (this._icons[id] = this.querySelector('#' + id));
+        return this._icons[id] || (this._icons[id] = this.querySelector('[id="' + id +'"]'));
       },
 
       cloneIcon: function(id) {

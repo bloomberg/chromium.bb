@@ -1,7 +1,7 @@
 
 
   Polymer('core-transition-css', {
-    
+
     /**
      * The class that will be applied to all animated nodes.
      *
@@ -89,7 +89,6 @@
 
     transitionOpened: function(node, opened) {
       this.listenOnce(node, this.completeEventName, function() {
-        node.classList.toggle(this.revealedClass, opened);
         if (!opened) {
           node.classList.remove(this.closedClass);
         }

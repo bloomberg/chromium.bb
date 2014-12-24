@@ -5,104 +5,65 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
--->
+--><!--
 
-<!--
-`paper-input` is a single- or multi-line text field where user can enter input.
-It can optionally have a label.
+Material Design: <a href="http://www.google.com/design/spec/components/text-fields.html#text-fields-single-line-text-field">Single line text field</a>
+
+`paper-input` is a single-line text field for user input. It is a convenience element composed of
+a `paper-input-decorator` and a `input is="core-input"`.
 
 Example:
 
     <paper-input label="Your Name"></paper-input>
-    <paper-input multiline label="Enter multiple lines here"></paper-input>
+
+If you need more control over the `input` element, use `paper-input-decorator`.
 
 Theming
---------
+-------
 
-Set `CoreStyle.g.paperInput.focusedColor` and `CoreStyle.g.paperInput.invalidColor` to theme
-the focused and invalid states.
+`paper-input` can be styled similarly to `paper-input-decorator`.
+
+Form submission
+---------------
+
+Unlike inputs using `paper-input-decorator` directly, `paper-input` does not work out of
+the box with the native `form` element. This is because the native `form` is not aware of
+shadow DOM and does not treat `paper-input` as a form element.
+
+Use `paper-input-decorator` directly, or see
+<a href="https://github.com/garstasio/ajax-form">`ajax-form`</a> for a possible solution
+to submitting a `paper-input`.
+
+Validation
+----------
+
+Use `paper-input-decorator` if you would like to implement validation.
 
 @group Paper Elements
 @element paper-input
-@extends core-input
 @homepage github.io
--->
-<link href="../polymer/polymer.html" rel="import">
+--><html><head><link href="../polymer/polymer.html" rel="import">
 <link href="../core-input/core-input.html" rel="import">
-<link href="../core-style/core-style.html" rel="import">
 
-<core-style id="paper-input">
+<link href="paper-input-decorator.html" rel="import">
 
-#label.focused,
-#floatedLabel.focused {
-  color: {{g.paperInput.focusedColor}};
-}
+</head><body><polymer-element name="paper-input" assetpath="">
 
-#underlineHighlight.focused,
-#caretInner {
-  background-color: {{g.paperInput.focusedColor}};
-}
+<template>
 
-#error,
-:host(.invalid) #label.focused,
-:host(.invalid) #floatedLabel.focused {
-  color: {{g.paperInput.invalidColor}};
-}
-:host(.invalid) #underlineHighlight.focused,
-:host(.invalid) #caretInner {
-  background-color: {{g.paperInput.invalidColor}};
-}
+  <style>
+    :host {
+      display: inline-block;
+    }
+  </style>
 
-</core-style>
+  <paper-input-decorator id="decorator" label="{{label}}" floatinglabel="{{floatingLabel}}" value="{{value}}" disabled?="{{disabled}}">
+    <input is="core-input" value="{{value}}" committedvalue="{{committedValue}}" on-change="{{changeAction}}" disabled?="{{disabled}}">
+  </paper-input-decorator>
 
-<polymer-element name="paper-input" extends="core-input" attributes="label floatingLabel maxRows error" on-down="{{downAction}}" on-up="{{upAction}}" assetpath="">
+</template>
 
-  <template>
 
-    <link href="paper-input.css" rel="stylesheet">
-
-    <core-style ref="paper-input"></core-style>
-
-    <div id="floatedLabel" class="hidden" hidden?="{{!floatingLabel}}"><span id="floatedLabelSpan">{{label}}</span></div>
-
-    <div id="container" on-transitionend="{{transitionEndAction}}" on-webkittransitionend="{{transitionEndAction}}">
-
-      <div id="label"><span id="labelSpan">{{label}}</span></div>
-
-      <div id="inputContainer">
-
-        <div id="inputClone">
-          <span id="inputCloneSpan" aria-hidden="true">&#xA0;</span>
-        </div>
-
-        <template if="{{multiline}}">
-          <div id="minInputHeight"></div>
-          <div id="maxInputHeight"></div>
-        </template>
-
-        <shadow></shadow>
-
-      </div>
-
-      <div id="underlineContainer">
-        <div id="underline"></div>
-        <div id="underlineHighlight" class="focusedColor"></div>
-      </div>
-
-      <div id="caret">
-        <div id="caretInner" class="focusedColor"></div>
-      </div>
-
-    </div>
-
-    <div id="errorContainer">
-      <div id="error" role="alert" aria-hidden="{{!invalid}}">{{error || validationMessage}}</div>
-      <div id="errorIcon"></div>
-    </div>
-
-  </template>
-
-  
 
 </polymer-element>
-<script src="paper-input-extracted.js"></script>
+<script src="paper-input-extracted.js"></script></body></html>

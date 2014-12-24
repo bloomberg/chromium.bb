@@ -5,75 +5,90 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+--><!--
 
-<!--
-
-`core-dropdown` is a control where the user can choose from an array of options in a drop-down
-menu. The currently selected option is displayed in the control.
-
-Example:
-
-    <core-dropdown selected="Financier" valueattr="label">
-        <core-item label="Croissant"></core-item>
-        <core-item label="Donut"></core-item>
-        <core-item label="Financier"></core-item>
-        <core-item label="Madeleine"></core-item>
-    </core-dropdown>
-
-This example renders a drop-down menu with 4 options, with the option `Financier` pre-selected.
-
-Theming
--------
-
-Style the drop-down menu with the `core-dropdown::shadow #menu` selector.
+`core-dropdown` is an element that is initially hidden and is positioned relatively to another
+element, usually the element that triggers the dropdown. The dropdown and the triggering element
+should be children of the same offsetParent, e.g. the same `<div>` with `position: relative`.
+It can be used to implement dropdown menus, menu buttons, etc..
 
 Example:
 
-    core-dropdown::shadow #menu {
-        background-color: #eee;
-        border: 1px solid #ccc;
-    }
+    <template is="auto-binding">
+      <div relative>
+        <core-icon-button id="trigger" icon="menu"></core-icon-button>
+        <core-dropdown relatedTarget="{{$.trigger}}">
+          <core-menu>
+            <core-item>Cut</core-item>
+            <core-item>Copy</core-item>
+            <core-item>Paste</core-item>
+          </core-menu>
+        </core-dropdown>
+      </div>
+    </template>
+
+Positioning
+-----------
+
+By default, the dropdown is absolutely positioned on top of the `relatedTarget` with the top and
+left edges aligned. The `halign` and `valign` properties controls the various alignments. The size
+of the dropdown is automatically restrained such that it is entirely visible on the screen. Use the
+`margin`
+
+If you need more control over the dropdown's position, use CSS. The `halign` and `valign` properties are
+ignored if the dropdown is positioned with CSS.
+
+Example:
+
+    <style>
+      /* manually position the dropdown below the trigger */
+      core-dropdown {
+        position: absolute;
+        top: 38px;
+        left: 0;
+      }
+    </style>
+
+    <template is="auto-binding">
+      <div relative>
+        <core-icon-button id="trigger" icon="menu"></core-icon-button>
+        <core-dropdown relatedTarget="{{$.trigger}}">
+          <core-menu>
+            <core-item>Cut</core-item>
+            <core-item>Copy</core-item>
+            <core-item>Paste</core-item>
+          </core-menu>
+        </core-dropdown>
+      </div>
+    </template>
+
+The `layered` property
+----------------------
+
+Sometimes you may need to render the dropdown in a separate layer. For example,
+it may be nested inside an element that needs to be `overflow: hidden`, or
+its parent may be overlapped by elements above it in stacking order.
+
+The `layered` property will place the dropdown in a separate layer to ensure
+it appears on top of everything else. Note that this implies the dropdown will
+not scroll with its container.
 
 @group Polymer Core Elements
 @element core-dropdown
-@status beta
+@extends core-overlay
 @homepage github.io
--->
-
-<!--
-Fired when an item's selection state is changed. This event is fired both
-when an item is selected or deselected. The `isSelected` detail property
-contains the selection state.
-
-@event core-select
-@param {Object} detail
-  @param {boolean} detail.isSelected true for selection and false for deselection
-  @param {Object} detail.item the item element
--->
-<link href="../polymer/polymer.html" rel="import">
-<link href="../core-icon/core-icon.html" rel="import">
-<link href="../core-icons/core-icons.html" rel="import">
-<link href="../core-item/core-item.html" rel="import">
-<link href="../core-menu/core-menu.html" rel="import">
+--><html><head><link href="../polymer/polymer.html" rel="import">
 <link href="../core-overlay/core-overlay.html" rel="import">
 
-<polymer-element name="core-dropdown" assetpath="">
-<template>
+<style shim-shadowdom="">
+  html /deep/ core-dropdown {
+    position: absolute;
+    overflow: auto;
+    background-color: #fff;
+  }
+</style>
 
-  <link href="core-dropdown.css" rel="stylesheet">
+</head><body><polymer-element name="core-dropdown" extends="core-overlay" assetpath="">
 
-  <div id="control" layout="" horizontal="" center="" on-tap="{{toggle}}">
-    <core-item flex="" src="{{selectedItem.src}}" icon="{{selectedItem.icon}}" label="{{selectedItem ? selectedItem.label : label}}"></core-item>
-    <core-icon id="arrow" icon="{{opened ? &apos;arrow-drop-up&apos; : &apos;arrow-drop-down&apos;}}"></core-icon>
-  </div>
-
-  <core-overlay target="{{$.menu}}" opened="{{opened}}" on-core-overlay-open="{{openAction}}"></core-overlay>
-
-  <core-menu id="menu" selected="{{selected}}" selecteditem="{{selectedItem}}" selectedclass="{{selectedClass}}" valueattr="{{valueattr}}" selectedproperty="{{selectedProperty}}" selectedattribute="{{selectedAttribute}}" on-core-select="{{selectAction}}">
-    <content select="*"></content>
-  </core-menu>
-
-</template>
-
-</polymer-element><script src="core-dropdown-extracted.js"></script>
+</polymer-element>
+<script src="core-dropdown-extracted.js"></script></body></html>

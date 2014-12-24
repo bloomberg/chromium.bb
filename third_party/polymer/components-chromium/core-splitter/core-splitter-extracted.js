@@ -1,9 +1,9 @@
 
 
-  Polymer('core-splitter', {
+  Polymer('core-splitter',Polymer.mixin({
 
     /**
-     * Possible values are "left", "right", "up" and "down".
+     * Possible values are `left`, `right`, `up` and `down`.
      *
      * @attribute direction
      * @type string
@@ -12,13 +12,14 @@
     direction: 'left',
 
     /**
-     * Minimum width to which the splitter target can be sized
+     * Minimum width to which the splitter target can be sized, e.g. 
+     * `minSize="100px"`
      *
      * @attribute minSize
-     * @type number
-     * @default 0
+     * @type string
+     * @default ''
      */
-    minSize: 0,
+    minSize: '',
 
     /**
      * Locks the split bar so it can't be dragged.
@@ -40,8 +41,19 @@
      */
     allowOverflow: false,
 
+    // Listen for resize requests on parent, since splitter is peer to resizables
+    resizerIsPeer: true,
+
     ready: function() {
       this.directionChanged();
+    },
+
+    attached: function() {
+      this.resizerAttachedHandler();
+    },
+
+    detached: function() {
+      this.resizerDetachedHandler();
     },
 
     domReady: function() {
@@ -68,7 +80,7 @@
         old.style[old.__splitterMinSize] = '';
       }
       var min = this.target.__splitterMinSize = this.horizontal ? 'minHeight' : 'minWidth';
-      this.target.style[min] = this.minSize + 'px';
+      this.target.style[min] = this.minSize;
     },
 
     trackStart: function() {
@@ -83,10 +95,12 @@
       var d = e[this.horizontal ? 'dy' : 'dx'];
       this.target.style[this.dimension] =
           this.size + (this.isNext ? -d : d) + 'px';
+      this.notifyResize();
     },
 
     preventSelection: function(e) {
       e.preventDefault();
     }
-  });
+
+  }, Polymer.CoreResizer));
 

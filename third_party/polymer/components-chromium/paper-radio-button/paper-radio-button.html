@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `paper-radio-button` is a button that can be either checked or unchecked.
 User can tap the radio button to check it.  But it cannot be unchecked by
 tapping once checked.
@@ -48,14 +46,15 @@ To change the radio unchecked color:
 @group Paper Elements
 @element paper-radio-button
 @homepage github.io
--->
+--><html><head><link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../core-a11y-keys/core-a11y-keys.html">
 
-<link rel="import" href="../paper-ripple/paper-ripple.html">
-
-<polymer-element name="paper-radio-button" role="radio" tabindex="0" aria-checked="false" assetpath="">
+</head><body><polymer-element name="paper-radio-button" role="radio" tabindex="0" aria-checked="false" assetpath="">
 <template>
 
   <link rel="stylesheet" href="paper-radio-button.css">
+
+  <core-a11y-keys target="{{}}" keys="space" on-keys-pressed="{{tap}}"></core-a11y-keys>
   
   <div id="radioContainer" class="{{ {labeled: label} | tokenList }}">
   
@@ -71,4 +70,4 @@ To change the radio unchecked color:
 </template>
 
 </polymer-element>
-<script src="paper-radio-button-extracted.js"></script>
+<script src="paper-radio-button-extracted.js"></script></body></html>

@@ -52,6 +52,19 @@
        */
       swipeDisabled: false,
       
+      /**
+       * By default, the toast will close automatically if the user taps
+       * outside it or presses the escape key. Disable this behavior by setting
+       * the `autoCloseDisabled` property to true.
+       *
+       * @attribute autoCloseDisabled
+       * @type boolean
+       * @default false
+       */
+      autoCloseDisabled: false,
+      
+      narrowMode: false,
+      
       eventDelegates: {
         trackstart: 'trackStart',
         track: 'track',
@@ -61,6 +74,9 @@
       
       narrowModeChanged: function() {
         this.classList.toggle('fit-bottom', this.narrowMode);
+        if (this.opened) {
+          this.$.overlay.resizeHandler();
+        }
       },
       
       openedChanged: function() {
@@ -124,11 +140,11 @@
           if (this.vertical) {
             var y = e.dy;
             s.opacity = (this.h - Math.abs(y)) / this.h;
-            s.webkitTransform = s.transform =  'translate3d(0, ' + y + 'px, 0)';
+            s.transform = s.webkitTransform = 'translate3d(0, ' + y + 'px, 0)';
           } else {
             var x = e.dx;
             s.opacity = (this.w - Math.abs(x)) / this.w;
-            s.webkitTransform = s.transform = 'translate3d(' + x + 'px, 0, 0)';
+            s.transform = s.webkitTransform = 'translate3d(' + x + 'px, 0, 0)';
           }
         }
       },
@@ -136,8 +152,8 @@
       trackEnd: function(e) {
         if (this.dragging) {
           this.classList.remove('dragging');
-          this.style.opacity = null;
-          this.style.webkitTransform = this.style.transform = null;
+          this.style.opacity = '';
+          this.style.transform = this.style.webkitTransform = '';
           var cl = this.classList;
           if (this.vertical) {
             cl.toggle('fade-out-down', e.yDirection === 1 && e.dy > 0);

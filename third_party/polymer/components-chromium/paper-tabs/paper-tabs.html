@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `paper-tabs` is a `core-selector` styled to look like tabs. Tabs make it easy to 
 explore and switch between different views or functional aspects of an app, or 
 to browse categorized data sets.
@@ -25,6 +23,41 @@ Example:
 See <a href="#paper-tab">paper-tab</a> for more information about 
 `paper-tab`.
 
+A common usage for `paper-tabs` is to use it along with `core-pages` to switch
+between different views.
+
+    <paper-tabs selected="{{selected}}">
+      <paper-tab>Tab 1</paper-tab>
+      <paper-tab>Tab 2</paper-tab>
+      <paper-tab>Tab 3</paper-tab>
+    </paper-tabs>
+  
+    <core-pages selected="{{selected}}">
+      <div>Page 1</div>
+      <div>Page 2</div>
+      <div>Page 3</div>
+    </core-pages>
+    
+`paper-tabs` adapt to mobile/narrow layout when there is a `core-narrow` class set
+on itself or any of its ancestors.
+
+To use links in tabs, add `link` attribute to `paper-tabs` and put an `<a>`
+element in `paper-tab`.
+
+Example:
+
+    <paper-tabs selected="0" link>
+      <paper-tab>
+        <a href="#link1" horizontal center-center layout>TAB ONE</a>
+      </paper-tab>
+      <paper-tab>
+        <a href="#link2" horizontal center-center layout>TAB TWO</a>
+      </paper-tab>
+      <paper-tab>
+        <a href="#link3" horizontal center-center layout>TAB THREE</a>
+      </paper-tab>
+    </paper-tabs>
+
 Styling tabs:
 
 To change the sliding bar color:
@@ -32,29 +65,45 @@ To change the sliding bar color:
     paper-tabs.pink::shadow #selectionBar {
       background-color: #ff4081;
     }
+    
+To change the ink ripple color:
+
+    paper-tabs.pink paper-tab::shadow #ink {
+      color: #ff4081;
+    }
 
 @group Paper Elements
 @element paper-tabs
 @extends core-selector
 @homepage github.io
--->
-
-<link rel="import" href="../core-selector/core-selector.html">
+--><html><head><link rel="import" href="../core-selector/core-selector.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../core-resizable/core-resizable.html">
 <link rel="import" href="paper-tab.html">
 
-<polymer-element name="paper-tabs" extends="core-selector" attributes="noink nobar" role="tablist" assetpath="">
+</head><body><polymer-element name="paper-tabs" extends="core-selector" attributes="noink nobar noslide scrollable hideScrollButton" role="tablist" horizontal="" center="" layout="" assetpath="">
 <template>
 
   <link rel="stylesheet" href="paper-tabs.css">
   
-  <div id="tabsContainer" horizontal="" layout="">
+  <div class="scroll-button" hidden?="{{!scrollable || hideScrollButton}}">
+    <paper-icon-button icon="chevron-left" class="{{ {hidden: leftHidden} | tokenList }}" on-down="{{holdLeft}}" on-up="{{releaseHold}}"></paper-icon-button>
+  </div>
   
-    <shadow></shadow>
-    <div id="selectionBar" hidden?="{{nobar}}" on-transitionend="{{barTransitionEnd}}"></div>
+  <div id="tabsContainer" class="{{ {scrollable: scrollable} | tokenList }}" flex="" on-scroll="{{scroll}}" on-trackstart="{{trackStart}}">
+  
+    <div id="tabsContent" horizontal="" layout?="{{!scrollable}}">
+      <shadow></shadow>
+      <div id="selectionBar" hidden?="{{nobar}}" on-transitionend="{{barTransitionEnd}}"></div>
+    </div>
     
+  </div>
+  
+  <div class="scroll-button" hidden?="{{!scrollable || hideScrollButton}}">
+    <paper-icon-button icon="chevron-right" class="{{ {hidden: rightHidden} | tokenList }}" on-down="{{holdRight}}" on-up="{{releaseHold}}"></paper-icon-button>
   </div>
     
 </template>
 
 </polymer-element>
-<script src="paper-tabs-extracted.js"></script>
+<script src="paper-tabs-extracted.js"></script></body></html>

@@ -1,6 +1,6 @@
 
 
-  Polymer('core-animated-pages',{
+  Polymer('core-animated-pages',Polymer.mixin({
 
     eventDelegates: {
       'core-transitionend': 'transitionEnd'
@@ -38,6 +38,14 @@
       this.transitioning = [];
     },
 
+    attached: function() {
+      this.resizerAttachedHandler();
+    },
+
+    detached: function() {
+      this.resizerDetachedHandler();
+    },
+
     transitionsChanged: function() {
       this._transitions = this.transitions.split(' ');
     },
@@ -73,7 +81,7 @@
         this.animating = null;
       }
 
-      Platform.flush();
+      Polymer.flush();
 
       if (this.transitioning.indexOf(src) === -1) {
         this.transitioning.push(src);
@@ -89,7 +97,7 @@
         src: src,
         dst: dst,
         easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-      }
+      };
 
       // fire an event so clients have a chance to do something when the
       // new page becomes visible but before it draws.
@@ -171,18 +179,30 @@
       if (this.hasAttribute('no-transition') || !this._transitionElements || !this._transitionElements.length) {
         this.applySelection(oldItem, false);
         this.applySelection(this.selectedItem, true);
+        this.notifyResize();
         return;
       }
 
       if (oldItem && this.selectedItem) {
         // TODO(sorvell): allow bindings to update first?
         var self = this;
-        Platform.flush();
-        Platform.endOfMicrotask(function() {
+        Polymer.flush();
+        Polymer.endOfMicrotask(function() {
           self.applyTransition(oldItem, self.selectedItem);
+          self.notifyResize();
         });
+      }
+    },
+
+    resizerShouldNotify: function(el) {
+      // Only notify descendents of selected item
+      while (el && (el != this)) {
+        if (el == this.selectedItem) {
+          return true;
+        }
+        el = el.parentElement || (el.parentNode && el.parentNode.host);
       }
     }
 
-  });
+  }, Polymer.CoreResizer));
 

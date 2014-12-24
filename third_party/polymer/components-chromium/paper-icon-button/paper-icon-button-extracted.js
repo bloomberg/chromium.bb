@@ -1,35 +1,41 @@
 
-  
-    Polymer('paper-icon-button', {
+    Polymer('paper-icon-button',{
 
       publish: {
 
         /**
-         * If true, the ripple expands to a square to fill the containing box.
+         * The URL of an image for the icon. If the src property is specified,
+         * the icon property should not be.
          *
-         * @attribute fill
-         * @type boolean
-         * @default false
+         * @attribute src
+         * @type string
+         * @default ''
          */
-        fill: {value: false, reflect: true}
+        src: '',
 
-      },
+        /**
+         * Specifies the icon name or index in the set of icons available in
+         * the icon's icon set. If the icon property is specified,
+         * the src property should not be.
+         *
+         * @attribute icon
+         * @type string
+         * @default ''
+         */
+        icon: '',
 
-      ready: function() {
-        this.$.ripple.classList.add('recenteringTouch');
-        this.fillChanged();
-      },
+        recenteringTouch: true,
+        fill: false
 
-      fillChanged: function() {
-        this.$.ripple.classList.toggle('circle', !this.fill);
       },
 
       iconChanged: function(oldIcon) {
-        if (!this.label) {
+        var label = this.getAttribute('aria-label');
+        if (!label || label === oldIcon) {
           this.setAttribute('aria-label', this.icon);
         }
       }
 
     });
-    
+
   

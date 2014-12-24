@@ -43,15 +43,14 @@
      */
     autoSaveDisabled: false,
     
-    attached: function() {
-      // wait for bindings are all setup
-      this.async('load');
-    },
-    
     valueChanged: function() {
       if (this.loaded && !this.autoSaveDisabled) {
         this.save();
       }
+    },
+
+    nameChanged: function() {
+      this.load();
     },
     
     load: function() {
@@ -68,7 +67,7 @@
         // be escaped, i.e. "null")
         // in this case we save any non-null current (default) value
         if (v === null) {
-          if (this.value !== null) {
+          if (this.value != null) {
             this.save();
           }
         } else {

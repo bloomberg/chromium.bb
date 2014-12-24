@@ -5,34 +5,166 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `core-list` displays a virtual, 'infinite' list. The template inside the 
-`core-list` element represents the dom to create for each list item. The
-`data` property specifies an array of list item data. The `height` property
-represents the height of a list item.
+`core-list` element represents the DOM to create for each list item. The
+`data` property specifies an array of list item data.
 
-By default, the list supports selection via tapping. Styling the selection 
-should be done via binding. The `selectedProperty` property is set on the 
-list view data for each selected item.
+For performance reasons, not every item in the list is rendered at once; instead
+a small subset of actual template elements (enough to fill the viewport) are
+rendered and reused as the user scrolls.  As such, it is important that all
+state of the list template be bound to the model driving it, since the view 
+may be reused with a new model at any time.  Particularly, any state that 
+may change as the result of a user interaction with the list item must be
+bound to the model to avoid view state inconsistency.
 
-`core-list` manages a viewport of data based on the current scroll position.
-For performance reasons, not every item in the list is rendered at once.
+### Template model
 
-    <core-list data="{{data}}" height="80">
+List item templates should bind to template models of the following structure:
+
+    {
+      index: 0,           // data index for this item
+      selected: false,    // selection state for this item
+      model: {            // user data corresponding to data[index]
+        /* user item data  */
+      }
+    }
+
+For example, given the following data array:
+
+    [
+      {name: 'Bob', checked: true},
+      {name: 'Tim', checked: false},
+      ...
+    ]
+
+The following code would render the list (note the `name` and `checked`
+properties are bound from the `model` object provided to the template
+scope):
+
+    <core-list data="{{data}}">
       <template>
-        <div class="{{ {selected: selected} | tokenList }}">List row: {{index}}</div>
+        <div class="row {{ {selected: selected} | tokenList }}">
+          List row: {{index}}, User data from model: {{model.name}}
+          <input type="checkbox" checked="{{model.checked}}">
+        </div>
       </template>
     </core-list>
 
+### Selection
+
+By default, the list supports selection via tapping. Styling selected items
+should be done via binding to the `selected` property of each model (see examples
+above.  The data model for the selected item (for single-selection) or array of
+models (for multi-selection) is published to the `selection` property.
+
+### Grouping **(experimental)**
+
+`core-list` supports showing dividers between groups of data by setting the 
+`groups` property to an array containing group information.  An element with
+a `divider` attribute set should be supplied a the top level of the template
+next to the template item to provide the divider template.  The template model
+contains extra fields when `groups` is used, as follows:
+
+    {
+      index: 0,           // data index for this item
+      groupIndex: 0,      // group index for this item
+      groupItemIndex: 0,  // index within group for this item
+      selected: false,    // selection state for this item
+      model: {            // user data corresponding to data[index]
+        /* user item data  */
+      },
+      groupModel: {       // user group data corresponding to groups[index]
+        /* user group data */
+      }
+    }
+
+Groups may be specified one of two ways (users should choose the data format 
+that closest matches their source data, to avoid the performance impact of 
+needing totransform data to fit the required structure):
+
+1. Flat data array - In this scenario, the `data` array is provided as 
+a flat list of models.  Group lengths are determined by the `length` property
+on each group object, with the `data` property providing user-specified group
+data, typically for binding to dividers.  For example:
+
+        data = [
+          { name: 'Adam' },
+          { name: 'Alex' },
+          { name: 'Bob' },
+          { name: 'Chuck' },
+          { name: 'Cathy' },
+          ...
+        ];
+
+        groups = [
+          { length: 2, data: { letter: 'A' } },
+          { length: 1, data: { letter: 'B' } },
+          { length: 2, data: { letter: 'C' } },
+          ...
+        ];
+
+        <core-list data="{{data}}" groups="{{groups}}">
+          <template>
+            <div divider class="divider">{{groupModel.letter}}</div>
+            <div class="item">{{model.name}}</div>
+          </template>
+        </core-list>
+
+2. Nested data array - In this scenario, the `data` array is a nested
+array of arrays of models, where each array determines the length of the
+group, and the `groups` models provide the user-specified data directly.
+For example:
+
+        data = [
+          [ { name: 'Adam' }, { name: 'Alex' } ],
+          [ { name: 'Bob' } ],
+          [ { name: 'Chuck' }, { name: 'Cathy' } ],
+          ...
+        ];
+
+        groups = [
+          { letter: 'A' },
+          { letter: 'B' },
+          { letter: 'C' },
+          ...
+        ];
+
+        <core-list data="{{data}}" groups="{{groups}}">
+          <template>
+            <div divider class="divider">{{groupModel.letter}}</div>
+            <div class="item">{{model.name}}</div>
+          </template>
+        </core-list>
+
+### Grid layout **(experimental)**
+
+`core-list` supports a grid layout in addition to linear layout by setting
+the `grid` attribute.  In this case, the list template item must have both fixed
+width and height (e.g. via CSS), with the desired width of each grid item
+specified by the `width` attribute.  Based on this, the number of items 
+per row are determined automatically based on the size of the list viewport.
+
+### Non-native scrollers **(experimental)**
+
+By default, core-list assumes the `scrollTarget` (if set) is a native scrollable
+element (e.g. `overflow:auto` or `overflow:y`) that fires the `scroll` event and
+whose scroll position can be read/set via the `scrollTop` property.
+`core-list` provides experimental support for setting `scrollTarget`
+to a custom scroller element (e.g. a JS-based scroller) as long as it provides 
+the following abstract API:
+
+  - `getScrollTop()` - returns the current scroll position
+  - `setScrollTop(y)` - sets the current scroll position
+  - Fires a `scroll` event indicating when the scroll position has changed
+
 @group Polymer Core Elements
 @element core-list
--->
-<link rel="import" href="../polymer/polymer.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-selection/core-selection.html">
+<link rel="import" href="../core-resizable/core-resizable.html">
 
-<polymer-element name="core-list" on-tap="{{tapHandler}}" assetpath="">
+</head><body><polymer-element name="core-list" tabindex="-1" assetpath="">
 <template>
   <core-selection id="selection" multi="{{multi}}" on-core-select="{{selectedHandler}}"></core-selection>
   <link rel="stylesheet" href="core-list.css">
@@ -40,4 +172,4 @@ For performance reasons, not every item in the list is rendered at once.
 </template>
 
 </polymer-element>
-<script src="core-list-extracted.js"></script>
+<script src="core-list-extracted.js"></script></body></html>

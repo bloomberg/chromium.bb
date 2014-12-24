@@ -5,8 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-<!--
+--><!--
 
 The `core-style` element helps manage styling inside other elements and can 
 be used to make themes. The `core-style` element can be either a producer 
@@ -46,8 +45,8 @@ shadowRoot of the `x-test` element. If the content of the `x-test` producer
 `core-style` changes, all consumers of it are automatically kept in sync. This
 allows updating styling on the fly.
 
-The `core-style` element also supports bindings and it is the producer 
-`core-style` element is the model for its content. Here's an example:
+The `core-style` element also supports bindings, in which case the producer
+`core-style` element is the model. Here's an example:
 
     <core-style id="x-test">
       :host {
@@ -94,11 +93,9 @@ Putting this together:
 @group Polymer Core Elements
 @element core-style
 @homepage github.io
--->
+--><html><head><link rel="import" href="../polymer/polymer.html">
 
-<link rel="import" href="../polymer/polymer.html">
-
-<polymer-element name="core-style" hidden assetpath="">
+</head><body><polymer-element name="core-style" hidden="" assetpath="">
 
 </polymer-element>
-<script src="core-style-extracted.js"></script>
+<script src="core-style-extracted.js"></script></body></html>

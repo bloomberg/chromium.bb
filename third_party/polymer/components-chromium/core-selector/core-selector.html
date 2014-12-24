@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 @group Polymer Core Elements
 
 `<core-selector>` is used to manage a list of elements that can be selected.
@@ -42,9 +40,7 @@ Example:
 @element core-selector
 @status stable
 @homepage github.io
--->
-
-<!--
+--><!--
 Fired when an item's selection state is changed. This event is fired both
 when an item is selected or deselected. The `isSelected` detail property
 contains the selection state.
@@ -53,19 +49,16 @@ contains the selection state.
 @param {Object} detail
   @param {boolean} detail.isSelected true for selection and false for deselection
   @param {Object} detail.item the item element
--->
-<!--
+--><!--
 Fired when an item element is tapped.
 
 @event core-activate
 @param {Object} detail
   @param {Object} detail.item the item element
--->
-
-<link rel="import" href="../polymer/polymer.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-selection/core-selection.html">
 
-<polymer-element name="core-selector" attributes="selected multi valueattr selectedClass selectedProperty selectedAttribute selectedItem selectedModel selectedIndex notap target itemsSelector activateEvent" assetpath="">
+</head><body><polymer-element name="core-selector" attributes="selected multi valueattr selectedClass selectedProperty selectedAttribute selectedItem selectedModel selectedIndex notap excludedLocalNames target itemsSelector activateEvent" assetpath="">
 
   <template>
     <core-selection id="selection" multi="{{multi}}" on-core-select="{{selectionSelect}}"></core-selection>
@@ -74,4 +67,4 @@ Fired when an item element is tapped.
 
   
 </polymer-element>
-<script src="core-selector-extracted.js"></script>
+<script src="core-selector-extracted.js"></script></body></html>

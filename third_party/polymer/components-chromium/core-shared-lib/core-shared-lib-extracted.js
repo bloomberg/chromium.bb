@@ -40,7 +40,7 @@
   }
   
   function nameFromUrl(url) {
-    return url.replace(/[\:\/\%\?\&\.\=\-]/g, '_') + '_api';
+    return url.replace(/[\:\/\%\?\&\.\=\-\,]/g, '_') + '_api';
   }
 
   var Loader = function(name, url, callbackName) {

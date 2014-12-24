@@ -1,52 +1,38 @@
 
-    Polymer('paper-item', {
+    Polymer('paper-item',{
 
       publish: {
 
         /**
-         * The label for the item.
+         * If true, the button will be styled with a shadow.
          *
-         * @attribute label
-         * @type string
-         * @default ''
+         * @attribute raised
+         * @type boolean
+         * @default false
          */
-        label: '',
+        raised: false,
 
         /**
-         * (optional) The URL of an image for an icon to use in the button.
-         * Should not use `icon` property if you are using this property.
+         * By default the ripple emanates from where the user touched the button.
+         * Set this to true to always center the ripple.
          *
-         * @attribute iconSrc
-         * @type string
-         * @default ''
+         * @attribute recenteringTouch
+         * @type boolean
+         * @default false
          */
-        iconSrc: '',
+        recenteringTouch: false,
 
         /**
-         * (optional) Specifies the icon name or index in the set of icons
-         * available in the icon set. If using this property, load the icon
-         * set separately where the icon is used. Should not use `src`
-         * if you are using this property.
+         * By default the ripple expands to fill the button. Set this to false to
+         * constrain the ripple to a circle within the button.
          *
-         * @attribute icon
-         * @type string
-         * @default ''
+         * @attribute fill
+         * @type boolean
+         * @default true
          */
-        icon: ''
+        fill: true
 
-      },
-
-      eventDelegates: {
-        'down': 'downAction',
-        'up': 'upAction'
-      },
-
-      downAction: function(e) {
-        this.$.ripple.downAction(e);
-      },
-
-      upAction: function(e) {
-        this.$.ripple.upAction(e);
       }
+
     });
   

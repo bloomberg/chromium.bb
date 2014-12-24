@@ -2,17 +2,17 @@
   "name": "core-icon-button",
   "private": true,
   "dependencies": {
-    "core-icons": "Polymer/core-icons#>=0.3.0 <1.0.0"
+    "core-icons": "Polymer/core-icons#^0.5.0"
   },
+  "version": "0.5.2",
   "homepage": "https://github.com/Polymer/core-icon-button",
-  "version": "0.3.5",
-  "_release": "0.3.5",
+  "_release": "0.5.2",
   "_resolution": {
     "type": "version",
-    "tag": "0.3.5",
-    "commit": "8cba0cc3afb550c9d51400c5f2ce2532d104b13d"
+    "tag": "0.5.2",
+    "commit": "427829ab8b58454987f27814921d504f64358126"
   },
   "_source": "git://github.com/Polymer/core-icon-button.git",
-  "_target": "0.3.5",
+  "_target": "0.5.2",
   "_originalSource": "Polymer/core-icon-button"
 }

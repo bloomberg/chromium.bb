@@ -5,11 +5,14 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+--><!--
+`core-toolbar` is a horizontal bar containing items that can be used for
+label, navigation, search and actions.  The items place inside the 
+`core-toolbar` are projected into a `horizontal center layout` container inside of 
+`core-toolbar`'s Shadow DOM.  You can use flex attributes to control the items'
+sizing.
 
-<!--
-`core-toolbar` is a horizontal bar containing elements that can be used for
-label, navigation, search and actions.
+Example:
 
     <core-toolbar>
       <core-icon-button icon="menu" on-tap="{{menuAction}}"></core-icon-button>
@@ -23,21 +26,26 @@ class on the `core-toolbar`.  This will make the toolbar 3x the normal height.
     <core-toolbar class="tall">
       <core-icon-button icon="menu"></core-icon-button>
     </core-toolbar>
-    
-Apply `medium-tall` class to make the toolbar medium tall.  This will make the 
+
+Apply `medium-tall` class to make the toolbar medium tall.  This will make the
 toolbar 2x the normal height.
 
     <core-toolbar class="medium-tall">
       <core-icon-button icon="menu"></core-icon-button>
     </core-toolbar>
 
-When taller, elements can pin to either the top (default), middle or bottom.
+When `tall`, items can pin to either the top (default), middle or bottom.  Use
+`middle` class for middle content and `bottom` class for bottom content.
 
     <core-toolbar class="tall">
       <core-icon-button icon="menu"></core-icon-button>
       <div class="middle indent">Middle Title</div>
       <div class="bottom indent">Bottom Title</div>
     </core-toolbar>
+    
+For `medium-tall` toolbar, the middle and bottom contents overlap and are
+pinned to the bottom.  But `middleJustify` and `bottomJustify` attributes are 
+still honored separately.
     
 To make an element completely fit at the bottom of the toolbar, use `fit` along
 with `bottom`.
@@ -46,29 +54,32 @@ with `bottom`.
       <div id="progressBar" class="bottom fit"></div>
     </core-toolbar>
 
+`core-toolbar` adapts to mobile/narrow layout when there is a `core-narrow` class set
+on itself or any of its ancestors.
+
 @group Polymer Core Elements
 @element core-toolbar
 @homepage github.io
--->
+--><html><head><link rel="import" href="../polymer/polymer.html">
 
-<link rel="import" href="../polymer/polymer.html">
-
-<polymer-element name="core-toolbar" noscript>
+</head><body><polymer-element name="core-toolbar" attributes="justify middleJustify bottomJustify" assetpath="">
 <template>
 
   <link rel="stylesheet" href="core-toolbar.css">
 
-  <div id="bottomBar" class="toolbar-tools" center horizontal layout>
+  <div id="bottomBar" class="toolbar-tools" center="" horizontal="" layout="">
     <content select=".bottom"></content>
   </div>
-  
-  <div id="middleBar" class="toolbar-tools" center horizontal layout>
+
+  <div id="middleBar" class="toolbar-tools" center="" horizontal="" layout="">
     <content select=".middle"></content>
   </div>
 
-  <div id="topBar" class="toolbar-tools" center horizontal layout>
+  <div id="topBar" class="toolbar-tools" center="" horizontal="" layout="">
     <content></content>
   </div>
 
 </template>
+
 </polymer-element>
+<script src="core-toolbar-extracted.js"></script></body></html>

@@ -1,4 +1,14 @@
+<!--
+    @license
+    Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
 <link href="../core-selector/core-selector.html" rel="import">
+<link href="../core-resizable/core-resizable.html" rel="import">
 
 <link href="transitions/hero-transition.html" rel="import">
 <link href="transitions/cross-fade.html" rel="import">
@@ -162,7 +172,7 @@ Note that the container element of the page does not participate in the transiti
 Dynamically setting up transitions
 ----------------------------------
 
-An easy way to dynamically set up transitions dynamically is to use property binding on
+An easy way to set up transitions dynamically is to use property binding on
 the transition attributes. 
 
 Example:
@@ -204,7 +214,7 @@ Example:
 
     <core-animated-pages>
       <section id="page1"></section>
-      <nested-page id="page2"></section>
+      <nested-page id="page2"></nested-page>
     </core-animated-pages>
 
 @element core-animated-pages
@@ -236,7 +246,7 @@ Fired when a page transition completes.
 
 <script>
 
-  Polymer({
+  Polymer(Polymer.mixin({
 
     eventDelegates: {
       'core-transitionend': 'transitionEnd'
@@ -274,6 +284,14 @@ Fired when a page transition completes.
       this.transitioning = [];
     },
 
+    attached: function() {
+      this.resizerAttachedHandler();
+    },
+
+    detached: function() {
+      this.resizerDetachedHandler();
+    },
+
     transitionsChanged: function() {
       this._transitions = this.transitions.split(' ');
     },
@@ -309,7 +327,7 @@ Fired when a page transition completes.
         this.animating = null;
       }
 
-      Platform.flush();
+      Polymer.flush();
 
       if (this.transitioning.indexOf(src) === -1) {
         this.transitioning.push(src);
@@ -325,7 +343,7 @@ Fired when a page transition completes.
         src: src,
         dst: dst,
         easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-      }
+      };
 
       // fire an event so clients have a chance to do something when the
       // new page becomes visible but before it draws.
@@ -407,20 +425,32 @@ Fired when a page transition completes.
       if (this.hasAttribute('no-transition') || !this._transitionElements || !this._transitionElements.length) {
         this.applySelection(oldItem, false);
         this.applySelection(this.selectedItem, true);
+        this.notifyResize();
         return;
       }
 
       if (oldItem && this.selectedItem) {
         // TODO(sorvell): allow bindings to update first?
         var self = this;
-        Platform.flush();
-        Platform.endOfMicrotask(function() {
+        Polymer.flush();
+        Polymer.endOfMicrotask(function() {
           self.applyTransition(oldItem, self.selectedItem);
+          self.notifyResize();
         });
+      }
+    },
+
+    resizerShouldNotify: function(el) {
+      // Only notify descendents of selected item
+      while (el && (el != this)) {
+        if (el == this.selectedItem) {
+          return true;
+        }
+        el = el.parentElement || (el.parentNode && el.parentNode.host);
       }
     }
 
-  });
+  }, Polymer.CoreResizer));
 
 </script>
 

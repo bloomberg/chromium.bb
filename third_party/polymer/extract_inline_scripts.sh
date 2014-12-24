@@ -31,6 +31,8 @@ fi
 cp -r "$src" "$dst"
 find "$dst" -name "*.html" \
             -not -path "*/demos/*" \
+            -not -path "*/test/*" \
+            -not -path "*/tests/*" \
             -not -name "demo*.html" \
             -not -name "index.html" \
             -not -name "metadata.html" | \
@@ -43,6 +45,6 @@ do
   html_without_js="$dir/$name-extracted.html"
   extracted_js="$dir/$name-extracted.js"
   vulcanize -o "$html_without_js" --csp --config vulcanize_config.json \
-      "$original_html_name" 1>&2
+      --no-strip-excludes "$original_html_name" 1>&2
   mv "$html_without_js" "$original_html_name"
 done

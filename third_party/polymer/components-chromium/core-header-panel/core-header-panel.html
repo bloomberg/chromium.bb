@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `core-header-panel` contains a header section and a content panel section.
 
 __Important:__ The `core-header-panel` will not display if its parent does not have a height.
@@ -42,7 +40,7 @@ Example:
       <div>Content goes here...</div>
     </core-header-panel>
 
-If you want to use other than `core-toolbar` for the header, add 
+If you want to use other than `core-toolbar` for the header, add
 `core-header` class to that element.
 
 Example:
@@ -51,7 +49,7 @@ Example:
       <div class="core-header">Header</div>
       <div>Content goes here...</div>
     </core-header-panel>
-    
+
 To have the content fits to the main area, use `fit` attribute.
 
     <core-header-panel>
@@ -64,27 +62,25 @@ Use `mode` to control the header and scrolling behavior.
 @group Polymer Core Elements
 @element core-header-panel
 @homepage github.io
--->
+--><html><head><link rel="import" href="../polymer/polymer.html">
 
-<link rel="import" href="../polymer/polymer.html">
-
-<polymer-element name="core-header-panel" assetpath="">
+</head><body><polymer-element name="core-header-panel" assetpath="">
 <template>
 
   <link rel="stylesheet" href="core-header-panel.css">
-  
-  <div id="outerContainer" on-scroll="{{scroll}}" vertical="" layout="">
+
+  <div id="outerContainer" vertical="" layout="">
 
     <content id="headerContent" select="core-toolbar, .core-header"></content>
 
     <div id="mainPanel" flex="" vertical="" layout="">
-    
-      <div id="mainContainer" flex?="{{mode !== &apos;cover&apos;}}" on-scroll="{{scroll}}">
+
+      <div id="mainContainer" flex?="{{mode !== 'cover'}}">
         <content id="mainContent" select="*"></content>
       </div>
-      
+
       <div id="dropShadow"></div>
-      
+
     </div>
 
   </div>
@@ -92,4 +88,4 @@ Use `mode` to control the header and scrolling behavior.
 </template>
 
 </polymer-element>
-<script src="core-header-panel-extracted.js"></script>
+<script src="core-header-panel-extracted.js"></script></body></html>

@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 
 `<core-transition-css>` implements CSS transitions as `<core-transition>` objects so they can be
 reused in a pluggable transition system such as in `<core-overlay>`. Currently this class has
@@ -100,11 +98,9 @@ Available transitions
 @extends core-transition
 @status beta
 @homepage github.io
--->
+--><html><head><link rel="import" href="core-transition.html">
 
-<link rel="import" href="core-transition.html">
-
-<polymer-element name="core-transition-css" extends="core-transition" attributes="transitionType" assetpath="">
+</head><body><polymer-element name="core-transition-css" extends="core-transition" attributes="transitionType" assetpath="">
 <template>
   <link no-shim="" rel="stylesheet" href="core-transition-overlay.css">
 </template>
@@ -117,4 +113,4 @@ Available transitions
 <core-transition-css id="core-transition-bottom" transitiontype="bottom"></core-transition-css>
 <core-transition-css id="core-transition-left" transitiontype="left"></core-transition-css>
 <core-transition-css id="core-transition-right" transitiontype="right"></core-transition-css>
-<script src="core-transition-css-extracted.js"></script>
+<script src="core-transition-css-extracted.js"></script></body></html>

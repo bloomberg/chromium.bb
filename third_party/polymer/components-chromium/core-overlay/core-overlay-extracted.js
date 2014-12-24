@@ -1,7 +1,7 @@
 
 (function() {
 
-  Polymer('core-overlay', {
+  Polymer('core-overlay',Polymer.mixin({
 
     publish: {
       /**
@@ -71,6 +71,16 @@
       autoCloseDisabled: false,
 
       /**
+       * By default an overlay will focus its target or an element inside
+       * it with the `autoFocus` attribute. Disable this
+       * behavior by setting the `autoFocusDisabled` property to true.
+       * @attribute autoFocusDisabled
+       * @type boolean
+       * @default false
+       */
+      autoFocusDisabled: false,
+
+      /**
        * This property specifies an attribute on elements that should
        * close the overlay on tap. Should not set `closeSelector` if this
        * is set.
@@ -93,18 +103,6 @@
       closeSelector: '',
 
       /**
-       * A `core-overlay` target's size is constrained to the window size.
-       * The `margin` property specifies a pixel amount around the overlay 
-       * that will be reserved. It's useful for ensuring that, for example, 
-       * a shadow displayed outside the target will always be visible.
-       *
-       * @attribute margin
-       * @type number
-       * @default 0
-       */
-      margin: 0,
-
-      /**
        * The transition property specifies a string which identifies a 
        * <a href="../core-transition/">`core-transition`</a> element that 
        * will be used to help the overlay open and close. The default
@@ -124,7 +122,19 @@
       'keydown': 'keydownHandler',
       'core-transitionend': 'transitionend'
     },
-    
+
+    attached: function() {
+      this.resizerAttachedHandler();
+    },
+
+    detached: function() {
+      this.resizerDetachedHandler();
+    },
+
+    resizerShouldNotify: function() {
+      return this.opened;
+    },
+
     registerCallback: function(element) {
       this.layer = document.createElement('core-overlay-layer');
       this.keyHelper = document.createElement('core-key-helper');
@@ -136,7 +146,7 @@
     ready: function() {
       this.target = this.target || this;
       // flush to ensure styles are installed before paint
-      Platform.flush();
+      Polymer.flush();
     },
 
     /** 
@@ -177,6 +187,7 @@
         }
         this.addElementListenerList(this.target, this.targetListeners);
         this.target.style.display = 'none';
+        this.target.__overlaySetup = false;
       }
       if (old) {
         this.removeElementListenerList(old, this.targetListeners);
@@ -191,11 +202,24 @@
       }
     },
 
+    transitionChanged: function(old) {
+      if (!this.target) {
+        return;
+      }
+      if (old) {
+        this.getTransition(old).teardown(this.target);
+      }
+      this.target.__overlaySetup = false;
+    },
+
     // NOTE: wait to call this until we're as sure as possible that target
     // is styled.
     ensureTargetSetup: function() {
       if (!this.target || this.target.__overlaySetup) {
         return;
+      }
+      if (!this.sizingTarget) {
+        this.sizingTarget = this.target;
       }
       this.target.__overlaySetup = true;
       this.target.style.display = '';
@@ -203,29 +227,25 @@
       if (transition) {
         transition.setup(this.target);
       }
+      var style = this.target.style;
       var computed = getComputedStyle(this.target);
-      this.targetStyle = {
-        position: computed.position === 'static' ? 'fixed' :
-            computed.position
+      if (computed.position === 'static') {
+        style.position = 'fixed';
       }
-      if (!transition) {
-        this.target.style.position = this.targetStyle.position;
-        this.target.style.outline = 'none';
-      }
-      this.target.style.display = 'none';
+      style.outline = 'none';
+      style.display = 'none';
     },
 
     openedChanged: function() {
       this.transitioning = true;
       this.ensureTargetSetup();
       this.prepareRenderOpened();
-      // continue styling after delay so display state can change
-      // without aborting transitions
-      // note: we wait a full frame so that transition changes executed
-      // during measuring do not cause transition
+      // async here to allow overlay layer to become visible.
       this.async(function() {
         this.target.style.display = '';
-        this.async('renderOpened');
+        // force layout to ensure transitions will go
+        this.target.offsetWidth;
+        this.renderOpened();
       });
       this.fire('core-overlay-open', this.opened);
     },
@@ -247,20 +267,14 @@
           'resizeHandler');
 
       if (this.opened) {
-        // TODO(sorvell): force SD Polyfill to render
-        forcePolyfillRender(this.target);
-        if (!this._shouldPosition) {
-          this.target.style.position = 'absolute';
-          var computed = getComputedStyle(this.target);
-          var t = (computed.top === 'auto' && computed.bottom === 'auto');
-          var l = (computed.left === 'auto' && computed.right === 'auto');
-          this.target.style.position = this.targetStyle.position;
-          this._shouldPosition = {top: t, left: l};
-        }
-        // if we are showing, then take care when measuring
-        this.prepareMeasure(this.target);
+        // force layout so SD Polyfill renders
+        this.target.offsetHeight;
+        this.discoverDimensions();
+        // if we are showing, then take care when positioning
+        this.preparePositioning();
+        this.positionTarget();
         this.updateTargetDimensions();
-        this.finishMeasure(this.target);
+        this.finishPositioning();
         if (this.layered) {
           this.layer.addElement(this.target);
           this.layer.opened = this.opened;
@@ -271,6 +285,7 @@
     // tasks which cause the overlay to actually open; typically play an
     // animation
     renderOpened: function() {
+      this.notifyResize();
       var transition = this.getTransition();
       if (transition) {
         transition.go(this.target, {opened: this.opened});
@@ -299,6 +314,8 @@
           this.layer.removeElement(this.target);
         }
       }
+      this.fire('core-overlay-' + (this.opened ? 'open' : 'close') + 
+          '-completed');
       this.applyFocus();
     },
 
@@ -327,20 +344,49 @@
       }
     },
 
-    prepareMeasure: function(target) {
-      target.style.transition = target.style.webkitTransition = 'none';
-      target.style.transform = target.style.webkitTransform = 'none';
-      target.style.display = '';
+    preparePositioning: function() {
+      this.target.style.transition = this.target.style.webkitTransition = 'none';
+      this.target.style.transform = this.target.style.webkitTransform = 'none';
+      this.target.style.display = '';
     },
 
-    finishMeasure: function(target) {
-      target.style.display = 'none';
-      target.style.transform = target.style.webkitTransform = '';
-      target.style.transition = target.style.webkitTransition = '';
+    discoverDimensions: function() {
+      if (this.dimensions) {
+        return;
+      }
+      var target = getComputedStyle(this.target);
+      var sizer = getComputedStyle(this.sizingTarget);
+      this.dimensions = {
+        position: {
+          v: target.top !== 'auto' ? 'top' : (target.bottom !== 'auto' ?
+            'bottom' : null),
+          h: target.left !== 'auto' ? 'left' : (target.right !== 'auto' ?
+            'right' : null),
+          css: target.position
+        },
+        size: {
+          v: sizer.maxHeight !== 'none',
+          h: sizer.maxWidth !== 'none'
+        },
+        margin: {
+          top: parseInt(target.marginTop) || 0,
+          right: parseInt(target.marginRight) || 0,
+          bottom: parseInt(target.marginBottom) || 0,
+          left: parseInt(target.marginLeft) || 0
+        }
+      };
     },
 
-    getTransition: function() {
-      return this.meta.byId(this.transition);
+    finishPositioning: function(target) {
+      this.target.style.display = 'none';
+      this.target.style.transform = this.target.style.webkitTransform = '';
+      // force layout to avoid application of transform
+      this.target.offsetWidth;
+      this.target.style.transition = this.target.style.webkitTransition = '';
+    },
+
+    getTransition: function(name) {
+      return this.meta.byId(name || this.transition);
     },
 
     getFocusNode: function() {
@@ -350,7 +396,9 @@
     applyFocus: function() {
       var focusNode = this.getFocusNode();
       if (this.opened) {
-        focusNode.focus();
+        if (!this.autoFocusDisabled) {
+          focusNode.focus();
+        }
       } else {
         focusNode.blur();
         if (currentOverlay() == this) {
@@ -361,49 +409,76 @@
       }
     },
 
-    updateTargetDimensions: function() {
-      this.positionTarget();
-      this.sizeTarget();
-      //
-      if (this.layered) {
-        var rect = this.target.getBoundingClientRect();
-        this.target.style.top = rect.top + 'px';
-        this.target.style.left = rect.left + 'px';
-        this.target.style.right = this.target.style.bottom = 'auto';
+    positionTarget: function() {
+      // fire positioning event
+      this.fire('core-overlay-position', {target: this.target,
+          sizingTarget: this.sizingTarget, opened: this.opened});
+      if (!this.dimensions.position.v) {
+        this.target.style.top = '0px';
       }
+      if (!this.dimensions.position.h) {
+        this.target.style.left = '0px';
+      }
+    },
+
+    updateTargetDimensions: function() {
+      this.sizeTarget();
+      this.repositionTarget();
     },
 
     sizeTarget: function() {
-      var sizer = this.sizingTarget || this.target;
-      var rect = sizer.getBoundingClientRect();
-      var mt = rect.top === this.margin ? this.margin : this.margin * 2;
-      var ml = rect.left === this.margin ? this.margin : this.margin * 2;
-      var h = window.innerHeight - rect.top - mt;
-      var w = window.innerWidth - rect.left - ml;
-      sizer.style.maxHeight = h + 'px';
-      sizer.style.maxWidth = w + 'px';
-      sizer.style.boxSizing = 'border-box';
+      this.sizingTarget.style.boxSizing = 'border-box';
+      var dims = this.dimensions;
+      var rect = this.target.getBoundingClientRect();
+      if (!dims.size.v) {
+        this.sizeDimension(rect, dims.position.v, 'top', 'bottom', 'Height');
+      }
+      if (!dims.size.h) {
+        this.sizeDimension(rect, dims.position.h, 'left', 'right', 'Width');
+      }
     },
 
-    positionTarget: function() {
-      // vertically and horizontally center if not positioned
-      if (this._shouldPosition.top) {
-        var t = Math.max((window.innerHeight - 
-            this.target.offsetHeight - this.margin*2) / 2, this.margin);
+    sizeDimension: function(rect, positionedBy, start, end, extent) {
+      var dims = this.dimensions;
+      var flip = (positionedBy === end);
+      var m = flip ? start : end;
+      var ws = window['inner' + extent];
+      var o = dims.margin[m] + (flip ? ws - rect[end] : 
+          rect[start]);
+      var offset = 'offset' + extent;
+      var o2 = this.target[offset] - this.sizingTarget[offset];
+      this.sizingTarget.style['max' + extent] = (ws - o - o2) + 'px';
+    },
+
+    // vertically and horizontally center if not positioned
+    repositionTarget: function() {
+      // only center if position fixed.      
+      if (this.dimensions.position.css !== 'fixed') {
+        return; 
+      }
+      if (!this.dimensions.position.v) {
+        var t = (window.innerHeight - this.target.offsetHeight) / 2;
+        t -= this.dimensions.margin.top;
         this.target.style.top = t + 'px';
       }
-      if (this._shouldPosition.left) {
-        var l = Math.max((window.innerWidth - 
-            this.target.offsetWidth - this.margin*2) / 2, this.margin);
+
+      if (!this.dimensions.position.h) {
+        var l = (window.innerWidth - this.target.offsetWidth) / 2;
+        l -= this.dimensions.margin.left;
         this.target.style.left = l + 'px';
       }
     },
 
     resetTargetDimensions: function() {
-      this.target.style.top = this.target.style.left = '';
-      this.target.style.right = this.target.style.bottom = '';
-      this.target.style.width = this.target.style.height = '';
-      this._shouldPosition = null;
+      if (!this.dimensions || !this.dimensions.size.v) {
+        this.sizingTarget.style.maxHeight = '';  
+        this.target.style.top = '';
+      }
+      if (!this.dimensions || !this.dimensions.size.h) {
+        this.sizingTarget.style.maxWidth = '';  
+        this.target.style.left = '';
+      }
+      this.dimensions = null;
     },
 
     tapHandler: function(e) {
@@ -496,17 +571,12 @@
       if (!this[bound]) {
         this[bound] = function(e) {
           method.call(self, e);
-        }
+        };
       }
       return this[bound];
-    },
-  });
-
-  function forcePolyfillRender(target) {
-    if (window.ShadowDOMPolyfill) {
-      target.offsetHeight;
     }
-  }
+
+  }, Polymer.CoreResizer));
 
   // TODO(sorvell): This should be an element with private state so it can
   // be independent of overlay.

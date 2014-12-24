@@ -1,6 +1,7 @@
 
+(function() {
 
-  Polymer('core-scroll-header-panel', {
+  Polymer('core-scroll-header-panel',Polymer.mixin({
     
     /**
      * Fired when the content has been scrolled.
@@ -70,6 +71,7 @@
        *
        * @attribute headerHeight
        * @type number
+       * @default 0
        */
       headerHeight: 0,
 
@@ -81,8 +83,20 @@
        *
        * @attribute condensedHeaderHeight
        * @type number
+       * @default 0
        */
-      condensedHeaderHeight: 0
+      condensedHeaderHeight: 0,
+      
+      /**
+       * By default, the top part of the header stays when the header is being
+       * condensed.  Set this to true if you want the top part of the header
+       * to be scrolled away.
+       *
+       * @attribute scrollAwayTopbar
+       * @type boolean
+       * @default false
+       */
+      scrollAwayTopbar: false
     },
 
     prevScrollTop: 0,
@@ -94,6 +108,24 @@
     observe: {
       'headerMargin fixed': 'setup'
     },
+
+    eventDelegates: {
+      'core-resize': 'measureHeaderHeight'
+    },
+
+    attached: function() {
+      this.resizableAttachedHandler();
+    },
+
+    ready: function() {
+      this._scrollHandler = this.scroll.bind(this);
+      this.scroller.addEventListener('scroll', this._scrollHandler);
+    },
+    
+    detached: function() {
+      this.scroller.removeEventListener('scroll', this._scrollHandler);
+      this.resizableDetachedHandler();
+    },
     
     domReady: function() {
       this.async('measureHeaderHeight');
@@ -103,13 +135,25 @@
       return this.$.headerContent.getDistributedNodes()[0];
     },
     
+    /**
+     * Returns the scrollable element.
+     *
+     * @property scroller
+     * @type Object
+     */
     get scroller() {
       return this.$.mainContainer;
     },
     
+    /**
+     * Invoke this to tell `core-scroll-header-panel` to re-measure the header's
+     * height.
+     *
+     * @method measureHeaderHeight
+     */
     measureHeaderHeight: function() {
       var header = this.header;
-      if (this.header) {
+      if (header && header.offsetHeight) {
         this.headerHeight = header.offsetHeight;
       }
     },
@@ -166,7 +210,7 @@
     condenseHeader: function(y) {
       var reset = y == null;
       // adjust top bar in core-header so the top bar stays at the top
-      if (this.header.$ && this.header.$.topBar) {
+      if (!this.scrollAwayTopbar && this.header.$ && this.header.$.topBar) {
         this.translateY(this.header.$.topBar.style, 
             reset ? null : Math.min(y, this.headerMargin));
       }
@@ -188,8 +232,8 @@
     },
     
     translateY: function(s, y) {
-      s.transform = s.webkitTransform = y == null ? '' : 
-          'translate3d(0, ' + y + 'px, 0)';
+      var t = y == null ? '' : 'translate3d(0, ' + y + 'px, 0)';
+      setTransform(s, t);
     },
     
     scroll: function(event) {
@@ -208,10 +252,10 @@
       }
       
       if (!event || !this.fixed && y !== this.y) {
-        requestAnimationFrame(this.transformHeader.bind(this, y));
+        this.transformHeader(y);
       }
       
-      this.prevScrollTop = sTop;
+      this.prevScrollTop = Math.max(sTop, 0);
       this.y = y;
       
       if (event) {
@@ -219,5 +263,18 @@
       }
     }
 
-  });
+  }, Polymer.CoreResizable));
+  
+  //determine proper transform mechanizm
+  if (document.documentElement.style.transform !== undefined) {
+    var setTransform = function(style, string) {
+      style.transform = string;
+    }
+  } else {
+    var setTransform = function(style, string) {
+      style.webkitTransform = string;
+    }
+  }
+
+})();
 

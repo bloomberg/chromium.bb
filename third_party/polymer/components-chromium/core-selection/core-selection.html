@@ -5,14 +5,13 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-<!--
+--><!--
 @group Polymer Core Elements
 
 The `<core-selection>` element is used to manage selection state. It has no
 visual appearance and is typically used in conjunction with another element.
 For example, [core-selector](#core-selector)
-use a `<core-selection>` to manage selection.
+uses a `<core-selection>` to manage selection.
 
 To mark an item as selected, call the `select(item)` method on 
 `<core-selection>`. The item itself is an argument to this method.
@@ -58,9 +57,7 @@ Example:
     </selection-example>
  
 @element core-selection
--->
-
-<!--
+--><!--
 Fired when an item's selection state is changed. This event is fired both
 when an item is selected or deselected. The `isSelected` detail property
 contains the selection state.
@@ -69,10 +66,9 @@ contains the selection state.
 @param {Object} detail
   @param {boolean} detail.isSelected true for selection and false for de-selection
   @param {Object} detail.item the item element
--->
-<link rel="import" href="../polymer/polymer.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
 
-<polymer-element name="core-selection" attributes="multi" hidden assetpath="">
+</head><body><polymer-element name="core-selection" attributes="multi" hidden="" assetpath="">
   
 </polymer-element>
-<script src="core-selection-extracted.js"></script>
+<script src="core-selection-extracted.js"></script></body></html>

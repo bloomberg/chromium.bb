@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `core-scaffold` provides general application layout, introducing a 
 responsive scaffold containing a header, toolbar, menu, title and 
 areas for application content.
@@ -23,13 +21,33 @@ Example:
         </core-menu>
       </core-header-panel>
       <div tool>Title</div>
-      <div>Content goes here...</div>
+      <div>Main content goes here...</div>
     </core-scaffold>
 
 Use `mode` to control the header and scrolling behavior of `core-header-panel`
-and `responsiveWidth` to change the layout of the scaffold.
+and `responsiveWidth` to change the layout of the scaffold.  Use 'disableSwipe'
+to disable swipe-to-open on toolbar.
 
-To have the content fits to the main area, use `fit` attribute.
+Use `rightDrawer` to move position of folding toolbar to the right instead of
+left (default).  This will also position content to the left of the menu button
+instead of the right.  You can use `flex` within your `tool` content to push the menu
+button to the far right:
+
+    <core-scaffold rightDrawer>
+      <div tool flex >Title</div>
+    </core-scaffold>
+    
+You may also add `middle` or `bottom` classes to your `tool` content when using tall
+modes to adjust vertical content positioning in the core-toolbar (e.g. when using 
+mode="waterfall-tall"):
+
+    <core-scaffold rightDrawer mode="waterfall-tall">
+      <div tool flex >Title</div>
+      <div tool horizontal layout flex center-justified class="middle">Title-middle</div>
+      <div tool horizontal layout flex end-justified class="bottom">Title-bottom</div>
+    </core-scaffold>
+
+To have the content fit to the main area, use `fit` attribute.
 
     <core-scaffold>
       <core-header-panel navigation flex mode="seamed">
@@ -42,14 +60,12 @@ To have the content fits to the main area, use `fit` attribute.
 @group Polymer Core Elements
 @element core-scaffold
 @homepage github.io
--->
-
-<link rel="import" href="../core-toolbar/core-toolbar.html">
+--><html><head><link rel="import" href="../core-toolbar/core-toolbar.html">
 <link rel="import" href="../core-drawer-panel/core-drawer-panel.html">
 <link rel="import" href="../core-header-panel/core-header-panel.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
 
-<polymer-element name="core-scaffold" assetpath="">
+</head><body><polymer-element name="core-scaffold" assetpath="">
 <template>
 
   <style>
@@ -79,7 +95,7 @@ To have the content fits to the main area, use `fit` attribute.
     
   </style>
 
-  <core-drawer-panel id="drawerPanel" narrow="{{narrow}}" responsivewidth="{{responsiveWidth}}">
+  <core-drawer-panel id="drawerPanel" narrow="{{narrow}}" drawerwidth="{{drawerWidth}}" rightdrawer="{{rightDrawer}}" responsivewidth="{{responsiveWidth}}" disableswipe="{{disableSwipe}}">
 
     <div vertical="" layout="" drawer="">
 
@@ -87,11 +103,16 @@ To have the content fits to the main area, use `fit` attribute.
 
     </div>
     
-    <core-header-panel main="" mode="{{mode}}">
+    <core-header-panel id="headerPanel" main="" mode="{{mode}}">
 
       <core-toolbar>
-        <core-icon-button id="menuButton" icon="menu" on-tap="{{togglePanel}}"></core-icon-button>
+        <template if="{{!rightDrawer}}">
+          <core-icon-button id="menuButton" icon="menu" on-tap="{{togglePanel}}"></core-icon-button>
+        </template>
         <content select="[tool]"></content>
+        <template if="{{rightDrawer}}">
+          <core-icon-button id="menuButton" icon="menu" on-tap="{{togglePanel}}"></core-icon-button>
+        </template>
       </core-toolbar>
       
       <content select="*"></content>
@@ -103,4 +124,4 @@ To have the content fits to the main area, use `fit` attribute.
 </template>
 
 </polymer-element>
-<script src="core-scaffold-extracted.js"></script>
+<script src="core-scaffold-extracted.js"></script></body></html>

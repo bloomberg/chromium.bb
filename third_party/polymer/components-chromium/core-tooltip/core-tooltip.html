@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 The `core-tooltip` element creates a hover tooltip centered for the content
 it contains. It can be positioned on the top|bottom|left|right of content using
 the `position` attribute.
@@ -24,13 +22,19 @@ content.
 <b>Example</b> - positioning the tooltip to the right:
 
     <core-tooltip label="I'm a tooltip to the right" position="right">
-      <polymer-ui-icon-button icon="drawer"></polymer-ui-icon-button>
+      <core-icon-button icon="drawer"></core-icon-button>
     </core-tooltip>
 
 <b>Example</b> - no arrow and showing by default:
 
     <core-tooltip label="Tooltip with no arrow and always on" noarrow show>
       <img src="image.jpg">
+    </core-tooltip>
+
+<b>Example</b> - disable the tooltip.
+
+    <core-tooltip label="Disabled label never shows" disabled>
+      ...
     </core-tooltip>
 
 <b>Example</b> - rich tooltip using the `tip` attribute:
@@ -42,12 +46,24 @@ content.
       </div>
     </core-tooltip>
 
+By default, the `tip` attribute specifies the HTML content for a rich tooltip.
+You can customize this attribute with the `tipAttribute` attribute:
+
+    <core-tooltip tipAttribute="htmltooltip">
+      <div>Example of a rich information tooltip</div>
+      <div htmltooltip>
+        ...
+      </div>
+    </core-tooltip>
+
 @group Polymer Core Elements
 @element core-tooltip
-@homepage http://polymer.github.io/core-tooltip
--->
-
-<link rel="import" href="../polymer/polymer.html">
+@extends core-focusable
+@mixins Polymer.CoreFocusable
+@homepage http://www.polymer-project.org/components/core-tooltip/index.html
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-focusable/core-focusable.html">
+<link rel="import" href="../core-resizable/core-resizable.html">
 
 <!-- TODO: would be nice to inherit from label to get .htmlFor, and .control,
            but the latter is readonly. -->
@@ -55,13 +71,12 @@ content.
 <!-- TODO: detect mobile and apply the .large class, instead of manual
            control. -->
 <!-- TODO: possibly reuse core-overlay. -->
-<polymer-element name="core-tooltip" attributes="noarrow position label show" tabindex="0" assetpath="">
+</head><body><polymer-element name="core-tooltip" attributes="noarrow position label show tipAttribute" role="tooltip" tabindex="0" assetpath="">
 <template>
 
   <link rel="stylesheet" href="core-tooltip.css">
-
-  <div id="tooltip" class="polymer-tooltip {{position}} {{ {noarrow: noarrow, show: show} | tokenList}}">
-    <content select="[tip]">{{label}}</content>
+  <div id="tooltip" hidden?="{{!hasTooltipContent}}" class="core-tooltip {{position}} {{ {noarrow: noarrow, show: show &amp;&amp; !disabled} | tokenList}}">
+    <content id="c" select="[{{tipAttribute}}]">{{label}}</content>
   </div>
 
   <content></content>
@@ -69,4 +84,4 @@ content.
 </template>
 
 </polymer-element>
-<script src="core-tooltip-extracted.js"></script>
+<script src="core-tooltip-extracted.js"></script></body></html>

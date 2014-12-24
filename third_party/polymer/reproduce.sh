@@ -16,7 +16,16 @@ cd "$(dirname "$0")"
 rm -rf components components-chromium
 
 bower install
-find components/core-list -type f -exec chmod -x {} \;
+
+# These components are deprecated or needed only for demos.
+rm -rf components/{core-component-page,core-field,font-roboto,webcomponentsjs}
+
+# Make checkperms.py happy.
+find components/{core-list,core-resizable} -type f -exec chmod -x {} \;
+
+# TODO(dzhioev): remove when
+# https://code.google.com/p/grit-i18n/issues/detail?id=30 is fixed
+patch -p1 < chromium.patch
 
 ./extract_inline_scripts.sh components components-chromium
 

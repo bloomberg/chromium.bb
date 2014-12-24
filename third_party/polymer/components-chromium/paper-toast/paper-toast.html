@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 `paper-toast` provides lightweight feedback about an operation in a small popup 
 at the base of the screen on mobile and at the lower left on desktop. Toasts are 
 above all other elements on screen, including the FAB.
@@ -43,6 +41,13 @@ position by overriding bottom and left positions.
       bottom: 40px;
       left: 10px;
     }
+    
+To position the toast to the right:
+
+    paper-toast {
+      right: 10px;
+      left: auto;
+    } 
   
 To make it fit at the bottom of the screen:
 
@@ -58,19 +63,30 @@ the toast will automatically fits at the bottom of the screen.
 @group Paper Elements
 @element paper-toast
 @homepage github.io
--->
+--><!--
+Fired when the `paper-toast`'s `opened` property changes.
 
-<link rel="import" href="../core-overlay/core-overlay.html">
+@event core-overlay-open
+@param {boolean} detail the opened state
+--><!--
+Fired when the `paper-toast` has completely opened.
+
+@event core-overlay-open-completed
+--><!--
+Fired when the `paper-toast` has completely closed.
+
+@event core-overlay-close-completed
+--><html><head><link rel="import" href="../core-overlay/core-overlay.html">
 <link rel="import" href="../core-transition/core-transition-css.html">
 <link rel="import" href="../core-media-query/core-media-query.html">
 
-<polymer-element name="paper-toast" attributes="text duration opened responsiveWidth swipeDisabled" role="status" assetpath="">
+</head><body><polymer-element name="paper-toast" attributes="text duration opened responsiveWidth swipeDisabled autoCloseDisabled" role="status" assetpath="">
 
 <template>
 
   <link rel="stylesheet" href="paper-toast.css">
 
-  <core-overlay opened="{{opened}}" target="{{}}" sizingtarget="{{$.container}}" transition="core-transition-bottom"></core-overlay>
+  <core-overlay id="overlay" autofocusdisabled="" autoclosedisabled="{{autoCloseDisabled}}" opened="{{opened}}" target="{{}}" transition="core-transition-bottom"></core-overlay>
 
   <div class="toast-container" horizontal="" layout="">
 
@@ -87,4 +103,4 @@ the toast will automatically fits at the bottom of the screen.
 </template>
 
 </polymer-element>
-<script src="paper-toast-extracted.js"></script>
+<script src="paper-toast-extracted.js"></script></body></html>

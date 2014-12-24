@@ -5,9 +5,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<!--
+--><!--
 
 `<core-transition>` is an abstraction of an animation. It is used to implement pluggable
 transitions, for example in `<core-overlay>`. You can extend this class to create a custom
@@ -58,18 +56,16 @@ my-transition-demo.html:
 @extends core-meta
 @status beta
 @homepage github.io
--->
-<!--
+--><!--
 Fired when the animation finishes.
 
 @event core-transitionend
 @param {Object} detail
 @param {Object} detail.node The animated node
--->
+--><html><head><link rel="import" href="../core-meta/core-meta.html">
 
-<link rel="import" href="../core-meta/core-meta.html">
-
-<polymer-element name="core-transition" extends="core-meta" assetpath="">
+</head><body><polymer-element name="core-transition" extends="core-meta" assetpath="">
   
   
-</polymer-element><script src="core-transition-extracted.js"></script>
+</polymer-element>
+<script src="core-transition-extracted.js"></script></body></html>

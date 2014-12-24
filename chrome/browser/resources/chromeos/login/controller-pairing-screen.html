@@ -100,8 +100,9 @@ controller-pairing-page::shadow #top {
     <link rel="stylesheet" href="oobe_screen_controller_pairing.css">
 
     <template id="help-button">
-      <paper-button class="help-button" on-tap="{{helpButtonClicked}}"
-          label="{{'helpBtn' | i18n}}"></paper-button>
+      <paper-button class="help-button" on-tap="{{helpButtonClicked}}">
+        {{'helpBtn' | i18n}}
+      </paper-button>
     </template>
 
     <template id="progress">
@@ -109,10 +110,9 @@ controller-pairing-page::shadow #top {
           runnerPortion="23"></indeterminate-progress>
     </template>
 
-    <paper-shadow z="1"></paper-shadow>
-
+    <paper-shadow z="1" fit>
     <core-animated-pages transitions="cross-fade-all hero-transition"
-        selected="{{C.page}}">
+        selected="{{C.page}}" fit>
       <controller-pairing-page name="devices-discovery" class="big-font">
         <div class="title">{{'welcomeTitle' | i18n}}</div>
         <div>{{'searching' | i18n}}</div>
@@ -124,16 +124,17 @@ controller-pairing-page::shadow #top {
         <pairing-device-list devices="{{C.devices}}"
             selected="{{selectedDevice}}"></pairing-device-list>
         <template bind ref="help-button"></template>
-        <paper-button label="{{'connectBtn' | i18n}}" on-tap="{{userActed}}"
-            action="chooseDevice" disabled?="{{C.controlsDisabled}}">
+        <paper-button on-tap="{{userActed}}" action="chooseDevice"
+            disabled?="{{C.controlsDisabled}}">
+         {{'connectBtn' | i18n}}
         </paper-button>
       </controller-pairing-page>
 
       <controller-pairing-page name="device-not-found">
         <div class="title">{{'troubleConnectingTitle' | i18n}}</div>
         <div>{{'connectingAdvice' | i18n}}</div>
-        <paper-button label="{{'adviceGotItBtn' | i18n}}" on-tap="{{userActed}}"
-            action="repeatDiscovery">
+        <paper-button on-tap="{{userActed}}" action="repeatDiscovery">
+          {{'adviceGotItBtn' | i18n}}
         </paper-button>
       </controller-pairing-page>
 
@@ -142,26 +143,28 @@ controller-pairing-page::shadow #top {
         <pairing-device-list devices="{{C.devices}}"
             selected="{{selectedDevice}}" connecting></pairing-device-list>
         <template bind ref="help-button"></template>
-        <paper-button label="{{'connecting' | i18n}}" disabled></paper-button>
+        <paper-button disabled>{{'connecting' | i18n}}</paper-button>
       </controller-pairing-page>
 
       <controller-pairing-page name="establishing-connection-error">
         <!-- TODO(dzhioev): Strings TBD. http://crbug.com/423740 -->
         <div class="title">Unable to connect to {{selectedDevice}}</div>
-        <paper-button on-tap="{{userActed}}" action="repeatDiscovery"
-            label="Repeat discovery"></paper-button>
-        </button>
+        <paper-button on-tap="{{userActed}}" action="repeatDiscovery">
+          Repeat discovery
+        </paper-button>
       </controller-pairing-page>
 
       <controller-pairing-page name="code-confirmation" class="split">
         <div class="title">{{'confirmationTitle' | i18n}}</div>
         <div>{{'confirmationQuestion' | i18n}}</div>
         <div id="code">{{C.code}}</div>
-        <paper-button label="{{'rejectCodeBtn' | i18n}}" on-tap="{{userActed}}"
-            action="rejectCode" disabled?="{{C.controlsDisabled}}">
+        <paper-button on-tap="{{userActed}}" action="rejectCode"
+            disabled?="{{C.controlsDisabled}}">
+          {{'rejectCodeBtn' | i18n}}
         </paper-button>
-        <paper-button label="{{'acceptCodeBtn' | i18n}}" on-tap="{{userActed}}"
-            action="acceptCode" disabled?="{{C.controlsDisabled}}">
+        <paper-button on-tap="{{userActed}}" action="acceptCode"
+            disabled?="{{C.controlsDisabled}}">
+          {{'acceptCodeBtn' | i18n}}
         </paper-button>
       </controller-pairing-page>
 
@@ -181,8 +184,9 @@ controller-pairing-page::shadow #top {
         <div class="title">{{'enrollTitle' | i18n}}</div>
         <p>{{'enrollText1' | i18n}}</p>
         <p><strong>{{'enrollText2' | i18n}}</strong></p>
-        <paper-button label="{{'continueBtn' | i18n}}" on-click="{{userActed}}"
-            action="proceedToAuthentication" disabled?="{{C.controlsDisabled}}">
+        <paper-button on-click="{{userActed}}" action="proceedToAuthentication"
+            disabled?="{{C.controlsDisabled}}">
+          {{'continueBtn' | i18n}}
         </paper-button>
       </controller-pairing-page>
 
@@ -207,11 +211,12 @@ controller-pairing-page::shadow #top {
       <controller-pairing-page name="pairing-done" class="big-font">
         <div class="title">{{'successTitle' | i18n}}</div>
         <div>{{['successText', selectedDevice] | i18n}}</div>
-        <paper-button label="{{'continueToHangoutsBtn' | i18n}}"
-            on-click="{{userActed}}" action="startSession"
+        <paper-button on-click="{{userActed}}" action="startSession"
             disabled?="{{C.controlsDisabled}}">
+          {{'continueToHangoutsBtn' | i18n}}
         </paper-button>
       </controller-pairing-page>
     </core-animated-pages>
+    </paper-shadow>
   </template>
 </polymer-element>
