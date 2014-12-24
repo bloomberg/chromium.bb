@@ -8,9 +8,10 @@
  */
 
 /**
- * @param {HTMLElement} containerElement The container for the controls.
- * @param {function} onMediaError Function to display an error message.
+ * @param {!HTMLElement} containerElement The container for the controls.
+ * @param {function(Event)} onMediaError Function to display an error message.
  * @constructor
+ * @struct
  */
 function MediaControls(containerElement, onMediaError) {
   this.container_ = containerElement;
@@ -24,6 +25,54 @@ function MediaControls(containerElement, onMediaError) {
   this.onMediaError_ = onMediaError || function() {};
 
   this.savedVolume_ = 1;  // 100% volume.
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.playButton_ = null;
+
+  /**
+   * @type {MediaControls.Slider}
+   * @private
+   */
+  this.progressSlider_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.duration_ = null;
+
+  /**
+   * @type {MediaControls.AnimatedSlider}
+   * @private
+   */
+  this.volume_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.textBanner_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.soundButton_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.resumeAfterDrag_ = false;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.currentTime_ = null;
 }
 
 /**
@@ -66,11 +115,12 @@ MediaControls.formatTime_ = function(timeInSec) {
  *
  * @param {string} className Class name.
  * @param {HTMLElement=} opt_parent Parent element or container if undefined.
- * @return {HTMLElement} The new control element.
+ * @return {!HTMLElement} The new control element.
  */
 MediaControls.prototype.createControl = function(className, opt_parent) {
   var parent = opt_parent || this.container_;
-  var control = this.document_.createElement('div');
+  var control = assertInstanceof(this.document_.createElement('div'),
+      HTMLDivElement);
   control.className = className;
   parent.appendChild(control);
   return control;
@@ -80,18 +130,17 @@ MediaControls.prototype.createControl = function(className, opt_parent) {
  * Create a custom button.
  *
  * @param {string} className Class name.
- * @param {function(Event)} handler Click handler.
+ * @param {function(Event)=} opt_handler Click handler.
  * @param {HTMLElement=} opt_parent Parent element or container if undefined.
  * @param {number=} opt_numStates Number of states, default: 1.
- * @return {HTMLElement} The new button element.
+ * @return {!HTMLElement} The new button element.
  */
 MediaControls.prototype.createButton = function(
-    className, handler, opt_parent, opt_numStates) {
+    className, opt_handler, opt_parent, opt_numStates) {
   opt_numStates = opt_numStates || 1;
 
   var button = this.createControl(className, opt_parent);
   button.classList.add('media-button');
-  button.addEventListener('click', handler);
 
   var stateTypes = Object.keys(MediaControls.ButtonStateType);
   for (var state = 0; state != opt_numStates; state++) {
@@ -103,7 +152,10 @@ MediaControls.prototype.createButton = function(
   this.createControl('disabled', button);
 
   button.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
-  button.addEventListener('click', handler);
+
+  if (opt_handler)
+    button.addEventListener('click', opt_handler);
+
   return button;
 };
 
@@ -153,7 +205,7 @@ MediaControls.prototype.pause = function() {
  * @return {boolean} True if the media is currently playing.
  */
 MediaControls.prototype.isPlaying = function() {
-  return this.media_ && !this.media_.paused && !this.media_.ended;
+  return !!this.media_ && !this.media_.paused && !this.media_.ended;
 };
 
 /**
@@ -167,12 +219,11 @@ MediaControls.prototype.togglePlayState = function() {
 };
 
 /**
- * Toggle play/pause state on a mouse click on the play/pause button. Can be
- * called externally. TODO(mtomasz): Remove it. http://www.crbug.com/254318.
+ * Toggles play/pause state on a mouse click on the play/pause button.
  *
- * @param {Event=} opt_event Mouse click event.
+ * @param {Event} event Mouse click event.
  */
-MediaControls.prototype.onPlayButtonClicked = function(opt_event) {
+MediaControls.prototype.onPlayButtonClicked = function(event) {
   this.togglePlayState();
 };
 
@@ -348,7 +399,7 @@ MediaControls.prototype.onVolumeDrag_ = function(on) {
 /**
  * Attach a media element.
  *
- * @param {HTMLMediaElement} mediaElement The media element to control.
+ * @param {!HTMLMediaElement} mediaElement The media element to control.
  */
 MediaControls.prototype.attachMedia = function(mediaElement) {
   this.media_ = mediaElement;
@@ -441,8 +492,7 @@ MediaControls.prototype.onMediaDuration_ = function() {
 
   this.duration_.textContent = valueToString(1);
 
-  if (this.progressSlider_.setValueToStringFunction)
-    this.progressSlider_.setValueToStringFunction(valueToString);
+  this.progressSlider_.setValueToStringFunction(valueToString);
 
   if (this.media_.seekable)
     this.restorePlayState();
@@ -550,12 +600,13 @@ MediaControls.prototype.clearState = function() {
 /**
  * Create a customized slider control.
  *
- * @param {HTMLElement} container The containing div element.
+ * @param {!HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
  * @param {function(number)} onChange Value change handler.
  * @param {function(boolean)} onDrag Drag begin/end handler.
  * @constructor
+ * @struct
  */
 
 MediaControls.Slider = function(container, value, range, onChange, onDrag) {
@@ -563,15 +614,22 @@ MediaControls.Slider = function(container, value, range, onChange, onDrag) {
   this.onChange_ = onChange;
   this.onDrag_ = onDrag;
 
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.isDragging_ = false;
+
   var document = this.container_.ownerDocument;
 
   this.container_.classList.add('custom-slider');
 
-  this.input_ = document.createElement('input');
+  this.input_ = assertInstanceof(document.createElement('input'),
+      HTMLInputElement);
   this.input_.type = 'range';
-  this.input_.min = 0;
-  this.input_.max = range;
-  this.input_.value = value * range;
+  this.input_.min = (0).toString();
+  this.input_.max = range.toString();
+  this.input_.value = (value * range).toString();
   this.container_.appendChild(this.input_);
 
   this.input_.addEventListener(
@@ -581,7 +639,7 @@ MediaControls.Slider = function(container, value, range, onChange, onDrag) {
   this.input_.addEventListener(
       'mouseup', this.onInputDrag_.bind(this, false));
 
-  this.bar_ = document.createElement('div');
+  this.bar_ = assertInstanceof(document.createElement('div'), HTMLDivElement);
   this.bar_.className = 'bar';
   this.container_.appendChild(this.bar_);
 
@@ -665,7 +723,7 @@ MediaControls.Slider.prototype.getValueFromUI_ = function() {
  * @private
  */
 MediaControls.Slider.prototype.setValueToUI_ = function(value) {
-  this.input_.value = value * this.input_.max;
+  this.input_.value = (value * this.input_.max).toString();
   this.setFilled_(value);
 };
 
@@ -679,6 +737,12 @@ MediaControls.Slider.prototype.getProportion = function(position) {
   var rect = this.bar_.getBoundingClientRect();
   return Math.max(0, Math.min(1, (position - rect.left) / rect.width));
 };
+
+/**
+ * Sets value formatting function.
+ * @param {function(number):string} func Value formatting function.
+ */
+MediaControls.Slider.prototype.setValueToStringFunction = function(func) {};
 
 /**
  * 'change' event handler.
@@ -718,17 +782,24 @@ MediaControls.Slider.prototype.isAtEnd = function() {
 /**
  * Create a customized slider with animated thumb movement.
  *
- * @param {HTMLElement} container The containing div element.
+ * @param {!HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
  * @param {function(number)} onChange Value change handler.
  * @param {function(boolean)} onDrag Drag begin/end handler.
- * @param {function(number):string} formatFunction Value formatting function.
  * @constructor
+ * @struct
+ * @extends {MediaControls.Slider}
  */
 MediaControls.AnimatedSlider = function(
-    container, value, range, onChange, onDrag, formatFunction) {
+    container, value, range, onChange, onDrag) {
   MediaControls.Slider.apply(this, arguments);
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.animationInterval_ = 0;
 };
 
 MediaControls.AnimatedSlider.prototype = {
@@ -772,13 +843,15 @@ MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
  *
  * The time value is shown above the slider bar at the mouse position.
  *
- * @param {HTMLElement} container The containing div element.
+ * @param {!HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
  * @param {function(number)} onChange Value change handler.
  * @param {function(boolean)} onDrag Drag begin/end handler.
  * @param {function(number):string} formatFunction Value formatting function.
  * @constructor
+ * @struct
+ * @extends {MediaControls.Slider}
  */
 MediaControls.PreciseSlider = function(
     container, value, range, onChange, onDrag, formatFunction) {
@@ -787,7 +860,25 @@ MediaControls.PreciseSlider = function(
   var doc = this.container_.ownerDocument;
 
   /**
-   * @type {function(number):string}
+   * @type {number}
+   * @private
+   */
+  this.latestMouseUpTime_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.seekMarkTimer_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.latestSeekRatio_ = 0;
+
+  /**
+   * @type {?function(number):string}
    * @private
    */
   this.valueToString_ = null;
@@ -831,7 +922,7 @@ MediaControls.PreciseSlider.HIDE_AFTER_DRAG_DELAY = 750;
 MediaControls.PreciseSlider.NO_AUTO_HIDE = 0;
 
 /**
- * @param {function(number):string} func Value formatting function.
+ * @override
  */
 MediaControls.PreciseSlider.prototype.setValueToStringFunction =
     function(func) {
@@ -871,7 +962,7 @@ MediaControls.PreciseSlider.prototype.showSeekMark_ =
 
   if (this.seekMarkTimer_) {
     clearTimeout(this.seekMarkTimer_);
-    this.seekMarkTimer_ = null;
+    this.seekMarkTimer_ = 0;
   }
   if (timeout != MediaControls.PreciseSlider.NO_AUTO_HIDE) {
     this.seekMarkTimer_ = setTimeout(this.hideSeekMark_.bind(this), timeout);
@@ -882,7 +973,7 @@ MediaControls.PreciseSlider.prototype.showSeekMark_ =
  * @private
  */
 MediaControls.PreciseSlider.prototype.hideSeekMark_ = function() {
-  this.seekMarkTimer_ = null;
+  this.seekMarkTimer_ = 0;
   this.seekMark_.classList.remove('visible');
 };
 
@@ -894,13 +985,12 @@ MediaControls.PreciseSlider.prototype.hideSeekMark_ = function() {
 MediaControls.PreciseSlider.prototype.onMouseMove_ = function(e) {
   this.latestSeekRatio_ = this.getProportion(e.clientX);
 
-  var self = this;
-  function showMark() {
-    if (!self.isDragging()) {
-      self.showSeekMark_(self.latestSeekRatio_,
+  var showMark = function() {
+    if (!this.isDragging()) {
+      this.showSeekMark_(this.latestSeekRatio_,
           MediaControls.PreciseSlider.HIDE_AFTER_MOVE_DELAY);
     }
-  }
+  }.bind(this);
 
   if (this.seekMark_.classList.contains('visible')) {
     showMark();
@@ -922,7 +1012,7 @@ MediaControls.PreciseSlider.prototype.onMouseOut_ = function(e) {
   }
   if (this.seekMarkTimer_) {
     clearTimeout(this.seekMarkTimer_);
-    this.seekMarkTimer_ = null;
+    this.seekMarkTimer_ = 0;
   }
   this.hideSeekMark_();
 };
@@ -963,14 +1053,17 @@ MediaControls.PreciseSlider.prototype.onInputDrag_ = function(on) {
 /**
  * Create video controls.
  *
- * @param {HTMLElement} containerElement The container for the controls.
- * @param {function} onMediaError Function to display an error message.
+ * @param {!HTMLElement} containerElement The container for the controls.
+ * @param {function(Event)} onMediaError Function to display an error message.
  * @param {function(string):string} stringFunction Function providing localized
  *     strings.
- * @param {function=} opt_fullScreenToggle Function to toggle fullscreen mode.
+ * @param {function(Event)=} opt_fullScreenToggle Function to toggle fullscreen
+ *     mode.
  * @param {HTMLElement=} opt_stateIconParent The parent for the icon that
  *     gives visual feedback when the playback state changes.
  * @constructor
+ * @struct
+ * @extends {MediaControls}
  */
 function VideoControls(containerElement, onMediaError, stringFunction,
     opt_fullScreenToggle, opt_stateIconParent) {
@@ -1072,10 +1165,7 @@ VideoControls.prototype.showTextBanner_ = function(identifier) {
 };
 
 /**
- * Toggle play/pause state on a mouse click on the play/pause button. Can be
- * called externally.
- *
- * @param {Event} event Mouse click event.
+ * @override
  */
 VideoControls.prototype.onPlayButtonClicked = function(event) {
   if (event.ctrlKey) {
@@ -1214,10 +1304,12 @@ VideoControls.prototype.updateStyle = function() {
 /**
  * Creates audio controls.
  *
- * @param {HTMLElement} container Parent container.
+ * @param {!HTMLElement} container Parent container.
  * @param {function(boolean)} advanceTrack Parameter: true=forward.
- * @param {function} onError Error handler.
+ * @param {function(Event)} onError Error handler.
  * @constructor
+ * @struct
+ * @extends {MediaControls}
  */
 function AudioControls(container, advanceTrack, onError) {
   MediaControls.call(this, container, onError);

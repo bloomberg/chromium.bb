@@ -402,10 +402,10 @@ util.AppCache.getValue = function(key, callback) {
 };
 
 /**
- * Update the cache.
+ * Updates the cache.
  *
  * @param {string} key Key.
- * @param {string} value Value. Remove the key if value is null.
+ * @param {?(string|number)} value Value. Remove the key if value is null.
  * @param {number=} opt_lifetime Maximum time to keep an item (in milliseconds).
  */
 util.AppCache.update = function(key, value, opt_lifetime) {
