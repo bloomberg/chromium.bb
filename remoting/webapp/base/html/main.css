@@ -573,11 +573,6 @@ button {
   color: rgba(0, 0, 0, 0.5);
 }
 
-#daemon-plugin-container {
-  width: 0;
-  height: 0;
-}
-
 .dialog-container {
   position: absolute;
   top: 200px;
@@ -617,11 +612,6 @@ html.apps-v2.scrollable {
   width: 460px;
 }
 */
-
-#host-plugin-container {
-  width: 0;
-  height: 0;
-}
 
 /* The NAT traversal state is independent of the app mode, and both need
  * to be combined to determine the visibility of the butter bar. We use
