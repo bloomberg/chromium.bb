@@ -9,7 +9,18 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
-class DiscardableSharedMemory;
+
+// TODO(reveman): Remove this by having allocator interface return
+// real DiscardableMemory instances. crbug.com/442945
+class BASE_EXPORT DiscardableMemoryShmemChunk {
+ public:
+  virtual ~DiscardableMemoryShmemChunk() {}
+
+  virtual bool Lock() = 0;
+  virtual void Unlock() = 0;
+  virtual void* Memory() const = 0;
+  virtual bool IsMemoryResident() const = 0;
+};
 
 class BASE_EXPORT DiscardableMemoryShmemAllocator {
  public:
@@ -20,8 +31,8 @@ class BASE_EXPORT DiscardableMemoryShmemAllocator {
   // Ownership of |instance| remains with the caller.
   static void SetInstance(DiscardableMemoryShmemAllocator* allocator);
 
-  virtual scoped_ptr<DiscardableSharedMemory>
-  AllocateLockedDiscardableSharedMemory(size_t size) = 0;
+  virtual scoped_ptr<DiscardableMemoryShmemChunk>
+  AllocateLockedDiscardableMemory(size_t size) = 0;
 
  protected:
   virtual ~DiscardableMemoryShmemAllocator() {}

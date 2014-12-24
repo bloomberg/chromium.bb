@@ -33,8 +33,8 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   static HostDiscardableSharedMemoryManager* current();
 
   // Overridden from base::DiscardableMemoryShmemAllocator:
-  scoped_ptr<base::DiscardableSharedMemory>
-  AllocateLockedDiscardableSharedMemory(size_t size) override;
+  scoped_ptr<base::DiscardableMemoryShmemChunk> AllocateLockedDiscardableMemory(
+      size_t size) override;
 
   // This allocates a discardable memory segment for |process_handle|.
   // A valid shared memory handle is returned on success.

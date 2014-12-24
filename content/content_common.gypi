@@ -214,6 +214,8 @@
       'common/device_sensors/device_orientation_hardware_buffer.h',
       'common/device_sensors/device_orientation_messages.h',
       'common/devtools_messages.h',
+      'common/discardable_shared_memory_heap.cc',
+      'common/discardable_shared_memory_heap.h',
       'common/dom_storage/dom_storage_map.cc',
       'common/dom_storage/dom_storage_map.h',
       'common/dom_storage/dom_storage_messages.h',

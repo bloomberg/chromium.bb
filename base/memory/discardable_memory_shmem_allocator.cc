@@ -11,19 +11,39 @@
 namespace base {
 namespace {
 
+class DiscardableMemoryShmemChunkImpl : public DiscardableMemoryShmemChunk {
+ public:
+  explicit DiscardableMemoryShmemChunkImpl(
+      scoped_ptr<DiscardableSharedMemory> shared_memory)
+      : shared_memory_(shared_memory.Pass()) {}
+
+  // Overridden from DiscardableMemoryShmemChunk:
+  bool Lock() override { return shared_memory_->Lock(0, 0); }
+  void Unlock() override { shared_memory_->Unlock(0, 0); }
+  void* Memory() const override { return shared_memory_->memory(); }
+  bool IsMemoryResident() const override {
+    return shared_memory_->IsMemoryResident();
+  }
+
+ private:
+  scoped_ptr<DiscardableSharedMemory> shared_memory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmemChunkImpl);
+};
+
 // Default allocator implementation that allocates in-process
 // DiscardableSharedMemory instances.
 class DiscardableMemoryShmemAllocatorImpl
     : public DiscardableMemoryShmemAllocator {
  public:
   // Overridden from DiscardableMemoryShmemAllocator:
-  scoped_ptr<DiscardableSharedMemory> AllocateLockedDiscardableSharedMemory(
-      size_t size) override {
+  scoped_ptr<DiscardableMemoryShmemChunk>
+  AllocateLockedDiscardableMemory(size_t size) override {
     scoped_ptr<DiscardableSharedMemory> memory(new DiscardableSharedMemory);
     if (!memory->CreateAndMap(size))
-      return scoped_ptr<DiscardableSharedMemory>();
+      return nullptr;
 
-    return memory.Pass();
+    return make_scoped_ptr(new DiscardableMemoryShmemChunkImpl(memory.Pass()));
   }
 };
 

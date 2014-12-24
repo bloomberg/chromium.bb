@@ -7,7 +7,9 @@
 
 #include "base/memory/discardable_memory_shmem_allocator.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/discardable_shared_memory_heap.h"
 
 namespace content {
 
@@ -20,10 +22,20 @@ class ChildDiscardableSharedMemoryManager
   ~ChildDiscardableSharedMemoryManager() override;
 
   // Overridden from base::DiscardableMemoryShmemAllocator:
-  scoped_ptr<base::DiscardableSharedMemory>
-  AllocateLockedDiscardableSharedMemory(size_t size) override;
+  scoped_ptr<base::DiscardableMemoryShmemChunk> AllocateLockedDiscardableMemory(
+      size_t size) override;
+
+  bool LockSpan(DiscardableSharedMemoryHeap::Span* span);
+  void UnlockSpan(DiscardableSharedMemoryHeap::Span* span);
+  bool IsSpanResident(DiscardableSharedMemoryHeap::Span* span) const;
+  void ReleaseSpan(scoped_ptr<DiscardableSharedMemoryHeap::Span> span);
 
  private:
+  scoped_ptr<base::DiscardableSharedMemory>
+  AllocateLockedDiscardableSharedMemory(size_t size);
+
+  mutable base::Lock lock_;
+  DiscardableSharedMemoryHeap heap_;
   scoped_refptr<ThreadSafeSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildDiscardableSharedMemoryManager);

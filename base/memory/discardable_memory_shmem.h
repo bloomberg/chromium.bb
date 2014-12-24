@@ -10,7 +10,7 @@
 #include "base/memory/discardable_memory_manager.h"
 
 namespace base {
-class DiscardableSharedMemory;
+class DiscardableMemoryShmemChunk;
 
 namespace internal {
 
@@ -40,7 +40,7 @@ class DiscardableMemoryShmem
 
  private:
   const size_t bytes_;
-  scoped_ptr<DiscardableSharedMemory> shared_memory_;
+  scoped_ptr<DiscardableMemoryShmemChunk> chunk_;
   bool is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmem);

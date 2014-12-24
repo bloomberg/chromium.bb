@@ -52,13 +52,13 @@ HostDiscardableSharedMemoryManager::current() {
   return g_discardable_shared_memory_manager.Pointer();
 }
 
-scoped_ptr<base::DiscardableSharedMemory>
-HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
+scoped_ptr<base::DiscardableMemoryShmemChunk>
+HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
   // TODO(reveman): Need to implement this for discardable memory support in
   // the browser process.
   NOTIMPLEMENTED();
-  return scoped_ptr<base::DiscardableSharedMemory>();
+  return nullptr;
 }
 
 void HostDiscardableSharedMemoryManager::

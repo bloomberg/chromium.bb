@@ -88,33 +88,31 @@ void DiscardableMemoryShmem::Unlock() {
 
 void* DiscardableMemoryShmem::Memory() const {
   DCHECK(is_locked_);
-  DCHECK(shared_memory_);
-  return shared_memory_->memory();
+  DCHECK(chunk_);
+  return chunk_->Memory();
 }
 
 bool DiscardableMemoryShmem::AllocateAndAcquireLock() {
-  if (shared_memory_ && shared_memory_->Lock(0, 0))
+  if (chunk_ && chunk_->Lock())
     return true;
 
-  // TODO(reveman): Allocate fixed size memory segments and use a free list to
-  // improve performance and limit the number of file descriptors used.
-  shared_memory_ = DiscardableMemoryShmemAllocator::GetInstance()
-                       ->AllocateLockedDiscardableSharedMemory(bytes_);
-  DCHECK(shared_memory_);
+  chunk_ = DiscardableMemoryShmemAllocator::GetInstance()
+               ->AllocateLockedDiscardableMemory(bytes_);
+  DCHECK(chunk_);
   return false;
 }
 
 void DiscardableMemoryShmem::ReleaseLock() {
-  shared_memory_->Unlock(0, 0);
+  chunk_->Unlock();
 }
 
 void DiscardableMemoryShmem::Purge() {
-  shared_memory_->Purge(Time());
-  shared_memory_.reset();
+  DCHECK(!is_locked_);
+  chunk_.reset();
 }
 
 bool DiscardableMemoryShmem::IsMemoryResident() const {
-  return shared_memory_->IsMemoryResident();
+  return chunk_->IsMemoryResident();
 }
 
 }  // namespace internal
