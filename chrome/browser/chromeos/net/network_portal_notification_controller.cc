@@ -15,8 +15,11 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -101,8 +104,18 @@ void NetworkPortalNotificationControllerDelegate::Click() {
       NetworkPortalNotificationController::USER_ACTION_METRIC_CLICKED,
       NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
 
+  // ConsumerManagementService may not exist in tests.
+  const policy::ConsumerManagementService* consumer_management_service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetConsumerManagementService();
+  const bool enrolled = consumer_management_service &&
+                        consumer_management_service->GetStatus() ==
+                            policy::ConsumerManagementService::STATUS_ENROLLED;
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableCaptivePortalBypassProxy)) {
+          chromeos::switches::kEnableCaptivePortalBypassProxy) &&
+      !enrolled) {
     if (controller_)
       controller_->ShowDialog();
   } else {
