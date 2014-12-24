@@ -40,6 +40,7 @@
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
+#include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBCursor.h"
@@ -57,7 +58,7 @@ class IDBRequest
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBRequest>);
     DEFINE_WRAPPERTYPEINFO();
-    USING_PRE_FINALIZER(IDBRequest, dispose);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
@@ -81,6 +82,20 @@ public:
         PENDING = 1,
         DONE = 2,
         EarlyDeath = 3
+    };
+
+    class IDBBlobHolder {
+        WTF_MAKE_NONCOPYABLE(IDBBlobHolder);
+    public:
+        explicit IDBBlobHolder(PassOwnPtr<Vector<WebBlobInfo>>);
+        virtual ~IDBBlobHolder() { }
+
+        const Vector<WebBlobInfo>* getInfo() const { return m_blobInfo.get(); }
+        Vector<String> getUUIDs() const;
+
+    private:
+        OwnPtr<Vector<WebBlobInfo>> m_blobInfo;
+        OwnPtr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
     };
 
     const String& readyState() const;
@@ -140,10 +155,8 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    void dispose();
     void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> >);
     void setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>>);
-    void handleBlobAcks();
 
     RefPtr<ScriptState> m_scriptState;
     Member<IDBAny> m_source;
@@ -162,7 +175,7 @@ private:
     Member<IDBKey> m_cursorKey;
     Member<IDBKey> m_cursorPrimaryKey;
     RefPtr<SharedBuffer> m_cursorValue;
-    OwnPtr<Vector<WebBlobInfo> > m_blobInfo;
+    OwnPtr<IDBBlobHolder> m_blobs;
 
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;

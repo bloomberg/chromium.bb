@@ -43,11 +43,9 @@ class IDBAny;
 class IDBTransaction;
 class ScriptState;
 class SharedBuffer;
-class WebBlobInfo;
 
 class IDBCursor : public GarbageCollectedFinalized<IDBCursor>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    USING_PRE_FINALIZER(IDBCursor, dispose);
 public:
     static WebIDBCursorDirection stringToDirection(const String& modeString, ExceptionState&);
 
@@ -77,7 +75,7 @@ public:
     void postSuccessHandlerCallback();
     bool isDeleted() const;
     void close();
-    void setValueReady(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> >);
+    void setValueReady(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<IDBRequest::IDBBlobHolder>);
     IDBKey* idbPrimaryKey() const { return m_primaryKey; }
     IDBRequest* request() const { return m_request.get(); }
     virtual bool isKeyCursor() const { return true; }
@@ -87,9 +85,7 @@ protected:
     IDBCursor(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
-    void dispose();
     IDBObjectStore* effectiveObjectStore() const;
-    void handleBlobAcks();
 
     OwnPtr<WebIDBCursor> m_backend;
     Member<IDBRequest> m_request;
@@ -103,7 +99,7 @@ private:
     Member<IDBKey> m_key;
     Member<IDBKey> m_primaryKey;
     RefPtr<SharedBuffer> m_value;
-    OwnPtr<Vector<WebBlobInfo> > m_blobInfo;
+    OwnPtr<IDBRequest::IDBBlobHolder> m_blobs;
 };
 
 } // namespace blink

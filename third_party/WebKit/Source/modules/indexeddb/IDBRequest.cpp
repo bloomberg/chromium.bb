@@ -77,12 +77,6 @@ IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction*
 IDBRequest::~IDBRequest()
 {
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
-    ASSERT(!m_blobInfo || m_blobInfo->size() == 0);
-}
-
-void IDBRequest::dispose()
-{
-    handleBlobAcks();
 }
 
 void IDBRequest::trace(Visitor* visitor)
@@ -110,7 +104,6 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
         return ScriptValue();
     m_resultDirty = false;
     ScriptValue value = idbAnyToScriptValue(m_scriptState.get(), m_result);
-    handleBlobAcks();
     return value;
 }
 
@@ -211,19 +204,7 @@ void IDBRequest::setResultCursor(IDBCursor* cursor, IDBKey* key, IDBKey* primary
 
 void IDBRequest::setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
 {
-    ASSERT(!m_blobInfo);
-    m_blobInfo = blobInfo;
-    if (m_blobInfo && m_blobInfo->size() > 0)
-        ThreadState::current()->registerPreFinalizer(*this);
-}
-
-void IDBRequest::handleBlobAcks()
-{
-    if (m_blobInfo.get() && m_blobInfo->size()) {
-        m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
-        m_blobInfo.clear();
-        ThreadState::current()->unregisterPreFinalizer(*this);
-    }
+    m_blobs = adoptPtr(new IDBBlobHolder(blobInfo));
 }
 
 bool IDBRequest::shouldEnqueueEvent() const
@@ -310,7 +291,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassOwnPtr<Vect
     }
 
     setBlobInfo(blobInfo);
-    onSuccessInternal(IDBAny::create(valueBuffer, m_blobInfo.get()));
+    onSuccessInternal(IDBAny::create(valueBuffer, m_blobs->getInfo()));
 }
 
 #if ENABLE(ASSERT)
@@ -339,10 +320,10 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<V
     setBlobInfo(blobInfo);
 
 #if ENABLE(ASSERT)
-    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, m_blobInfo.get(), primaryKey, keyPath);
+    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, m_blobs->getInfo(), primaryKey, keyPath);
 #endif
 
-    onSuccessInternal(IDBAny::create(valueBuffer, m_blobInfo.get(), primaryKey, keyPath));
+    onSuccessInternal(IDBAny::create(valueBuffer, m_blobs->getInfo(), primaryKey, keyPath));
 }
 
 void IDBRequest::onSuccess(int64_t value)
@@ -458,11 +439,8 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     IDBCursor* cursorToNotify = 0;
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
-        if (cursorToNotify) {
-            if (m_blobInfo && m_blobInfo->size() > 0)
-                ThreadState::current()->unregisterPreFinalizer(*this);
-            cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release(), m_blobInfo.release());
-        }
+        if (cursorToNotify)
+            cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release(), m_blobs.release());
     }
 
     if (event->type() == EventTypeNames::upgradeneeded) {
@@ -554,6 +532,25 @@ void IDBRequest::dequeueEvent(Event* event)
         if (m_enqueuedEvents[i].get() == event)
             m_enqueuedEvents.remove(i);
     }
+}
+
+IDBRequest::IDBBlobHolder::IDBBlobHolder(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+    : m_blobInfo(blobInfo)
+{
+    if (!m_blobInfo->isEmpty()) {
+        m_blobData = adoptPtr(new Vector<RefPtr<BlobDataHandle>>());
+        for (const auto& info : *m_blobInfo.get())
+            m_blobData->append(BlobDataHandle::create(info.uuid(), info.type(), info.size()));
+    }
+}
+
+Vector<String> IDBRequest::IDBBlobHolder::getUUIDs() const
+{
+    Vector<String> uuids;
+    uuids.reserveCapacity(m_blobInfo->size());
+    for (const auto& info : *m_blobInfo)
+        uuids.append(info.uuid());
+    return uuids;
 }
 
 } // namespace blink

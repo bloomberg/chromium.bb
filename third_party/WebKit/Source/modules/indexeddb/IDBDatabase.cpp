@@ -110,16 +110,10 @@ int64_t IDBDatabase::nextTransactionId()
     return atomicIncrement(&currentTransactionId);
 }
 
-void IDBDatabase::ackReceivedBlobs(const Vector<WebBlobInfo>* blobInfo)
+void IDBDatabase::ackReceivedBlobs(const Vector<String>& uuids)
 {
-    ASSERT(blobInfo);
-    if (!blobInfo->size() || !m_backend)
+    if (!m_backend)
         return;
-    Vector<WebBlobInfo>::const_iterator iter;
-    Vector<String> uuids;
-    uuids.reserveCapacity(blobInfo->size());
-    for (iter = blobInfo->begin(); iter != blobInfo->end(); ++iter)
-        uuids.append(iter->uuid());
     m_backend->ackReceivedBlobs(uuids);
 }
 
