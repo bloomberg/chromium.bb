@@ -451,18 +451,20 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Updates a PrefixStore store for URLs (|url_store|) which is backed on disk
   // by a "|db_filename| Prefix Set" file. Specific failure types are provided
   // to highlight the specific store who made the initial request on failure.
+  // |store_full_hashes_in_prefix_set| dictates whether full_hashes from the
+  // |url_store| should be cached in the |prefix_set| as well.
   void UpdatePrefixSetUrlStore(
       const base::FilePath& db_filename,
       SafeBrowsingStore* url_store,
       scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
       FailureType finish_failure_type,
-      FailureType write_failure_type);
+      FailureType write_failure_type,
+      bool store_full_hashes_in_prefix_set);
 
   void UpdateUrlStore(SafeBrowsingStore* url_store,
                       scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
                       FailureType failure_type);
 
-  void UpdateSideEffectFreeWhitelistStore();
   void UpdateWhitelistStore(const base::FilePath& store_filename,
                             SafeBrowsingStore* store,
                             SBWhitelist* whitelist);

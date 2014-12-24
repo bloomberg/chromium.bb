@@ -29898,12 +29898,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.DatabaseKilobytes" units="KB">
-  <obsolete>
-    Replaced by SB2.BrowseDatabaseKilobytes.
-  </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
-    The size of the SafeBrowsing database file on disk in kilobytes.
+    The size of one of the browsing SafeBrowsing database file on disk in
+    kilobytes, after an update has occurred.
   </summary>
 </histogram>
 
@@ -30349,12 +30347,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.PrefixSetKilobytes" units="KB">
   <owner>shess@chromium.org</owner>
-  <summary>The size of the PrefixSet file in kilobytes.</summary>
+  <summary>The size of one of the PrefixSet files in kilobytes.</summary>
 </histogram>
 
 <histogram name="SB2.PrefixSetLoad" units="ms">
   <owner>shess@chromium.org</owner>
-  <summary>Time to load the PrefixSet file.</summary>
+  <summary>Time to load one of the PrefixSet files.</summary>
 </histogram>
 
 <histogram name="SB2.PrefixSetRestoredExcess">
@@ -30422,12 +30420,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.PrefixSetVersionRead">
   <owner>shess@chromium.org</owner>
-  <summary>Version read from the PrefixSet file.</summary>
+  <summary>Version read from one of the PrefixSet files.</summary>
 </histogram>
 
 <histogram name="SB2.PrefixSetWrite" units="ms">
   <owner>shess@chromium.org</owner>
-  <summary>Time to store the PrefixSet file.</summary>
+  <summary>Time to store one of the PrefixSet files.</summary>
 </histogram>
 
 <histogram name="SB2.ReportingIsEnabled" enum="BooleanEnabled">
@@ -30461,7 +30459,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SB2.SideEffectFreePrefixSetWrite" units="ms">
+  <obsolete>
+    Deprecated 12/2014. Merged into SB2.PrefixSetWrite.
+  </obsolete>
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Time to store the Side Effect Free Whitelist PrefixSet file. Note: this
+    histogram was intended to be stored as
+    SB2.SideEffectFreeWhitelistPrefixSetWrite but was actually reported as
+    SB2.SideEffectFreePrefixSetWrite from its inception to its deprecation...
+  </summary>
+</histogram>
+
 <histogram name="SB2.SideEffectFreeWhitelistDatabaseKilobytes" units="KB">
+  <obsolete>
+    Deprecated 12/2014. Merged into SB2.DatabaseKilobytes.
+  </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>
     The size of the Side Effect Free Whitelist SaafeBrowsing database file on
@@ -30470,6 +30484,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.SideEffectFreeWhitelistPrefixSetKilobytes" units="KB">
+  <obsolete>
+    Deprecated 12/2014. Merged into SB2.PrefixSetKilobytes.
+  </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>
     The size of the Side Effect Free Whitelist PrefixSet file in kilobytes,
@@ -30478,15 +30495,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.SideEffectFreeWhitelistPrefixSetLoad" units="ms">
+  <obsolete>
+    Deprecated 12/2014. Merged into SB2.PrefixSetLoad.
+  </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>Time to load the Side Effect Free Whitelist PrefixSet file.</summary>
-</histogram>
-
-<histogram name="SB2.SideEffectFreeWhitelistPrefixSetWrite" units="ms">
-  <owner>shess@chromium.org</owner>
-  <summary>
-    Time to store the Side Effect Free Whitelist PrefixSet file.
-  </summary>
 </histogram>
 
 <histogram name="SB2.SideEffectFreeWhitelistStatus"
