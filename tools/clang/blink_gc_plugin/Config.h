@@ -18,11 +18,13 @@
 const char kNewOperatorName[] = "operator new";
 const char kCreateName[] = "create";
 const char kTraceName[] = "trace";
+const char kTraceImplName[] = "traceImpl";
 const char kFinalizeName[] = "finalizeGarbageCollectedObject";
 const char kTraceAfterDispatchName[] = "traceAfterDispatch";
 const char kRegisterWeakMembersName[] = "registerWeakMembers";
 const char kHeapAllocatorName[] = "HeapAllocator";
 const char kTraceIfNeededName[] = "TraceIfNeeded";
+const char kVisitorDispatcherName[] = "VisitorDispatcher";
 
 class Config {
  public:
@@ -163,16 +165,7 @@ class Config {
     return name == "Visitor" || name == "VisitorHelper";
   }
 
-  static bool IsTraceMethod(clang::FunctionDecl* method,
-                            bool* isTraceAfterDispatch = 0) {
-    if (method->getNumParams() != 1)
-      return false;
-
-    const std::string& name = method->getNameAsString();
-    if (name != kTraceName && name != kTraceAfterDispatchName)
-      return false;
-
-    const clang::QualType& formal_type = method->getParamDecl(0)->getType();
+  static bool IsVisitorPtrType(const clang::QualType& formal_type) {
     if (!formal_type->isPointerType())
       return false;
 
@@ -184,8 +177,50 @@ class Config {
     if (!IsVisitor(pointee_type->getName()))
       return false;
 
+    return true;
+  }
+
+  static bool IsVisitorDispatcherType(const clang::QualType& formal_type) {
+    if (const clang::SubstTemplateTypeParmType* subst_type =
+            clang::dyn_cast<clang::SubstTemplateTypeParmType>(
+                formal_type.getTypePtr())) {
+      if (IsVisitorPtrType(subst_type->getReplacementType())) {
+        // VisitorDispatcher template parameter substituted to Visitor*.
+        return true;
+      }
+    } else if (const clang::TemplateTypeParmType* parm_type =
+                   clang::dyn_cast<clang::TemplateTypeParmType>(
+                       formal_type.getTypePtr())) {
+      if (parm_type->getDecl()->getName() == kVisitorDispatcherName) {
+        // Unresolved, but its parameter name is VisitorDispatcher.
+        return false;
+      }
+    }
+
+    return IsVisitorPtrType(formal_type);
+  }
+
+  static bool IsTraceMethod(clang::FunctionDecl* method,
+                            bool* isTraceAfterDispatch = 0) {
+    if (method->getNumParams() != 1)
+      return false;
+
+    const std::string& name = method->getNameAsString();
+    if (name != kTraceName && name != kTraceAfterDispatchName &&
+        name != kTraceImplName)
+      return false;
+
+    const clang::QualType& formal_type = method->getParamDecl(0)->getType();
+    if (name == kTraceImplName) {
+      if (!IsVisitorDispatcherType(formal_type))
+        return false;
+    } else if (!IsVisitorPtrType(formal_type)) {
+      return false;
+    }
+
     if (isTraceAfterDispatch)
       *isTraceAfterDispatch = (name == kTraceAfterDispatchName);
+
     return true;
   }
 
