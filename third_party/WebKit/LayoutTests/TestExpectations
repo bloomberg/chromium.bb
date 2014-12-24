@@ -1347,6 +1347,7 @@ crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Crash ]
+crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Pass Crash ]
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
 

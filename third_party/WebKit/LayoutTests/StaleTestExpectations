@@ -26,7 +26,6 @@ crbug.com/418091 [ Mavericks ] editing/inserting/edited-whitespace-1.html [ Imag
 crbug.com/418091 [ SnowLeopard Debug ] media/track/track-cue-rendering-rtl.html [ Pass Crash ]
 crbug.com/418091 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-neutral-run.html [ Pass Crash Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ Pass Crash ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/atsui-bidi-control.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ Pass Failure ]
