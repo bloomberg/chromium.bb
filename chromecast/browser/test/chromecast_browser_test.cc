@@ -71,7 +71,9 @@ content::WebContents* ChromecastBrowserTest::CreateBrowser() {
   window_.reset(new CastContentWindow);
   gfx::Size initial_size(1280, 720);
 
-  web_contents_ = window_->CreateWebContents(initial_size, browser_context());
+  web_contents_ = window_->CreateWebContents(
+      initial_size,
+      CastBrowserProcess::GetInstance()->browser_context());
   window_->CreateWindowTree(initial_size, web_contents_.get());
   return web_contents_.get();
 }
