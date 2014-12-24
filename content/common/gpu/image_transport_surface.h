@@ -200,6 +200,7 @@ class PassThroughImageTransportSurface
   // If updated vsync parameters can be determined, send this information to
   // the browser.
   virtual void SendVSyncUpdateIfAvailable();
+  void SwapBuffersCallBack();
 
   ImageTransportHelper* GetHelper() { return helper_.get(); }
 
@@ -207,6 +208,7 @@ class PassThroughImageTransportSurface
   scoped_ptr<ImageTransportHelper> helper_;
   bool did_set_swap_interval_;
   std::vector<ui::LatencyInfo> latency_info_;
+  base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

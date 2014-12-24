@@ -188,7 +188,8 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuCommandBufferStub* stub,
     gfx::GLSurface* surface)
     : GLSurfaceAdapter(surface),
-      did_set_swap_interval_(false) {
+      did_set_swap_interval_(false),
+      weak_ptr_factory_(this) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -214,21 +215,28 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
-  bool result = gfx::GLSurfaceAdapter::SwapBuffers();
-  for (size_t i = 0; i < latency_info_.size(); i++) {
-    latency_info_[i].AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-  }
-
-  helper_->SwapBuffersCompleted(latency_info_);
-  latency_info_.clear();
-  return result;
+  // We use WeakPtr here to avoid manual management of life time of an instance
+  // of this class. Callback will not be called once the instance of this class
+  // is destroyed. However, this also means that the callback can be run on
+  // the calling thread only.
+  return gfx::GLSurfaceAdapter::SwapBuffersAsync(
+      base::Bind(&PassThroughImageTransportSurface::SwapBuffersCallBack,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   SendVSyncUpdateIfAvailable();
-  bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
+  // We use WeakPtr here to avoid manual management of life time of an instance
+  // of this class. Callback will not be called once the instance of this class
+  // is destroyed. However, this also means that the callback can be run on
+  // the calling thread only.
+  return gfx::GLSurfaceAdapter::PostSubBufferAsync(x, y, width, height,
+      base::Bind(&PassThroughImageTransportSurface::SwapBuffersCallBack,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PassThroughImageTransportSurface::SwapBuffersCallBack() {
   for (size_t i = 0; i < latency_info_.size(); i++) {
     latency_info_[i].AddLatencyNumber(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
@@ -236,7 +244,6 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
 
   helper_->SwapBuffersCompleted(latency_info_);
   latency_info_.clear();
-  return result;
 }
 
 bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
