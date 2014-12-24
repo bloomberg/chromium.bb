@@ -107,10 +107,8 @@ void AudioPipeReader::OnDirectoryChanged(const base::FilePath& path,
 void AudioPipeReader::TryOpenPipe() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  base::File new_pipe;
-  new_pipe.Initialize(
-      pipe_path_,
-      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC);
+  base::File new_pipe(
+      HANDLE_EINTR(open(pipe_path_.value().c_str(), O_RDONLY | O_NONBLOCK)));
 
   // If both |pipe_| and |new_pipe| are valid then compare inodes for the two
   // file descriptors. Don't need to do anything if inode hasn't changed.
@@ -130,13 +128,6 @@ void AudioPipeReader::TryOpenPipe() {
   pipe_ = new_pipe.Pass();
 
   if (pipe_.IsValid()) {
-    // Set O_NONBLOCK flag.
-    if (HANDLE_EINTR(fcntl(pipe_.GetPlatformFile(), F_SETFL, O_NONBLOCK)) < 0) {
-      PLOG(ERROR) << "fcntl";
-      pipe_.Close();
-      return;
-    }
-
     // Set buffer size for the pipe.
     if (HANDLE_EINTR(fcntl(
             pipe_.GetPlatformFile(), F_SETPIPE_SZ, kPipeBufferSizeBytes)) < 0) {
