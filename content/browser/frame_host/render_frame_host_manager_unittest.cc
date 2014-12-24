@@ -1844,7 +1844,7 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
 #if 0
   // TODO(nick): Currently a proxy to the removed frame lingers in the parent.
   // Enable this assert below once the proxies to the subframe are correctly
-  // cleaned up after detach.
+  // cleaned up after detach. http://crbug.com/444955.
   ASSERT_TRUE(site_instance->HasOneRef())
       << "This SiteInstance should be destroyable now.";
 #endif
