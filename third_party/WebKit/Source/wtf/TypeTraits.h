@@ -303,6 +303,7 @@ namespace WTF {
 namespace blink {
 
 class JSONValue;
+class Visitor;
 
 } // namespace blink
 
@@ -324,17 +325,25 @@ class NeedsTracing {
         char padding[8];
     } NoType;
 #if COMPILER(MSVC)
-    template<typename V> static YesType checkHasTraceMethod(char[&V::trace != 0]);
+public:
+    __if_exists(T::trace)
+    {
+        static const bool value = true;
+    }
+    __if_not_exists(T::trace)
+    {
+        static const bool value = false;
+    }
 #else
     template<size_t> struct HasMethod;
-    template<typename V> static YesType checkHasTraceMethod(HasMethod<sizeof(&V::trace)>*);
-#endif // COMPILER(MSVC)
+    template<typename V> static YesType checkHasTraceMethod(HasMethod<sizeof(static_cast<void (V::*)(blink::Visitor*)>(&V::trace))>*);
     template<typename V> static NoType checkHasTraceMethod(...);
 public:
     // We add sizeof(T) to both sides here, because we want it to fail for
     // incomplete types. Otherwise it just assumes that incomplete types do not
     // have a trace method, which may not be true.
-    static const bool value = sizeof(YesType) + sizeof(T) == sizeof(checkHasTraceMethod<T>(0)) + sizeof(T);
+    static const bool value = sizeof(YesType) + sizeof(T) == sizeof(checkHasTraceMethod<T>(nullptr)) + sizeof(T);
+#endif // COMPILER(MSVC)
 };
 
 // Convenience template wrapping the NeedsTracingLazily template in
