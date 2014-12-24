@@ -1,7 +1,10 @@
-var global = this;
-if (global.importScripts) {
-    // Worker case
-    importScripts('/resources/testharness.js');
+if ('ServiceWorkerGlobalScope' in self &&
+    self instanceof ServiceWorkerGlobalScope) {
+  // ServiceWorker case
+  importScripts('/serviceworker/resources/worker-testharness.js');
+} else if (self.importScripts) {
+  // Other workers cases
+  importScripts('/resources/testharness.js');
 }
 
 test(function(test) {
@@ -19,7 +22,4 @@ test(function(test) {
     assert_equals(headers.constructor, Headers);
 }, 'Create headers');
 
-if (global.importScripts) {
-    // Worker case
-    done();
-}
+done();

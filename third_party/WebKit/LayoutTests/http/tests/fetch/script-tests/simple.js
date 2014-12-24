@@ -1,5 +1,9 @@
-var global = this;
-if (global.importScripts) {
+if ('ServiceWorkerGlobalScope' in self &&
+    self instanceof ServiceWorkerGlobalScope) {
+  // ServiceWorker case
+  importScripts('/serviceworker/resources/worker-testharness.js');
+} else if (self.importScripts) {
+  // Other workers cases
   importScripts('/resources/testharness.js');
 }
 
