@@ -78,7 +78,7 @@ public:
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     {% endif %}
     {% if interface_name == 'Window' %}
-    static v8::Handle<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*);
+    static v8::Local<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*);
     {% endif %}
     {% for method in methods %}
     {% if method.is_custom %}
