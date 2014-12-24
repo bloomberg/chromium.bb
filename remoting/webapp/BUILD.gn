@@ -68,7 +68,6 @@ action("html") {
     "client_session.js",
     "clipboard.js",
     "hangout_session.js",
-    "media_source_renderer.js",
     "session_connector.js",
     "smart_reconnector.js",
     "video_frame_recorder.js",

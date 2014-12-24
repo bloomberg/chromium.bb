@@ -134,7 +134,7 @@ remoting.Application.prototype.getSessionConnector = function() {
   // TODO(garykac): Check if this can be initialized in the ctor.
   if (!this.session_connector_) {
     this.session_connector_ = remoting.SessionConnector.factory.createConnector(
-        document.getElementById('video-container'),
+        document.getElementById('client-container'),
         this.onConnected.bind(this),
         this.onError.bind(this),
         this.onExtensionMessage.bind(this),

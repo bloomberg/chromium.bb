@@ -706,38 +706,6 @@ body:not(.connected) #session-mode {
   height: auto;
 }
 
-/* video-container needs relative position so that mediasource-video-output can
- * be positioned relative to the parent with position:absolute. */
-#video-container {
-  position: relative;
-}
-
-/* mediasource-video-output is hidden by default. */
-#video-container video {
-  display: none;
-}
-
-/* Use absolute positioning for mediasource-video-output so that it's rendered
- * at the same position as the plugin. */
-#video-container.mediasource-rendering video {
-  display: block;
-  position: absolute;
-  left: 0;
-  top: 0;
-  box-shadow: 0 0 8px 0 black;
-}
-
-/*
- * With MediaSource-based rendering the plugin is transparent and is placed on
- * top of the <video> element so that it can still receive mouse events.
- *
- * TODO(sergeyu): This is temporary solution. Ideally mouse and keyboard events
- * should be captured on JS level and passed to the plugin.
- */
-#video-container.mediasource-rendering .client-plugin-container {
-  opacity: 0;
-}
-
 .mouse-cursor-overlay {
   position: absolute;
   pointer-events: none;

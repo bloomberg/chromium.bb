@@ -50,7 +50,6 @@
       'webapp/crd/js/client_session.js',
       'webapp/crd/js/clipboard.js',
       'webapp/crd/js/hangout_session.js',
-      'webapp/crd/js/media_source_renderer.js',
       'webapp/crd/js/session_connector.js',
       'webapp/crd/js/session_connector_impl.js',
       'webapp/crd/js/smart_reconnector.js',

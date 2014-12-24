@@ -97,9 +97,6 @@ remoting.MockClientPlugin.prototype.hasFeature = function(feature) {
   return false;
 };
 
-remoting.MockClientPlugin.prototype.enableMediaSourceRendering =
-    function(mediaSourceRenderer) {};
-
 remoting.MockClientPlugin.prototype.sendClipboardItem =
     function(mimeType, item) {};
 

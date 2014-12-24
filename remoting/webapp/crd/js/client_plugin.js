@@ -112,14 +112,6 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
 remoting.ClientPlugin.prototype.hasFeature = function(feature) {};
 
 /**
- * Enable MediaSource rendering via the specified renderer.
- *
- * @param {remoting.MediaSourceRenderer} mediaSourceRenderer
- */
-remoting.ClientPlugin.prototype.enableMediaSourceRendering =
-    function(mediaSourceRenderer) {};
-
-/**
  * Sends a clipboard item to the host.
  *
  * @param {string} mimeType The MIME type of the clipboard item.
@@ -303,7 +295,6 @@ remoting.ClientPlugin.Feature = {
   PINLESS_AUTH: 'pinlessAuth',
   ALLOW_MOUSE_LOCK: 'allowMouseLock',
   EXTENSION_MESSAGE: 'extensionMessage',
-  MEDIA_SOURCE_RENDERING: 'mediaSourceRendering',
   VIDEO_CONTROL: 'videoControl'
 };
 

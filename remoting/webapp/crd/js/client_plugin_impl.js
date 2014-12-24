@@ -120,12 +120,6 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   this.onCastExtensionHandler_ = function(data) {};
 
   /**
-   * @type {remoting.MediaSourceRenderer}
-   * @private
-   */
-  this.mediaSourceRenderer_ = null;
-
-  /**
    * @type {number}
    * @private
    */
@@ -508,27 +502,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
         this.onExtensionMessage_(extMsgType, extMsgData);
         break;
     }
-
-  } else if (message.method == 'mediaSourceReset') {
-    if (!this.mediaSourceRenderer_) {
-      console.error('Unexpected mediaSourceReset.');
-      return;
-    }
-    this.mediaSourceRenderer_.reset(getStringAttr(message.data, 'format'))
-
-  } else if (message.method == 'mediaSourceData') {
-    if (!(message.data['buffer'] instanceof ArrayBuffer)) {
-      console.error('Invalid mediaSourceData message:', message.data);
-      return;
-    }
-    if (!this.mediaSourceRenderer_) {
-      console.error('Unexpected mediaSourceData.');
-      return;
-    }
-    // keyframe flag may be absent from the message.
-    var keyframe = !!message.data['keyframe'];
-    this.mediaSourceRenderer_.onIncomingData(
-        (/** @type {ArrayBuffer} */ message.data['buffer']), keyframe);
 
   } else if (message.method == 'unsetCursorShape') {
     this.updateMouseCursorImage_('', 0, 0);
@@ -915,21 +888,6 @@ remoting.ClientPluginImpl.prototype.sendClientMessage =
       { method: 'extensionMessage',
         data: { type: type, data: message } }));
 
-};
-
-/**
- * Request MediaStream-based rendering.
- *
- * @param {remoting.MediaSourceRenderer} mediaSourceRenderer
- */
-remoting.ClientPluginImpl.prototype.enableMediaSourceRendering =
-    function(mediaSourceRenderer) {
-  if (!this.hasFeature(remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
-    return;
-  }
-  this.mediaSourceRenderer_ = mediaSourceRenderer;
-  this.plugin_.postMessage(JSON.stringify(
-      { method: 'enableMediaSourceRendering', data: {} }));
 };
 
 remoting.ClientPluginImpl.prototype.getDesktopWidth = function() {
