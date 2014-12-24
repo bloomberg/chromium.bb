@@ -315,4 +315,8 @@ input {
   /* Should be 0, but that breaks scrolling -- see crbug.com/292715. */
   bottom: -1px;
 }
+
+#results-header:empty {
+  display: none;
+}
 </if> /* is_ios */
