@@ -94,6 +94,7 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
  *
  * @param {Array.<Entry>} entries List of file entries.
  * @param {Array.<string>=} opt_mimeTypes Mime-type specified for each entries.
+ * @return {!Promise} Promise to be fulfilled when the initialization completes.
  */
 FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   this.entries_ = entries;
@@ -232,16 +233,6 @@ FileTasks.isInternalTask_ = function(taskId) {
 FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
   var id = chrome.runtime.id;
-  var isOnDrive = false;
-  var fm = this.fileManager_;
-  for (var index = 0; index < this.entries_.length; ++index) {
-    var locationInfo = fm.volumeManager.getLocationInfo(this.entries_[index]);
-    if (locationInfo && locationInfo.isDriveBased) {
-      isOnDrive = true;
-      break;
-    }
-  }
-
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
     var taskParts = task.taskId.split('|');

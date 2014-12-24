@@ -348,7 +348,7 @@ TaskController.prototype.doEntryAction = function(entry) {
     this.metadataCache_.get([entry], 'external', function(props) {
       var tasks = this.createTask_();
       tasks.init([entry], [props[0].contentMimeType || '']);
-      tasks.executeDefault_();
+      tasks.executeDefault();
     }.bind(this));
   } else {
     var selection = this.selectionHandler_.selection;

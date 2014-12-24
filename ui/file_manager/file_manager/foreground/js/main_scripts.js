@@ -87,6 +87,7 @@
 //<include src="app_state_controller.js">
 //<include src="cws_container_client.js">
 //<include src="dialog_action_controller.js">
+//<include src="dialog_type.js">
 //<include src="directory_contents.js">
 //<include src="directory_model.js">
 //<include src="file_manager.js">

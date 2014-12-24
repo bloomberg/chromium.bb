@@ -25,6 +25,17 @@ MockMetadataCache.prototype.getLatest = function(entries, type, callback) {
 };
 
 /**
+ * @param {!Array<!Entry>} entries
+ * @param {string} type
+ * @param {function(!Array<!Object>)} callback
+ */
+MockMetadataCache.prototype.get = function(entries, type, callback) {
+  return Promise.resolve(entries.map(function(entry) {
+    return this.getOne_(entry, type);
+  }.bind(this))).then(callback);
+};
+
+/**
  * Fetches metadata for one entry.
  * @param {Entry} entry The entry.
  * @param {string} type The metadata type.
@@ -33,8 +44,8 @@ MockMetadataCache.prototype.getLatest = function(entries, type, callback) {
  * @private
  */
 MockMetadataCache.prototype.getOne_ = function(entry, type) {
-  if (this.metadata_[entry] && this.metadata_[entry][type])
-    return this.metadata_[entry][type];
+  if (this.metadata_[entry.toURL()] && this.metadata_[entry.toURL()][type])
+    return this.metadata_[entry.toURL()][type];
   else
     return null;
 };
@@ -46,5 +57,7 @@ MockMetadataCache.prototype.getOne_ = function(entry, type) {
  * @param {Object} value The metadata for the entry and the type.
  */
 MockMetadataCache.prototype.setForTest = function(entry, type, value) {
-  this.metadata_[entry][type] = value;
+  if (!this.metadata_[entry.toURL()])
+    this.metadata_[entry.toURL()] = {};
+  this.metadata_[entry.toURL()][type] = value;
 };

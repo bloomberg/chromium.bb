@@ -71,6 +71,7 @@
           './app_state_controller.js',
           './cws_container_client.js',
           './dialog_action_controller.js',
+          './dialog_type.js',
           './directory_contents.js',
           './directory_model.js',
           './file_manager.js',
