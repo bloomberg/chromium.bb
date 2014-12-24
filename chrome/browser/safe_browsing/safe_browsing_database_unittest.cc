@@ -830,7 +830,8 @@ void SafeBrowsingDatabaseTest::PopulateDatabaseForCacheTest() {
   database_->UpdateFinished(true);
 
   // Cache should be cleared after updating.
-  EXPECT_TRUE(database_->prefix_gethash_cache_.empty());
+  EXPECT_TRUE(
+      database_->GetUnsynchronizedPrefixGetHashCacheForTesting()->empty());
 
   SBFullHashResult full_hash;
   full_hash.list_id = safe_browsing_util::MALWARE;
@@ -854,7 +855,8 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   PopulateDatabaseForCacheTest();
 
   // We should have both full hashes in the cache.
-  EXPECT_EQ(2U, database_->prefix_gethash_cache_.size());
+  EXPECT_EQ(2U,
+            database_->GetUnsynchronizedPrefixGetHashCacheForTesting()->size());
 
   // Test the cache lookup for the first prefix.
   std::vector<SBPrefix> prefix_hits;
@@ -910,7 +912,8 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   database_->UpdateFinished(true);
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL("http://www.evil.com/malware.html"), &prefix_hits, &cache_hits));
-  EXPECT_TRUE(database_->prefix_gethash_cache_.empty());
+  EXPECT_TRUE(
+      database_->GetUnsynchronizedPrefixGetHashCacheForTesting()->empty());
   prefix_hits.clear();
   cache_hits.clear();
 
@@ -919,13 +922,13 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   // cache insert uses Time::Now(). First, store some entries.
   PopulateDatabaseForCacheTest();
 
-  std::map<SBPrefix, SBCachedFullHashResult>* hash_cache =
-      &database_->prefix_gethash_cache_;
+  SafeBrowsingDatabaseNew::PrefixGetHashCache* hash_cache =
+      database_->GetUnsynchronizedPrefixGetHashCacheForTesting();
   EXPECT_EQ(2U, hash_cache->size());
 
   // Now adjust one of the entries times to be in the past.
   const SBPrefix key = SBPrefixForString("www.evil.com/malware.html");
-  std::map<SBPrefix, SBCachedFullHashResult>::iterator iter =
+  SafeBrowsingDatabaseNew::PrefixGetHashCache::iterator iter =
       hash_cache->find(key);
   ASSERT_TRUE(iter != hash_cache->end());
   iter->second.expire_after = Time::Now() - TimeDelta::FromMinutes(1);
@@ -1885,7 +1888,8 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
   database_->UpdateFinished(true);
 
   // Cache should be cleared after updating.
-  EXPECT_TRUE(database_->prefix_gethash_cache_.empty());
+  EXPECT_TRUE(
+      database_->GetUnsynchronizedPrefixGetHashCacheForTesting()->empty());
 
   {
     // Now the database doesn't contain kFullHash1_1.
@@ -1922,7 +1926,8 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
   database_->UpdateFinished(true);
 
   // Cache should be cleared after updating.
-  EXPECT_TRUE(database_->prefix_gethash_cache_.empty());
+  EXPECT_TRUE(
+      database_->GetUnsynchronizedPrefixGetHashCacheForTesting()->empty());
 
   {
     // None are present.
