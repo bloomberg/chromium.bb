@@ -241,6 +241,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   bool IsReadyToDraw() const;
   void CheckIfReadyToActivate();
   void CheckIfReadyToDraw();
+  void CheckIfMoreTilesNeedToBePrepared();
 
   TileManagerClient* client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -279,6 +280,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
 
   UniqueNotifier ready_to_activate_check_notifier_;
   UniqueNotifier ready_to_draw_check_notifier_;
+  UniqueNotifier more_tiles_need_prepare_check_notifier_;
 
   RasterTilePriorityQueue raster_priority_queue_;
   EvictionTilePriorityQueue eviction_priority_queue_;

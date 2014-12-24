@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "cc/base/unique_notifier.h"
 #include "cc/resources/bitmap_tile_task_worker_pool.h"
 #include "cc/resources/gpu_tile_task_worker_pool.h"
 #include "cc/resources/one_copy_tile_task_worker_pool.h"
@@ -125,6 +126,10 @@ class TileTaskWorkerPoolTest
 
   TileTaskWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
+        all_tile_tasks_finished_(
+            base::MessageLoopProxy::current().get(),
+            base::Bind(&TileTaskWorkerPoolTest::AllTileTasksFinished,
+                       base::Unretained(this))),
         timeout_seconds_(5),
         timed_out_(false) {}
 
@@ -176,13 +181,17 @@ class TileTaskWorkerPoolTest
     tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
   }
 
+  void AllTileTasksFinished() {
+    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
+    base::MessageLoop::current()->Quit();
+  }
+
   // Overriden from TileTaskWorkerPoolClient:
   void DidFinishRunningTileTasks(TaskSet task_set) override {
-    if (task_set == ALL) {
-      tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
-      base::MessageLoop::current()->Quit();
-    }
+    if (task_set == ALL)
+      all_tile_tasks_finished_.Schedule();
   }
+
   TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
     return TaskSetCollection();
   }
@@ -297,6 +306,7 @@ class TileTaskWorkerPoolTest
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
   base::CancelableClosure timeout_;
+  UniqueNotifier all_tile_tasks_finished_;
   int timeout_seconds_;
   bool timed_out_;
   RasterTaskVector tasks_;
