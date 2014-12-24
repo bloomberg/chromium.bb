@@ -8148,7 +8148,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Clear on exit
       </message>
       <message name="IDS_EXCEPTIONS_DETECT_IMPORTANT_CONTENT_BUTTON" desc="A label to display in the exception page's action column when only important content is allowed.">
-        Detect important content
+        Detect content
       </message>
       <message name="IDS_EXCEPTIONS_OTR_LABEL" desc="A label informing the user that the table below the label shows incognito-only exceptions">
         Exceptions below only apply to the current incognito session.
