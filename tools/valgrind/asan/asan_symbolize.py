@@ -77,7 +77,7 @@ def chrome_dsym_hints(binary):
     return []
   assert (not (len(app_positions) == 1 and
                len(framework_positions) == 1 and
-               app_positions[0] < framework_positions[0])), \
+               app_positions[0] > framework_positions[0])), \
       "The path contains an app bundle inside a framework: %s" % binary
   # Cases 2 and 3. The outermost bundle (which is the only bundle in the case 2)
   # is located in the product dir.
