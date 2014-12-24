@@ -19,7 +19,7 @@ namespace blink {
 
 class V8TestInterfaceNamedConstructor2Constructor {
 public:
-    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static const WrapperTypeInfo wrapperTypeInfo;
 };
 
@@ -27,7 +27,7 @@ class V8TestInterfaceNamedConstructor2 {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceNamedConstructor2* toImpl(v8::Handle<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterfaceNamedConstructor2>();

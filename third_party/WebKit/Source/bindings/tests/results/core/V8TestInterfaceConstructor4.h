@@ -21,7 +21,7 @@ class V8TestInterfaceConstructor4 {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceConstructor4* toImpl(v8::Handle<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterfaceConstructor4>();

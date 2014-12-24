@@ -20,7 +20,7 @@ class Dictionary;
 {% if named_constructor %}
 class {{v8_class}}Constructor {
 public:
-    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static const WrapperTypeInfo wrapperTypeInfo;
 };
 
@@ -47,7 +47,7 @@ public:
     static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object);
     {% else %}
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<{{cpp_class}}>();
