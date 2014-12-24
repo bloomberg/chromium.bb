@@ -18,13 +18,11 @@ import sys
 if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
-  # The xcode-ninja generator fails because it doesn't copy the extension
-  # cf. https://code.google.com/p/gyp/issues/detail?id=450
-  if test.format == 'xcode-ninja':
-    test.skip_test()
-
   CHDIR = 'loadable-module-bundle-product-extension'
-  test.run_gyp('test.gyp', chdir=CHDIR)
+  test.run_gyp('test.gyp',
+               '-G', 'xcode_ninja_target_pattern=^.*$',
+               chdir=CHDIR)
+
   test.build('test.gyp', test.ALL, chdir=CHDIR)
 
   test.must_exist(test.built_file_path('Collide.foo', chdir=CHDIR))

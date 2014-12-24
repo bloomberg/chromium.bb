@@ -67,10 +67,13 @@ def _TargetFromSpec(old_spec, params):
 
   target_name = old_spec.get('target_name')
   product_name = old_spec.get('product_name', target_name)
+  product_extension = old_spec.get('product_extension')
 
   ninja_target = {}
   ninja_target['target_name'] = target_name
   ninja_target['product_name'] = product_name
+  if product_extension:
+    ninja_target['product_extension'] = product_extension
   ninja_target['toolset'] = old_spec.get('toolset')
   ninja_target['default_configuration'] = old_spec.get('default_configuration')
   ninja_target['configurations'] = {}
