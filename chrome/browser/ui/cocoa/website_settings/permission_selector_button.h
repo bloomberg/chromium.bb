@@ -27,7 +27,8 @@
                 withCallback:(PermissionMenuModel::ChangeCallback)callback;
 
 // Returns the largest possible size given all of the items in the menu.
-- (CGFloat)maxTitleWidthWithDefaultSetting:(ContentSetting)defaultSetting;
+- (CGFloat)maxTitleWidthForContentSettingsType:(ContentSettingsType)type
+                            withDefaultSetting:(ContentSetting)defaultSetting;
 
 @end
 

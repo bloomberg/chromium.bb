@@ -176,9 +176,9 @@ PermissionSelectorView::PermissionSelectorView(
       permission.source == content_settings::SETTING_SOURCE_USER;
   menu_button_ = new internal::PermissionMenuButton(
       WebsiteSettingsUI::PermissionActionToUIString(
-          permission.setting, permission.default_setting, permission.source),
-      menu_model_.get(),
-      button_enabled);
+          permission.type, permission.setting, permission.default_setting,
+          permission.source),
+      menu_model_.get(), button_enabled);
   menu_button_->SetEnabled(button_enabled);
   menu_button_->SetFocusable(button_enabled);
   menu_button_->SetAccessibleName(
@@ -211,8 +211,7 @@ void PermissionSelectorView::PermissionChanged(
 
   // Update the menu button text to reflect the new setting.
   menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
-      permission.setting,
-      permission.default_setting,
+      permission.type, permission.setting, permission.default_setting,
       content_settings::SETTING_SOURCE_USER));
 
   FOR_EACH_OBSERVER(PermissionSelectorViewObserver,

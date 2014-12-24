@@ -31,9 +31,8 @@
     // Set the button title.
     base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
     base::string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
-        permissionInfo.setting,
-        permissionInfo.default_setting,
-        permissionInfo.source);
+        permissionInfo.type, permissionInfo.setting,
+        permissionInfo.default_setting, permissionInfo.source);
     [titleItem setTitle:base::SysUTF16ToNSString(buttonTitle)];
     [[self cell] setUsesItemFromMenu:NO];
     [[self cell] setMenuItem:titleItem.get()];
@@ -46,14 +45,14 @@
   return self;
 }
 
-- (CGFloat)maxTitleWidthWithDefaultSetting:(ContentSetting)defaultSetting {
+- (CGFloat)maxTitleWidthForContentSettingsType:(ContentSettingsType)type
+                            withDefaultSetting:(ContentSetting)defaultSetting {
   // Determine the largest possible size for this button.
   CGFloat maxTitleWidth = 0;
   for (NSMenuItem* item in [self itemArray]) {
     NSString* title =
         base::SysUTF16ToNSString(WebsiteSettingsUI::PermissionActionToUIString(
-            static_cast<ContentSetting>([item tag]),
-            defaultSetting,
+            type, static_cast<ContentSetting>([item tag]), defaultSetting,
             content_settings::SETTING_SOURCE_USER));
     NSSize size = SizeForWebsiteSettingsButtonTitle(self, title);
     maxTitleWidth = std::max(maxTitleWidth, size.width);

@@ -120,6 +120,7 @@ class WebsiteSettingsUI {
   // including why that action was taken. E.g. "Allowed by you",
   // "Blocked by default".
   static base::string16 PermissionActionToUIString(
+      ContentSettingsType type,
       ContentSetting setting,
       ContentSetting default_setting,
       content_settings::SettingSource source);

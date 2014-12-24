@@ -50,7 +50,7 @@ const int kPermissionButtonTextIDUserManaged[] = {
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_USER,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_USER,
     kInvalidResourceID,
-    kInvalidResourceID};
+    IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER};
 static_assert(arraysize(kPermissionButtonTextIDUserManaged) ==
               CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDUserManaged array size is incorrect");
@@ -157,12 +157,20 @@ base::string16 WebsiteSettingsUI::PermissionValueToUIString(
 
 // static
 base::string16 WebsiteSettingsUI::PermissionActionToUIString(
-      ContentSetting setting,
-      ContentSetting default_setting,
-      content_settings::SettingSource source) {
+    ContentSettingsType type,
+    ContentSetting setting,
+    ContentSetting default_setting,
+    content_settings::SettingSource source) {
   ContentSetting effective_setting = setting;
-  if (effective_setting == CONTENT_SETTING_DEFAULT)
+  if (effective_setting == CONTENT_SETTING_DEFAULT) {
     effective_setting = default_setting;
+
+    // For Plugins, ASK is obsolete. Show as BLOCK to reflect actual behavior.
+    if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+        default_setting == CONTENT_SETTING_ASK) {
+      effective_setting = CONTENT_SETTING_BLOCK;
+    }
+  }
 
   const int* button_text_ids = NULL;
   switch (source) {

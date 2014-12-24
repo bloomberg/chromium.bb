@@ -921,8 +921,9 @@ NSColor* IdentityVerifiedTextColor() {
                                                         forURL:url
                                                   withCallback:callback]);
   // Determine the largest possible size for this button.
-  CGFloat maxTitleWidth =
-      [button maxTitleWidthWithDefaultSetting:permissionInfo.default_setting];
+  CGFloat maxTitleWidth = [button
+      maxTitleWidthForContentSettingsType:permissionInfo.type
+                       withDefaultSetting:permissionInfo.default_setting];
 
   // Ensure the containing view is large enough to contain the button with its
   // widest possible title.
