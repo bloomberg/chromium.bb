@@ -14,6 +14,9 @@ var FILE_MANAGER_HOST = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 // line.
 importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/metadata_parser.js');
 importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/byte_reader.js');
+// TODO(yawano): common/js/util.js seems to be imported only for
+// util.readFileBytes. Investigate this, and move util.readFileBytes to this
+// file, and remove this import.
 importScripts(FILE_MANAGER_HOST + '/common/js/util.js');
 
 /**
