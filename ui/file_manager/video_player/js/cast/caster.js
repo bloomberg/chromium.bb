@@ -8,6 +8,10 @@
 // cast extension. This line prevents an exception on using localStorage.
 window.__defineGetter__('localStorage', function() { return {}; });
 
+/**
+ * @type {string}
+ * @const
+ */
 var APPLICATION_ID = '4CCB98DA';
 
 util.addPageLoadHandler(function() {
@@ -42,7 +46,7 @@ function initialize() {
  * in background before load. The cast API will load the cast SDK automatically.
  * The given callback is executes after the cast SDK extension is initialized.
  *
- * @param {function} callback Callback (executed asynchronously).
+ * @param {function()} callback Callback (executed asynchronously).
  * @param {boolean=} opt_secondTry Specify true if it's the second call after
  *     installation of Cast API extension.
  */
@@ -79,7 +83,7 @@ function loadCastAPI(callback, opt_secondTry) {
           console.info('Google Cast API extension installed.');
 
           // Loads API again.
-          setTimeout(loadCastAPI.bind(null, callback, true));
+          setTimeout(loadCastAPI.bind(null, callback, true), 0);
         }.wrap());
   }.wrap();
 
@@ -107,7 +111,7 @@ function onLoadCastExtension(callback, opt_installationOccured) {
           metrics.CAST_API_EXTENSION_STATUS.LOADED);
     }
 
-    setTimeout(callback);  // Runs asynchronously.
+    setTimeout(callback, 0);  // Runs asynchronously.
   };
 
   if(!chrome.cast || !chrome.cast.isAvailable) {
@@ -164,6 +168,9 @@ function initializeApi() {
 }
 
 /**
+ * Called when receiver availability is changed. This method is also called when
+ * initialization is completed.
+ *
  * @param {chrome.cast.ReceiverAvailability} availability Availability of casts.
  * @param {Array.<Object>} receivers List of casts.
  */

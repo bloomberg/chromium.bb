@@ -19,15 +19,14 @@ window.onerror = function() { window.JSErrorCount++; };
  *  - Capture the stack trace in case of error.
  *  - Bind this object
  *
- * @param {Object} thisObject Object to be used as this.
+ * @param {Object=} opt_thisObject Object to be used as this.
  * @param {...} var_args Arguments to be bound with the wrapped function.
  * @return {function} Wrapped function.
  */
-Function.prototype.wrap = function(thisObject, var_args) {
+Function.prototype.wrap = function(opt_thisObject, var_args) {
   var func = this;
   var liveStack = (new Error('Stack trace before async call')).stack;
-  if (thisObject === undefined)
-    thisObject = null;
+  var thisObject = opt_thisObject || null;
   var boundArguments = Array.prototype.slice.call(arguments, 1);
 
   return function wrappedCallback(var_args) {

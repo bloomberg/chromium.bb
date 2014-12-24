@@ -334,7 +334,8 @@ chrome.cast.Volume.prototype.muted;
 /**
  * @param {!chrome.cast.SessionRequest} sessionRequest
  * @param {function(!chrome.cast.Session)} sessionListener
- * @param {function(!chrome.cast.ReceiverAvailability)} receiverListener
+ * @param {function(!chrome.cast.ReceiverAvailability,Array.<Object>)}
+ *     receiverListener
  * @param {chrome.cast.AutoJoinPolicy=} opt_autoJoinPolicy
  * @param {chrome.cast.DefaultActionPolicy=} opt_defaultActionPolicy
  * @constructor
