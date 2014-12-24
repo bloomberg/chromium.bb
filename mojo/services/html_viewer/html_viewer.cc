@@ -174,6 +174,8 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     logging::LoggingSettings settings;
     settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
     logging::InitLogging(settings);
+    // Display process ID, thread ID and timestamp in logs.
+    logging::SetLogItems(true, true, true, false);
 
     bool enable_mojo_media_renderer =
         command_line->HasSwitch(kEnableMojoMediaRenderer);

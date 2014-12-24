@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 
 namespace media {
@@ -16,6 +19,25 @@ class MojoMediaApplication
       public mojo::InterfaceFactory<mojo::MediaRenderer> {
  public:
   // mojo::ApplicationDelegate implementation.
+  void Initialize(mojo::ApplicationImpl* app) override {
+    base::CommandLine::StringVector command_line_args;
+#if defined(OS_WIN)
+    for (const auto& arg : app->args())
+      command_line_args.push_back(base::UTF8ToUTF16(arg));
+#elif defined(OS_POSIX)
+    command_line_args = app->args();
+#endif
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->InitFromArgv(command_line_args);
+
+    logging::LoggingSettings settings;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    logging::InitLogging(settings);
+    // Display process ID, thread ID and timestamp in logs.
+    logging::SetLogItems(true, true, true, false);
+  }
+
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
