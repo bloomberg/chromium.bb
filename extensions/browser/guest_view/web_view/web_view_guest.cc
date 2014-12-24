@@ -544,7 +544,6 @@ void WebViewGuest::CreateNewGuestWebViewWindow(
   create_params.SetString(webview::kStoragePartitionId, storage_partition_id);
 
   guest_manager->CreateGuest(WebViewGuest::Type,
-                             owner_extension_id(),
                              embedder_web_contents(),
                              create_params,
                              base::Bind(&WebViewGuest::NewGuestWebViewCallback,
@@ -880,7 +879,6 @@ content::WebContents* WebViewGuest::CreateNewGuestWindow(
       GuestViewManager::FromBrowserContext(browser_context());
   return guest_manager->CreateGuestWithWebContentsParams(
       WebViewGuest::Type,
-      owner_extension_id(),
       embedder_web_contents(),
       create_params);
 }

@@ -23,6 +23,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
@@ -150,8 +151,7 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       weak_ptr_factory_(this) {
 }
 
-void GuestViewBase::Init(const std::string& owner_extension_id,
-                         const base::DictionaryValue& create_params,
+void GuestViewBase::Init(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) {
   if (initialized_)
     return;
@@ -163,15 +163,17 @@ void GuestViewBase::Init(const std::string& owner_extension_id,
   ProcessMap* process_map = ProcessMap::Get(browser_context());
   CHECK(process_map);
 
-  const Extension* embedder_extension = ExtensionRegistry::Get(browser_context_)
-          ->enabled_extensions()
-          .GetByID(owner_extension_id);
+  const Extension* owner_extension =
+      ProcessManager::Get(owner_web_contents()->GetBrowserContext())->
+          GetExtensionForRenderViewHost(
+              owner_web_contents()->GetRenderViewHost());
+  owner_extension_id_ = owner_extension ? owner_extension->id() : std::string();
 
-  // Ok for |embedder_extension| to be NULL, the embedder might be WebUI.
+  // Ok for |owner_extension| to be NULL, the embedder might be WebUI.
   Feature::Availability availability = feature->IsAvailableToContext(
-      embedder_extension,
+      owner_extension,
       process_map->GetMostLikelyContextType(
-          embedder_extension,
+          owner_extension,
           owner_web_contents()->GetRenderProcessHost()->GetID()),
       GetOwnerSiteURL());
   if (!availability.is_available()) {
@@ -185,16 +187,12 @@ void GuestViewBase::Init(const std::string& owner_extension_id,
   CreateWebContents(create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
                                weak_ptr_factory_.GetWeakPtr(),
-                               owner_extension_id,
                                callback));
 }
 
 void GuestViewBase::InitWithWebContents(
-    const std::string& owner_extension_id,
     content::WebContents* guest_web_contents) {
   DCHECK(guest_web_contents);
-
-  owner_extension_id_ = owner_extension_id;
 
   // At this point, we have just created the guest WebContents, we need to add
   // an observer to the embedder WebContents. This observer will be responsible
@@ -542,8 +540,7 @@ void GuestViewBase::SendQueuedEvents() {
   }
 }
 
-void GuestViewBase::CompleteInit(const std::string& owner_extension_id,
-                                 const WebContentsCreatedCallback& callback,
+void GuestViewBase::CompleteInit(const WebContentsCreatedCallback& callback,
                                  content::WebContents* guest_web_contents) {
   if (!guest_web_contents) {
     // The derived class did not create a WebContents so this class serves no
@@ -552,7 +549,7 @@ void GuestViewBase::CompleteInit(const std::string& owner_extension_id,
     callback.Run(NULL);
     return;
   }
-  InitWithWebContents(owner_extension_id, guest_web_contents);
+  InitWithWebContents(guest_web_contents);
   callback.Run(guest_web_contents);
 }
 

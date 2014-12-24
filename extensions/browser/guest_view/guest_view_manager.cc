@@ -140,7 +140,6 @@ int GuestViewManager::GetNextInstanceID() {
 }
 
 void GuestViewManager::CreateGuest(const std::string& view_type,
-                                   const std::string& owner_extension_id,
                                    content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
                                    const WebContentsCreatedCallback& callback) {
@@ -154,12 +153,11 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
     callback.Run(NULL);
     return;
   }
-  guest->Init(owner_extension_id, create_params, callback);
+  guest->Init(create_params, callback);
 }
 
 content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
-    const std::string& owner_extension_id,
     content::WebContents* owner_web_contents,
     const content::WebContents::CreateParams& create_params) {
   int guest_instance_id = GetNextInstanceID();
@@ -174,7 +172,7 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
   guest_create_params.guest_delegate = guest;
   content::WebContents* guest_web_contents =
       WebContents::Create(guest_create_params);
-  guest->InitWithWebContents(owner_extension_id, guest_web_contents);
+  guest->InitWithWebContents(guest_web_contents);
   return guest_web_contents;
 }
 

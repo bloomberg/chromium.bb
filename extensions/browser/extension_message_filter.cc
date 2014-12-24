@@ -206,7 +206,6 @@ void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
   create_params.SetString(mime_handler_view::kSrc, src);
   create_params.SetString(mime_handler_view::kContentUrl, content_url);
   manager->CreateGuest(MimeHandlerViewGuest::Type,
-                       "",
                        embedder_web_contents,
                        create_params,
                        callback);

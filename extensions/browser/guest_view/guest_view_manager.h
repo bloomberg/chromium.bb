@@ -68,14 +68,12 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   typedef base::Callback<void(content::WebContents*)>
       WebContentsCreatedCallback;
   void CreateGuest(const std::string& view_type,
-                   const std::string& owner_extension_id,
                    content::WebContents* owner_web_contents,
                    const base::DictionaryValue& create_params,
                    const WebContentsCreatedCallback& callback);
 
   content::WebContents* CreateGuestWithWebContentsParams(
       const std::string& view_type,
-      const std::string& owner_extension_id,
       content::WebContents* owner_web_contents,
       const content::WebContents::CreateParams& create_params);
 

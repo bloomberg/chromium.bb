@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onEmbedRequested.addListener(function(request) {
+  if (!request.embedderId)
+    request.deny();
   if (!request.data.foo) {
     request.allow('main.html');
     return;

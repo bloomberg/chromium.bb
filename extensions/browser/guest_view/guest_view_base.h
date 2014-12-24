@@ -170,12 +170,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // This creates a WebContents and initializes |this| GuestViewBase to use the
   // newly created WebContents.
-  void Init(const std::string& owner_extension_id,
-            const base::DictionaryValue& create_params,
+  void Init(const base::DictionaryValue& create_params,
             const WebContentsCreatedCallback& callback);
 
-  void InitWithWebContents(const std::string& owner_extension_id,
-                           content::WebContents* guest_web_contents);
+  void InitWithWebContents(content::WebContents* guest_web_contents);
 
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
@@ -276,8 +274,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void SendQueuedEvents();
 
-  void CompleteInit(const std::string& owner_extension_id,
-                    const WebContentsCreatedCallback& callback,
+  void CompleteInit(const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
 
   void StartTrackingEmbedderZoomLevel();
