@@ -31,7 +31,7 @@ namespace TestInterfaceDocumentV8Internal {
 
 } // namespace TestInterfaceDocumentV8Internal
 
-static void installV8TestInterfaceDocumentTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

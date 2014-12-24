@@ -97,7 +97,7 @@ void V8TestInterfaceConstructor4::constructorCallback(const v8::FunctionCallback
     TestInterfaceConstructor4V8Internal::constructor(info);
 }
 
-static void installV8TestInterfaceConstructor4Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceConstructor4Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

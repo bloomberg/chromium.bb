@@ -462,7 +462,7 @@ void V8TestInterface2::constructorCallback(const v8::FunctionCallbackInfo<v8::Va
     TestInterface2V8Internal::constructor(info);
 }
 
-static void installV8TestInterface2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

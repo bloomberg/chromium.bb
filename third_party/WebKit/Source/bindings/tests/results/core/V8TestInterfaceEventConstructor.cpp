@@ -333,7 +333,7 @@ void V8TestInterfaceEventConstructor::constructorCallback(const v8::FunctionCall
     TestInterfaceEventConstructorV8Internal::constructor(info);
 }
 
-static void installV8TestInterfaceEventConstructorTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceEventConstructorTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

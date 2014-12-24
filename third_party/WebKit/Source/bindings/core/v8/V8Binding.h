@@ -967,7 +967,7 @@ private:
     v8::TryCatch& m_block;
 };
 
-typedef void (*InstallTemplateFunction)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
+typedef void (*InstallTemplateFunction)(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
 
 } // namespace blink
 

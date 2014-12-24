@@ -177,12 +177,12 @@ public:
 
     static void installAccessors(v8::Isolate*, v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount);
 
-    static v8::Local<v8::Signature> installDOMClassTemplate(v8::Isolate*, v8::Handle<v8::FunctionTemplate>, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
+    static v8::Local<v8::Signature> installDOMClassTemplate(v8::Isolate*, v8::Local<v8::FunctionTemplate>, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
         const AttributeConfiguration*, size_t attributeCount,
         const AccessorConfiguration*, size_t accessorCount,
         const MethodConfiguration*, size_t callbackCount);
 
-    static v8::Handle<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*));
+    static v8::Handle<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Local<v8::FunctionTemplate>, v8::Isolate*));
 
 private:
     static void setMethod(v8::Handle<v8::Object> target, v8::Handle<v8::Name> name, v8::Handle<v8::FunctionTemplate> functionTemplate, v8::PropertyAttribute attribute)

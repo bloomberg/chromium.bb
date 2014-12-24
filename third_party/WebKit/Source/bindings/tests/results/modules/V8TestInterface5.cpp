@@ -811,7 +811,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterface5Methods[] =
     {"voidMethodDoubleOrDOMStringArg", TestInterface5ImplementationV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
 };
 
-static void installV8TestInterface5Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterface5Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

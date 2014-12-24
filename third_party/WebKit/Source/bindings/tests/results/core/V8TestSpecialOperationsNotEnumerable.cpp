@@ -72,7 +72,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 
 } // namespace TestSpecialOperationsNotEnumerableV8Internal
 
-static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

@@ -23,7 +23,7 @@ public:
     static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void installConditionallyEnabledMethods(v8::Local<v8::Object>, v8::Isolate*);
 private:
-    static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
+    static void installV8TestInterfaceTemplate(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
 };
 }
 #endif // V8TestInterfacePartial_h

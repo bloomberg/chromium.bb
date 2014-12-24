@@ -31,7 +31,7 @@ namespace TestInterfaceEmptyV8Internal {
 
 } // namespace TestInterfaceEmptyV8Internal
 
-static void installV8TestInterfaceEmptyTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceEmptyTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

@@ -230,7 +230,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
 
 } // namespace TestInterfaceImplementationPartialV8Internal
 
-void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     V8TestInterface::installV8TestInterfaceTemplate(functionTemplate, isolate);
 

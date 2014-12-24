@@ -263,9 +263,9 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% from 'attributes.cpp' import attribute_configuration with context %}
 {% from 'constants.cpp' import install_constants with context %}
 {% if has_partial_interface or is_partial %}
-void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {% else %}
-static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {% endif %}
 {
     {% if is_partial %}

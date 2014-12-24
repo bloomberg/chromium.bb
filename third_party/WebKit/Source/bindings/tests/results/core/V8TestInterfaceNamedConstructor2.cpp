@@ -77,7 +77,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2Constructor::do
     return result;
 }
 
-static void installV8TestInterfaceNamedConstructor2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceNamedConstructor2Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

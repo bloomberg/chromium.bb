@@ -168,7 +168,7 @@ void V8TestInterfaceWillBeGarbageCollected::constructorCallback(const v8::Functi
     TestInterfaceWillBeGarbageCollectedV8Internal::constructor(info);
 }
 
-static void installV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 

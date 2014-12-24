@@ -130,7 +130,7 @@ v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::functionTemplateForCallback
     return functionTemplate;
 }
 
-v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Isolate* isolate, v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
+v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
     const AttributeConfiguration* attributes, size_t attributeCount,
     const AccessorConfiguration* accessors, size_t accessorCount,
     const MethodConfiguration* callbacks, size_t callbackCount)
@@ -157,7 +157,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Isolate
     return defaultSignature;
 }
 
-v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(v8::Isolate* isolate, WrapperTypeInfo* wrapperTypeInfo, void (*configureDOMClassTemplate)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*))
+v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(v8::Isolate* isolate, WrapperTypeInfo* wrapperTypeInfo, void (*configureDOMClassTemplate)(v8::Local<v8::FunctionTemplate>, v8::Isolate*))
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(wrapperTypeInfo);
