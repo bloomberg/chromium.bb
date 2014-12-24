@@ -72,6 +72,9 @@ public:
     BLINK_PLATFORM_EXPORT WebString responseHeadersText() const;
     BLINK_PLATFORM_EXPORT void setResponseHeadersText(const WebString&);
 
+    BLINK_PLATFORM_EXPORT WebString npnNegotiatedProtocol() const;
+    BLINK_PLATFORM_EXPORT void setNPNNegotiatedProtocol(const WebString&);
+
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<ResourceLoadInfo>);
     BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<ResourceLoadInfo>() const;

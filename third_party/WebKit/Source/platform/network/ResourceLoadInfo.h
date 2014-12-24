@@ -44,6 +44,7 @@ struct ResourceLoadInfo : RefCounted<ResourceLoadInfo> {
     HTTPHeaderMap responseHeaders;
     String requestHeadersText;
     String responseHeadersText;
+    String npnNegotiatedProtocol;
 };
 
 }

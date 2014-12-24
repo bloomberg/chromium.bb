@@ -142,4 +142,16 @@ void WebHTTPLoadInfo::setResponseHeadersText(const WebString& headersText)
     m_private->responseHeadersText = headersText;
 }
 
+WebString WebHTTPLoadInfo::npnNegotiatedProtocol() const
+{
+    ASSERT(!m_private.isNull());
+    return m_private->npnNegotiatedProtocol;
+}
+
+void WebHTTPLoadInfo::setNPNNegotiatedProtocol(const WebString& npnNegotiatedProtocol)
+{
+    ASSERT(!m_private.isNull());
+    m_private->npnNegotiatedProtocol = npnNegotiatedProtocol;
+}
+
 } // namespace blink
