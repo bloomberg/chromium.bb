@@ -3,11 +3,17 @@ Worker, most (if not all) of tests are expected to run on Window,
 DedicatedWorker and ServiceWorker.
 For each test (say X), we have
 - a script X.js in /fetch/script-tests,
-- /fetch/X.html Window test file,
+- /fetch/window/X.html Window test file,
 - /fetch/workers/X.html Worker test file, and
 - /fetch/serviceworker/X.html ServiceWorker test file.
 
-PRESUBMIT.py checks above. For each file in /fetch/script-tests, the
+Run
+$ python generate.py
+at this (/LayoutTests/http/tests/fetch/) directory to generate these files
+from templates script-tests/TEMPLATE*.html.
+
+PRESUBMIT.py checks the existence of the files.
+For each file in /fetch/script-tests, the
 corresponding html files must exist at the paths listed above.
 
 Other resources such as helper JS files and server side scripts are located on

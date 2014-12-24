@@ -23,12 +23,11 @@ def missing_files(scripts_path, path_list):
 
 
 def CheckChangeOnUpload(input, output):
+    contexts = ['window', 'workers', 'serviceworker']
+
     top_path = input.PresubmitLocalPath()
-    worker_path = os.path.join(top_path, 'workers')
-    serviceworker_path = os.path.join(top_path, 'serviceworker')
     script_tests_path = os.path.join(top_path, 'script-tests')
+    test_paths = [os.path.join(top_path, context) for context in contexts]
 
     return [output.PresubmitPromptWarning('%s is missing' % path) for path
-            in missing_files(script_tests_path, [top_path,
-                                                 worker_path,
-                                                 serviceworker_path])]
+            in missing_files(script_tests_path, test_paths)]
