@@ -1525,16 +1525,6 @@ crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ 
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/fake-italic.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/justify-padding-distribution.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/decorations-transformed.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/textIteratorNilRenderer.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/emphasis-overlap.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/emphasis-avoid-ruby.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/fixed-pitch-control-characters.html [ NeedsRebaseline ]
-crbug.com/381919 [ SnowLeopard ] virtual/antialiasedtext/fast/text/selection-painted-separately.html [ NeedsRebaseline ]
-
 crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Pass ImageOnlyFailure ]
 crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ]
 crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
