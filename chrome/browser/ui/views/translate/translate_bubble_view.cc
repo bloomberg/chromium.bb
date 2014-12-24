@@ -258,7 +258,7 @@ TranslateBubbleView::TranslateBubbleView(
     scoped_ptr<TranslateBubbleModel> model,
     translate::TranslateErrors::Type error_type,
     content::WebContents* web_contents)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
       WebContentsObserver(web_contents),
       before_translate_view_(NULL),
       translating_view_(NULL),

@@ -4,21 +4,18 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -989,9 +986,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     ManagePasswordsIconView* anchor_view,
     DisplayReason reason)
     : ManagePasswordsBubble(web_contents, reason),
-      BubbleDelegateView(anchor_view,
-                         anchor_view ? views::BubbleBorder::TOP_RIGHT
-                                     : views::BubbleBorder::NONE),
+      ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
       anchor_view_(anchor_view),
       initially_focused_view_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -999,13 +994,6 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
   if (anchor_view)
     anchor_view->SetActive(true);
   mouse_handler_.reset(new WebContentMouseHandler(this));
-
-  // Add observers to close the bubble if the fullscreen state changes.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      content::Source<FullscreenController>(browser->fullscreen_controller()));
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
@@ -1013,23 +1001,27 @@ ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
     anchor_view_->SetActive(false);
 }
 
-void ManagePasswordsBubbleView::AdjustForFullscreen(
-    const gfx::Rect& screen_bounds) {
-  if (GetAnchorView())
-    return;
+views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
+  return initially_focused_view_;
+}
 
-  // The bubble's padding from the screen edge, used in fullscreen.
-  const int kFullscreenPaddingEnd = 20;
-  const size_t bubble_half_width = width() / 2;
-  const int x_pos = base::i18n::IsRTL() ?
-      screen_bounds.x() + bubble_half_width + kFullscreenPaddingEnd :
-      screen_bounds.right() - bubble_half_width - kFullscreenPaddingEnd;
-  SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
+void ManagePasswordsBubbleView::Init() {
+  views::FillLayout* layout = new views::FillLayout();
+  SetLayoutManager(layout);
+
+  Refresh();
+}
+
+void ManagePasswordsBubbleView::WindowClosing() {
+  // Close() closes the window asynchronously, so by the time we reach here,
+  // |manage_passwords_bubble_| may have already been reset.
+  if (manage_passwords_bubble_ == this)
+    manage_passwords_bubble_ = NULL;
 }
 
 void ManagePasswordsBubbleView::Close() {
   mouse_handler_.reset();
-  GetWidget()->Close();
+  ManagedFullScreenBubbleDelegateView::Close();
 }
 
 void ManagePasswordsBubbleView::Refresh() {
@@ -1061,16 +1053,6 @@ void ManagePasswordsBubbleView::Refresh() {
     SizeToContents();
 }
 
-void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
-  if (model()->best_matches().empty()) {
-    // Skip confirmation if there are no existing passwords for this site.
-    NotifyConfirmedNeverForThisSite();
-  } else {
-    model()->OnConfirmationForNeverForThisSite();
-    Refresh();
-  }
-}
-
 void ManagePasswordsBubbleView::NotifyConfirmedNeverForThisSite() {
   model()->OnNeverForThisSiteClicked();
   Close();
@@ -1081,29 +1063,12 @@ void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
   Refresh();
 }
 
-void ManagePasswordsBubbleView::Init() {
-  views::FillLayout* layout = new views::FillLayout();
-  SetLayoutManager(layout);
-
-  Refresh();
-}
-
-void ManagePasswordsBubbleView::WindowClosing() {
-  // Close() closes the window asynchronously, so by the time we reach here,
-  // |manage_passwords_bubble_| may have already been reset.
-  if (manage_passwords_bubble_ == this)
-    manage_passwords_bubble_ = NULL;
-}
-
-views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
-  return initially_focused_view_;
-}
-
-void ManagePasswordsBubbleView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  GetWidget()->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
-  CloseBubble();
+void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
+  if (model()->best_matches().empty()) {
+    // Skip confirmation if there are no existing passwords for this site.
+    NotifyConfirmedNeverForThisSite();
+  } else {
+    model()->OnConfirmationForNeverForThisSite();
+    Refresh();
+  }
 }
