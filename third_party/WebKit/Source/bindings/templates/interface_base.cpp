@@ -109,7 +109,7 @@ static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8:
     }
     {% endif %}
     if (info.This()->IsObject())
-        v8::Handle<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
+        v8::Local<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
 static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -416,7 +416,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
            (cpp_class, attribute.name) %}
     {% filter conditional(attribute.conditional_string) %}
-    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfilter %}
     {% endfor %}
     {# Special interfaces #}
