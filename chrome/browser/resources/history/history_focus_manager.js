@@ -22,7 +22,7 @@ HistoryFocusManager.prototype = {
   /** @override */
   getFocusParent: function() {
     return document.querySelector('#overlay .showing') ||
-        document.querySelector('menu:not([hidden])') ||
+        document.querySelector('cr-menu:not([hidden])') ||
         $('history-page');
   },
 };
