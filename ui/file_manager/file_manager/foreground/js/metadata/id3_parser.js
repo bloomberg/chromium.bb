@@ -267,7 +267,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
          * @param {File} file File which bytes to read.
          */
         function readTail(file) {
-          util.readFileBytes(file, file.size - 128, file.size,
+          MetadataParser.readFileBytes(file, file.size - 128, file.size,
               this.nextStep, this.onError);
         },
 
@@ -311,7 +311,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
       'id3v2parser',
       [
         function readHead(file) {
-          util.readFileBytes(file, 0, 10, this.nextStep, this.onError);
+          MetadataParser.readFileBytes(file, 0, 10, this.nextStep,
+              this.onError);
         },
 
         /**
@@ -329,8 +330,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
             id3v2.flags = reader.readScalar(1, false);
             id3v2.size = Id3Parser.readSynchSafe_(reader, 4);
 
-            util.readFileBytes(file, 10, 10 + id3v2.size, this.nextStep,
-                this.onError);
+            MetadataParser.readFileBytes(file, 10, 10 + id3v2.size,
+                this.nextStep, this.onError);
           } else {
             this.finish();
           }

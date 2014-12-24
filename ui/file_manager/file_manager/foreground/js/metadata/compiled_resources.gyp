@@ -13,8 +13,10 @@
           'image_parsers.js',
           'mpeg_parser.js',
           'id3_parser.js',
-          '../../../common/js/util.js',
 	],
+	'externs': [
+          '../../../../externs/platform_worker.js',
+	]
       },
       'includes': [
         '../../../../../../third_party/closure_compiler/compile_js.gypi'

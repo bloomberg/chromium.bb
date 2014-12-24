@@ -14,16 +14,13 @@ var FILE_MANAGER_HOST = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 // line.
 importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/metadata_parser.js');
 importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/byte_reader.js');
-// TODO(yawano): common/js/util.js seems to be imported only for
-// util.readFileBytes. Investigate this, and move util.readFileBytes to this
-// file, and remove this import.
-importScripts(FILE_MANAGER_HOST + '/common/js/util.js');
 
 /**
  * Dispatches metadata requests to the correct parser.
  *
  * @param {Object} port Worker port.
  * @constructor
+ * @struct
  */
 function MetadataDispatcher(port) {
   this.port_ = port;
@@ -61,7 +58,8 @@ function MetadataDispatcher(port) {
 MetadataDispatcher.parserClasses_ = [];
 
 /**
- * @param {function} parserClass Parser constructor function.
+ * @param {function(!MetadataDispatcher)} parserClass Parser constructor
+ *     function.
  */
 MetadataDispatcher.registerParserClass = function(parserClass) {
   MetadataDispatcher.parserClasses_.push(parserClass);
@@ -104,7 +102,7 @@ MetadataDispatcher.prototype.request_ = function(fileURL) {
  * Indicate to the caller that an operation has failed.
  *
  * No other messages relating to the failed operation should be sent.
- * @param {...Object} var_args Arguments.
+ * @param {...(Object|string)} var_args Arguments.
  */
 MetadataDispatcher.prototype.error = function(var_args) {
   var ary = Array.apply(null, arguments);
@@ -115,7 +113,7 @@ MetadataDispatcher.prototype.error = function(var_args) {
  * Send a log message to the caller.
  *
  * Callers must not parse log messages for control flow.
- * @param {...Object} var_args Arguments.
+ * @param {...(Object|string)} var_args Arguments.
  */
 MetadataDispatcher.prototype.log = function(var_args) {
   var ary = Array.apply(null, arguments);
@@ -124,7 +122,7 @@ MetadataDispatcher.prototype.log = function(var_args) {
 
 /**
  * Send a log message to the caller only if this.verbose is true.
- * @param {...Object} var_args Arguments.
+ * @param {...(Object|string)} var_args Arguments.
  */
 MetadataDispatcher.prototype.vlog = function(var_args) {
   if (this.verbose)
@@ -162,6 +160,9 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
   var self = this;
   var currentStep = -1;
 
+  /**
+   * @param {...} var_args Arguments.
+   */
   function nextStep(var_args) {
     self.vlog('nextStep: ' + steps[currentStep + 1].name);
     steps[++currentStep].apply(self, arguments);
@@ -169,8 +170,12 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 
   var metadata;
 
-  function onError(err, stepName) {
-    self.error(fileURL, stepName || steps[currentStep].name, err.toString(),
+  /**
+   * @param {*} err An error.
+   * @param {string=} opt_stepName Step name.
+   */
+  function onError(err, opt_stepName) {
+    self.error(fileURL, opt_stepName || steps[currentStep].name, err.toString(),
         metadata);
   }
 

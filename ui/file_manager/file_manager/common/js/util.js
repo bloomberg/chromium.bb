@@ -200,26 +200,6 @@ util.bytesToString = function(bytes) {
 };
 
 /**
- * Utility function to read specified range of bytes from file
- * @param {File} file The file to read.
- * @param {number} begin Starting byte(included).
- * @param {number} end Last byte(excluded).
- * @param {function(File, ByteReader)} callback Callback to invoke.
- * @param {function(string)} onError Error handler.
- */
-util.readFileBytes = function(file, begin, end, callback, onError) {
-  var fileReader = new FileReader();
-  fileReader.onerror = function(event) {
-    onError(event.type);
-  };
-  fileReader.onloadend = function() {
-    callback(file, new ByteReader(
-        /** @type {ArrayBuffer} */ (fileReader.result)));
-  };
-  fileReader.readAsArrayBuffer(file.slice(begin, end));
-};
-
-/**
  * Returns a string '[Ctrl-][Alt-][Shift-][Meta-]' depending on the event
  * modifiers. Convenient for writing out conditions in keyboard handlers.
  *

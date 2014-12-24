@@ -20,7 +20,7 @@ SimpleImageParser.prototype = {__proto__: ImageParser.prototype};
 SimpleImageParser.prototype.parse = function(
     file, metadata, callback, errorCallback) {
   var self = this;
-  util.readFileBytes(
+  MetadataParser.readFileBytes(
       file, 0, this.headerSize,
       function(file, br) {
         try {
