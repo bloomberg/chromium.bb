@@ -183,14 +183,20 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
-  this.taskId_ = util.loadImage(
-      this.image_,
+  this.taskId_ = ImageLoaderClient.loadToImage(
       this.thumbnailUrl_,
-      { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+      this.image_,
+      {
+        maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
         priority: this.priority_,
-        timestamp: modificationTime },
+        timestamp: modificationTime
+      },
+      function() {},
+      function() {
+        this.image_.onerror(new Event('load-error'));
+      }.bind(this),
       function() {
         if (opt_optimizationMode ==
             ThumbnailLoader.OptimizationMode.DISCARD_DETACHED &&
@@ -209,7 +215,7 @@ ThumbnailLoader.prototype.cancel = function() {
   if (this.taskId_) {
     this.image_.onload = function() {};
     this.image_.onerror = function() {};
-    util.cancelLoadImage(this.taskId_);
+    ImageLoaderClient.getInstance().cancel(this.taskId_);
     this.taskId_ = null;
   }
 };
@@ -266,14 +272,20 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
-  this.taskId_ = util.loadImage(
-      this.image_,
+  this.taskId_ = ImageLoaderClient.loadToImage(
       this.thumbnailUrl_,
-      { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+      this.image_,
+      {
+        maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
         priority: this.priority_,
-        timestamp: modificationTime });
+        timestamp: modificationTime
+      },
+      function() {},
+      function() {
+        this.image_.onerror(new Event('load-error'));
+      }.bind(this));
 };
 
 /**

@@ -486,37 +486,6 @@ util.AppCache.cleanup_ = function(map) {
 };
 
 /**
- * Load an image.
- *
- * @param {HTMLImageElement} image Image element.
- * @param {string} url Source url.
- * @param {Object=} opt_options Hash array of options, eg. width, height,
- *     maxWidth, maxHeight, scale, cache.
- * @param {function()=} opt_isValid Function returning false iff the task
- *     is not valid and should be aborted.
- * @return {?number} Task identifier or null if fetched immediately from
- *     cache.
- */
-util.loadImage = function(image, url, opt_options, opt_isValid) {
-  return ImageLoaderClient.loadToImage(url,
-                                       image,
-                                       opt_options || {},
-                                       function() {},
-                                       function() {
-                                         image.onerror(new Event('load-error'));
-                                       },
-                                       opt_isValid);
-};
-
-/**
- * Cancels loading an image.
- * @param {number} taskId Task identifier returned by util.loadImage().
- */
-util.cancelLoadImage = function(taskId) {
-  ImageLoaderClient.getInstance().cancel(taskId);
-};
-
-/**
  * Returns true if the board of the device matches the given prefix.
  * @param {string} boardPrefix The board prefix to match against.
  *     (ex. "x86-mario". Prefix is used as the actual board name comes with
