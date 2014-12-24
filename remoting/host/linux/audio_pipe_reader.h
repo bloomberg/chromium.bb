@@ -82,6 +82,12 @@ class AudioPipeReader
   base::RepeatingTimer<AudioPipeReader> timer_;
   scoped_refptr<ObserverListThreadSafe<StreamObserver> > observers_;
 
+  // Size of the pipe buffer.
+  int pipe_buffer_size_;
+
+  // Period between pipe reads.
+  base::TimeDelta capture_period_;
+
   // Time when capturing was started.
   base::TimeTicks started_time_;
 

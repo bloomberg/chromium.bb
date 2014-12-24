@@ -21,16 +21,6 @@ const int kSampleBytesPerSecond = AudioPipeReader::kSamplingRate *
                                   AudioPipeReader::kChannels *
                                   AudioPipeReader::kBytesPerSample;
 
-// Read data from the pipe every 40ms.
-const int kCapturingPeriodMs = 40;
-
-// Size of the pipe buffer in milliseconds.
-const int kPipeBufferSizeMs = kCapturingPeriodMs * 2;
-
-// Size of the pipe buffer in bytes.
-const int kPipeBufferSizeBytes = kPipeBufferSizeMs * kSampleBytesPerSecond /
-    base::Time::kMillisecondsPerSecond;
-
 #if !defined(F_SETPIPE_SZ)
 // F_SETPIPE_SZ is supported only starting linux 2.6.35, but we want to be able
 // to compile this code on machines with older kernel.
@@ -128,11 +118,16 @@ void AudioPipeReader::TryOpenPipe() {
   pipe_ = new_pipe.Pass();
 
   if (pipe_.IsValid()) {
-    // Set buffer size for the pipe.
-    if (HANDLE_EINTR(fcntl(
-            pipe_.GetPlatformFile(), F_SETPIPE_SZ, kPipeBufferSizeBytes)) < 0) {
-      PLOG(ERROR) << "fcntl";
+    // Get buffer size for the pipe.
+    pipe_buffer_size_ = fpathconf(pipe_.GetPlatformFile(), _PC_PIPE_BUF);
+    if (pipe_buffer_size_ < 0) {
+      PLOG(ERROR) << "fpathconf(_PC_PIPE_BUF)";
+      pipe_buffer_size_ = 4096;
     }
+
+    // Read from the pipe twice per buffer length, to avoid starving the stream.
+    capture_period_ = base::TimeDelta::FromSeconds(1) * pipe_buffer_size_ /
+                      kSampleBytesPerSecond / 2;
 
     WaitForPipeReadable();
   }
@@ -142,8 +137,7 @@ void AudioPipeReader::StartTimer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   started_time_ = base::TimeTicks::Now();
   last_capture_position_ = 0;
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kCapturingPeriodMs),
-               this, &AudioPipeReader::DoCapture);
+  timer_.Start(FROM_HERE, capture_period_, this, &AudioPipeReader::DoCapture);
 }
 
 void AudioPipeReader::DoCapture() {
@@ -192,8 +186,8 @@ void AudioPipeReader::DoCapture() {
   // to read |bytes_to_read| bytes, but in case it's misbehaving we need to make
   // sure that |stream_position_bytes| doesn't go out of sync with the current
   // stream position.
-  if (stream_position_bytes - last_capture_position_ > kPipeBufferSizeBytes)
-    last_capture_position_ = stream_position_bytes - kPipeBufferSizeBytes;
+  if (stream_position_bytes - last_capture_position_ > pipe_buffer_size_)
+    last_capture_position_ = stream_position_bytes - pipe_buffer_size_;
   DCHECK_LE(last_capture_position_, stream_position_bytes);
 
   // Dispatch asynchronous notification to the stream observers.
