@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -204,6 +205,59 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   chrome::Reload(browser(), CURRENT_TAB);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+}
+
+// Test for http://crbug.com/444722, which is not fixed yet.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
+                       DISABLED_NavigateAwayFromHungRenderer) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ShowTaskManager();
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  GURL url1(embedded_test_server()->GetURL("/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+
+  // Open a new tab and make sure the task manager notices it.
+  AddTabAtIndex(0, url1, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchTab("Title Of Awesomeness")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Initiate a navigation that will create a new WebContents in the same
+  // SiteInstace...
+  content::WebContentsAddedObserver web_contents_added_observer;
+  tab1->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("window.open('title3.html', '_blank');"));
+  // ... then immediately hang the renderer so that title3.html can't load.
+  tab1->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("while(1);"));
+
+  // Blocks until a new WebContents appears.
+  WebContents* tab2 = web_contents_added_observer.GetWebContents();
+
+  // Make sure the new WebContents is in tab1's hung renderer process.
+  ASSERT_NE(nullptr, tab2);
+  ASSERT_NE(tab1, tab2);
+  ASSERT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess())
+      << "New WebContents must be in the same process as the old WebContents, "
+      << "so that the new tab doesn't finish loading (what this test is all "
+      << "about)";
+  ASSERT_EQ(tab1->GetSiteInstance(), tab2->GetSiteInstance())
+      << "New WebContents must initially be in the same site instance as the "
+      << "old WebContents";
+
+  // Now navigate this tab to a different site. This should wind up in a
+  // different renderer process, so it should complete and show up in the task
+  // manager.
+  tab2->OpenURL(content::OpenURLParams(url3, content::Referrer(), CURRENT_TAB,
+                                       ui::PAGE_TRANSITION_TYPED, false));
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("iframe test")));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanel) {

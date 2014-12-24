@@ -15,6 +15,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/browser_context.h"
@@ -838,6 +839,68 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   *message = message_queue_.front();
   message_queue_.pop();
   return true;
+}
+
+class WebContentsAddedObserver::RenderViewCreatedObserver
+    : public WebContentsObserver {
+ public:
+  explicit RenderViewCreatedObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        render_view_created_called_(false),
+        main_frame_created_called_(false) {}
+
+  // WebContentsObserver:
+  void RenderViewCreated(RenderViewHost* rvh) override {
+    render_view_created_called_ = true;
+  }
+
+  void RenderFrameCreated(RenderFrameHost* rfh) override {
+    if (rfh == web_contents()->GetMainFrame())
+      main_frame_created_called_ = true;
+  }
+
+  bool render_view_created_called_;
+  bool main_frame_created_called_;
+};
+
+WebContentsAddedObserver::WebContentsAddedObserver()
+    : web_contents_created_callback_(
+          base::Bind(&WebContentsAddedObserver::WebContentsCreated,
+                     base::Unretained(this))),
+      web_contents_(NULL) {
+  WebContentsImpl::FriendZone::AddCreatedCallbackForTesting(
+      web_contents_created_callback_);
+}
+
+WebContentsAddedObserver::~WebContentsAddedObserver() {
+  WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(
+      web_contents_created_callback_);
+}
+
+void WebContentsAddedObserver::WebContentsCreated(WebContents* web_contents) {
+  DCHECK(!web_contents_);
+  web_contents_ = web_contents;
+  child_observer_.reset(new RenderViewCreatedObserver(web_contents));
+
+  if (runner_.get())
+    runner_->QuitClosure().Run();
+}
+
+WebContents* WebContentsAddedObserver::GetWebContents() {
+  if (web_contents_)
+    return web_contents_;
+
+  runner_ = new MessageLoopRunner();
+  runner_->Run();
+  return web_contents_;
+}
+
+bool WebContentsAddedObserver::RenderViewCreatedCalled() {
+  if (child_observer_) {
+    return child_observer_->render_view_created_called_ &&
+           child_observer_->main_frame_created_called_;
+  }
+  return false;
 }
 
 }  // namespace content

@@ -27,9 +27,7 @@ class Rect;
 namespace content {
 
 class MessageLoopRunner;
-class RenderViewCreatedObserver;
 class Shell;
-class WebContents;
 
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in
@@ -91,33 +89,6 @@ class ShellAddedObserver {
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellAddedObserver);
-};
-
-// Used to wait for a new WebContents to be created. Instantiate this object
-// before the operation that will create the window.
-class WebContentsAddedObserver {
- public:
-  WebContentsAddedObserver();
-  ~WebContentsAddedObserver();
-
-  // Will run a message loop to wait for the new window if it hasn't been
-  // created since the constructor
-  WebContents* GetWebContents();
-
-  // Will tell whether RenderViewCreated Callback has invoked
-  bool RenderViewCreatedCalled();
-
-  base::Callback<void(WebContents*)> web_contents_created_callback_;
-
- private:
-  void WebContentsCreated(WebContents* web_contents);
-
-  // Callback invoked on WebContents creation.
-  WebContents* web_contents_;
-  scoped_ptr<RenderViewCreatedObserver> child_observer_;
-  scoped_refptr<MessageLoopRunner> runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);
 };
 
 #if defined OS_MACOSX
