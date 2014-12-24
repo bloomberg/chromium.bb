@@ -428,6 +428,12 @@
             '../ipc/ipc.gyp:ipc',
           ],
           'sources': [
+            'browser/media/cma_message_filter_host.cc',
+            'browser/media/cma_message_filter_host.h',
+            'browser/media/cma_message_loop.cc',
+            'browser/media/cma_message_loop.h',
+            'browser/media/media_pipeline_host.cc',
+            'browser/media/media_pipeline_host.h',
             'common/media/cma_ipc_common.h',
             'common/media/cma_messages.h',
             'common/media/cma_message_generator.cc',
