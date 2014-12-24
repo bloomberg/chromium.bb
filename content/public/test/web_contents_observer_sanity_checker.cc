@@ -174,7 +174,10 @@ void WebContentsObserverSanityChecker::FrameDetached(
 bool WebContentsObserverSanityChecker::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
+#if !defined(OS_MACOSX)
+// TODO(avi): Disabled because of http://crbug.com/445054
   AssertFrameExists(render_frame_host);
+#endif
   return false;
 }
 
