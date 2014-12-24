@@ -158,8 +158,8 @@ class UsbDeviceHandleImpl::Transfer {
   static scoped_ptr<Transfer> CreateControlTransfer(
       uint8 type,
       uint8 request,
-      uint8 value,
-      uint8 index,
+      uint16 value,
+      uint16 index,
       uint16 length,
       scoped_refptr<net::IOBuffer> buffer,
       unsigned int timeout,
@@ -220,8 +220,8 @@ scoped_ptr<UsbDeviceHandleImpl::Transfer>
 UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
     uint8 type,
     uint8 request,
-    uint8 value,
-    uint8 index,
+    uint16 value,
+    uint16 index,
     uint16 length,
     scoped_refptr<net::IOBuffer> buffer,
     unsigned int timeout,
@@ -232,6 +232,7 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
+    LOG(ERROR) << "Failed to allocate control transfer.";
     return nullptr;
   }
 
@@ -259,6 +260,7 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
+    LOG(ERROR) << "Failed to allocate bulk transfer.";
     return nullptr;
   }
 
@@ -285,6 +287,7 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
+    LOG(ERROR) << "Failed to allocate interrupt transfer.";
     return nullptr;
   }
 
@@ -314,8 +317,9 @@ UsbDeviceHandleImpl::Transfer::CreateIsochronousTransfer(
   scoped_ptr<Transfer> transfer(
       new Transfer(USB_TRANSFER_ISOCHRONOUS, buffer, length, callback));
 
-  transfer->platform_transfer_ = libusb_alloc_transfer(0);
+  transfer->platform_transfer_ = libusb_alloc_transfer(packets);
   if (!transfer->platform_transfer_) {
+    LOG(ERROR) << "Failed to allocate isochronous transfer.";
     return nullptr;
   }
 
