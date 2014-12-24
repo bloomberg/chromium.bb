@@ -38,7 +38,7 @@
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
@@ -286,8 +286,10 @@ chromeos::ErrorScreen* WizardController::GetErrorScreen() {
 
 BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
-    return new chromeos::NetworkScreen(this,
-                                       oobe_display_->GetNetworkScreenActor());
+    scoped_ptr<NetworkScreen> screen(new chromeos::NetworkScreen(
+        this, this, oobe_display_->GetNetworkView()));
+    screen->Initialize(nullptr /* context */);
+    return screen.release();
   } else if (screen_name == kErrorScreenName) {
     return new chromeos::ErrorScreen(this,
                                      oobe_display_->GetErrorScreenActor());
@@ -1039,13 +1041,11 @@ bool WizardController::GetUsageStatisticsReporting() const {
 
 void WizardController::SetHostConfiguration() {
   if (shark_controller_) {
-    NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
+    NetworkScreen* network_screen = NetworkScreen::Get(this);
     shark_controller_->SetHostConfiguration(
         true,  // Eula must be accepted before we get this far.
-        network_actor->GetApplicationLocale(),
-        network_actor->GetTimezone(),
-        GetUsageStatisticsReporting(),
-        network_actor->GetInputMethod());
+        network_screen->GetApplicationLocale(), network_screen->GetTimezone(),
+        GetUsageStatisticsReporting(), network_screen->GetInputMethod());
   }
 }
 
@@ -1059,10 +1059,16 @@ void WizardController::ConfigureHost(bool accepted_eula,
   if (accepted_eula)  // Always true.
     StartupUtils::MarkEulaAccepted();
   SetUsageStatisticsReporting(send_reports);
-  NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
-  network_actor->SetApplicationLocale(lang);
-  network_actor->SetTimezone(timezone);
-  network_actor->SetInputMethod(keyboard_layout);
+
+  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  network_screen->SetApplicationLocale(lang);
+  network_screen->SetTimezone(timezone);
+  network_screen->SetInputMethod(keyboard_layout);
+}
+
+void WizardController::OnEnableDebuggingScreenRequested() {
+  if (!login_screen_started())
+    AdvanceToScreen(WizardController::kEnableDebuggingScreenName);
 }
 
 void WizardController::OnAccessibilityStatusChanged(

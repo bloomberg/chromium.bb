@@ -50,11 +50,11 @@ cr.define('cr.ui.Oobe', function() {
         }
       }
       if (callback) {
-        var sendCallback = function() {
-          chrome.send(callback, [select.options[select.selectedIndex].value]);
+        var runCallback = function() {
+          callback(select.options[select.selectedIndex].value);
         };
-        select.addEventListener('blur', sendCallback);
-        select.addEventListener('click', sendCallback);
+        select.addEventListener('blur', runCallback);
+        select.addEventListener('click', runCallback);
         select.addEventListener('keyup', function(event) {
           var keycodeInterested = [
             9,  // Tab
@@ -62,7 +62,7 @@ cr.define('cr.ui.Oobe', function() {
             27,  // Escape
           ];
           if (keycodeInterested.indexOf(event.keyCode) >= 0)
-            sendCallback();
+            runCallback();
         });
       }
     },
@@ -280,9 +280,9 @@ cr.define('cr.ui.Oobe', function() {
       i18nTemplate.process(document, loadTimeData);
 
       // Update language and input method menu lists.
-      Oobe.setupSelect($('language-select'), data.languageList, '');
-      Oobe.setupSelect($('keyboard-select'), data.inputMethodsList, '');
-      Oobe.setupSelect($('timezone-select'), data.timezoneList, '');
+      Oobe.setupSelect($('language-select'), data.languageList);
+      Oobe.setupSelect($('keyboard-select'), data.inputMethodsList);
+      Oobe.setupSelect($('timezone-select'), data.timezoneList);
 
       // Update localized content of the screens.
       Oobe.updateLocalizedContent();

@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/screens/model_view_channel.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -78,7 +79,8 @@ class LocalizedValuesBuilder {
 };
 
 // Base class for the OOBE/Login WebUI handlers.
-class BaseScreenHandler : public content::WebUIMessageHandler {
+class BaseScreenHandler : public content::WebUIMessageHandler,
+                          public ModelViewChannel {
  public:
   // C-tor used when JS screen prefix is not needed.
   BaseScreenHandler();
@@ -94,6 +96,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() override;
+
+  // ModelViewChannel implementation:
+  virtual void CommitContextChanges(const base::DictionaryValue& diff) override;
 
   // This method is called when page is ready. It propagates to inherited class
   // via virtual Initialize() method (see below).
@@ -233,7 +238,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   // Returns the window which shows us.
   virtual gfx::NativeWindow GetNativeWindow();
 
-  void set_base_screen(BaseScreen* base_screen) { base_screen_ = base_screen; }
+  void SetBaseScreen(BaseScreen* base_screen);
 
  private:
   // Returns full name of JS method based on screen and method
@@ -262,6 +267,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   // non empty value, the Initialize will be deferred until the underlying load
   // is finished.
   std::string async_assets_load_id_;
+
+  // Pending changes to context which will be sent when the page will be ready.
+  base::DictionaryValue pending_context_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreenHandler);
 };

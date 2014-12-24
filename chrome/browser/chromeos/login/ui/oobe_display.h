@@ -26,7 +26,7 @@ class HIDDetectionScreenActor;
 class HostPairingScreenActor;
 class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
-class NetworkScreenActor;
+class NetworkView;
 class ResetScreenActor;
 class SupervisedUserCreationScreenHandler;
 class TermsOfServiceScreenActor;
@@ -74,7 +74,7 @@ class OobeDisplay {
   // must be owned by the OobeDisplay implementation.
   virtual CoreOobeActor* GetCoreOobeActor() = 0;
   virtual UpdateScreenActor* GetUpdateScreenActor() = 0;
-  virtual NetworkScreenActor* GetNetworkScreenActor() = 0;
+  virtual NetworkView* GetNetworkView() = 0;
   virtual EulaView* GetEulaView() = 0;
   virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() = 0;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() = 0;

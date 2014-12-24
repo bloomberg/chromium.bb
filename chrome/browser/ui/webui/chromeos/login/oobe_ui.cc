@@ -194,28 +194,28 @@ const char OobeUI::kScreenDeviceDisabled[] = "device-disabled";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
-      core_handler_(NULL),
-      network_dropdown_handler_(NULL),
-      update_screen_handler_(NULL),
-      network_screen_actor_(NULL),
-      debugging_screen_actor_(NULL),
-      eula_view_(NULL),
-      hid_detection_screen_actor_(NULL),
-      reset_screen_actor_(NULL),
-      autolaunch_screen_actor_(NULL),
-      kiosk_enable_screen_actor_(NULL),
-      wrong_hwid_screen_actor_(NULL),
-      auto_enrollment_check_screen_actor_(NULL),
-      supervised_user_creation_screen_actor_(NULL),
-      app_launch_splash_screen_actor_(NULL),
-      controller_pairing_screen_actor_(NULL),
-      host_pairing_screen_actor_(NULL),
-      device_disabled_screen_actor_(NULL),
-      error_screen_handler_(NULL),
-      signin_screen_handler_(NULL),
-      terms_of_service_screen_actor_(NULL),
-      user_image_screen_actor_(NULL),
-      kiosk_app_menu_handler_(NULL),
+      core_handler_(nullptr),
+      network_dropdown_handler_(nullptr),
+      update_screen_handler_(nullptr),
+      network_view_(nullptr),
+      debugging_screen_actor_(nullptr),
+      eula_view_(nullptr),
+      hid_detection_screen_actor_(nullptr),
+      reset_screen_actor_(nullptr),
+      autolaunch_screen_actor_(nullptr),
+      kiosk_enable_screen_actor_(nullptr),
+      wrong_hwid_screen_actor_(nullptr),
+      auto_enrollment_check_screen_actor_(nullptr),
+      supervised_user_creation_screen_actor_(nullptr),
+      app_launch_splash_screen_actor_(nullptr),
+      controller_pairing_screen_actor_(nullptr),
+      host_pairing_screen_actor_(nullptr),
+      device_disabled_screen_actor_(nullptr),
+      error_screen_handler_(nullptr),
+      signin_screen_handler_(nullptr),
+      terms_of_service_screen_actor_(nullptr),
+      user_image_screen_actor_(nullptr),
+      kiosk_app_menu_handler_(nullptr),
       current_screen_(SCREEN_UNKNOWN),
       previous_screen_(SCREEN_UNKNOWN),
       ready_(false) {
@@ -239,7 +239,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   if (display_type_ == kOobeDisplay || display_type_ == kNewOobeDisplay) {
     NetworkScreenHandler* network_screen_handler =
         new NetworkScreenHandler(core_handler_);
-    network_screen_actor_ = network_screen_handler;
+    network_view_ = network_screen_handler;
     AddScreenHandler(network_screen_handler);
   }
 
@@ -386,7 +386,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 }
 
 OobeUI::~OobeUI() {
-  core_handler_->SetDelegate(NULL);
+  core_handler_->SetDelegate(nullptr);
   network_dropdown_handler_->RemoveObserver(update_screen_handler_);
 }
 
@@ -398,8 +398,8 @@ UpdateScreenActor* OobeUI::GetUpdateScreenActor() {
   return update_screen_handler_;
 }
 
-NetworkScreenActor* OobeUI::GetNetworkScreenActor() {
-  return network_screen_actor_;
+NetworkView* OobeUI::GetNetworkView() {
+  return network_view_;
 }
 
 EulaView* OobeUI::GetEulaView() {
@@ -601,8 +601,8 @@ void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
 }
 
 void OobeUI::ResetSigninScreenHandlerDelegate() {
-  signin_screen_handler_->SetDelegate(NULL);
-  signin_screen_handler_->SetNativeWindowDelegate(NULL);
+  signin_screen_handler_->SetDelegate(nullptr);
+  signin_screen_handler_->SetNativeWindowDelegate(nullptr);
 }
 
 

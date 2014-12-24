@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 
 class PrefRegistrySimple;
@@ -43,7 +44,6 @@ class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
 class LoginScreenContext;
-class NetworkScreen;
 class OobeDisplay;
 class SimpleGeolocationProvider;
 class SupervisedUserCreationScreen;
@@ -58,7 +58,8 @@ class WizardController : public BaseScreenDelegate,
                          public ScreenManager,
                          public EulaScreen::Delegate,
                          public ControllerPairingScreen::Delegate,
-                         public HostPairingScreen::Delegate {
+                         public HostPairingScreen::Delegate,
+                         public NetworkScreen::Delegate {
  public:
   // Observes screen changes.
   class Observer {
@@ -252,6 +253,9 @@ class WizardController : public BaseScreenDelegate,
                              const std::string& timezone,
                              bool send_reports,
                              const std::string& keyboard_layout) override;
+
+  // Override from NetworkScreen::Delegate:
+  virtual void OnEnableDebuggingScreenRequested() override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

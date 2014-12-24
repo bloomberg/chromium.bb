@@ -7,7 +7,7 @@
 
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
-#include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -15,35 +15,37 @@ namespace chromeos {
 class MockNetworkScreen : public NetworkScreen {
  public:
   MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                    NetworkScreenActor* actor);
+                    Delegate* delegate,
+                    NetworkView* view);
   virtual ~MockNetworkScreen();
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
 };
 
-class MockNetworkScreenActor : public NetworkScreenActor {
+class MockNetworkView : public NetworkView {
  public:
-  MockNetworkScreenActor();
-  virtual ~MockNetworkScreenActor();
+  MockNetworkView();
+  virtual ~MockNetworkView();
 
-  virtual void SetDelegate(Delegate* delegate);
+  virtual void Bind(NetworkModel& model) override;
+  virtual void Unbind() override;
 
-  MOCK_METHOD1(MockSetDelegate, void(Delegate* delegate));
+  MOCK_METHOD1(MockBind, void(NetworkModel& model));
+  MOCK_METHOD0(MockUnbind, void());
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(ShowError, void(const base::string16& message));
   MOCK_METHOD0(ClearErrors, void());
+  MOCK_METHOD0(StopDemoModeDetection, void());
   MOCK_METHOD2(ShowConnectingStatus,
                void(bool connecting, const base::string16& network_id));
   MOCK_METHOD1(EnableContinue, void(bool enabled));
-  MOCK_CONST_METHOD0(GetApplicationLocale, std::string());
-  MOCK_CONST_METHOD0(GetInputMethod, std::string());
-  MOCK_CONST_METHOD0(GetTimezone, std::string());
-  MOCK_METHOD1(SetApplicationLocale, void(const std::string& locale));
-  MOCK_METHOD1(SetInputMethod, void(const std::string& input_method));
-  MOCK_METHOD1(SetTimezone, void(const std::string& timezone));
+  MOCK_METHOD0(ReloadLocalizedContent, void());
 
  private:
-  Delegate* delegate_;
+  NetworkModel* model_;
 };
 
 }  // namespace chromeos

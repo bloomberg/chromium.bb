@@ -107,14 +107,14 @@ void EulaScreenHandler::Hide() {
 
 void EulaScreenHandler::Bind(EulaModel& model) {
   model_ = &model;
-  BaseScreenHandler::set_base_screen(model_);
+  BaseScreenHandler::SetBaseScreen(model_);
   if (page_is_ready())
     Initialize();
 }
 
 void EulaScreenHandler::Unbind() {
   model_ = nullptr;
-  BaseScreenHandler::set_base_screen(nullptr);
+  BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
 void EulaScreenHandler::DeclareLocalizedValues(

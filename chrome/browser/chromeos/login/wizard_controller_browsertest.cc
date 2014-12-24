@@ -257,6 +257,12 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
                WizardController::default_controller())->GetErrorScreen();
   }
 
+  OobeUI* GetOobeUI() {
+    OobeUI* oobe_ui = static_cast<LoginDisplayHostImpl*>(
+                          LoginDisplayHostImpl::default_host())->GetOobeUI();
+    return oobe_ui;
+  }
+
   content::WebContents* GetWebContents() {
     LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
         LoginDisplayHostImpl::default_host());
@@ -424,10 +430,15 @@ class WizardControllerFlowTest : public WizardControllerTest {
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
 
     // Set up the mocks for all screens.
-    MOCK(mock_network_screen_,
-         kNetworkScreenName,
-         MockNetworkScreen,
-         MockNetworkScreenActor);
+    mock_network_screen_.reset(new MockNetworkScreen(
+        WizardController::default_controller(),
+        WizardController::default_controller(), GetOobeUI()->GetNetworkView()));
+    mock_network_screen_->Initialize(nullptr /* context */);
+    WizardController::default_controller()
+        ->screens_[WizardController::kNetworkScreenName] = mock_network_screen_;
+    EXPECT_CALL(*mock_network_screen_, Show()).Times(0);
+    EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);
+
     MOCK(mock_update_screen_,
          kUpdateScreenName,
          MockUpdateScreen,
@@ -462,6 +473,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   }
 
   void TearDownOnMainThread() override {
+    mock_network_screen_.reset();
     device_disabled_screen_actor_.reset();
     WizardControllerTest::TearDownOnMainThread();
   }
@@ -523,8 +535,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         WizardController::kAutoEnrollmentCheckScreenName);
   }
 
-  MockOutShowHide<MockNetworkScreen, MockNetworkScreenActor>*
-      mock_network_screen_;
+  linked_ptr<MockNetworkScreen> mock_network_screen_;
   MockOutShowHide<MockUpdateScreen, MockUpdateScreenActor>* mock_update_screen_;
   MockOutShowHide<MockEulaScreen, MockEulaView>* mock_eula_screen_;
   MockOutShowHide<MockEnrollmentScreen,
@@ -1166,10 +1177,8 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
 
     // Set up the mocks for all screens.
-    MOCK(mock_network_screen_,
-         kNetworkScreenName,
-         MockNetworkScreen,
-         MockNetworkScreenActor);
+    MOCK_WITH_DELEGATE(mock_network_screen_, kNetworkScreenName,
+                       MockNetworkScreen, MockNetworkView);
     MOCK(mock_enrollment_screen_,
          kEnrollmentScreenName,
          MockEnrollmentScreen,
@@ -1185,8 +1194,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     return WizardController::default_controller()->first_screen_name();
   }
 
-  MockOutShowHide<MockNetworkScreen, MockNetworkScreenActor>*
-      mock_network_screen_;
+  MockOutShowHide<MockNetworkScreen, MockNetworkView>* mock_network_screen_;
   MockOutShowHide<MockEnrollmentScreen,
       MockEnrollmentScreenActor>* mock_enrollment_screen_;
 

@@ -98,7 +98,7 @@ class OobeUI : public OobeDisplay,
   // OobeDisplay implementation:
   virtual CoreOobeActor* GetCoreOobeActor() override;
   virtual UpdateScreenActor* GetUpdateScreenActor() override;
-  virtual NetworkScreenActor* GetNetworkScreenActor() override;
+  virtual NetworkView* GetNetworkView() override;
   virtual EulaView* GetEulaView() override;
   virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() override;
@@ -187,7 +187,7 @@ class OobeUI : public OobeDisplay,
 
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
   UpdateScreenHandler* update_screen_handler_;
-  NetworkScreenActor* network_screen_actor_;
+  NetworkView* network_view_;
   EnableDebuggingScreenActor* debugging_screen_actor_;
   EulaView* eula_view_;
   EnrollmentScreenActor* enrollment_screen_actor_;

@@ -67,7 +67,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);
     network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
-    ASSERT_TRUE(network_screen_->actor() != NULL);
+    ASSERT_TRUE(network_screen_->view_ != nullptr);
 
     mock_network_state_helper_ = new login::MockNetworkStateHelper;
     SetDefaultNetworkStateHelperExpectations();
@@ -83,7 +83,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
                 OnExit(_, BaseScreenDelegate::NETWORK_CONNECTED, _)).Times(1);
     EXPECT_CALL(*mock_network_state_helper_, IsConnected())
         .WillOnce(Return(true));
-    network_screen->OnContinuePressed();
+    network_screen->OnContinueButtonPressed();
     content::RunAllPendingInMessageLoop();
   }
 

@@ -7,11 +7,16 @@
  */
 
 login.createScreen('NetworkScreen', 'connect', function() {
+  var USER_ACTION_CONTINUE_BUTTON_CLICKED = 'continue';
+  var USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED =
+        'connect-debugging-features';
+  var CONTEXT_KEY_LOCALE = 'locale';
+  var CONTEXT_KEY_INPUT_METHOD = 'input-method';
+  var CONTEXT_KEY_TIMEZONE = 'timezone';
+  var CONTEXT_KEY_CONTINUE_BUTTON_ENABLED = 'continue-button-enabled';
+
   return {
     EXTERNAL_API: [
-      'enableContinueButton',
-      'setInputMethod',
-      'setTimezone',
       'showError'
     ],
 
@@ -22,29 +27,58 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
     /** @override */
     decorate: function() {
+      var self = this;
+
       Oobe.setupSelect($('language-select'),
                        loadTimeData.getValue('languageList'),
-                       'networkOnLanguageChanged');
-
+                       function(languageId) {
+                         self.context.set(CONTEXT_KEY_LOCALE, languageId);
+                         self.commitContextChanges();
+                       });
       Oobe.setupSelect($('keyboard-select'),
                        loadTimeData.getValue('inputMethodsList'),
-                       'networkOnInputMethodChanged');
-
+                       function(inputMethodId) {
+                         self.context.set(CONTEXT_KEY_INPUT_METHOD,
+                                          inputMethodId);
+                         self.commitContextChanges();
+                       });
       Oobe.setupSelect($('timezone-select'),
                        loadTimeData.getValue('timezoneList'),
-                       'networkOnTimezoneChanged');
+                       function(timezoneId) {
+                         self.context.set(CONTEXT_KEY_TIMEZONE, timezoneId);
+                         self.commitContextChanges();
+                       });
 
       this.dropdown_ = $('networks-list');
       cr.ui.DropDown.decorate(this.dropdown_);
 
-      $('connect-debugging-features-link').addEventListener('click',
-        this.handleDeveloperFeaturesLinkClick_.bind(this));
-      $('connect-debugging-features-link').addEventListener('keyup',
-        function(event) {
-          if (event.keyCode == 32)
-            this.handleDeveloperFeaturesLinkClick_(event);
-        }
-      );
+      this.declareUserAction(
+          $('connect-debugging-features-link'),
+          { action_id: USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED,
+            event: 'click'
+          });
+      this.declareUserAction(
+          $('connect-debugging-features-link'),
+          { action_id: USER_ACTION_CONNECT_DEBUGGING_FEATURES_CLICKED,
+            condition: function(event) { return event.keyCode == 32; },
+            event: 'keyup'
+          });
+
+      this.context.addObserver(
+          CONTEXT_KEY_INPUT_METHOD,
+          function(inputMethodId) {
+            option = $('keyboard-select').querySelector(
+                'option[value="' + inputMethodId + '"]');
+            if (option)
+              option.selected = true;
+          });
+      this.context.addObserver(CONTEXT_KEY_TIMEZONE, function(timezoneId) {
+        $('timezone-select').value = timezoneId;
+      });
+      this.context.addObserver(CONTEXT_KEY_CONTINUE_BUTTON_ENABLED,
+                               function(enabled) {
+        $('continue-button').disabled = !enabled;
+      });
     },
 
     onBeforeShow: function(data) {
@@ -55,7 +89,6 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
     onBeforeHide: function() {
       cr.ui.DropDown.hide('networks-list');
-      this.enableContinueButton(false);
     },
 
     /**
@@ -73,15 +106,13 @@ login.createScreen('NetworkScreen', 'connect', function() {
     get buttons() {
       var buttons = [];
 
-      var continueButton = this.ownerDocument.createElement('button');
-      continueButton.disabled = true;
-      continueButton.id = 'continue-button';
+      var continueButton = this.declareButton(
+          'continue-button',
+          USER_ACTION_CONTINUE_BUTTON_CLICKED);
+      continueButton.disabled = !this.context.get(
+          CONTEXT_KEY_CONTINUE_BUTTON_ENABLED, false /* default */);
       continueButton.textContent = loadTimeData.getString('continueButton');
       continueButton.classList.add('preserve-disabled-state');
-      continueButton.addEventListener('click', function(e) {
-        chrome.send('networkOnExit');
-        e.stopPropagation();
-      });
       buttons.push(continueButton);
 
       return buttons;
@@ -92,40 +123,6 @@ login.createScreen('NetworkScreen', 'connect', function() {
      */
     get defaultControl() {
       return $('language-select');
-    },
-
-    /**
-     * Enable developer features link handler.
-     */
-    handleDeveloperFeaturesLinkClick_: function() {
-      chrome.send('toggleEnableDebuggingScreen');
-    },
-
-    /**
-     * Enables/disables continue button.
-     * @param {boolean} enable Should the button be enabled?
-     */
-    enableContinueButton: function(enable) {
-      $('continue-button').disabled = !enable;
-    },
-
-    /**
-     * Sets the current input method.
-     * @param {string} inputMethodId The ID of the input method to select.
-     */
-    setInputMethod: function(inputMethodId) {
-      option = $('keyboard-select').querySelector(
-          'option[value="' + inputMethodId + '"]');
-      if (option)
-        option.selected = true;
-    },
-
-    /**
-     * Sets the current timezone.
-     * @param {string} timezoneId The timezone ID to select.
-     */
-    setTimezone: function(timezoneId) {
-      $('timezone-select').value = timezoneId;
     },
 
     /**

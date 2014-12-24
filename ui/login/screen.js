@@ -11,6 +11,8 @@ cr.define('login', function() {
 
   function doNothing() {};
 
+  function alwaysTruePredicate() { return true; }
+
   var querySelectorAll = HTMLDivElement.prototype.querySelectorAll;
 
   var Screen = function(sendPrefix) {
@@ -97,19 +99,53 @@ cr.define('login', function() {
     },
 
     /**
+     * Creates and returns new button element with given identifier
+     * and on-click event listener, which sends notification about
+     * user action to the C++ side.
+     *
+     * @param {string} id Identifier of a button.
+     * @param {string} opt_action_id Identifier of user action.
      * @final
      */
-    declareButton: function(id) {
-      var self = this;
+    declareButton: function(id, opt_action_id) {
       var button = this.ownerDocument.createElement('button');
       button.id = id;
+      this.declareUserAction(button,
+                             { action_id: opt_action_id,
+                               event: 'click'
+                             });
+      return button;
+    },
 
-      button.addEventListener('click', function(e) {
-        self.sendImpl_(CALLBACK_USER_ACTED, id);
+    /**
+      * Adds event listener to an element which sends notification
+      * about event to the C++ side.
+      *
+      * @param {Element} element An DOM element
+      * @param {Object} options A dictionary of optional arguments:
+      *   {string} event: name of event that will be listened,
+      *            default: 'click'.
+      *   {string} action_id: name of an action which will be sent to
+      *                       the C++ side.
+      *   {function} condition: a one-argument function which takes
+      *              event as an argument, notification is sent to the
+      *              C++ side iff condition is true, default: constant
+      *              true function.
+      * @final
+      */
+    declareUserAction: function(element, options) {
+      var self = this;
+      options = options || {};
+
+      var event = options.event || 'click';
+      var action_id = options.action_id || element.id;
+      var condition = options.condition || alwaysTruePredicate;
+
+      element.addEventListener(event, function(e) {
+        if (condition(e))
+          self.sendImpl_(CALLBACK_USER_ACTED, action_id);
         e.stopPropagation();
       });
-
-      return button;
     },
 
     /**

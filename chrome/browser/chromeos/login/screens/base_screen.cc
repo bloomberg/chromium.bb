@@ -6,17 +6,20 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/screens/model_view_channel.h"
 
 namespace chromeos {
 
 BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate)
-    : base_screen_delegate_(base_screen_delegate) {
+    : channel_(nullptr), base_screen_delegate_(base_screen_delegate) {
 }
 
 BaseScreen::~BaseScreen() {
 }
 
 void BaseScreen::Initialize(::login::ScreenContext* context) {
+  if (context)
+    context_.CopyFrom(*context);
 }
 
 void BaseScreen::OnShow() {
@@ -42,11 +45,26 @@ std::string BaseScreen::GetID() const {
   return GetName();
 }
 
+void BaseScreen::CommitContextChanges() {
+  if (!context_.HasChanges())
+    return;
+  if (!channel_) {
+    LOG(ERROR) << "Model-view channel for " << GetID()
+               << " is not ready, context changes are not sent to the view.";
+    return;
+  }
+  base::DictionaryValue diff;
+  context_.GetChangesAndReset(&diff);
+  channel_->CommitContextChanges(diff);
+}
+
 void BaseScreen::Finish(BaseScreenDelegate::ExitCodes exit_code) {
   base_screen_delegate_->OnExit(*this, exit_code, &context_);
 }
 
 void BaseScreen::SetContext(::login::ScreenContext* context) {
+  if (context)
+    context_.CopyFrom(*context);
 }
 
 void BaseScreen::OnUserAction(const std::string& action_id) {

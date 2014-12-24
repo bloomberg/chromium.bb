@@ -12,6 +12,10 @@
 
 namespace chromeos {
 
+namespace {
+const char kMethodContextChanged[] = "contextChanged";
+}  // namespace
+
 LocalizedValuesBuilder::LocalizedValuesBuilder(base::DictionaryValue* dict)
     : dict_(dict) {
 }
@@ -62,11 +66,12 @@ void LocalizedValuesBuilder::AddF(const std::string& key,
 }
 
 BaseScreenHandler::BaseScreenHandler()
-    : page_is_ready_(false) {
+    : page_is_ready_(false), base_screen_(nullptr) {
 }
 
 BaseScreenHandler::BaseScreenHandler(const std::string& js_screen_path)
     : page_is_ready_(false),
+      base_screen_(nullptr),
       js_screen_path_prefix_(js_screen_path + ".") {
   CHECK(!js_screen_path.empty());
 }
@@ -77,6 +82,10 @@ BaseScreenHandler::~BaseScreenHandler() {
 void BaseScreenHandler::InitializeBase() {
   page_is_ready_ = true;
   Initialize();
+  if (!pending_context_changes_.empty()) {
+    CommitContextChanges(pending_context_changes_);
+    pending_context_changes_.Clear();
+  }
 }
 
 void BaseScreenHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
@@ -91,6 +100,14 @@ void BaseScreenHandler::RegisterMessages() {
   AddPrefixedCallback("contextChanged",
                       &BaseScreenHandler::HandleContextChanged);
   DeclareJSCallbacks();
+}
+
+void BaseScreenHandler::CommitContextChanges(
+    const base::DictionaryValue& diff) {
+  if (!page_is_ready())
+    pending_context_changes_.MergeDictionary(&diff);
+  else
+    CallJS(kMethodContextChanged, diff);
 }
 
 void BaseScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -113,6 +130,16 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
 
 gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
   return LoginDisplayHostImpl::default_host()->GetNativeWindow();
+}
+
+void BaseScreenHandler::SetBaseScreen(BaseScreen* base_screen) {
+  if (base_screen_ == base_screen)
+    return;
+  if (base_screen_)
+    base_screen_->set_model_view_channel(nullptr);
+  base_screen_ = base_screen;
+  if (base_screen_)
+    base_screen_->set_model_view_channel(this);
 }
 
 std::string BaseScreenHandler::FullMethodPath(const std::string& method) const {

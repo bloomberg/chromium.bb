@@ -18,6 +18,8 @@ class DictionaryValue;
 
 namespace chromeos {
 
+class ModelViewChannel;
+
 // Base class for the all OOBE/login/before-session screens.
 // Screens are identified by ID, screen and it's JS counterpart must have same
 // id.
@@ -73,7 +75,12 @@ class BaseScreen {
   // Returns the identifier of the screen.
   virtual std::string GetID() const;
 
+  void set_model_view_channel(ModelViewChannel* channel) { channel_ = channel; }
+
  protected:
+  // Sends all pending context changes to the JS side.
+  void CommitContextChanges();
+
   // Screen can call this method to notify framework that it have finished
   // it's work with |outcome|.
   void Finish(BaseScreenDelegate::ExitCodes exit_code);
@@ -81,7 +88,7 @@ class BaseScreen {
   // Called when user action event with |event_id|
   // happened. Notification about this event comes from the JS
   // counterpart.
-  virtual void OnUserAction(const std::string& event_id);
+  virtual void OnUserAction(const std::string& action_id);
 
   // The method is called each time some key in screen context is
   // updated by JS side. Default implementation does nothing, so
@@ -111,6 +118,8 @@ class BaseScreen {
   // changed. Notification about this event comes from the JS
   // counterpart.
   void OnContextChanged(const base::DictionaryValue& diff);
+
+  ModelViewChannel* channel_;
 
   BaseScreenDelegate* base_screen_delegate_;
 

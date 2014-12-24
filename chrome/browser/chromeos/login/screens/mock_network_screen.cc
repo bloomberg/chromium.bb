@@ -7,29 +7,34 @@
 namespace chromeos {
 
 using ::testing::AtLeast;
-using ::testing::NotNull;
+using ::testing::_;
 
 MockNetworkScreen::MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                                     NetworkScreenActor* actor)
-    : NetworkScreen(base_screen_delegate, actor) {
+                                     Delegate* delegate,
+                                     NetworkView* view)
+    : NetworkScreen(base_screen_delegate, delegate, view) {
 }
 
 MockNetworkScreen::~MockNetworkScreen() {
 }
 
-
-MockNetworkScreenActor::MockNetworkScreenActor() {
-  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
+MockNetworkView::MockNetworkView() {
+  EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
 }
 
-MockNetworkScreenActor::~MockNetworkScreenActor() {
-  if (delegate_)
-    delegate_->OnActorDestroyed(this);
+MockNetworkView::~MockNetworkView() {
+  if (model_)
+    model_->OnViewDestroyed(this);
 }
 
-void MockNetworkScreenActor::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-  MockSetDelegate(delegate);
+void MockNetworkView::Bind(NetworkModel& model) {
+  model_ = &model;
+  MockBind(model);
+}
+
+void MockNetworkView::Unbind() {
+  model_ = nullptr;
+  MockUnbind();
 }
 
 }  // namespace chromeos

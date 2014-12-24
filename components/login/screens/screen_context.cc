@@ -122,6 +122,13 @@ String16List ScreenContext::GetString16List(
   return Get(key, default_value);
 }
 
+void ScreenContext::CopyFrom(ScreenContext& context) {
+  scoped_ptr<base::DictionaryValue> storage(context.storage_.DeepCopy());
+  scoped_ptr<base::DictionaryValue> changes(context.changes_.DeepCopy());
+  storage_.Swap(storage.get());
+  changes_.Swap(changes.get());
+}
+
 bool ScreenContext::HasKey(const KeyType& key) const {
   DCHECK(CalledOnValidThread());
   return storage_.HasKey(key);

@@ -12,8 +12,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -40,7 +42,32 @@ const char kKeyboardSelect[] = "keyboard-select";
 
 const char kUSLayout[] = "xkb:us::eng";
 
-}
+class LanguageListWaiter : public NetworkScreen::Observer {
+ public:
+  explicit LanguageListWaiter(base::RunLoop& loop)
+      : network_screen_(
+            NetworkScreen::Get(WizardController::default_controller())),
+        loop_(loop) {
+    network_screen_->AddObserver(this);
+    CheckLanguageList();
+  }
+
+  virtual ~LanguageListWaiter() { network_screen_->RemoveObserver(this); }
+
+  // NetworkScreen::Observer implementation:
+  virtual void OnLanguageListReloaded() override { CheckLanguageList(); }
+
+ private:
+  void CheckLanguageList() {
+    if (network_screen_->GetLanguageList())
+      loop_.Quit();
+  }
+
+  NetworkScreen* network_screen_;
+  base::RunLoop& loop_;
+};
+
+}  // namespace
 
 struct LocalizationTestParams {
   const char* initial_locale;
@@ -277,6 +304,12 @@ void OobeLocalizationTest::RunLocalizationTest() {
 
   const std::string expected_keyboard_select =
       TranslateXKB2Extension(expected_keyboard_select_control);
+
+  {
+    base::RunLoop loop;
+    LanguageListWaiter waiter(loop);
+    loop.Run();
+  }
 
   WaitUntilJSIsReady();
 

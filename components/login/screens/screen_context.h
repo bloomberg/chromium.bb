@@ -68,6 +68,9 @@ class LOGIN_EXPORT ScreenContext : public base::NonThreadSafe {
   String16List GetString16List(const KeyType& key,
                                const String16List& default_value) const;
 
+  // Copies internal state of |context|.
+  void CopyFrom(ScreenContext& context);
+
   // Returns true if context has |key|.
   bool HasKey(const KeyType& key) const;
 
