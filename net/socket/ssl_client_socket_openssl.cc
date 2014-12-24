@@ -931,14 +931,26 @@ bool SSLClientSocketOpenSSL::DoTransportIO() {
 }
 
 int SSLClientSocketOpenSSL::DoHandshake() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::DoHandshake1"));
-
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int net_error = OK;
-  int rv = SSL_do_handshake(ssl_);
+
+  int rv;
+
+  // TODO(vadimt): Leave only 1 call to SSL_do_handshake once crbug.com/424386
+  // is fixed.
+  if (ssl_config_.send_client_cert && ssl_config_.client_cert.get()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 DoHandshake_WithCert"));
+
+    rv = SSL_do_handshake(ssl_);
+  } else {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 DoHandshake_WithoutCert"));
+
+    rv = SSL_do_handshake(ssl_);
+  }
 
   if (client_auth_cert_needed_) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
@@ -1229,6 +1241,11 @@ void SSLClientSocketOpenSSL::UpdateServerCert() {
           "424386 SSLClientSocketOpenSSL::UpdateServerCert"));
 
   server_cert_chain_->Reset(SSL_get_peer_cert_chain(ssl_));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::UpdateServerCert1"));
   server_cert_ = server_cert_chain_->AsOSChain();
 
   if (server_cert_.get()) {
@@ -1241,6 +1258,12 @@ void SSLClientSocketOpenSSL::UpdateServerCert() {
     // update IsOCSPStaplingSupported for Mac. https://crbug.com/430714
     if (IsOCSPStaplingSupported()) {
 #if defined(OS_WIN)
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "424386 SSLClientSocketOpenSSL::UpdateServerCert2"));
+
       const uint8_t* ocsp_response_raw;
       size_t ocsp_response_len;
       SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
