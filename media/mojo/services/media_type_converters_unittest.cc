@@ -157,5 +157,22 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_NullExtraData) {
   EXPECT_TRUE(result.Matches(config));
 }
 
+TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
+  media::AudioDecoderConfig config;
+  config.Initialize(media::kCodecAAC,
+                    media::kSampleFormatU8,
+                    media::CHANNEL_LAYOUT_SURROUND,
+                    48000,
+                    NULL,
+                    0,
+                    true,  // Is encrypted.
+                    false,
+                    base::TimeDelta(),
+                    0);
+  AudioDecoderConfigPtr ptr(AudioDecoderConfig::From(config));
+  media::AudioDecoderConfig result(ptr.To<media::AudioDecoderConfig>());
+  EXPECT_TRUE(result.Matches(config));
+}
+
 }  // namespace test
 }  // namespace mojo

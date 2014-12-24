@@ -364,6 +364,7 @@ TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig>::Convert(
   }
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
   config->codec_delay = input.codec_delay();
+  config->is_encrypted = input.is_encrypted();
   return config.Pass();
 }
 
@@ -379,7 +380,7 @@ TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr>::Convert(
       input->samples_per_second,
       input->extra_data.size() ? &input->extra_data.front() : NULL,
       input->extra_data.size(),
-      false,
+      input->is_encrypted,
       false,
       base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
       input->codec_delay);

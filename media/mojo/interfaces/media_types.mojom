@@ -154,6 +154,7 @@ struct AudioDecoderConfig {
   array<uint8>? extra_data;
   int64 seek_preroll_usec;
   int32 codec_delay;
+  bool is_encrypted;
 };
 
 // This defines a mojo transport format for media::VideoDecoderConfig.
