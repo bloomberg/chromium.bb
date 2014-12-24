@@ -173,10 +173,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(switches::kForceTextBlobs);
     }
 
-    if (!command_line.HasSwitch(switches::kEnableDisplayList2dCanvas)) {
-      command_line.AppendSwitch(switches::kDisableDisplayList2dCanvas);
-    }
-
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);
     command_line.AppendSwitch(switches::kMuteAudio);
 

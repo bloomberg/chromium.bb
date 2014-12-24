@@ -145,14 +145,17 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!command_line.HasSwitch(switches::kDisableAcceleratedJpegDecoding))
     WebRuntimeFeatures::enableDecodeToYUV(true);
 
-  if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas))
-    WebRuntimeFeatures::enableDisplayList2dCanvas(true);
-
-  if (command_line.HasSwitch(switches::kDisableDisplayList2dCanvas))
+  if (command_line.HasSwitch(switches::kDisableDisplayList2dCanvas)) {
     WebRuntimeFeatures::enableDisplayList2dCanvas(false);
-
-  if (command_line.HasSwitch(switches::kForceDisplayList2dCanvas))
+  } else if (command_line.HasSwitch(switches::kForceDisplayList2dCanvas)) {
     WebRuntimeFeatures::forceDisplayList2dCanvas(true);
+  } else if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas)) {
+    WebRuntimeFeatures::enableDisplayList2dCanvas(true);
+  } else {
+    WebRuntimeFeatures::enableDisplayList2dCanvas(
+        base::FieldTrialList::FindFullName("DisplayList2dCanvas") == "Enabled"
+    );
+  }
 
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::enableWebGLDraftExtensions(true);
