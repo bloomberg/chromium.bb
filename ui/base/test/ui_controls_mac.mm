@@ -219,8 +219,28 @@ void EventQueueWatcher(const base::Closure& task) {
 NSWindow* WindowAtCurrentMouseLocation() {
   NSInteger window_number = [NSWindow windowNumberAtPoint:g_mouse_location
                               belowWindowWithWindowNumber:0];
-  return
+  NSWindow* window =
       [[NSApplication sharedApplication] windowWithWindowNumber:window_number];
+  if (window)
+    return window;
+
+  // It's possible for a window owned by another application to be at that
+  // location. Cocoa won't provide an NSWindow* for those. Tests should not care
+  // about other applications, and raising windows in a headless application is
+  // flaky due to OS restrictions. For tests, hunt through all of this
+  // application's windows, top to bottom, looking for a good candidate.
+  NSArray* window_list = [[NSApplication sharedApplication] orderedWindows];
+  for (window in window_list) {
+    // Note this skips the extra checks (e.g. fully-transparent windows), that
+    // +[NSWindow windowNumberAtPoint:] performs. Tests that care about that
+    // should check separately (the goal here is to minimize flakiness).
+    if (NSPointInRect(g_mouse_location, [window frame]))
+      return window;
+  }
+
+  // Note that -[NSApplication orderedWindows] won't include NSPanels. If a test
+  // uses those, it will need to handle that itself.
+  return nil;
 }
 
 }  // namespace
