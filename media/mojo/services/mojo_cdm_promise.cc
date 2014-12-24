@@ -40,6 +40,7 @@ MojoCdmPromise<T...>::~MojoCdmPromise() {
 
 template <typename... T>
 void MojoCdmPromise<T...>::resolve(const T&... result) {
+  MarkPromiseSettled();
   mojo::CdmPromiseResultPtr cdm_promise_result(mojo::CdmPromiseResult::New());
   cdm_promise_result->success = true;
   callback_.Run(cdm_promise_result.Pass(),
@@ -51,6 +52,7 @@ template <typename... T>
 void MojoCdmPromise<T...>::reject(MediaKeys::Exception exception,
                                   uint32_t system_code,
                                   const std::string& error_message) {
+  MarkPromiseSettled();
   callback_.Run(GetRejectResult(exception, system_code, error_message),
                 MojoTypeTrait<T>::DefaultValue()...);
   callback_.reset();
