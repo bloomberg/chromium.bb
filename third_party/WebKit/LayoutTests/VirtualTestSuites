@@ -93,11 +93,6 @@
              "--disable-composited-antialiasing"]
   },
   {
-    "prefix": "implsidepainting",
-    "base": "inspector/tracing",
-    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
-  },
-  {
     "prefix": "stable",
     "base": "fast/css3-text/css3-text-decoration/stable",
     "args": ["--stable-release-mode"]

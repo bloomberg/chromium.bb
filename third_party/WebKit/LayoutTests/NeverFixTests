@@ -169,3 +169,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 # aren't critical to run in this mode.
 virtual/threaded/printing/setPrinting.html [ WontFix ]
 virtual/threaded/printing/width-overflow.html [ WontFix ]
+
+# Deferred suite doesn't have impl-side painting, so this doesn't make sense
+virtual/deferred/inspector/tracing/paint-command-log-nodes.html [ WontFix ]
