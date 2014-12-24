@@ -260,16 +260,6 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 
     RefPtr<DocumentThreadableLoader> protect(this);
 
-    // FIXME: Support redirect in Fetch API.
-    if (resource->resourceRequest().requestContext() == blink::WebURLRequest::RequestContextFetch) {
-        m_client->didFailRedirectCheck();
-
-        clearResource();
-        request = ResourceRequest();
-
-        return;
-    }
-
     if (!isAllowedByContentSecurityPolicy(request.url())) {
         m_client->didFailRedirectCheck();
 

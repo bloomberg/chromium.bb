@@ -158,14 +158,7 @@ var TEST_TARGETS = [
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&ACACredentials=true',
    [fetchRejected]],
   [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
-   [fetchResolved, hasBody], [authCheck2]],
-
-  // Redirect
-  // FIXME: Currently we don't support redirect in Fech() API.
-  [REDIRECT_URL + encodeURIComponent(BASE_URL),
-   [fetchRejected]],
-  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL),
-   [fetchRejected]]
+   [fetchResolved, hasBody], [authCheck2]]
 ];
 
 var test = async_test('Verify access control of fetch() in a Service Worker');

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<title>Service Worker: fetch()</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script src="resources/fetch-access-control-util.js"></script>
+<body>
+<script>
+
+var TEST_TARGETS = [
+  // Redirect: same origin -> same origin
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, authCheck1]],
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, hasCustomHeader, authCheck1]],
+  // Chrome changes the method from POST to GET when it recieves 302 redirect
+  // response. See a note in http://tools.ietf.org/html/rfc7231#section-6.4.3
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=POST',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, authCheck1]],
+  // The 307 redirect response doesn't change the method.
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=POST&Status=307',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPOST, authCheck1]],
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=PUT',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPUT, authCheck1]],
+
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=no-cors&method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, noCustomHeader, authCheck1]],
+
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=cors&method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, hasCustomHeader, authCheck1]],
+
+  // Credential test
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=cors&credentials=omit&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, authCheckNone]],
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=cors&credentials=include&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, authCheck1]],
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=cors&credentials=same-origin&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, authCheck1]],
+
+  // Redirect: same origin -> other origin
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=same-origin&method=GET',
+   [fetchRejected]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=same-origin&method=POST',
+   [fetchRejected]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=same-origin&method=PUT',
+   [fetchRejected]],
+
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=no-cors&method=GET&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, noCustomHeader, authCheck2]],
+  // The 302 redirect response changes POST method to GET method.
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=no-cors&method=POST',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, authCheck2]],
+  // The 307 redirect response doesn't change the method.
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=no-cors&method=POST&Status=307',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsPOST, authCheck2]],
+
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&method=GET',
+   [fetchRejected]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&method=PUT',
+   [fetchRejected]],
+
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=*') +
+   '&mode=cors&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=*') +
+   '&mode=cors&method=PUT',
+   [fetchRejected]],
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=*&ACAMethods=PUT') +
+   '&mode=cors&method=PUT',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, noCustomHeader, authCheckNone]],
+
+  // Server header
+  [REDIRECT_URL +
+   encodeURIComponent(
+     OTHER_BASE_URL +
+     '&ACAOrigin=http://127.0.0.1:8000' +
+     '&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader') +
+   '&mode=cors&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  // Credential test
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&credentials=omit&method=GET',
+   [fetchRejected]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&credentials=include&method=GET',
+   [fetchRejected]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&credentials=same-origin&method=GET',
+   [fetchRejected]],
+
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=http://127.0.0.1:8000') +
+   '&mode=cors&credentials=omit&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL +
+                      '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true') +
+   '&mode=cors&credentials=omit&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=http://127.0.0.1:8000') +
+   '&mode=cors&credentials=include&method=GET',
+   [fetchRejected]],
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL +
+                      '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true') +
+   '&mode=cors&credentials=include&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheck2]],
+
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + '&ACAOrigin=http://127.0.0.1:8000') +
+   '&mode=cors&credentials=same-origin&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL +
+                      '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true') +
+   '&mode=cors&credentials=same-origin&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  // Redirect: other origin -> same origin
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=GET',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&method=POST',
+   [fetchRejected]],
+
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=no-cors&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, authCheck1]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=no-cors&method=GET&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, noCustomHeader, authCheck1]],
+  // The 302 redirect response changes POST method to GET method.
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=no-cors&method=POST',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, authCheck1]],
+  // The 307 redirect response doesn't change the method.
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=no-cors&method=POST&Status=307',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsPOST, authCheck1]],
+
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=cors&method=GET',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=cors&method=GET&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL + 'ACAOrigin=*') +
+   '&mode=cors&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  // Once CORS preflight flag is set, redirecting to the cross-origin is not
+  // allowed.
+  // Custom method
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(BASE_URL + 'ACAOrigin=*&ACAMethods=PUT') +
+   '&mode=cors&method=PUT&ACAOrigin=*&ACAMethods=PUT',
+   [fetchRejected]],
+  // Custom header
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(
+       BASE_URL +
+       'ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test') +
+   '&mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*',
+   [fetchRejected]],
+
+  // Credentials test
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL + 'ACAOrigin=*') +
+   '&mode=cors&credentials=omit&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL + 'ACAOrigin=*') +
+   '&mode=cors&credentials=include&method=GET&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(BASE_URL + 'ACAOrigin=*') +
+   '&mode=cors&credentials=same-origin&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(BASE_URL + 'ACAOrigin=null&ACACredentials=true') +
+   '&mode=cors&credentials=omit&method=GET' +
+   '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(BASE_URL + 'ACAOrigin=null&ACACredentials=true') +
+   '&mode=cors&credentials=include&method=GET' +
+   '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheck1]],
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(BASE_URL + 'ACAOrigin=null&ACACredentials=true') +
+   '&mode=cors&credentials=same-origin&method=GET' +
+   '&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  // Redirect: other origin -> other origin
+  [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=same-origin&method=GET',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=no-cors&method=GET',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, authCheck2]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&method=GET',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
+   '&mode=cors&method=GET&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*') +
+   '&mode=cors&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=http://127.0.0.1:8000') +
+   '&mode=cors&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*') +
+   '&mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=http://127.0.0.1:8000') +
+   '&mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  // Server header
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL +
+                      'ACAOrigin=*&ACEHeaders=X-ServiceWorker-ServerHeader') +
+   '&mode=cors&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET, authCheckNone]],
+
+  // Once CORS preflight flag is set, redirecting to the cross-origin is not
+  // allowed.
+  // Custom method
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*&ACAMethods=PUT') +
+   '&mode=cors&method=PUT&ACAOrigin=*&ACAMethods=PUT',
+   [fetchRejected]],
+  // Custom header
+  [OTHER_REDIRECT_URL +
+   encodeURIComponent(
+     OTHER_BASE_URL +
+     'ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test') +
+   '&mode=cors&method=GET&headers=CUSTOM' +
+   '&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test',
+   [fetchRejected]],
+
+   // Redirect loop
+  [REDIRECT_LOOP_URL + encodeURIComponent(BASE_URL) + '&Count=20',
+   [fetchResolved, hasContentLength, hasBody, typeBasic],
+   [methodIsGET, authCheck1]],
+  [REDIRECT_LOOP_URL + encodeURIComponent(BASE_URL) + '&Count=21',
+   [fetchRejected]],
+];
+
+var test = async_test('Verify access control of fetch() in a Service Worker');
+executeTests(test, TEST_TARGETS);
+</script>
+</body>

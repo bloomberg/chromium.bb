@@ -31,6 +31,19 @@ async_test(function(t) {
       .catch(unreached_rejection(t));
   }, 'Fetch test for default-src');
 
+async_test(function(t) {
+    var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
+    var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?'
+    fetch(REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*'),
+          {mode: 'cors'})
+      .then(function(response){
+          assert_unreached('Redirected fetch should fail.');
+        }, function(){
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'Redirected fetch test for default-src');
+
 <?php
 
 } else if ($directive == 'script') {
@@ -62,6 +75,19 @@ async_test(function(t) {
       .catch(unreached_rejection(t));
   }, 'Fetch test for script-src');
 
+async_test(function(t) {
+    var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
+    var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?'
+    fetch(REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*'),
+          {mode: 'cors'})
+      .then(function(response){
+          t.done();
+        }, function(){
+          assert_unreached('Redirected fetch should not fail.');
+        })
+      .catch(unreached_rejection(t));
+  }, 'Redirected fetch test for script-src');
+
 <?php
 
 } else if ($directive == 'connect') {
@@ -92,6 +118,19 @@ async_test(function(t) {
         })
       .catch(unreached_rejection(t));
   }, 'Fetch test for connect-src');
+
+async_test(function(t) {
+    var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
+    var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?'
+    fetch(REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*'),
+          {mode: 'cors'})
+      .then(function(response){
+          assert_unreached('Redirected fetch should fail.');
+        }, function(){
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'Redirected fetch test for connect-src');
 
 <?php
 }

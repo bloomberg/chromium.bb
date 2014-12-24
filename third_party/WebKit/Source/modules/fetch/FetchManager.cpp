@@ -80,13 +80,28 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 {
     // FIXME: Use |handle|.
     ASSERT_UNUSED(handle, !handle);
+    // Reset the tainting if the request was redirected to the different origin.
+    if (!SecurityOrigin::create(response.url())->isSameSchemeHostPort(m_request->origin().get())) {
+        switch (m_request->mode()) {
+        case WebURLRequest::FetchRequestModeSameOrigin:
+            ASSERT_NOT_REACHED();
+            break;
+        case WebURLRequest::FetchRequestModeNoCORS:
+            m_request->setResponseTainting(FetchRequestData::OpaqueTainting);
+            break;
+        case WebURLRequest::FetchRequestModeCORS:
+        case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
+            m_request->setResponseTainting(FetchRequestData::CORSTainting);
+            break;
+        }
+    }
     m_responseBuffer = new BodyStreamBuffer();
     FetchResponseData* responseData = FetchResponseData::createWithBuffer(m_responseBuffer);
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
         responseData->headerList()->append(it.key, it.value);
-    responseData->setURL(m_request->url());
+    responseData->setURL(response.url());
     responseData->setContentTypeForBuffer(response.mimeType());
 
     FetchResponseData* taintedResponse = responseData;
@@ -130,7 +145,7 @@ void FetchManager::Loader::didFailAccessControlCheck(const ResourceError& error)
 
 void FetchManager::Loader::didFailRedirectCheck()
 {
-    failed("Fetch API cannot load " + m_request->url().string() + ". Redirects are not yet supported.");
+    failed("Fetch API cannot load " + m_request->url().string() + ". Redirect failed.");
 }
 
 void FetchManager::Loader::start()
@@ -308,16 +323,26 @@ void FetchManager::Loader::performHTTPFetch()
         || (m_request->credentials() == WebURLRequest::FetchCredentialsModeSameOrigin && !m_corsFlag)) {
         resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
     }
+    if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude)
+        resourceLoaderOptions.credentialsRequested = ClientRequestedCredentials;
+    resourceLoaderOptions.securityOrigin = m_request->origin().get();
 
     ThreadableLoaderOptions threadableLoaderOptions;
     threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
     if (m_corsPreflightFlag)
         threadableLoaderOptions.preflightPolicy = ForcePreflight;
-    if (m_corsFlag)
-        threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
-    else
+    switch (m_request->mode()) {
+    case WebURLRequest::FetchRequestModeSameOrigin:
+        threadableLoaderOptions.crossOriginRequestPolicy = DenyCrossOriginRequests;
+        break;
+    case WebURLRequest::FetchRequestModeNoCORS:
         threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
-
+        break;
+    case WebURLRequest::FetchRequestModeCORS:
+    case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
+        threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
+        break;
+    }
     m_loader = ThreadableLoader::create(*m_executionContext, this, request, threadableLoaderOptions, resourceLoaderOptions);
 }
 

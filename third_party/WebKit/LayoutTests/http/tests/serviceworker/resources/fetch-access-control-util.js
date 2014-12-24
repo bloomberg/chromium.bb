@@ -2,6 +2,8 @@ var SCOPE = 'resources/fetch-access-control-iframe.html';
 var BASE_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control.php?';
 var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?';
 var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
+var OTHER_REDIRECT_URL = 'http://localhost:8000/serviceworker/resources/redirect.php?Redirect=';
+var REDIRECT_LOOP_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect-loop.php?Redirect=';
 var IFRAME_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-iframe.html';
 var WORKER_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-worker.js';
 var IFRAME_ORIGIN = 'http://127.0.0.1:8000';

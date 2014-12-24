@@ -86,23 +86,3 @@ async_test(function(t) {
         })
       .catch(unreached_rejection(t));
   }, 'Fetch API error message - cors error.');
-
-async_test(function(t) {
-    // FIXME: When we support the redirection in Fech API, we have to change
-    // this test case.
-    var redirect = 'http://www.example.com';
-    var url =
-        new URL(get_host_info()['HTTP_REMOTE_ORIGIN'] + base_path() +
-                '../../resources/redirect.php?Redirect=' + redirect).toString();
-    fetch(new Request(url))
-      .then(
-        t.unreached_func('Fetching must fail.'),
-        function(e) {
-          assert_equals(
-            e.message,
-            'Fetch API cannot load ' + url + '. ' +
-            'Redirects are not yet supported.');
-          t.done();
-        })
-      .catch(unreached_rejection(t));
-  }, 'Fetch API error message - redirect error.');
