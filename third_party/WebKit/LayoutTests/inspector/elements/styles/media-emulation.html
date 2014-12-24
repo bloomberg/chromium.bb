@@ -24,14 +24,14 @@ function test()
     function step0()
     {
         InspectorTest.addResult("Original style:");
-        InspectorTest.dumpSelectedElementStyles();
+        InspectorTest.dumpSelectedElementStyles(true);
         applyEmulatedMedia("print");
         InspectorTest.waitForStyles("main", step1);
     }
 
     function step1() {
         InspectorTest.addResult("print media emulated:");
-        InspectorTest.dumpSelectedElementStyles();
+        InspectorTest.dumpSelectedElementStyles(true);
         applyEmulatedMedia("tty");
         InspectorTest.waitForStyles("main", step2);
     }
@@ -39,7 +39,7 @@ function test()
     function step2()
     {
         InspectorTest.addResult("tty media emulated:");
-        InspectorTest.dumpSelectedElementStyles();
+        InspectorTest.dumpSelectedElementStyles(true);
         applyEmulatedMedia("");
         InspectorTest.waitForStyles("main", step3);
     }
@@ -47,7 +47,7 @@ function test()
     function step3()
     {
         InspectorTest.addResult("No media emulated:");
-        InspectorTest.dumpSelectedElementStyles();
+        InspectorTest.dumpSelectedElementStyles(true);
         InspectorTest.completeTest();
     }
 

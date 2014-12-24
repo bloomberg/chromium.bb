@@ -210,14 +210,12 @@ InspectorTest.selectNodeAndWaitForStyles = function(idValue, callback)
 InspectorTest.selectNodeAndWaitForStylesWithComputed = function(idValue, callback)
 {
     callback = InspectorTest.safeWrap(callback);
+    InspectorTest.selectNodeAndWaitForStyles(idValue, onSidebarRendered);
 
-    function stylesCallback(targetNode)
+    function onSidebarRendered()
     {
-        InspectorTest.addSniffer(WebInspector.ComputedStyleSidebarPane.prototype, "onContentReady", callback);
-        WebInspector.panels.elements.sidebarPanes.computedStyle.expand();
+        WebInspector.panels.elements.sidebarPanes.computedStyle.doUpdate(callback);
     }
-
-    InspectorTest.selectNodeAndWaitForStyles(idValue, stylesCallback);
 }
 
 InspectorTest.firstElementsTreeOutline = function()
@@ -249,6 +247,8 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
 
 function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
 {
+    if (!section)
+        return;
     InspectorTest.addResult((section.expanded ? "[expanded] " : "[collapsed] ") + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
     var chainEntries = section.titleElement.querySelectorAll(".media-list .media");
     chainEntries = Array.prototype.slice.call(chainEntries);

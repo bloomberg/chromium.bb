@@ -17,8 +17,6 @@ Original elements tree:
 
 Running: dumpNormalNodeStyles
 [expanded] 
-
-[expanded] 
 element.style  { ()
 
 [expanded] 
@@ -41,16 +39,12 @@ element.style  { ()
 
 Running: dumpBeforeStyles
 [expanded] 
-
-[expanded] 
 [$#inspected:before$], .some-other-selector  { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
   content: "BEFORE";
 
 
 
 Running: dumpAfterStyles
-[expanded] 
-
 [expanded] 
 [$#inspected:after$]  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
   content: "AFTER";

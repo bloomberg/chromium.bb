@@ -2,8 +2,6 @@ Tests that computed styles expand and allow tracing to style rules.
 
 ==== All styles (should be no computed) ====
 [expanded] 
-
-[expanded] 
 element.style  { ()
 
 [expanded] 
