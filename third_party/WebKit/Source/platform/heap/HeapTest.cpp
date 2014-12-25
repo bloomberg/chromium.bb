@@ -58,7 +58,7 @@ public:
     }
 
     static int s_destructorCalls;
-    void trace(Visitor*) { }
+    static void trace(Visitor*) { }
 
     int value() const { return m_x; }
 
@@ -72,7 +72,6 @@ private:
     IntWrapper();
     int m_x;
 };
-static_assert(WTF::NeedsTracing<IntWrapper>::value, "NeedsTracing macro failed to recognize trace method.");
 
 class ThreadMarker {
 public:
@@ -3550,8 +3549,6 @@ TEST(HeapTest, CollectionNesting)
     typedef HeapDeque<Member<IntWrapper> > IntDeque;
     HeapHashMap<void*, IntVector>* map = new HeapHashMap<void*, IntVector>();
     HeapHashMap<void*, IntDeque>* map2 = new HeapHashMap<void*, IntDeque>();
-    static_assert(WTF::NeedsTracing<IntVector>::value, "Failed to recognize HeapVector as NeedsTracing");
-    static_assert(WTF::NeedsTracing<IntDeque>::value, "Failed to recognize HeapDeque as NeedsTracing");
 
     map->add(key, IntVector());
     map2->add(key, IntDeque());

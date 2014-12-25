@@ -112,7 +112,7 @@ namespace WTF {
         template<typename Predicate>
         iterator findIf(Predicate&);
 
-        template<typename VisitorDispatcher> void trace(VisitorDispatcher);
+        void trace(typename Allocator::Visitor*);
 
     private:
         friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
@@ -520,8 +520,7 @@ namespace WTF {
     // This is only called if the allocator is a HeapAllocator. It is used when
     // visiting during a tracing GC.
     template<typename T, size_t inlineCapacity, typename Allocator>
-    template<typename VisitorDispatcher>
-    void Deque<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
+    void Deque<T, inlineCapacity, Allocator>::trace(typename Allocator::Visitor* visitor)
     {
         ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
         const T* bufferBegin = m_buffer.buffer();
@@ -529,13 +528,13 @@ namespace WTF {
         if (ShouldBeTraced<VectorTraits<T> >::value) {
             if (m_start <= m_end) {
                 for (const T* bufferEntry = bufferBegin + m_start; bufferEntry != end; bufferEntry++)
-                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                    Allocator::template trace<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
             } else {
                 for (const T* bufferEntry = bufferBegin; bufferEntry != end; bufferEntry++)
-                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                    Allocator::template trace<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
                 const T* bufferEnd = m_buffer.buffer() + m_buffer.capacity();
                 for (const T* bufferEntry = bufferBegin + m_start; bufferEntry != bufferEnd; bufferEntry++)
-                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                    Allocator::template trace<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
             }
         }
         if (m_buffer.hasOutOfLineBuffer())

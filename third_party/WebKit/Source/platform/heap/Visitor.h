@@ -199,14 +199,13 @@ class TraceTrait {
 public:
     // Default implementation of TraceTrait<T>::trace just statically
     // dispatches to the trace method of the class T.
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, void* self)
+    template<typename TraceDispatcher>
+    static void trace(TraceDispatcher visitor, void* self)
     {
         TraceCompatibilityAdaptor<T>::trace(visitor, static_cast<T*>(self));
     }
 
-    template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher visitor, const T* t)
+    static void mark(Visitor* visitor, const T* t)
     {
         DefaultTraceTrait<T>::mark(visitor, t);
     }
@@ -670,8 +669,7 @@ template<typename T, size_t N>
 struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
     typedef WTF::Vector<T, N, WTF::DefaultAllocator> Vector;
 
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, const Vector& vector)
+    static void trace(Visitor* visitor, const Vector& vector)
     {
         if (vector.isEmpty())
             return;
@@ -684,8 +682,7 @@ template<typename T, size_t N>
 struct OffHeapCollectionTraceTrait<WTF::Deque<T, N> > {
     typedef WTF::Deque<T, N> Deque;
 
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, const Deque& deque)
+    static void trace(Visitor* visitor, const Deque& deque)
     {
         if (deque.isEmpty())
             return;
@@ -706,8 +703,7 @@ public:
 template<typename T>
 class DefaultTraceTrait<T, false> {
 public:
-    template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher visitor, const T* t)
+    static void mark(Visitor* visitor, const T* t)
     {
         // Default mark method of the trait just calls the two-argument mark
         // method on the visitor. The second argument is the static trace method
@@ -747,8 +743,7 @@ public:
 template<typename T>
 class DefaultTraceTrait<T, true> {
 public:
-    template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher visitor, const T* self)
+    static void mark(Visitor* visitor, const T* self)
     {
         if (!self)
             return;

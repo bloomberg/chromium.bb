@@ -479,7 +479,7 @@ namespace WTF {
         template<typename HashTranslator, typename T> ValueType* lookup(T);
         template<typename HashTranslator, typename T> const ValueType* lookup(T) const;
 
-        template<typename VisitorDispatcher> void trace(VisitorDispatcher);
+        void trace(typename Allocator::Visitor*);
 
 #if ENABLE(ASSERT)
         int64_t modifications() const { return m_modifications; }
@@ -1223,8 +1223,7 @@ namespace WTF {
     };
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    template<typename VisitorDispatcher>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::trace(VisitorDispatcher visitor)
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::trace(typename Allocator::Visitor* visitor)
     {
         // If someone else already marked the backing and queued up the trace
         // and/or weak callback then we are done. This optimization does not
@@ -1275,7 +1274,7 @@ namespace WTF {
             }
             for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
                 if (!isEmptyOrDeletedBucket(*element))
-                    Allocator::template trace<VisitorDispatcher, ValueType, Traits>(visitor, *element);
+                    Allocator::template trace<ValueType, Traits>(visitor, *element);
             }
         }
     }
