@@ -961,10 +961,8 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-      params.common_params.url, params.common_params.navigation_type,
-      params.commit_params.page_state, true, is_history_navigation,
-      params.current_history_list_offset, params.page_id, &is_reload,
-      &cache_policy)) {
+      params.common_params.url, true, is_history_navigation,
+      params.current_history_list_offset, &is_reload, &cache_policy)) {
     Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
   }
@@ -3758,10 +3756,9 @@ void RenderFrameImpl::OnCommitNavigation(
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-      common_params.url, common_params.navigation_type,
-      commit_params.page_state, false /* check_for_stale_navigation */,
+      common_params.url, false /* check_for_stale_navigation */,
       is_history_navigation, -1 /* current_history_list_offset; TODO(clamy)*/,
-      -1, &is_reload, &cache_policy)) {
+      &is_reload, &cache_policy)) {
     return;
   }
 
@@ -4182,12 +4179,9 @@ RenderFrameImpl::CreateRendererFactory() {
 
 bool RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
-    FrameMsg_Navigate_Type::Value navigate_type,
-    const PageState& state,
     bool check_for_stale_navigation,
     bool is_history_navigation,
     int current_history_list_offset,
-    int32 page_id,
     bool* is_reload,
     WebURLRequest::CachePolicy* cache_policy) {
   MaybeHandleDebugURL(url);

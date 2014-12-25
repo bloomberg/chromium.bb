@@ -680,12 +680,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // the return value is false, the navigation should be abandoned.
   bool PrepareRenderViewForNavigation(
       const GURL& url,
-      FrameMsg_Navigate_Type::Value navigate_type,
-      const PageState& state,
       bool check_for_stale_navigation,
       bool is_history_navigation,
       int current_history_list_offset,
-      int32 page_id,
       bool* is_reload,
       blink::WebURLRequest::CachePolicy* cache_policy);
 
