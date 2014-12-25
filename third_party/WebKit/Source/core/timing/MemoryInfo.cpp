@@ -37,6 +37,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
+#include "wtf/ThreadSpecific.h"
 #include <limits>
 
 namespace blink {
@@ -53,6 +54,12 @@ public:
     {
         maybeUpdate();
         info = m_info;
+    }
+
+    static HeapSizeCache& forCurrentThread()
+    {
+        AtomicallyInitializedStatic(ThreadSpecific<HeapSizeCache>*, heapSizeCache = new ThreadSpecific<HeapSizeCache>);
+        return **heapSizeCache;
     }
 
 private:
@@ -132,12 +139,10 @@ size_t quantizeMemorySize(size_t size)
 
 MemoryInfo::MemoryInfo()
 {
-    if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled()) {
+    if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled())
         ScriptGCEvent::getHeapSize(m_info);
-    } else {
-        DEFINE_STATIC_LOCAL(HeapSizeCache, heapSizeCache, ());
-        heapSizeCache.getCachedHeapSize(m_info);
-    }
+    else
+        HeapSizeCache::forCurrentThread().getCachedHeapSize(m_info);
 }
 
 } // namespace blink
