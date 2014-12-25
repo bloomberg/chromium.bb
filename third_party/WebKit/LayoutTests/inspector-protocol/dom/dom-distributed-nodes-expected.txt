@@ -2,26 +2,38 @@ Tests that distributed nodes are correctly reported in the protocol as long as t
 
 Loading content node...
 Loading shadow host node...
-Adding distributed node...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Adding distributed node before distributed nodes requested...
+Requesting distributed nodes for: 
   - <div id=shadowHost>
-  Shadow host distribution updated for <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
     Distributed nodes set for <content select=.distributeMeToOldest> :
      - <div class=distributeMeToOldest original>
      - <div class=distributeMeToOldest distributeMeAsWell_1>
-Shadow host distributed nodes request finished.
-Adding another node to be distributed...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Adding distributed node...
+Shadow host distribution invalidated
+Requesting distributed nodes for: 
   - <div id=shadowHost>
-  Shadow host distribution updated for <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
     Distributed nodes set for <content select=.distributeMeToOldest> :
      - <div class=distributeMeToOldest original>
      - <div class=distributeMeToOldest distributeMeAsWell_1>
      - <div class=distributeMeToOldest distributeMeAsWell_2>
-Adding youngest shadow root...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Shadow host distributed nodes request finished.
+Adding another node to be distributed...
+Shadow host distribution invalidated
+Requesting distributed nodes for: 
   - <div id=shadowHost>
-  Shadow host distribution updated for <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
+    Distributed nodes set for <content select=.distributeMeToOldest> :
+     - <div class=distributeMeToOldest original>
+     - <div class=distributeMeToOldest distributeMeAsWell_1>
+     - <div class=distributeMeToOldest distributeMeAsWell_2>
+     - <div class=distributeMeToOldest distributeMeAsWell_3>
+Adding youngest shadow root...
+Shadow host distribution invalidated
+Requesting distributed nodes for: 
+  - <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
     Distributed nodes set for <shadow> :
      - <div class=oldestShadowMain>
     Distributed nodes set for <content select=.distributeMeToYoungest> :
@@ -33,19 +45,20 @@ Shadow host distribution invalidated, requesting distributed nodes for:
      - <div class=distributeMeToOldest original>
      - <div class=distributeMeToOldest distributeMeAsWell_1>
      - <div class=distributeMeToOldest distributeMeAsWell_2>
+     - <div class=distributeMeToOldest distributeMeAsWell_3>
 Adding inner shadow root node...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Requesting distributed nodes for: 
   - <div class=innerShadowHost>
-  Shadow host distribution updated for <div class=innerShadowHost>
+  Shadow host distribution for <div class=innerShadowHost>:
     Distributed nodes set for <content in-inner-shadow-root select=.distributeMeToInner> :
      - <div class=distributeMeToInner original> (through <content in-youngest-shadow-root select=.distributeMeToInner>, <content in-inner-shadow-root select=.distributeMeToInner>)
      - <div class=distributeMeToInner original2> (through <content in-youngest-shadow-root select=.distributeMeToInner>, <content in-inner-shadow-root select=.distributeMeToInner>)
-Loading inner shadow host node...
 Inner shadow host distributed nodes request finished.
 Removing shadow host children...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Shadow host distribution invalidated
+Requesting distributed nodes for: 
   - <div id=shadowHost>
-  Shadow host distribution updated for <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
     Distributed nodes set for <shadow> :
      - <div class=oldestShadowMain>
     Distributed nodes set for <content select=.distributeMeToYoungest> :
@@ -53,9 +66,10 @@ Shadow host distribution invalidated, requesting distributed nodes for:
     Distributed nodes set for <content select=.distributeMeToOldest> :
      - <div id=fallbackOldest>
 Putting text into content node...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Shadow host distribution invalidated
+Requesting distributed nodes for: 
   - <div id=shadowHost>
-  Shadow host distribution updated for <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
     Distributed nodes set for <shadow> :
      - <div class=oldestShadowMain>
     Distributed nodes set for <content select=.distributeMeToYoungest> :
@@ -63,9 +77,10 @@ Shadow host distribution invalidated, requesting distributed nodes for:
     Distributed nodes set for <content select=.distributeMeToOldest> :
      - <div id=fallbackOldest>
 Removing content node children...
-Shadow host distribution invalidated, requesting distributed nodes for: 
+Shadow host distribution invalidated
+Requesting distributed nodes for: 
   - <div id=shadowHost>
-  Shadow host distribution updated for <div id=shadowHost>
+  Shadow host distribution for <div id=shadowHost>:
     Distributed nodes set for <shadow> :
      - <div class=oldestShadowMain>
     Distributed nodes set for <content select=.distributeMeToYoungest> :

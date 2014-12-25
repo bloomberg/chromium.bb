@@ -11,6 +11,7 @@ function createShadowRootFromTemplate(root, selector, templateId)
     var template = document.querySelector(templateId);
     var clone = document.importNode(template.content, true);
     shadowRoot.appendChild(clone);
+    return shadowHost;
 }
 
 function initOldestShadowRoot()
@@ -26,7 +27,8 @@ function initYoungestShadowRoot()
 function initInnerShadowRoot()
 {
     var shadowHost = document.querySelector("#shadowHost");
-    createShadowRootFromTemplate(shadowHost.shadowRoot, ".innerShadowHost", "#innerShadowRootTemplate");
+    var innerShadowHost = createShadowRootFromTemplate(shadowHost.shadowRoot, ".innerShadowHost", "#innerShadowRootTemplate");
+    innerShadowHost.id = "innerShadowHost";
 }
 
 var lastDistributedNodeId = 0;
@@ -78,7 +80,6 @@ function test()
     var documentNodeId;
     var contentNodeId;
     var shadowHostNodeId;
-    var innerShadowHostNodeId;
     var nodeInfo = {};
     InspectorTest.trackGetChildNodesEvents(nodeInfo);
     InspectorTest.eventHandler["DOM.childNodeInserted"] = childNodeInserted;
@@ -116,6 +117,23 @@ function test()
     {
         shadowHostNodeId = nodeId;
 
+        InspectorTest.log("Adding distributed node before distributed nodes requested...");
+        InspectorTest.evaluateInInspectedPage("addDistributedNodeToOldest()", evaluated);
+
+        function distributedNodeAdded()
+        {
+            // Make one more round trip to make sure we did not receive any unexpected invalidation events.
+            InspectorTest.evaluateInInspectedPage("var dummy = 42;", evaluated);
+        }
+
+        function evaluated()
+        {
+            requestDistributedNodesForNodes([shadowHostNodeId], onDistributionRequested);
+        }
+    }
+
+    function onDistributionRequested()
+    {
         InspectorTest.log("Adding distributed node...");
         InspectorTest.evaluateInInspectedPage("addDistributedNodeToOldest()");
         waitForShadowHostDistributionInvalidatedAndReloaded(distributedNodeChangedAfterFirstAdding);
@@ -141,19 +159,16 @@ function test()
     {
         InspectorTest.log("Adding inner shadow root node...");
         InspectorTest.evaluateInInspectedPage("initInnerShadowRoot()");
-        waitForShadowHostDistributionInvalidatedAndReloaded(distributedNodeChangedAfterAddingInnerShadowRoot);
+        InspectorTest.requestNodeId(documentNodeId, "body /deep/ #innerShadowHost", onInnerShadowHostNodeReceived);
+    }
+
+    function onInnerShadowHostNodeReceived(innerShadowHostId)
+    {
+        requestDistributedNodesForNodes([innerShadowHostId], distributedNodeChangedAfterAddingInnerShadowRoot);
     }
 
     function distributedNodeChangedAfterAddingInnerShadowRoot()
     {
-        InspectorTest.log("Loading inner shadow host node...");
-        InspectorTest.requestNodeId(documentNodeId, "body /deep/ .innerShadowHost", onInnerShadowHostNodeReceived);
-    }
-
-    function onInnerShadowHostNodeReceived(nodeId)
-    {
-        innerShadowHostNodeId = nodeId;
-
         InspectorTest.log("Inner shadow host distributed nodes request finished.");
 
         InspectorTest.log("Removing shadow host children...");
@@ -208,22 +223,30 @@ function test()
     function shadowHostDistributionInvalidated(message)
     {
         var shadowHostIds = message.params.nodeIds;
-        InspectorTest.log("Shadow host distribution invalidated, requesting distributed nodes for: ");
-        for (var i = 0; i < shadowHostIds.length; ++i) {
-            InspectorTest.log("  - " + nodeToString(shadowHostIds[i]));
-            requestShadowHostDistribution(shadowHostIds[i], distributedNodesLoaded);
+        InspectorTest.log("Shadow host distribution invalidated");
+
+        var nodeIds = [];
+        for (var i = 0; i < shadowHostIds.length; ++i)
+            nodeIds.push(shadowHostIds[i]);
+        requestDistributedNodesForNodes(nodeIds, nextStep);
+        nextStep = null;
+    }
+
+    function requestDistributedNodesForNodes(nodeIds, callback)
+    {
+        InspectorTest.log("Requesting distributed nodes for: ");
+        for (var nodeId of nodeIds) {
+            InspectorTest.log("  - " + nodeToString(nodeId));
+            requestShadowHostDistribution(nodeId, distributedNodesLoaded);
         }
 
-        var callbacksLeft = shadowHostIds.length;
+        var callbacksLeft = nodeIds.length;
         function distributedNodesLoaded()
         {
             if (--callbacksLeft)
                 return;
-            if (!nextStep)
-                return;
-            var next = nextStep;
-            nextStep = null;
-            next();
+            if (callback)
+                callback();
         }
     }
 
@@ -235,7 +258,7 @@ function test()
         {
             var insertionPointDistributions = result.insertionPointDistributions;
 
-            InspectorTest.log("  Shadow host distribution updated for " + nodeToString(shadowHostId));
+            InspectorTest.log("  Shadow host distribution for " + nodeToString(shadowHostId) + ":");
             for (var insertionPointDistribution of insertionPointDistributions) {
                 var insertionPointId = insertionPointDistribution.nodeId;
                 var distributedNodes = insertionPointDistribution.distributedNodes;

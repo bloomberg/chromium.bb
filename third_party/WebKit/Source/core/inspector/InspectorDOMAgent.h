@@ -269,6 +269,7 @@ private:
     WillBeHeapHashMap<int, RawPtrWillBeMember<Node> > m_idToNode;
     WillBeHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap> > m_idToNodesMap;
     HashSet<int> m_childrenRequested;
+    HashSet<int> m_distributedNodesRequested;
     HashMap<int, int> m_cachedChildCount;
     int m_lastNodeId;
     RefPtrWillBeMember<Document> m_document;

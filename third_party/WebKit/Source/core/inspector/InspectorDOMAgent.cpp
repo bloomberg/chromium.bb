@@ -417,6 +417,7 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
             child = innerNextSibling(child);
         }
     }
+    m_distributedNodesRequested.remove(id);
     if (nodesMap == m_documentNodeToIdMap.get())
         m_cachedChildCount.remove(id);
 }
@@ -614,6 +615,7 @@ void InspectorDOMAgent::discardFrontendBindings()
     m_idToNodesMap.clear();
     releaseDanglingNodes();
     m_childrenRequested.clear();
+    m_distributedNodesRequested.clear();
     m_cachedChildCount.clear();
     if (m_revalidateTask)
         m_revalidateTask->reset();
@@ -658,6 +660,8 @@ void InspectorDOMAgent::requestShadowHostDistributedNodes(ErrorString* errorStri
 
     NodeToIdMap* nodeMap = m_idToNodesMap.get(nodeId);
     ASSERT(nodeMap);
+
+    m_distributedNodesRequested.add(nodeId);
 
     insertionPointDistributions = TypeBuilder::Array<TypeBuilder::DOM::InsertionPointDistribution>::create();
     for (ShadowRoot* root = shadowHost->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
@@ -2119,6 +2123,8 @@ void InspectorDOMAgent::didPerformElementShadowDistribution(Element* shadowHost)
 {
     int shadowHostId = m_documentNodeToIdMap->get(shadowHost);
     if (!shadowHostId)
+        return;
+    if (!m_distributedNodesRequested.contains(shadowHostId))
         return;
     revalidateTask()->scheduleContentDistributionRevalidationFor(shadowHost);
 }
