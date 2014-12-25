@@ -207,7 +207,7 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
                     continue;
                 if (sectionFilter && !sectionFilter(node._section))
                     continue;
-                node._section.expanded = true;
+                node._section.expand();
 
                 if (!deepFilter)
                     continue;

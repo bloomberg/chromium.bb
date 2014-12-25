@@ -67,7 +67,7 @@ function test()
         while (node) {
             if (node._section) {
                 sections.push(node._section);
-                node._section.expanded = true;
+                node._section.expand();
             }
             node = node.traverseNextNode(element);
         }
