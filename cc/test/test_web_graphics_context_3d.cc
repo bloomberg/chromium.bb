@@ -67,6 +67,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       last_update_type_(NoUpdate),
       next_insert_sync_point_(1),
       last_waited_sync_point_(0),
+      unpack_alignment_(4),
       bound_buffer_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
@@ -367,6 +368,8 @@ void TestWebGraphicsContext3D::getIntegerv(
     *value = max_texture_size_;
   else if (pname == GL_ACTIVE_TEXTURE)
     *value = GL_TEXTURE0;
+  else if (pname == GL_UNPACK_ALIGNMENT)
+    *value = unpack_alignment_;
 }
 
 void TestWebGraphicsContext3D::getProgramiv(GLuint program,
@@ -516,6 +519,28 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
   max_used_transfer_buffer_usage_bytes_ =
       std::max(max_used_transfer_buffer_usage_bytes_,
                current_used_transfer_buffer_usage_bytes_);
+}
+
+void TestWebGraphicsContext3D::pixelStorei(GLenum pname, GLint param) {
+  switch (pname) {
+    case GL_UNPACK_ALIGNMENT:
+      // Param should be a power of two <= 8.
+      EXPECT_EQ(0, param & (param - 1));
+      EXPECT_GE(8, param);
+      switch (param) {
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+          unpack_alignment_ = param;
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
 }
 
 void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,

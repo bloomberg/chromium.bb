@@ -64,6 +64,8 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void BindRenderbuffer(GLenum target, GLuint buffer) override;
   void BindFramebuffer(GLenum target, GLuint buffer) override;
 
+  void PixelStorei(GLenum pname, GLint param) override;
+
   void TexImage2D(GLenum target,
                   GLint level,
                   GLint internalformat,

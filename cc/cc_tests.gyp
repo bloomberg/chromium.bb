@@ -85,6 +85,7 @@
       'resources/tile_task_worker_pool_unittest.cc',
       'resources/resource_provider_unittest.cc',
       'resources/resource_update_controller_unittest.cc',
+      'resources/scoped_gpu_raster_unittest.cc',
       'resources/scoped_resource_unittest.cc',
       'resources/task_graph_runner_unittest.cc',
       'resources/texture_mailbox_deleter_unittest.cc',

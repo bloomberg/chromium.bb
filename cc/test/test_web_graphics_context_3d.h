@@ -248,6 +248,7 @@ class TestWebGraphicsContext3D {
                           GLsizeiptr size,
                           const void* data,
                           GLenum usage);
+  virtual void pixelStorei(GLenum pname, GLint param);
   virtual void* mapBufferCHROMIUM(GLenum target,
                                   GLenum access);
   virtual GLboolean unmapBufferCHROMIUM(GLenum target);
@@ -463,6 +464,7 @@ class TestWebGraphicsContext3D {
   UpdateType last_update_type_;
   unsigned next_insert_sync_point_;
   unsigned last_waited_sync_point_;
+  int unpack_alignment_;
 
   unsigned bound_buffer_;
   TextureTargets texture_targets_;

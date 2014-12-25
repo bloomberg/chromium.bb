@@ -178,6 +178,10 @@ void TestGLES2Interface::BindBuffer(GLenum target, GLuint buffer) {
   test_context_->bindBuffer(target, buffer);
 }
 
+void TestGLES2Interface::PixelStorei(GLenum pname, GLint param) {
+  test_context_->pixelStorei(pname, param);
+}
+
 void TestGLES2Interface::TexImage2D(GLenum target,
                                     GLint level,
                                     GLint internalformat,

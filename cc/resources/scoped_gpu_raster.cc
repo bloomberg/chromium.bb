@@ -34,10 +34,13 @@ void ScopedGpuRaster::BeginGpuRaster() {
 }
 
 void ScopedGpuRaster::EndGpuRaster() {
-  GLES2Interface* gl = context_provider_->ContextGL();
-
   class GrContext* gr_context = context_provider_->GrContext();
   gr_context->flush();
+
+  GLES2Interface* gl = context_provider_->ContextGL();
+
+  // Restore default GL unpack alignment.  TextureUploader expects this.
+  gl->PixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
   // TODO(alokp): Use a trace macro to push/pop markers.
   // Using push/pop functions directly incurs cost to evaluate function

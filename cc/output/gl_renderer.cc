@@ -27,6 +27,7 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/layer_quad.h"
+#include "cc/resources/scoped_gpu_raster.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -158,7 +159,12 @@ class GLRenderer::ScopedUseGrContext {
     return make_scoped_ptr(new ScopedUseGrContext(renderer, frame));
   }
 
-  ~ScopedUseGrContext() { PassControlToGLRenderer(); }
+  ~ScopedUseGrContext() {
+    // Pass context control back to GLrenderer.
+    scoped_gpu_raster_ = nullptr;
+    renderer_->RestoreGLState();
+    renderer_->RestoreFramebuffer(frame_);
+  }
 
   GrContext* context() const {
     return renderer_->output_surface_->context_provider()->GrContext();
@@ -166,17 +172,14 @@ class GLRenderer::ScopedUseGrContext {
 
  private:
   ScopedUseGrContext(GLRenderer* renderer, DrawingFrame* frame)
-      : renderer_(renderer), frame_(frame) {
-    PassControlToSkia();
+      : scoped_gpu_raster_(
+            new ScopedGpuRaster(renderer->output_surface_->context_provider())),
+        renderer_(renderer),
+        frame_(frame) {
+    // scoped_gpu_raster_ passes context control to Skia.
   }
 
-  void PassControlToSkia() { context()->resetContext(); }
-
-  void PassControlToGLRenderer() {
-    renderer_->RestoreGLState();
-    renderer_->RestoreFramebuffer(frame_);
-  }
-
+  scoped_ptr<ScopedGpuRaster> scoped_gpu_raster_;
   GLRenderer* renderer_;
   DrawingFrame* frame_;
 
