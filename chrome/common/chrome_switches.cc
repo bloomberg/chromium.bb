@@ -1374,15 +1374,16 @@ const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 
 bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableAboutInSettings);
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ::switches::kDisableAboutInSettings);
 }
 
 bool OutOfProcessPdfEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableOutOfProcessPdf))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableOutOfProcessPdf))
     return true;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableOutOfProcessPdf))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableOutOfProcessPdf))
     return false;
 
   // Default.
@@ -1391,17 +1392,17 @@ bool OutOfProcessPdfEnabled() {
 
 bool SettingsWindowEnabled() {
 #if defined(OS_CHROMEOS)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kDisableSettingsWindow);
 #else
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableSettingsWindow);
 #endif
 }
 
 #if defined(OS_CHROMEOS)
 bool PowerOverlayEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnablePowerOverlay);
 }
 #endif

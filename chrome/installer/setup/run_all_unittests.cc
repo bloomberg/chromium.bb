@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 
   // Handle the --adjust-process-priority switch, which is used to test the
   // installer::AdjustProcessPriority() function in a subprocess.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kAdjustProcessPriority))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kAdjustProcessPriority))
     return DoProcessPriorityAdjustment();
 
   // Register Chrome Path provider so that we can get test data dir.

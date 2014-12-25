@@ -48,7 +48,7 @@ TEST_F(ContentScriptsManifestTest, MatchPattern) {
 }
 
 TEST_F(ContentScriptsManifestTest, OnChromeUrlsWithFlag) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExtensionsOnChromeURLs);
   scoped_refptr<Extension> extension =
     LoadAndExpectSuccess("content_script_chrome_url_invalid.json");

@@ -253,7 +253,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     ChromeContentRendererClient* client)
     : client_(client),
       webkit_initialized_(false) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
   WebRuntimeFeatures::enableRequestAutocomplete(true);

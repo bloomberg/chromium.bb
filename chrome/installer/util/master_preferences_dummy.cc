@@ -15,7 +15,7 @@
 
 namespace installer {
 
-MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
+MasterPreferences::MasterPreferences(const base::CommandLine& cmd_line)
     : distribution_(NULL), preferences_read_from_file_(false) {
 }
 
@@ -49,7 +49,7 @@ std::vector<std::string> MasterPreferences::GetFirstRunTabs() const {
 
 // static
 const MasterPreferences& MasterPreferences::ForCurrentProcess() {
-  static MasterPreferences prefs(*CommandLine::ForCurrentProcess());
+  static MasterPreferences prefs(*base::CommandLine::ForCurrentProcess());
   return prefs;
 }
 

@@ -226,7 +226,4 @@ class BASE_EXPORT CommandLine {
 
 }  // namespace base
 
-// TODO(brettw) remove once all callers specify the namespace properly.
-using base::CommandLine;
-
 #endif  // BASE_COMMAND_LINE_H_

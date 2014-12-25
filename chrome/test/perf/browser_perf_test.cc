@@ -15,7 +15,7 @@ BrowserPerfTest::BrowserPerfTest() {
 BrowserPerfTest::~BrowserPerfTest() {
 }
 
-void BrowserPerfTest::SetUpCommandLine(CommandLine* command_line) {
+void BrowserPerfTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Reduce performance test variance by disabling background networking.
   command_line->AppendSwitch(switches::kDisableBackgroundNetworking);
 }

@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, RelativeManifest) {
 // Test with the NaCl debug flag turned on.
 class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     NaClBrowserTestPnacl::SetUpCommandLine(command_line);
     // Turn on debugging to influence the PNaCl URL loaded
     command_line->AppendSwitch(switches::kEnableNaClDebug);
@@ -296,7 +296,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
                        int debug_stub_port) {
     // We call a python script that speaks to the debug stub, and
     // lets the app continue, so that the load progress event completes.
-    CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
+    base::CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
     base::FilePath script;
     PathService::Get(chrome::DIR_TEST_DATA, &script);
     script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
@@ -329,7 +329,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
 // so that nothing is actually debugged.
 class NaClBrowserTestPnaclDebugMasked : public NaClBrowserTestPnaclDebug {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     NaClBrowserTestPnaclDebug::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kNaClDebugMask,
                                     "!<all_urls>");

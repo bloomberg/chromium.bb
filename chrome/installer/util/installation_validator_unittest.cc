@@ -187,8 +187,8 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
   DCHECK(version);
 
   const bool is_multi_install = (channel_modifiers & CM_MULTI) != 0;
-  uninstall_command_ = CommandLine(GetSetupExePath(dist_type, install_level,
-                                                   version, channel_modifiers));
+  uninstall_command_ = base::CommandLine(
+      GetSetupExePath(dist_type, install_level, version, channel_modifiers));
   uninstall_command_.AppendSwitch(installer::switches::kUninstall);
   if (install_level == SYSTEM_LEVEL)
     uninstall_command_.AppendSwitch(installer::switches::kSystemLevel);
@@ -213,8 +213,8 @@ void FakeProductState::AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
   // Right now only Chrome browser uses this.
   DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BROWSER);
 
-  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
-                                       channel_modifiers));
+  base::CommandLine cmd_line(
+      GetSetupExePath(dist_type, install_level, version, channel_modifiers));
   cmd_line.AppendSwitch(installer::switches::kOnOsUpgrade);
   // Imitating ChromeBrowserOperations::AppendProductFlags().
   if ((channel_modifiers & CM_MULTI) != 0) {
@@ -237,8 +237,8 @@ void FakeProductState::AddQueryEULAAcceptanceCommand(
     int channel_modifiers) {
   DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
 
-  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
-                                       channel_modifiers));
+  base::CommandLine cmd_line(
+      GetSetupExePath(dist_type, install_level, version, channel_modifiers));
   cmd_line.AppendSwitch(installer::switches::kQueryEULAAcceptance);
   if (install_level == SYSTEM_LEVEL)
     cmd_line.AppendSwitch(installer::switches::kSystemLevel);
@@ -258,8 +258,8 @@ void FakeProductState::AddQuickEnableApplicationHostCommand(
   DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
   DCHECK_NE(channel_modifiers & CM_MULTI, 0);
 
-  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
-                                       channel_modifiers));
+  base::CommandLine cmd_line(
+      GetSetupExePath(dist_type, install_level, version, channel_modifiers));
   cmd_line.AppendSwitch(installer::switches::kMultiInstall);
   cmd_line.AppendSwitch(installer::switches::kChromeAppLauncher);
   cmd_line.AppendSwitch(installer::switches::kEnsureGoogleUpdatePresent);

@@ -178,7 +178,8 @@ void SpellCheckProvider::requestCheckingOfText(
 }
 
 WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.autocorrect", word.length());
     return spellcheck_->GetAutoCorrectionWord(word, routing_id());

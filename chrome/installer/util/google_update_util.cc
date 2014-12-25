@@ -66,7 +66,7 @@ bool GetUserLevelGoogleUpdateInstallCommandLine(base::string16* cmd_string) {
   base::FilePath google_update_setup(
       GetGoogleUpdateSetupExe(true));  // system-level.
   if (!google_update_setup.empty()) {
-    CommandLine cmd(google_update_setup);
+    base::CommandLine cmd(google_update_setup);
     // Appends "/install runtime=true&needsadmin=false /silent /nomitag".
     // NB: /nomitag needs to be at the end.
     // Constants are found in code.google.com/p/omaha/common/const_cmd_line.h.
@@ -164,7 +164,7 @@ void ElevateIfNeededToReenableUpdates() {
     return;
   }
 
-  CommandLine cmd(exe_path);
+  base::CommandLine cmd(exe_path);
   cmd.AppendSwitch(installer::switches::kReenableAutoupdates);
   installer::Product product(dist);
   product.InitializeFromUninstallCommand(product_state.uninstall_command());

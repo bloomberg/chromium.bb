@@ -153,7 +153,7 @@ void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Auto-reload breaks many browser tests, which assume error pages won't be
   // reloaded out from under them. Tests that expect or desire this behavior can
@@ -205,7 +205,8 @@ void InProcessBrowserTest::SetUp() {
   // Although Ash officially is only supported for users on Win7+, we still run
   // ash_unittests on Vista builders, so we still need to initialize COM.
   if (version >= base::win::VERSION_VISTA &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
     if (version >= base::win::VERSION_WIN8)
@@ -216,7 +217,8 @@ void InProcessBrowserTest::SetUp() {
   BrowserTestBase::SetUp();
 }
 
-void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
+void InProcessBrowserTest::PrepareTestCommandLine(
+    base::CommandLine* command_line) {
   // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
 
@@ -259,7 +261,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath user_data_dir =
       command_line->GetSwitchValuePath(switches::kUserDataDir);
   if (user_data_dir.empty()) {
@@ -364,10 +366,11 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
 }
 
 #if !defined(OS_MACOSX)
-CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
-  CommandLine new_command_line(CommandLine::ForCurrentProcess()->GetProgram());
-  CommandLine::SwitchMap switches =
-      CommandLine::ForCurrentProcess()->GetSwitches();
+base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
+  base::CommandLine new_command_line(
+      base::CommandLine::ForCurrentProcess()->GetProgram());
+  base::CommandLine::SwitchMap switches =
+      base::CommandLine::ForCurrentProcess()->GetSwitches();
   switches.erase(switches::kUserDataDir);
   switches.erase(content::kSingleProcessTestsFlag);
   switches.erase(switches::kSingleProcess);
@@ -377,8 +380,8 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   new_command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
-        iter != switches.end(); ++iter) {
+  for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
     new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
   }
   return new_command_line;

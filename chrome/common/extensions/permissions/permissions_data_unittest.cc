@@ -562,7 +562,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
 }
 
 TEST_F(ExtensionScriptAndCaptureVisibleTest, PermissionsWithChromeURLsEnabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExtensionsOnChromeURLs);
 
   scoped_refptr<Extension> extension;

@@ -76,7 +76,8 @@ const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry
       { switches::kMediaCacheSize, prefs::kMediaCacheSize },
     };
 
-CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
+CommandLinePrefStore::CommandLinePrefStore(
+    const base::CommandLine* command_line)
     : command_line_(command_line) {
   ApplySimpleSwitches();
   ApplyProxyMode();

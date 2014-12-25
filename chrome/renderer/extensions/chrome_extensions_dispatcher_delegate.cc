@@ -246,7 +246,7 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
   if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
       is_within_platform_app &&
       extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           extensions::switches::kEnableAppWindowControls)) {
     module_system->Require("windowControls");
   }
@@ -269,7 +269,8 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
 void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
     const std::set<std::string>& extension_ids) {
   // In single-process mode, the browser process reports the active extensions.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kSingleProcess))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kSingleProcess))
     return;
   crash_keys::SetActiveExtensions(extension_ids);
 }

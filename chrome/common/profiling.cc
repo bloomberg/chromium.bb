@@ -47,7 +47,8 @@ std::string GetProfileName() {
   CR_DEFINE_STATIC_LOCAL(std::string, profile_name, ());
 
   if (profile_name.empty()) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kProfilingFile))
       profile_name = command_line.GetSwitchValueASCII(switches::kProfilingFile);
     else
@@ -70,7 +71,8 @@ void FlushProfilingData(base::Thread* thread) {
   base::debug::FlushProfiling();
   static int flush_seconds;
   if (!flush_seconds) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     std::string profiling_flush =
         command_line.GetSwitchValueASCII(switches::kProfilingFlush);
     if (!profiling_flush.empty()) {
@@ -125,7 +127,8 @@ base::LazyInstance<ProfilingThreadControl>::Leaky
 
 // static
 void Profiling::ProcessStarted() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
@@ -165,7 +168,8 @@ void Profiling::ProcessStarted() {
 
 // static
 void Profiling::Start() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool flush = command_line.HasSwitch(switches::kProfilingFlush);
   base::debug::StartProfiling(GetProfileName());
 

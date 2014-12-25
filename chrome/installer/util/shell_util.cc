@@ -850,12 +850,13 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
                KEY_READ | KEY_WOW64_32KEY);
     base::string16 uninstall_string;
     key.ReadValue(installer::kUninstallStringField, &uninstall_string);
-    CommandLine command_line = CommandLine::FromString(uninstall_string);
+    base::CommandLine command_line =
+        base::CommandLine::FromString(uninstall_string);
     exe_path = command_line.GetProgram();
   }
 
   if (base::PathExists(exe_path)) {
-    CommandLine cmd(exe_path);
+    base::CommandLine cmd(exe_path);
     cmd.AppendSwitchPath(installer::switches::kRegisterChromeBrowser,
                          chrome_exe);
     if (!suffix.empty()) {
@@ -1249,7 +1250,7 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
   base::string16 key_path;
   base::win::RegKey key;
   base::string16 value;
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   base::string16 short_path;
 
   for (size_t i = 0; i < num_protocols; ++i) {
@@ -1262,7 +1263,7 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
     }
 
     // Need to normalize path in case it's been munged.
-    command_line = CommandLine::FromString(value);
+    command_line = base::CommandLine::FromString(value);
     if (!ShortNameFromPath(command_line.GetProgram(), &short_path))
       return ShellUtil::UNKNOWN_DEFAULT;
 
@@ -1423,15 +1424,15 @@ bool ShortcutOpListOrRemoveUnknownArgs(
   if (!base::win::ResolveShortcut(shortcut_path, NULL, &args))
     return false;
 
-  CommandLine current_args(CommandLine::FromString(base::StringPrintf(
-      L"unused_program %ls", args.c_str())));
+  base::CommandLine current_args(base::CommandLine::FromString(
+      base::StringPrintf(L"unused_program %ls", args.c_str())));
   const char* const kept_switches[] = {
       switches::kApp,
       switches::kAppId,
       switches::kShowAppList,
       switches::kProfileDirectory,
   };
-  CommandLine desired_args(CommandLine::NO_PROGRAM);
+  base::CommandLine desired_args(base::CommandLine::NO_PROGRAM);
   desired_args.CopySwitchesFrom(current_args, kept_switches,
                                 arraysize(kept_switches));
   if (desired_args.argv().size() == current_args.argv().size())
@@ -1846,7 +1847,7 @@ base::string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
 
   // TODO(robertshield): Temporary hack to make the kRegisterChromeBrowserSuffix
   // apply to all registry values computed down in these murky depths.
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(
           installer::switches::kRegisterChromeBrowserSuffix)) {
     suffix = command_line.GetSwitchValueNative(
@@ -2155,7 +2156,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     return false;
   }
 
-  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
   base::string16 suffix;
   if (!unique_suffix.empty()) {

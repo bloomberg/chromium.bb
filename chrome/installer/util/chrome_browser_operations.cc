@@ -34,9 +34,9 @@ void ChromeBrowserOperations::ReadOptions(const MasterPreferences& prefs,
   }
 }
 
-void ChromeBrowserOperations::ReadOptions(const CommandLine& uninstall_command,
-                                          std::set<base::string16>* options)
-    const {
+void ChromeBrowserOperations::ReadOptions(
+    const base::CommandLine& uninstall_command,
+    std::set<base::string16>* options) const {
   DCHECK(options);
 
   if (uninstall_command.HasSwitch(switches::kMultiInstall))
@@ -57,7 +57,7 @@ void ChromeBrowserOperations::AddComDllList(
 
 void ChromeBrowserOperations::AppendProductFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   if (options.find(kOptionMultiInstall) != options.end()) {
@@ -72,7 +72,7 @@ void ChromeBrowserOperations::AppendProductFlags(
 
 void ChromeBrowserOperations::AppendRenameFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   // Add --multi-install if it isn't already there.
@@ -142,7 +142,7 @@ void ChromeBrowserOperations::LaunchUserExperiment(
     const std::set<base::string16>& options,
     InstallStatus status,
     bool system_level) const {
-  CommandLine base_command(setup_path);
+  base::CommandLine base_command(setup_path);
   AppendProductFlags(options, &base_command);
   installer::LaunchBrowserUserExperiment(base_command, status, system_level);
 }

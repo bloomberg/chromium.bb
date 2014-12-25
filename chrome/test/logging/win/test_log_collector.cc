@@ -198,7 +198,7 @@ void TestLogCollector::Initialize(testing::UnitTest* unit_test) {
     listeners.Append(
         new EventListener(this, listeners.Release(default_result_printer)));
 
-    also_emit_success_logs_ = CommandLine::ForCurrentProcess()->HasSwitch(
+    also_emit_success_logs_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kAlsoEmitSuccessLogs);
 
     unit_test_ = unit_test;

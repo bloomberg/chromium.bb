@@ -12,6 +12,7 @@
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
+using base::CommandLine;
 
 namespace {
 

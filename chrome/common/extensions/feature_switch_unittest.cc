@@ -18,11 +18,10 @@ template<FeatureSwitch::DefaultValue T>
 class FeatureSwitchTest : public testing::Test {
  public:
   FeatureSwitchTest()
-      : command_line_(CommandLine::NO_PROGRAM),
-        feature_(&command_line_, kSwitchName, T) {
-  }
+      : command_line_(base::CommandLine::NO_PROGRAM),
+        feature_(&command_line_, kSwitchName, T) {}
  protected:
-  CommandLine command_line_;
+  base::CommandLine command_line_;
   FeatureSwitch feature_;
 };
 

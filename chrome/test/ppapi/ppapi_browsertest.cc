@@ -1490,7 +1490,7 @@ class PackagedAppTest : public ExtensionBrowserTest {
     AppLaunchParams params(browser()->profile(), extension,
                            extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
                            extensions::SOURCE_TEST);
-    params.command_line = *CommandLine::ForCurrentProcess();
+    params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }
 

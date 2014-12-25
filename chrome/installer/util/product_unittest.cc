@@ -51,7 +51,7 @@ TEST_F(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool multi_install = false;
   const bool system_level = true;
-  CommandLine cmd_line = CommandLine::FromString(
+  base::CommandLine cmd_line = base::CommandLine::FromString(
       std::wstring(L"setup.exe") +
       (multi_install ? L" --multi-install --chrome" : L"") +
       (system_level ? L" --system-level" : L""));

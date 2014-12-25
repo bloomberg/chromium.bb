@@ -183,7 +183,8 @@ void SetWillLaunchAtLogin(const base::FilePath& application_path,
       cmd_line += ASCIIToUTF16(" --");
       cmd_line += ASCIIToUTF16(switches::kAutoLaunchAtStartup);
 
-      const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+      const base::CommandLine& command_line =
+          *base::CommandLine::ForCurrentProcess();
       if (command_line.HasSwitch(switches::kUserDataDir)) {
         cmd_line += ASCIIToUTF16(" --");
         cmd_line += ASCIIToUTF16(switches::kUserDataDir);

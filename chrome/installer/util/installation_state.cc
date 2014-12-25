@@ -15,7 +15,7 @@
 namespace installer {
 
 ProductState::ProductState()
-    : uninstall_command_(CommandLine::NO_PROGRAM),
+    : uninstall_command_(base::CommandLine::NO_PROGRAM),
       eula_accepted_(0),
       usagestats_(0),
       msi_(false),
@@ -181,7 +181,7 @@ void ProductState::Clear() {
   brand_.clear();
   rename_cmd_.clear();
   oem_install_.clear();
-  uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
+  uninstall_command_ = base::CommandLine(base::CommandLine::NO_PROGRAM);
   commands_.Clear();
   eula_accepted_ = 0;
   usagestats_ = 0;

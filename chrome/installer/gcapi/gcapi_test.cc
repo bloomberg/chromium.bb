@@ -62,12 +62,12 @@ const char kManualLaunchTests[] = "launch-chrome";
 
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   testing::InitGoogleTest(&argc, argv);
   RUN_ALL_TESTS();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kManualLaunchTests)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kManualLaunchTests)) {
     call_dynamically();
     call_statically();
     printf("LaunchChrome returned %d.\n", LaunchGoogleChrome());

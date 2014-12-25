@@ -32,7 +32,7 @@ class InitValueManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(InitValueManifestTest, InitFromValueInvalid) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       extensions::switches::kWhitelistedExtensionID, kWhitelistID);
   Testcase testcases[] = {
       Testcase("init_invalid_version_missing.json", errors::kInvalidVersion),

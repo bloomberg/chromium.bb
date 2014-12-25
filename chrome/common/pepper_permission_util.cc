@@ -76,7 +76,8 @@ bool IsHostAllowedByCommandLine(const GURL& url,
   if (!url.is_valid())
     return false;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   const std::string allowed_list =
       command_line.GetSwitchValueASCII(command_line_switch);
   if (allowed_list.empty())

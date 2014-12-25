@@ -147,10 +147,10 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
       // "apple-touch-icon-precomposed".
       if (LowerCaseEqualsASCII(rel, "icon") ||
           LowerCaseEqualsASCII(rel, "shortcut icon") ||
-          (!CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kDisableNewBookmarkApps) &&
-            (LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
-             LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
+          (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kDisableNewBookmarkApps) &&
+           (LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
+            LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
         AddInstallIcon(elem, &app_info->icons);
       }
     } else if (elem.hasHTMLTagName("meta") && elem.hasAttribute("name")) {

@@ -33,7 +33,7 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
 
   // Invoke it
   std::string ps_output;
-  if (!base::GetAppOutput(CommandLine(cmdline), &ps_output))
+  if (!base::GetAppOutput(base::CommandLine(cmdline), &ps_output))
     return result;  // All the pids might have exited
 
   // Process the results

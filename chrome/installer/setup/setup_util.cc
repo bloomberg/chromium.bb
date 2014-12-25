@@ -45,15 +45,15 @@ namespace {
 // the off chance that waiting itself fails, |exit_code| is set to
 // WAIT_FOR_EXISTING_FAILED.
 bool LaunchAndWaitForExistingInstall(const base::FilePath& setup_exe,
-                                     const CommandLine& command_line,
+                                     const base::CommandLine& command_line,
                                      int* exit_code) {
   DCHECK(exit_code);
-  CommandLine new_cl(setup_exe);
+  base::CommandLine new_cl(setup_exe);
 
   // Copy over all switches but --install-archive.
-  CommandLine::SwitchMap switches(command_line.GetSwitches());
+  base::CommandLine::SwitchMap switches(command_line.GetSwitches());
   switches.erase(switches::kInstallArchive);
-  for (CommandLine::SwitchMap::const_iterator i = switches.begin();
+  for (base::CommandLine::SwitchMap::const_iterator i = switches.begin();
        i != switches.end(); ++i) {
     if (i->second.empty())
       new_cl.AppendSwitch(i->first);
@@ -62,8 +62,8 @@ bool LaunchAndWaitForExistingInstall(const base::FilePath& setup_exe,
   }
 
   // Copy over all arguments.
-  CommandLine::StringVector args(command_line.GetArgs());
-  for (CommandLine::StringVector::const_iterator i = args.begin();
+  base::CommandLine::StringVector args(command_line.GetArgs());
+  for (base::CommandLine::StringVector::const_iterator i = args.begin();
        i != args.end(); ++i) {
     new_cl.AppendArgNative(*i);
   }
@@ -285,7 +285,7 @@ bool GetExistingHigherInstaller(
 }
 
 bool DeferToExistingInstall(const base::FilePath& setup_exe,
-                            const CommandLine& command_line,
+                            const base::CommandLine& command_line,
                             const InstallerState& installer_state,
                             const base::FilePath& temp_path,
                             InstallStatus* install_status) {
@@ -432,7 +432,7 @@ bool IsUninstallSuccess(InstallStatus install_status) {
           install_status == UNINSTALL_REQUIRES_REBOOT);
 }
 
-bool ContainsUnsupportedSwitch(const CommandLine& cmd_line) {
+bool ContainsUnsupportedSwitch(const base::CommandLine& cmd_line) {
   static const char* const kLegacySwitches[] = {
     // Chrome Frame ready-mode.
     "ready-mode",

@@ -12,7 +12,7 @@ namespace installer {
 
 void ChromeBrowserSxSOperations::AppendProductFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   cmd_line->AppendSwitch(switches::kChromeSxS);
@@ -21,7 +21,7 @@ void ChromeBrowserSxSOperations::AppendProductFlags(
 
 void ChromeBrowserSxSOperations::AppendRenameFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   cmd_line->AppendSwitch(switches::kChromeSxS);

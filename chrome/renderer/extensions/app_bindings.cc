@@ -34,7 +34,7 @@ namespace {
 
 bool IsCheckoutURL(const std::string& url_spec) {
   std::string checkout_url_prefix =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAppsCheckoutURL);
   if (checkout_url_prefix.empty())
     checkout_url_prefix = "https://checkout.google.com/";

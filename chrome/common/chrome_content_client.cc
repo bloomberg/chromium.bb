@@ -364,8 +364,8 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
 
 void AddPepperFlashFromCommandLine(
     std::vector<content::PepperPluginInfo>* plugins) {
-  const CommandLine::StringType flash_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+  const base::CommandLine::StringType flash_path =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kPpapiFlashPath);
   if (flash_path.empty())
     return;
@@ -373,7 +373,7 @@ void AddPepperFlashFromCommandLine(
   // Also get the version from the command-line. Should be something like 11.2
   // or 11.2.123.45.
   std::string flash_version =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPpapiFlashVersion);
 
   plugins->push_back(
@@ -382,7 +382,7 @@ void AddPepperFlashFromCommandLine(
 
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #if defined(FLAPPER_AVAILABLE)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
   // command-line.
@@ -414,7 +414,7 @@ std::string GetProduct() {
 }  // namespace
 
 std::string GetUserAgent() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUserAgent)) {
     std::string ua = command_line->GetSwitchValueASCII(switches::kUserAgent);
     if (net::HttpUtil::IsValidHeaderValue(ua))

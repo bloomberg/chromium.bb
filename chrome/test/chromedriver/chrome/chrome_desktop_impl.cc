@@ -67,7 +67,7 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<PortReservation> port_reservation,
     base::Process process,
-    const CommandLine& command,
+    const base::CommandLine& command,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
     : ChromeImpl(http_client.Pass(),
@@ -173,6 +173,6 @@ Status ChromeDesktopImpl::QuitImpl() {
   return Status(kOk);
 }
 
-const CommandLine& ChromeDesktopImpl::command() const {
+const base::CommandLine& ChromeDesktopImpl::command() const {
   return command_;
 }

@@ -20,10 +20,10 @@ const wchar_t* GetBeaconKeyPath() {
   // sets some locale-related stuff to make sure it is parsed properly. But we
   // can temporarily initialize it for the purpose of determining if we are
   // Canary.
-  if (!CommandLine::InitializedForCurrentProcess()) {
-    CommandLine::Init(0, NULL);
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
+    base::CommandLine::Init(0, NULL);
     channel = chrome::VersionInfo::GetChannel();
-    CommandLine::Reset();
+    base::CommandLine::Reset();
   } else {
     channel = chrome::VersionInfo::GetChannel();
   }

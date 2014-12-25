@@ -165,7 +165,7 @@ int wmain(int argc, wchar_t *argv[]) {
   int result = EXIT_SUCCESS;
   base::AtExitManager exit_manager;
 
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   ConsoleLogHelper log_helper;
 
   // Check user-level and system-level for products.

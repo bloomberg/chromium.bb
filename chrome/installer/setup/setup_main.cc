@@ -91,7 +91,7 @@ namespace {
 // returns a patch helper configured to uncompress and patch.
 scoped_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
     const base::FilePath& setup_exe,
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     const installer::InstallerState& installer_state,
     const base::FilePath& working_directory) {
   // A compressed archive is ordinarily given on the command line by the mini
@@ -583,7 +583,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
             *status = installer::EXISTING_VERSION_LAUNCHED;
             base::FilePath chrome_exe =
                 install_path.Append(installer::kChromeExe);
-            CommandLine cmd(chrome_exe);
+            base::CommandLine cmd(chrome_exe);
             cmd.AppendSwitch(switches::kForceFirstRun);
             installer_state->WriteInstallerResult(*status, 0, NULL);
             VLOG(1) << "Launching existing system-level chrome instead.";
@@ -644,7 +644,7 @@ installer::InstallStatus UninstallProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
-    const CommandLine& cmd_line,
+    const base::CommandLine& cmd_line,
     bool remove_all,
     bool force_uninstall,
     const Product& product) {
@@ -669,12 +669,12 @@ installer::InstallStatus UninstallProducts(
     const InstallationState& original_state,
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
-    const CommandLine& cmd_line) {
+    const base::CommandLine& cmd_line) {
   const Products& products = installer_state.products();
 
   // System-level Chrome will be launched via this command if its program gets
   // set below.
-  CommandLine system_level_cmd(CommandLine::NO_PROGRAM);
+  base::CommandLine system_level_cmd(base::CommandLine::NO_PROGRAM);
 
   const Product* chrome =
       installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
@@ -758,7 +758,7 @@ void UninstallBinariesIfUnused(
   const ProductState* binaries_state =
       original_state.GetProductState(installer_state.system_install(),
                                      BrowserDistribution::CHROME_BINARIES);
-  const CommandLine& uninstall_cmd(binaries_state->uninstall_command());
+  const base::CommandLine& uninstall_cmd(binaries_state->uninstall_command());
   MasterPreferences uninstall_prefs(uninstall_cmd);
   InstallerState uninstall_state;
   uninstall_state.Initialize(uninstall_cmd, uninstall_prefs, original_state);
@@ -778,7 +778,7 @@ void UninstallBinariesIfUnused(
 installer::InstallStatus InstallProducts(
     const InstallationState& original_state,
     const base::FilePath& setup_exe,
-    const CommandLine& cmd_line,
+    const base::CommandLine& cmd_line,
     const MasterPreferences& prefs,
     InstallerState* installer_state,
     base::FilePath* installer_directory) {
@@ -895,7 +895,7 @@ installer::InstallStatus RegisterDevChrome(
     const InstallationState& original_state,
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
-    const CommandLine& cmd_line) {
+    const base::CommandLine& cmd_line) {
   BrowserDistribution* chrome_dist =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER);
@@ -971,7 +971,7 @@ installer::InstallStatus RegisterDevChrome(
 // has been found and processed (so setup.exe should exit at that point).
 bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                                     const base::FilePath& setup_exe,
-                                    const CommandLine& cmd_line,
+                                    const base::CommandLine& cmd_line,
                                     InstallerState* installer_state,
                                     int* exit_code) {
   // TODO(gab): Add a local |status| variable which each block below sets;
@@ -1325,7 +1325,7 @@ scoped_ptr<google_breakpad::ExceptionHandler> InitializeCrashReporting(
 // binaries will be uninstalled during later processing if they are not in-use
 // (see UninstallBinariesIfUnused). |original_state| and |installer_state| are
 // updated to reflect the state of the world following the operation.
-void UninstallMultiChromeFrameIfPresent(const CommandLine& cmd_line,
+void UninstallMultiChromeFrameIfPresent(const base::CommandLine& cmd_line,
                                         const MasterPreferences& prefs,
                                         InstallationState* original_state,
                                         InstallerState* installer_state) {
@@ -1347,7 +1347,8 @@ void UninstallMultiChromeFrameIfPresent(const CommandLine& cmd_line,
 
   // Uninstall Chrome Frame without touching the multi-install binaries.
   // Simulate the uninstall as coming from the installed version.
-  const CommandLine& uninstall_cmd(chrome_frame_state->uninstall_command());
+  const base::CommandLine& uninstall_cmd(
+      chrome_frame_state->uninstall_command());
   MasterPreferences uninstall_prefs(uninstall_cmd);
   InstallerState uninstall_state;
   uninstall_state.Initialize(uninstall_cmd, uninstall_prefs, *original_state);
@@ -1381,15 +1382,14 @@ void UninstallMultiChromeFrameIfPresent(const CommandLine& cmd_line,
 
 namespace installer {
 
-InstallStatus InstallProductsHelper(
-    const InstallationState& original_state,
-    const base::FilePath& setup_exe,
-    const CommandLine& cmd_line,
-    const MasterPreferences& prefs,
-    const InstallerState& installer_state,
-    base::FilePath* installer_directory,
-    ArchiveType* archive_type,
-    bool* delegated_to_existing) {
+InstallStatus InstallProductsHelper(const InstallationState& original_state,
+                                    const base::FilePath& setup_exe,
+                                    const base::CommandLine& cmd_line,
+                                    const MasterPreferences& prefs,
+                                    const InstallerState& installer_state,
+                                    base::FilePath* installer_directory,
+                                    ArchiveType* archive_type,
+                                    bool* delegated_to_existing) {
   DCHECK(archive_type);
   DCHECK(delegated_to_existing);
   const bool system_install = installer_state.system_install();
@@ -1683,7 +1683,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
 
   // install_util uses chrome paths.
   chrome::RegisterPathProvider();
@@ -1691,7 +1691,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
   installer::InitInstallerLogging(prefs);
 
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   VLOG(1) << "Command Line: " << cmd_line.GetCommandLineString();
 
   VLOG(1) << "multi install is " << prefs.is_multi_install();
@@ -1764,7 +1764,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (system_install && !IsUserAnAdmin()) {
     if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
-      CommandLine new_cmd(CommandLine::NO_PROGRAM);
+      base::CommandLine new_cmd(base::CommandLine::NO_PROGRAM);
       new_cmd.AppendArguments(cmd_line, true);
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.

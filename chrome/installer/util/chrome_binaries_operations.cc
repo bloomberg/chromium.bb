@@ -22,9 +22,9 @@ void ChromeBinariesOperations::ReadOptions(const MasterPreferences& prefs,
   options->insert(kOptionMultiInstall);
 }
 
-void ChromeBinariesOperations::ReadOptions(const CommandLine& uninstall_command,
-                                           std::set<base::string16>* options)
-    const {
+void ChromeBinariesOperations::ReadOptions(
+    const base::CommandLine& uninstall_command,
+    std::set<base::string16>* options) const {
   DCHECK(options);
   options->insert(kOptionMultiInstall);
 }
@@ -43,7 +43,7 @@ void ChromeBinariesOperations::AddComDllList(
 
 void ChromeBinariesOperations::AppendProductFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   DCHECK(options.find(kOptionMultiInstall) != options.end());
@@ -55,7 +55,7 @@ void ChromeBinariesOperations::AppendProductFlags(
 
 void ChromeBinariesOperations::AppendRenameFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   DCHECK(options.find(kOptionMultiInstall) != options.end());

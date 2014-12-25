@@ -29,7 +29,7 @@ TEST_F(ChromePermissionManifestTest, ChromeURLPermissionInvalid) {
 TEST_F(ChromePermissionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   // Ignore the policy delegate for this test.
   PermissionsData::SetPolicyDelegate(NULL);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExtensionsOnChromeURLs);
   std::string error;
   scoped_refptr<Extension> extension =

@@ -32,9 +32,10 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get browser process binary name.";
   }
-  CommandLine cmd_line(exe_path);
+  base::CommandLine cmd_line(exe_path);
 
-  const CommandLine& process_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& process_command_line =
+      *base::CommandLine::ForCurrentProcess();
   base::FilePath user_data_dir =
       process_command_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
@@ -234,7 +235,7 @@ void CloudPrintProxy::OnAuthenticated(
   service_prefs_->WritePrefs();
   // When this switch used we don't want connector continue running, we just
   // need authentication.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCloudPrintSetupProxy)) {
     ShutdownBackend();
     if (client_) {

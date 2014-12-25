@@ -121,14 +121,15 @@ TEST_F(ServiceProcessStateTest, DISABLED_ReadyState) {
 TEST_F(ServiceProcessStateTest, AutoRun) {
   ServiceProcessState state;
   ASSERT_TRUE(state.AddToAutoRun());
-  scoped_ptr<CommandLine> autorun_command_line;
+  scoped_ptr<base::CommandLine> autorun_command_line;
 #if defined(OS_WIN)
   std::string value_name = GetServiceProcessScopedName("_service_run");
   base::string16 value;
   EXPECT_TRUE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
                                                 base::UTF8ToWide(value_name),
                                                 &value));
-  autorun_command_line.reset(new CommandLine(CommandLine::FromString(value)));
+  autorun_command_line.reset(
+      new base::CommandLine(base::CommandLine::FromString(value)));
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #if defined(GOOGLE_CHROME_BUILD)
   std::string base_desktop_name = "google-chrome-service.desktop";
@@ -146,11 +147,11 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   ASSERT_EQ(std::string::npos, exec_value.find('"'));
   ASSERT_EQ(std::string::npos, exec_value.find('\''));
 
-  CommandLine::StringVector argv;
+  base::CommandLine::StringVector argv;
   base::SplitString(exec_value, ' ', &argv);
   ASSERT_GE(argv.size(), 2U)
       << "Expected at least one command-line option in: " << exec_value;
-  autorun_command_line.reset(new CommandLine(argv));
+  autorun_command_line.reset(new base::CommandLine(argv));
 #endif  // defined(OS_WIN)
   if (autorun_command_line.get()) {
     EXPECT_EQ(autorun_command_line->GetSwitchValueASCII(switches::kProcessType),
@@ -349,7 +350,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, VerifyLaunchD) {
   // /tmp/launchd*/sock. This test is still useful as a sanity check to make
   // sure that launchd appears to be working.
 
-  CommandLine cl(base::FilePath("/bin/launchctl"));
+  base::CommandLine cl(base::FilePath("/bin/launchctl"));
   cl.AppendArg("limit");
 
   std::string output;

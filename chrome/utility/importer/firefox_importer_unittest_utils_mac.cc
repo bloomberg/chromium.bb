@@ -38,7 +38,7 @@ const char kTestChannelID[] = "T1";
 // child.
 bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
     IPC::Channel* channel, base::ProcessHandle* handle) {
-  CommandLine cl(*CommandLine::ForCurrentProcess());
+  base::CommandLine cl(*base::CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
 
   // Set env variable needed for FF encryption libs to load.

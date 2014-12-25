@@ -37,7 +37,8 @@ typedef ChromeRenderViewTest InstantProcessNavigationTest;
 // bounced back to the browser to be rebucketed into a non-Instant renderer if
 // necessary.
 TEST_F(InstantProcessNavigationTest, ForkForNavigationsFromInstantProcess) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kInstantProcess);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kInstantProcess);
   bool unused;
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());

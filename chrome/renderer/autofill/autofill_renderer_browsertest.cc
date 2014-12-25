@@ -307,7 +307,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
     AutofillRendererTest::SetUp();
 
     // Bypass the HTTPS-only restriction to show requestAutocomplete.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
 
     GURL url("data:text/html;charset=utf-8,"

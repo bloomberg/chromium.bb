@@ -22,7 +22,7 @@ const char kWhitelistID[] = "lmadimbbgapmngbiclpjjngmdickadpl";
 typedef ChromeManifestTest LauncherPageManifestTest;
 
 TEST_F(LauncherPageManifestTest, ValidLauncherPage) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       extensions::switches::kWhitelistedExtensionID, kWhitelistID);
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_valid_launcher_page.json"));

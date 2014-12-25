@@ -203,7 +203,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   } else if (proxy_type == "system") {
     // Chrome default.
   } else if (proxy_type == "pac") {
-    CommandLine::StringType proxy_pac_url;
+    base::CommandLine::StringType proxy_pac_url;
     if (!proxy_dict->GetString("proxyAutoconfigUrl", &proxy_pac_url))
       return Status(kUnknownError, "'proxyAutoconfigUrl' must be a string");
     capabilities->switches.SetSwitch("proxy-pac-url", proxy_pac_url);
@@ -506,7 +506,7 @@ size_t Switches::GetSize() const {
   return switch_map_.size();
 }
 
-void Switches::AppendToCommandLine(CommandLine* command) const {
+void Switches::AppendToCommandLine(base::CommandLine* command) const {
   for (SwitchMap::const_iterator iter = switch_map_.begin();
        iter != switch_map_.end();
        ++iter) {

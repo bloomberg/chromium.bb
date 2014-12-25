@@ -24,7 +24,7 @@ TEST_F(IsolatedAppsManifestTest, IsolatedApps) {
       "'experimental' requires the 'experimental-extension-apis' "
       "command line switch to be enabled.");
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));

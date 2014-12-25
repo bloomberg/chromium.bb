@@ -196,8 +196,9 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
   // process isolation, we must insert any provided value into the component
   // app's launch url and web extent.
   if (extension->id() == extensions::kWebStoreAppId) {
-    std::string gallery_url_str = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kAppsGalleryURL);
+    std::string gallery_url_str =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kAppsGalleryURL);
 
     // Empty string means option was not used.
     if (!gallery_url_str.empty()) {

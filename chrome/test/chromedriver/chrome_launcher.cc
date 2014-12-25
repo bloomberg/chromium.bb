@@ -87,7 +87,7 @@ Status UnpackAutomationExtension(const base::FilePath& temp_dir,
 
 Status PrepareCommandLine(uint16 port,
                           const Capabilities& capabilities,
-                          CommandLine* prepared_command,
+                          base::CommandLine* prepared_command,
                           base::ScopedTempDir* user_data_dir,
                           base::ScopedTempDir* extension_dir,
                           std::vector<std::string>* extension_bg_pages) {
@@ -100,7 +100,7 @@ Status PrepareCommandLine(uint16 port,
                   base::StringPrintf("no chrome binary at %" PRFilePath,
                                      program.value().c_str()));
   }
-  CommandLine command(program);
+  base::CommandLine command(program);
   Switches switches;
 
   for (size_t i = 0; i < arraysize(kCommonSwitches); ++i)
@@ -274,7 +274,7 @@ Status LaunchDesktopChrome(
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
-  CommandLine command(CommandLine::NO_PROGRAM);
+  base::CommandLine command(base::CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
   std::vector<std::string> extension_bg_pages;
@@ -316,7 +316,7 @@ Status LaunchDesktopChrome(
 #if defined(OS_POSIX)
   base::FileHandleMappingVector no_stderr;
   base::ScopedFD devnull;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
     // users.
     devnull.reset(HANDLE_EINTR(open("/dev/null", O_WRONLY)));

@@ -57,15 +57,15 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
   bool AdjustChildProcessCommandLine(
-      CommandLine* command_line,
+      base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) override {
-    CommandLine new_command_line(command_line->GetProgram());
-    CommandLine::SwitchMap switches = command_line->GetSwitches();
+    base::CommandLine new_command_line(command_line->GetProgram());
+    base::CommandLine::SwitchMap switches = command_line->GetSwitches();
 
     // Strip out user-data-dir if present.  We will add it back in again later.
     switches.erase(switches::kUserDataDir);
 
-    for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+    for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
          iter != switches.end(); ++iter) {
       new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
     }
@@ -86,7 +86,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 
   void AdjustDefaultParallelJobs(int* default_jobs) override {
 #if defined(OS_WIN)
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAshBrowserTests)) {
       *default_jobs = 1;
       fprintf(stdout,

@@ -602,8 +602,10 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     int features = wake_on_wifi_ssid_.GetValue() ?
         WakeOnWifiManager::WAKE_ON_SSID : WakeOnWifiManager::WAKE_ON_NONE;
     // The flag enables wake on packets but doesn't update a preference.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWakeOnPackets))
+    if (base::CommandLine::ForCurrentProcess()->
+            HasSwitch(switches::kWakeOnPackets)) {
       features |= WakeOnWifiManager::WAKE_ON_PACKET;
+    }
     WakeOnWifiManager::Get()->OnPreferenceChanged(
         static_cast<WakeOnWifiManager::WakeOnWifiFeature>(features));
   }

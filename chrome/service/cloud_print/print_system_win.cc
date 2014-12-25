@@ -661,7 +661,7 @@ PrintSystemWin::PrintSystemWin() : use_cdd_(true) {
 }
 
 PrintSystem::PrintSystemResult PrintSystemWin::Init() {
-  use_cdd_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+  use_cdd_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableCloudPrintXps);
 
   if (!use_cdd_)

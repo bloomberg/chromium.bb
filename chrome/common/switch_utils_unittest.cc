@@ -10,17 +10,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SwitchUtilsTest, RemoveSwitches) {
-  const CommandLine::CharType* argv[] = {
-    FILE_PATH_LITERAL("program"),
-    FILE_PATH_LITERAL("--app=http://www.google.com/"),
-    FILE_PATH_LITERAL("--force-first-run"),
-    FILE_PATH_LITERAL("--make-default-browser"),
-    FILE_PATH_LITERAL("--foo"),
-    FILE_PATH_LITERAL("--bar")};
-  CommandLine cmd_line(arraysize(argv), argv);
+  const base::CommandLine::CharType* argv[] = {
+      FILE_PATH_LITERAL("program"),
+      FILE_PATH_LITERAL("--app=http://www.google.com/"),
+      FILE_PATH_LITERAL("--force-first-run"),
+      FILE_PATH_LITERAL("--make-default-browser"),
+      FILE_PATH_LITERAL("--foo"),
+      FILE_PATH_LITERAL("--bar")};
+  base::CommandLine cmd_line(arraysize(argv), argv);
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
-  std::map<std::string, CommandLine::StringType> switches =
+  std::map<std::string, base::CommandLine::StringType> switches =
       cmd_line.GetSwitches();
   EXPECT_EQ(5U, switches.size());
 
@@ -34,7 +34,7 @@ TEST(SwitchUtilsTest, RemoveSwitches) {
 TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
   // All these command line args (except foo and bar) will
   // be removed after RemoveSwitchesForAutostart:
-  CommandLine cmd_line = CommandLine::FromString(
+  base::CommandLine cmd_line = base::CommandLine::FromString(
       L"program"
       L" --app=http://www.google.com/"
       L" --force-first-run"
@@ -43,7 +43,7 @@ TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
       L" --bar");
   EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
-  std::map<std::string, CommandLine::StringType> switches =
+  std::map<std::string, base::CommandLine::StringType> switches =
       cmd_line.GetSwitches();
   EXPECT_EQ(5U, switches.size());
 

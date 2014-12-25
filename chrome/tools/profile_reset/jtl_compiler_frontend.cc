@@ -60,8 +60,8 @@ const char* ResolveErrorCode(JtlCompiler::CompileError::ErrorCode code) {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  CommandLine::Init(argc, argv);
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(kInputPath) || !cmd_line->HasSwitch(kHashSeed) ||
       !cmd_line->HasSwitch(kOutputPath)) {
     std::cerr << "Usage: " << argv[0] << " <required switches>" << std::endl;

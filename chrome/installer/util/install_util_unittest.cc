@@ -35,7 +35,7 @@ class InstallUtilTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 };
 
 TEST_F(InstallUtilTest, MakeUninstallCommand) {
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
   std::pair<std::wstring, std::wstring> params[] = {
     std::make_pair(std::wstring(L""), std::wstring(L"")),

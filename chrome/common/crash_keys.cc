@@ -309,12 +309,12 @@ static bool IsBoringSwitch(const std::string& flag) {
 #endif
 }
 
-void SetSwitchesFromCommandLine(const CommandLine* command_line) {
+void SetSwitchesFromCommandLine(const base::CommandLine* command_line) {
   DCHECK(command_line);
   if (!command_line)
     return;
 
-  const CommandLine::StringVector& argv = command_line->argv();
+  const base::CommandLine::StringVector& argv = command_line->argv();
 
   // Set the number of switches in case size > kNumSwitches.
   base::debug::SetCrashKeyValue(kNumSwitches,

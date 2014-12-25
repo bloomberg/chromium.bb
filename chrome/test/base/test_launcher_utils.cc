@@ -20,7 +20,7 @@
 
 namespace test_launcher_utils {
 
-void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
+void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
   // Turn off tip loading for tests; see http://crbug.com/17725.
   command_line->AppendSwitch(switches::kDisableWebResources);
 

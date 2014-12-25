@@ -467,7 +467,7 @@ bool ApplyAlternateVersion(const base::FilePath& work_dir,
 // command-line switch.
 base::FilePath Get7zaPath() {
   base::FilePath l7za_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           &kSwitch7zaPath[0]);
   if (l7za_path.empty()) {
     base::FilePath dir_exe;

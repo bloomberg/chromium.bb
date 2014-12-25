@@ -1421,7 +1421,7 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
 // FillOnAccountSelect is enabled.
 TEST_F(PasswordAutofillAgentTest,
        FillOnAccountSelectOnlyNoCredentialsOnPasswordClick) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableFillOnAccountSelect);
 
   // Simulate the browser sending back the login info.
@@ -1451,7 +1451,7 @@ TEST_F(PasswordAutofillAgentTest,
 // suggested.
 TEST_F(PasswordAutofillAgentTest,
        FillOnAccountSelectOnlyCredentialsOnPasswordClick) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableFillOnAccountSelect);
 
   // Simulate the browser sending back the login info.
@@ -1673,7 +1673,7 @@ TEST_F(PasswordAutofillAgentTest, FormFillDataMustHaveUsername) {
 }
 
 TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnly) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableFillOnAccountSelect);
 
   ClearUsernameAndPasswordFields();
@@ -1685,7 +1685,7 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnly) {
 }
 
 TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyReadonlyUsername) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableFillOnAccountSelect);
 
   ClearUsernameAndPasswordFields();
@@ -1700,7 +1700,7 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyReadonlyUsername) {
 }
 
 TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       autofill::switches::kEnableFillOnAccountSelect);
 
   // Load a form with no username and update test data.

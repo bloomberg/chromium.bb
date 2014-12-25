@@ -82,7 +82,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   // Whitelisted ones can (this is the ID corresponding to the base 64 encoded
   // key in the init_platform_app_csp.json manifest.)
   std::string test_id = "ahplfneplbnjcflhdgkkjeiglkkfeelb";
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWhitelistedExtensionID, test_id);
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");
@@ -138,7 +138,7 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   }
 
   // Now try again with the experimental flag set.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
     LoadAndExpectSuccess(ManifestData(manifests[i].get(), ""));

@@ -117,7 +117,7 @@ void SuppressDialogs() {
 
 namespace logging {
 
-LoggingDestination DetermineLogMode(const CommandLine& command_line) {
+LoggingDestination DetermineLogMode(const base::CommandLine& command_line) {
   // only use OutputDebugString in debug mode
 #ifdef NDEBUG
   bool enable_logging = false;
@@ -187,7 +187,7 @@ void RemoveSymlinkAndLog(const base::FilePath& link_path,
 
 }  // anonymous namespace
 
-base::FilePath GetSessionLogDir(const CommandLine& command_line) {
+base::FilePath GetSessionLogDir(const base::CommandLine& command_line) {
   base::FilePath log_dir;
   std::string log_dir_str;
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -213,11 +213,11 @@ base::FilePath GetSessionLogDir(const CommandLine& command_line) {
   return log_dir;
 }
 
-base::FilePath GetSessionLogFile(const CommandLine& command_line) {
+base::FilePath GetSessionLogFile(const base::CommandLine& command_line) {
   return GetSessionLogDir(command_line).Append(GetLogFileName().BaseName());
 }
 
-void RedirectChromeLogging(const CommandLine& command_line) {
+void RedirectChromeLogging(const base::CommandLine& command_line) {
   if (chrome_logging_redirected_) {
     // TODO(nkostylev): Support multiple active users. http://crbug.com/230345
     LOG(WARNING) << "NOT redirecting logging for multi-profiles case.";
@@ -252,7 +252,7 @@ void RedirectChromeLogging(const CommandLine& command_line) {
 
 #endif  // OS_CHROMEOS
 
-void InitChromeLogging(const CommandLine& command_line,
+void InitChromeLogging(const base::CommandLine& command_line,
                        OldFileDeletionState delete_old_log_file) {
   DCHECK(!chrome_logging_initialized_) <<
     "Attempted to initialize logging when it was already initialized.";
@@ -315,7 +315,8 @@ void InitChromeLogging(const CommandLine& command_line,
 #endif
 
   // Default to showing error dialogs.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoErrorDialogs))
     logging::SetShowErrorDialogs(true);
 
   // we want process and thread IDs because we have a lot of things running

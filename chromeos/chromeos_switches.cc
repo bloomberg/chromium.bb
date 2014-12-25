@@ -285,8 +285,7 @@ const char kEnableCaptivePortalBypassProxy[] =
     "enable-captive-portal-bypass-proxy";
 
 bool WakeOnWifiEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableWakeOnWifi);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
 
 }  // namespace switches

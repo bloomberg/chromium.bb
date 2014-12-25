@@ -77,7 +77,7 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame) {
   RenderThread::Get()->AddObserver(this);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =
       command_line->HasSwitch(switches::kEnableOfflineAutoReload);
   bool auto_reload_visible_only =
@@ -180,7 +180,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   if (template_html.empty()) {
     NOTREACHED() << "unable to load template.";
   } else {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     bool load_stale_cache_enabled =
         command_line->HasSwitch(switches::kEnableOfflineLoadStaleCache);
 
@@ -216,7 +216,7 @@ void NetErrorHelper::EnablePageHelperFunctions() {
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool is_failed_post) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     bool load_stale_cache_enabled =
         command_line->HasSwitch(switches::kEnableOfflineLoadStaleCache);
 

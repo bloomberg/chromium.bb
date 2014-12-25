@@ -229,7 +229,7 @@ ScopedPriorityClass::~ScopedPriorityClass() {
 }
 
 PriorityClassChangeResult RelaunchAndDoProcessPriorityAdjustment() {
-  CommandLine cmd_line(*CommandLine::ForCurrentProcess());
+  base::CommandLine cmd_line(*base::CommandLine::ForCurrentProcess());
   cmd_line.AppendSwitch(kAdjustProcessPriority);
   base::Process process = base::LaunchProcess(cmd_line, base::LaunchOptions());
   int exit_code = 0;
@@ -285,7 +285,7 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
         version_.reset();
     }
 
-    void set_uninstall_command(const CommandLine& uninstall_command) {
+    void set_uninstall_command(const base::CommandLine& uninstall_command) {
       uninstall_command_ = uninstall_command;
     }
   };
@@ -342,10 +342,11 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
                                                      kProductType_));
 
     product->set_version(product_version_);
-    CommandLine uninstall_command(
-        test_dir_.path().AppendASCII(product_version_.GetString())
-        .Append(installer::kInstallerDir)
-        .Append(installer::kSetupExe));
+    base::CommandLine uninstall_command(
+        test_dir_.path()
+            .AppendASCII(product_version_.GetString())
+            .Append(installer::kInstallerDir)
+            .Append(installer::kSetupExe));
     uninstall_command.AppendSwitch(installer::switches::kUninstall);
     product->set_uninstall_command(uninstall_command);
   }
@@ -490,11 +491,11 @@ TEST_F(MigrateMultiToSingleTest, ChromeFrame) {
 
 TEST(SetupUtilTest, ContainsUnsupportedSwitch) {
   EXPECT_FALSE(installer::ContainsUnsupportedSwitch(
-      CommandLine::FromString(L"foo.exe")));
+      base::CommandLine::FromString(L"foo.exe")));
   EXPECT_FALSE(installer::ContainsUnsupportedSwitch(
-      CommandLine::FromString(L"foo.exe --multi-install --chrome")));
+      base::CommandLine::FromString(L"foo.exe --multi-install --chrome")));
   EXPECT_TRUE(installer::ContainsUnsupportedSwitch(
-      CommandLine::FromString(L"foo.exe --chrome-frame")));
+      base::CommandLine::FromString(L"foo.exe --chrome-frame")));
 }
 
 TEST(SetupUtilTest, GetRegistrationDataCommandKey) {

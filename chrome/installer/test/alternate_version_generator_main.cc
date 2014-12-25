@@ -58,7 +58,7 @@ const wchar_t* GetErrorMessage(ErrorCode error_code) {
 
 // Display usage information to stderr along with an optional error message with
 // details.
-void DumpUsage(const CommandLine& cmd_line,
+void DumpUsage(const base::CommandLine& cmd_line,
                errors::ErrorCode error_code,
                const std::wstring& detail) {
   const wchar_t* error_message = errors::GetErrorMessage(error_code);
@@ -93,7 +93,7 @@ L"                            relative to this program's location.\n",
 
 // Gets the path to the source mini_installer.exe on which to operate, putting
 // the result in |mini_installer|.  Returns true on success.
-bool GetMiniInstallerPath(const CommandLine& cmd_line,
+bool GetMiniInstallerPath(const base::CommandLine& cmd_line,
                           base::FilePath* mini_installer) {
   DCHECK(mini_installer);
   base::FilePath result = cmd_line.GetSwitchValuePath(switches::kMiniInstaller);
@@ -106,7 +106,7 @@ bool GetMiniInstallerPath(const CommandLine& cmd_line,
 }
 
 // Gets the path to the output file, putting the result in |out|.
-void GetOutPath(const CommandLine& cmd_line, base::FilePath* out) {
+void GetOutPath(const base::CommandLine& cmd_line, base::FilePath* out) {
   DCHECK(out);
   base::FilePath result = cmd_line.GetSwitchValuePath(switches::kOut);
   if (result.empty())
@@ -116,7 +116,7 @@ void GetOutPath(const CommandLine& cmd_line, base::FilePath* out) {
 }
 
 // Returns the direction in which the version should be adjusted.
-upgrade_test::Direction GetDirection(const CommandLine& cmd_line) {
+upgrade_test::Direction GetDirection(const base::CommandLine& cmd_line) {
   return cmd_line.HasSwitch(switches::kPrevious) ?
       upgrade_test::PREVIOUS_VERSION : upgrade_test::NEXT_VERSION;
 }
@@ -126,8 +126,8 @@ upgrade_test::Direction GetDirection(const CommandLine& cmd_line) {
 // The main program.
 int wmain(int argc, wchar_t *argv[]) {
   base::AtExitManager exit_manager;
-  CommandLine::Init(0, NULL);
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(0, NULL);
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
   if (cmd_line->HasSwitch(switches::kHelp)) {
     DumpUsage(*cmd_line, errors::SHOW_HELP, std::wstring());

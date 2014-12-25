@@ -148,7 +148,7 @@ void InstallUtil::TriggerActiveSetupCommand() {
     return;
   }
 
-  CommandLine cmd(CommandLine::FromString(cmd_str));
+  base::CommandLine cmd(base::CommandLine::FromString(cmd_str));
   // Force creation of shortcuts as the First Run beacon might land between now
   // and the time setup.exe checks for it.
   cmd.AppendSwitch(installer::switches::kForceConfigureUserSettings);
@@ -162,12 +162,13 @@ void InstallUtil::TriggerActiveSetupCommand() {
     PLOG(ERROR) << cmd.GetCommandLineString();
 }
 
-bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
+bool InstallUtil::ExecuteExeAsAdmin(const base::CommandLine& cmd,
+                                    DWORD* exit_code) {
   base::FilePath::StringType program(cmd.GetProgram().value());
   DCHECK(!program.empty());
   DCHECK_NE(program[0], L'\"');
 
-  CommandLine::StringType params(cmd.GetCommandLineString());
+  base::CommandLine::StringType params(cmd.GetCommandLineString());
   if (params[0] == '"') {
     DCHECK_EQ('"', params[program.length() + 1]);
     DCHECK_EQ(program, params.substr(1, program.length()));
@@ -208,13 +209,14 @@ bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
   return success;
 }
 
-CommandLine InstallUtil::GetChromeUninstallCmd(
-    bool system_install, BrowserDistribution::Type distribution_type) {
+base::CommandLine InstallUtil::GetChromeUninstallCmd(
+    bool system_install,
+    BrowserDistribution::Type distribution_type) {
   ProductState state;
   if (state.Initialize(system_install, distribution_type)) {
     return state.uninstall_command();
   }
-  return CommandLine(CommandLine::NO_PROGRAM);
+  return base::CommandLine(base::CommandLine::NO_PROGRAM);
 }
 
 void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
@@ -388,7 +390,7 @@ bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,
 }
 
 bool CheckIsChromeSxSProcess() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   CHECK(command_line);
 
   if (command_line->HasSwitch(installer::switches::kChromeSxS))
@@ -564,8 +566,9 @@ int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
 // static
 void InstallUtil::MakeUninstallCommand(const base::string16& program,
                                        const base::string16& arguments,
-                                       CommandLine* command_line) {
-  *command_line = CommandLine::FromString(L"\"" + program + L"\" " + arguments);
+                                       base::CommandLine* command_line) {
+  *command_line =
+      base::CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
 // static
@@ -623,7 +626,7 @@ bool InstallUtil::ProgramCompare::Evaluate(const base::string16& value) const {
   // Suss out the exe portion of the value, which is expected to be a command
   // line kinda (or exactly) like:
   // "c:\foo\bar\chrome.exe" -- "%1"
-  base::FilePath program(CommandLine::FromString(value).GetProgram());
+  base::FilePath program(base::CommandLine::FromString(value).GetProgram());
   if (program.empty()) {
     LOG(WARNING) << "Failed to parse an executable name from command line: \""
                  << value << "\"";

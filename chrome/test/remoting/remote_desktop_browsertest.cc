@@ -584,7 +584,7 @@ void RemoteDesktopBrowserTest::DisableDNSLookupForThisTest() {
 }
 
 void RemoteDesktopBrowserTest::ParseCommandLine() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // The test framework overrides any command line user-data-dir
   // argument with a /tmp/.org.chromium.Chromium.XXXXXX directory.
@@ -603,7 +603,7 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
                                    override_user_data_dir);
   }
 
-  CommandLine::StringType accounts_file =
+  base::CommandLine::StringType accounts_file =
       command_line->GetSwitchValueNative(kAccountsFile);
   std::string account_type = command_line->GetSwitchValueASCII(kAccountType);
   if (!accounts_file.empty()) {

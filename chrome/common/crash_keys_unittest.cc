@@ -60,7 +60,7 @@ CrashKeysTest* CrashKeysTest::self_ = NULL;
 TEST_F(CrashKeysTest, Switches) {
   // Set three switches.
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     for (int i = 1; i <= 3; ++i)
       command_line.AppendSwitch(base::StringPrintf("--flag-%d", i));
     crash_keys::SetSwitchesFromCommandLine(&command_line);
@@ -72,7 +72,7 @@ TEST_F(CrashKeysTest, Switches) {
 
   // Set more than the max switches.
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     const int kMax = crash_keys::kSwitchesMaxCount + 2;
     EXPECT_GT(kMax, 15);
     for (int i = 1; i <= kMax; ++i)
@@ -87,7 +87,7 @@ TEST_F(CrashKeysTest, Switches) {
 
   // Set fewer to ensure that old ones are erased.
   {
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     for (int i = 1; i <= 5; ++i)
       command_line.AppendSwitch(base::StringPrintf("--fewer-%d", i));
     crash_keys::SetSwitchesFromCommandLine(&command_line);
@@ -164,7 +164,7 @@ TEST_F(CrashKeysTest, Extensions) {
 
 #if defined(OS_CHROMEOS)
 TEST_F(CrashKeysTest, IgnoreBoringFlags) {
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("--enable-logging");
   command_line.AppendSwitch("--user-data-dir=/tmp");
   command_line.AppendSwitch("--v=1");

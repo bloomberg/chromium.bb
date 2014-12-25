@@ -227,7 +227,7 @@ bool CheckServiceProcessReady() {
   return ready;
 }
 
-CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
+CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
                                                  bool for_auto_launch) {
   base::mac::ScopedNSAutoreleasePool pool;
 

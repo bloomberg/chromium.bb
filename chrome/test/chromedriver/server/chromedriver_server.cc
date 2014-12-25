@@ -206,10 +206,10 @@ void RunServer(uint16 port,
 }  // namespace
 
 int main(int argc, char *argv[]) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   base::AtExitManager at_exit;
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
 #if defined(OS_LINUX)
   // Select the locale from the environment by passing an empty string instead

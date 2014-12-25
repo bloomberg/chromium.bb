@@ -18,7 +18,7 @@ TEST(ServiceProcessTest, DISABLED_Run) {
   base::MessageLoopForUI main_message_loop;
   ServiceProcess process;
   ServiceProcessState state;
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
   EXPECT_TRUE(process.Teardown());
 }

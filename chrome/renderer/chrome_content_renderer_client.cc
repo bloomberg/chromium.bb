@@ -352,7 +352,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking))
     thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
   if (command_line->HasSwitch(switches::kEnableNetBenchmarking))
@@ -446,7 +446,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new ChromeRenderFrameObserver(render_frame);
 
   bool should_whitelist_for_content_settings =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInstantProcess);
   extensions::Dispatcher* ext_dispatcher = NULL;
 #if defined(ENABLE_EXTENSIONS)
   ext_dispatcher = extension_dispatcher_.get();
@@ -516,7 +517,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 
@@ -736,7 +737,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           bool is_nacl_unrestricted = false;
           if (is_nacl_mime_type) {
             is_nacl_unrestricted =
-                CommandLine::ForCurrentProcess()->HasSwitch(
+                base::CommandLine::ForCurrentProcess()->HasSwitch(
                     switches::kEnableNaCl);
           } else if (is_pnacl_mime_type) {
             is_nacl_unrestricted = true;
@@ -1181,7 +1182,8 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // process if it is an Instant url, or to another process if not.  Conversely,
   // fork if this is a non-Instant process navigating to an Instant url, so that
   // such navigations can also be bucketed into an Instant renderer.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess) ||
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInstantProcess) ||
       (search_bouncer_.get() && search_bouncer_->ShouldFork(url))) {
     *send_referrer = true;
     return true;
@@ -1197,7 +1199,8 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // If this is the Signin process, fork all navigations originating from the
   // renderer.  The destination page will then be bucketed back to this Signin
   // process if it is a Signin url, or to another process if not.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSigninProcess)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSigninProcess)) {
     // We never want to allow non-signin pages to fork-on-POST to a
     // signin-related action URL. We'll need to handle this carefully once
     // http://crbug.com/101395 is fixed. The CHECK ensures we don't forget.
@@ -1470,7 +1473,7 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
     return true;
   }
   // Allow access for tests.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     return true;
   }
@@ -1499,7 +1502,7 @@ bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   // SiteIsolationPolicy for a renderer process that does not have the extension
   // flag on.
 #if defined(ENABLE_EXTENSIONS)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(extensions::switches::kExtensionProcess);
 #else
   return true;
@@ -1516,7 +1519,7 @@ ChromeContentRendererClient::CreateWorkerPermissionClientProxy(
 bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 #if defined(ENABLE_PLUGINS)
   // Allow access for tests.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     return true;
   }
@@ -1534,7 +1537,7 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
     const GURL& url) {
 #if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting))
     return true;
   if (IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_))
@@ -1550,7 +1553,7 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
 bool ChromeContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
     const GURL& url) {
 #if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting))
     return true;
 

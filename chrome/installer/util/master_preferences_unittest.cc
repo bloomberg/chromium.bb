@@ -258,7 +258,7 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   std::wstring cmd_str(
       L"setup.exe --installerdata=\"" + prefs_file.value() + L"\"");
   cmd_str.append(L" --do-not-launch-chrome");
-  CommandLine cmd_line = CommandLine::FromString(cmd_str);
+  base::CommandLine cmd_line = base::CommandLine::FromString(cmd_str);
   installer::MasterPreferences prefs(cmd_line);
 
   // Check prefs that do not have any equivalent command line option.
@@ -303,7 +303,8 @@ TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
   std::wstringstream chrome_cmd;
   chrome_cmd << "setup.exe";
 
-  CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
+  base::CommandLine chrome_install(
+      base::CommandLine::FromString(chrome_cmd.str()));
 
   installer::MasterPreferences pref_chrome(chrome_install);
 
@@ -318,7 +319,8 @@ TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
   std::wstringstream chrome_cmd, cf_cmd, chrome_cf_cmd;
   chrome_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome;
 
-  CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
+  base::CommandLine chrome_install(
+      base::CommandLine::FromString(chrome_cmd.str()));
 
   installer::MasterPreferences pref_chrome(chrome_install);
 

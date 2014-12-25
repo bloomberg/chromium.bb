@@ -607,7 +607,7 @@ InstallStatus IsChromeActiveOrUserCancelled(
     const InstallerState& installer_state,
     const Product& product) {
   int32 exit_code = content::RESULT_CODE_NORMAL_EXIT;
-  CommandLine options(CommandLine::NO_PROGRAM);
+  base::CommandLine options(base::CommandLine::NO_PROGRAM);
   options.AppendSwitch(installer::switches::kUninstall);
 
   // Here we want to save user from frustration (in case of Chrome crashes)
@@ -638,7 +638,8 @@ InstallStatus IsChromeActiveOrUserCancelled(
 }
 
 bool ShouldDeleteProfile(const InstallerState& installer_state,
-                         const CommandLine& cmd_line, InstallStatus status,
+                         const base::CommandLine& cmd_line,
+                         InstallStatus status,
                          const Product& product) {
   bool should_delete = false;
 
@@ -1094,7 +1095,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                const Product& product,
                                bool remove_all,
                                bool force_uninstall,
-                               const CommandLine& cmd_line) {
+                               const base::CommandLine& cmd_line) {
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
   BrowserDistribution* browser_dist = product.distribution();
   const base::FilePath chrome_exe(
@@ -1132,7 +1133,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
         !::IsUserAnAdmin() &&
         base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
-      CommandLine new_cmd(CommandLine::NO_PROGRAM);
+      base::CommandLine new_cmd(base::CommandLine::NO_PROGRAM);
       new_cmd.AppendArguments(cmd_line, true);
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.

@@ -275,7 +275,7 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
   // built files (nexes, etc).  TestServer expects a path relative to the source
   // root.
   base::FilePath exe_dir =
-      CommandLine::ForCurrentProcess()->GetProgram().DirName();
+      base::CommandLine::ForCurrentProcess()->GetProgram().DirName();
   base::FilePath src_dir;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
     return false;

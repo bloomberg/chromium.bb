@@ -504,7 +504,7 @@ BOOL __stdcall LaunchGoogleChrome() {
     }
   }
 
-  CommandLine chrome_command(chrome_exe_path);
+  base::CommandLine chrome_command(chrome_exe_path);
 
   bool ret = false;
   ScopedComPtr<IProcessLauncher> ipl;
@@ -540,7 +540,7 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
     // When launching in the background, use WMI to ensure that chrome.exe is
     // is not our child process. This prevents it from pushing itself to
     // foreground.
-    CommandLine chrome_command(chrome_exe_path);
+    base::CommandLine chrome_command(chrome_exe_path);
 
     ScopedCOMInitializer com_initializer;
     if (!installer::WMIProcess::Launch(chrome_command.GetCommandLineString(),

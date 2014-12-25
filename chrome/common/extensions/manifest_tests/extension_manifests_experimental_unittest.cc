@@ -21,7 +21,7 @@ TEST_F(ChromeManifestTest, ExperimentalPermission) {
   LoadAndExpectSuccess("experimental.json", extensions::Manifest::COMPONENT);
   LoadAndExpectSuccess("experimental.json", extensions::Manifest::INTERNAL,
                        extensions::Extension::FROM_WEBSTORE);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
   LoadAndExpectSuccess("experimental.json");
 }

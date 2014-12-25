@@ -122,9 +122,9 @@ TEST(ProcessExtensions, MultipleExtensionsNoBgPages) {
                                               false, &switches, &bg_pages);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(switches.HasSwitch("load-extension"));
-  CommandLine::StringType ext_paths = switches.GetSwitchValueNative(
-      "load-extension");
-  std::vector<CommandLine::StringType> ext_path_list;
+  base::CommandLine::StringType ext_paths =
+      switches.GetSwitchValueNative("load-extension");
+  std::vector<base::CommandLine::StringType> ext_path_list;
   base::SplitString(ext_paths, FILE_PATH_LITERAL(','), &ext_path_list);
   ASSERT_EQ(2u, ext_path_list.size());
   ASSERT_TRUE(base::PathExists(base::FilePath(ext_path_list[0])));

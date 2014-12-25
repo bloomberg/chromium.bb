@@ -30,9 +30,9 @@ void ChromeAppHostOperations::ReadOptions(const MasterPreferences& prefs,
   }
 }
 
-void ChromeAppHostOperations::ReadOptions(const CommandLine& uninstall_command,
-                                          std::set<base::string16>* options)
-    const {
+void ChromeAppHostOperations::ReadOptions(
+    const base::CommandLine& uninstall_command,
+    std::set<base::string16>* options) const {
   DCHECK(options);
 
   if (uninstall_command.HasSwitch(switches::kMultiInstall))
@@ -51,7 +51,7 @@ void ChromeAppHostOperations::AddComDllList(
 
 void ChromeAppHostOperations::AppendProductFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 
@@ -68,7 +68,7 @@ void ChromeAppHostOperations::AppendProductFlags(
 
 void ChromeAppHostOperations::AppendRenameFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 
@@ -105,7 +105,7 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
     properties->set_target(target_exe);
 
   if (!properties->has_arguments()) {
-    CommandLine app_host_args(CommandLine::NO_PROGRAM);
+    base::CommandLine app_host_args(base::CommandLine::NO_PROGRAM);
     app_host_args.AppendSwitch(::switches::kShowAppList);
     properties->set_arguments(app_host_args.GetCommandLineString());
   }

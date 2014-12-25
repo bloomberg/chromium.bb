@@ -79,7 +79,7 @@ void ServiceIOThread::CleanUp() {
 // environment block so they are accessible in the early stages of the
 // chrome executable's lifetime.
 void PrepareRestartOnCrashEnviroment(
-    const CommandLine &parsed_command_line) {
+    const base::CommandLine& parsed_command_line) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   // Clear this var so child processes don't show the dialog by default.
   env->UnSetVar(env_vars::kShowRestart);
@@ -123,7 +123,7 @@ ServiceProcess::ServiceProcess()
 }
 
 bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
-                                const CommandLine& command_line,
+                                const base::CommandLine& command_line,
                                 ServiceProcessState* state) {
 #if defined(USE_GLIB)
   // g_type_init has been deprecated since version 2.35.
@@ -309,7 +309,7 @@ ServiceProcess::GetServiceURLRequestContextGetter() {
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
   if ((1 == enabled_services_) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNoServiceAutorun)) {
     if (!service_process_state_->AddToAutoRun()) {
       // TODO(scottbyer/sanjeevr/dmaclach): Handle error condition

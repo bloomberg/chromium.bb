@@ -19,10 +19,10 @@ base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   base::AtExitManager exit_manager;
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
 
   std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
   crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
   breakpad::InitCrashReporter(process_type);

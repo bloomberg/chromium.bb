@@ -325,7 +325,7 @@ void NaClBrowserTestPnaclTransitionalNonSfi::SetUpCommandLine(
 }
 
 void NaClBrowserTestNewlibExtension::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   base::FilePath src_root;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
@@ -343,7 +343,7 @@ void NaClBrowserTestNewlibExtension::SetUpCommandLine(
 }
 
 void NaClBrowserTestGLibcExtension::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   base::FilePath src_root;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));

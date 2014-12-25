@@ -595,7 +595,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
 
   about_flags::ReportCustomFlags("Login.CustomFlags", command_line_difference);
 
-  CommandLine::StringVector flags;
+  base::CommandLine::StringVector flags;
   // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
   LOG(WARNING) << "Restarting to apply per-session flags...";

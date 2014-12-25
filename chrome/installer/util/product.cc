@@ -58,26 +58,26 @@ void Product::InitializeFromPreferences(const MasterPreferences& prefs) {
 }
 
 void Product::InitializeFromUninstallCommand(
-    const CommandLine& uninstall_command) {
+    const base::CommandLine& uninstall_command) {
   operations_->ReadOptions(uninstall_command, &options_);
 }
 
 bool Product::LaunchChrome(const base::FilePath& application_path) const {
   bool success = !application_path.empty();
   if (success) {
-    CommandLine cmd(application_path.Append(installer::kChromeExe));
+    base::CommandLine cmd(application_path.Append(installer::kChromeExe));
     success = base::LaunchProcess(cmd, base::LaunchOptions()).IsValid();
   }
   return success;
 }
 
 bool Product::LaunchChromeAndWait(const base::FilePath& application_path,
-                                  const CommandLine& options,
+                                  const base::CommandLine& options,
                                   int32* exit_code) const {
   if (application_path.empty())
     return false;
 
-  CommandLine cmd(application_path.Append(installer::kChromeExe));
+  base::CommandLine cmd(application_path.Append(installer::kChromeExe));
   cmd.AppendArguments(options, false);
 
   bool success = false;
@@ -143,11 +143,11 @@ void Product::AddComDllList(std::vector<base::FilePath>* com_dll_list) const {
   operations_->AddComDllList(options_, com_dll_list);
 }
 
-void Product::AppendProductFlags(CommandLine* command_line) const {
+void Product::AppendProductFlags(base::CommandLine* command_line) const {
   operations_->AppendProductFlags(options_, command_line);
 }
 
-void Product::AppendRenameFlags(CommandLine* command_line) const {
+void Product::AppendRenameFlags(base::CommandLine* command_line) const {
   operations_->AppendRenameFlags(options_, command_line);
 }
 

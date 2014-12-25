@@ -36,9 +36,9 @@ void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
   }
 }
 
-void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
-                                        std::set<base::string16>* options)
-    const {
+void ChromeFrameOperations::ReadOptions(
+    const base::CommandLine& uninstall_command,
+    std::set<base::string16>* options) const {
   DCHECK(options);
 
   static const struct FlagToOption {
@@ -72,7 +72,7 @@ void ChromeFrameOperations::AddComDllList(
 
 void ChromeFrameOperations::AppendProductFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 
@@ -86,7 +86,7 @@ void ChromeFrameOperations::AppendProductFlags(
 
 void ChromeFrameOperations::AppendRenameFlags(
     const std::set<base::string16>& options,
-    CommandLine* cmd_line) const {
+    base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 

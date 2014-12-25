@@ -75,10 +75,10 @@ MasterPreferences::MasterPreferences() : distribution_(NULL),
                                          chrome_(true),
                                          chrome_app_launcher_(false),
                                          multi_install_(false) {
-  InitializeFromCommandLine(*CommandLine::ForCurrentProcess());
+  InitializeFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
-MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
+MasterPreferences::MasterPreferences(const base::CommandLine& cmd_line)
     : distribution_(NULL),
       preferences_read_from_file_(false),
       chrome_(true),
@@ -117,7 +117,8 @@ MasterPreferences::MasterPreferences(const std::string& prefs)
 MasterPreferences::~MasterPreferences() {
 }
 
-void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
+void MasterPreferences::InitializeFromCommandLine(
+    const base::CommandLine& cmd_line) {
 #if defined(OS_WIN)
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
     base::FilePath prefs_path(cmd_line.GetSwitchValuePath(
