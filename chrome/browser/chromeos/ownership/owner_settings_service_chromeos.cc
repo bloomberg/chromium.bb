@@ -13,6 +13,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -228,6 +229,16 @@ OwnerSettingsServiceChromeOS::~OwnerSettingsServiceChromeOS() {
   }
 }
 
+OwnerSettingsServiceChromeOS* OwnerSettingsServiceChromeOS::FromWebUI(
+    content::WebUI* web_ui) {
+  if (!web_ui)
+    return nullptr;
+  Profile* profile = Profile::FromWebUI(web_ui);
+  if (!profile)
+    return nullptr;
+  return OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
+}
+
 void OwnerSettingsServiceChromeOS::OnTPMTokenReady(
     bool /* tpm_token_enabled */) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -244,6 +255,7 @@ bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
 
 bool OwnerSettingsServiceChromeOS::Set(const std::string& setting,
                                        const base::Value& value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsOwner() && !IsOwnerInTests(user_id_))
     return false;
 
@@ -265,6 +277,32 @@ bool OwnerSettingsServiceChromeOS::Set(const std::string& setting,
                     OnTentativeChangesInPolicy(policy_data));
   StorePendingChanges();
   return true;
+}
+
+bool OwnerSettingsServiceChromeOS::AppendToList(const std::string& setting,
+                                                const base::Value& value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const base::Value* old_value = CrosSettings::Get()->GetPref(setting);
+  if (old_value && !old_value->IsType(base::Value::TYPE_LIST))
+    return false;
+  scoped_ptr<base::ListValue> new_value(
+      old_value ? static_cast<const base::ListValue*>(old_value)->DeepCopy()
+                : new base::ListValue());
+  new_value->Append(value.DeepCopy());
+  return Set(setting, *new_value);
+}
+
+bool OwnerSettingsServiceChromeOS::RemoveFromList(const std::string& setting,
+                                                  const base::Value& value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const base::Value* old_value = CrosSettings::Get()->GetPref(setting);
+  if (old_value && !old_value->IsType(base::Value::TYPE_LIST))
+    return false;
+  scoped_ptr<base::ListValue> new_value(
+      old_value ? static_cast<const base::ListValue*>(old_value)->DeepCopy()
+                : new base::ListValue());
+  new_value->Remove(value, nullptr);
+  return Set(setting, *new_value);
 }
 
 bool OwnerSettingsServiceChromeOS::CommitTentativeDeviceSettings(

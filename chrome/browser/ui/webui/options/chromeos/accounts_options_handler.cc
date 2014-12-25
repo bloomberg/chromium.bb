@@ -14,8 +14,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,12 +34,14 @@ namespace {
 
 // Adds specified user to the whitelist. Returns false if that user is already
 // in the whitelist.
-bool WhitelistUser(const std::string& username) {
-  CrosSettings* cros_settings = CrosSettings::Get();
-  if (cros_settings->FindEmailInList(kAccountsPrefUsers, username, NULL))
+bool WhitelistUser(OwnerSettingsServiceChromeOS* service,
+                   const std::string& username) {
+  if (CrosSettings::Get()->FindEmailInList(kAccountsPrefUsers, username, NULL))
     return false;
-  base::StringValue username_value(username);
-  cros_settings->AppendToList(kAccountsPrefUsers, &username_value);
+  if (service) {
+    base::StringValue username_value(username);
+    service->AppendToList(kAccountsPrefUsers, username_value);
+  }
   return true;
 }
 
@@ -105,7 +109,10 @@ void AccountsOptionsHandler::HandleWhitelistUser(const base::ListValue* args) {
     return;
   }
 
-  WhitelistUser(gaia::CanonicalizeEmail(typed_email));
+  if (OwnerSettingsServiceChromeOS* service =
+          OwnerSettingsServiceChromeOS::FromWebUI(web_ui())) {
+    WhitelistUser(service, gaia::CanonicalizeEmail(typed_email));
+  }
 }
 
 void AccountsOptionsHandler::HandleUnwhitelistUser(
@@ -116,7 +123,10 @@ void AccountsOptionsHandler::HandleUnwhitelistUser(
   }
 
   base::StringValue canonical_email(gaia::CanonicalizeEmail(email));
-  CrosSettings::Get()->RemoveFromList(kAccountsPrefUsers, &canonical_email);
+  if (OwnerSettingsServiceChromeOS* service =
+          OwnerSettingsServiceChromeOS::FromWebUI(web_ui())) {
+    service->RemoveFromList(kAccountsPrefUsers, canonical_email);
+  }
   user_manager::UserManager::Get()->RemoveUser(email, NULL);
 }
 
@@ -156,7 +166,10 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
        ++it)
     new_list->AppendIfNotPresent(new base::StringValue((*it)->email()));
 
-  cros_settings->Set(kAccountsPrefUsers, *new_list.get());
+  if (OwnerSettingsServiceChromeOS* service =
+          OwnerSettingsServiceChromeOS::FromWebUI(web_ui())) {
+    service->Set(kAccountsPrefUsers, *new_list.get());
+  }
 }
 
 }  // namespace options

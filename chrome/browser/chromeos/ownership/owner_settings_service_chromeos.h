@@ -24,6 +24,10 @@
 
 class Profile;
 
+namespace content {
+class WebUI;
+}
+
 namespace ownership {
 class OwnerKeyUtil;
 }
@@ -55,12 +59,18 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   virtual ~OwnerSettingsServiceChromeOS();
 
+  static OwnerSettingsServiceChromeOS* FromWebUI(content::WebUI* web_ui);
+
   void OnTPMTokenReady(bool tpm_token_enabled);
 
   // ownership::OwnerSettingsService implementation:
   virtual bool HandlesSetting(const std::string& setting) override;
   virtual bool Set(const std::string& setting,
                    const base::Value& value) override;
+  virtual bool AppendToList(const std::string& setting,
+                            const base::Value& value) override;
+  virtual bool RemoveFromList(const std::string& setting,
+                              const base::Value& value) override;
   virtual bool CommitTentativeDeviceSettings(
       scoped_ptr<enterprise_management::PolicyData> policy) override;
 

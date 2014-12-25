@@ -91,6 +91,15 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   // Sets |setting| value to |value|.
   virtual bool Set(const std::string& setting, const base::Value& value) = 0;
 
+  // Convenience functions for manipulating lists. Note that the following
+  // functions employs a read, modify and write pattern. If there're
+  // pending updates to |setting|, value cache they read from might not
+  // be fresh and multiple calls to those function would lose data.
+  virtual bool AppendToList(const std::string& setting,
+                            const base::Value& value) = 0;
+  virtual bool RemoveFromList(const std::string& setting,
+                              const base::Value& value) = 0;
+
   // Sets a bunch of device settings accumulated before ownership gets
   // established.
   //
