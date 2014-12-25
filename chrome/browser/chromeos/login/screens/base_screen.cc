@@ -10,6 +10,63 @@
 
 namespace chromeos {
 
+BaseScreen::ContextEditor::ContextEditor(BaseScreen& screen)
+    : screen_(screen), context_(screen.context_) {
+}
+
+BaseScreen::ContextEditor::~ContextEditor() {
+  screen_.CommitContextChanges();
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetBoolean(
+    const KeyType& key,
+    bool value) const {
+  context_.SetBoolean(key, value);
+  return *this;
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetInteger(
+    const KeyType& key,
+    int value) const {
+  context_.SetInteger(key, value);
+  return *this;
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetDouble(
+    const KeyType& key,
+    double value) const {
+  context_.SetDouble(key, value);
+  return *this;
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetString(
+    const KeyType& key,
+    const std::string& value) const {
+  context_.SetString(key, value);
+  return *this;
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetString(
+    const KeyType& key,
+    const base::string16& value) const {
+  context_.SetString(key, value);
+  return *this;
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetStringList(
+    const KeyType& key,
+    const StringList& value) const {
+  context_.SetStringList(key, value);
+  return *this;
+}
+
+const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetString16List(
+    const KeyType& key,
+    const String16List& value) const {
+  context_.SetString16List(key, value);
+  return *this;
+}
+
 BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate)
     : channel_(nullptr), base_screen_delegate_(base_screen_delegate) {
 }
@@ -74,6 +131,10 @@ void BaseScreen::OnUserAction(const std::string& action_id) {
 void BaseScreen::OnContextKeyUpdated(
     const ::login::ScreenContext::KeyType& key) {
   LOG(WARNING) << "Unhandled context change: key=" << key;
+}
+
+BaseScreen::ContextEditor BaseScreen::GetContextEditor() {
+  return ContextEditor(*this);
 }
 
 void BaseScreen::OnContextChanged(const base::DictionaryValue& diff) {

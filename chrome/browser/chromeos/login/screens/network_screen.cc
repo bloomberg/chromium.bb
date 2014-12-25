@@ -168,10 +168,9 @@ void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
 void NetworkScreen::InputMethodChanged(
     input_method::InputMethodManager* manager,
     bool /* show_message */) {
-  context_.SetString(
+  GetContextEditor().SetString(
       kContextKeyInputMethod,
       manager->GetActiveIMEState()->GetCurrentInputMethod().id());
-  CommitContextChanges();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -306,8 +305,7 @@ void NetworkScreen::StopWaitingForConnection(const base::string16& network_id) {
   if (view_)
     view_->ShowConnectingStatus(false, network_id_);
 
-  context_.SetBoolean(kContextKeyContinueButtonEnabled, is_connected);
-  CommitContextChanges();
+  GetContextEditor().SetBoolean(kContextKeyContinueButtonEnabled, is_connected);
 }
 
 void NetworkScreen::WaitForConnection(const base::string16& network_id) {
@@ -323,8 +321,7 @@ void NetworkScreen::WaitForConnection(const base::string16& network_id) {
   if (view_)
     view_->ShowConnectingStatus(continue_pressed_, network_id_);
 
-  context_.SetBoolean(kContextKeyContinueButtonEnabled, false);
-  CommitContextChanges();
+  GetContextEditor().SetBoolean(kContextKeyContinueButtonEnabled, false);
 }
 
 void NetworkScreen::OnContinueButtonPressed() {
@@ -383,8 +380,7 @@ void NetworkScreen::OnLanguageListResolved(
 void NetworkScreen::OnSystemTimezoneChanged() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
-  context_.SetString(kContextKeyTimezone, current_timezone_id);
-  CommitContextChanges();
+  GetContextEditor().SetString(kContextKeyTimezone, current_timezone_id);
 }
 
 }  // namespace chromeos
