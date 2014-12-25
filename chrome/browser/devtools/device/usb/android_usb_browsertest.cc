@@ -37,12 +37,21 @@ struct AndroidTraits {
   static const int kClass = 0xff;
   static const int kSubclass = 0x42;
   static const int kProtocol = 0x1;
+  static const bool kBreaks = false;
 };
 
 struct NonAndroidTraits {
   static const int kClass = 0xf0;
   static const int kSubclass = 0x42;
   static const int kProtocol = 0x2;
+  static const bool kBreaks = false;
+};
+
+struct BreakingAndroidTraits {
+  static const int kClass = 0xff;
+  static const int kSubclass = 0x42;
+  static const int kProtocol = 0x1;
+  static const bool kBreaks = true;
 };
 
 const uint32 kMaxPayload = 4096;
@@ -53,19 +62,25 @@ const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kListProcessesCommand[] = "shell:ps";
 const char kInstalledChromePackagesCommand[] = "shell:pm list packages";
+const char kOpenSocketCommand[] = "localabstract:chrome_devtools_remote";
 const char kDeviceManufacturer[] = "Test Manufacturer";
 const char kDeviceModel[] = "Nexus 5";
 const char kDeviceSerial[] = "Sample serial";
 
+const char kHttpVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
+const char kHttpPagesRequest[] = "GET /json HTTP/1.1\r\n\r\n";
+
 const char kSampleOpenedUnixSockets[] =
-    "Num       RefCount Protocol Flags    Type St Inode Path\n"
+    "Num       RefCount Protocol Flags    Type St Inode Path\r\n"
     "00000000: 00000004 00000000"
-    " 00000000 0002 01  3328 /dev/socket/wpa_wlan0\n"
+    " 00000000 0002 01  3328 /dev/socket/wpa_wlan0\r\n"
     "00000000: 00000002 00000000"
-    " 00010000 0001 01  5394 /dev/socket/vold\n";
+    " 00010000 0001 01  5394 /dev/socket/vold\r\n"
+    "00000000: 00000002 00000000"
+    " 00010000 0001 01 1095814 @chrome_devtools_remote\r\n";
 
 const char kSampleListProcesses[] =
-    "USER   PID  PPID VSIZE  RSS    WCHAN    PC         NAME\n"
+    "USER   PID  PPID VSIZE  RSS    WCHAN    PC         NAME\r\n"
     "root   1    0    688    508    ffffffff 00000000 S /init\r\n"
     "u0_a75 2425 123  933736 193024 ffffffff 00000000 S com.sample.feed\r\n"
     "nfc    741  123  706448 26316  ffffffff 00000000 S com.android.nfc\r\n"
@@ -85,7 +100,38 @@ const char kSampleDumpsys[] =
     "    mStable=(0,50)-(720,1184)\r\n"  // Only mStable parameter is parsed
     "    mForceStatusBar=false mForceStatusBarFromKeyguard=false\r\n";
 
-const char* GetMockShellResponse(std::string command) {
+const char kSampleBrowserVersion[] =
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Length:312\r\n"
+    "Content-Type:application/json; charset=UTF-8\r\n\r\n"
+    "{\n"
+    "   \"Android-Package\": \"com.android.chrome\",\n"
+    "   \"Browser\": \"Chrome/39.0.2171.93\",\n"
+    "   \"Protocol-Version\": \"1.1\",\n"
+    "   \"User-Agent\": \"Mozilla/5.0 (Linux; Android 5.0.1; Nexus 5 "
+    "Build/LRX22C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.93 "
+    "Mobile Safari/537.36\",\n"
+    "   \"WebKit-Version\": \"537.36 (@185626)\"\n"
+    "}\n";
+
+const char kSampleBrowserPages[] =
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Length:397\r\n"
+    "Content-Type:application/json; charset=UTF-8\r\n\r\n"
+    "[ {\n"
+    "   \"description\": \"\",\n"
+    "   \"devtoolsFrontendUrl\": \"http://chrome-devtools-frontend.appspot.com"
+    "/serve_rev/@185626/devtools.html?ws=/devtools/page/377\",\n"
+    "   \"faviconUrl\": "
+    "\"http://www.chromium.org/_/rsrc/1354323194313/favicon.ico\",\n"
+    "   \"id\": \"377\",\n"
+    "   \"title\": \"The Chromium Projects\",\n"
+    "   \"type\": \"page\",\n"
+    "   \"url\": \"http://www.chromium.org/\",\n"
+    "   \"webSocketDebuggerUrl\": \"ws:///devtools/page/377\"\n"
+    "} ]\n";
+
+const char* GetMockShellResponse(const std::string& command) {
   if (command == kDeviceModelCommand) {
     return kDeviceModel;
   } else if (command == kOpenedUnixSocketsCommand) {
@@ -97,9 +143,17 @@ const char* GetMockShellResponse(std::string command) {
   } else if (command == kInstalledChromePackagesCommand) {
     return kSampleListPackages;
   }
+  NOTREACHED();
+  return "";
+}
 
-  DCHECK(false) << "Should not be reached";
-
+const char* GetMockHttpResponse(const std::string& request) {
+  if (request == kHttpVersionRequest) {
+    return kSampleBrowserVersion;
+  } else if (request == kHttpPagesRequest) {
+    return kSampleBrowserPages;
+  }
+  NOTREACHED();
   return "";
 }
 
@@ -112,13 +166,15 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   explicit MockUsbDeviceHandle(MockUsbDevice<T>* device)
       : device_(device),
         remaining_body_length_(0),
-        next_local_socket_(0) {}
+        last_local_socket_(0),
+        broken_(false) {
+  }
 
   virtual scoped_refptr<UsbDevice> GetDevice() const override {
     return device_;
   }
 
-  virtual void Close() override { device_ = NULL; }
+  virtual void Close() override { device_ = nullptr; }
 
   bool ClaimInterface(int interface_number) override {
     if (device_->claimed_interfaces_.find(interface_number) !=
@@ -172,7 +228,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         std::vector<uint32> header(6);
         memcpy(&header[0], buffer->data(), length);
         current_message_.reset(
-            new AdbMessage(header[0], header[1], header[2], ""));
+            new AdbMessage(header[0], header[1], header[2], std::string()));
         remaining_body_length_ = header[3];
         uint32 magic = header[5];
         if ((current_message_->command ^ 0xffffffff) != magic) {
@@ -189,13 +245,12 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         ProcessIncoming();
       }
 
+      device::UsbTransferStatus status =
+          broken_ ? device::USB_TRANSFER_ERROR : device::USB_TRANSFER_COMPLETED;
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback,
-                     device::USB_TRANSFER_COMPLETED,
-                     scoped_refptr<net::IOBuffer>(),
-                     0));
-
+          base::Bind(callback, status, scoped_refptr<net::IOBuffer>(), 0));
+      ProcessQueries();
     } else if (direction == device::USB_DIRECTION_INBOUND) {
       queries_.push(Query(callback, make_scoped_refptr(buffer), length));
       ProcessQueries();
@@ -222,7 +277,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   void ProcessIncoming() {
     DCHECK(current_message_.get());
     switch (current_message_->command) {
-      case AdbMessage::kCommandCNXN:
+      case AdbMessage::kCommandCNXN: {
         WriteResponse(make_scoped_ptr(
             new AdbMessage(AdbMessage::kCommandCNXN,
                            kVersion,
@@ -231,25 +286,64 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                            "product.model=SampleModel;ro.product."
                            "device=SampleDevice;")));
         break;
-      case AdbMessage::kCommandOPEN:
+      }
+      case AdbMessage::kCommandWRTE: {
+        if (T::kBreaks) {
+          broken_ = true;
+          return;
+        }
+        auto it = local_sockets_.find(current_message_->arg0);
+        if (it == local_sockets_.end())
+          return;
+
+        DCHECK((int)current_message_->arg1 == it->second);
+        WriteResponse(make_scoped_ptr(new AdbMessage(AdbMessage::kCommandOKAY,
+                                                     current_message_->arg1,
+                                                     current_message_->arg0,
+                                                     std::string())));
+        WriteResponse(make_scoped_ptr(
+            new AdbMessage(AdbMessage::kCommandWRTE,
+                           current_message_->arg1,
+                           current_message_->arg0,
+                           GetMockHttpResponse(current_message_->body))));
+        WriteResponse(make_scoped_ptr(new AdbMessage(AdbMessage::kCommandCLSE,
+                                                     0,
+                                                     current_message_->arg0,
+                                                     std::string())));
+        break;
+      }
+      case AdbMessage::kCommandOPEN: {
         DCHECK(current_message_->arg1 == 0);
         DCHECK(current_message_->arg0 != 0);
-        if (current_message_->body.find("shell:") != std::string::npos) {
+        std::string response;
+        if (current_message_->body.find("shell:") == (size_t)0) {
           WriteResponse(make_scoped_ptr(new AdbMessage(AdbMessage::kCommandOKAY,
-                                                       ++next_local_socket_,
+                                                       ++last_local_socket_,
                                                        current_message_->arg0,
-                                                       "")));
+                                                       std::string())));
           WriteResponse(make_scoped_ptr(
               new AdbMessage(AdbMessage::kCommandWRTE,
-                             next_local_socket_,
+                             last_local_socket_,
                              current_message_->arg0,
                              GetMockShellResponse(current_message_->body.substr(
                                  0, current_message_->body.size() - 1)))));
-          WriteResponse(make_scoped_ptr(new AdbMessage(
-              AdbMessage::kCommandCLSE, 0, current_message_->arg0, "")));
+          WriteResponse(make_scoped_ptr(new AdbMessage(AdbMessage::kCommandCLSE,
+                                                       0,
+                                                       current_message_->arg0,
+                                                       std::string())));
         }
-      default:
+        if (current_message_->body.find(kOpenSocketCommand) == (size_t)0) {
+          local_sockets_[current_message_->arg0] = ++last_local_socket_;
+          WriteResponse(make_scoped_ptr(new AdbMessage(AdbMessage::kCommandOKAY,
+                                                       last_local_socket_,
+                                                       current_message_->arg0,
+                                                       std::string())));
+        }
         return;
+      }
+      default: {
+        return;
+      }
     }
     ProcessQueries();
   }
@@ -276,6 +370,14 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     if (!queries_.size())
       return;
     Query query = queries_.front();
+    if (broken_) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(query.callback,
+                     device::USB_TRANSFER_ERROR,
+                     nullptr,
+                     0));
+    }
 
     if (query.size > output_buffer_.size())
       return;
@@ -292,6 +394,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                    device::USB_TRANSFER_COMPLETED,
                    query.buffer,
                    query.size));
+
   }
 
   virtual void InterruptTransfer(UsbEndpointDirection direction,
@@ -331,7 +434,9 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   scoped_ptr<AdbMessage> current_message_;
   std::vector<char> output_buffer_;
   std::queue<Query> queries_;
-  int next_local_socket_;
+  std::map<int, int> local_sockets_;
+  int last_local_socket_;
+  bool broken_;
 };
 
 template <class T>
@@ -420,7 +525,7 @@ class MockUsbService : public UsbService {
 
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
 
   void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
@@ -431,6 +536,22 @@ class MockUsbService : public UsbService {
   std::vector<scoped_refptr<UsbDevice> > devices_;
 };
 
+class MockBreakingUsbService : public UsbService {
+ public:
+  MockBreakingUsbService() {}
+  ~MockBreakingUsbService() {}
+
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
+    STLClearObject(devices);
+    devices->push_back(new MockUsbDevice<BreakingAndroidTraits>());
+  }
+};
+
 class MockUsbServiceForCheckingTraits : public UsbService {
  public:
   MockUsbServiceForCheckingTraits() : step_(0) {}
@@ -439,7 +560,7 @@ class MockUsbServiceForCheckingTraits : public UsbService {
 
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
 
   void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
@@ -531,7 +652,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    UsbService* service = NULL;
+    UsbService* service = nullptr;
     BrowserThread::PostTaskAndReply(
         BrowserThread::FILE,
         FROM_HERE,
@@ -560,6 +681,13 @@ class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
  protected:
   void SetUpService() override {
     UsbService::SetInstanceForTest(new MockUsbServiceForCheckingTraits());
+  }
+};
+
+class AndroidBreakingUsbTest : public AndroidUsbDiscoveryTest {
+ protected:
+  void SetUpService() override {
+    UsbService::SetInstanceForTest(new MockBreakingUsbService());
   }
 };
 
@@ -724,6 +852,12 @@ class MockCountListenerForCheckingTraits : public MockCountListener {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(AndroidUsbDiscoveryTest, TestDeviceDiscovery) {
+  MockListListener listener(adb_bridge_, runner_->QuitClosure());
+  adb_bridge_->AddDeviceListListener(&listener);
+  runner_->Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AndroidBreakingUsbTest, TestDeviceBreaking) {
   MockListListener listener(adb_bridge_, runner_->QuitClosure());
   adb_bridge_->AddDeviceListListener(&listener);
   runner_->Run();
