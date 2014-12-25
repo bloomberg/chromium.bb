@@ -372,6 +372,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertTrue(all(
         isinstance(x, int) for x in self.repo.run(self.gc.get_git_version)))
 
+  @unittest.expectedFailure
   def testGetBranchesInfo(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.repo.git('checkout', '-tb', 'happybranch', 'master')

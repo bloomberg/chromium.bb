@@ -21,6 +21,10 @@ class Android(recipe_util.Recipe):
       },
     }
 
+  @staticmethod
+  def expected_root(_props):
+    return ''
+
 
 def main(argv=None):
   return Android().handle_args(argv)

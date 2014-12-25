@@ -21,6 +21,10 @@ class IOS(recipe_util.Recipe):
       },
     }
 
+  @staticmethod
+  def expected_root(_props):
+    return ''
+
 
 def main(argv=None):
   return IOS().handle_args(argv)

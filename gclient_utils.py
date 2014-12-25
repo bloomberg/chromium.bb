@@ -166,6 +166,13 @@ def safe_rename(old, new):
       time.sleep(0.1)
 
 
+def rm_file_or_tree(path):
+  if os.path.isfile(path):
+    os.remove(path)
+  else:
+    rmtree(path)
+
+
 def rmtree(path):
   """shutil.rmtree() on steroids.
 

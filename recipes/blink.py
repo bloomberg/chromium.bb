@@ -30,6 +30,10 @@ class Blink(recipe_util.Recipe):
       },
     }
 
+  @staticmethod
+  def expected_root(_props):
+    return ''
+
 
 def main(argv=None):
   return Blink().handle_args(argv)

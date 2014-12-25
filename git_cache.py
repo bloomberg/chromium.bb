@@ -312,7 +312,7 @@ class Mirror(object):
           retcode = 0
     finally:
       # Clean up the downloaded zipfile.
-      gclient_utils.rmtree(tempdir)
+      gclient_utils.rm_file_or_tree(tempdir)
 
     if retcode:
       self.print(
@@ -486,7 +486,7 @@ class Mirror(object):
                      if os.path.isdir(os.path.join(cachepath, path))])
     for dirent in dirlist:
       if dirent.startswith('_cache_tmp') or dirent.startswith('tmp'):
-        gclient_utils.rmtree(os.path.join(cachepath, dirent))
+        gclient_utils.rm_file_or_tree(os.path.join(cachepath, dirent))
       elif (dirent.endswith('.lock') and
           os.path.isfile(os.path.join(cachepath, dirent))):
         repo_dirs.add(os.path.join(cachepath, dirent[:-5]))
