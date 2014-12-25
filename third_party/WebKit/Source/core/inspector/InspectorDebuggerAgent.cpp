@@ -37,7 +37,6 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/AsyncCallChain.h"
-#include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScript.h"
@@ -130,14 +129,13 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_skipAllPauses(false)
     , m_skipContentScripts(false)
     , m_cachedSkipStackGeneration(0)
-    , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker(this)))
-    , m_v8AsyncCallTracker(adoptPtrWillBeNoop(new V8AsyncCallTracker(this)))
     , m_promiseTracker(PromiseTracker::create())
     , m_maxAsyncCallStackDepth(0)
     , m_currentAsyncCallChain(nullptr)
     , m_nestedAsyncCallCount(0)
     , m_performingAsyncStepIn(false)
 {
+    m_v8AsyncCallTracker = adoptPtrWillBeNoop(new V8AsyncCallTracker(this));
 }
 
 InspectorDebuggerAgent::~InspectorDebuggerAgent()
@@ -238,7 +236,8 @@ void InspectorDebuggerAgent::internalSetAsyncCallStackDepth(int depth)
     } else {
         m_maxAsyncCallStackDepth = depth;
     }
-    m_instrumentingAgents->setAsyncCallStackTracker(depth > 0 ? &asyncCallStackTracker() : nullptr);
+    for (auto& listener: m_asyncCallTrackingListeners)
+        listener->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
 void InspectorDebuggerAgent::restore()
@@ -1166,8 +1165,8 @@ void InspectorDebuggerAgent::resetAsyncCallTracker()
 {
     m_currentAsyncCallChain.clear();
     m_nestedAsyncCallCount = 0;
-    asyncCallStackTracker().reset();
-    m_v8AsyncCallTracker->reset();
+    for (auto& listener: m_asyncCallTrackingListeners)
+        listener->resetAsyncCallChains();
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
@@ -1177,6 +1176,20 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
         directive->setString("directiveText", directiveText);
         breakProgram(InspectorFrontend::Debugger::Reason::CSPViolation, directive.release());
     }
+}
+
+
+void InspectorDebuggerAgent::addAsyncCallTrackingListener(AsyncCallTrackingListener* listener)
+{
+    m_asyncCallTrackingListeners.append(listener);
+}
+
+void InspectorDebuggerAgent::removeAsyncCallTrackingListener(AsyncCallTrackingListener* listener)
+{
+    size_t index = m_asyncCallTrackingListeners.find(listener);
+    if (index == kNotFound)
+        return;
+    m_asyncCallTrackingListeners.remove(index);
 }
 
 void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, int scriptId, const String&, int)
@@ -1548,7 +1561,6 @@ void InspectorDebuggerAgent::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_listener);
-    visitor->trace(m_asyncCallStackTracker);
     visitor->trace(m_v8AsyncCallTracker);
     visitor->trace(m_promiseTracker);
     visitor->trace(m_asyncOperationsForStepInto);

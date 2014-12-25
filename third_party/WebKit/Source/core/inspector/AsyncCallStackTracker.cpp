@@ -142,12 +142,26 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
     return 0;
 }
 
-AsyncCallStackTracker::AsyncCallStackTracker(InspectorDebuggerAgent* debuggerAgent)
+AsyncCallStackTracker::AsyncCallStackTracker(InspectorDebuggerAgent* debuggerAgent, InstrumentingAgents* instrumentingAgents)
     : m_debuggerAgent(debuggerAgent)
+    , m_instrumentingAgents(instrumentingAgents)
 {
+    m_debuggerAgent->addAsyncCallTrackingListener(this);
 }
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
+
+void AsyncCallStackTracker::asyncCallTrackingStateChanged(bool tracking)
+{
+    m_instrumentingAgents->setAsyncCallStackTracker(tracking ? this : nullptr);
+}
+
+void AsyncCallStackTracker::resetAsyncCallChains()
+{
+    for (auto& it : m_executionContextDataMap)
+        it.value->dispose();
+    m_executionContextDataMap.clear();
+}
 
 void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
@@ -420,13 +434,6 @@ AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContex
             .storedValue->value.get();
     }
     return data;
-}
-
-void AsyncCallStackTracker::reset()
-{
-    for (auto& it : m_executionContextDataMap)
-        it.value->dispose();
-    m_executionContextDataMap.clear();
 }
 
 void AsyncCallStackTracker::trace(Visitor* visitor)

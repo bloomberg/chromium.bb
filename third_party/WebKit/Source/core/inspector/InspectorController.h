@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class AsyncCallStackTracker;
 class ContextMenuProvider;
 class LocalFrame;
 class GraphicsContext;
@@ -147,6 +148,7 @@ private:
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     OwnPtrWillBeMember<InspectorOverlay> m_overlay;
+    OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;

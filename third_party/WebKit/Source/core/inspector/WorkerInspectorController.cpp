@@ -34,6 +34,7 @@
 
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
+#include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorConsoleAgent.h"
@@ -97,6 +98,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get());
     m_workerDebuggerAgent = workerDebuggerAgent.get();
     m_agents.append(workerDebuggerAgent.release());
+    m_asyncCallStackTracker = adoptPtrWillBeNoop(new AsyncCallStackTracker(m_workerDebuggerAgent, m_instrumentingAgents.get()));
 
     m_agents.append(InspectorProfilerAgent::create(m_injectedScriptManager.get(), 0));
     m_agents.append(InspectorHeapProfilerAgent::create(m_injectedScriptManager.get()));

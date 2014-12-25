@@ -6,6 +6,7 @@
 #define V8AsyncCallTracker_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -16,16 +17,20 @@ namespace blink {
 class InspectorDebuggerAgent;
 class ScriptState;
 
-class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker>, public ScriptState::Observer {
+class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker>, public ScriptState::Observer, public InspectorDebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
 public:
     explicit V8AsyncCallTracker(InspectorDebuggerAgent*);
     ~V8AsyncCallTracker();
     void trace(Visitor*);
 
-    void reset();
+    // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
+    void asyncCallTrackingStateChanged(bool tracking) override;
+    void resetAsyncCallChains() override;
+
     void didReceiveV8AsyncTaskEvent(ScriptState*, const String& eventType, const String& eventName, int id);
 
+    // ScriptState::Observer implementation:
     void willDisposeScriptState(ScriptState*) override;
 
 private:

@@ -34,6 +34,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
+#include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -138,6 +139,7 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_state);
     visitor->trace(m_overlay);
+    visitor->trace(m_asyncCallStackTracker);
     visitor->trace(m_domAgent);
     visitor->trace(m_animationAgent);
     visitor->trace(m_pageAgent);
@@ -203,6 +205,7 @@ void InspectorController::initializeDeferredAgents()
     OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, m_pageAgent, injectedScriptManager, overlay));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
+    m_asyncCallStackTracker = adoptPtrWillBeNoop(new AsyncCallStackTracker(debuggerAgent, m_instrumentingAgents.get()));
 
     m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
 

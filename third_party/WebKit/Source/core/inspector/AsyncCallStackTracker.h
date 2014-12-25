@@ -31,6 +31,7 @@
 #ifndef AsyncCallStackTracker_h
 #define AsyncCallStackTracker_h
 
+#include "core/inspector/InspectorDebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -52,11 +53,15 @@ class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollected<AsyncCallStackTracker> {
+class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollected<AsyncCallStackTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
 public:
-    explicit AsyncCallStackTracker(InspectorDebuggerAgent*);
+    AsyncCallStackTracker(InspectorDebuggerAgent*, InstrumentingAgents*);
+
+    // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
+    void asyncCallTrackingStateChanged(bool tracking) override;
+    void resetAsyncCallChains() override;
 
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
@@ -92,8 +97,6 @@ public:
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
 
-    void reset();
-
     void trace(Visitor*);
 
     class ExecutionContextData;
@@ -109,6 +112,7 @@ private:
     using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
     InspectorDebuggerAgent* m_debuggerAgent;
+    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 };
 
 } // namespace blink

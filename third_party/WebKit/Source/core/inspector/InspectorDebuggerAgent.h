@@ -49,7 +49,6 @@
 namespace blink {
 
 class AsyncCallChain;
-class AsyncCallStackTracker;
 class ConsoleMessage;
 class InjectedScript;
 class InjectedScriptManager;
@@ -181,6 +180,15 @@ public:
     void didCompleteAsyncOperation(AsyncCallChain*);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
 
+    class AsyncCallTrackingListener {
+    public:
+        virtual ~AsyncCallTrackingListener() { }
+        virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
+        virtual void resetAsyncCallChains() = 0;
+    };
+    void addAsyncCallTrackingListener(AsyncCallTrackingListener*);
+    void removeAsyncCallTrackingListener(AsyncCallTrackingListener*);
+
 protected:
     explicit InspectorDebuggerAgent(InjectedScriptManager*);
 
@@ -234,7 +242,6 @@ private:
 
     bool isCallStackEmptyOrBlackboxed();
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed, int* index = 0);
-    AsyncCallStackTracker& asyncCallStackTracker() const { return *m_asyncCallStackTracker; };
     PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
     void internalSetAsyncCallStackDepth(int);
@@ -276,7 +283,6 @@ private:
     bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     unsigned m_cachedSkipStackGeneration;
-    OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
 
@@ -285,6 +291,7 @@ private:
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     bool m_performingAsyncStepIn;
+    WillBeHeapVector<AsyncCallTrackingListener*> m_asyncCallTrackingListeners;
 };
 
 } // namespace blink

@@ -73,7 +73,11 @@ void V8AsyncCallTracker::trace(Visitor* visitor)
 #endif
 }
 
-void V8AsyncCallTracker::reset()
+void V8AsyncCallTracker::asyncCallTrackingStateChanged(bool)
+{
+}
+
+void V8AsyncCallTracker::resetAsyncCallChains()
 {
     for (auto& it : m_contextAsyncCallChainMap)
         it.key->removeObserver(this);
