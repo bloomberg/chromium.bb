@@ -27,7 +27,16 @@ function performActions()
 
 function test()
 {
-    InspectorTest.performActionsAndPrint("performActions()", "RecalculateStyles");
+    InspectorTest.evaluateWithTimeline("performActions()", callback);
+
+    function callback()
+    {
+        InspectorTest.printTimelineRecords("", function(record) {
+            if (record.type() === "RecalculateStyles")
+                InspectorTest.addResult(record.type());
+        });
+        InspectorTest.completeTest();
+    }
 }
 
 </script>
