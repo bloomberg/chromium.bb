@@ -578,7 +578,7 @@ test("media_unittests") {
     ]
   }
 
-  if (cpu_arch != "arm" && is_chromeos && use_x11) {
+  if (cpu_arch != "arm" && is_chromeos) {
     sources += [ "filters/h264_bitstream_buffer_unittest.cc" ]
   }
 

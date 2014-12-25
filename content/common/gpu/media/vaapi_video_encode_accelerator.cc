@@ -113,8 +113,7 @@ VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
     return profiles;
 
   std::vector<media::VideoCodecProfile> hw_profiles =
-      VaapiWrapper::GetSupportedEncodeProfiles(
-          x_display_, base::Bind(&base::DoNothing));
+      VaapiWrapper::GetSupportedEncodeProfiles(base::Bind(&base::DoNothing));
 
   media::VideoEncodeAccelerator::SupportedProfile profile;
   profile.max_resolution.SetSize(1920, 1088);
@@ -139,12 +138,11 @@ static unsigned int Log2OfPowerOf2(unsigned int x) {
   return log;
 }
 
-VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator(Display* x_display)
+VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
     : profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
       mb_width_(0),
       mb_height_(0),
       output_buffer_byte_size_(0),
-      x_display_(x_display),
       state_(kUninitialized),
       frame_num_(0),
       last_idr_frame_num_(0),
@@ -217,9 +215,8 @@ bool VaapiVideoEncodeAccelerator::Initialize(
 
   vaapi_wrapper_ = VaapiWrapper::Create(VaapiWrapper::kEncode,
                                         output_profile,
-                                        x_display_,
                                         base::Bind(&ReportToUMA, VAAPI_ERROR));
-  if (!vaapi_wrapper_) {
+  if (!vaapi_wrapper_.get()) {
     LOG(ERROR) << "Failed initializing VAAPI";
     return false;
   }
@@ -604,12 +601,12 @@ bool VaapiVideoEncodeAccelerator::PrepareNextJob() {
     return false;
   }
 
-  current_encode_job_->input_surface =
-      new VASurface(available_va_surface_ids_.back(), va_surface_release_cb_);
+  current_encode_job_->input_surface = new VASurface(
+      available_va_surface_ids_.back(), coded_size_, va_surface_release_cb_);
   available_va_surface_ids_.pop_back();
 
-  current_encode_job_->recon_surface =
-      new VASurface(available_va_surface_ids_.back(), va_surface_release_cb_);
+  current_encode_job_->recon_surface = new VASurface(
+      available_va_surface_ids_.back(), coded_size_, va_surface_release_cb_);
   available_va_surface_ids_.pop_back();
 
   // Reference surfaces are needed until the job is done, but they get

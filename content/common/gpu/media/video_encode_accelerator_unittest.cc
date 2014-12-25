@@ -23,13 +23,9 @@
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
-#endif
-
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
 #else
 #error The VideoEncodeAcceleratorUnittest is not supported on this platform.
@@ -735,8 +731,8 @@ void VEAClient::CreateEncoder() {
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   scoped_ptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   encoder_.reset(new V4L2VideoEncodeAccelerator(device.Pass()));
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
-  encoder_.reset(new VaapiVideoEncodeAccelerator(gfx::GetXDisplay()));
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  encoder_.reset(new VaapiVideoEncodeAccelerator());
 #endif
 
   SetState(CS_ENCODER_SET);

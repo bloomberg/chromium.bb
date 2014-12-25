@@ -699,7 +699,7 @@
           ],
         }],
         # For VaapiVideoEncodeAccelerator.
-        ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
+        ['target_arch != "arm" and chromeos == 1', {
           'sources': [
             'filters/h264_bitstream_buffer.cc',
             'filters/h264_bitstream_buffer.h',

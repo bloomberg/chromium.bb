@@ -781,7 +781,7 @@
         '<(DEPTH)/third_party/khronos',
       ],
     }],
-    ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
+    ['target_arch != "arm" and chromeos == 1', {
       'dependencies': [
         '../media/media.gyp:media',
         '../third_party/libyuv/libyuv.gyp:libyuv',
@@ -792,6 +792,8 @@
         'common/gpu/media/va_surface.h',
         'common/gpu/media/vaapi_h264_decoder.cc',
         'common/gpu/media/vaapi_h264_decoder.h',
+        'common/gpu/media/vaapi_picture.cc',
+        'common/gpu/media/vaapi_picture.h',
         'common/gpu/media/vaapi_video_decode_accelerator.cc',
         'common/gpu/media/vaapi_video_decode_accelerator.h',
         'common/gpu/media/vaapi_video_encode_accelerator.cc',
@@ -799,10 +801,29 @@
         'common/gpu/media/vaapi_wrapper.cc',
         'common/gpu/media/vaapi_wrapper.h',
       ],
+      'conditions': [
+        ['use_x11 == 1', {
+          'variables': {
+            'sig_files': [
+              'common/gpu/media/va.sigs',
+              'common/gpu/media/va_x11.sigs',
+            ],
+          },
+          'sources': [
+            'common/gpu/media/vaapi_tfp_picture.cc',
+            'common/gpu/media/vaapi_tfp_picture.h',
+          ],
+        }, {
+          'variables': {
+            'sig_files': [
+              'common/gpu/media/va.sigs',
+            ],
+          },
+        }],
+      ],
       'variables': {
         'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
         'extra_header': 'common/gpu/media/va_stub_header.fragment',
-        'sig_files': ['common/gpu/media/va.sigs'],
         'outfile_type': 'posix_stubs',
         'stubs_filename_root': 'va_stubs',
         'project_path': 'content/common/gpu/media',
