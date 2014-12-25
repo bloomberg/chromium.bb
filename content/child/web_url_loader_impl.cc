@@ -1038,6 +1038,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
       load_info.addResponseHeader(WebString::fromLatin1(it->first),
           WebString::fromLatin1(it->second));
     }
+    load_info.setNPNNegotiatedProtocol(WebString::fromLatin1(
+        info.npn_negotiated_protocol));
     response->setHTTPLoadInfo(load_info);
   }
 
