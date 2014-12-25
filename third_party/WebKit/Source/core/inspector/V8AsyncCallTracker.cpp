@@ -71,6 +71,7 @@ void V8AsyncCallTracker::trace(Visitor* visitor)
     visitor->trace(m_contextAsyncCallChainMap);
     visitor->trace(m_debuggerAgent);
 #endif
+    InspectorDebuggerAgent::AsyncCallTrackingListener::trace(visitor);
 }
 
 void V8AsyncCallTracker::asyncCallTrackingStateChanged(bool)

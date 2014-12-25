@@ -1565,6 +1565,7 @@ void InspectorDebuggerAgent::trace(Visitor* visitor)
     visitor->trace(m_promiseTracker);
     visitor->trace(m_asyncOperationsForStepInto);
     visitor->trace(m_currentAsyncCallChain);
+    visitor->trace(m_asyncCallTrackingListeners);
 #endif
     InspectorBaseAgent::trace(visitor);
 }

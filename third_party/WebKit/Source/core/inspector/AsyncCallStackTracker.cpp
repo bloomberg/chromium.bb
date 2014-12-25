@@ -149,7 +149,9 @@ AsyncCallStackTracker::AsyncCallStackTracker(InspectorDebuggerAgent* debuggerAge
     m_debuggerAgent->addAsyncCallTrackingListener(this);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
+AsyncCallStackTracker::~AsyncCallStackTracker()
+{
+}
 
 void AsyncCallStackTracker::asyncCallTrackingStateChanged(bool tracking)
 {
@@ -440,7 +442,10 @@ void AsyncCallStackTracker::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContextDataMap);
+    visitor->trace(m_debuggerAgent);
+    visitor->trace(m_instrumentingAgents);
 #endif
+    InspectorDebuggerAgent::AsyncCallTrackingListener::trace(visitor);
 }
 
 } // namespace blink

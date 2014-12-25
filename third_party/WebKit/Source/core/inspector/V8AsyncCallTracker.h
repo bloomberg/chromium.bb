@@ -19,6 +19,7 @@ class ScriptState;
 
 class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker>, public ScriptState::Observer, public InspectorDebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8AsyncCallTracker);
 public:
     explicit V8AsyncCallTracker(InspectorDebuggerAgent*);
     ~V8AsyncCallTracker();

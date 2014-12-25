@@ -180,9 +180,10 @@ public:
     void didCompleteAsyncOperation(AsyncCallChain*);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
 
-    class AsyncCallTrackingListener {
+    class AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~AsyncCallTrackingListener() { }
+        virtual void trace(Visitor*) { }
         virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
         virtual void resetAsyncCallChains() = 0;
     };
@@ -291,10 +292,10 @@ private:
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     bool m_performingAsyncStepIn;
-    WillBeHeapVector<AsyncCallTrackingListener*> m_asyncCallTrackingListeners;
+    WillBeHeapVector<RawPtrWillBeMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
 };
 
 } // namespace blink
 
 
-#endif // !defined(InspectorDebuggerAgent_h)
+#endif // InspectorDebuggerAgent_h

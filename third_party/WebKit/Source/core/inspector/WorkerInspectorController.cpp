@@ -187,6 +187,7 @@ void WorkerInspectorController::trace(Visitor* visitor)
     visitor->trace(m_backendDispatcher);
     visitor->trace(m_agents);
     visitor->trace(m_workerDebuggerAgent);
+    visitor->trace(m_asyncCallStackTracker);
 }
 
-}
+} // namespace blink
