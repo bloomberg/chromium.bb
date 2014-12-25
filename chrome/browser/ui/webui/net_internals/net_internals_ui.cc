@@ -700,7 +700,8 @@ void NetInternalsMessageHandler::OnGetDataReductionProxyInfo(
   DataReductionProxyChromeSettings* data_reduction_proxy_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
   data_reduction_proxy::DataReductionProxyEventStore* event_store =
-      data_reduction_proxy_settings->GetEventStore();
+      (data_reduction_proxy_settings == nullptr) ? nullptr :
+          data_reduction_proxy_settings->GetEventStore();
   SendJavascriptCommand(
       "receivedDataReductionProxyInfo",
       (event_store == nullptr) ? nullptr : event_store->GetSummaryValue());
