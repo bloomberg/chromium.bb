@@ -150,7 +150,14 @@ class Mirror(object):
     self.refs = refs or []
     self.basedir = self.UrlToCacheDir(url)
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
-    self.print = print_func or print
+    if print_func:
+      self.print = self.print_without_file
+      self.print_func = print_func
+    else:
+      self.print = print
+
+  def print_without_file(self, message, **kwargs):
+    self.print_func(message)
 
   @property
   def bootstrap_bucket(self):
