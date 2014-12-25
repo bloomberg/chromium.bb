@@ -32,7 +32,7 @@ function test()
             if (!event.picture)
                 continue;
             ++inFlightPictures;
-            new WebInspector.LayerPaintEvent(event, InspectorTest.timelineModel().target()).loadPicture(onSnapshotLoaded);
+            new WebInspector.LayerPaintEvent(event, InspectorTest.timelineModel().target()).loadSnapshot(onSnapshotLoaded);
         }
         if (!inFlightPictures)
             InspectorTest.completeTest();
