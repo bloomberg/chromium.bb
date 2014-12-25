@@ -59,6 +59,7 @@ class ScriptAsyncCallStack;
 class ScriptDebugServer;
 class ScriptRegexp;
 class ScriptSourceCode;
+class V8AsyncCallTracker;
 
 typedef String ErrorString;
 
@@ -216,7 +217,7 @@ private:
 
     void didParseSource(const String& scriptId, const Script&, CompileResult) final;
     bool v8AsyncTaskEventsEnabled() const final;
-    void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) final;
+    void didReceiveV8AsyncTaskEvent(ScriptState*, const String& eventType, const String& eventName, int id) final;
     bool v8PromiseEventsEnabled() const final;
     void didReceiveV8PromiseEvent(ScriptState*, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status) final;
 
@@ -276,6 +277,7 @@ private:
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
+    OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
 
     WillBeHeapHashSet<RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationsForStepInto;

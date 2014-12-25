@@ -559,7 +559,7 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
 
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
-    listener->didReceiveV8AsyncTaskEvent(pausedScriptState->executionContext(), type, name, id);
+    listener->didReceiveV8AsyncTaskEvent(pausedScriptState, type, name, id);
     m_pausedScriptState.clear();
     m_executionState.Clear();
 }

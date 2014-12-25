@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {
@@ -79,7 +80,15 @@ public:
     void clearContext() { return m_context.clear(); }
 
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
-    void disposePerContextData() { m_perContextData = nullptr; }
+    void disposePerContextData();
+
+    class Observer {
+    public:
+        virtual ~Observer() { }
+        virtual void willDisposeScriptState(ScriptState*) = 0;
+    };
+    void addObserver(Observer*);
+    void removeObserver(Observer*);
 
     bool evalEnabled() const;
     void setEvalEnabled(bool);
@@ -103,6 +112,7 @@ private:
     OwnPtr<V8PerContextData> m_perContextData;
 
     bool m_globalObjectDetached;
+    Vector<Observer*> m_observers;
 };
 
 class ScriptStateForTesting : public ScriptState {

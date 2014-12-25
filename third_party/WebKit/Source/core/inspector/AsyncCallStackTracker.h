@@ -86,16 +86,12 @@ public:
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didPerformExecutionContextTask() { didFireAsyncCall(); };
 
-    void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id);
-    void willHandleV8AsyncTask(ExecutionContext*, const String& eventName, int id);
-
     int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, int prevOperationId = 0);
     void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
     void traceAsyncOperationCompletedCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
 
-    void didFireAsyncCall();
     void reset();
 
     void trace(Visitor*);
@@ -103,10 +99,10 @@ public:
     class ExecutionContextData;
 
 private:
-    template <class K> class AsyncCallChainMap;
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
     void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
+    void didFireAsyncCall();
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 

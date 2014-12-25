@@ -37,6 +37,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/AsyncCallChain.h"
+#include "core/inspector/AsyncCallChainMap.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
@@ -56,84 +57,19 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace blink {
 
-template <class K>
-class AsyncCallStackTracker::AsyncCallChainMap final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
-public:
-    using MapType = WillBeHeapHashMap<K, RefPtrWillBeMember<AsyncCallChain>>;
-    explicit AsyncCallChainMap(AsyncCallStackTracker* tracker)
-        : m_tracker(tracker)
-    {
-    }
-
-    ~AsyncCallChainMap()
-    {
-        // Verify that this object has been explicitly cleared already.
-        ASSERT(!m_tracker);
-    }
-
-    void dispose()
-    {
-        clear();
-        m_tracker = nullptr;
-    }
-
-    void clear()
-    {
-        ASSERT(m_tracker);
-        for (auto it : m_asyncCallChains)
-            m_tracker->m_debuggerAgent->didCompleteAsyncOperation(it.value.get());
-        m_asyncCallChains.clear();
-    }
-
-    void set(typename MapType::KeyPeekInType key, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
-    {
-        m_asyncCallChains.set(key, chain);
-    }
-
-    bool contains(typename MapType::KeyPeekInType key) const
-    {
-        return m_asyncCallChains.contains(key);
-    }
-
-    PassRefPtrWillBeRawPtr<AsyncCallChain> get(typename MapType::KeyPeekInType key) const
-    {
-        return m_asyncCallChains.get(key);
-    }
-
-    void remove(typename MapType::KeyPeekInType key)
-    {
-        ASSERT(m_tracker);
-        RefPtrWillBeRawPtr<AsyncCallChain> chain = m_asyncCallChains.take(key);
-        if (chain)
-            m_tracker->m_debuggerAgent->didCompleteAsyncOperation(chain.get());
-    }
-
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_tracker);
-        visitor->trace(m_asyncCallChains);
-    }
-
-private:
-    RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
-    MapType m_asyncCallChains;
-};
-
 class AsyncCallStackTracker::ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
         : ContextLifecycleObserver(executionContext)
         , m_tracker(tracker)
-        , m_timerCallChains(tracker)
-        , m_animationFrameCallChains(tracker)
-        , m_eventCallChains(tracker)
-        , m_xhrCallChains(tracker)
-        , m_mutationObserverCallChains(tracker)
-        , m_executionContextTaskCallChains(tracker)
-        , m_v8AsyncTaskCallChains(tracker)
-        , m_asyncOperationCallChains(tracker)
+        , m_timerCallChains(tracker->m_debuggerAgent)
+        , m_animationFrameCallChains(tracker->m_debuggerAgent)
+        , m_eventCallChains(tracker->m_debuggerAgent)
+        , m_xhrCallChains(tracker->m_debuggerAgent)
+        , m_mutationObserverCallChains(tracker->m_debuggerAgent)
+        , m_executionContextTaskCallChains(tracker->m_debuggerAgent)
+        , m_asyncOperationCallChains(tracker->m_debuggerAgent)
         , m_circularSequentialId(0)
     {
     }
@@ -167,7 +103,6 @@ public:
         visitor->trace(m_xhrCallChains);
         visitor->trace(m_mutationObserverCallChains);
         visitor->trace(m_executionContextTaskCallChains);
-        visitor->trace(m_v8AsyncTaskCallChains);
         visitor->trace(m_asyncOperationCallChains);
 #endif
     }
@@ -180,7 +115,6 @@ public:
         m_xhrCallChains.dispose();
         m_mutationObserverCallChains.dispose();
         m_executionContextTaskCallChains.dispose();
-        m_v8AsyncTaskCallChains.dispose();
         m_asyncOperationCallChains.dispose();
     }
 
@@ -192,7 +126,6 @@ public:
     AsyncCallChainMap<RawPtrWillBeMember<EventTarget> > m_xhrCallChains;
     AsyncCallChainMap<RawPtrWillBeMember<MutationObserver> > m_mutationObserverCallChains;
     AsyncCallChainMap<ExecutionContextTask*> m_executionContextTaskCallChains;
-    AsyncCallChainMap<String> m_v8AsyncTaskCallChains;
     AsyncCallChainMap<int> m_asyncOperationCallChains;
 
 private:
@@ -423,38 +356,6 @@ void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* co
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         setCurrentAsyncCallChain(context, data->m_executionContextTaskCallChains.get(task));
         data->m_executionContextTaskCallChains.remove(task);
-    } else {
-        setCurrentAsyncCallChain(context, nullptr);
-    }
-}
-
-static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
-{
-    StringBuilder builder;
-    builder.append(eventName);
-    builder.appendNumber(id);
-    return builder.toString();
-}
-
-void AsyncCallStackTracker::didEnqueueV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
-{
-    ASSERT(context);
-    ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    RefPtrWillBeRawPtr<AsyncCallChain> callChain = m_debuggerAgent->createAsyncCallChain(eventName);
-    if (!callChain)
-        return;
-    ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), callChain.release());
-}
-
-void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
-{
-    ASSERT(context);
-    ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
-        String taskId = makeV8AsyncTaskUniqueId(eventName, id);
-        setCurrentAsyncCallChain(context, data->m_v8AsyncTaskCallChains.get(taskId));
-        data->m_v8AsyncTaskCallChains.remove(taskId);
     } else {
         setCurrentAsyncCallChain(context, nullptr);
     }

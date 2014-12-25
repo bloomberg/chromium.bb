@@ -49,6 +49,7 @@
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/V8AsyncCallTracker.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -64,14 +65,6 @@ using blink::TypeBuilder::Debugger::PromiseDetails;
 using blink::TypeBuilder::Debugger::ScriptId;
 using blink::TypeBuilder::Debugger::StackTrace;
 using blink::TypeBuilder::Runtime::RemoteObject;
-
-namespace {
-
-static const char v8AsyncTaskEventEnqueue[] = "enqueue";
-static const char v8AsyncTaskEventWillHandle[] = "willHandle";
-static const char v8AsyncTaskEventDidHandle[] = "didHandle";
-
-}
 
 namespace blink {
 
@@ -138,6 +131,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_skipContentScripts(false)
     , m_cachedSkipStackGeneration(0)
     , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker(this)))
+    , m_v8AsyncCallTracker(adoptPtrWillBeNoop(new V8AsyncCallTracker(this)))
     , m_promiseTracker(PromiseTracker::create())
     , m_maxAsyncCallStackDepth(0)
     , m_currentAsyncCallChain(nullptr)
@@ -756,17 +750,10 @@ bool InspectorDebuggerAgent::v8AsyncTaskEventsEnabled() const
     return trackingAsyncCalls();
 }
 
-void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
+void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ScriptState* state, const String& eventType, const String& eventName, int id)
 {
     ASSERT(trackingAsyncCalls());
-    if (eventType == v8AsyncTaskEventEnqueue)
-        asyncCallStackTracker().didEnqueueV8AsyncTask(context, eventName, id);
-    else if (eventType == v8AsyncTaskEventWillHandle)
-        asyncCallStackTracker().willHandleV8AsyncTask(context, eventName, id);
-    else if (eventType == v8AsyncTaskEventDidHandle)
-        asyncCallStackTracker().didFireAsyncCall();
-    else
-        ASSERT_NOT_REACHED();
+    m_v8AsyncCallTracker->didReceiveV8AsyncTaskEvent(state, eventType, eventName, id);
 }
 
 bool InspectorDebuggerAgent::v8PromiseEventsEnabled() const
@@ -1180,6 +1167,7 @@ void InspectorDebuggerAgent::resetAsyncCallTracker()
     m_currentAsyncCallChain.clear();
     m_nestedAsyncCallCount = 0;
     asyncCallStackTracker().reset();
+    m_v8AsyncCallTracker->reset();
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
@@ -1561,6 +1549,7 @@ void InspectorDebuggerAgent::trace(Visitor* visitor)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_listener);
     visitor->trace(m_asyncCallStackTracker);
+    visitor->trace(m_v8AsyncCallTracker);
     visitor->trace(m_promiseTracker);
     visitor->trace(m_asyncOperationsForStepInto);
     visitor->trace(m_currentAsyncCallChain);
