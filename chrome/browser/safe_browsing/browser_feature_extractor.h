@@ -80,9 +80,6 @@ struct BrowseInfo {
   // The HTTP status code from this navigation.
   int http_status_code;
 
-  // The page ID of the navigation.  This comes from FrameNavigateParams.
-  int32 page_id;
-
   BrowseInfo();
   ~BrowseInfo();
 };

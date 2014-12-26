@@ -393,7 +393,6 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
   browse_info_->url_redirects = params.redirects;
   browse_info_->referrer = params.referrer.url;
   browse_info_->http_status_code = details.http_status_code;
-  browse_info_->page_id = params.page_id;
 
   should_extract_malware_features_ = true;
   should_classify_for_malware_ = false;
