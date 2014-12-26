@@ -53,11 +53,12 @@ class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class AsyncCallTracker final : public NoBaseWillBeGarbageCollected<AsyncCallTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
+class AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallTracker);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker);
 public:
     AsyncCallTracker(InspectorDebuggerAgent*, InstrumentingAgents*);
+    virtual ~AsyncCallTracker();
 
     // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;
@@ -111,7 +112,7 @@ private:
 
     using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
-    InspectorDebuggerAgent* m_debuggerAgent;
+    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 };
 
