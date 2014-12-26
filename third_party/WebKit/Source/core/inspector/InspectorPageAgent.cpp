@@ -1468,6 +1468,11 @@ void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, co
     m_state->setBoolean(PageAgentState::showGridOnResize, asBool(showGrid));
 }
 
+void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
+{
+    m_overlay->setPausedInDebuggerMessage(message);
+}
+
 void InspectorPageAgent::animationsPlaybackRate(ErrorString*, double* playbackRate)
 {
     *playbackRate = toLocalFrame(m_page->mainFrame())->document()->timeline().playbackRate();

@@ -987,10 +987,6 @@ void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId&
     }
 }
 
-void InspectorDebuggerAgent::setOverlayMessage(ErrorString*, const String*)
-{
-}
-
 void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)
 {
     InjectedScript injectedScript;
@@ -1507,8 +1503,6 @@ void InspectorDebuggerAgent::clear()
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
     clearStepIntoAsync();
-    ErrorString error;
-    setOverlayMessage(&error, 0);
 }
 
 void InspectorDebuggerAgent::clearStepIntoAsync()

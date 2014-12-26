@@ -95,36 +95,37 @@ public:
     static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName);
 
     // Page API for InspectorFrontend
-    virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
-    virtual void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) override;
-    virtual void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
-    virtual void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor) override;
-    virtual void navigate(ErrorString*, const String& url, String* frameId) override;
-    virtual void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies) override;
-    virtual void deleteCookie(ErrorString*, const String& cookieName, const String& url) override;
-    virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) override;
-    virtual void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>) override;
-    virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) override;
-    virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY) override;
-    virtual void clearDeviceMetricsOverride(ErrorString*) override;
-    virtual void resetScrollAndPageScaleFactor(ErrorString*) override;
-    virtual void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
-    virtual void setShowPaintRects(ErrorString*, bool show) override;
-    virtual void setShowDebugBorders(ErrorString*, bool show) override;
-    virtual void setShowFPSCounter(ErrorString*, bool show) override;
-    virtual void setContinuousPaintingEnabled(ErrorString*, bool enabled) override;
-    virtual void setShowScrollBottleneckRects(ErrorString*, bool show) override;
-    virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*) override;
-    virtual void setScriptExecutionDisabled(ErrorString*, bool) override;
-    virtual void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
-    virtual void setEmulatedMedia(ErrorString*, const String&) override;
-    virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
-    virtual void stopScreencast(ErrorString*) override;
-    virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
-    virtual void animationsPlaybackRate(ErrorString*, double* playbackRate) override;
-    virtual void setAnimationsPlaybackRate(ErrorString*, double playbackRate) override;
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
+    void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) override;
+    void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
+    void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor) override;
+    void navigate(ErrorString*, const String& url, String* frameId) override;
+    void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies) override;
+    void deleteCookie(ErrorString*, const String& cookieName, const String& url) override;
+    void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) override;
+    void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>) override;
+    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) override;
+    void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
+    void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY) override;
+    void clearDeviceMetricsOverride(ErrorString*) override;
+    void resetScrollAndPageScaleFactor(ErrorString*) override;
+    void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
+    void setShowPaintRects(ErrorString*, bool show) override;
+    void setShowDebugBorders(ErrorString*, bool show) override;
+    void setShowFPSCounter(ErrorString*, bool show) override;
+    void setContinuousPaintingEnabled(ErrorString*, bool enabled) override;
+    void setShowScrollBottleneckRects(ErrorString*, bool show) override;
+    void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*) override;
+    void setScriptExecutionDisabled(ErrorString*, bool) override;
+    void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
+    void setEmulatedMedia(ErrorString*, const String&) override;
+    void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
+    void stopScreencast(ErrorString*) override;
+    void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
+    void setOverlayMessage(ErrorString*, const String*) override;
+    void animationsPlaybackRate(ErrorString*, double* playbackRate) override;
+    void setAnimationsPlaybackRate(ErrorString*, double playbackRate) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);
@@ -150,10 +151,10 @@ public:
     void scriptsEnabled(bool isEnabled);
 
     // Inspector Controller API
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
-    virtual void discardAgent() override;
+    void setFrontend(InspectorFrontend*) override;
+    void clearFrontend() override;
+    void restore() override;
+    void discardAgent() override;
 
     // Cross-agents API
     Page* page() { return m_page; }
@@ -176,7 +177,7 @@ public:
     void addEditedResourceContent(const String& url, const String& content);
     bool getEditedResourceContent(const String& url, String* content);
 
-    virtual void trace(Visitor*) override;
+    void trace(Visitor*) override;
 
 private:
     class GetResourceContentLoadListener;

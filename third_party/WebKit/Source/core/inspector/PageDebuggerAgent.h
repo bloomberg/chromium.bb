@@ -72,7 +72,6 @@ private:
     void overlaySteppedOver() override;
 
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
-    void setOverlayMessage(ErrorString*, const String*) override;
 
     PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     // FIXME: Oilpan: Move PageScriptDebugServer to heap in follow-up CL.

@@ -133,11 +133,6 @@ InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString
     return injectedScript;
 }
 
-void PageDebuggerAgent::setOverlayMessage(ErrorString*, const String* message)
-{
-    m_overlay->setPausedInDebuggerMessage(message);
-}
-
 void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     if (frame != m_pageAgent->mainFrame())
