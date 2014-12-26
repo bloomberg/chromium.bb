@@ -4,6 +4,8 @@
 
 /**
  * @constructor
+ * @struct
+ * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
 function FileOperationManager() {
@@ -11,8 +13,6 @@ function FileOperationManager() {
   this.deleteTasks_ = [];
   this.taskIdCounter_ = 0;
   this.eventRouter_ = new fileOperationUtil.EventRouter();
-
-  Object.seal(this);
 }
 
 /**
@@ -270,7 +270,7 @@ FileOperationManager.DELETE_TIMEOUT = 30 * 1000;
  */
 FileOperationManager.prototype.deleteEntries = function(entries) {
   // TODO(hirono): Make fileOperationUtil.DeleteTask.
-  var task = Object.seal({
+  var task = Object.preventExtensions({
     entries: entries,
     taskId: this.generateTaskId(),
     entrySize: {},

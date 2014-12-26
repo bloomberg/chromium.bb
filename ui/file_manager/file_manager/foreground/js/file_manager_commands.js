@@ -226,6 +226,7 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
  * Handle of the command events.
  * @param {!FileManager} fileManager FileManager.
  * @constructor
+ * @struct
  */
 var CommandHandler = function(fileManager) {
   /**
@@ -241,8 +242,6 @@ var CommandHandler = function(fileManager) {
    * @private
    */
   this.commands_ = {};
-
-  Object.seal(this);
 
   // Decorate command tags in the document.
   var commands = fileManager.document.querySelectorAll('command');

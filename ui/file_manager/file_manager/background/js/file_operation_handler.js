@@ -6,6 +6,7 @@
  * An event handler of the background page for file operations.
  * @param {FileBrowserBackground} background Background page.
  * @constructor
+ * @struct
  */
 var FileOperationHandler = function(background) {
   /**
@@ -49,9 +50,6 @@ var FileOperationHandler = function(background) {
   this.fileOperationManager_.addEventListener(
       'delete',
       this.onDeleteProgress_.bind(this));
-
-  // Seal the object.
-  Object.seal(this);
 };
 
 /**

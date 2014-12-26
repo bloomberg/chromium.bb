@@ -17,6 +17,7 @@
  * @param {string} id App window id.
  * @param {Object} options Options object to create it.
  * @constructor
+ * @struct
  */
 function AppWindowWrapper(url, id, options) {
   this.url_ = url;
@@ -27,10 +28,9 @@ function AppWindowWrapper(url, id, options) {
   this.appState_ = null;
   this.openingOrOpened_ = false;
   this.queue = new AsyncUtil.Queue();
-  Object.seal(this);
 }
 
-AppWindowWrapper.prototype = {
+AppWindowWrapper.prototype = /** @struct */ {
   /**
    * @return {chrome.app.window.AppWindow} Wrapped application window.
    */

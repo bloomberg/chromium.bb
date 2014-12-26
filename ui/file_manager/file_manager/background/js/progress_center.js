@@ -5,6 +5,7 @@
 /**
  * Progress center at the background page.
  * @constructor
+ * @struct
  */
 var ProgressCenter = function() {
   /**
@@ -28,8 +29,6 @@ var ProgressCenter = function() {
    * @private
    */
   this.panels_ = [];
-
-  Object.seal(this);
 };
 
 /**
@@ -37,6 +36,7 @@ var ProgressCenter = function() {
  * @param {function(string)} cancelCallback Callback to notify the progress
  *     center of cancel operation.
  * @constructor
+ * @struct
  * @private
  */
 ProgressCenter.Notifications_ = function(cancelCallback) {
@@ -64,8 +64,6 @@ ProgressCenter.Notifications_ = function(cancelCallback) {
   chrome.notifications.onButtonClicked.addListener(
       this.onButtonClicked_.bind(this));
   chrome.notifications.onClosed.addListener(this.onClosed_.bind(this));
-
-  Object.seal(this);
 };
 
 /**
@@ -78,7 +76,7 @@ ProgressCenter.Notifications_.NotificationState_ = {
   VISIBLE: 'visible',
   DISMISSED: 'dismissed'
 };
-Object.freeze(ProgressCenter.Notifications_.NotificationState_);
+
 /**
  * Updates the notification according to the item.
  * @param {ProgressCenterItem} item Item to contain new information.

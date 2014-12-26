@@ -5,6 +5,7 @@
 /**
  * Root class of the background page.
  * @constructor
+ * @struct
  */
 function BackgroundBase() {
   /**

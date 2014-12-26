@@ -7,6 +7,7 @@
  * flush storage", or "mounted zip archive" etc.
  *
  * @constructor
+ * @struct
  *
  * @param {VolumeManagerCommon.VolumeType} volumeType The type of the volume.
  * @param {string} volumeId ID of the volume.
@@ -76,11 +77,9 @@ function VolumeInfo(
   this.profile_ = Object.freeze(profile);
   this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
-
-  Object.seal(this);
 }
 
-VolumeInfo.prototype = {
+VolumeInfo.prototype = /** @struct */ {
   /**
    * @return {VolumeManagerCommon.VolumeType} Volume type.
    */

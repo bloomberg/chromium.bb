@@ -232,8 +232,6 @@ function FileManagerUI(element, launchParam) {
   this.dialogFooter = DialogFooter.findDialogFooter(
       this.dialogType_, /** @type {!Document} */(this.element.ownerDocument));
 
-  Object.seal(this);
-
   // Initialize attributes.
   this.element.querySelector('#app-name').innerText =
       chrome.runtime.getManifest().name;

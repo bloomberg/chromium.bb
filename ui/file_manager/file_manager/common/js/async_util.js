@@ -46,6 +46,7 @@ AsyncUtil.forEach = function(
  *
  * @param {number} limit The number of jobs to run at the same time.
  * @constructor
+ * @struct
  */
 AsyncUtil.ConcurrentQueue = function(limit) {
   console.assert(limit > 0, '|limit| must be larger than 0');
@@ -54,8 +55,6 @@ AsyncUtil.ConcurrentQueue = function(limit) {
   this.addedTasks_ = [];
   this.pendingTasks_ = [];
   this.isCancelled_ = false;
-
-  Object.seal(this);
 };
 
 /**
@@ -381,6 +380,7 @@ AsyncUtil.Aggregator.prototype.cancelScheduledRuns_ = function() {
  * @param {number=} opt_minInterval Minimum interval between each call in
  *     milliseconds. Default is 200 milliseconds.
  * @constructor
+ * @struct
  */
 AsyncUtil.RateLimiter = function(closure, opt_minInterval) {
   /**
@@ -407,8 +407,6 @@ AsyncUtil.RateLimiter = function(closure, opt_minInterval) {
    * @private
    */
   this.lastRunTime_ = 0;
-
-  Object.seal(this);
 };
 
 /**

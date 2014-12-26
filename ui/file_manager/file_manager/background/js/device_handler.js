@@ -61,6 +61,7 @@ DeviceHandler.VOLUME_NAVIGATION_REQUESTED = 'volumenavigationrequested';
  * @param {string} message String ID of message.
  * @param {string=} opt_buttonLabel String ID of the button label.
  * @constructor
+ * @struct
  */
 DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
   /**
@@ -93,8 +94,6 @@ DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
    * @private
    */
   this.queue_ = new AsyncUtil.Queue();
-
-  Object.seal(this);
 };
 
 /**

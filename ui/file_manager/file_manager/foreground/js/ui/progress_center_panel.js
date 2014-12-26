@@ -168,6 +168,7 @@ ProgressCenterItemElement.prototype.onTransitionEnd_ = function(event) {
  *
  * @param {!Element} element DOM Element of the process center panel.
  * @constructor
+ * @struct
  */
 function ProgressCenterPanel(element) {
   /**
@@ -221,7 +222,7 @@ function ProgressCenterPanel(element) {
    * @type {Object.<string, string>}
    * @private
    */
-  this.itemQuery_ = Object.seal({
+  this.itemQuery_ = Object.preventExtensions({
     normal: 'li:not(.quiet)',
     quiet: 'li.quiet'
   });
@@ -231,7 +232,7 @@ function ProgressCenterPanel(element) {
    * @type {Object.<string, number?>}
    * @private
    */
-  this.timeoutId_ = Object.seal({
+  this.timeoutId_ = Object.preventExtensions({
     normal: null,
     quiet: null
   });
@@ -241,8 +242,6 @@ function ProgressCenterPanel(element) {
    * button is clicked.
    */
   this.cancelCallback = null;
-
-  Object.seal(this);
 
   // Register event handlers.
   element.addEventListener('click', this.onClick_.bind(this));
@@ -282,7 +281,7 @@ ProgressCenterPanel.getToggleAnimation_ = function(document) {
  */
 ProgressCenterPanel.RESET_DELAY_TIME_MS_ = 5000;
 
-ProgressCenterPanel.prototype = {
+ProgressCenterPanel.prototype = /** @struct */ {
   /**
    * Root element of the progress center.
    * @type {HTMLElement}

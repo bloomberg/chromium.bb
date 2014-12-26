@@ -7,16 +7,12 @@
  *
  * @param {string} itemId Item id to be installed.
  * @constructor
+ * @struct
  */
 function AppInstaller(itemId) {
   this.itemId_ = itemId;
   this.callback_ = null;
-
-  Object.seal(this);
 }
-
-AppInstaller.prototype = {
-};
 
 /**
  * Type of result.

@@ -11,12 +11,12 @@ var LaunchType = {
   FOCUS_ANY_OR_CREATE: 1,
   FOCUS_SAME_OR_CREATE: 2
 };
-Object.freeze(LaunchType);
 
 /**
  * Root class of the background page.
  * @constructor
  * @extends {BackgroundBase}
+ * @struct
  */
 function FileBrowserBackground() {
   BackgroundBase.call(this);
@@ -124,9 +124,6 @@ function FileBrowserBackground() {
    */
   this.lastTimeCanClose_ = null;
 
-  // Seal self.
-  Object.seal(this);
-
   // Initialize handlers.
   chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
   chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
@@ -159,9 +156,7 @@ function FileBrowserBackground() {
  */
 FileBrowserBackground.CLOSE_DELAY_MS_ = 5000;
 
-FileBrowserBackground.prototype = {
-  __proto__: BackgroundBase.prototype
-};
+FileBrowserBackground.prototype.__proto__ = BackgroundBase.prototype;
 
 /**
  * Register callback to be invoked after initialization.

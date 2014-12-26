@@ -6,6 +6,7 @@
 /**
  * Mock of Progress Center.
  * @constructor
+ * @struct
  */
 function MockProgressCenter() {
   /**
@@ -13,8 +14,6 @@ function MockProgressCenter() {
    * @type {Object.<string, ProgressCenterItem>}
    */
   this.items = {};
-
-  Object.seal(this);
 }
 
 /**

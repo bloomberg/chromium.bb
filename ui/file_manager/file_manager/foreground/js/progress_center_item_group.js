@@ -10,6 +10,7 @@
  * @param {string} name Name of the group.
  * @param {boolean} quiet Whether the group is for quiet items or not.
  * @constructor
+ * @struct
  */
 function ProgressCenterItemGroup(name, quiet) {
   /**
@@ -77,8 +78,6 @@ function ProgressCenterItemGroup(name, quiet) {
    * @private
    */
   this.totalProgressValue_ = 0;
-
-  Object.seal(this);
 }
 
 /**
@@ -94,7 +93,6 @@ ProgressCenterItemGroup.State = {
   // Group has no progressing items but still shows error items.
   INACTIVE: 'inactive'
 };
-Object.freeze(ProgressCenterItemGroup.State);
 
 /**
  * Makes the summarized item for the groups.
@@ -152,7 +150,7 @@ ProgressCenterItemGroup.shouldAnimate_ = function(
   return false;
 };
 
-ProgressCenterItemGroup.prototype = {
+ProgressCenterItemGroup.prototype = /** @struct */ {
   /**
    * @return {ProgressCenterItemGroup.State} State of the group.
    */

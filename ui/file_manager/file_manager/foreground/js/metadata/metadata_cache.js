@@ -44,6 +44,7 @@
  *
  * @param {Array.<MetadataProvider>} providers Metadata providers.
  * @constructor
+ * @struct
  */
 function MetadataCache(providers) {
   /**
@@ -83,8 +84,6 @@ function MetadataCache(providers) {
    * @private
    */
   this.lastBatchStart_ = new Date();
-
-  Object.seal(this);
 }
 
 /**

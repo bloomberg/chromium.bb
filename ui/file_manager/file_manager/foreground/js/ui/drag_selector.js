@@ -6,6 +6,7 @@
  * Drag selector used on the file list or the grid table.
  * TODO(hirono): Support drag selection for grid view. crbug.com/224832
  * @constructor
+ * @struct
  */
 function DragSelector() {
   /**
@@ -53,8 +54,6 @@ function DragSelector() {
   // Bind handlers to make them removable.
   this.onMouseMoveBound_ = this.onMouseMove_.bind(this);
   this.onMouseUpBound_ = this.onMouseUp_.bind(this);
-
-  Object.seal(this);
 }
 
 /**
