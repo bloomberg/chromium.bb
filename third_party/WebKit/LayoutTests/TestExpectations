@@ -977,8 +977,6 @@ crbug.com/429069 http/tests/xmlhttprequest/xmlhttprequest-responseXML-nopartial.
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
-crbug.com/444199 http/tests/serviceworker/skip-waiting.html [ Pass Timeout ]
-
 # Added in r171958 and timing out on some platforms ever since.
 crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Failure Timeout ]
 crbug.com/392640 [ Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Failure Timeout ]
