@@ -32,6 +32,7 @@ crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/table-borders.html [
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
+crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
