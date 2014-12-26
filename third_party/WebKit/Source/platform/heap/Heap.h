@@ -999,12 +999,12 @@ public:
 
     static void increaseAllocatedObjectSize(size_t delta) { atomicAdd(&s_allocatedObjectSize, static_cast<long>(delta)); }
     static void decreaseAllocatedObjectSize(size_t delta) { atomicSubtract(&s_allocatedObjectSize, static_cast<long>(delta)); }
-    static size_t allocatedObjectSize() { return s_allocatedObjectSize; }
+    static size_t allocatedObjectSize() { return acquireLoad(&s_allocatedObjectSize); }
     static void increaseMarkedObjectSize(size_t delta) { atomicAdd(&s_markedObjectSize, static_cast<long>(delta)); }
-    static size_t markedObjectSize() { return s_markedObjectSize; }
+    static size_t markedObjectSize() { return acquireLoad(&s_markedObjectSize); }
     static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
-    static size_t allocatedSpace() { return s_allocatedSpace; }
+    static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
 
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
