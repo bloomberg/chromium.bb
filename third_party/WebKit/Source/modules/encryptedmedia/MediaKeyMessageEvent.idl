@@ -23,11 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/encrypted-media/#mediakeymessageevent
+// Note: This implementation is different from the spec.
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional MediaKeyMessageEventInit eventInitDict),
     RuntimeEnabled=EncryptedMedia
 ] interface MediaKeyMessageEvent : Event {
     readonly attribute ArrayBuffer message;
-    [InitializedByEventConstructor] readonly attribute DOMString destinationURL;
+    readonly attribute DOMString destinationURL;
 };
 

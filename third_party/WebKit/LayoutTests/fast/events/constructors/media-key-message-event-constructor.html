@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("This tests the constructor for the MediaKeyMessageEvent DOM class.");
+
+// No initializer is passed.
+shouldBe("new MediaKeyMessageEvent('eventType').bubbles", "false");
+shouldBe("new MediaKeyMessageEvent('eventType').cancelable", "false");
+shouldBeNull("new MediaKeyMessageEvent('eventType').message");
+shouldBeEmptyString("new MediaKeyMessageEvent('eventType').destinationURL");
+
+// bubbles is passed.
+shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: false }).bubbles", "false");
+shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: true }).bubbles", "true");
+
+// cancelable is passed.
+shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: false }).cancelable", "false");
+shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: true }).cancelable", "true");
+
+// message is passed.
+var arrayBuffer = new ArrayBuffer(1);
+shouldBe("new MediaKeyMessageEvent('eventType', { message: arrayBuffer }).message", "arrayBuffer");
+
+// destinationURL is passed.
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { destinationURL: 'foo' }).destinationURL", "foo");
+
+</script>
+</body>
+</html>

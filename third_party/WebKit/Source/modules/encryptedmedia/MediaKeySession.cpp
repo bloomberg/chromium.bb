@@ -803,10 +803,8 @@ void MediaKeySession::message(const unsigned char* message, size_t messageLength
     ASSERT(m_isCallable);
 
     MediaKeyMessageEventInit init;
-    init.bubbles = false;
-    init.cancelable = false;
-    init.message = DOMArrayBuffer::create(static_cast<const void*>(message), messageLength);
-    init.destinationURL = destinationURL.string();
+    init.setMessage(DOMArrayBuffer::create(static_cast<const void*>(message), messageLength));
+    init.setDestinationURL(destinationURL.string());
 
     RefPtrWillBeRawPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
     event->setTarget(this);

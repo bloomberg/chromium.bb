@@ -29,17 +29,11 @@
 
 #include "core/html/MediaKeyError.h"
 #include "modules/EventModules.h"
+#include "modules/encryptedmedia/MediaKeyMessageEventInit.h"
 
 namespace blink {
 
 class DOMArrayBuffer;
-
-struct MediaKeyMessageEventInit : public EventInit {
-    MediaKeyMessageEventInit();
-
-    RefPtr<DOMArrayBuffer> message;
-    String destinationURL;
-};
 
 class MediaKeyMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
