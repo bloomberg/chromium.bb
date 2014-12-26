@@ -499,7 +499,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
 
 // Test for crbug.com/297289.  Ensure that modal dialogs are closed when a
 // cross-process navigation is ready to commit.
-IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky under ASan on Mac, see https://crbug.com/445155.
+#define MAYBE_CrossProcessNavCancelsDialogs \
+    DISABLED_CrossProcessNavCancelsDialogs
+#else
+#define MAYBE_CrossProcessNavCancelsDialogs CrossProcessNavCancelsDialogs
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_CrossProcessNavCancelsDialogs) {
   ASSERT_TRUE(test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(test_server()->GetURL("empty.html"));
