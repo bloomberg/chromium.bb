@@ -27,19 +27,26 @@ typedef ServiceWorkerVersion::MessageCallback MessageCallback;
 class ServiceWorkerVersion::GetClientDocumentsCallback
     : public base::RefCounted<GetClientDocumentsCallback> {
  public:
-  GetClientDocumentsCallback(int request_id, int pending_requests)
+  GetClientDocumentsCallback(int request_id,
+                             int pending_requests,
+                             ServiceWorkerVersion* version)
       : request_id_(request_id),
-        pending_requests_(pending_requests) {}
+        pending_requests_(pending_requests),
+        version_(version) {
+    DCHECK(version_);
+  }
+
   void AddClientInfo(int client_id, const ServiceWorkerClientInfo& info) {
     clients_.push_back(info);
     clients_.back().client_id = client_id;
   }
-  void DecrementPendingRequests(ServiceWorkerVersion* version) {
+
+  void DecrementPendingRequests() {
     if (--pending_requests_ > 0)
       return;
     // Don't bother if it's no longer running.
-    if (version->running_status() == RUNNING) {
-      version->embedded_worker_->SendMessage(
+    if (version_->running_status() == RUNNING) {
+      version_->embedded_worker_->SendMessage(
           ServiceWorkerMsg_DidGetClientDocuments(request_id_, clients_));
     }
   }
@@ -52,6 +59,9 @@ class ServiceWorkerVersion::GetClientDocumentsCallback
   int request_id_;
   size_t pending_requests_;
 
+  // |version_| must outlive this callback.
+  ServiceWorkerVersion* version_;
+
   DISALLOW_COPY_AND_ASSIGN(GetClientDocumentsCallback);
 };
 
@@ -63,13 +73,11 @@ class ServiceWorkerVersion::GetClientInfoCallback {
       : client_id_(client_id),
         callback_(callback) {}
 
-  void OnSuccess(ServiceWorkerVersion* version,
-                 const ServiceWorkerClientInfo& info) {
-    callback_->AddClientInfo(client_id_, info);
-    callback_->DecrementPendingRequests(version);
-  }
-  void OnError(ServiceWorkerVersion* version) {
-    callback_->DecrementPendingRequests(version);
+  void Run(ServiceWorkerStatusCode status,
+           const ServiceWorkerClientInfo& info) {
+    if (status == SERVICE_WORKER_OK)
+      callback_->AddClientInfo(client_id_, info);
+    callback_->DecrementPendingRequests();
   }
 
  private:
@@ -714,12 +722,18 @@ void ServiceWorkerVersion::OnStopped(
                     ServiceWorkerResponse());
   RunIDMapCallbacks(&sync_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED);
+  RunIDMapCallbacks(&notification_click_callbacks_,
+                    SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&push_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&geofencing_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED);
-
-  get_client_info_callbacks_.Clear();
+  RunIDMapCallbacks(&get_client_info_callbacks_,
+                    SERVICE_WORKER_ERROR_FAILED,
+                    ServiceWorkerClientInfo());
+  RunIDMapCallbacks(&cross_origin_connect_callbacks_,
+                    SERVICE_WORKER_ERROR_FAILED,
+                    false);
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
 
@@ -846,7 +860,8 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
     return;
   }
   scoped_refptr<GetClientDocumentsCallback> callback(
-      new GetClientDocumentsCallback(request_id, controllee_by_id_.size()));
+      new GetClientDocumentsCallback(
+          request_id, controllee_by_id_.size(), this));
   ControlleeByIDMap::iterator it(&controllee_by_id_);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClientDocuments");
@@ -868,7 +883,7 @@ void ServiceWorkerVersion::OnGetClientInfoSuccess(
     // The callback may already have been cleared by OnStopped, just ignore.
     return;
   }
-  callback->OnSuccess(this, info);
+  callback->Run(SERVICE_WORKER_OK, info);
   get_client_info_callbacks_.Remove(request_id);
 }
 
@@ -879,7 +894,7 @@ void ServiceWorkerVersion::OnGetClientInfoError(int request_id) {
     // The callback may already have been cleared by OnStopped, just ignore.
     return;
   }
-  callback->OnError(this);
+  callback->Run(SERVICE_WORKER_ERROR_FAILED, ServiceWorkerClientInfo());
   get_client_info_callbacks_.Remove(request_id);
 }
 
@@ -1133,7 +1148,9 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
     !sync_callbacks_.IsEmpty() ||
     !notification_click_callbacks_.IsEmpty() ||
     !push_callbacks_.IsEmpty() ||
-    !geofencing_callbacks_.IsEmpty();
+    !geofencing_callbacks_.IsEmpty() ||
+    !get_client_info_callbacks_.IsEmpty() ||
+    !cross_origin_connect_callbacks_.IsEmpty();
 }
 
 void ServiceWorkerVersion::DoomInternal() {
