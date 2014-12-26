@@ -462,7 +462,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
  * @type {!Array.<ImageEditor.Mode>}
  * @const
  */
-SlideMode.EDITOR_MODES = Object.freeze([
+SlideMode.EDITOR_MODES = [
   new ImageEditor.Mode.InstantAutofix(),
   new ImageEditor.Mode.Crop(),
   new ImageEditor.Mode.Exposure(),
@@ -470,7 +470,7 @@ SlideMode.EDITOR_MODES = Object.freeze([
       'rotate_left', 'GALLERY_ROTATE_LEFT', new Command.Rotate(-1)),
   new ImageEditor.Mode.OneClick(
       'rotate_right', 'GALLERY_ROTATE_RIGHT', new Command.Rotate(1))
-]);
+];
 
 /**
  * Map of the key identifier and offset delta.

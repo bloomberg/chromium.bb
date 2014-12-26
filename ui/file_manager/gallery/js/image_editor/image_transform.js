@@ -327,6 +327,7 @@ ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
  * @param {!ImageRect} rect Initial size of the image.
  * @param {!Viewport} viewport Viewport.
  * @constructor
+ * @struct
  */
 function DraggableRect(rect, viewport) {
   /**
@@ -366,8 +367,6 @@ function DraggableRect(rect, viewport) {
    * @type {?number}
    */
   this.fixedAspectRatio = null;
-
-  Object.seal(this);
 }
 
 // Static members to simplify reflective access to the bounds.

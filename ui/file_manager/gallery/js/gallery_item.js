@@ -31,7 +31,7 @@ Gallery.Item = function(
    * @type {!Object}
    * @private
    */
-  this.metadata_ = Object.freeze(metadata);
+  this.metadata_ = Object.preventExtensions(metadata);
 
   /**
    * @type {!MetadataCache}
@@ -71,8 +71,6 @@ Gallery.Item = function(
    * @private
    */
   this.original_ = original;
-
-  Object.seal(this);
 };
 
 /**
@@ -118,7 +116,7 @@ Gallery.Item.prototype.getFetchedMedia = function() {
  * @param {!Object} metadata New metadata.
  */
 Gallery.Item.prototype.setMetadata = function(metadata) {
-  this.metadata_ = Object.freeze(metadata);
+  this.metadata_ = Object.preventExtensions(metadata);
 };
 
 /**
