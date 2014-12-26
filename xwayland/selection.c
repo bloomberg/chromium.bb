@@ -46,6 +46,7 @@ writable_callback(int fd, uint32_t mask, void *data)
 		wm->property_reply = NULL;
 		if (wm->property_source)
 			wl_event_source_remove(wm->property_source);
+		wm->property_source = NULL;
 		close(fd);
 		weston_log("write error to target fd: %m\n");
 		return 1;
@@ -61,6 +62,7 @@ writable_callback(int fd, uint32_t mask, void *data)
 		wm->property_reply = NULL;
 		if (wm->property_source)
 			wl_event_source_remove(wm->property_source);
+		wm->property_source = NULL;
 
 		if (wm->incr) {
 			xcb_delete_property(wm->conn,
@@ -352,6 +354,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		weston_log("read error from data source: %m\n");
 		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		wl_event_source_remove(wm->property_source);
+		wm->property_source = NULL;
 		close(fd);
 		wl_array_release(&wm->source_data);
 	}
@@ -375,6 +378,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 			wm->selection_property_set = 1;
 			wm->flush_property_on_delete = 1;
 			wl_event_source_remove(wm->property_source);
+			wm->property_source = NULL;
 			weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		} else if (wm->selection_property_set) {
 			weston_log("got %zu bytes, waiting for "
@@ -382,6 +386,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 
 			wm->flush_property_on_delete = 1;
 			wl_event_source_remove(wm->property_source);
+			wm->property_source = NULL;
 		} else {
 			weston_log("got %zu bytes, "
 				"property deleted, seting new property\n",
@@ -395,6 +400,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		xcb_flush(wm->conn);
 		wl_event_source_remove(wm->property_source);
+		wm->property_source = NULL;
 		close(fd);
 		wl_array_release(&wm->source_data);
 		wm->selection_request.requestor = XCB_NONE;
@@ -413,6 +419,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		}
 		xcb_flush(wm->conn);
 		wl_event_source_remove(wm->property_source);
+		wm->property_source = NULL;
 		close(wm->data_source_fd);
 		wm->data_source_fd = -1;
 		close(fd);
