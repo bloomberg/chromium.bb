@@ -3,7 +3,7 @@ Tests filter query parsing.
 
 Keys: []
 Query: plain text
-Result: {"text":["plain text"],"filters":[]}
+Result: {"text":["plain","text"],"filters":[]}
 
 Keys: ["single"]
 Query: single:value
@@ -31,7 +31,7 @@ Result: {"text":[],"filters":[{"type":"one","data":"foo","negative":false},{"typ
 
 Keys: ["key"]
 Query: bar key foo
-Result: {"text":["bar key foo"],"filters":[]}
+Result: {"text":["bar","key","foo"],"filters":[]}
 
 Keys: ["key"]
 Query: bar key:foo
@@ -43,15 +43,15 @@ Result: {"text":["bar","baz"],"filters":[{"type":"key","data":"foo","negative":f
 
 Keys: ["key"]
 Query: bar key:foo yek:roo baz
-Result: {"text":["bar","yek:roo baz"],"filters":[{"type":"key","data":"foo","negative":false}]}
+Result: {"text":["bar","yek:roo","baz"],"filters":[{"type":"key","data":"foo","negative":false}]}
 
 Keys: ["key"]
 Query: bar key:foo -yek:roo baz
-Result: {"text":["bar","-yek:roo baz"],"filters":[{"type":"key","data":"foo","negative":false}]}
+Result: {"text":["bar","-yek:roo","baz"],"filters":[{"type":"key","data":"foo","negative":false}]}
 
 Keys: ["key"]
 Query: bar baz key:foo goo zoo
-Result: {"text":["bar baz","goo zoo"],"filters":[{"type":"key","data":"foo","negative":false}]}
+Result: {"text":["bar","baz","goo","zoo"],"filters":[{"type":"key","data":"foo","negative":false}]}
 
 Keys: ["key"]
 Query: bar key:key:foo
@@ -59,11 +59,11 @@ Result: {"text":["bar"],"filters":[{"type":"key","data":"key:foo","negative":fal
 
 Keys: ["key"]
 Query: bar :key:foo baz
-Result: {"text":["bar :key:foo baz"],"filters":[]}
+Result: {"text":["bar",":key:foo","baz"],"filters":[]}
 
 Keys: ["key"]
 Query: bar -:key:foo baz
-Result: {"text":["bar -:key:foo baz"],"filters":[]}
+Result: {"text":["bar","-:key:foo","baz"],"filters":[]}
 
 Keys: ["key"]
 Query: bar key:-foo baz
