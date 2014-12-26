@@ -38,6 +38,8 @@ private:
             if (executionContext())
                 executionContext()->consumeWindowFocus();
         }
+
+        void trace(Visitor*) { }
     };
 
     // In Oilpan, destructors are not allowed to touch other on-heap objects.
