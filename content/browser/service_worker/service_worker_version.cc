@@ -28,10 +28,8 @@ class ServiceWorkerVersion::GetClientDocumentsCallback
     : public base::RefCounted<GetClientDocumentsCallback> {
  public:
   GetClientDocumentsCallback(int request_id,
-                             int pending_requests,
                              ServiceWorkerVersion* version)
       : request_id_(request_id),
-        pending_requests_(pending_requests),
         version_(version) {
     DCHECK(version_);
   }
@@ -41,50 +39,23 @@ class ServiceWorkerVersion::GetClientDocumentsCallback
     clients_.back().client_id = client_id;
   }
 
-  void DecrementPendingRequests() {
-    if (--pending_requests_ > 0)
-      return;
-    // Don't bother if it's no longer running.
+ private:
+  friend class base::RefCounted<GetClientDocumentsCallback>;
+
+  virtual ~GetClientDocumentsCallback() {
     if (version_->running_status() == RUNNING) {
       version_->embedded_worker_->SendMessage(
           ServiceWorkerMsg_DidGetClientDocuments(request_id_, clients_));
     }
   }
 
- private:
-  friend class base::RefCounted<GetClientDocumentsCallback>;
-  virtual ~GetClientDocumentsCallback() {}
-
   std::vector<ServiceWorkerClientInfo> clients_;
   int request_id_;
-  size_t pending_requests_;
 
   // |version_| must outlive this callback.
   ServiceWorkerVersion* version_;
 
   DISALLOW_COPY_AND_ASSIGN(GetClientDocumentsCallback);
-};
-
-class ServiceWorkerVersion::GetClientInfoCallback {
- public:
-  GetClientInfoCallback(
-      int client_id,
-      const scoped_refptr<GetClientDocumentsCallback>& callback)
-      : client_id_(client_id),
-        callback_(callback) {}
-
-  void Run(ServiceWorkerStatusCode status,
-           const ServiceWorkerClientInfo& info) {
-    if (status == SERVICE_WORKER_OK)
-      callback_->AddClientInfo(client_id_, info);
-    callback_->DecrementPendingRequests();
-  }
-
- private:
-  int client_id_;
-  scoped_refptr<GetClientDocumentsCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetClientInfoCallback);
 };
 
 namespace {
@@ -860,14 +831,15 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
     return;
   }
   scoped_refptr<GetClientDocumentsCallback> callback(
-      new GetClientDocumentsCallback(
-          request_id, controllee_by_id_.size(), this));
+      new GetClientDocumentsCallback(request_id, this));
   ControlleeByIDMap::iterator it(&controllee_by_id_);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClientDocuments");
   while (!it.IsAtEnd()) {
     int client_request_id = get_client_info_callbacks_.Add(
-        new GetClientInfoCallback(it.GetCurrentKey(), callback));
+        new GetClientInfoCallback(base::Bind(
+            &ServiceWorkerVersion::DidGetClientInfo,
+            weak_factory_.GetWeakPtr(), it.GetCurrentKey(), callback)));
     it.GetCurrentValue()->GetClientInfo(embedded_worker_->embedded_worker_id(),
                                         client_request_id);
     it.Advance();
@@ -1112,6 +1084,15 @@ void ServiceWorkerVersion::OnSkipWaiting(int request_id) {
 void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
   if (running_status() == STARTING || running_status() == RUNNING)
     embedded_worker_->SendMessage(ServiceWorkerMsg_DidSkipWaiting(request_id));
+}
+
+void ServiceWorkerVersion::DidGetClientInfo(
+    int client_id,
+    scoped_refptr<GetClientDocumentsCallback> callback,
+    ServiceWorkerStatusCode status,
+    const ServiceWorkerClientInfo& info) {
+  if (status == SERVICE_WORKER_OK)
+    callback->AddClientInfo(client_id, info);
 }
 
 void ServiceWorkerVersion::ScheduleStopWorker() {

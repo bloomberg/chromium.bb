@@ -57,6 +57,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode,
+                              const ServiceWorkerClientInfo&)>
+      GetClientInfoCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode, bool)>
       CrossOriginConnectCallback;
 
@@ -282,7 +285,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   class GetClientDocumentsCallback;
-  class GetClientInfoCallback;
 
   friend class base::RefCounted<ServiceWorkerVersion>;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
@@ -348,6 +350,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnFocusClientFinished(int request_id, bool result);
   void DidSkipWaiting(int request_id);
+  void DidGetClientInfo(int client_id,
+                        scoped_refptr<GetClientDocumentsCallback> callback,
+                        ServiceWorkerStatusCode status,
+                        const ServiceWorkerClientInfo& info);
   void ScheduleStopWorker();
   void StopWorkerIfIdle();
   bool HasInflightRequests() const;
