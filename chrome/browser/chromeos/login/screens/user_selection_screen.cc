@@ -12,9 +12,12 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -102,8 +105,11 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 
 }  // namespace
 
-UserSelectionScreen::UserSelectionScreen()
-    : handler_(NULL), login_display_delegate_(NULL) {
+UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
+    : handler_(nullptr),
+      login_display_delegate_(nullptr),
+      view_(nullptr),
+      display_type_(display_type) {
 }
 
 UserSelectionScreen::~UserSelectionScreen() {
@@ -210,6 +216,10 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 
 void UserSelectionScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
   handler_ = handler;
+}
+
+void UserSelectionScreen::SetView(UserBoardView* view) {
+  view_ = view;
 }
 
 void UserSelectionScreen::Init(const user_manager::UserList& users,
@@ -383,7 +393,7 @@ void UserSelectionScreen::SetAuthType(
              ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD ||
          auth_type == ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD);
   user_auth_type_map_[user_id] = auth_type;
-  handler_->SetAuthType(user_id, auth_type, initial_value);
+  view_->SetAuthType(user_id, auth_type, initial_value);
 }
 
 ScreenlockBridge::LockHandler::AuthType UserSelectionScreen::GetAuthType(
@@ -394,7 +404,7 @@ ScreenlockBridge::LockHandler::AuthType UserSelectionScreen::GetAuthType(
 }
 
 void UserSelectionScreen::ShowBannerMessage(const base::string16& message) {
-  handler_->ShowBannerMessage(message);
+  view_->ShowBannerMessage(message);
 }
 
 void UserSelectionScreen::ShowUserPodCustomIcon(
@@ -403,11 +413,11 @@ void UserSelectionScreen::ShowUserPodCustomIcon(
   scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
-  handler_->ShowUserPodCustomIcon(user_id, *icon);
+  view_->ShowUserPodCustomIcon(user_id, *icon);
 }
 
 void UserSelectionScreen::HideUserPodCustomIcon(const std::string& user_id) {
-  handler_->HideUserPodCustomIcon(user_id);
+  view_->HideUserPodCustomIcon(user_id);
 }
 
 void UserSelectionScreen::EnableInput() {
@@ -423,17 +433,62 @@ void UserSelectionScreen::Unlock(const std::string& user_email) {
   ScreenLocker::Hide();
 }
 
-void UserSelectionScreen::AttemptEasySignin(const std::string& user_email,
+void UserSelectionScreen::AttemptEasySignin(const std::string& user_id,
                                             const std::string& secret,
                                             const std::string& key_label) {
   DCHECK(!ScreenLocker::default_screen_locker());
 
-  UserContext user_context(user_email);
+  UserContext user_context(user_id);
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);
 
   login_display_delegate_->Login(user_context, SigninSpecifics());
+}
+
+void UserSelectionScreen::HardLockPod(const std::string& user_id) {
+  view_->SetAuthType(user_id, ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+                     base::string16());
+  EasyUnlockService* service = GetEasyUnlockServiceForUser(user_id);
+  if (!service)
+    return;
+  service->SetHardlockState(EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
+}
+
+void UserSelectionScreen::AttemptEasyUnlock(const std::string& user_id) {
+  EasyUnlockService* service = GetEasyUnlockServiceForUser(user_id);
+  if (!service)
+    return;
+  service->AttemptAuth(user_id);
+}
+
+EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(
+    const std::string& user_id) const {
+  if (!ScreenLocker::default_screen_locker() &&
+      display_type_ != OobeUI::kLoginDisplay) {
+    return nullptr;
+  }
+
+  const user_manager::User* unlock_user = nullptr;
+  for (const user_manager::User* user : GetUsers()) {
+    if (user->email() == user_id) {
+      unlock_user = user;
+      break;
+    }
+  }
+  if (!unlock_user)
+    return nullptr;
+
+  ProfileHelper* profile_helper = ProfileHelper::Get();
+  Profile* profile = profile_helper->GetProfileByUser(unlock_user);
+
+  // The user profile should exists if and only if this is lock screen.
+  DCHECK_NE(!profile, !ScreenLocker::default_screen_locker());
+
+  if (!profile)
+    profile = profile_helper->GetSigninProfile();
+
+  return EasyUnlockService::Get(profile);
 }
 
 }  // namespace chromeos

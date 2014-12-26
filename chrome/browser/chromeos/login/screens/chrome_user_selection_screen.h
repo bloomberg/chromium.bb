@@ -21,7 +21,7 @@ class ChromeUserSelectionScreen
     : public UserSelectionScreen,
       public policy::DeviceLocalAccountPolicyService::Observer {
  public:
-  ChromeUserSelectionScreen();
+  explicit ChromeUserSelectionScreen(const std::string& display_type);
   virtual ~ChromeUserSelectionScreen();
 
   // UserSelectionScreen:

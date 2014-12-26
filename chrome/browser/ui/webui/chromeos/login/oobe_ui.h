@@ -39,6 +39,7 @@ class NetworkStateInformer;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class UpdateScreenHandler;
+class UserBoardScreenHandler;
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
 // - welcome screen (setup language/keyboard/network).
@@ -124,6 +125,7 @@ class OobeUI : public OobeDisplay,
   virtual HostPairingScreenActor* GetHostPairingScreenActor() override;
   DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() override;
   virtual GaiaScreenHandler* GetGaiaScreenActor() override;
+  virtual UserBoardView* GetUserBoardScreenActor() override;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -211,6 +213,10 @@ class OobeUI : public OobeDisplay,
   // Reference to GaiaScreenHandler that handles gaia screen requests and
   // forwards calls from native code to JS side.
   GaiaScreenHandler* gaia_screen_handler_;
+
+  // Reference to UserBoardScreenHandler, that allows to pick user on device
+  // and attempt authentication.
+  UserBoardScreenHandler* user_board_screen_handler_;
 
   // Reference to SigninScreenHandler that handles sign-in screen requests and
   // forwards calls from native code to JS side.

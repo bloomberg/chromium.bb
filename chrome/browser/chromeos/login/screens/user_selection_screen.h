@@ -13,23 +13,29 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "components/user_manager/user.h"
 #include "ui/wm/core/user_activity_observer.h"
 
+class EasyUnlockService;
+
 namespace chromeos {
 
 class LoginDisplayWebUIHandler;
+class UserBoardView;
 
 // This class represents User Selection screen: user pod-based login screen.
 class UserSelectionScreen : public wm::UserActivityObserver,
-                            public ScreenlockBridge::LockHandler {
+                            public ScreenlockBridge::LockHandler,
+                            public UserBoardModel {
  public:
-  UserSelectionScreen();
+  explicit UserSelectionScreen(const std::string& display_type);
   virtual ~UserSelectionScreen();
 
   void SetLoginDisplayDelegate(LoginDisplay::Delegate* login_display_delegate);
   void SetHandler(LoginDisplayWebUIHandler* handler);
+  void SetView(UserBoardView* view);
 
   static const user_manager::UserList PrepareUserListForSending(
       const user_manager::UserList& users,
@@ -44,8 +50,9 @@ class UserSelectionScreen : public wm::UserActivityObserver,
   void OnUserRemoved(const std::string& username);
 
   void OnPasswordClearTimerExpired();
-  virtual void SendUserList();
+
   void HandleGetUsers();
+
   // wm::UserActivityDetector implementation:
   virtual void OnUserActivity(const ui::Event* event) override;
 
@@ -69,6 +76,11 @@ class UserSelectionScreen : public wm::UserActivityObserver,
                                  const std::string& secret,
                                  const std::string& key_label) override;
 
+  // UserBoardModel implementation.
+  virtual void SendUserList() override;
+  virtual void HardLockPod(const std::string& user_id) override;
+  virtual void AttemptEasyUnlock(const std::string& user_id) override;
+
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(
       user_manager::User* user,
@@ -84,6 +96,7 @@ class UserSelectionScreen : public wm::UserActivityObserver,
  protected:
   LoginDisplayWebUIHandler* handler_;
   LoginDisplay::Delegate* login_display_delegate_;
+  UserBoardView* view_;
 
   // Map from public session user IDs to recommended locales set by policy.
   typedef std::map<std::string, std::vector<std::string> >
@@ -91,8 +104,14 @@ class UserSelectionScreen : public wm::UserActivityObserver,
   PublicSessionRecommendedLocaleMap public_session_recommended_locales_;
 
  private:
+  EasyUnlockService* GetEasyUnlockServiceForUser(
+      const std::string& user_id) const;
+
   // Whether to show guest login.
   bool show_guest_;
+
+  // Purpose of the screen (see constants in OobeUI).
+  std::string display_type_;
 
   // Set of Users that are visible.
   user_manager::UserList users_;

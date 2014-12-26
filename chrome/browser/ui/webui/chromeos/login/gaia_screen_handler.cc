@@ -641,12 +641,12 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 
   // Set Least Recently Used input method for the user.
   if (!populated_email_.empty()) {
-    signin_screen_handler_->SetUserInputMethod(populated_email_,
-                                               gaia_ime_state.get());
+    SigninScreenHandler::SetUserInputMethod(populated_email_,
+                                            gaia_ime_state.get());
   } else {
     std::vector<std::string> input_methods =
         imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
-    const std::string owner_im = signin_screen_handler_->GetUserLRUInputMethod(
+    const std::string owner_im = SigninScreenHandler::GetUserLRUInputMethod(
         user_manager::UserManager::Get()->GetOwnerEmail());
     const std::string system_im = g_browser_process->local_state()->GetString(
         language_prefs::kPreferredKeyboardLayout);

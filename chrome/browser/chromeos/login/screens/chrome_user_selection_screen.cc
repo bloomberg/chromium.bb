@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -27,8 +28,10 @@
 
 namespace chromeos {
 
-ChromeUserSelectionScreen::ChromeUserSelectionScreen()
-    : handler_initialized_(false),
+ChromeUserSelectionScreen::ChromeUserSelectionScreen(
+    const std::string& display_type)
+    : UserSelectionScreen(display_type),
+      handler_initialized_(false),
       weak_factory_(this) {
   device_local_account_policy_service_ = g_browser_process->platform_part()->
       browser_policy_connector_chromeos()->GetDeviceLocalAccountPolicyService();
@@ -85,7 +88,7 @@ void ChromeUserSelectionScreen::CheckForPublicSessionDisplayNameChange(
 
   if (!display_name.empty()) {
     // If a new display name was set by policy, notify the UI about it.
-    handler_->SetPublicSessionDisplayName(user_id, display_name);
+    view_->SetPublicSessionDisplayName(user_id, display_name);
     return;
   }
 
@@ -145,9 +148,8 @@ void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return;
 
-  handler_->SetPublicSessionDisplayName(
-      user_id,
-      base::UTF16ToUTF8(user->GetDisplayName()));
+  view_->SetPublicSessionDisplayName(user_id,
+                                     base::UTF16ToUTF8(user->GetDisplayName()));
 }
 
 void ChromeUserSelectionScreen::SetPublicSessionLocales(
@@ -175,10 +177,9 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
   const bool two_or_more_recommended_locales = recommended_locales.size() >= 2;
 
   // Notify the UI.
-  handler_->SetPublicSessionLocales(user_id,
-                                    available_locales.Pass(),
-                                    default_locale,
-                                    two_or_more_recommended_locales);
+  view_->SetPublicSessionLocales(user_id, available_locales.Pass(),
+                                 default_locale,
+                                 two_or_more_recommended_locales);
 }
 
 }  // namespace chromeos

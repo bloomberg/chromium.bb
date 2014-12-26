@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
 namespace chromeos {
@@ -19,12 +20,14 @@ SignInScreenController::SignInScreenController(
     : oobe_display_(oobe_display),
       login_display_delegate_(login_display_delegate),
       webui_handler_(NULL),
-      gaia_screen_(new GaiaScreen()),
-      user_selection_screen_(new ChromeUserSelectionScreen()) {
+      gaia_screen_(new GaiaScreen()) {
   DCHECK(instance_ == NULL);
   instance_ = this;
 
   gaia_screen_->SetScreenHandler(oobe_display_->GetGaiaScreenActor());
+  std::string display_type = static_cast<OobeUI*>(oobe_display)->display_type();
+  user_selection_screen_.reset(new ChromeUserSelectionScreen(display_type));
+  user_selection_screen_->SetView(oobe_display_->GetUserBoardScreenActor());
   user_selection_screen_->SetLoginDisplayDelegate(login_display_delegate);
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,

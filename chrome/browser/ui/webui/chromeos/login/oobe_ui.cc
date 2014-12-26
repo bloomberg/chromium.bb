@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
@@ -318,6 +319,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetConsumerManagementService();
+
+  user_board_screen_handler_ = new UserBoardScreenHandler();
+  AddScreenHandler(user_board_screen_handler_);
+
   gaia_screen_handler_ =
       new GaiaScreenHandler(
           core_handler_, network_state_informer_, consumer_management);
@@ -469,6 +474,10 @@ SupervisedUserCreationScreenHandler*
 
 GaiaScreenHandler* OobeUI::GetGaiaScreenActor() {
   return gaia_screen_handler_;
+}
+
+UserBoardView* OobeUI::GetUserBoardScreenActor() {
+  return user_board_screen_handler_;
 }
 
 AppLaunchSplashScreenActor*

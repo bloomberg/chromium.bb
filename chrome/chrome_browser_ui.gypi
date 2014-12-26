@@ -972,6 +972,8 @@
       'browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h',
       'browser/ui/webui/chromeos/login/update_screen_handler.cc',
       'browser/ui/webui/chromeos/login/update_screen_handler.h',
+      'browser/ui/webui/chromeos/login/user_board_screen_handler.cc',
+      'browser/ui/webui/chromeos/login/user_board_screen_handler.h',
       'browser/ui/webui/chromeos/login/user_image_screen_handler.cc',
       'browser/ui/webui/chromeos/login/user_image_screen_handler.h',
       'browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.cc',
