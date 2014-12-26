@@ -1045,12 +1045,13 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
     }
 
     const Attribute& existingAttribute = elementData()->attributes().at(index);
+    AtomicString existingAttributeValue = existingAttribute.value();
     QualifiedName existingAttributeName = existingAttribute.name();
 
     if (!inSynchronizationOfLazyAttribute)
-        willModifyAttribute(existingAttributeName, existingAttribute.value(), newValue);
+        willModifyAttribute(existingAttributeName, existingAttributeValue, newValue);
 
-    if (newValue != existingAttribute.value()) {
+    if (newValue != existingAttributeValue) {
         // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
         // will write into the ElementData.
         // FIXME: Refactor this so it makes some sense.
