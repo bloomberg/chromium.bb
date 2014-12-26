@@ -99,7 +99,16 @@ class InputMethodUtil {
   // Returns empty string on error.
   std::string GetLanguageDefaultInputMethodId(const std::string& language_code);
 
-  // Migrates the legacy xkb id to extension based xkb id.
+  // Migrates the input method id as below:
+  //  - Legacy xkb id to extension based id, e.g.
+  //    xkb:us::eng -> _comp_ime_...xkb:us::eng
+  //  - VPD well formatted id to extension based input method id, e.g.
+  //    m17n:vi_telex -> _comp_ime_...vkd_vi_telex
+  //  - ChromiumOS input method ID to ChromeOS one, or vice versa, e.g.
+  //    _comp_ime_xxxxxx...xkb:us::eng -> _comp_ime_yyyyyy...xkb:us::eng
+  std::string MigrateInputMethod(const std::string& input_method_id);
+
+  // Migrates the input method IDs.
   // Returns true if the given input method id list is modified,
   // returns false otherwise.
   // This method should not be removed because it's required to transfer XKB
