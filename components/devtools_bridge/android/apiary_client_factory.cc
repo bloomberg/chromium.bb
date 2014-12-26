@@ -14,8 +14,8 @@ namespace devtools_bridge {
 namespace android {
 
 // static
-void ApiaryClientFactory::RegisterNatives(JNIEnv* env) {
-  RegisterNativesImpl(env);
+bool ApiaryClientFactory::RegisterNatives(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 // static

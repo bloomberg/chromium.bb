@@ -16,7 +16,7 @@ class SessionDependencyFactoryAndroid : public SessionDependencyFactory {
   SessionDependencyFactoryAndroid();
   virtual ~SessionDependencyFactoryAndroid();
 
-  static void RegisterNatives(JNIEnv* env);
+  static bool RegisterNatives(JNIEnv* env);
 
   virtual scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
       scoped_ptr<RTCConfiguration> config,

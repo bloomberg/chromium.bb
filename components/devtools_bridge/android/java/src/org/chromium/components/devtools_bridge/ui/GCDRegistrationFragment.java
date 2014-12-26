@@ -54,7 +54,7 @@ public abstract class GCDRegistrationFragment extends Fragment
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        mClientFactory = newClientFactory();
+        mClientFactory = new ApiaryClientFactory();
         mPreferences = DevToolsBridgeServer.getPreferences(getActivity());
         mPreferences.registerOnSharedPreferenceChangeListener(this);
         mInstanceCredential = InstanceCredential.get(mPreferences);
@@ -252,7 +252,6 @@ public abstract class GCDRegistrationFragment extends Fragment
     }
 
     protected abstract void onRegistrationStatusChange();
-    protected abstract ApiaryClientFactory newClientFactory();
     protected abstract String generateDisplayName();
 
     private abstract class RegistrationTask extends AsyncTask<Void, Void, Boolean> {

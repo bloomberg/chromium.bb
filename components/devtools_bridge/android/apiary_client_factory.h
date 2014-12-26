@@ -17,7 +17,7 @@ namespace android {
  */
 class ApiaryClientFactory {
  public:
-  static void RegisterNatives(JNIEnv* env);
+  static bool RegisterNatives(JNIEnv* env);
 };
 
 }  // namespace android
