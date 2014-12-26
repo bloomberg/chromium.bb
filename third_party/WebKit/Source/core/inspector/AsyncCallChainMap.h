@@ -26,9 +26,16 @@ public:
 
     ~AsyncCallChainMap()
     {
-        // Verify that this object has been explicitly cleared already.
-        ASSERT(!m_debuggerAgent);
+        // Verify that this object has been explicitly disposed.
+        ASSERT(hasBeenDisposed());
     }
+
+#if ENABLE(ASSERT)
+    bool hasBeenDisposed() const
+    {
+        return !m_debuggerAgent;
+    }
+#endif
 
     void dispose()
     {

@@ -33,6 +33,11 @@ public:
 
     ~V8ContextAsyncCallChains()
     {
+        ASSERT(m_v8AsyncCallChains.hasBeenDisposed());
+    }
+
+    void dispose()
+    {
         // FIXME: get rid of the dispose method and this class altogether once AsyncCallChainMap is always allocated on C++ heap.
         m_v8AsyncCallChains.dispose();
     }
@@ -80,8 +85,10 @@ void V8AsyncCallTracker::asyncCallTrackingStateChanged(bool)
 
 void V8AsyncCallTracker::resetAsyncCallChains()
 {
-    for (auto& it : m_contextAsyncCallChainMap)
+    for (auto& it : m_contextAsyncCallChainMap) {
         it.key->removeObserver(this);
+        it.value->dispose();
+    }
     m_contextAsyncCallChainMap.clear();
 }
 

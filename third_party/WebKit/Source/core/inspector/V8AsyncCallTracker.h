@@ -21,7 +21,11 @@ class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8AsyncCallTracker);
 public:
-    explicit V8AsyncCallTracker(InspectorDebuggerAgent*);
+    static PassOwnPtrWillBeRawPtr<V8AsyncCallTracker> create(InspectorDebuggerAgent* debuggerAgent)
+    {
+        return adoptPtrWillBeNoop(new V8AsyncCallTracker(debuggerAgent));
+    }
+
     ~V8AsyncCallTracker();
     void trace(Visitor*);
 
@@ -35,6 +39,8 @@ public:
     void willDisposeScriptState(ScriptState*) override;
 
 private:
+    explicit V8AsyncCallTracker(InspectorDebuggerAgent*);
+
     void didEnqueueV8AsyncTask(ScriptState*, const String& eventName, int id);
     void willHandleV8AsyncTask(ScriptState*, const String& eventName, int id);
 

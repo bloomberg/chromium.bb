@@ -135,7 +135,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_nestedAsyncCallCount(0)
     , m_performingAsyncStepIn(false)
 {
-    m_v8AsyncCallTracker = adoptPtrWillBeNoop(new V8AsyncCallTracker(this));
+    m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
 }
 
 InspectorDebuggerAgent::~InspectorDebuggerAgent()
