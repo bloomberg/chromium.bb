@@ -487,13 +487,9 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
 
   if (status != SERVICE_WORKER_OK) {
-    // Dispatching event has been failed, falling back to the network.
-    // (Tentative behavior described on github)
-    // TODO(kinuko): consider returning error if we've come here because
-    // unexpected worker termination etc (so that we could fix bugs).
+    // Dispatching event has been failed, returns an error response.
     // TODO(kinuko): Would be nice to log the error case.
-    response_type_ = FALLBACK_TO_NETWORK;
-    NotifyRestartRequired();
+    DeliverErrorResponse();
     return;
   }
 
