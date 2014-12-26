@@ -5,13 +5,13 @@
 /**
  * Discover the ID of installed cast extension.
  * @constructor
+ * @struct
  */
-function CastExtensionDiscoverer() {
-}
+function CastExtensionDiscoverer() {}
 
 /**
  * Tentatice IDs to try.
- * @type {Array.<string>}
+ * @type {!Array.<string>}
  * @const
  */
 CastExtensionDiscoverer.CAST_EXTENSION_IDS = [
@@ -23,8 +23,8 @@ CastExtensionDiscoverer.CAST_EXTENSION_IDS = [
 ];
 
 /**
- * @param {function(string)} callback Callback called with the extension ID. The
- *     ID may be null if extension is not found.
+ * @param {function(?string)} callback Callback called with the extension ID.
+ *     The ID may be null if extension is not found.
  */
 CastExtensionDiscoverer.findInstalledExtension = function(callback) {
   CastExtensionDiscoverer.findInstalledExtensionHelper_(0, callback);
@@ -32,7 +32,7 @@ CastExtensionDiscoverer.findInstalledExtension = function(callback) {
 
 /**
  * @param {number} index Current index which is tried to check.
- * @param {function(string)} callback Callback function which will be called
+ * @param {function(?string)} callback Callback function which will be called
  *     the extension is found.
  * @private
  */

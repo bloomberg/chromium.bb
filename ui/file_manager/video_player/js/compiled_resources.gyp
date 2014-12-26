@@ -67,6 +67,7 @@
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '<(CLOSURE_DIR)/externs/media_player_private.js',
           '../../externs/chrome_cast.js',
+          '../../externs/platform.js',
         ],
       },
       'includes': [

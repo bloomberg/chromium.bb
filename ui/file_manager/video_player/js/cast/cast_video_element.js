@@ -24,6 +24,8 @@ var CAST_MESSAGE_NAMESPACE = 'urn:x-cast:com.google.chromeos.videoplayer';
  * @param {MediaManager} media Media manager with the media to play.
  * @param {chrome.cast.Session} session Session to play a video on.
  * @constructor
+ * @struct
+ * @extends {cr.EventTarget}
  */
 function CastVideoElement(media, session) {
   this.mediaManager_ = media;
@@ -42,13 +44,25 @@ function CastVideoElement(media, session) {
   this.pauseInProgress_ = false;
   this.errorCode_ = 0;
 
+  /**
+   * @type {number}
+   * @private
+   */
+  this.updateTimerId_ = 0;
+
+  /**
+   * @type {?string}
+   * @private
+   */
+  this.token_ = null;
+
   this.onMessageBound_ = this.onMessage_.bind(this);
   this.onCastMediaUpdatedBound_ = this.onCastMediaUpdated_.bind(this);
   this.castSession_.addMessageListener(
       CAST_MESSAGE_NAMESPACE, this.onMessageBound_);
 }
 
-CastVideoElement.prototype = {
+CastVideoElement.prototype = /** @struct */ {
   __proto__: cr.EventTarget.prototype,
 
   /**
@@ -119,7 +133,7 @@ CastVideoElement.prototype = {
     if (!this.castMedia_)
       return true;
 
-    return !this.playInProgress &&
+    return !this.playInProgress_ &&
            this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED;
   },
 
@@ -285,10 +299,11 @@ CastVideoElement.prototype = {
    * Loads the video.
    */
   load: function(opt_callback) {
-    var sendTokenPromise = this.mediaManager_.getToken().then(function(token) {
-      this.token_ = token;
-      this.sendMessage_({message: 'push-token', token: token});
-    }.bind(this));
+    var sendTokenPromise = this.mediaManager_.getToken(false).then(
+        function(token) {
+          this.token_ = token;
+          this.sendMessage_({message: 'push-token', token: token});
+        }.bind(this));
 
     // Resets the error code.
     this.errorCode_ = 0;
@@ -303,8 +318,7 @@ CastVideoElement.prototype = {
           var mime = results[2];  // maybe empty
           var thumbnailUrl = results[3];  // maybe empty
 
-          this.mediaInfo_ = new chrome.cast.media.MediaInfo(url);
-          this.mediaInfo_.contentType = mime;
+          this.mediaInfo_ = new chrome.cast.media.MediaInfo(url, mime);
           this.mediaInfo_.customData = {
             tokenRequired: true,
             thumbnailUrl: thumbnailUrl,
@@ -348,11 +362,13 @@ CastVideoElement.prototype = {
 
   /**
    * Sends the message to cast.
-   * @param {Object} message Message to be sent (Must be JSON-able object).
+   * @param {(!Object|string)} message Message to be sent (Must be JSON-able
+   *     object).
    * @private
    */
   sendMessage_: function(message) {
-    this.castSession_.sendMessage(CAST_MESSAGE_NAMESPACE, message);
+    this.castSession_.sendMessage(CAST_MESSAGE_NAMESPACE, message,
+        function() {}, function(error) {});
   },
 
   /**
@@ -403,7 +419,7 @@ CastVideoElement.prototype = {
 
   /**
    * This method should be called when a media file is loaded.
-   * @param {chrome.cast.Media} media Media object which was discovered.
+   * @param {chrome.cast.media.Media} media Media object which was discovered.
    * @private
    */
   onMediaDiscovered_: function(media) {
@@ -486,7 +502,11 @@ CastVideoElement.prototype = {
     }
 
     if (this.currentMediaDuration_ !== media.media.duration) {
-      metrics.recordCastedVideoLength(this.currentMediaDuration_);
+      // Since recordMediumCount which is called inside recordCastedVideoLangth
+      // can take a value ranges from 1 to 10,000, we don't allow to pass 0
+      // here. i.e. length 0 is not recorded.
+      if (this.currentMediaDuration_)
+        metrics.recordCastedVideoLength(this.currentMediaDuration_);
 
       this.currentMediaDuration_ = media.media.duration;
       this.dispatchEvent(new Event('durationchange'));
