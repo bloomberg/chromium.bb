@@ -197,7 +197,8 @@ class CollectVisitor : public RecursiveASTVisitor<CollectVisitor> {
 
   // Collect tracing method definitions, but don't traverse method bodies.
   bool TraverseCXXMethodDecl(CXXMethodDecl* method) {
-    if (method->isThisDeclarationADefinition() && Config::IsTraceMethod(method))
+    if (method->isThisDeclarationADefinition() &&
+        Config::IsTraceMethod(method, nullptr))
       trace_decls_.push_back(method);
     return true;
   }
@@ -469,7 +470,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       return false;
 
     FunctionDecl* fn = dyn_cast<FunctionDecl>(callee->getMemberDecl());
-    if (!fn || !Config::IsTraceMethod(fn))
+    if (!fn || !Config::IsTraceMethod(fn, nullptr))
       return false;
 
     // Currently, a manually dispatched class cannot have mixin bases (having

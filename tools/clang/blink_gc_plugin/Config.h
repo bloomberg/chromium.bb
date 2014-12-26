@@ -201,7 +201,7 @@ class Config {
   }
 
   static bool IsTraceMethod(clang::FunctionDecl* method,
-                            bool* isTraceAfterDispatch = 0) {
+                            bool* is_trace_after_dispatch) {
     if (method->getNumParams() != 1)
       return false;
 
@@ -218,8 +218,8 @@ class Config {
       return false;
     }
 
-    if (isTraceAfterDispatch)
-      *isTraceAfterDispatch = (name == kTraceAfterDispatchName);
+    if (is_trace_after_dispatch)
+      *is_trace_after_dispatch = (name == kTraceAfterDispatchName);
 
     return true;
   }
