@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/inspector/AsyncCallStackTracker.h"
+#include "core/inspector/AsyncCallTracker.h"
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
@@ -57,10 +57,10 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace blink {
 
-class AsyncCallStackTracker::ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
+class AsyncCallTracker::ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
+    ExecutionContextData(AsyncCallTracker* tracker, ExecutionContext* executionContext)
         : ContextLifecycleObserver(executionContext)
         , m_tracker(tracker)
         , m_timerCallChains(tracker->m_debuggerAgent)
@@ -118,7 +118,7 @@ public:
         m_asyncOperationCallChains.dispose();
     }
 
-    RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
+    RawPtrWillBeMember<AsyncCallTracker> m_tracker;
     HashSet<int> m_intervalTimerIds;
     AsyncCallChainMap<int> m_timerCallChains;
     AsyncCallChainMap<int> m_animationFrameCallChains;
@@ -142,30 +142,28 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
     return 0;
 }
 
-AsyncCallStackTracker::AsyncCallStackTracker(InspectorDebuggerAgent* debuggerAgent, InstrumentingAgents* instrumentingAgents)
+AsyncCallTracker::AsyncCallTracker(InspectorDebuggerAgent* debuggerAgent, InstrumentingAgents* instrumentingAgents)
     : m_debuggerAgent(debuggerAgent)
     , m_instrumentingAgents(instrumentingAgents)
 {
     m_debuggerAgent->addAsyncCallTrackingListener(this);
 }
 
-AsyncCallStackTracker::~AsyncCallStackTracker()
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallTracker);
+
+void AsyncCallTracker::asyncCallTrackingStateChanged(bool tracking)
 {
+    m_instrumentingAgents->setAsyncCallTracker(tracking ? this : nullptr);
 }
 
-void AsyncCallStackTracker::asyncCallTrackingStateChanged(bool tracking)
-{
-    m_instrumentingAgents->setAsyncCallStackTracker(tracking ? this : nullptr);
-}
-
-void AsyncCallStackTracker::resetAsyncCallChains()
+void AsyncCallTracker::resetAsyncCallChains()
 {
     for (auto& it : m_executionContextDataMap)
         it.value->dispose();
     m_executionContextDataMap.clear();
 }
 
-void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
+void AsyncCallTracker::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -179,7 +177,7 @@ void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timer
         data->m_intervalTimerIds.add(timerId);
 }
 
-void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerId)
+void AsyncCallTracker::didRemoveTimer(ExecutionContext* context, int timerId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -192,7 +190,7 @@ void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerI
     data->m_timerCallChains.remove(timerId);
 }
 
-bool AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId)
+bool AsyncCallTracker::willFireTimer(ExecutionContext* context, int timerId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -208,7 +206,7 @@ bool AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
     return true;
 }
 
-void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId)
+void AsyncCallTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -220,7 +218,7 @@ void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, 
     data->m_animationFrameCallChains.set(callbackId, callChain.release());
 }
 
-void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
+void AsyncCallTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -230,7 +228,7 @@ void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, i
         data->m_animationFrameCallChains.remove(callbackId);
 }
 
-bool AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
+bool AsyncCallTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -245,7 +243,7 @@ bool AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
     return true;
 }
 
-void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
+void AsyncCallTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -256,7 +254,7 @@ void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* eve
     data->m_eventCallChains.set(event, callChain.release());
 }
 
-void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
+void AsyncCallTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -264,7 +262,7 @@ void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* even
         data->m_eventCallChains.remove(event);
 }
 
-void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)
+void AsyncCallTracker::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -279,7 +277,7 @@ void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* eve
     }
 }
 
-void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
+void AsyncCallTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
 {
     ASSERT(xhr->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -292,7 +290,7 @@ void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCli
     data->m_xhrCallChains.set(xhr, callChain.release());
 }
 
-void AsyncCallStackTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
+void AsyncCallTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
 {
     ASSERT(xhr->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -300,7 +298,7 @@ void AsyncCallStackTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
         data->m_xhrCallChains.remove(xhr);
 }
 
-void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event)
+void AsyncCallTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event)
 {
     ExecutionContext* context = xhr->executionContext();
     ASSERT(context);
@@ -311,7 +309,7 @@ void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event
         setCurrentAsyncCallChain(context, nullptr);
 }
 
-void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
+void AsyncCallTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -324,7 +322,7 @@ void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, 
     data->m_mutationObserverCallChains.set(observer, callChain.release());
 }
 
-void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
+void AsyncCallTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -332,7 +330,7 @@ void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context
         data->m_mutationObserverCallChains.remove(observer);
 }
 
-void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context, MutationObserver* observer)
+void AsyncCallTracker::willDeliverMutationRecords(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -344,7 +342,7 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
     }
 }
 
-void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
+void AsyncCallTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -357,7 +355,7 @@ void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* contex
     data->m_executionContextTaskCallChains.set(task, callChain.release());
 }
 
-void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* context)
+void AsyncCallTracker::didKillAllExecutionContextTasks(ExecutionContext* context)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -365,7 +363,7 @@ void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* co
         data->m_executionContextTaskCallChains.clear();
 }
 
-void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
+void AsyncCallTracker::willPerformExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -377,7 +375,7 @@ void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* co
     }
 }
 
-int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
+int AsyncCallTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -392,7 +390,7 @@ int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context
     return id;
 }
 
-void AsyncCallStackTracker::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)
+void AsyncCallTracker::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -402,13 +400,13 @@ void AsyncCallStackTracker::traceAsyncOperationCompleted(ExecutionContext* conte
         data->m_asyncOperationCallChains.remove(operationId);
 }
 
-void AsyncCallStackTracker::traceAsyncOperationCompletedCallbackStarting(ExecutionContext* context, int operationId)
+void AsyncCallTracker::traceAsyncOperationCompletedCallbackStarting(ExecutionContext* context, int operationId)
 {
     traceAsyncCallbackStarting(context, operationId);
     traceAsyncOperationCompleted(context, operationId);
 }
 
-void AsyncCallStackTracker::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
+void AsyncCallTracker::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
 {
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -418,34 +416,32 @@ void AsyncCallStackTracker::traceAsyncCallbackStarting(ExecutionContext* context
         setCurrentAsyncCallChain(context, nullptr);
 }
 
-void AsyncCallStackTracker::didFireAsyncCall()
+void AsyncCallTracker::didFireAsyncCall()
 {
     m_debuggerAgent->clearCurrentAsyncCallChain();
 }
 
-void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
+void AsyncCallTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
     m_debuggerAgent->setCurrentAsyncCallChain(toIsolate(context), chain);
 }
 
-AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)
+AsyncCallTracker::ExecutionContextData* AsyncCallTracker::createContextDataIfNeeded(ExecutionContext* context)
 {
     ExecutionContextData* data = m_executionContextDataMap.get(context);
     if (!data) {
-        data = m_executionContextDataMap.set(context, adoptPtrWillBeNoop(new AsyncCallStackTracker::ExecutionContextData(this, context)))
+        data = m_executionContextDataMap.set(context, adoptPtrWillBeNoop(new AsyncCallTracker::ExecutionContextData(this, context)))
             .storedValue->value.get();
     }
     return data;
 }
 
-void AsyncCallStackTracker::trace(Visitor* visitor)
+void AsyncCallTracker::trace(Visitor* visitor)
 {
+    InspectorDebuggerAgent::AsyncCallTrackingListener::trace(visitor);
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContextDataMap);
-    visitor->trace(m_debuggerAgent);
-    visitor->trace(m_instrumentingAgents);
 #endif
-    InspectorDebuggerAgent::AsyncCallTrackingListener::trace(visitor);
 }
 
 } // namespace blink

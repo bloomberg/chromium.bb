@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AsyncCallStackTracker_h
-#define AsyncCallStackTracker_h
+#ifndef AsyncCallTracker_h
+#define AsyncCallTracker_h
 
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "platform/heap/Handle.h"
@@ -53,12 +53,11 @@ class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallStackTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
-    WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallStackTracker);
+class AsyncCallTracker final : public NoBaseWillBeGarbageCollected<AsyncCallTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
+    WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallTracker);
 public:
-    AsyncCallStackTracker(InspectorDebuggerAgent*, InstrumentingAgents*);
-    virtual ~AsyncCallStackTracker();
+    AsyncCallTracker(InspectorDebuggerAgent*, InstrumentingAgents*);
 
     // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;
@@ -98,7 +97,7 @@ public:
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
 
-    void trace(Visitor*);
+    void trace(Visitor*) override;
 
     class ExecutionContextData;
 
@@ -112,10 +111,10 @@ private:
 
     using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    InspectorDebuggerAgent* m_debuggerAgent;
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 };
 
 } // namespace blink
 
-#endif // !defined(AsyncCallStackTracker_h)
+#endif // AsyncCallTracker_h
