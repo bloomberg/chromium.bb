@@ -57,6 +57,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     SetLayerTreeId : "SetLayerTreeId"
     StyleInvalidatorInvalidationTracking : "StyleInvalidatorInvalidationTracking"
     StyleRecalcInvalidationTracking : "StyleRecalcInvalidationTracking"
+    Task : "Task"
     TimeStamp : "TimeStamp"
     TimerFire : "TimerFire"
     TimerInstall : "TimerInstall"
