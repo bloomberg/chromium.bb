@@ -126,18 +126,19 @@
 #include "extensions/browser/extension_prefs.h"
 #endif
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugins/plugins_resource_service.h"
+#endif
+
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
-#endif
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -423,6 +424,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
+#if defined(ENABLE_APP_LIST)
+  app_list::AppListPrefs::RegisterProfilePrefs(registry);
+#endif
+
 #if defined(ENABLE_AUTOFILL_DIALOG)
   autofill::AutofillDialogController::RegisterProfilePrefs(registry);
 #endif
@@ -439,21 +444,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_APP_LIST)
-  app_list::AppListPrefs::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(ENABLE_PRINT_PREVIEW)
-  print_dialog_cloud::RegisterProfilePrefs(registry);
-  printing::StickySettings::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(ENABLE_SUPERVISED_USERS)
-  SupervisedUserService::RegisterProfilePrefs(registry);
-  SupervisedUserSharedSettingsService::RegisterProfilePrefs(registry);
-  SupervisedUserSyncService::RegisterProfilePrefs(registry);
-#endif
-
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService::RegisterProfilePrefs(registry);
 #endif
@@ -465,8 +455,20 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
 #endif
 
+#if defined(ENABLE_PRINT_PREVIEW)
+  print_dialog_cloud::RegisterProfilePrefs(registry);
+  printing::StickySettings::RegisterProfilePrefs(registry);
+#endif
+
 #if defined(ENABLE_SERVICE_DISCOVERY)
   LocalDiscoveryUI::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService::RegisterProfilePrefs(registry);
+  SupervisedUserSharedSettingsService::RegisterProfilePrefs(registry);
+  SupervisedUserSyncService::RegisterProfilePrefs(registry);
+  SupervisedUserWhitelistService::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_ANDROID)

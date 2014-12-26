@@ -21,7 +21,8 @@ SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USERS ||
          type == syncer::SUPERVISED_USER_SETTINGS ||
-         type == syncer::SUPERVISED_USER_SHARED_SETTINGS);
+         type == syncer::SUPERVISED_USER_SHARED_SETTINGS ||
+         type == syncer::SUPERVISED_USER_WHITELISTS);
 }
 
 SupervisedUserSyncDataTypeController::~SupervisedUserSyncDataTypeController() {}
@@ -31,6 +32,7 @@ bool SupervisedUserSyncDataTypeController::ReadyForStart() const {
     case syncer::SUPERVISED_USERS:
       return !profile_->IsSupervised();
     case syncer::SUPERVISED_USER_SETTINGS:
+    case syncer::SUPERVISED_USER_WHITELISTS:
       return profile_->IsSupervised();
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return !profile_->IsChild();

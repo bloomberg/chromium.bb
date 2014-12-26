@@ -381,6 +381,9 @@ public class ProfileSyncService {
         if ((modelTypeSelection & ModelTypeSelection.SUPERVISED_USER_SETTING) != 0) {
             syncTypes.add(ModelType.MANAGED_USER_SETTING);
         }
+        if ((modelTypeSelection & ModelTypeSelection.SUPERVISED_USER_WHITELIST) != 0) {
+            syncTypes.add(ModelType.MANAGED_USER_WHITELIST);
+        }
         return syncTypes;
     }
 

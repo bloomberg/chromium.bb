@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
+#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -282,6 +284,10 @@ SupervisedUserService::GetURLFilterForIOThread() {
 
 SupervisedUserURLFilter* SupervisedUserService::GetURLFilterForUIThread() {
   return url_filter_context_.ui_url_filter();
+}
+
+SupervisedUserWhitelistService* SupervisedUserService::GetWhitelistService() {
+  return whitelist_service_.get();
 }
 
 // Items not on any list must return -1 (CATEGORY_NOT_ON_LIST in history.js).
@@ -734,6 +740,13 @@ void SupervisedUserService::Init() {
   if (sync_service)
     sync_service->AddPreferenceProvider(this);
 
+  component_updater::ComponentUpdateService* component_updater =
+      g_browser_process->component_updater();
+  whitelist_service_.reset(new SupervisedUserWhitelistService(
+      profile_->GetPrefs(),
+      component_updater::SupervisedUserWhitelistInstaller::Create(
+          component_updater)));
+
   SetActive(ProfileIsSupervised());
 }
 
@@ -831,6 +844,7 @@ void SupervisedUserService::SetActive(bool active) {
     // Initialize the filter.
     OnDefaultFilteringBehaviorChanged();
     UpdateSiteLists();
+    whitelist_service_->Init();
     UpdateManualHosts();
     UpdateManualURLs();
     bool use_blacklist = base::CommandLine::ForCurrentProcess()->HasSwitch(

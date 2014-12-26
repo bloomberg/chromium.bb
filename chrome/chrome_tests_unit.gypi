@@ -767,6 +767,7 @@
       'browser/supervised_user/supervised_user_shared_settings_update_unittest.cc',
       'browser/supervised_user/supervised_user_sync_service_unittest.cc',
       'browser/supervised_user/supervised_user_url_filter_unittest.cc',
+      'browser/supervised_user/supervised_user_whitelist_service_unittest.cc',
       'browser/sync/about_sync_util_unittest.cc',
       'browser/sync/abstract_profile_sync_service_test.cc',
       'browser/sync/abstract_profile_sync_service_test.h',

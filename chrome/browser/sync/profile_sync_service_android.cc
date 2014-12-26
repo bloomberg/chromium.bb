@@ -63,6 +63,7 @@ enum ModelTypeSelection {
   DEVICE_INFO = 1 << 11,
   EXPERIMENTS = 1 << 12,
   SUPERVISED_USER_SETTING = 1 << 13,
+  SUPERVISED_USER_WHITELIST = 1 << 14,
 };
 
 }  // namespace
@@ -485,6 +486,9 @@ jlong ProfileSyncServiceAndroid::ModelTypeSetToSelection(
   }
   if (types.Has(syncer::SUPERVISED_USER_SETTINGS)) {
     model_type_selection |= SUPERVISED_USER_SETTING;
+  }
+  if (types.Has(syncer::SUPERVISED_USER_WHITELISTS)) {
+    model_type_selection |= SUPERVISED_USER_WHITELIST;
   }
   return model_type_selection;
 }

@@ -39,6 +39,7 @@ class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
 class SupervisedUserSiteList;
 class SupervisedUserURLFilter;
+class SupervisedUserWhitelistService;
 
 namespace base {
 class FilePath;
@@ -112,6 +113,9 @@ class SupervisedUserService : public KeyedService,
   // Returns the URL filter for the UI thread, for filtering navigations and
   // classifying sites in the history view.
   SupervisedUserURLFilter* GetURLFilterForUIThread();
+
+  // Returns the whitelist service.
+  SupervisedUserWhitelistService* GetWhitelistService();
 
   // Returns the URL's category, obtained from the installed content packs.
   int GetCategory(const GURL& url);
@@ -376,6 +380,8 @@ class SupervisedUserService : public KeyedService,
 
   URLFilterContext url_filter_context_;
   scoped_ptr<SupervisedUserBlacklistDownloader> blacklist_downloader_;
+
+  scoped_ptr<SupervisedUserWhitelistService> whitelist_service_;
 
   // Used to create permission requests.
   ScopedVector<PermissionRequestCreator> permissions_creators_;

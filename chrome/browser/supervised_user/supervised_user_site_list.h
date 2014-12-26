@@ -67,6 +67,10 @@ class SupervisedUserSiteList {
   // Returns a list of all sites in this site list.
   void GetSites(std::vector<Site>* sites);
 
+  // Returns the path to the site list. Public for testing.
+  // TODO(bauerb): Remove this again.
+  const base::FilePath& path() const { return path_; }
+
  private:
   bool LazyLoad();
 

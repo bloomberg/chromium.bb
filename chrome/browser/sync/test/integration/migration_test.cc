@@ -95,9 +95,10 @@ class MigrationTest : public SyncTest  {
         GetSyncService((0))->GetPreferredDataTypes();
     preferred_data_types.RemoveAll(syncer::ProxyTypes());
 
-    // The managed user settings will be "unready" during this test, so we
+    // Supervised user data types will be "unready" during this test, so we
     // should not request that they be migrated.
     preferred_data_types.Remove(syncer::SUPERVISED_USER_SETTINGS);
+    preferred_data_types.Remove(syncer::SUPERVISED_USER_WHITELISTS);
 
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {

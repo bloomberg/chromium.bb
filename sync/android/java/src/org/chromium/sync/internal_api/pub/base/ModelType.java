@@ -78,7 +78,11 @@ public enum ModelType {
      * A supervised user setting object. The old name "managed user" is used for backwards
      * compatibility.
      */
-    MANAGED_USER_SETTING("MANAGED_USER_SETTING");
+    MANAGED_USER_SETTING("MANAGED_USER_SETTING"),
+    /**
+     * A supervised user whitelist object.
+     */
+    MANAGED_USER_WHITELIST("MANAGED_USER_WHITELIST");
 
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";

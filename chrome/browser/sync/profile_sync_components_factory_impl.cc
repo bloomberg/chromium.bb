@@ -81,6 +81,8 @@
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
@@ -88,6 +90,7 @@
 #include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -287,6 +290,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   pss->RegisterDataTypeController(
       new SupervisedUserSyncDataTypeController(
           syncer::SUPERVISED_USER_SETTINGS,
+          this,
+          profile_));
+  pss->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          syncer::SUPERVISED_USER_WHITELISTS,
           this,
           profile_));
 #endif
@@ -522,6 +530,10 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
           profile_)->AsWeakPtr();
+    case syncer::SUPERVISED_USER_WHITELISTS:
+      return SupervisedUserServiceFactory::GetForProfile(profile_)
+          ->GetWhitelistService()
+          ->AsWeakPtr();
 #endif
     case syncer::ARTICLES: {
       dom_distiller::DomDistillerService* service =

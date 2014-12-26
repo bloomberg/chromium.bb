@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "categories": {
+    "org.example.entertainment": {
+      "name": "Entertainment",
+      "thumbnails": {
+        "128": "entertainment.jpg"
+      }
+    }
+  },
+  "sites": [
+    {
+      "name": "YouTube",
+      "url": "http://www.youtube.com",
+      "categories": [
+        "org.example.entertainment"
+      ],
+      "thumbnails": {
+        "128": "youtube_128.png"
+      },
+      "whitelist": [
+        "youtube.com",
+        "ytimg.com",
+        "https://googleusercontent.com",
+        "gstatic.com"
+      ]
+    },
+    {
+      "name": "Homestar Runner",
+      "url": "http://homestarrunner.com"
+    },
+    {
+      "whitelist": [
+        "example.com",
+        "www.iana.org/domains/example/"
+      ]
+    }
+  ]
+}

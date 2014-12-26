@@ -42,6 +42,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSupervisedUserSettingsSyncTest, Sanity) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
 
+  supervised_user_service->Init();
+
   // This call triggers a separate, supervised user-specific codepath
   // that does not normally execute for sync.
   supervised_user_service->OnSupervisedUserRegistered(

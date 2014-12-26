@@ -2664,6 +2664,8 @@
       'browser/supervised_user/supervised_user_sync_service_observer.h',
       'browser/supervised_user/supervised_user_url_filter.cc',
       'browser/supervised_user/supervised_user_url_filter.h',
+      'browser/supervised_user/supervised_user_whitelist_service.cc',
+      'browser/supervised_user/supervised_user_whitelist_service.h',
       'browser/supervised_user/supervised_users.h',
     ],
     'chrome_browser_supervised_user_and_themes_sources': [

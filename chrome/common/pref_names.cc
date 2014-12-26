@@ -133,6 +133,11 @@ const char kSupervisedUserSecondCustodianProfileURL[] =
 // the format.
 const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 
+// A dictionary storing whitelists for a supervised user. The key is the CRX ID
+// of the whitelist, the value a dictionary containing whitelist properties
+// (currently the name).
+const char kSupervisedUserWhitelists[] = "profile.managed.whitelists";
+
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,
