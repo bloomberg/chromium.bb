@@ -6,11 +6,12 @@
  * @class FunctionSequence to invoke steps in sequence
  *
  * @param {string} name Name of the function.
- * @param {Array.<function>} steps Array of functions to invoke in parallel.
+ * @param {Array.<Function>} steps Array of functions to invoke in parallel.
  * @param {Object} logger Logger object.
  * @param {function()} callback Callback to invoke on success.
  * @param {function(string)} failureCallback Callback to invoke on failure.
  * @constructor
+ * @struct
  */
 function FunctionParallel(name, steps, logger, callback, failureCallback) {
   // Private variables hidden in closure
@@ -28,7 +29,6 @@ function FunctionParallel(name, steps, logger, callback, failureCallback) {
   this.onError = this.onError_.bind(this);
   this.apply = this.start.bind(this);
 }
-
 
 /**
  * Error handling function, which fires error callback.

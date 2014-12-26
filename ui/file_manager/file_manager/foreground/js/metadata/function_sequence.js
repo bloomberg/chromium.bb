@@ -8,8 +8,8 @@
  * @param {string} name Name of the function.
  * @param {Array} steps Array of functions to invoke in sequence.
  * @param {Object} logger Logger object.
- * @param {function} callback Callback to invoke on success.
- * @param {function} failureCallback Callback to invoke on failure.
+ * @param {function()} callback Callback to invoke on success.
+ * @param {function(string)} failureCallback Callback to invoke on failure.
  * @constructor
  */
 function FunctionSequence(name, steps, logger, callback, failureCallback) {
@@ -31,7 +31,7 @@ function FunctionSequence(name, steps, logger, callback, failureCallback) {
 /**
  * Sets new callback
  *
- * @param {function} callback New callback to call on succeed.
+ * @param {function()} callback New callback to call on succeed.
  */
 FunctionSequence.prototype.setCallback = function(callback) {
   this.callback_ = callback;
@@ -40,7 +40,7 @@ FunctionSequence.prototype.setCallback = function(callback) {
 /**
  * Sets new error callback
  *
- * @param {function} failureCallback New callback to call on failure.
+ * @param {function(string)} failureCallback New callback to call on failure.
  */
 FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
   this.failureCallback_ = failureCallback;
@@ -124,7 +124,7 @@ FunctionSequence.prototype.start = function(var_args) {
  * Add Function object mimics to FunctionSequence
  * @private
  * @param {*} obj Object.
- * @param {Array.*} args Arguments.
+ * @param {Array} args Arguments.
  */
 FunctionSequence.prototype.apply_ = function(obj, args) {
   this.start.apply(this, args);

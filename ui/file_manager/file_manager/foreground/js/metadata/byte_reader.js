@@ -310,7 +310,7 @@ ByteReader.prototype.validateRead = function(size, opt_end) {
  * @param {number} width Number of bytes to read.
  * @param {boolean=} opt_signed True if signed, false otherwise.
  * @param {number=} opt_end Maximum position to read from.
- * @return {string} Scalar value.
+ * @return {number} Scalar value.
  */
 ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
   var method = opt_signed ? 'getInt' : 'getUint';

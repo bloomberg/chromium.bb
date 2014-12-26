@@ -13,6 +13,8 @@
           'image_parsers.js',
           'mpeg_parser.js',
           'id3_parser.js',
+	  'function_sequence.js',
+	  'function_parallel.js',
 	],
 	'externs': [
           '../../../../externs/platform_worker.js',

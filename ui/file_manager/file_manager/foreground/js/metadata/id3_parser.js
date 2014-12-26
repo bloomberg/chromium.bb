@@ -14,11 +14,19 @@ importScripts(
 importScripts(
     FILE_MANAGER_HOST + '/foreground/js/metadata/function_parallel.js');
 
+/**
+ * ID3 parser.
+ *
+ * @param {MetadataDispatcher} parent A metadata dispatcher.
+ * @constructor
+ * @struct
+ * @extends {MetadataParser}
+ */
 function Id3Parser(parent) {
   MetadataParser.call(this, parent, 'id3', /\.(mp3)$/i);
 }
 
-Id3Parser.prototype = {__proto__: MetadataParser.prototype};
+Id3Parser.prototype.__proto__ = MetadataParser.prototype;
 
 /**
  * Reads synchsafe integer.
@@ -305,7 +313,9 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           this.nextStep();
         }
       ],
-      this);
+      this,
+      function() {},
+      function(error) {});
 
   var id3v2Parser = new FunctionSequence(
       'id3v2parser',
@@ -391,6 +401,10 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
             }
           }
 
+          /**
+           * @param {string} propName
+           * @param {...string} tags
+           */
           function extract(propName, tags) {
             for (var i = 1; i != arguments.length; i++) {
               var tag = id3v2[arguments[i]];
@@ -412,7 +426,9 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           this.nextStep();
         }
       ],
-      this);
+      this,
+      function() {},
+      function(error) {});
 
   var metadataParser = new FunctionParallel(
       'mp3metadataParser',
