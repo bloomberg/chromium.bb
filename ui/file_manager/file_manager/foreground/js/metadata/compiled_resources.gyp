@@ -10,6 +10,7 @@
           'metadata_parser.js',
           'byte_reader.js',
           'exif_parser.js',
+          'exif_constants.js',
           'image_parsers.js',
           'mpeg_parser.js',
           'id3_parser.js',

@@ -62,6 +62,7 @@
           '../../file_manager/foreground/js/metrics_base.js',
           '../../file_manager/foreground/js/metrics.js',
           '../../file_manager/foreground/js/metadata/metadata_cache.js',
+          '../../file_manager/foreground/js/metadata/exif_constants.js',
           '../../file_manager/foreground/js/mouse_inactivity_watcher.js',
           '../../file_manager/foreground/js/share_client.js',
           '../../file_manager/foreground/js/thumbnail_loader.js',
