@@ -515,6 +515,14 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 
             var userProperties = userPropertyDataDump(treeItem);
             var value = prefix + expander + beautify(treeItem.listItemElement) + userProperties;
+            if (treeItem.shadowHostToolbar) {
+                value = prefix + expander;
+                for (var button of treeItem.buttons) {
+                    var toggled = button.disabled;
+                    var name = (toggled ? "<" : "") + button.textContent + (toggled ? ">" : "");
+                    value += name + " ";
+                }
+            }
             if (resultsArray)
                 resultsArray.push(value);
             else

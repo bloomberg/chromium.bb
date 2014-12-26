@@ -19,9 +19,9 @@ Running: testCreateSecondShadowRoot
 ===== After second createShadowRoot =====
 - <div id="container">
     - #shadow-root
-          <div id="shadow-1"></div>
-    - #shadow-root
           <div id="shadow-2"></div>
+    - #shadow-root
+          <div id="shadow-1"></div>
       <div id="child"></div>
   </div>
 
