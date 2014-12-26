@@ -65,7 +65,7 @@ InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 InspectorTest._defaultWorkspaceEventHandler = function(event)
 {
     var uiSourceCode = event.data;
-    if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger && !uiSourceCode.url)
+    if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger && !uiSourceCode.networkURL())
         return;
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
         return;

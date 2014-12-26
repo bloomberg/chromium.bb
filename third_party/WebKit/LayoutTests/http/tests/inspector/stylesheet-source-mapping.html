@@ -28,9 +28,9 @@ function test()
     function locationsUpdated()
     {
         var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, 2, 3));
-        if (uiLocation.uiSourceCode.url.indexOf(".scss") === -1)
+        if (uiLocation.uiSourceCode.networkURL().indexOf(".scss") === -1)
             return;
-        finalMappedLocation = uiLocation.uiSourceCode.url + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
+        finalMappedLocation = uiLocation.uiSourceCode.networkURL() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
         join();
     }
 

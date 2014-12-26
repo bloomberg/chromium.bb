@@ -37,7 +37,7 @@ function test()
         var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
         InspectorTest.addResult("UISourceCode uri to url mappings:");
         for (var i = 0; i < uiSourceCodes.length; ++i)
-            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].url);
+            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].networkURL());
     }
 
     function fileSystemAdded(event)
@@ -57,7 +57,7 @@ function test()
             InspectorTest.addResult("Null uiLocation");
             return;
         }
-        InspectorTest.addResult(uiLocation.uiSourceCode.url + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
+        InspectorTest.addResult(uiLocation.uiSourceCode.networkURL() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
     }
 
     InspectorTest.createWorkspace();

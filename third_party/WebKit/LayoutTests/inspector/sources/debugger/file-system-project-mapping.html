@@ -92,7 +92,7 @@ function test()
                 var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
                 InspectorTest.addResult("UISourceCode uri to url mappings:");
                 for (var i = 0; i < uiSourceCodes.length; ++i)
-                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].url);
+                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].networkURL());
             }
 
             var fileSystemPath = "/var/www";
@@ -146,7 +146,7 @@ function test()
                 manager.addFiles(fileSystemPath, files);
                 dumpFileSystemUISourceCodesMappings();
 
-                InspectorTest.testFileSystemMapping.removeMappingForURL(networkUISourceCode.url);
+                InspectorTest.testFileSystemMapping.removeMappingForURL(networkUISourceCode.networkURL());
                 next();
             }
         },
@@ -292,7 +292,7 @@ function test()
             
             function didShowScriptSource(sourceFrame)
             {
-                var scriptURL = sourceFrame._uiSourceCode.url;
+                var scriptURL = sourceFrame._uiSourceCode.networkURL();
 
                 var fileContent = "function f()\n{\n    return 0;\n}\n";
                 var fileSystemPath = "/var/www";
@@ -451,14 +451,14 @@ function test()
             function renameNextFile()
             {
                 var uiSourceCode = uiSourceCodes[index];
-                oldURL = uiSourceCode.url;
+                oldURL = uiSourceCode.networkURL();
                 uiSourceCodes[index].rename("newName.js", fileRenamed);
             }
 
             function fileRenamed()
             {
                 var uiSourceCode = uiSourceCodes[index];
-                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + uiSourceCode.url);
+                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + uiSourceCode.networkURL());
                 ++index;
                 if (index < uiSourceCodes.length)
                     renameNextFile();

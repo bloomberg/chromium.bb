@@ -14,9 +14,9 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
 
         uiLocationToRawLocation: function(uiSourceCode, lineNumber)
         {
-            if (!InspectorTest.uiSourceCodes[uiSourceCode.url])
+            if (!InspectorTest.uiSourceCodes[uiSourceCode.networkURL()])
                 return null;
-            return new WebInspector.DebuggerModel.Location(target, uiSourceCode.url, lineNumber, 0);
+            return new WebInspector.DebuggerModel.Location(target, uiSourceCode.networkURL(), lineNumber, 0);
         },
 
         isIdentity: function()
@@ -225,7 +225,7 @@ InspectorTest.addScript = function(target, breakpointManager, url)
     var uiSourceCodes = breakpointManager._workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Debugger);
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
-        if (uiSourceCode.url === url) {
+        if (uiSourceCode.networkURL() === url) {
             breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);
             InspectorTest.uiSourceCodes[url] = uiSourceCode;
             return uiSourceCode;
@@ -337,7 +337,7 @@ InspectorTest.dumpBreakpointLocations = function(breakpointManager)
         locations.sort(function(a, b) {
             return a.lineNumber - b.lineNumber;
         });
-        InspectorTest.addResult("    UISourceCode (url='" + uiSourceCode.url + "', uri='" + uiSourceCode.uri() + "')");
+        InspectorTest.addResult("    UISourceCode (url='" + uiSourceCode.networkURL() + "', uri='" + uiSourceCode.uri() + "')");
         for (var i = 0; i < locations.length; ++i)
             InspectorTest.addResult("      Location: (" + locations[i].lineNumber + ", " + locations[i].columnNumber + ")");
     }

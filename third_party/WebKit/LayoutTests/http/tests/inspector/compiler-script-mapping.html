@@ -80,13 +80,13 @@ function test()
     function uiSourceCodeAdded(event)
     {
         var uiSourceCode = event.data;
-        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + uiSourceCode.url);
+        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + uiSourceCode.networkURL());
     }
 
     function uiSourceCodeRemoved(event)
     {
         var uiSourceCode = event.data;
-        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + uiSourceCode.url);
+        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + uiSourceCode.networkURL());
     }
 
     InspectorTest.runTestSuite([
@@ -280,7 +280,7 @@ function test()
 
             function firstUISourceCodeAdded(uiSourceCode)
             {
-                if (!uiSourceCode.url) {
+                if (!uiSourceCode.networkURL()) {
                     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
                     return;
                 }
@@ -289,7 +289,7 @@ function test()
 
             function secondUISourceCodeAdded(uiSourceCode)
             {
-                if (!uiSourceCode.url) {
+                if (!uiSourceCode.networkURL()) {
                     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
                     return;
                 }
