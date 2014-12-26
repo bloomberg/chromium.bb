@@ -17,3 +17,6 @@ crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
+
+crbug.com/445160 [ Linux ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass Crash ]
+crbug.com/445160 [ Linux ] virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ Pass Crash ]
