@@ -5,16 +5,10 @@
 #ifndef AnimationPlayerEvent_h
 #define AnimationPlayerEvent_h
 
+#include "core/events/AnimationPlayerEventInit.h"
 #include "core/events/Event.h"
 
 namespace blink {
-
-struct AnimationPlayerEventInit : public EventInit {
-    AnimationPlayerEventInit();
-
-    double currentTime;
-    double timelineTime;
-};
 
 class AnimationPlayerEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

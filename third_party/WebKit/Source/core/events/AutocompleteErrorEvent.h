@@ -25,13 +25,10 @@
 #ifndef AutocompleteErrorEvent_h
 #define AutocompleteErrorEvent_h
 
+#include "core/events/AutocompleteErrorEventInit.h"
 #include "core/events/Event.h"
 
 namespace blink {
-
-struct AutocompleteErrorEventInit : public EventInit {
-    String reason;
-};
 
 class AutocompleteErrorEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
@@ -66,7 +63,10 @@ private:
 
     AutocompleteErrorEvent(const AtomicString& eventType, const AutocompleteErrorEventInit& initializer)
         : Event(eventType, initializer)
-        , m_reason(initializer.reason) { }
+    {
+        if (initializer.hasReason())
+            m_reason = initializer.reason();
+    }
 
     String m_reason;
 };

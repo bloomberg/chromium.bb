@@ -28,12 +28,6 @@
 
 namespace blink {
 
-WebKitAnimationEventInit::WebKitAnimationEventInit()
-    : animationName()
-    , elapsedTime(0.0)
-{
-}
-
 WebKitAnimationEvent::WebKitAnimationEvent()
     : m_elapsedTime(0.0)
 {
@@ -41,9 +35,12 @@ WebKitAnimationEvent::WebKitAnimationEvent()
 
 WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const WebKitAnimationEventInit& initializer)
     : Event(type, initializer)
-    , m_animationName(initializer.animationName)
-    , m_elapsedTime(initializer.elapsedTime)
+    , m_elapsedTime(0.0)
 {
+    if (initializer.hasAnimationName())
+        m_animationName = initializer.animationName();
+    if (initializer.hasElapsedTime())
+        m_elapsedTime = initializer.elapsedTime();
 }
 
 WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)

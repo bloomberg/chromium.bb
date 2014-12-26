@@ -6,13 +6,9 @@
 #define RelatedEvent_h
 
 #include "core/events/Event.h"
+#include "core/events/RelatedEventInit.h"
 
 namespace blink {
-
-struct RelatedEventInit : public EventInit {
-    RelatedEventInit();
-    RefPtrWillBeMember<EventTarget> relatedTarget;
-};
 
 class RelatedEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

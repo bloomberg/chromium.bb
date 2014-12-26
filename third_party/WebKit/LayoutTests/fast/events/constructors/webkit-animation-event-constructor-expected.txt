@@ -13,7 +13,7 @@ PASS new WebKitAnimationEvent('eventType', { cancelable: false }).cancelable is 
 PASS new WebKitAnimationEvent('eventType', { cancelable: true }).cancelable is true
 PASS new WebKitAnimationEvent('eventType', { animationName: 'doremi' }).animationName is "doremi"
 PASS new WebKitAnimationEvent('eventType', { animationName: '' }).animationName is ""
-PASS new WebKitAnimationEvent('eventType', { animationName: undefined }).animationName is "undefined"
+PASS new WebKitAnimationEvent('eventType', { animationName: undefined }).animationName is ""
 PASS new WebKitAnimationEvent('eventType', { animationName: null }).animationName is "null"
 PASS new WebKitAnimationEvent('eventType', { animationName: false }).animationName is "false"
 PASS new WebKitAnimationEvent('eventType', { animationName: true }).animationName is "true"
@@ -31,7 +31,7 @@ PASS new WebKitAnimationEvent('eventType', { elapsedTime: 18446744073709551615 }
 PASS new WebKitAnimationEvent('eventType', { elapsedTime: NaN }).elapsedTime is NaN
 PASS new WebKitAnimationEvent('eventType', { elapsedTime: Infinity }).elapsedTime is Infinity
 PASS new WebKitAnimationEvent('eventType', { elapsedTime: -Infinity }).elapsedTime is -Infinity
-PASS new WebKitAnimationEvent('eventType', { elapsedTime: undefined }).elapsedTime is NaN
+PASS new WebKitAnimationEvent('eventType', { elapsedTime: undefined }).elapsedTime is 0
 PASS new WebKitAnimationEvent('eventType', { elapsedTime: null }).elapsedTime is 0
 PASS new WebKitAnimationEvent('eventType', { elapsedTime: false }).elapsedTime is 0
 PASS new WebKitAnimationEvent('eventType', { elapsedTime: true }).elapsedTime is 1

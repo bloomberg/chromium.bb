@@ -28,16 +28,9 @@
 #define TransitionEvent_h
 
 #include "core/events/Event.h"
+#include "core/events/TransitionEventInit.h"
 
 namespace blink {
-
-struct TransitionEventInit : public EventInit {
-    TransitionEventInit();
-
-    String propertyName;
-    double elapsedTime;
-    String pseudoElement;
-};
 
 class TransitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

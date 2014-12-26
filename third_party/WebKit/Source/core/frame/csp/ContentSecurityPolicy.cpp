@@ -626,23 +626,23 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
         // If this load was blocked via 'frame-ancestors', then the URL of |document| has not yet
         // been initialized. In this case, we'll set both 'documentURI' and 'blockedURI' to the
         // blocked document's URL.
-        init.documentURI = blockedURL.string();
-        init.blockedURI = blockedURL.string();
+        init.setDocumentURI(blockedURL.string());
+        init.setBlockedURI(blockedURL.string());
     } else {
-        init.documentURI = document->url().string();
-        init.blockedURI = stripURLForUseInReport(document, blockedURL);
+        init.setDocumentURI(document->url().string());
+        init.setBlockedURI(stripURLForUseInReport(document, blockedURL));
     }
-    init.referrer = document->referrer();
-    init.violatedDirective = directiveText;
-    init.effectiveDirective = effectiveDirective;
-    init.originalPolicy = header;
-    init.sourceFile = String();
-    init.lineNumber = 0;
-    init.columnNumber = 0;
-    init.statusCode = 0;
+    init.setReferrer(document->referrer());
+    init.setViolatedDirective(directiveText);
+    init.setEffectiveDirective(effectiveDirective);
+    init.setOriginalPolicy(header);
+    init.setSourceFile(String());
+    init.setLineNumber(0);
+    init.setColumnNumber(0);
+    init.setStatusCode(0);
 
     if (!SecurityOrigin::isSecure(document->url()) && document->loader())
-        init.statusCode = document->loader()->response().httpStatusCode();
+        init.setStatusCode(document->loader()->response().httpStatusCode());
 
     RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(1, false);
     if (!stack)
@@ -652,9 +652,9 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
 
     if (callFrame.lineNumber()) {
         KURL source = KURL(ParsedURLString, callFrame.sourceURL());
-        init.sourceFile = stripURLForUseInReport(document, source);
-        init.lineNumber = callFrame.lineNumber();
-        init.columnNumber = callFrame.columnNumber();
+        init.setSourceFile(stripURLForUseInReport(document, source));
+        init.setLineNumber(callFrame.lineNumber());
+        init.setColumnNumber(callFrame.columnNumber());
     }
 }
 
@@ -690,18 +690,18 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     // harmless information.
 
     RefPtr<JSONObject> cspReport = JSONObject::create();
-    cspReport->setString("document-uri", violationData.documentURI);
-    cspReport->setString("referrer", violationData.referrer);
-    cspReport->setString("violated-directive", violationData.violatedDirective);
-    cspReport->setString("effective-directive", violationData.effectiveDirective);
-    cspReport->setString("original-policy", violationData.originalPolicy);
-    cspReport->setString("blocked-uri", violationData.blockedURI);
-    if (!violationData.sourceFile.isEmpty() && violationData.lineNumber) {
-        cspReport->setString("source-file", violationData.sourceFile);
-        cspReport->setNumber("line-number", violationData.lineNumber);
-        cspReport->setNumber("column-number", violationData.columnNumber);
+    cspReport->setString("document-uri", violationData.documentURI());
+    cspReport->setString("referrer", violationData.referrer());
+    cspReport->setString("violated-directive", violationData.violatedDirective());
+    cspReport->setString("effective-directive", violationData.effectiveDirective());
+    cspReport->setString("original-policy", violationData.originalPolicy());
+    cspReport->setString("blocked-uri", violationData.blockedURI());
+    if (!violationData.sourceFile().isEmpty() && violationData.lineNumber()) {
+        cspReport->setString("source-file", violationData.sourceFile());
+        cspReport->setNumber("line-number", violationData.lineNumber());
+        cspReport->setNumber("column-number", violationData.columnNumber());
     }
-    cspReport->setNumber("status-code", violationData.statusCode);
+    cspReport->setNumber("status-code", violationData.statusCode());
 
     RefPtr<JSONObject> reportObject = JSONObject::create();
     reportObject->setObject("csp-report", cspReport.release());

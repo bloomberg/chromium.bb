@@ -4,10 +4,6 @@
 
 // https://html.spec.whatwg.org/#relatedevent
 
-[
-    Constructor(DOMString type, optional RelatedEventInit eventInitDict),
-    RuntimeEnabled=ContextMenu,
-] interface RelatedEvent : Event {
-    readonly attribute EventTarget? relatedTarget;
+dictionary RelatedEventInit : EventInit {
+    EventTarget? relatedTarget;
 };
-

@@ -17,9 +17,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in http://www.whatwg.org/specs/web-apps/current-work/multiframe/History.html#event-hashchange
+// https://html.spec.whatwg.org/multipage/browsers.html#hashchangeevent
 [
-    EventConstructor,
+    Constructor(DOMString type, optional HashChangeEventInit eventInitDict),
 ] interface HashChangeEvent : Event {
     void initHashChangeEvent([Default=Undefined] optional DOMString type,
                              [Default=Undefined] optional boolean canBubble,

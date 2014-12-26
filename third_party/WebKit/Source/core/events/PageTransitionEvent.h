@@ -27,14 +27,9 @@
 #define PageTransitionEvent_h
 
 #include "core/events/Event.h"
+#include "core/events/PageTransitionEventInit.h"
 
 namespace blink {
-
-struct PageTransitionEventInit : public EventInit {
-    PageTransitionEventInit();
-
-    bool persisted;
-};
 
 class PageTransitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

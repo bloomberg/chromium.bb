@@ -28,13 +28,6 @@
 
 namespace blink {
 
-ProgressEventInit::ProgressEventInit()
-    : lengthComputable(false)
-    , loaded(0)
-    , total(0)
-{
-}
-
 ProgressEvent::ProgressEvent()
     : m_lengthComputable(false)
     , m_loaded(0)
@@ -44,10 +37,16 @@ ProgressEvent::ProgressEvent()
 
 ProgressEvent::ProgressEvent(const AtomicString& type, const ProgressEventInit& initializer)
     : Event(type, initializer)
-    , m_lengthComputable(initializer.lengthComputable)
-    , m_loaded(initializer.loaded)
-    , m_total(initializer.total)
+    , m_lengthComputable(false)
+    , m_loaded(0)
+    , m_total(0)
 {
+    if (initializer.hasLengthComputable())
+        m_lengthComputable = initializer.lengthComputable();
+    if (initializer.hasLoaded())
+        m_loaded = initializer.loaded();
+    if (initializer.hasTotal())
+        m_total = initializer.total();
 }
 
 ProgressEvent::ProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)

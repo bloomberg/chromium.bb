@@ -22,18 +22,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://w3c.github.io/webappsec/specs/content-security-policy/#securitypolicyviolationevent-interface
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional SecurityPolicyViolationEventInit eventInitDict),
     RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures,
 ] interface SecurityPolicyViolationEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString documentURI;
-    [InitializedByEventConstructor] readonly attribute DOMString referrer;
-    [InitializedByEventConstructor] readonly attribute DOMString blockedURI;
-    [InitializedByEventConstructor] readonly attribute DOMString violatedDirective;
-    [InitializedByEventConstructor] readonly attribute DOMString effectiveDirective;
-    [InitializedByEventConstructor] readonly attribute DOMString originalPolicy;
-    [InitializedByEventConstructor] readonly attribute DOMString sourceFile;
-    [InitializedByEventConstructor] readonly attribute long      lineNumber;
-    [InitializedByEventConstructor] readonly attribute long      columnNumber;
-    [InitializedByEventConstructor] readonly attribute long      statusCode;
+    readonly attribute DOMString documentURI;
+    readonly attribute DOMString referrer;
+    readonly attribute DOMString blockedURI;
+    readonly attribute DOMString violatedDirective;
+    readonly attribute DOMString effectiveDirective;
+    readonly attribute DOMString originalPolicy;
+    readonly attribute DOMString sourceFile;
+    readonly attribute long      lineNumber;
+    readonly attribute long      columnNumber;
+    // FIXME: The spec says "statusCode" is a DOMString.
+    readonly attribute long      statusCode;
 };

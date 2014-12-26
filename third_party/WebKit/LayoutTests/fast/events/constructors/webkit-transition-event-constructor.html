@@ -29,7 +29,7 @@ shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: 'd
 shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: '' }).propertyName", "");
 
 // Non-strings.
-shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: undefined }).propertyName", "undefined");
+shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: undefined }).propertyName", "");
 shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: null }).propertyName", "null");
 shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: false }).propertyName", "false");
 shouldBeEqualToString("new WebKitTransitionEvent('eventType', { propertyName: true }).propertyName", "true");
@@ -57,7 +57,7 @@ shouldBeEqualToString("new WebKitTransitionEvent('eventType', { pseudoElement: '
 shouldBeEqualToString("new WebKitTransitionEvent('eventType', { pseudoElement: '' }).pseudoElement", "");
 
 // Non-numeric values.
-shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime", "NaN");
+shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime", "0");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: null }).elapsedTime", "0");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new WebKitTransitionEvent('eventType', { elapsedTime: true }).elapsedTime", "1");

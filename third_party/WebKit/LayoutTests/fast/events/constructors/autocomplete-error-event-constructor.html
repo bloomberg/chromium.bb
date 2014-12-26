@@ -28,7 +28,7 @@ if (!window.AutocompleteErrorEvent) {
     // reason is passed.
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: 'doremi' }).reason", "doremi");
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: '' }).reason", "");
-    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: undefined }).reason", "undefined");
+    shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: undefined }).reason", "");
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: null }).reason", "null");
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: false }).reason", "false");
     shouldBeEqualToString("new AutocompleteErrorEvent('eventType', { reason: true }).reason", "true");

@@ -14,7 +14,7 @@ PASS new WebKitTransitionEvent('eventType', { cancelable: false }).cancelable is
 PASS new WebKitTransitionEvent('eventType', { cancelable: true }).cancelable is true
 PASS new WebKitTransitionEvent('eventType', { propertyName: 'doremi' }).propertyName is "doremi"
 PASS new WebKitTransitionEvent('eventType', { propertyName: '' }).propertyName is ""
-PASS new WebKitTransitionEvent('eventType', { propertyName: undefined }).propertyName is "undefined"
+PASS new WebKitTransitionEvent('eventType', { propertyName: undefined }).propertyName is ""
 PASS new WebKitTransitionEvent('eventType', { propertyName: null }).propertyName is "null"
 PASS new WebKitTransitionEvent('eventType', { propertyName: false }).propertyName is "false"
 PASS new WebKitTransitionEvent('eventType', { propertyName: true }).propertyName is "true"
@@ -34,7 +34,7 @@ PASS new WebKitTransitionEvent('eventType', { elapsedTime: Infinity }).elapsedTi
 PASS new WebKitTransitionEvent('eventType', { elapsedTime: -Infinity }).elapsedTime is -Infinity
 PASS new WebKitTransitionEvent('eventType', { pseudoElement: '::before' }).pseudoElement is "::before"
 PASS new WebKitTransitionEvent('eventType', { pseudoElement: '' }).pseudoElement is ""
-PASS new WebKitTransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime is NaN
+PASS new WebKitTransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime is 0
 PASS new WebKitTransitionEvent('eventType', { elapsedTime: null }).elapsedTime is 0
 PASS new WebKitTransitionEvent('eventType', { elapsedTime: false }).elapsedTime is 0
 PASS new WebKitTransitionEvent('eventType', { elapsedTime: true }).elapsedTime is 1

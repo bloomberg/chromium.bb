@@ -28,13 +28,6 @@
 
 namespace blink {
 
-OverflowEventInit::OverflowEventInit()
-    : orient(0)
-    , horizontalOverflow(false)
-    , verticalOverflow(false)
-{
-}
-
 OverflowEvent::OverflowEvent()
     : Event(EventTypeNames::overflowchanged, false, false)
     , m_orient(VERTICAL)
@@ -60,10 +53,16 @@ OverflowEvent::OverflowEvent(bool horizontalOverflowChanged, bool horizontalOver
 
 OverflowEvent::OverflowEvent(const AtomicString& type, const OverflowEventInit& initializer)
     : Event(type, initializer)
-    , m_orient(initializer.orient)
-    , m_horizontalOverflow(initializer.horizontalOverflow)
-    , m_verticalOverflow(initializer.verticalOverflow)
+    , m_orient(0)
+    , m_horizontalOverflow(false)
+    , m_verticalOverflow(false)
 {
+    if (initializer.hasOrient())
+        m_orient = initializer.orient();
+    if (initializer.hasHorizontalOverflow())
+        m_horizontalOverflow = initializer.horizontalOverflow();
+    if (initializer.hasVerticalOverflow())
+        m_verticalOverflow = initializer.verticalOverflow();
 }
 
 const AtomicString& OverflowEvent::interfaceName() const

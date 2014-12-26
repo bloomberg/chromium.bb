@@ -28,7 +28,7 @@ shouldBeEqualToString("new AnimationEvent('eventType', { animationName: 'doremi'
 shouldBeEqualToString("new AnimationEvent('eventType', { animationName: '' }).animationName", "");
 
 // Non-strings.
-shouldBeEqualToString("new AnimationEvent('eventType', { animationName: undefined }).animationName", "undefined");
+shouldBeEqualToString("new AnimationEvent('eventType', { animationName: undefined }).animationName", "");
 shouldBeEqualToString("new AnimationEvent('eventType', { animationName: null }).animationName", "null");
 shouldBeEqualToString("new AnimationEvent('eventType', { animationName: false }).animationName", "false");
 shouldBeEqualToString("new AnimationEvent('eventType', { animationName: true }).animationName", "true");
@@ -51,7 +51,7 @@ shouldBe("new AnimationEvent('eventType', { elapsedTime: Infinity }).elapsedTime
 shouldBe("new AnimationEvent('eventType', { elapsedTime: -Infinity }).elapsedTime", "-Infinity");
 
 // Non-numeric values.
-shouldBe("new AnimationEvent('eventType', { elapsedTime: undefined }).elapsedTime", "NaN");
+shouldBe("new AnimationEvent('eventType', { elapsedTime: undefined }).elapsedTime", "0");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: null }).elapsedTime", "0");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: true }).elapsedTime", "1");

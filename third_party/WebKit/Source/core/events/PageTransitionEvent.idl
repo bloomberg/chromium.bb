@@ -23,9 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/multipage/browsers.html#pagetransitionevent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional PageTransitionEventInit eventInitDict),
 ] interface PageTransitionEvent : Event {
-    [InitializedByEventConstructor] readonly attribute boolean persisted;
+    readonly attribute boolean persisted;
 };
 

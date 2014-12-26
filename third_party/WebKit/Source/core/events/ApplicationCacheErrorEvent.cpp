@@ -40,11 +40,6 @@ static const String& errorReasonToString(blink::WebApplicationCacheHost::ErrorRe
     return emptyString();
 }
 
-ApplicationCacheErrorEventInit::ApplicationCacheErrorEventInit()
-    : status(0)
-{
-}
-
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent()
 {
 }
@@ -60,11 +55,16 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(blink::WebApplicationCach
 
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
     : Event(eventType, initializer)
-    , m_reason(initializer.reason)
-    , m_url(initializer.url)
-    , m_status(initializer.status)
-    , m_message(initializer.message)
+    , m_status(0)
 {
+    if (initializer.hasReason())
+        m_reason = initializer.reason();
+    if (initializer.hasURL())
+        m_url = initializer.url();
+    if (initializer.hasStatus())
+        m_status = initializer.status();
+    if (initializer.hasMessage())
+        m_message = initializer.message();
 }
 
 ApplicationCacheErrorEvent::~ApplicationCacheErrorEvent()

@@ -22,9 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/multipage/forms.html#the-autocompleteerrorevent-interface
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional AutocompleteErrorEventInit eventInitDict),
 ] interface AutocompleteErrorEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString reason;
+    readonly attribute DOMString reason;
 };
 

@@ -29,7 +29,7 @@ shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: 'doremi'
 shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: '' }).propertyName", "");
 
 // Non-strings.
-shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: undefined }).propertyName", "undefined");
+shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: undefined }).propertyName", "");
 shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: null }).propertyName", "null");
 shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: false }).propertyName", "false");
 shouldBeEqualToString("new TransitionEvent('eventType', { propertyName: true }).propertyName", "true");
@@ -57,7 +57,7 @@ shouldBeEqualToString("new TransitionEvent('eventType', { pseudoElement: '::befo
 shouldBeEqualToString("new TransitionEvent('eventType', { pseudoElement: '' }).pseudoElement", "");
 
 // Non-numeric values.
-shouldBe("new TransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime", "NaN");
+shouldBe("new TransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime", "0");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: null }).elapsedTime", "0");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new TransitionEvent('eventType', { elapsedTime: true }).elapsedTime", "1");

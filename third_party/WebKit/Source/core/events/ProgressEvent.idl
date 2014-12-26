@@ -23,11 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/progress-events/#interface-progressevent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional ProgressEventInit eventInitDict),
 ] interface ProgressEvent : Event {
-    [InitializedByEventConstructor] readonly attribute boolean lengthComputable;
-    [InitializedByEventConstructor] readonly attribute unsigned long long loaded;
-    [InitializedByEventConstructor] readonly attribute unsigned long long total;
+    readonly attribute boolean lengthComputable;
+    readonly attribute unsigned long long loaded;
+    readonly attribute unsigned long long total;
 };
 

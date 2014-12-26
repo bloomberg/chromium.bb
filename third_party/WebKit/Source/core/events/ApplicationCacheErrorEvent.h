@@ -5,22 +5,12 @@
 #ifndef ApplicationCacheErrorEvent_h
 #define ApplicationCacheErrorEvent_h
 
+#include "core/events/ApplicationCacheErrorEventInit.h"
 #include "core/events/Event.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "public/platform/WebApplicationCacheHostClient.h"
 
 namespace blink {
-
-class ApplicationCacheErrorEvent;
-
-struct ApplicationCacheErrorEventInit : public EventInit {
-    ApplicationCacheErrorEventInit();
-
-    String reason;
-    String url;
-    int status;
-    String message;
-};
 
 class ApplicationCacheErrorEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

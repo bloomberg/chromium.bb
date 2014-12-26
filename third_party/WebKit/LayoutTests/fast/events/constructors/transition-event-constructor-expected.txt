@@ -14,7 +14,7 @@ PASS new TransitionEvent('eventType', { cancelable: false }).cancelable is false
 PASS new TransitionEvent('eventType', { cancelable: true }).cancelable is true
 PASS new TransitionEvent('eventType', { propertyName: 'doremi' }).propertyName is "doremi"
 PASS new TransitionEvent('eventType', { propertyName: '' }).propertyName is ""
-PASS new TransitionEvent('eventType', { propertyName: undefined }).propertyName is "undefined"
+PASS new TransitionEvent('eventType', { propertyName: undefined }).propertyName is ""
 PASS new TransitionEvent('eventType', { propertyName: null }).propertyName is "null"
 PASS new TransitionEvent('eventType', { propertyName: false }).propertyName is "false"
 PASS new TransitionEvent('eventType', { propertyName: true }).propertyName is "true"
@@ -34,7 +34,7 @@ PASS new TransitionEvent('eventType', { elapsedTime: Infinity }).elapsedTime is 
 PASS new TransitionEvent('eventType', { elapsedTime: -Infinity }).elapsedTime is -Infinity
 PASS new TransitionEvent('eventType', { pseudoElement: '::before' }).pseudoElement is "::before"
 PASS new TransitionEvent('eventType', { pseudoElement: '' }).pseudoElement is ""
-PASS new TransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime is NaN
+PASS new TransitionEvent('eventType', { elapsedTime: undefined }).elapsedTime is 0
 PASS new TransitionEvent('eventType', { elapsedTime: null }).elapsedTime is 0
 PASS new TransitionEvent('eventType', { elapsedTime: false }).elapsedTime is 0
 PASS new TransitionEvent('eventType', { elapsedTime: true }).elapsedTime is 1

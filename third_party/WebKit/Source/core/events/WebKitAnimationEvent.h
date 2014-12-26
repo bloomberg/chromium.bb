@@ -27,18 +27,9 @@
 #define WebKitAnimationEvent_h
 
 #include "core/events/Event.h"
+#include "core/events/WebKitAnimationEventInit.h"
 
 namespace blink {
-
-// FIXME : This class has a WebKit prefix on purpose so we can use the EventAliases system. When the
-// runtime flag of unprefixed animation will be removed we can rename that class and do the same as
-// the CSS Transitions.
-struct WebKitAnimationEventInit : public EventInit {
-    WebKitAnimationEventInit();
-
-    String animationName;
-    double elapsedTime;
-};
 
 class WebKitAnimationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

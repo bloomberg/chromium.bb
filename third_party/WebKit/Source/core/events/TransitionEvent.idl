@@ -24,11 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/csswg/css-transitions/#Events-TransitionEvent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional TransitionEventInit eventInitDict),
 ] interface TransitionEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString propertyName;
-    [InitializedByEventConstructor] readonly attribute double elapsedTime;
-    [InitializedByEventConstructor] readonly attribute DOMString pseudoElement;
+    readonly attribute DOMString propertyName;
+    readonly attribute double elapsedTime;
+    readonly attribute DOMString pseudoElement;
 };
 

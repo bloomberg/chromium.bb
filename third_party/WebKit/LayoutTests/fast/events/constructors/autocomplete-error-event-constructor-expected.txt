@@ -12,7 +12,7 @@ PASS new AutocompleteErrorEvent('eventType', { cancelable: false }).cancelable i
 PASS new AutocompleteErrorEvent('eventType', { cancelable: true }).cancelable is true
 PASS new AutocompleteErrorEvent('eventType', { reason: 'doremi' }).reason is "doremi"
 PASS new AutocompleteErrorEvent('eventType', { reason: '' }).reason is ""
-PASS new AutocompleteErrorEvent('eventType', { reason: undefined }).reason is "undefined"
+PASS new AutocompleteErrorEvent('eventType', { reason: undefined }).reason is ""
 PASS new AutocompleteErrorEvent('eventType', { reason: null }).reason is "null"
 PASS new AutocompleteErrorEvent('eventType', { reason: false }).reason is "false"
 PASS new AutocompleteErrorEvent('eventType', { reason: true }).reason is "true"

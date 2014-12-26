@@ -27,16 +27,9 @@
 #define ProgressEvent_h
 
 #include "core/events/Event.h"
+#include "core/events/ProgressEventInit.h"
 
 namespace blink {
-
-struct ProgressEventInit : public EventInit {
-    ProgressEventInit();
-
-    bool lengthComputable;
-    unsigned long long loaded;
-    unsigned long long total;
-};
 
 class ProgressEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
