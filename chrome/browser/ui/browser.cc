@@ -2419,8 +2419,8 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     return;
   }
 
-  bool shouldAnimate = reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE;
-  window_->BookmarkBarStateChanged(shouldAnimate ?
+  bool should_animate = reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE;
+  window_->BookmarkBarStateChanged(should_animate ?
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
