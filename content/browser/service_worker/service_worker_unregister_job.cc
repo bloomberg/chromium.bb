@@ -43,13 +43,14 @@ void ServiceWorkerUnregisterJob::Abort() {
   CompleteInternal(SERVICE_WORKER_ERROR_ABORT);
 }
 
-bool ServiceWorkerUnregisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
+bool ServiceWorkerUnregisterJob::Equals(
+    ServiceWorkerRegisterJobBase* job) const {
   if (job->GetType() != GetType())
     return false;
   return static_cast<ServiceWorkerUnregisterJob*>(job)->pattern_ == pattern_;
 }
 
-RegistrationJobType ServiceWorkerUnregisterJob::GetType() {
+RegistrationJobType ServiceWorkerUnregisterJob::GetType() const {
   return UNREGISTRATION_JOB;
 }
 

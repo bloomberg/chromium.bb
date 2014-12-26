@@ -51,11 +51,20 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
     JobQueue();
     ~JobQueue();
 
-    // Adds a job to the queue. If an identical job is already in the queue, no
-    // new job is added. Returns the job in the queue, regardless of whether it
-    // was newly added.
+    // Adds a job to the queue. If an identical job is already at the end of the
+    // queue, no new job is added. Returns the job in the queue, regardless of
+    // whether it was newly added.
     ServiceWorkerRegisterJobBase* Push(
         scoped_ptr<ServiceWorkerRegisterJobBase> job);
+
+    // Dooms the installing worker of the running register/update job if a
+    // register/update job is scheduled to run after it. This corresponds to
+    // the "Terminate installing worker" steps at the beginning of the spec's
+    // [[Update]] and [[Install]] algorithms.
+    void DoomInstallingWorkerIfNeeded();
+
+    // Starts the first job in the queue.
+    void StartOneJob();
 
     // Removes a job from the queue.
     void Pop(ServiceWorkerRegisterJobBase* job);

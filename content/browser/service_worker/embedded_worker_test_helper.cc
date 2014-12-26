@@ -139,6 +139,9 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
 void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
                                               int request_id,
                                               int active_version_id) {
+  // The installing worker may have been doomed and terminated.
+  if (!registry()->GetWorker(embedded_worker_id))
+    return;
   SimulateSend(
       new ServiceWorkerHostMsg_InstallEventFinished(
           embedded_worker_id, request_id,

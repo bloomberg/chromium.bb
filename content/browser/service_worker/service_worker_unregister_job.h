@@ -41,8 +41,8 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;
   void Abort() override;
-  bool Equals(ServiceWorkerRegisterJobBase* job) override;
-  RegistrationJobType GetType() override;
+  bool Equals(ServiceWorkerRegisterJobBase* job) const override;
+  RegistrationJobType GetType() const override;
 
  private:
   void OnRegistrationFound(

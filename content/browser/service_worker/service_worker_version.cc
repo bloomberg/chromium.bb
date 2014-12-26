@@ -677,7 +677,9 @@ void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   DCHECK(cache_listener_.get());
   ScheduleStopWorker();
+
   // Fire all start callbacks.
+  scoped_refptr<ServiceWorkerVersion> protect(this);
   RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStarted(this));
 }
@@ -908,7 +910,9 @@ void ServiceWorkerVersion::OnActivateEventFinished(
 void ServiceWorkerVersion::OnInstallEventFinished(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  DCHECK_EQ(INSTALLING, status()) << status();
+  // Status is REDUNDANT if the worker was doomed while handling the install
+  // event, and finished handling before being terminated.
+  DCHECK(status() == INSTALLING || status() == REDUNDANT) << status();
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnInstallEventFinished");
 

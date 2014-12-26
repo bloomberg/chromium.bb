@@ -63,8 +63,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;
   void Abort() override;
-  bool Equals(ServiceWorkerRegisterJobBase* job) override;
-  RegistrationJobType GetType() override;
+  bool Equals(ServiceWorkerRegisterJobBase* job) const override;
+  RegistrationJobType GetType() const override;
+
+  void DoomInstallingWorker();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
@@ -157,6 +159,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   std::vector<RegistrationCallback> callbacks_;
   Phase phase_;
   Internal internal_;
+  bool doom_installing_worker_;
   bool is_promise_resolved_;
   ServiceWorkerStatusCode promise_resolved_status_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;

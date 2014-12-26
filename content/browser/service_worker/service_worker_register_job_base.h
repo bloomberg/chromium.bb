@@ -28,10 +28,10 @@ class ServiceWorkerRegisterJobBase {
   // collapsing them together in a ServiceWorkerJobCoordinator queue.
   // Registration jobs are equal if they are for the same pattern and script
   // URL; unregistration jobs are equal if they are for the same pattern.
-  virtual bool Equals(ServiceWorkerRegisterJobBase* job) = 0;
+  virtual bool Equals(ServiceWorkerRegisterJobBase* job) const = 0;
 
   // Returns the type of this job.
-  virtual RegistrationJobType GetType() = 0;
+  virtual RegistrationJobType GetType() const = 0;
 };
 
 }  // namespace content

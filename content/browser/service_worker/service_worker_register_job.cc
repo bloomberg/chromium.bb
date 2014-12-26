@@ -35,9 +35,11 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       pattern_(pattern),
       script_url_(script_url),
       phase_(INITIAL),
+      doom_installing_worker_(false),
       is_promise_resolved_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -47,6 +49,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       pattern_(registration->pattern()),
       script_url_(registration->GetNewestVersion()->script_url()),
       phase_(INITIAL),
+      doom_installing_worker_(false),
       is_promise_resolved_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {
@@ -100,7 +103,7 @@ void ServiceWorkerRegisterJob::Abort() {
   // the jobs from the queue.
 }
 
-bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
+bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
   if (job->GetType() != GetType())
     return false;
   ServiceWorkerRegisterJob* register_job =
@@ -109,8 +112,14 @@ bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
          register_job->script_url_ == script_url_;
 }
 
-RegistrationJobType ServiceWorkerRegisterJob::GetType() {
+RegistrationJobType ServiceWorkerRegisterJob::GetType() const {
   return job_type_;
+}
+
+void ServiceWorkerRegisterJob::DoomInstallingWorker() {
+  doom_installing_worker_ = true;
+  if (phase_ == INSTALL)
+    Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
 ServiceWorkerRegisterJob::Internal::Internal() {}
@@ -382,6 +391,12 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
       -1,
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
                  weak_factory_.GetWeakPtr()));
+
+  // A subsequent registration job may terminate our installing worker. It can
+  // only do so after we've started the worker and dispatched the install
+  // event, as those are atomic substeps in the [[Install]] algorithm.
+  if (doom_installing_worker_)
+    Complete(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
 void ServiceWorkerRegisterJob::OnInstallFinished(
@@ -473,6 +488,7 @@ void ServiceWorkerRegisterJob::ResolvePromise(
     ServiceWorkerStatusCode status,
     ServiceWorkerRegistration* registration) {
   DCHECK(!is_promise_resolved_);
+
   is_promise_resolved_ = true;
   promise_resolved_status_ = status;
   promise_resolved_registration_ = registration;
