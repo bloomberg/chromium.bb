@@ -44,7 +44,7 @@ public:
 private:
     void performBasicFetch();
     void performNetworkError(const String& message);
-    void performHTTPFetch();
+    void performHTTPFetch(bool corsFlag, bool corsPreflightFlag);
     void failed(const String& message);
     void notifyFinished();
 
@@ -54,8 +54,6 @@ private:
     Persistent<FetchRequestData> m_request;
     Persistent<BodyStreamBuffer> m_responseBuffer;
     RefPtr<ThreadableLoader> m_loader;
-    bool m_corsFlag;
-    bool m_corsPreflightFlag;
     bool m_failed;
 };
 
@@ -64,8 +62,6 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
     , m_request(request->createCopy())
-    , m_corsFlag(false)
-    , m_corsPreflightFlag(false)
     , m_failed(false)
 {
 }
@@ -184,7 +180,8 @@ void FetchManager::Loader::start()
     // "- |request|'s url's scheme is 'data' and |request|'s same-origin data
     //    URL flag is set"
     // "- |request|'s url's scheme is 'about'"
-    if ((SecurityOrigin::create(m_request->url())->isSameSchemeHostPort(m_request->origin().get()) && !m_corsFlag)
+    // Note we don't support to call this method with |CORS flag|.
+    if ((SecurityOrigin::create(m_request->url())->isSameSchemeHostPort(m_request->origin().get()))
         || (m_request->url().protocolIsData() && m_request->sameOriginDataURLFlag())
         || (m_request->url().protocolIsAbout())) {
         // "The result of performing a basic fetch using request."
@@ -227,9 +224,7 @@ void FetchManager::Loader::start()
         m_request->setResponseTainting(FetchRequestData::CORSTainting);
         // "The result of performing an HTTP fetch using |request| with the
         // |CORS flag| and |CORS preflight flag| set."
-        m_corsFlag = true;
-        m_corsPreflightFlag = true;
-        performHTTPFetch();
+        performHTTPFetch(true, true);
         return;
     }
 
@@ -238,9 +233,7 @@ void FetchManager::Loader::start()
     m_request->setResponseTainting(FetchRequestData::CORSTainting);
     // "The result of performing an HTTP fetch using |request| with the
     // |CORS flag| set."
-    m_corsFlag = true;
-    m_corsPreflightFlag = false;
-    performHTTPFetch();
+    performHTTPFetch(true, false);
 }
 
 void FetchManager::Loader::cleanup()
@@ -260,9 +253,7 @@ void FetchManager::Loader::performBasicFetch()
     // scheme, and run the associated steps:"
     if (m_request->url().protocolIsInHTTPFamily()) {
         // "Return the result of performing an HTTP fetch using |request|."
-        m_corsFlag = false;
-        m_corsPreflightFlag = false;
-        performHTTPFetch();
+        performHTTPFetch(false, false);
     } else {
         // FIXME: implement other protocols.
         performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme \"" + m_request->url().protocol() + "\" is not supported.");
@@ -274,7 +265,7 @@ void FetchManager::Loader::performNetworkError(const String& message)
     failed(message);
 }
 
-void FetchManager::Loader::performHTTPFetch()
+void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFlag)
 {
     ASSERT(m_request->url().protocolIsInHTTPFamily());
     // CORS preflight fetch procedure is implemented inside DocumentThreadableLoader.
@@ -321,7 +312,7 @@ void FetchManager::Loader::performHTTPFetch()
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
     if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude
-        || (m_request->credentials() == WebURLRequest::FetchCredentialsModeSameOrigin && !m_corsFlag)) {
+        || (m_request->credentials() == WebURLRequest::FetchCredentialsModeSameOrigin && !corsFlag)) {
         resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
     }
     if (m_request->credentials() == WebURLRequest::FetchCredentialsModeInclude)
@@ -330,7 +321,7 @@ void FetchManager::Loader::performHTTPFetch()
 
     ThreadableLoaderOptions threadableLoaderOptions;
     threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
-    if (m_corsPreflightFlag)
+    if (corsPreflightFlag)
         threadableLoaderOptions.preflightPolicy = ForcePreflight;
     switch (m_request->mode()) {
     case WebURLRequest::FetchRequestModeSameOrigin:
