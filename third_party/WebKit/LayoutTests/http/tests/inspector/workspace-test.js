@@ -4,6 +4,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 {
     WebInspector.settings.createSetting("fileSystemMapping", {}).set({});
     InspectorTest.testFileSystemMapping = new WebInspector.FileSystemMapping();
+    InspectorTest.testExcludedFolderManager = new WebInspector.ExcludedFolderManager();
     InspectorTest.testFileSystemMapping._fileSystemMappingSetting = new InspectorTest.MockSetting({});
     InspectorTest.testFileSystemMapping._excludedFoldersSetting = new InspectorTest.MockSetting({});
 

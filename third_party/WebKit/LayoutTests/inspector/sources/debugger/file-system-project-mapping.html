@@ -74,7 +74,7 @@ function test()
         createWorkspaceWithTarget(callback, useRealTarget);
         function callback(target)
         {
-            manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+            manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
             var entry = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target);
             resourceScriptMapping = entry._resourceMapping;
             defaultScriptMapping = entry._defaultMapping;
@@ -370,7 +370,7 @@ function test()
                 InspectorTest.addResult("Adding file system.");
                 manager.addMockFileSystem(fileSystemPath);
                 InspectorTest.addResult("Adding exclusion pattern and excluded folder.");
-                InspectorTest.testFileSystemMapping.addExcludedFolder(fileSystemPath, "/html/");
+                InspectorTest.testExcludedFolderManager.addExcludedFolder(fileSystemPath, "/html/");
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
                 manager.addFiles(fileSystemPath, files);
                 dumpWorkspaceUISourceCodes();
@@ -378,6 +378,7 @@ function test()
                 InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
                 InspectorTest.testWorkspace.uiSourceCodes()[0].project().excludeFolder("/html2/");
                 dumpWorkspaceUISourceCodes();
+                InspectorTest.testExcludedFolderManager.removeExcludedFolder(fileSystemPath, "/html/");
                 next();
             }
         },

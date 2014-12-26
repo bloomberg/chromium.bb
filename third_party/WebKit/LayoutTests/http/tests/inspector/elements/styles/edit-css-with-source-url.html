@@ -24,8 +24,9 @@ function test()
     {
         InspectorTest.testFileSystemMapping = new WebInspector.FileSystemMapping();
         InspectorTest.testFileSystemMapping._fileSystemMappingSetting = new InspectorTest.MockSetting({});
+        InspectorTest.testExcludedFolderManager = new WebInspector.ExcludedFolderManager();
         WebInspector.workspace._fileSystemMapping = InspectorTest.testFileSystemMapping;
-        manager = InspectorTest.createIsolatedFileSystemManager(WebInspector.workspace, InspectorTest.testFileSystemMapping);
+        manager = InspectorTest.createIsolatedFileSystemManager(WebInspector.workspace);
     }
 
     InspectorTest.runTestSuite([

@@ -61,7 +61,7 @@ function test()
     }
 
     InspectorTest.createWorkspace();
-    manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+    manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
     var target = WebInspector.targetManager.mainTarget();
     cssModel = new WebInspector.CSSStyleModel(target, InspectorTest.testWorkspace);
     target.cssModel = cssModel;

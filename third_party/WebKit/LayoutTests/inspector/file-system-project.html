@@ -48,7 +48,7 @@ function test()
         function testFileSystems(next)
         {
             InspectorTest.createWorkspace();
-            var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+            var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
             var uiSourceCodes = [];
 
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 3);

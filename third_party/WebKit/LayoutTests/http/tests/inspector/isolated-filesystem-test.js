@@ -1,10 +1,10 @@
 var initialize_IsolatedFileSystemTest = function() {
 
-InspectorTest.createIsolatedFileSystemManager = function(workspace, fileSystemMapping)
+InspectorTest.createIsolatedFileSystemManager = function(workspace)
 {
     var manager = new MockIsolatedFileSystemManager();
     manager.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(manager, workspace);
-    manager.fileSystemMapping = fileSystemMapping;
+    manager.fileSystemMapping = InspectorTest.testFileSystemMapping;
     return manager;
 }
 
@@ -71,7 +71,7 @@ MockIsolatedFileSystem.prototype = {
             var isExcluded = false;
             for (var j = 0; j < files[i].length; ++j) {
                 if (files[i][j] === "/") {
-                    if (this._manager.mapping().isFileExcluded(this._path, files[i].substr(0, j + 1)))
+                    if (InspectorTest.testExcludedFolderManager.isFileExcluded(this._path, files[i].substr(0, j + 1)))
                         isExcluded = true;
                 }
             }
@@ -126,6 +126,11 @@ MockIsolatedFileSystemManager.prototype = {
     mapping: function()
     {
         return this.fileSystemMapping;
+    },
+
+    excludedFolderManager: function()
+    {
+        return InspectorTest.testExcludedFolderManager;
     },
 
     __proto__: WebInspector.Object.prototype
