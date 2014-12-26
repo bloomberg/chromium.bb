@@ -359,19 +359,25 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         responseObject->setRemotePort(response.remotePort());
     }
 
-    if (response.wasFetchedViaSPDY()) {
-        responseObject->setProtocol(TypeBuilder::Network::Response::Protocol::Spdy);
-    } else if (response.isHTTP()) {
-        ResourceResponse::HTTPVersion httpVersion = response.httpVersion();
-        if (httpVersion == ResourceResponse::HTTPVersion::HTTP_0_9)
-            responseObject->setProtocol(TypeBuilder::Network::Response::Protocol::Http09);
-        else if (httpVersion == ResourceResponse::HTTPVersion::HTTP_1_0)
-            responseObject->setProtocol(TypeBuilder::Network::Response::Protocol::Http10);
-        else if (httpVersion == ResourceResponse::HTTPVersion::HTTP_1_1)
-            responseObject->setProtocol(TypeBuilder::Network::Response::Protocol::Http11);
-        else
-            responseObject->setProtocol(TypeBuilder::Network::Response::Protocol::Unknown);
+    String protocol;
+    if (response.resourceLoadInfo())
+        protocol = response.resourceLoadInfo()->npnNegotiatedProtocol;
+    if (protocol.isEmpty() || protocol == "unknown") {
+        if (response.wasFetchedViaSPDY()) {
+            protocol = "spdy";
+        } else if (response.isHTTP()) {
+            protocol = "http";
+            if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTP_0_9)
+                protocol = "http/0.9";
+            else if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTP_1_0)
+                protocol = "http/1.0";
+            else if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTP_1_1)
+                protocol = "http/1.1";
+        } else {
+            protocol = response.url().protocol();
+        }
     }
+    responseObject->setProtocol(protocol);
 
     return responseObject;
 }
