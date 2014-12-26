@@ -26,7 +26,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   // loads the HTML, loads the accessibility tree, calls Dump(), then
   // compares the output to the expected result and has the test succeed
   // or fail based on the diff.
-  void RunTest(const base::FilePath::CharType* file_path);
+  void RunTest(const base::FilePath file_path, const char* file_dir);
 
  protected:
   //

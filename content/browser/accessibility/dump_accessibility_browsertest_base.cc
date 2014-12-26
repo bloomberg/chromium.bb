@@ -120,29 +120,20 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
 }
 
 void DumpAccessibilityTestBase::RunTest(
-    const base::FilePath::CharType* file_path) {
+    const base::FilePath file_path, const char* file_dir) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  // Setup test paths.
-  base::FilePath dir_test_data;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-  base::FilePath test_path(
-      dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
-  ASSERT_TRUE(base::PathExists(test_path))
-      << test_path.LossyDisplayName();
-
-  base::FilePath html_file = test_path.Append(base::FilePath(file_path));
   // Output the test path to help anyone who encounters a failure and needs
   // to know where to look.
-  printf("Testing: %s\n", html_file.MaybeAsASCII().c_str());
+  printf("Testing: %s\n", file_path.MaybeAsASCII().c_str());
 
   std::string html_contents;
-  base::ReadFileToString(html_file, &html_contents);
+  base::ReadFileToString(file_path, &html_contents);
 
   // Read the expected file.
   std::string expected_contents_raw;
   base::FilePath expected_file =
-    base::FilePath(html_file.RemoveExtension().value() +
+    base::FilePath(file_path.RemoveExtension().value() +
                    AccessibilityTreeFormatter::GetExpectedFileSuffix());
   base::ReadFileToString(expected_file, &expected_contents_raw);
 
@@ -164,8 +155,7 @@ void DumpAccessibilityTestBase::RunTest(
   // Load the page.
   base::string16 html_contents16;
   html_contents16 = base::UTF8ToUTF16(html_contents);
-  GURL url = GetTestUrl("accessibility",
-                        html_file.BaseName().MaybeAsASCII().c_str());
+  GURL url = GetTestUrl(file_dir, file_path.BaseName().MaybeAsASCII().c_str());
 
   // If there's a @WAIT-FOR directive, set up an accessibility notification
   // waiter that returns on any event; we'll stop when we get the text we're
@@ -235,7 +225,7 @@ void DumpAccessibilityTestBase::RunTest(
 
   if (!base::PathExists(expected_file)) {
     base::FilePath actual_file =
-        base::FilePath(html_file.RemoveExtension().value() +
+        base::FilePath(file_path.RemoveExtension().value() +
                        AccessibilityTreeFormatter::GetActualFileSuffix());
 
     EXPECT_TRUE(base::WriteFile(

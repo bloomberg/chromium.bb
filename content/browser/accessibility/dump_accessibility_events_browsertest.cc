@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_paths.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 
@@ -60,6 +62,7 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
   std::vector<std::string> Dump() override;
 
   void OnDiffFailed() override;
+  void RunEventTest(const base::FilePath::CharType* file_path);
 
  private:
   base::string16 initial_tree_;
@@ -131,17 +134,30 @@ void DumpAccessibilityEventsTest::OnDiffFailed() {
   printf("\n");
 }
 
+void DumpAccessibilityEventsTest::RunEventTest(
+    const base::FilePath::CharType* file_path) {
+  base::FilePath dir_test_data;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
+  base::FilePath test_path(
+      dir_test_data.AppendASCII("accessibility/event"));
+  ASSERT_TRUE(base::PathExists(test_path))
+      << test_path.LossyDisplayName();
+
+  base::FilePath event_file = test_path.Append(base::FilePath(file_path));
+  RunTest(event_file, "accessibility/event");
+}
+
 // TODO(dmazzoni): port these tests to run on all platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsCheckedStateChanged) {
-  RunTest(FILE_PATH_LITERAL("events-checked-state-changed.html"));
+  RunEventTest(FILE_PATH_LITERAL("events-checked-state-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsInputTypeTextValueChanged) {
-  RunTest(FILE_PATH_LITERAL("events-input-type-text-value-changed.html"));
+  RunEventTest(FILE_PATH_LITERAL("events-input-type-text-value-changed.html"));
 }
 
 #endif  // defined(OS_WIN)
