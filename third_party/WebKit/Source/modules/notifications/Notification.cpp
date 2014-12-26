@@ -163,6 +163,7 @@ void Notification::dispatchShowEvent()
 void Notification::dispatchClickEvent()
 {
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    ASSERT(executionContext());
     ScopedWindowFocusAllowedIndicator windowFocusAllowed(executionContext());
     dispatchEvent(Event::create(EventTypeNames::click));
 }
