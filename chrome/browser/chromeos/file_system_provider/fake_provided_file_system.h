@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -39,7 +40,7 @@ class RequestManager;
 
 // Path of a sample fake file, which is added to the fake file system by
 // default.
-extern const char kFakeFilePath[];
+extern const base::FilePath::CharType kFakeFilePath[];
 
 // Represents a file or a directory on a fake file system.
 struct FakeEntry {

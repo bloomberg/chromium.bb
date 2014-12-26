@@ -103,8 +103,7 @@ class FileSystemProviderFileStreamReader : public testing::Test {
         static_cast<FakeProvidedFileSystem*>(
             service->GetProvidedFileSystem(kExtensionId, kFileSystemId));
     ASSERT_TRUE(provided_file_system);
-    fake_file_ = provided_file_system->GetEntry(
-        base::FilePath::FromUTF8Unsafe(kFakeFilePath));
+    fake_file_ = provided_file_system->GetEntry(base::FilePath(kFakeFilePath));
     ASSERT_TRUE(fake_file_);
     const ProvidedFileSystemInfo& file_system_info =
         service->GetProvidedFileSystem(kExtensionId, kFileSystemId)
@@ -112,11 +111,11 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     const std::string mount_point_name =
         file_system_info.mount_path().BaseName().AsUTF8Unsafe();
 
-    file_url_ = CreateFileSystemURL(
-        mount_point_name, base::FilePath::FromUTF8Unsafe(kFakeFilePath + 1));
+    file_url_ = CreateFileSystemURL(mount_point_name,
+                                    base::FilePath(kFakeFilePath + 1));
     ASSERT_TRUE(file_url_.is_valid());
     wrong_file_url_ = CreateFileSystemURL(
-        mount_point_name, base::FilePath::FromUTF8Unsafe("im-not-here.txt"));
+        mount_point_name, base::FilePath(FILE_PATH_LITERAL("im-not-here.txt")));
     ASSERT_TRUE(wrong_file_url_.is_valid());
   }
 

@@ -27,7 +27,8 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kEntryPath[] = "/kitty/and/puppy/happy";
+const base::FilePath::CharType kEntryPath[] =
+    FILE_PATH_LITERAL("/kitty/and/puppy/happy");
 
 }  // namespace
 
@@ -53,10 +54,7 @@ TEST_F(FileSystemProviderOperationsRemoveWatcherTest, Execute) {
   util::StatusCallbackLog callback_log;
 
   RemoveWatcher remove_watcher(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -89,10 +87,7 @@ TEST_F(FileSystemProviderOperationsRemoveWatcherTest, Execute_NoListener) {
   util::StatusCallbackLog callback_log;
 
   RemoveWatcher remove_watcher(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -106,10 +101,7 @@ TEST_F(FileSystemProviderOperationsRemoveWatcherTest, OnSuccess) {
   util::StatusCallbackLog callback_log;
 
   RemoveWatcher remove_watcher(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -129,10 +121,7 @@ TEST_F(FileSystemProviderOperationsRemoveWatcherTest, OnError) {
   util::StatusCallbackLog callback_log;
 
   RemoveWatcher remove_watcher(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
+      NULL, file_system_info_, base::FilePath(kEntryPath), true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

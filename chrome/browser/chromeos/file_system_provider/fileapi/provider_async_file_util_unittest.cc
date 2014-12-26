@@ -144,13 +144,12 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     const std::string mount_point_name =
         file_system_info.mount_path().BaseName().AsUTF8Unsafe();
 
-    file_url_ =
-        CreateFileSystemURL(mount_point_name,
-                            base::FilePath::FromUTF8Unsafe(
-                                kFakeFilePath + 1 /* No leading slash. */));
+    file_url_ = CreateFileSystemURL(
+        mount_point_name,
+        base::FilePath(kFakeFilePath + 1 /* No leading slash. */));
     ASSERT_TRUE(file_url_.is_valid());
     directory_url_ = CreateFileSystemURL(
-        mount_point_name, base::FilePath::FromUTF8Unsafe("hello"));
+        mount_point_name, base::FilePath(FILE_PATH_LITERAL("hello")));
     ASSERT_TRUE(directory_url_.is_valid());
     root_url_ = CreateFileSystemURL(mount_point_name, base::FilePath());
     ASSERT_TRUE(root_url_.is_valid());

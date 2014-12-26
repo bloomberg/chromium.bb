@@ -119,7 +119,7 @@ bool FileSystemURLParser::Parse() {
     if (components.size() < 3)
       return false;
 
-    file_path_ = base::FilePath::FromUTF8Unsafe("/");
+    file_path_ = base::FilePath(FILE_PATH_LITERAL("/"));
     for (size_t i = 3; i < components.size(); ++i) {
       // TODO(mtomasz): This could be optimized, to avoid unnecessary copies.
       file_path_ = file_path_.Append(components[i]);
@@ -166,7 +166,7 @@ bool LocalPathParser::Parse() {
   // Strip the mount point path from the virtual path, to extract the file
   // path within the provided file system.
   file_system_ = file_system;
-  file_path_ = base::FilePath::FromUTF8Unsafe("/");
+  file_path_ = base::FilePath(FILE_PATH_LITERAL("/"));
   for (size_t i = 3; i < components.size(); ++i) {
     file_path_ = file_path_.Append(components[i]);
   }

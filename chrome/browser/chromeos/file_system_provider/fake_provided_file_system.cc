@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 
-#include "base/files/file.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/base/io_buffer.h"
 
@@ -21,7 +20,8 @@ const char kFakeFileMimeType[] = "text/plain";
 
 }  // namespace
 
-const char kFakeFilePath[] = "/hello.txt";
+const base::FilePath::CharType kFakeFilePath[] =
+    FILE_PATH_LITERAL("/hello.txt");
 
 FakeEntry::FakeEntry() {
 }
@@ -39,18 +39,13 @@ FakeProvidedFileSystem::FakeProvidedFileSystem(
     : file_system_info_(file_system_info),
       last_file_handle_(0),
       weak_ptr_factory_(this) {
-  AddEntry(
-      base::FilePath::FromUTF8Unsafe("/"), true, "", 0, base::Time(), "", "");
+  AddEntry(base::FilePath(FILE_PATH_LITERAL("/")), true, "", 0, base::Time(),
+           "", "");
 
   base::Time modification_time;
   DCHECK(base::Time::FromString(kFakeFileModificationTime, &modification_time));
-  AddEntry(base::FilePath::FromUTF8Unsafe(kFakeFilePath),
-           false,
-           kFakeFileName,
-           kFakeFileSize,
-           modification_time,
-           kFakeFileMimeType,
-           kFakeFileText);
+  AddEntry(base::FilePath(kFakeFilePath), false, kFakeFileName, kFakeFileSize,
+           modification_time, kFakeFileMimeType, kFakeFileText);
 }
 
 FakeProvidedFileSystem::~FakeProvidedFileSystem() {}

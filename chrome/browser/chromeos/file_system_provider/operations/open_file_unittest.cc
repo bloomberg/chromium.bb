@@ -27,7 +27,8 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kFilePath[] = "/directory/blueberries.txt";
+const base::FilePath::CharType kFilePath[] =
+    FILE_PATH_LITERAL("/directory/blueberries.txt");
 
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
@@ -87,9 +88,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(NULL,
-                     file_system_info_,
-                     base::FilePath::FromUTF8Unsafe(kFilePath),
+  OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
                      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
@@ -123,9 +122,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(NULL,
-                     file_system_info_,
-                     base::FilePath::FromUTF8Unsafe(kFilePath),
+  OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
                      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
@@ -147,9 +144,8 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
 
   // Opening for read on a read-only file system is allowed.
   {
-    OpenFile open_file(NULL,
-                       read_only_file_system_info,
-                       base::FilePath::FromUTF8Unsafe(kFilePath),
+    OpenFile open_file(NULL, read_only_file_system_info,
+                       base::FilePath(kFilePath),
                        ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
                        base::Bind(&CallbackLogger::OnOpenFile,
                                   base::Unretained(&callback_logger)));
@@ -162,9 +158,8 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
 
   // Opening for write on a read-only file system is forbidden and must fail.
   {
-    OpenFile open_file(NULL,
-                       read_only_file_system_info,
-                       base::FilePath::FromUTF8Unsafe(kFilePath),
+    OpenFile open_file(NULL, read_only_file_system_info,
+                       base::FilePath(kFilePath),
                        ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE,
                        base::Bind(&CallbackLogger::OnOpenFile,
                                   base::Unretained(&callback_logger)));
@@ -180,9 +175,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(NULL,
-                     file_system_info_,
-                     base::FilePath::FromUTF8Unsafe(kFilePath),
+  OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
                      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));
@@ -205,9 +198,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(NULL,
-                     file_system_info_,
-                     base::FilePath::FromUTF8Unsafe(kFilePath),
+  OpenFile open_file(NULL, file_system_info_, base::FilePath(kFilePath),
                      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
                      base::Bind(&CallbackLogger::OnOpenFile,
                                 base::Unretained(&callback_logger)));

@@ -28,7 +28,8 @@ const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const char kMimeType[] = "text/plain";
 const int kRequestId = 2;
-const base::FilePath::CharType kDirectoryPath[] = "/directory";
+const base::FilePath::CharType kDirectoryPath[] =
+    FILE_PATH_LITERAL("/directory");
 
 // URLs are case insensitive, so it should pass the sanity check.
 const char kThumbnail[] = "DaTa:ImAgE/pNg;base64,";
@@ -93,9 +94,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));
@@ -130,9 +129,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));
@@ -151,9 +148,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));
@@ -224,9 +219,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest,
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));
@@ -286,9 +279,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      NULL, file_system_info_, base::FilePath(kDirectoryPath),
       ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));

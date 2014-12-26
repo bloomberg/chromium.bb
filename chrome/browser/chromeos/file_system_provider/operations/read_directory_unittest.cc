@@ -27,7 +27,8 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kDirectoryPath[] = "/directory";
+const base::FilePath::CharType kDirectoryPath[] =
+    FILE_PATH_LITERAL("/directory");
 
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
@@ -95,9 +96,8 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  ReadDirectory read_directory(NULL,
-                               file_system_info_,
-                               base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+  ReadDirectory read_directory(NULL, file_system_info_,
+                               base::FilePath(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
@@ -129,9 +129,8 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  ReadDirectory read_directory(NULL,
-                               file_system_info_,
-                               base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+  ReadDirectory read_directory(NULL, file_system_info_,
+                               base::FilePath(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
@@ -148,9 +147,8 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  ReadDirectory read_directory(NULL,
-                               file_system_info_,
-                               base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+  ReadDirectory read_directory(NULL, file_system_info_,
+                               base::FilePath(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
@@ -216,9 +214,8 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  ReadDirectory read_directory(NULL,
-                               file_system_info_,
-                               base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+  ReadDirectory read_directory(NULL, file_system_info_,
+                               base::FilePath(kDirectoryPath),
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(

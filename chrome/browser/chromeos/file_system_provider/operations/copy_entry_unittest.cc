@@ -27,8 +27,10 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kSourcePath[] = "/bunny/and/bear/happy";
-const base::FilePath::CharType kTargetPath[] = "/kitty/and/puppy/happy";
+const base::FilePath::CharType kSourcePath[] =
+    FILE_PATH_LITERAL("/bunny/and/bear/happy");
+const base::FilePath::CharType kTargetPath[] =
+    FILE_PATH_LITERAL("/kitty/and/puppy/happy");
 
 }  // namespace
 
@@ -53,10 +55,8 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CopyEntry copy_entry(NULL,
-                       file_system_info_,
-                       base::FilePath::FromUTF8Unsafe(kSourcePath),
-                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+  CopyEntry copy_entry(NULL, file_system_info_, base::FilePath(kSourcePath),
+                       base::FilePath(kTargetPath),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   copy_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -87,10 +87,8 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CopyEntry copy_entry(NULL,
-                       file_system_info_,
-                       base::FilePath::FromUTF8Unsafe(kSourcePath),
-                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+  CopyEntry copy_entry(NULL, file_system_info_, base::FilePath(kSourcePath),
+                       base::FilePath(kTargetPath),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   copy_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -108,10 +106,8 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, Execute_ReadOnly) {
       MountOptions(kFileSystemId, "" /* display_name */),
       base::FilePath() /* mount_path */);
 
-  CopyEntry copy_entry(NULL,
-                       read_only_file_system_info,
-                       base::FilePath::FromUTF8Unsafe(kSourcePath),
-                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+  CopyEntry copy_entry(NULL, read_only_file_system_info,
+                       base::FilePath(kSourcePath), base::FilePath(kTargetPath),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   copy_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -124,10 +120,8 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CopyEntry copy_entry(NULL,
-                       file_system_info_,
-                       base::FilePath::FromUTF8Unsafe(kSourcePath),
-                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+  CopyEntry copy_entry(NULL, file_system_info_, base::FilePath(kSourcePath),
+                       base::FilePath(kTargetPath),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   copy_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -146,10 +140,8 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CopyEntry copy_entry(NULL,
-                       file_system_info_,
-                       base::FilePath::FromUTF8Unsafe(kSourcePath),
-                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+  CopyEntry copy_entry(NULL, file_system_info_, base::FilePath(kSourcePath),
+                       base::FilePath(kTargetPath),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   copy_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

@@ -27,7 +27,8 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kFilePath[] = "/kitty/and/puppy/happy";
+const base::FilePath::CharType kFilePath[] =
+    FILE_PATH_LITERAL("/kitty/and/puppy/happy");
 
 }  // namespace
 
@@ -52,9 +53,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateFile create_file(NULL,
-                         file_system_info_,
-                         base::FilePath::FromUTF8Unsafe(kFilePath),
+  CreateFile create_file(NULL, file_system_info_, base::FilePath(kFilePath),
                          base::Bind(&util::LogStatusCallback, &callback_log));
   create_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -85,9 +84,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateFile create_file(NULL,
-                         file_system_info_,
-                         base::FilePath::FromUTF8Unsafe(kFilePath),
+  CreateFile create_file(NULL, file_system_info_, base::FilePath(kFilePath),
                          base::Bind(&util::LogStatusCallback, &callback_log));
   create_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -105,9 +102,8 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, Execute_ReadOnly) {
       MountOptions(kFileSystemId, "" /* display_name */),
       base::FilePath() /* mount_path */);
 
-  CreateFile create_file(NULL,
-                         read_only_file_system_info,
-                         base::FilePath::FromUTF8Unsafe(kFilePath),
+  CreateFile create_file(NULL, read_only_file_system_info,
+                         base::FilePath(kFilePath),
                          base::Bind(&util::LogStatusCallback, &callback_log));
   create_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -120,9 +116,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateFile create_file(NULL,
-                         file_system_info_,
-                         base::FilePath::FromUTF8Unsafe(kFilePath),
+  CreateFile create_file(NULL, file_system_info_, base::FilePath(kFilePath),
                          base::Bind(&util::LogStatusCallback, &callback_log));
   create_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -141,9 +135,7 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateFile create_file(NULL,
-                         file_system_info_,
-                         base::FilePath::FromUTF8Unsafe(kFilePath),
+  CreateFile create_file(NULL, file_system_info_, base::FilePath(kFilePath),
                          base::Bind(&util::LogStatusCallback, &callback_log));
   create_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

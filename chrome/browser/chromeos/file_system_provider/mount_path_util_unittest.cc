@@ -110,7 +110,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, IsFileSystemProviderLocalPath) {
   const base::FilePath mount_path =
       GetMountPath(profile_, kExtensionId, kFileSystemId);
   const base::FilePath file_path =
-      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+      base::FilePath(FILE_PATH_LITERAL("/hello/world.txt"));
   const base::FilePath local_file_path =
       mount_path.Append(base::FilePath(file_path.value().substr(1)));
 
@@ -118,11 +118,11 @@ TEST_F(FileSystemProviderMountPathUtilTest, IsFileSystemProviderLocalPath) {
   EXPECT_TRUE(IsFileSystemProviderLocalPath(local_file_path));
 
   EXPECT_FALSE(IsFileSystemProviderLocalPath(
-      base::FilePath::FromUTF8Unsafe("provided/hello-world/test.txt")));
+      base::FilePath(FILE_PATH_LITERAL("provided/hello-world/test.txt"))));
   EXPECT_FALSE(IsFileSystemProviderLocalPath(
-      base::FilePath::FromUTF8Unsafe("/provided")));
+      base::FilePath(FILE_PATH_LITERAL("/provided"))));
   EXPECT_FALSE(
-      IsFileSystemProviderLocalPath(base::FilePath::FromUTF8Unsafe("/")));
+      IsFileSystemProviderLocalPath(base::FilePath(FILE_PATH_LITERAL("/"))));
   EXPECT_FALSE(IsFileSystemProviderLocalPath(base::FilePath()));
 }
 
@@ -137,7 +137,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
           ->GetFileSystemInfo();
 
   const base::FilePath kFilePath =
-      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+      base::FilePath(FILE_PATH_LITERAL("/hello/world.txt"));
   const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
@@ -161,7 +161,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
                                                            kFileSystemId)
           ->GetFileSystemInfo();
 
-  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/");
+  const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("/"));
   const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
@@ -181,7 +181,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
       MountOptions(kFileSystemId, kDisplayName),
       GetMountPath(profile_, kExtensionId, kFileSystemId));
 
-  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
+  const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("/hello"));
   const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   // It is impossible to create a cracked URL for a mount point which doesn't
@@ -203,7 +203,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
           ->GetFileSystemInfo();
 
   const base::FilePath kFilePath =
-      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+      base::FilePath(FILE_PATH_LITERAL("/hello/world.txt"));
   const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
@@ -250,7 +250,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser) {
           ->GetFileSystemInfo();
 
   const base::FilePath kFilePath =
-      base::FilePath::FromUTF8Unsafe("/hello/world.txt");
+      base::FilePath(FILE_PATH_LITERAL("/hello/world.txt"));
   const base::FilePath kLocalFilePath = file_system_info.mount_path().Append(
       base::FilePath(kFilePath.value().substr(1)));
 
@@ -274,7 +274,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser_RootPath) {
                                                            kFileSystemId)
           ->GetFileSystemInfo();
 
-  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/");
+  const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("/"));
   const base::FilePath kLocalFilePath = file_system_info.mount_path();
 
   LocalPathParser parser(profile_, kLocalFilePath);
@@ -288,21 +288,22 @@ TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser_RootPath) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, LocalPathParser_WrongPath) {
   {
-    const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
+    const base::FilePath kFilePath =
+        base::FilePath(FILE_PATH_LITERAL("/hello"));
     LocalPathParser parser(profile_, kFilePath);
     EXPECT_FALSE(parser.Parse());
   }
 
   {
     const base::FilePath kFilePath =
-        base::FilePath::FromUTF8Unsafe("/provided");
+        base::FilePath(FILE_PATH_LITERAL("/provided"));
     LocalPathParser parser(profile_, kFilePath);
     EXPECT_FALSE(parser.Parse());
   }
 
   {
     const base::FilePath kFilePath =
-        base::FilePath::FromUTF8Unsafe("provided/hello/world");
+        base::FilePath(FILE_PATH_LITERAL("provided/hello/world"));
     LocalPathParser parser(profile_, kFilePath);
     EXPECT_FALSE(parser.Parse());
   }
