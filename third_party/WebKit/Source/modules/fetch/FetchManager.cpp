@@ -80,7 +80,8 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 {
     // FIXME: Use |handle|.
     ASSERT_UNUSED(handle, !handle);
-    // Reset the tainting if the request was redirected to the different origin.
+    // Recompute the tainting if the request was redirected to a different
+    // origin.
     if (!SecurityOrigin::create(response.url())->isSameSchemeHostPort(m_request->origin().get())) {
         switch (m_request->mode()) {
         case WebURLRequest::FetchRequestModeSameOrigin:
