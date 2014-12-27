@@ -330,47 +330,47 @@ struct FuzzTraits<base::string16> {
 
 // Specializations to fuzz tuples.
 template <class A>
-struct FuzzTraits<Tuple1<A> > {
-  static void Fuzz(Tuple1<A>* p, Fuzzer* fuzzer) {
-    FuzzParam(&p->a, fuzzer);
+struct FuzzTraits<Tuple<A>> {
+  static void Fuzz(Tuple<A>* p, Fuzzer* fuzzer) {
+    FuzzParam(&get<0>(*p), fuzzer);
   }
 };
 
 template <class A, class B>
-struct FuzzTraits<Tuple2<A, B> > {
-  static void Fuzz(Tuple2<A, B>* p, Fuzzer* fuzzer) {
-    FuzzParam(&p->a, fuzzer);
-    FuzzParam(&p->b, fuzzer);
+struct FuzzTraits<Tuple<A, B>> {
+  static void Fuzz(Tuple<A, B>* p, Fuzzer* fuzzer) {
+    FuzzParam(&get<0>(*p), fuzzer);
+    FuzzParam(&get<1>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C>
-struct FuzzTraits<Tuple3<A, B, C> > {
-  static void Fuzz(Tuple3<A, B, C>* p, Fuzzer* fuzzer) {
-    FuzzParam(&p->a, fuzzer);
-    FuzzParam(&p->b, fuzzer);
-    FuzzParam(&p->c, fuzzer);
+struct FuzzTraits<Tuple<A, B, C>> {
+  static void Fuzz(Tuple<A, B, C>* p, Fuzzer* fuzzer) {
+    FuzzParam(&get<0>(*p), fuzzer);
+    FuzzParam(&get<1>(*p), fuzzer);
+    FuzzParam(&get<2>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C, class D>
-struct FuzzTraits<Tuple4<A, B, C, D> > {
-  static void Fuzz(Tuple4<A, B, C, D>* p, Fuzzer* fuzzer) {
-    FuzzParam(&p->a, fuzzer);
-    FuzzParam(&p->b, fuzzer);
-    FuzzParam(&p->c, fuzzer);
-    FuzzParam(&p->d, fuzzer);
+struct FuzzTraits<Tuple<A, B, C, D>> {
+  static void Fuzz(Tuple<A, B, C, D>* p, Fuzzer* fuzzer) {
+    FuzzParam(&get<0>(*p), fuzzer);
+    FuzzParam(&get<1>(*p), fuzzer);
+    FuzzParam(&get<2>(*p), fuzzer);
+    FuzzParam(&get<3>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C, class D, class E>
-struct FuzzTraits<Tuple5<A, B, C, D, E> > {
-  static void Fuzz(Tuple5<A, B, C, D, E>* p, Fuzzer* fuzzer) {
-    FuzzParam(&p->a, fuzzer);
-    FuzzParam(&p->b, fuzzer);
-    FuzzParam(&p->c, fuzzer);
-    FuzzParam(&p->d, fuzzer);
-    FuzzParam(&p->e, fuzzer);
+struct FuzzTraits<Tuple<A, B, C, D, E>> {
+  static void Fuzz(Tuple<A, B, C, D, E>* p, Fuzzer* fuzzer) {
+    FuzzParam(&get<0>(*p), fuzzer);
+    FuzzParam(&get<1>(*p), fuzzer);
+    FuzzParam(&get<2>(*p), fuzzer);
+    FuzzParam(&get<3>(*p), fuzzer);
+    FuzzParam(&get<4>(*p), fuzzer);
   }
 };
 
