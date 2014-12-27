@@ -90,22 +90,26 @@ bool RenderSVGShape::shapeDependentFillContains(const FloatPoint& point, const W
 
 bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, const WindRule fillRule)
 {
-    if (!m_fillBoundingBox.contains(point))
-        return false;
+    if (requiresFill) {
+        if (!m_fillBoundingBox.contains(point))
+            return false;
 
-    if (requiresFill && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToFillMode))
-        return false;
+        if (!SVGPaintServer::existsForRenderer(*this, style(), ApplyToFillMode))
+            return false;
+    }
 
     return shapeDependentFillContains(point, fillRule);
 }
 
 bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke)
 {
-    if (!strokeBoundingBox().contains(point))
-        return false;
+    if (requiresStroke) {
+        if (!strokeBoundingBox().contains(point))
+            return false;
 
-    if (requiresStroke && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToStrokeMode))
-        return false;
+        if (!SVGPaintServer::existsForRenderer(*this, style(), ApplyToStrokeMode))
+            return false;
+    }
 
     return shapeDependentStrokeContains(point);
 }
