@@ -151,7 +151,7 @@ bool InitializeWebRtcModule() {
   // PS: This function is actually implemented in allocator_proxy.cc with the
   // new/delete overrides.
   InitDiagnosticLoggingDelegateFunctionFunction init_diagnostic_logging = NULL;
-  bool init_ok = initialize_module(*CommandLine::ForCurrentProcess(),
+  bool init_ok = initialize_module(*base::CommandLine::ForCurrentProcess(),
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
       &Allocate,
       &Dellocate,

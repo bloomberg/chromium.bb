@@ -83,7 +83,7 @@ extern "C" {
 // return pointers to libjingle's WebRTC factory methods.
 // Called from init_webrtc.cc.
 ALLOC_EXPORT
-bool InitializeModule(const CommandLine& command_line,
+bool InitializeModule(const base::CommandLine& command_line,
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
                       AllocateFunction alloc,
                       DellocateFunction dealloc,
@@ -113,11 +113,11 @@ bool InitializeModule(const CommandLine& command_line,
   *destroy_media_engine = &DestroyWebRtcMediaEngine;
   *init_diagnostic_logging = &rtc::InitDiagnosticLoggingDelegateFunction;
 
-  if (CommandLine::Init(0, NULL)) {
+  if (base::CommandLine::Init(0, NULL)) {
 #if !defined(OS_WIN)
     // This is not needed on Windows since CommandLine::Init has already
     // done the equivalent thing via the GetCommandLine() API.
-    CommandLine::ForCurrentProcess()->AppendArguments(command_line, true);
+    base::CommandLine::ForCurrentProcess()->AppendArguments(command_line, true);
 #endif
     logging::LoggingSettings settings;
     settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
