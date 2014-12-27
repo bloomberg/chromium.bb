@@ -221,14 +221,14 @@ InstallationState::InstallationState() {
 
 // static
 int InstallationState::IndexFromDistType(BrowserDistribution::Type type) {
-  COMPILE_ASSERT(BrowserDistribution::CHROME_BROWSER == CHROME_BROWSER_INDEX,
-                 unexpected_chrome_browser_distribution_value_);
-  COMPILE_ASSERT(BrowserDistribution::CHROME_FRAME == CHROME_FRAME_INDEX,
-                 unexpected_chrome_frame_distribution_value_);
-  COMPILE_ASSERT(BrowserDistribution::CHROME_BINARIES == CHROME_BINARIES_INDEX,
-                 unexpected_chrome_frame_distribution_value_);
-  COMPILE_ASSERT(BrowserDistribution::CHROME_APP_HOST == CHROME_APP_HOST_INDEX,
-                 unexpected_chrome_frame_distribution_value_);
+  static_assert(BrowserDistribution::CHROME_BROWSER == CHROME_BROWSER_INDEX,
+                "unexpected chrome browser distribution value");
+  static_assert(BrowserDistribution::CHROME_FRAME == CHROME_FRAME_INDEX,
+                "unexpected chrome frame distribution value");
+  static_assert(BrowserDistribution::CHROME_BINARIES == CHROME_BINARIES_INDEX,
+                "unexpected chrome binaries distribution value");
+  static_assert(BrowserDistribution::CHROME_APP_HOST == CHROME_APP_HOST_INDEX,
+                "unexpected chrome app host distribution value");
   DCHECK(type == BrowserDistribution::CHROME_BROWSER ||
          type == BrowserDistribution::CHROME_FRAME ||
          type == BrowserDistribution::CHROME_BINARIES ||

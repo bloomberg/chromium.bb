@@ -5,13 +5,6 @@
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
 
-#ifndef COMPILE_ASSERT
-// COMPILE_ASSERT macro borrowed from basictypes.h
-template <bool>
-struct CompileAssert {};
-#define COMPILE_ASSERT(expr, msg) \
-    typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
-#endif
 
 namespace mini_installer {
 
@@ -72,7 +65,7 @@ template <size_t kCapacity>
 class StackString {
  public:
   StackString() {
-    COMPILE_ASSERT(kCapacity != 0, invalid_buffer_size);
+    static_assert(kCapacity != 0, "invalid buffer size");
     buffer_[kCapacity] = L'\0';  // We always reserve 1 more than asked for.
     clear();
   }

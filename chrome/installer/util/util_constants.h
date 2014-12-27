@@ -95,13 +95,13 @@ enum InstallStatus {
   UNPACKING_FAILED,            // 57. Unpacking the (possibly patched)
                                // uncompressed archive failed.
 
-  // Friendly reminder: note the COMPILE_ASSERT below.
+  // Friendly reminder: note the static_assert below.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::UNPACKING_FAILED == 57,
-               dont_change_enum);
+static_assert(installer::UNPACKING_FAILED == 57,
+              "dont change enum");
 
 // The type of an update archive.
 enum ArchiveType {
@@ -141,8 +141,8 @@ enum InstallerStage {
 
 // When we start reporting the numerical values from the enum, the order
 // above MUST be preserved.
-COMPILE_ASSERT(UNINSTALLING_CHROME_FRAME == 20,
-               never_ever_ever_change_InstallerStage_values_bang);
+static_assert(UNINSTALLING_CHROME_FRAME == 20,
+              "never ever ever change InstallerStage values!");
 
 namespace switches {
 

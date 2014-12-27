@@ -620,10 +620,10 @@ bool InstallerState::AnyExistsAndIsInUse(
   };
   DCHECK_NE(file_bits, 0U);
   DCHECK_LT(file_bits, 1U << NUM_BINARIES);
-  COMPILE_ASSERT(CHROME_DLL == 1, no_youre_out_of_order);
-  COMPILE_ASSERT(CHROME_FRAME_DLL == 2, no_youre_out_of_order);
-  COMPILE_ASSERT(CHROME_FRAME_HELPER_DLL == 4, no_youre_out_of_order);
-  COMPILE_ASSERT(CHROME_FRAME_HELPER_EXE == 8, no_youre_out_of_order);
+  static_assert(CHROME_DLL == 1, "no, you're out of order");
+  static_assert(CHROME_FRAME_DLL == 2, "no, you're out of order");
+  static_assert(CHROME_FRAME_HELPER_DLL == 4, "no, you're out of order");
+  static_assert(CHROME_FRAME_HELPER_EXE == 8, "no, you're out of order");
 
   // Check only for the current version (i.e., the version we are upgrading
   // _from_). Later versions from pending in-use updates need not be checked
