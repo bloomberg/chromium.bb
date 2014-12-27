@@ -83,7 +83,7 @@
     const unsigned short NODE_BEFORE_AND_AFTER = 2;
     const unsigned short NODE_INSIDE           = 3;
 
-    [RaisesException, MeasureAs=RangeCompareNode] short compareNode([Default=Undefined] optional Node refNode);
+    [RaisesException, DeprecateAs=RangeCompareNode] short compareNode([Default=Undefined] optional Node refNode);
 
-    [RaisesException, MeasureAs=RangeExpand] void expand([Default=Undefined] optional DOMString unit);
+    [RaisesException, DeprecateAs=RangeExpand] void expand([Default=Undefined] optional DOMString unit);
 };

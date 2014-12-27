@@ -828,6 +828,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedOfflineAudioContext:
         return replacedBy("webkitOfflineAudioContext", "OfflineAudioContext");
 
+    case RangeCompareNode:
+        return replacedBy("Range.compareNode()", "Range.compareBoundaryPoints()");
+
+    case RangeExpand:
+        return replacedBy("Range.expand()", "Selection.modify()");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
