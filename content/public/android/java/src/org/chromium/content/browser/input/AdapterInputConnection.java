@@ -69,14 +69,14 @@ public class AdapterInputConnection extends BaseInputConnection {
 
         int inputType = imeAdapter.getTextInputType();
         int inputFlags = imeAdapter.getTextInputFlags();
-        if ((inputFlags & imeAdapter.sTextInputFlagAutocompleteOff) != 0) {
+        if ((inputFlags & ImeAdapter.sTextInputFlagAutocompleteOff) != 0) {
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         }
 
         if (inputType == TextInputType.TEXT) {
             // Normal text field
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0) {
+            if ((inputFlags & ImeAdapter.sTextInputFlagAutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             }
         } else if (inputType == TextInputType.TEXT_AREA
@@ -84,7 +84,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             // TextArea or contenteditable.
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
                     | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
-            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0) {
+            if ((inputFlags & ImeAdapter.sTextInputFlagAutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             }
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NONE;
@@ -122,8 +122,8 @@ public class AdapterInputConnection extends BaseInputConnection {
         }
         outAttrs.initialSelStart = Selection.getSelectionStart(mEditable);
         outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
-        mLastUpdateSelectionStart = Selection.getSelectionStart(mEditable);
-        mLastUpdateSelectionEnd = Selection.getSelectionEnd(mEditable);
+        mLastUpdateSelectionStart = outAttrs.initialSelStart;
+        mLastUpdateSelectionEnd = outAttrs.initialSelEnd;
 
         Selection.setSelection(mEditable, outAttrs.initialSelStart, outAttrs.initialSelEnd);
         updateSelectionIfRequired();
@@ -357,10 +357,11 @@ public class AdapterInputConnection extends BaseInputConnection {
         // code. For multi-character deletion, executes deletion by calling
         // |ImeAdapter.deleteSurroundingText| and sends synthetic key events with a dummy key code.
         int keyCode = KeyEvent.KEYCODE_UNKNOWN;
-        if (originalBeforeLength == 1 && originalAfterLength == 0)
+        if (originalBeforeLength == 1 && originalAfterLength == 0) {
             keyCode = KeyEvent.KEYCODE_DEL;
-        else if (originalBeforeLength == 0 && originalAfterLength == 1)
+        } else if (originalBeforeLength == 0 && originalAfterLength == 1) {
             keyCode = KeyEvent.KEYCODE_FORWARD_DEL;
+        }
 
         boolean result = true;
         if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
