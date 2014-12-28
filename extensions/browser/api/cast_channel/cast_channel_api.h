@@ -252,11 +252,11 @@ class CastChannelSetAuthorityKeysFunction : public CastChannelAsyncApiFunction {
   CastChannelSetAuthorityKeysFunction();
 
  protected:
-  virtual ~CastChannelSetAuthorityKeysFunction();
+  ~CastChannelSetAuthorityKeysFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.setAuthorityKeys",

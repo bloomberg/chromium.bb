@@ -40,7 +40,7 @@ class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
   }
 
  protected:
-  ~FakeSerialGetDevicesFunction() {}
+  ~FakeSerialGetDevicesFunction() override {}
 };
 
 class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
@@ -97,7 +97,7 @@ class FakeSerialConnectFunction : public core_api::SerialConnectFunction {
   }
 
  protected:
-  ~FakeSerialConnectFunction() {}
+  ~FakeSerialConnectFunction() override {}
 };
 
 class SerialApiTest : public ExtensionApiTest,

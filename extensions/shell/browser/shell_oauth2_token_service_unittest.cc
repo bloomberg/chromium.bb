@@ -12,7 +12,7 @@ namespace extensions {
 class ShellOAuth2TokenServiceTest : public ExtensionsTest {
  public:
   ShellOAuth2TokenServiceTest() {}
-  virtual ~ShellOAuth2TokenServiceTest() {}
+  ~ShellOAuth2TokenServiceTest() override {}
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

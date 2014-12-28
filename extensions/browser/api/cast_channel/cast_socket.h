@@ -46,7 +46,7 @@ class MessageFramer;
 class CastSocket : public ApiResource {
  public:
   explicit CastSocket(const std::string& owner_extension_id);
-  virtual ~CastSocket() {}
+  ~CastSocket() override {}
 
   // Used by BrowserContextKeyedAPIFactory.
   static const char* service_name() { return "CastSocketImplManager"; }
@@ -128,20 +128,20 @@ class CastSocketImpl : public CastSocket {
                  const scoped_refptr<Logger>& logger);
 
   // Ensures that the socket is closed.
-  virtual ~CastSocketImpl();
+  ~CastSocketImpl() override;
 
   // CastSocket interface.
-  virtual void Connect(scoped_ptr<CastTransport::Delegate> delegate,
-                       base::Callback<void(ChannelError)> callback) override;
-  virtual CastTransport* transport() const override;
-  virtual void Close(const net::CompletionCallback& callback) override;
-  const virtual net::IPEndPoint& ip_endpoint() const override;
-  virtual int id() const override;
-  virtual void set_id(int channel_id) override;
-  virtual ChannelAuthType channel_auth() const override;
-  virtual std::string cast_url() const override;
-  virtual ReadyState ready_state() const override;
-  virtual ChannelError error_state() const override;
+  void Connect(scoped_ptr<CastTransport::Delegate> delegate,
+               base::Callback<void(ChannelError)> callback) override;
+  CastTransport* transport() const override;
+  void Close(const net::CompletionCallback& callback) override;
+  const net::IPEndPoint& ip_endpoint() const override;
+  int id() const override;
+  void set_id(int channel_id) override;
+  ChannelAuthType channel_auth() const override;
+  std::string cast_url() const override;
+  ReadyState ready_state() const override;
+  ChannelError error_state() const override;
 
   // Required by ApiResourceManager.
   static const char* service_name() { return "CastSocketManager"; }
@@ -153,9 +153,9 @@ class CastSocketImpl : public CastSocket {
     AuthTransportDelegate(CastSocketImpl* socket);
 
     // CastTransport::Delegate interface.
-    virtual void OnError(ChannelError error_state,
-                         const LastErrors& last_errors) override;
-    virtual void OnMessage(const CastMessage& message) override;
+    void OnError(ChannelError error_state,
+                 const LastErrors& last_errors) override;
+    void OnMessage(const CastMessage& message) override;
 
    private:
     CastSocketImpl* socket_;
@@ -179,7 +179,7 @@ class CastSocketImpl : public CastSocket {
   friend class CastSocketTest;
   friend class TestCastSocket;
 
-  virtual void SetErrorState(ChannelError error_state) override;
+  void SetErrorState(ChannelError error_state) override;
 
   // Frees resources and cancels pending callbacks.  |ready_state_| will be set
   // READY_STATE_CLOSED on completion.  A no-op if |ready_state_| is already

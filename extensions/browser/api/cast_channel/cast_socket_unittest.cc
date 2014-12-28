@@ -339,9 +339,9 @@ class CastSocketTest : public testing::Test {
             scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
             base::TimeTicks())),
         read_delegate_(new MockDelegate) {}
-  virtual ~CastSocketTest() {}
+  ~CastSocketTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(*read_delegate_, OnMessage(_)).Times(0);
     EXPECT_CALL(*read_delegate_, OnError(_, _)).Times(0);
   }

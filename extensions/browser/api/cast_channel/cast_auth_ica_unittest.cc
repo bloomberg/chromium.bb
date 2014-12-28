@@ -40,7 +40,7 @@ static const net::SHA256HashValue kFingerprintInvalid = {{
 class CastChannelAuthorityKeysTest : public testing::Test {
  public:
   CastChannelAuthorityKeysTest() {}
-  virtual ~CastChannelAuthorityKeysTest() {}
+  ~CastChannelAuthorityKeysTest() override {}
 
  protected:
   void ExpectKeysLoaded();

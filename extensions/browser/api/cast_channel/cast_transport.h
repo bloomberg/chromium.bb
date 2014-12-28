@@ -83,13 +83,13 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
                     ChannelAuthType channel_auth_,
                     scoped_refptr<Logger> logger);
 
-  virtual ~CastTransportImpl();
+  ~CastTransportImpl() override;
 
   // CastTransport interface.
-  virtual void SendMessage(const CastMessage& message,
-                           const net::CompletionCallback& callback) override;
-  virtual void StartReading() override;
-  virtual void SetReadDelegate(Delegate* delegate) override;
+  void SendMessage(const CastMessage& message,
+                   const net::CompletionCallback& callback) override;
+  void StartReading() override;
+  void SetReadDelegate(Delegate* delegate) override;
 
  private:
   // Internal write states.

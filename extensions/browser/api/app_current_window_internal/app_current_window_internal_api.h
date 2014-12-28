@@ -215,8 +215,8 @@ class AppCurrentWindowInternalSetInterceptAllKeysFunction
                              APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetInterceptAllKeysFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetInterceptAllKeysFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 }  // namespace extensions

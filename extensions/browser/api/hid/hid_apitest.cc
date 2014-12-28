@@ -94,7 +94,7 @@ class MockHidConnection : public HidConnection {
   }
 
  private:
-  ~MockHidConnection() {}
+  ~MockHidConnection() override {}
 };
 
 class MockHidService : public HidService {
