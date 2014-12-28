@@ -156,6 +156,11 @@ endif # BUILD_WESTON_LAUNCH
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = src/weston.pc
 
+EXTRA_DIST += $(wayland_session_DATA)
+
+wayland_sessiondir = $(datadir)/wayland-sessions
+wayland_session_DATA = src/weston.desktop
+
 westonincludedir = $(includedir)/weston
 westoninclude_HEADERS =				\
 	src/version.h				\
