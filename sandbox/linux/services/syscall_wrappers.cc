@@ -62,6 +62,13 @@ int CloneHelper(void* arg) {
 // that is saved when setjmp is called below. This is needed because when
 // compiled with FORTIFY_SOURCE, glibc's longjmp checks that the stack is moved
 // upwards. See crbug.com/442912 for more details.
+#if defined(ADDRESS_SANITIZER)
+// Disable AddressSanitizer instrumentation for this function to make sure
+// |stack_buf| is allocated on thread stack instead of ASan's fake stack.
+// Under ASan longjmp() will attempt to clean up the area between the old and
+// new stack pointers and print a warning that may confuse the user.
+__attribute__((no_sanitize_address))
+#endif
 NOINLINE pid_t CloneAndLongjmpInChild(unsigned long flags,
                                      pid_t* ptid,
                                      pid_t* ctid,
