@@ -64,6 +64,9 @@ MutationObserver::MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback> call
     : m_callback(callback)
     , m_priority(s_observerPriority++)
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(*this);
+#endif
 }
 
 MutationObserver::~MutationObserver()
