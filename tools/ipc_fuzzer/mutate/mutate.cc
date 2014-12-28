@@ -564,11 +564,12 @@ struct FuzzTraits<gfx::Rect> {
   }
 
 #define IPC_MEMBERS_IN_0(p)
-#define IPC_MEMBERS_IN_1(p) p.a
-#define IPC_MEMBERS_IN_2(p) p.a, p.b
-#define IPC_MEMBERS_IN_3(p) p.a, p.b, p.c
-#define IPC_MEMBERS_IN_4(p) p.a, p.b, p.c, p.d
-#define IPC_MEMBERS_IN_5(p) p.a, p.b, p.c, p.d, p.e
+#define IPC_MEMBERS_IN_1(p) get<0>(p)
+#define IPC_MEMBERS_IN_2(p) get<0>(p), get<1>(p)
+#define IPC_MEMBERS_IN_3(p) get<0>(p), get<1>(p), get<2>(p)
+#define IPC_MEMBERS_IN_4(p) get<0>(p), get<1>(p), get<2>(p), get<3>(p)
+#define IPC_MEMBERS_IN_5(p) get<0>(p), get<1>(p), get<2>(p), get<3>(p),     \
+                            get<4>(p)
 
 #define IPC_MEMBERS_OUT_0()
 #define IPC_MEMBERS_OUT_1() NULL
