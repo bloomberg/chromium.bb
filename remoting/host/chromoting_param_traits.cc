@@ -21,7 +21,7 @@ bool ParamTraits<webrtc::DesktopVector>::Read(const Message* m,
                                               PickleIterator* iter,
                                               webrtc::DesktopVector* r) {
   int x, y;
-  if (!iter->ReadInt(&x) || !iter->ReadInt(&y))
+  if (!m->ReadInt(iter, &x) || !m->ReadInt(iter, &y))
     return false;
   *r = webrtc::DesktopVector(x, y);
   return true;
@@ -46,7 +46,7 @@ bool ParamTraits<webrtc::DesktopSize>::Read(const Message* m,
                                             PickleIterator* iter,
                                             webrtc::DesktopSize* r) {
   int width, height;
-  if (!iter->ReadInt(&width) || !iter->ReadInt(&height))
+  if (!m->ReadInt(iter, &width) || !m->ReadInt(iter, &height))
     return false;
   *r = webrtc::DesktopSize(width, height);
   return true;
@@ -73,8 +73,8 @@ bool ParamTraits<webrtc::DesktopRect>::Read(const Message* m,
                                             PickleIterator* iter,
                                             webrtc::DesktopRect* r) {
   int left, right, top, bottom;
-  if (!iter->ReadInt(&left) || !iter->ReadInt(&top) ||
-      !iter->ReadInt(&right) || !iter->ReadInt(&bottom)) {
+  if (!m->ReadInt(iter, &left) || !m->ReadInt(iter, &top) ||
+      !m->ReadInt(iter, &right) || !m->ReadInt(iter, &bottom)) {
     return false;
   }
   *r = webrtc::DesktopRect::MakeLTRB(left, top, right, bottom);
@@ -126,8 +126,10 @@ bool ParamTraits<webrtc::MouseCursor>::Read(
 
   const char* data;
   int data_length;
-  if (!iter->ReadData(&data, &data_length) || data_length != expected_length)
+  if (!m->ReadData(iter, &data, &data_length) ||
+      data_length != expected_length) {
     return false;
+  }
 
   webrtc::DesktopVector hotspot;
   if (!ParamTraits<webrtc::DesktopVector>::Read(m, iter, &hotspot))

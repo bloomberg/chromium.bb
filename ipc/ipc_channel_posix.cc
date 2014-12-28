@@ -1005,7 +1005,7 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
 
     case Channel::HELLO_MESSAGE_TYPE:
       int pid;
-      if (!iter.ReadInt(&pid))
+      if (!msg.ReadInt(&iter, &pid))
         NOTREACHED();
 
 #if defined(IPC_USES_READWRITE)
@@ -1028,9 +1028,9 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
 #if defined(OS_MACOSX)
     case Channel::CLOSE_FD_MESSAGE_TYPE:
       int fd, hops;
-      if (!iter.ReadInt(&hops))
+      if (!msg.ReadInt(&iter, &hops))
         NOTREACHED();
-      if (!iter.ReadInt(&fd))
+      if (!msg.ReadInt(&iter, &fd))
         NOTREACHED();
       if (hops == 0) {
         if (fds_to_close_.erase(fd) > 0) {

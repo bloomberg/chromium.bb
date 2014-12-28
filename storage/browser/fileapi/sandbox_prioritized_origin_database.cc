@@ -44,7 +44,7 @@ bool ReadPrimaryOriginFile(const base::FilePath& path,
     return false;
   Pickle pickle(buffer.data(), buffer.size());
   PickleIterator iter(pickle);
-  return iter.ReadString(origin) && !origin->empty();
+  return pickle.ReadString(&iter, origin) && !origin->empty();
 }
 
 }  // namespace

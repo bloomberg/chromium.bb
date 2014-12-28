@@ -43,7 +43,7 @@ bool ReadVectorWithoutCopy(const Message* m,
   // This part is just a copy of the the default ParamTraits vector Read().
   int size;
   // ReadLength() checks for < 0 itself.
-  if (!iter->ReadLength(&size))
+  if (!m->ReadLength(iter, &size))
     return false;
   // Resizing beforehand is not safe, see BUG 1006367 for details.
   if (INT_MAX / sizeof(T) <= static_cast<size_t>(size))
@@ -118,7 +118,7 @@ bool ParamTraits<PP_NetAddress_Private>::Read(const Message* m,
   p->size = size;
 
   const char* data;
-  if (!iter->ReadBytes(&data, size))
+  if (!m->ReadBytes(iter, &data, size))
     return false;
   memcpy(p->data, data, size);
   return true;

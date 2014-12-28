@@ -160,7 +160,7 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
 
   // Read flags and verify version
   int flags;
-  if (!iter.ReadInt(&flags))
+  if (!pickle.ReadInt(&iter, &flags))
     return false;
   int version = flags & RESPONSE_INFO_VERSION_MASK;
   if (version < RESPONSE_INFO_MINIMUM_VERSION ||
@@ -171,57 +171,57 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
 
   // Read request-time
   int64 time_val;
-  if (!iter.ReadInt64(&time_val))
+  if (!pickle.ReadInt64(&iter, &time_val))
     return false;
   request_time = Time::FromInternalValue(time_val);
   was_cached = true;  // Set status to show cache resurrection.
 
   // Read response-time
-  if (!iter.ReadInt64(&time_val))
+  if (!pickle.ReadInt64(&iter, &time_val))
     return false;
   response_time = Time::FromInternalValue(time_val);
 
   // Read response-headers
-  headers = new HttpResponseHeaders(&iter);
+  headers = new HttpResponseHeaders(pickle, &iter);
   if (headers->response_code() == -1)
     return false;
 
   // Read ssl-info
   if (flags & RESPONSE_INFO_HAS_CERT) {
     X509Certificate::PickleType type = GetPickleTypeForVersion(version);
-    ssl_info.cert = X509Certificate::CreateFromPickle(&iter, type);
+    ssl_info.cert = X509Certificate::CreateFromPickle(pickle, &iter, type);
     if (!ssl_info.cert.get())
       return false;
   }
   if (flags & RESPONSE_INFO_HAS_CERT_STATUS) {
     CertStatus cert_status;
-    if (!iter.ReadUInt32(&cert_status))
+    if (!pickle.ReadUInt32(&iter, &cert_status))
       return false;
     ssl_info.cert_status = cert_status;
   }
   if (flags & RESPONSE_INFO_HAS_SECURITY_BITS) {
     int security_bits;
-    if (!iter.ReadInt(&security_bits))
+    if (!pickle.ReadInt(&iter, &security_bits))
       return false;
     ssl_info.security_bits = security_bits;
   }
 
   if (flags & RESPONSE_INFO_HAS_SSL_CONNECTION_STATUS) {
     int connection_status;
-    if (!iter.ReadInt(&connection_status))
+    if (!pickle.ReadInt(&iter, &connection_status))
       return false;
     ssl_info.connection_status = connection_status;
   }
 
   if (flags & RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS) {
     int num_scts;
-    if (!iter.ReadInt(&num_scts))
+    if (!pickle.ReadInt(&iter, &num_scts))
       return false;
     for (int i = 0; i < num_scts; ++i) {
       scoped_refptr<ct::SignedCertificateTimestamp> sct(
           ct::SignedCertificateTimestamp::CreateFromPickle(&iter));
       uint16 status;
-      if (!sct.get() || !iter.ReadUInt16(&status))
+      if (!sct.get() || !pickle.ReadUInt16(&iter, &status))
         return false;
       ssl_info.signed_certificate_timestamps.push_back(
           SignedCertificateTimestampAndStatus(
@@ -231,16 +231,16 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
 
   // Read vary-data
   if (flags & RESPONSE_INFO_HAS_VARY_DATA) {
-    if (!vary_data.InitFromPickle(&iter))
+    if (!vary_data.InitFromPickle(pickle, &iter))
       return false;
   }
 
   // Read socket_address.
   std::string socket_address_host;
-  if (iter.ReadString(&socket_address_host)) {
+  if (pickle.ReadString(&iter, &socket_address_host)) {
     // If the host was written, we always expect the port to follow.
     uint16 socket_address_port;
-    if (!iter.ReadUInt16(&socket_address_port))
+    if (!pickle.ReadUInt16(&iter, &socket_address_port))
       return false;
     socket_address = HostPortPair(socket_address_host, socket_address_port);
   } else if (version > 1) {
@@ -251,14 +251,14 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
 
   // Read protocol-version.
   if (flags & RESPONSE_INFO_HAS_NPN_NEGOTIATED_PROTOCOL) {
-    if (!iter.ReadString(&npn_negotiated_protocol))
+    if (!pickle.ReadString(&iter, &npn_negotiated_protocol))
       return false;
   }
 
   // Read connection info.
   if (flags & RESPONSE_INFO_HAS_CONNECTION_INFO) {
     int value;
-    if (!iter.ReadInt(&value))
+    if (!pickle.ReadInt(&iter, &value))
       return false;
 
     if (value > static_cast<int>(CONNECTION_INFO_UNKNOWN) &&

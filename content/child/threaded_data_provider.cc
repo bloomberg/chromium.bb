@@ -87,7 +87,7 @@ bool DataProviderMessageFilter::OnMessageReceived(
   int request_id;
 
   PickleIterator iter(message);
-  if (!iter.ReadInt(&request_id)) {
+  if (!message.ReadInt(&iter, &request_id)) {
     NOTREACHED() << "malformed resource message";
     return true;
   }

@@ -306,7 +306,8 @@ X509Certificate* X509Certificate::CreateFromBytes(const char* data,
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromPickle(PickleIterator* pickle_iter,
+X509Certificate* X509Certificate::CreateFromPickle(const Pickle& pickle,
+                                                   PickleIterator* pickle_iter,
                                                    PickleType type) {
   if (type == PICKLETYPE_CERTIFICATE_CHAIN_V3) {
     int chain_length = 0;

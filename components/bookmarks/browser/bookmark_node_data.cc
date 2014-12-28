@@ -57,12 +57,13 @@ void BookmarkNodeData::Element::WriteToPickle(Pickle* pickle) const {
   }
 }
 
-bool BookmarkNodeData::Element::ReadFromPickle(PickleIterator* iterator) {
+bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
+                                               PickleIterator* iterator) {
   std::string url_spec;
-  if (!iterator->ReadBool(&is_url) ||
-      !iterator->ReadString(&url_spec) ||
-      !iterator->ReadString16(&title) ||
-      !iterator->ReadInt64(&id_)) {
+  if (!pickle->ReadBool(iterator, &is_url) ||
+      !pickle->ReadString(iterator, &url_spec) ||
+      !pickle->ReadString16(iterator, &title) ||
+      !pickle->ReadInt64(iterator, &id_)) {
     return false;
   }
   url = GURL(url_spec);
@@ -70,13 +71,13 @@ bool BookmarkNodeData::Element::ReadFromPickle(PickleIterator* iterator) {
   date_folder_modified = base::Time();
   meta_info_map.clear();
   size_t meta_field_count;
-  if (!iterator->ReadSizeT(&meta_field_count))
+  if (!pickle->ReadSizeT(iterator, &meta_field_count))
     return false;
   for (size_t i = 0; i < meta_field_count; ++i) {
     std::string key;
     std::string value;
-    if (!iterator->ReadString(&key) ||
-        !iterator->ReadString(&value)) {
+    if (!pickle->ReadString(iterator, &key) ||
+        !pickle->ReadString(iterator, &value)) {
       return false;
     }
     meta_info_map[key] = value;
@@ -84,12 +85,12 @@ bool BookmarkNodeData::Element::ReadFromPickle(PickleIterator* iterator) {
   children.clear();
   if (!is_url) {
     size_t children_count;
-    if (!iterator->ReadSizeT(&children_count))
+    if (!pickle->ReadSizeT(iterator, &children_count))
       return false;
     children.reserve(children_count);
     for (size_t i = 0; i < children_count; ++i) {
       children.push_back(Element());
-      if (!children.back().ReadFromPickle(iterator))
+      if (!children.back().ReadFromPickle(pickle, iterator))
         return false;
     }
   }
@@ -244,11 +245,11 @@ bool BookmarkNodeData::ReadFromPickle(Pickle* pickle) {
   PickleIterator data_iterator(*pickle);
   size_t element_count;
   if (profile_path_.ReadFromPickle(&data_iterator) &&
-      data_iterator.ReadSizeT(&element_count)) {
+      pickle->ReadSizeT(&data_iterator, &element_count)) {
     std::vector<Element> tmp_elements;
     tmp_elements.resize(element_count);
     for (size_t i = 0; i < element_count; ++i) {
-      if (!tmp_elements[i].ReadFromPickle(&data_iterator)) {
+      if (!tmp_elements[i].ReadFromPickle(pickle, &data_iterator)) {
         return false;
       }
     }

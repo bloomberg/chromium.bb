@@ -67,7 +67,7 @@ bool QuicServerInfo::ParseInner(const string& data) {
   PickleIterator iter(p);
 
   int version = -1;
-  if (!iter.ReadInt(&version)) {
+  if (!p.ReadInt(&iter, &version)) {
     DVLOG(1) << "Missing version";
     return false;
   }
@@ -77,29 +77,29 @@ bool QuicServerInfo::ParseInner(const string& data) {
     return false;
   }
 
-  if (!iter.ReadString(&state->server_config)) {
+  if (!p.ReadString(&iter, &state->server_config)) {
     DVLOG(1) << "Malformed server_config";
     return false;
   }
-  if (!iter.ReadString(&state->source_address_token)) {
+  if (!p.ReadString(&iter, &state->source_address_token)) {
     DVLOG(1) << "Malformed source_address_token";
     return false;
   }
-  if (!iter.ReadString(&state->server_config_sig)) {
+  if (!p.ReadString(&iter, &state->server_config_sig)) {
     DVLOG(1) << "Malformed server_config_sig";
     return false;
   }
 
   // Read certs.
   uint32 num_certs;
-  if (!iter.ReadUInt32(&num_certs)) {
+  if (!p.ReadUInt32(&iter, &num_certs)) {
     DVLOG(1) << "Malformed num_certs";
     return false;
   }
 
   for (uint32 i = 0; i < num_certs; i++) {
     string cert;
-    if (!iter.ReadString(&cert)) {
+    if (!p.ReadString(&iter, &cert)) {
       DVLOG(1) << "Malformed cert";
       return false;
     }

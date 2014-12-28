@@ -156,10 +156,11 @@ HttpResponseHeaders::HttpResponseHeaders(const std::string& raw_input)
                                    HttpUtil::GetStatusCodesForHistogram());
 }
 
-HttpResponseHeaders::HttpResponseHeaders(PickleIterator* iter)
+HttpResponseHeaders::HttpResponseHeaders(const Pickle& pickle,
+                                         PickleIterator* iter)
     : response_code_(-1) {
   std::string raw_input;
-  if (iter->ReadString(&raw_input))
+  if (pickle.ReadString(iter, &raw_input))
     Parse(raw_input);
 }
 

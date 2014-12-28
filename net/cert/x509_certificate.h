@@ -179,7 +179,8 @@ class NET_EXPORT X509Certificate
   // Returns NULL on failure.
   //
   // The returned pointer must be stored in a scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromPickle(PickleIterator* pickle_iter,
+  static X509Certificate* CreateFromPickle(const Pickle& pickle,
+                                           PickleIterator* pickle_iter,
                                            PickleType type);
 
   // Parses all of the certificates possible from |data|. |format| is a

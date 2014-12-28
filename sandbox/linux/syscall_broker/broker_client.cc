@@ -92,7 +92,7 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
   int return_value = -1;
   // Now deserialize the return value and eventually return the file
   // descriptor.
-  if (iter.ReadInt(&return_value)) {
+  if (read_pickle.ReadInt(&iter, &return_value)) {
     switch (syscall_type) {
       case COMMAND_ACCESS:
         // We should never have a fd to return.

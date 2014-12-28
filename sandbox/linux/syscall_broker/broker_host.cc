@@ -110,18 +110,21 @@ void AccessFileForIPC(const BrokerPolicy& policy,
   }
 }
 
-// Handle a |command_type| request contained in |iter| and send the reply
+// Handle a |command_type| request contained in |read_pickle| and send the reply
 // on |reply_ipc|.
 // Currently COMMAND_OPEN and COMMAND_ACCESS are supported.
 bool HandleRemoteCommand(const BrokerPolicy& policy,
                          IPCCommand command_type,
                          int reply_ipc,
+                         const Pickle& read_pickle,
                          PickleIterator iter) {
   // Currently all commands have two arguments: filename and flags.
   std::string requested_filename;
   int flags = 0;
-  if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
+  if (!read_pickle.ReadString(&iter, &requested_filename) ||
+      !read_pickle.ReadInt(&iter, &flags)) {
     return false;
+  }
 
   Pickle write_pickle;
   std::vector<int> opened_files;
@@ -197,7 +200,7 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   Pickle pickle(buf, msg_len);
   PickleIterator iter(pickle);
   int command_type;
-  if (iter.ReadInt(&command_type)) {
+  if (pickle.ReadInt(&iter, &command_type)) {
     bool command_handled = false;
     // Go through all the possible IPC messages.
     switch (command_type) {
@@ -206,7 +209,7 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
         // We reply on the file descriptor sent to us via the IPC channel.
         command_handled = HandleRemoteCommand(
             broker_policy_, static_cast<IPCCommand>(command_type),
-            temporary_ipc.get(), iter);
+            temporary_ipc.get(), pickle, iter);
         break;
       default:
         NOTREACHED();
