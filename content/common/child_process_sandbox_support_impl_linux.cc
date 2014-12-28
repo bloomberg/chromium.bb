@@ -45,12 +45,12 @@ void GetFallbackFontForCharacter(int32_t character,
   if (n != -1) {
     Pickle reply(reinterpret_cast<char*>(buf), n);
     PickleIterator pickle_iter(reply);
-    if (reply.ReadString(&pickle_iter, &family_name) &&
-        reply.ReadString(&pickle_iter, &filename) &&
-        reply.ReadInt(&pickle_iter, &fontconfigInterfaceId) &&
-        reply.ReadInt(&pickle_iter, &ttcIndex) &&
-        reply.ReadBool(&pickle_iter, &isBold) &&
-        reply.ReadBool(&pickle_iter, &isItalic)) {
+    if (pickle_iter.ReadString(&family_name) &&
+        pickle_iter.ReadString(&filename) &&
+        pickle_iter.ReadInt(&fontconfigInterfaceId) &&
+        pickle_iter.ReadInt(&ttcIndex) &&
+        pickle_iter.ReadBool(&isBold) &&
+        pickle_iter.ReadBool(&isItalic)) {
       fallbackFont->name = family_name;
       fallbackFont->filename = filename;
       fallbackFont->fontconfigInterfaceId = fontconfigInterfaceId;
@@ -94,13 +94,13 @@ void GetRenderStyleForStrike(const char* family,
   PickleIterator pickle_iter(reply);
   int use_bitmaps, use_autohint, use_hinting, hint_style, use_antialias;
   int use_subpixel_rendering, use_subpixel_positioning;
-  if (reply.ReadInt(&pickle_iter, &use_bitmaps) &&
-      reply.ReadInt(&pickle_iter, &use_autohint) &&
-      reply.ReadInt(&pickle_iter, &use_hinting) &&
-      reply.ReadInt(&pickle_iter, &hint_style) &&
-      reply.ReadInt(&pickle_iter, &use_antialias) &&
-      reply.ReadInt(&pickle_iter, &use_subpixel_rendering) &&
-      reply.ReadInt(&pickle_iter, &use_subpixel_positioning)) {
+  if (pickle_iter.ReadInt(&use_bitmaps) &&
+      pickle_iter.ReadInt(&use_autohint) &&
+      pickle_iter.ReadInt(&use_hinting) &&
+      pickle_iter.ReadInt(&hint_style) &&
+      pickle_iter.ReadInt(&use_antialias) &&
+      pickle_iter.ReadInt(&use_subpixel_rendering) &&
+      pickle_iter.ReadInt(&use_subpixel_positioning)) {
     out->useBitmaps = use_bitmaps;
     out->useAutoHint = use_autohint;
     out->useHinting = use_hinting;

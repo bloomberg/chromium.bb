@@ -44,7 +44,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
 
   PickleIterator iter(m);
   std::string vs;
-  EXPECT_FALSE(m.ReadString(&iter, &vs));
+  EXPECT_FALSE(iter.ReadString(&vs));
 }
 
 TEST(IPCMessageIntegrity, ReadBeyondBufferWStr) {
@@ -57,7 +57,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferWStr) {
 
   PickleIterator iter(m);
   std::wstring vs;
-  EXPECT_FALSE(m.ReadWString(&iter, &vs));
+  EXPECT_FALSE(iter.ReadWString(&vs));
 }
 
 TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
@@ -68,7 +68,7 @@ TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
 
   PickleIterator iter(m);
   const char* data = NULL;
-  EXPECT_TRUE(m.ReadBytes(&iter, &data, sizeof(int)));
+  EXPECT_TRUE(iter.ReadBytes(&data, sizeof(int)));
 }
 
 TEST(IPCMessageIntegrity, ReadVectorNegativeSize) {
@@ -211,9 +211,9 @@ class FuzzerClientListener : public SimpleListener {
     int msg_value1 = 0;
     int msg_value2 = 0;
     PickleIterator iter(*last_msg_);
-    if (!last_msg_->ReadInt(&iter, &msg_value1))
+    if (!iter.ReadInt(&msg_value1))
       return false;
-    if (!last_msg_->ReadInt(&iter, &msg_value2))
+    if (!iter.ReadInt(&msg_value2))
       return false;
     if ((msg_value2 + 1) != msg_value1)
       return false;

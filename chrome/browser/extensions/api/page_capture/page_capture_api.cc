@@ -74,7 +74,7 @@ bool PageCaptureSaveAsMHTMLFunction::OnMessageReceived(
 
   int message_request_id;
   PickleIterator iter(message);
-  if (!message.ReadInt(&iter, &message_request_id)) {
+  if (!iter.ReadInt(&message_request_id)) {
     NOTREACHED() << "malformed extension message";
     return true;
   }

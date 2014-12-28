@@ -185,24 +185,24 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
   PickleIterator iter(pickle);
 
   int kind;
-  if (pickle.ReadInt(&iter, &kind)) {
+  if (iter.ReadInt(&kind)) {
     switch (kind) {
       case kZygoteCommandFork:
         // This function call can return multiple times, once per fork().
-        return HandleForkRequest(fd, pickle, iter, fds.Pass());
+        return HandleForkRequest(fd, iter, fds.Pass());
 
       case kZygoteCommandReap:
         if (!fds.empty())
           break;
-        HandleReapRequest(fd, pickle, iter);
+        HandleReapRequest(fd, iter);
         return false;
       case kZygoteCommandGetTerminationStatus:
         if (!fds.empty())
           break;
-        HandleGetTerminationStatus(fd, pickle, iter);
+        HandleGetTerminationStatus(fd, iter);
         return false;
       case kZygoteCommandGetSandboxStatus:
-        HandleGetSandboxStatus(fd, pickle, iter);
+        HandleGetSandboxStatus(fd, iter);
         return false;
       case kZygoteCommandForkRealPID:
         // This shouldn't happen in practice, but some failure paths in
@@ -223,11 +223,10 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
 
 // TODO(jln): remove callers to this broken API. See crbug.com/274855.
 void Zygote::HandleReapRequest(int fd,
-                               const Pickle& pickle,
                                PickleIterator iter) {
   base::ProcessId child;
 
-  if (!pickle.ReadInt(&iter, &child)) {
+  if (!iter.ReadInt(&child)) {
     LOG(WARNING) << "Error parsing reap request from browser";
     return;
   }
@@ -307,13 +306,11 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
 }
 
 void Zygote::HandleGetTerminationStatus(int fd,
-                                        const Pickle& pickle,
                                         PickleIterator iter) {
   bool known_dead;
   base::ProcessHandle child_requested;
 
-  if (!pickle.ReadBool(&iter, &known_dead) ||
-      !pickle.ReadInt(&iter, &child_requested)) {
+  if (!iter.ReadBool(&known_dead) || !iter.ReadInt(&child_requested)) {
     LOG(WARNING) << "Error parsing GetTerminationStatus request "
                  << "from browser";
     return;
@@ -428,9 +425,9 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     PickleIterator iter(pickle);
 
     int kind;
-    CHECK(pickle.ReadInt(&iter, &kind));
+    CHECK(iter.ReadInt(&kind));
     CHECK(kind == kZygoteCommandForkRealPID);
-    CHECK(pickle.ReadInt(&iter, &real_pid));
+    CHECK(iter.ReadInt(&real_pid));
   }
 
   // Fork failed.
@@ -466,8 +463,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   return real_pid;
 }
 
-base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
-                                        PickleIterator iter,
+base::ProcessId Zygote::ReadArgsAndFork(PickleIterator iter,
                                         ScopedVector<base::ScopedFD> fds,
                                         std::string* uma_name,
                                         int* uma_sample,
@@ -481,21 +477,21 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   const std::string channel_id_prefix = std::string("--")
       + switches::kProcessChannelID + std::string("=");
 
-  if (!pickle.ReadString(&iter, &process_type))
+  if (!iter.ReadString(&process_type))
     return -1;
-  if (!pickle.ReadInt(&iter, &argc))
+  if (!iter.ReadInt(&argc))
     return -1;
 
   for (int i = 0; i < argc; ++i) {
     std::string arg;
-    if (!pickle.ReadString(&iter, &arg))
+    if (!iter.ReadString(&arg))
       return -1;
     args.push_back(arg);
     if (arg.compare(0, channel_id_prefix.length(), channel_id_prefix) == 0)
       channel_id = arg.substr(channel_id_prefix.length());
   }
 
-  if (!pickle.ReadInt(&iter, &numfds))
+  if (!iter.ReadInt(&numfds))
     return -1;
   if (numfds != static_cast<int>(fds.size()))
     return -1;
@@ -508,7 +504,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   // Remaining FDs are for the global descriptor mapping.
   for (int i = 1; i < numfds; ++i) {
     base::GlobalDescriptors::Key key;
-    if (!pickle.ReadUInt32(&iter, &key))
+    if (!iter.ReadUInt32(&key))
       return -1;
     mapping.push_back(std::make_pair(key, fds[i]->get()));
   }
@@ -553,14 +549,13 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
 }
 
 bool Zygote::HandleForkRequest(int fd,
-                               const Pickle& pickle,
                                PickleIterator iter,
                                ScopedVector<base::ScopedFD> fds) {
   std::string uma_name;
   int uma_sample;
   int uma_boundary_value;
   base::ProcessId child_pid = ReadArgsAndFork(
-      pickle, iter, fds.Pass(), &uma_name, &uma_sample, &uma_boundary_value);
+      iter, fds.Pass(), &uma_name, &uma_sample, &uma_boundary_value);
   if (child_pid == 0)
     return true;
   // If there's no UMA report for this particular fork, then check if any
@@ -584,7 +579,6 @@ bool Zygote::HandleForkRequest(int fd,
 }
 
 bool Zygote::HandleGetSandboxStatus(int fd,
-                                    const Pickle& pickle,
                                     PickleIterator iter) {
   if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_))) !=
                    sizeof(sandbox_flags_)) {

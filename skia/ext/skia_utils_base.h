@@ -12,20 +12,20 @@ namespace skia {
 
 // Return true if the pickle/iterator contains a string. If so, and if str
 // is not null, copy that string into str.
-SK_API bool ReadSkString(const Pickle& pickle, PickleIterator* iter,
-                         SkString* str);
+SK_API bool ReadSkString(PickleIterator* iter, SkString* str);
 
 // Return true if the pickle/iterator contains a FontIdentity. If so, and if
 // identity is not null, copy it into identity.
-SK_API bool ReadSkFontIdentity(const Pickle& pickle, PickleIterator* iter,
+SK_API bool ReadSkFontIdentity(PickleIterator* iter,
                                SkFontConfigInterface::FontIdentity* identity);
 
 // Return true if str can be written into the request pickle.
 SK_API bool WriteSkString(Pickle* pickle, const SkString& str);
 
 // Return true if identity can be written into the request pickle.
-SK_API bool WriteSkFontIdentity(Pickle* pickle,
-                          const SkFontConfigInterface::FontIdentity& identity);
+SK_API bool WriteSkFontIdentity(
+    Pickle* pickle,
+    const SkFontConfigInterface::FontIdentity& identity);
 
 }  // namespace skia
 

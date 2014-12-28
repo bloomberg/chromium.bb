@@ -149,7 +149,7 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
 #endif
   // When reading, the dispatcher should be set when we get a Deserialize
   // call (which will supply a dispatcher).
-  if (!m->ReadBool(iter, &is_valid_var_))
+  if (!iter->ReadBool(&is_valid_var_))
       return false;
   if (is_valid_var_) {
     raw_var_data_ = RawVarDataGraph::Read(m, iter);

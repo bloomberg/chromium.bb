@@ -94,7 +94,7 @@ void ReleaseHandlesInMessage(const IPC::Message& message) {
   if (message.type() == ResourceMsg_SetDataBuffer::ID) {
     PickleIterator iter(message);
     int request_id;
-    CHECK(message.ReadInt(&iter, &request_id));
+    CHECK(iter.ReadInt(&request_id));
     base::SharedMemoryHandle shm_handle;
     if (IPC::ParamTraits<base::SharedMemoryHandle>::Read(&message,
                                                          &iter,

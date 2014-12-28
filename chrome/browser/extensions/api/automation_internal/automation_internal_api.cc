@@ -83,7 +83,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
     // There may be several requests in flight; check this response matches.
     int message_request_id = 0;
     PickleIterator iter(message);
-    if (!message.ReadInt(&iter, &message_request_id))
+    if (!iter.ReadInt(&message_request_id))
       return false;
 
     if (message_request_id != request_id_)

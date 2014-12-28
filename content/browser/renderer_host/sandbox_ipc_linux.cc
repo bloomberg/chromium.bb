@@ -144,23 +144,23 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
   PickleIterator iter(pickle);
 
   int kind;
-  if (!pickle.ReadInt(&iter, &kind))
+  if (!iter.ReadInt(&kind))
     return;
 
   if (kind == FontConfigIPC::METHOD_MATCH) {
-    HandleFontMatchRequest(fd, pickle, iter, fds.get());
+    HandleFontMatchRequest(fd, iter, fds.get());
   } else if (kind == FontConfigIPC::METHOD_OPEN) {
-    HandleFontOpenRequest(fd, pickle, iter, fds.get());
+    HandleFontOpenRequest(fd, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
-    HandleGetFallbackFontForChar(fd, pickle, iter, fds.get());
+    HandleGetFallbackFontForChar(fd, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
-    HandleLocaltime(fd, pickle, iter, fds.get());
+    HandleLocaltime(fd, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
-    HandleGetStyleForStrike(fd, pickle, iter, fds.get());
+    HandleGetStyleForStrike(fd, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
-    HandleMakeSharedMemorySegment(fd, pickle, iter, fds.get());
+    HandleMakeSharedMemorySegment(fd, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_MATCH_WITH_FALLBACK) {
-    HandleMatchWithFallback(fd, pickle, iter, fds.get());
+    HandleMatchWithFallback(fd, iter, fds.get());
   }
 }
 
@@ -176,13 +176,11 @@ int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
 
 void SandboxIPCHandler::HandleFontMatchRequest(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   uint32_t requested_style;
   std::string family;
-  if (!pickle.ReadString(&iter, &family) ||
-      !pickle.ReadUInt32(&iter, &requested_style))
+  if (!iter.ReadString(&family) || !iter.ReadUInt32(&requested_style))
     return;
 
   SkFontConfigInterface::FontIdentity result_identity;
@@ -216,11 +214,10 @@ void SandboxIPCHandler::HandleFontMatchRequest(
 
 void SandboxIPCHandler::HandleFontOpenRequest(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   uint32_t index;
-  if (!pickle.ReadUInt32(&iter, &index))
+  if (!iter.ReadUInt32(&index))
     return;
   if (index >= static_cast<uint32_t>(paths_.count()))
     return;
@@ -245,7 +242,6 @@ void SandboxIPCHandler::HandleFontOpenRequest(
 
 void SandboxIPCHandler::HandleGetFallbackFontForChar(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is
@@ -253,11 +249,11 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
 
   EnsureWebKitInitialized();
   WebUChar32 c;
-  if (!pickle.ReadInt(&iter, &c))
+  if (!iter.ReadInt(&c))
     return;
 
   std::string preferred_locale;
-  if (!pickle.ReadString(&iter, &preferred_locale))
+  if (!iter.ReadString(&preferred_locale))
     return;
 
   blink::WebFallbackFont fallbackFont;
@@ -286,17 +282,16 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
 
 void SandboxIPCHandler::HandleGetStyleForStrike(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   std::string family;
   bool bold, italic;
   uint16 pixel_size;
 
-  if (!pickle.ReadString(&iter, &family) ||
-      !pickle.ReadBool(&iter, &bold) ||
-      !pickle.ReadBool(&iter, &italic) ||
-      !pickle.ReadUInt16(&iter, &pixel_size)) {
+  if (!iter.ReadString(&family) ||
+      !iter.ReadBool(&bold) ||
+      !iter.ReadBool(&italic) ||
+      !iter.ReadUInt16(&pixel_size)) {
     return;
   }
 
@@ -325,16 +320,13 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
 
 void SandboxIPCHandler::HandleLocaltime(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is in zygote_main_linux.cc
 
   std::string time_string;
-  if (!pickle.ReadString(&iter, &time_string) ||
-      time_string.size() != sizeof(time_t)) {
+  if (!iter.ReadString(&time_string) || time_string.size() != sizeof(time_t))
     return;
-  }
 
   time_t time;
   memcpy(&time, time_string.data(), sizeof(time));
@@ -358,15 +350,14 @@ void SandboxIPCHandler::HandleLocaltime(
 
 void SandboxIPCHandler::HandleMakeSharedMemorySegment(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   base::SharedMemoryCreateOptions options;
   uint32_t size;
-  if (!pickle.ReadUInt32(&iter, &size))
+  if (!iter.ReadUInt32(&size))
     return;
   options.size = size;
-  if (!pickle.ReadBool(&iter, &options.executable))
+  if (!iter.ReadBool(&options.executable))
     return;
   int shm_fd = -1;
   base::SharedMemory shm;
@@ -378,18 +369,17 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
 
 void SandboxIPCHandler::HandleMatchWithFallback(
     int fd,
-    const Pickle& pickle,
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   std::string face;
   bool is_bold, is_italic;
   uint32 charset, fallback_family;
 
-  if (!pickle.ReadString(&iter, &face) || face.empty() ||
-      !pickle.ReadBool(&iter, &is_bold) ||
-      !pickle.ReadBool(&iter, &is_italic) ||
-      !pickle.ReadUInt32(&iter, &charset) ||
-      !pickle.ReadUInt32(&iter, &fallback_family)) {
+  if (!iter.ReadString(&face) || face.empty() ||
+      !iter.ReadBool(&is_bold) ||
+      !iter.ReadBool(&is_italic) ||
+      !iter.ReadUInt32(&charset) ||
+      !iter.ReadUInt32(&fallback_family)) {
     return;
   }
 

@@ -117,7 +117,7 @@ struct ParamTraits<bool> {
     m->WriteBool(p);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return m->ReadBool(iter, r);
+    return iter->ReadBool(r);
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -145,7 +145,7 @@ struct ParamTraits<int> {
     m->WriteInt(p);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return m->ReadInt(iter, r);
+    return iter->ReadInt(r);
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -157,7 +157,7 @@ struct ParamTraits<unsigned int> {
     m->WriteInt(p);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return m->ReadInt(iter, reinterpret_cast<int*>(r));
+    return iter->ReadInt(reinterpret_cast<int*>(r));
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -169,7 +169,7 @@ struct ParamTraits<long> {
     m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return m->ReadLong(iter, r);
+    return iter->ReadLong(r);
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -181,7 +181,7 @@ struct ParamTraits<unsigned long> {
     m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return m->ReadLong(iter, reinterpret_cast<long*>(r));
+    return iter->ReadLong(reinterpret_cast<long*>(r));
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -194,7 +194,7 @@ struct ParamTraits<long long> {
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
-    return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
+    return iter->ReadInt64(reinterpret_cast<int64*>(r));
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -207,7 +207,7 @@ struct ParamTraits<unsigned long long> {
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
-    return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
+    return iter->ReadInt64(reinterpret_cast<int64*>(r));
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -222,7 +222,7 @@ struct IPC_EXPORT ParamTraits<float> {
     m->WriteFloat(p);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return m->ReadFloat(iter, r);
+    return iter->ReadFloat(r);
   }
   static void Log(const param_type& p, std::string* l);
 };
@@ -245,7 +245,7 @@ struct ParamTraits<std::string> {
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
-    return m->ReadString(iter, r);
+    return iter->ReadString(r);
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -258,7 +258,7 @@ struct ParamTraits<std::wstring> {
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
-    return m->ReadWString(iter, r);
+    return iter->ReadWString(r);
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -274,7 +274,7 @@ struct ParamTraits<base::string16> {
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
-    return m->ReadString16(iter, r);
+    return iter->ReadString16(r);
   }
   IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
@@ -316,7 +316,7 @@ struct ParamTraits<std::vector<P> > {
                    param_type* r) {
     int size;
     // ReadLength() checks for < 0 itself.
-    if (!m->ReadLength(iter, &size))
+    if (!iter->ReadLength(&size))
       return false;
     // Resizing beforehand is not safe, see BUG 1006367 for details.
     if (INT_MAX / sizeof(P) <= static_cast<size_t>(size))
@@ -349,7 +349,7 @@ struct ParamTraits<std::set<P> > {
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
     int size;
-    if (!m->ReadLength(iter, &size))
+    if (!iter->ReadLength(&size))
       return false;
     for (int i = 0; i < size; ++i) {
       P item;
@@ -651,7 +651,7 @@ struct ParamTraits<ScopedVector<P> > {
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
     int size = 0;
-    if (!m->ReadLength(iter, &size))
+    if (!iter->ReadLength(&size))
       return false;
     if (INT_MAX/sizeof(P) <= static_cast<size_t>(size))
       return false;
@@ -690,7 +690,7 @@ struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
     int size;
-    if (!m->ReadLength(iter, &size))
+    if (!iter->ReadLength(&size))
       return false;
     for (int i = 0; i < size; ++i) {
       K key;

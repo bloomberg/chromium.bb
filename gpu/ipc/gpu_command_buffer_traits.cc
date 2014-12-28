@@ -63,7 +63,7 @@ bool ParamTraits<gpu::Mailbox>::Read(const Message* m,
                                      PickleIterator* iter,
                                      param_type* p) {
   const char* bytes = NULL;
-  if (!m->ReadBytes(iter, &bytes, sizeof(p->name)))
+  if (!iter->ReadBytes(&bytes, sizeof(p->name)))
     return false;
   DCHECK(bytes);
   memcpy(p->name, bytes, sizeof(p->name));
@@ -106,7 +106,7 @@ bool ParamTraits<gpu::ValueState>::Read(const Message* m,
                                         param_type* p) {
   int length;
   const char* data = NULL;
-  if (!m->ReadData(iter, &data, &length) || length != sizeof(gpu::ValueState))
+  if (!iter->ReadData(&data, &length) || length != sizeof(gpu::ValueState))
     return false;
   DCHECK(data);
   memcpy(p, data, sizeof(gpu::ValueState));

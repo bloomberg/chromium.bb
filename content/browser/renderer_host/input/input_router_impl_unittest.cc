@@ -49,7 +49,7 @@ const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
   PickleIterator iter(message);
   const char* data;
   int data_length;
-  if (!message.ReadData(&iter, &data, &data_length))
+  if (!iter.ReadData(&data, &data_length))
     return NULL;
   return reinterpret_cast<const WebInputEvent*>(data);
 }

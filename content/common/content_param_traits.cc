@@ -20,7 +20,7 @@ bool ParamTraits<gfx::Range>::Read(const Message* m,
                                   PickleIterator* iter,
                                   gfx::Range* r) {
   size_t start, end;
-  if (!m->ReadSizeT(iter, &start) || !m->ReadSizeT(iter, &end))
+  if (!iter->ReadSizeT(&start) || !iter->ReadSizeT(&end))
     return false;
   r->set_start(start);
   r->set_end(end);
@@ -40,7 +40,7 @@ bool ParamTraits<WebInputEventPointer>::Read(const Message* m,
                                              param_type* r) {
   const char* data;
   int data_length;
-  if (!m->ReadData(iter, &data, &data_length)) {
+  if (!iter->ReadData(&data, &data_length)) {
     NOTREACHED();
     return false;
   }

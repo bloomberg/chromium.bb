@@ -89,11 +89,11 @@ struct ParamTraits<gfx::NativeWindow> {
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
 #if defined(OS_WIN)
-    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
+    return iter->ReadUInt32(reinterpret_cast<uint32*>(r));
 #else
     const char *data;
     int data_size = 0;
-    bool result = m->ReadData(iter, &data, &data_size);
+    bool result = iter->ReadData(&data, &data_size);
     if (result && data_size == sizeof(gfx::NativeWindow)) {
       memcpy(r, data, sizeof(gfx::NativeWindow));
     } else {

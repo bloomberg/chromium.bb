@@ -113,7 +113,7 @@ bool SyncMessage::ReadSyncHeader(const Message& msg, SyncHeader* header) {
   DCHECK(msg.is_sync() || msg.is_reply());
 
   PickleIterator iter(msg);
-  bool result = msg.ReadInt(&iter, &header->message_id);
+  bool result = iter.ReadInt(&header->message_id);
   if (!result) {
     NOTREACHED();
     return false;

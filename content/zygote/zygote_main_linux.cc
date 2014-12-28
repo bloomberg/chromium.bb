@@ -134,8 +134,8 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   PickleIterator iter(reply);
   std::string result, timezone;
-  if (!reply.ReadString(&iter, &result) ||
-      !reply.ReadString(&iter, &timezone) ||
+  if (!iter.ReadString(&result) ||
+      !iter.ReadString(&timezone) ||
       result.size() != sizeof(struct tm)) {
     memset(output, 0, sizeof(struct tm));
     return;

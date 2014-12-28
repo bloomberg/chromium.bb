@@ -81,18 +81,18 @@ bool ReadMenuItem(int depth,
                   PickleIterator* iter,
                   PP_Flash_MenuItem* menu_item) {
   uint32_t type;
-  if (!m->ReadUInt32(iter, &type))
+  if (!iter->ReadUInt32(&type))
     return false;
   if (type > PP_FLASH_MENUITEM_TYPE_SUBMENU)
     return false;
   menu_item->type = static_cast<PP_Flash_MenuItem_Type>(type);
   std::string name;
-  if (!m->ReadString(iter, &name))
+  if (!iter->ReadString(&name))
     return false;
   menu_item->name = new char[name.size() + 1];
   std::copy(name.begin(), name.end(), menu_item->name);
   menu_item->name[name.size()] = 0;
-  if (!m->ReadInt(iter, &menu_item->id))
+  if (!iter->ReadInt(&menu_item->id))
     return false;
   if (!IPC::ParamTraits<PP_Bool>::Read(m, iter, &menu_item->enabled))
     return false;
@@ -116,7 +116,7 @@ PP_Flash_Menu* ReadMenu(int depth,
   PP_Flash_Menu* menu = new PP_Flash_Menu;
   menu->items = NULL;
 
-  if (!m->ReadUInt32(iter, &menu->count)) {
+  if (!iter->ReadUInt32(&menu->count)) {
     FreeMenu(menu);
     return NULL;
   }

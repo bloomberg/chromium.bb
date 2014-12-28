@@ -213,7 +213,7 @@ void PpapiDispatcher::OnPluginDispatcherMessageReceived(
   // The first parameter should be a plugin dispatcher ID.
   PickleIterator iter(msg);
   uint32 id = 0;
-  if (!msg.ReadUInt32(&iter, &id)) {
+  if (!iter.ReadUInt32(&id)) {
     NOTREACHED();
     return;
   }

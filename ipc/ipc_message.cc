@@ -139,7 +139,7 @@ bool Message::WriteBorrowingFile(const base::PlatformFile& descriptor) {
 
 bool Message::ReadFile(PickleIterator* iter, base::ScopedFD* descriptor) const {
   int descriptor_index;
-  if (!ReadInt(iter, &descriptor_index))
+  if (!iter->ReadInt(&descriptor_index))
     return false;
 
   FileDescriptorSet* file_descriptor_set = file_descriptor_set_.get();

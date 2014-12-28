@@ -228,7 +228,7 @@ bool ParamTraits<skia::RefPtr<SkImageFilter> >::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   const char* data = 0;
   int length = 0;
-  if (!m->ReadData(iter, &data, &length))
+  if (!iter->ReadData(&data, &length))
     return false;
   if (length > 0) {
     SkFlattenable* flattenable = SkValidatingDeserializeFlattenable(
@@ -262,7 +262,7 @@ void ParamTraits<gfx::Transform>::Write(
 bool ParamTraits<gfx::Transform>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   const char* column_major_data;
-  if (!m->ReadBytes(iter, &column_major_data, sizeof(SkMScalar) * 16))
+  if (!iter->ReadBytes(&column_major_data, sizeof(SkMScalar) * 16))
     return false;
   r->matrix().setColMajor(
       reinterpret_cast<const SkMScalar*>(column_major_data));

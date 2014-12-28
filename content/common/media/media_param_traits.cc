@@ -33,13 +33,13 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
   int format, channel_layout, sample_rate, bits_per_sample,
       frames_per_buffer, channels, effects;
 
-  if (!m->ReadInt(iter, &format) ||
-      !m->ReadInt(iter, &channel_layout) ||
-      !m->ReadInt(iter, &sample_rate) ||
-      !m->ReadInt(iter, &bits_per_sample) ||
-      !m->ReadInt(iter, &frames_per_buffer) ||
-      !m->ReadInt(iter, &channels) ||
-      !m->ReadInt(iter, &effects))
+  if (!iter->ReadInt(&format) ||
+      !iter->ReadInt(&channel_layout) ||
+      !iter->ReadInt(&sample_rate) ||
+      !iter->ReadInt(&bits_per_sample) ||
+      !iter->ReadInt(&frames_per_buffer) ||
+      !iter->ReadInt(&channels) ||
+      !iter->ReadInt(&effects))
     return false;
 
   AudioParameters params(static_cast<AudioParameters::Format>(format),
@@ -69,10 +69,10 @@ bool ParamTraits<VideoCaptureFormat>::Read(const Message* m,
                                            PickleIterator* iter,
                                            VideoCaptureFormat* r) {
   int frame_size_width, frame_size_height, pixel_format;
-  if (!m->ReadInt(iter, &frame_size_width) ||
-      !m->ReadInt(iter, &frame_size_height) ||
-      !m->ReadFloat(iter, &r->frame_rate) ||
-      !m->ReadInt(iter, &pixel_format))
+  if (!iter->ReadInt(&frame_size_width) ||
+      !iter->ReadInt(&frame_size_height) ||
+      !iter->ReadFloat(&r->frame_rate) ||
+      !iter->ReadInt(&pixel_format))
     return false;
 
   r->frame_size.SetSize(frame_size_width, frame_size_height);

@@ -185,10 +185,10 @@ bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
   uint32 dirty = 0;
   int64 usage = 0;
 
-  if (!read_pickle.ReadBytes(&iter, &header, kUsageFileHeaderSize) ||
-      !read_pickle.ReadBool(&iter, is_valid) ||
-      !read_pickle.ReadUInt32(&iter, &dirty) ||
-      !read_pickle.ReadInt64(&iter, &usage))
+  if (!iter.ReadBytes(&header, kUsageFileHeaderSize) ||
+      !iter.ReadBool(is_valid) ||
+      !iter.ReadUInt32(&dirty) ||
+      !iter.ReadInt64(&usage))
     return false;
 
   if (header[0] != kUsageFileHeader[0] ||

@@ -52,10 +52,10 @@ bool FileInfoFromPickle(const Pickle& pickle,
   std::string name;
   int64 internal_time;
 
-  if (pickle.ReadInt64(&iter, &info->parent_id) &&
-      pickle.ReadString(&iter, &data_path) &&
-      pickle.ReadString(&iter, &name) &&
-      pickle.ReadInt64(&iter, &internal_time)) {
+  if (iter.ReadInt64(&info->parent_id) &&
+      iter.ReadString(&data_path) &&
+      iter.ReadString(&name) &&
+      iter.ReadInt64(&internal_time)) {
     info->data_path = storage::StringToFilePath(data_path);
     info->name = storage::StringToFilePath(name).value();
     info->modification_time = base::Time::FromInternalValue(internal_time);

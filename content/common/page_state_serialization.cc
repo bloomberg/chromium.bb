@@ -211,7 +211,7 @@ void WriteData(const void* data, int length, SerializeObject* obj) {
 
 void ReadData(SerializeObject* obj, const void** data, int* length) {
   const char* tmp;
-  if (obj->pickle.ReadData(&obj->iter, &tmp, length)) {
+  if (obj->iter.ReadData(&tmp, length)) {
     *data = tmp;
   } else {
     obj->parse_error = true;
@@ -226,7 +226,7 @@ void WriteInteger(int data, SerializeObject* obj) {
 
 int ReadInteger(SerializeObject* obj) {
   int tmp;
-  if (obj->pickle.ReadInt(&obj->iter, &tmp))
+  if (obj->iter.ReadInt(&tmp))
     return tmp;
   obj->parse_error = true;
   return 0;
@@ -238,7 +238,7 @@ void WriteInteger64(int64 data, SerializeObject* obj) {
 
 int64 ReadInteger64(SerializeObject* obj) {
   int64 tmp = 0;
-  if (obj->pickle.ReadInt64(&obj->iter, &tmp))
+  if (obj->iter.ReadInt64(&tmp))
     return tmp;
   obj->parse_error = true;
   return 0;
@@ -268,7 +268,7 @@ void WriteBoolean(bool data, SerializeObject* obj) {
 
 bool ReadBoolean(SerializeObject* obj) {
   bool tmp;
-  if (obj->pickle.ReadBool(&obj->iter, &tmp))
+  if (obj->iter.ReadBool(&tmp))
     return tmp;
   obj->parse_error = true;
   return false;
@@ -280,7 +280,7 @@ void WriteGURL(const GURL& url, SerializeObject* obj) {
 
 GURL ReadGURL(SerializeObject* obj) {
   std::string spec;
-  if (obj->pickle.ReadString(&obj->iter, &spec))
+  if (obj->iter.ReadString(&spec))
     return GURL(spec);
   obj->parse_error = true;
   return GURL();
@@ -292,7 +292,7 @@ void WriteStdString(const std::string& s, SerializeObject* obj) {
 
 std::string ReadStdString(SerializeObject* obj) {
   std::string s;
-  if (obj->pickle.ReadString(&obj->iter, &s))
+  if (obj->iter.ReadString(&s))
     return s;
   obj->parse_error = true;
   return std::string();
@@ -319,7 +319,7 @@ void WriteString(const base::NullableString16& str, SerializeObject* obj) {
 // read, NULL is returned.
 const base::char16* ReadStringNoCopy(SerializeObject* obj, int* num_chars) {
   int length_in_bytes;
-  if (!obj->pickle.ReadInt(&obj->iter, &length_in_bytes)) {
+  if (!obj->iter.ReadInt(&length_in_bytes)) {
     obj->parse_error = true;
     return NULL;
   }
@@ -328,7 +328,7 @@ const base::char16* ReadStringNoCopy(SerializeObject* obj, int* num_chars) {
     return NULL;
 
   const char* data;
-  if (!obj->pickle.ReadBytes(&obj->iter, &data, length_in_bytes)) {
+  if (!obj->iter.ReadBytes(&data, length_in_bytes)) {
     obj->parse_error = true;
     return NULL;
   }
