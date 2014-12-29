@@ -1519,7 +1519,6 @@
       'browser/history/history_backend_android.cc',
       'browser/history/history_database.cc',
       'browser/history/history_database.h',
-      'browser/history/history_db_task.h',
       'browser/history/history_details.h',
       'browser/history/history_notifications.cc',
       'browser/history/history_notifications.h',

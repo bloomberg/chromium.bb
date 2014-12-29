@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/history/core/browser/history_db_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 

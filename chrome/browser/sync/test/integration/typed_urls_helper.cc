@@ -10,13 +10,13 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 
 using sync_datatype_helper::test;

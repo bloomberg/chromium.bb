@@ -30,6 +30,7 @@
         'history/core/browser/history_client.h',
         'history/core/browser/history_constants.cc',
         'history/core/browser/history_constants.h',
+        'history/core/browser/history_db_task.h',
         'history/core/browser/history_match.cc',
         'history/core/browser/history_match.h',
         'history/core/browser/history_service_observer.h',
