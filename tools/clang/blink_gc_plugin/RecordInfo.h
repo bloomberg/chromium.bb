@@ -100,8 +100,12 @@ class RecordInfo {
   clang::CXXMethodDecl* InheritsNonVirtualTrace();
   bool IsConsideredAbstract();
 
+  static clang::CXXRecordDecl* GetDependentTemplatedDecl(const clang::Type&);
+
  private:
   RecordInfo(clang::CXXRecordDecl* record, RecordCache* cache);
+
+  void walkBases();
 
   Fields* CollectFields();
   Bases* CollectBases();
@@ -129,7 +133,8 @@ class RecordInfo {
   clang::CXXMethodDecl* finalize_dispatch_method_;
 
   bool is_gc_derived_;
-  clang::CXXBasePaths* base_paths_;
+
+  std::vector<std::string> gc_base_names_;
 
   friend class RecordCache;
 };

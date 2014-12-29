@@ -408,16 +408,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
     if (!type)
       return 0;
 
-    const TemplateSpecializationType* tmpl_type =
-        type->getAs<TemplateSpecializationType>();
-    if (!tmpl_type)
-      return 0;
-
-    TemplateDecl* tmpl_decl = tmpl_type->getTemplateName().getAsTemplateDecl();
-    if (!tmpl_decl)
-      return 0;
-
-    return dyn_cast<CXXRecordDecl>(tmpl_decl->getTemplatedDecl());
+    return RecordInfo::GetDependentTemplatedDecl(*type);
   }
 
   void CheckCXXDependentScopeMemberExpr(CallExpr* call,
@@ -1068,7 +1059,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     while (it != left_most->bases_end()) {
       left_most_base = it->getType()->getAsCXXRecordDecl();
       if (!left_most_base && it->getType()->isDependentType())
-        left_most_base = GetDependentTemplatedDecl(*it->getType());
+        left_most_base = RecordInfo::GetDependentTemplatedDecl(*it->getType());
 
       // TODO: Find a way to correctly check actual instantiations
       // for dependent types. The escape below will be hit, eg, when
@@ -1129,7 +1120,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     CXXRecordDecl::base_class_iterator it = left_most->bases_begin();
     while (it != left_most->bases_end()) {
       if (it->getType()->isDependentType())
-        left_most = GetDependentTemplatedDecl(*it->getType());
+        left_most = RecordInfo::GetDependentTemplatedDecl(*it->getType());
       else
         left_most = it->getType()->getAsCXXRecordDecl();
       if (!left_most || !left_most->hasDefinition())
@@ -1148,12 +1139,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   }
 
   void CheckLeftMostDerived(RecordInfo* info) {
-    CXXRecordDecl* left_most = info->record();
-    CXXRecordDecl::base_class_iterator it = left_most->bases_begin();
-    while (it != left_most->bases_end()) {
-      left_most = it->getType()->getAsCXXRecordDecl();
-      it = left_most->bases_begin();
-    }
+    CXXRecordDecl* left_most = GetLeftMostBase(info->record());
+    if (!left_most)
+      return;
     if (!Config::IsGCBase(left_most->getName()))
       ReportClassMustLeftMostlyDeriveGC(info);
   }

@@ -23,13 +23,11 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       trace_method_(0),
       trace_dispatch_method_(0),
       finalize_dispatch_method_(0),
-      is_gc_derived_(false),
-      base_paths_(0) {}
+      is_gc_derived_(false) {}
 
 RecordInfo::~RecordInfo() {
   delete fields_;
   delete bases_;
-  delete base_paths_;
 }
 
 // Get |count| number of template arguments. Returns false if there
@@ -74,21 +72,11 @@ bool RecordInfo::IsHeapAllocatedCollection() {
   return Config::IsGCCollection(name_);
 }
 
-static bool IsGCBaseCallback(const CXXBaseSpecifier* specifier,
-                             CXXBasePath& path,
-                             void* data) {
-  if (CXXRecordDecl* record = specifier->getType()->getAsCXXRecordDecl())
-    return Config::IsGCBase(record->getName());
-  return false;
-}
-
 // Test if a record is derived from a garbage collected base.
 bool RecordInfo::IsGCDerived() {
   // If already computed, return the known result.
-  if (base_paths_)
+  if (gc_base_names_.size())
     return is_gc_derived_;
-
-  base_paths_ = new CXXBasePaths(true, true, false);
 
   if (!record_->hasDefinition())
     return false;
@@ -98,19 +86,62 @@ bool RecordInfo::IsGCDerived() {
     return false;
 
   // Walk the inheritance tree to find GC base classes.
-  is_gc_derived_ = record_->lookupInBases(IsGCBaseCallback, 0, *base_paths_);
+  walkBases();
   return is_gc_derived_;
+}
+
+CXXRecordDecl* RecordInfo::GetDependentTemplatedDecl(const Type& type) {
+  const TemplateSpecializationType* tmpl_type =
+      type.getAs<TemplateSpecializationType>();
+  if (!tmpl_type)
+    return 0;
+
+  TemplateDecl* tmpl_decl = tmpl_type->getTemplateName().getAsTemplateDecl();
+  if (!tmpl_decl)
+    return 0;
+
+  return dyn_cast_or_null<CXXRecordDecl>(tmpl_decl->getTemplatedDecl());
+}
+
+void RecordInfo::walkBases() {
+  // This traversal is akin to CXXRecordDecl::forallBases()'s,
+  // but without stepping over dependent bases -- these might also
+  // have a "GC base name", so are to be included and considered.
+  SmallVector<const CXXRecordDecl*, 8> queue;
+
+  const CXXRecordDecl *base_record = record();
+  while (true) {
+    for (const auto& it : base_record->bases()) {
+      const RecordType *type = it.getType()->getAs<RecordType>();
+      CXXRecordDecl* base;
+      if (!type)
+        base = GetDependentTemplatedDecl(*it.getType());
+      else {
+        base = cast_or_null<CXXRecordDecl>(type->getDecl()->getDefinition());
+        if (base)
+          queue.push_back(base);
+      }
+      if (!base)
+        continue;
+
+      const std::string& name = base->getName();
+      if (Config::IsGCBase(name)) {
+        gc_base_names_.push_back(name);
+        is_gc_derived_ = true;
+      }
+    }
+
+    if (queue.empty())
+      break;
+    base_record = queue.pop_back_val(); // not actually a queue.
+  }
 }
 
 bool RecordInfo::IsGCFinalized() {
   if (!IsGCDerived())
     return false;
-  for (CXXBasePaths::paths_iterator it = base_paths_->begin();
-       it != base_paths_->end();
-       ++it) {
-    const CXXBasePathElement& elem = (*it)[it->size() - 1];
-    CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
-    if (Config::IsGCFinalizedBase(base->getName()))
+  for (const auto& gc_base : gc_base_names_) {
+    if (Config::IsGCFinalizedBase(gc_base))
       return true;
   }
   return false;
@@ -119,16 +150,11 @@ bool RecordInfo::IsGCFinalized() {
 // A GC mixin is a class that inherits from a GC mixin base and has
 // not yet been "mixed in" with another GC base class.
 bool RecordInfo::IsGCMixin() {
-  if (!IsGCDerived() || base_paths_->begin() == base_paths_->end())
+  if (!IsGCDerived() || !gc_base_names_.size())
     return false;
-  for (CXXBasePaths::paths_iterator it = base_paths_->begin();
-       it != base_paths_->end();
-       ++it) {
-      // Get the last element of the path.
-      const CXXBasePathElement& elem = (*it)[it->size() - 1];
-      CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
+  for (const auto& gc_base : gc_base_names_) {
       // If it is not a mixin base we are done.
-      if (!Config::IsGCMixinBase(base->getName()))
+      if (!Config::IsGCMixinBase(gc_base))
           return false;
   }
   // This is a mixin if all GC bases are mixins.
