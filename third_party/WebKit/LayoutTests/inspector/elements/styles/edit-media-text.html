@@ -1,0 +1,70 @@
+<html>
+<head>
+<style>
+@media screen and (max-device-width: 100000px) {
+    #inspected {
+        color: green;
+    }
+    #inspected {
+        color: blue;
+    }
+}
+@media screen and (max-device-width: 200000px) {
+    #other {
+        color: green;
+    }
+}
+</style>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+
+    function step1()
+    {
+        InspectorTest.addResult("=== Before media text modification ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+        var section = InspectorTest.firstMatchedStyleSection();
+        var mediaTextElement = InspectorTest.firstMediaTextElementInSection(section);
+        mediaTextElement.click();
+        mediaTextElement.textContent = "screen and (max-device-width: 99999px)";
+        InspectorTest.waitForMediaTextCommitted(step2);
+        mediaTextElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("=== After valid media text modification ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+        var section = InspectorTest.firstMatchedStyleSection();
+        var mediaTextElement = InspectorTest.firstMediaTextElementInSection(section);
+        mediaTextElement.click();
+        mediaTextElement.textContent = "something is wrong here";
+        InspectorTest.waitForMediaTextCommitted(step3);
+        mediaTextElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult("=== After invalid media text modification ===");
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that editing media text updates element styles.
+</p>
+
+<div id="inspected" style="color: red">Text</div>
+<div id="other"></div>
+
+</body>
+</html>

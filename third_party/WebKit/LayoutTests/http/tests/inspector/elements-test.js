@@ -25,6 +25,11 @@ InspectorTest.firstMatchedStyleSection = function()
     return WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
 }
 
+InspectorTest.firstMediaTextElementInSection = function(section)
+{
+    return section.element.querySelector(".media-text");
+}
+
 InspectorTest.findNode = function(matchFunction, callback)
 {
     callback = InspectorTest.safeWrap(callback);
@@ -179,6 +184,11 @@ InspectorTest.waitForStylesForClass = function(classValue, callback, requireRebu
 InspectorTest.waitForSelectorCommitted = function(callback)
 {
     InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_editingSelectorCommittedForTest", callback);
+}
+
+InspectorTest.waitForMediaTextCommitted = function(callback)
+{
+    InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_editingMediaTextCommittedForTest", callback);
 }
 
 InspectorTest.waitForStyleApplied = function(callback)
