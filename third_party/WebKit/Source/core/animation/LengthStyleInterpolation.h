@@ -6,6 +6,7 @@
 #define LengthStyleInterpolation_h
 
 #include "core/animation/StyleInterpolation.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "platform/Length.h"
 
 namespace blink {
@@ -30,7 +31,7 @@ private:
         { }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(const InterpolableValue*, ValueRange);
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToLength(const InterpolableValue*, ValueRange);
 
     ValueRange m_range;
 

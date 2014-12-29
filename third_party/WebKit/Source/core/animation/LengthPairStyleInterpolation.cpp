@@ -27,16 +27,11 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPairStyleInterpolation::lengthPa
     return result.release();
 }
 
-static inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toPrimitiveValue(PassRefPtrWillBeRawPtr<CSSValue> value)
-{
-    return adoptRefWillBeNoop(toCSSPrimitiveValue(value.leakRef()));
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> LengthPairStyleInterpolation::interpolableValueToLengthPair(InterpolableValue* value, ValueRange range)
 {
     InterpolableList* lengthPair = toInterpolableList(value);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> first = toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(0), range));
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> second = toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(1), range));
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> first = (LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(0), range));
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> second = (LengthStyleInterpolation::interpolableValueToLength(lengthPair->get(1), range));
     RefPtrWillBeRawPtr<Pair> result = Pair::create(first, second, Pair::KeepIdenticalValues);
 
     return CSSPrimitiveValue::create(result.release());

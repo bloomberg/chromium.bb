@@ -6,6 +6,7 @@
 #define ColorStyleInterpolation_h
 
 #include "core/animation/StyleInterpolation.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
@@ -29,7 +30,7 @@ private:
     }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> colorToInterpolableValue(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToColor(InterpolableValue*);
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> interpolableValueToColor(InterpolableValue*);
 
     friend class AnimationColorStyleInterpolationTest;
 };

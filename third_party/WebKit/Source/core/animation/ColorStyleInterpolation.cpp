@@ -34,7 +34,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> ColorStyleInterpolation::colorToInterp
     return list->clone();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> ColorStyleInterpolation::interpolableValueToColor(InterpolableValue* value)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> ColorStyleInterpolation::interpolableValueToColor(InterpolableValue* value)
 {
     ASSERT(value->isList());
     InterpolableList* list = toInterpolableList(value);

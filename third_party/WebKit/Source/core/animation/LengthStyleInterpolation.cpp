@@ -80,7 +80,7 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(Pas
 
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLength(const InterpolableValue* value, ValueRange range)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolableValueToLength(const InterpolableValue* value, ValueRange range)
 {
     const InterpolableList* listOfValuesAndTypes = toInterpolableList(value);
     const InterpolableList* listOfValues = toInterpolableList(listOfValuesAndTypes->get(0));

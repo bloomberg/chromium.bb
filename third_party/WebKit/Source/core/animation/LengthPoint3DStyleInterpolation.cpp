@@ -41,11 +41,6 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPoint3DStyleInterpolation::lengt
     return result.release();
 }
 
-static inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toPrimitiveValue(PassRefPtrWillBeRawPtr<CSSValue> value)
-{
-    return adoptRefWillBeNoop(toCSSPrimitiveValue(value.leakRef()));
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> LengthPoint3DStyleInterpolation::interpolableValueToLengthPoint3D(InterpolableValue* value)
 {
     InterpolableList* lengthPoint3D = toInterpolableList(value);
@@ -53,7 +48,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthPoint3DStyleInterpolation::interpolableVa
     const int sizeOfList = 3;
 
     for (size_t i = 0; i < sizeOfList; i++)
-        result->append(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), ValueRangeNonNegative)));
+        result->append(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), ValueRangeNonNegative));
 
     return result.release();
 }
