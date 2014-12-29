@@ -51,9 +51,6 @@ crbug.com/441639 virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxe
 
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-with-mask.html [ Crash ]
-crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
-crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/border-image-scale-transform.html [ ImageOnlyFailure ]
-crbug.com/441547 [ Win ] virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
 
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
