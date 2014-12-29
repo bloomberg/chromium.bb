@@ -1270,7 +1270,7 @@ chrome_perf = chrome_info.derive(
                          timeout=90 * 60, critical=True, num=1)],
   use_chrome_lkgm=True,
   use_lkgm=False,
-  useflags=official['useflags'] + ['-cros-debug'],
+  useflags=append_useflags(['-cros-debug']),
 )
 
 # Base per-board configuration.
@@ -1860,7 +1860,7 @@ internal_paladin = internal.derive(official_chrome, paladin,
 
 # Used for paladin builders with nowithdebug flag (a.k.a -cros-debug)
 internal_nowithdebug_paladin = internal_paladin.derive(
-  useflags=official['useflags'] + ['-cros-debug'],
+  useflags=append_useflags(['-cros-debug']),
   description=paladin['description'] + ' (internal, nowithdebug)',
   prebuilts=False,
 )
@@ -2304,21 +2304,19 @@ internal_incremental.add_config('mario-incremental',
 
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
   boards=('x86-alex', 'stumpy', 'daisy'),
-  useflags=[constants.USE_CHROME_INTERNAL],
   build_tests=True,
   description=_toolchain_major['description'] + ' (internal)',
 )
 
 _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
   boards=('x86-alex', 'stumpy', 'daisy'),
-  useflags=[constants.USE_CHROME_INTERNAL],
   build_tests=True,
   description=_toolchain_minor['description'] + ' (internal)',
 )
 
 _release = full.derive(official, internal,
   build_type=constants.CANARY_TYPE,
-  useflags=official['useflags'] + ['-cros-debug', '-highdpi'],
+  useflags=append_useflags(['-cros-debug', '-highdpi']),
   build_tests=True,
   afdo_use=True,
   manifest=constants.OFFICIAL_MANIFEST,
@@ -2488,30 +2486,26 @@ _release.add_config('fox_wtm2-release',
   hw_tests=[],
 )
 
-# TODO(akeshet) Eliminate the need for this once useflag inheritance is made
-# more intelligent, or once highdpi useflag is removed.
-_RELEASE_HIGHDPI_USEFLAGS = [f for f in _release.useflags if f != '-highdpi']
-
 _release.add_config('link-release',
   boards=['link'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
   important=True,
 )
 
 _release.add_config('quawks-release',
   boards=['quawks'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
 )
 
 _release.add_config('samus-release',
   _base_configs['samus'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
   important=True,
 )
 
 _release.add_config('swanky-release',
   boards=['swanky'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
 )
 
 # TODO(fdeng): As a pilot experiment of crbug.com/441606
@@ -2532,7 +2526,7 @@ _release_freon = _release.derive(
 _release_freon.add_config('link_freon-release',
   _base_configs['link_freon'],
   boards=['link_freon'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
   important=True,
 )
 
@@ -2548,22 +2542,22 @@ _critical_for_chrome_boards = frozenset([
 
 _arm_release.add_config('peach_pi-release',
   boards=['peach_pi'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
 )
 
 _arm_release.add_config('nyan-release',
   boards=['nyan'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
 )
 
 _arm_release.add_config('nyan_big-release',
   boards=['nyan_big'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
 )
 
 _arm_release.add_config('nyan_blaze-release',
   boards=['nyan_blaze'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
 )
 
 # Now generate generic release configs if we haven't created anything more
@@ -2744,7 +2738,7 @@ _release.add_config('rush-release',
 _release.add_config('rush_ryu-release',
   non_testable_builder,
   boards=['rush_ryu'],
-  useflags=_RELEASE_HIGHDPI_USEFLAGS,
+  useflags=append_useflags(['highdpi']),
   hw_tests=[],
 )
 
@@ -2938,12 +2932,13 @@ _firmware_release = _release.derive(_firmware,
   afdo_use=False,
 )
 
-_depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
+_depthcharge_release = _firmware_release.derive(
+  useflags=append_useflags(['depthcharge']))
 
 _depthcharge_full_internal = full.derive(
   internal,
   _firmware,
-  useflags=['depthcharge'],
+  useflags=append_useflags(['depthcharge']),
   description='Firmware Informational',
 )
 
