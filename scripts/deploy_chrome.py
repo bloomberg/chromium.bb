@@ -65,7 +65,8 @@ _ANDROID_DIR_EXTRACT_PATH = 'system/chrome/*'
 _CHROME_DIR = '/opt/google/chrome'
 _CHROME_DIR_MOUNT = '/mnt/stateful_partition/deploy_rootfs/opt/google/chrome'
 
-_UMOUNT_DIR_IF_MOUNTPOINT_CMD = 'mountpoint -q %(dir)s && umount %(dir)s'
+_UMOUNT_DIR_IF_MOUNTPOINT_CMD = (
+    'if mountpoint -q %(dir)s; then umount %(dir)s; fi')
 _BIND_TO_FINAL_DIR_CMD = 'mount --rbind %s %s'
 _SET_MOUNT_FLAGS_CMD = 'mount -o remount,exec,suid %s'
 
