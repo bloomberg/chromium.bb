@@ -77,7 +77,6 @@ function test()
 
     function createNetworkUISourceCodeProvider()
     {
-        InspectorTest.createWorkspace();
         var target = WebInspector.targetManager.mainTarget();
         target.resourceTreeModel = new WebInspector.SDKModel(WebInspector.ResourceTreeModel, target);
         target.resourceTreeModel.inspectedPageURL = function() { return "foo"; };
@@ -87,13 +86,13 @@ function test()
         target.cssModel = new WebInspector.CSSStyleModel(target);
         WebInspector.resourceTreeModel = target.resourceTreeModel;
         WebInspector.debuggerModel = target.debuggerModel;
-        return new WebInspector.NetworkUISourceCodeProvider(InspectorTest.testNetworkWorkspaceBinding, InspectorTest.testWorkspace);
+        InspectorTest.createWorkspace();
     }
 
     InspectorTest.runTestSuite([
         function testDocumentResource(next)
         {
-            var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+            createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
             createResourceMock(WebInspector.resourceTypes.Document, "<document resource content>");
@@ -106,7 +105,7 @@ function test()
 
         function testScriptResource(next)
         {
-            var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+            createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
             createResourceMock(WebInspector.resourceTypes.Script, "<script resource content>");
@@ -119,7 +118,7 @@ function test()
 
         function testVMScript(next)
         {
-            var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+            createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating script.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
             createScriptMock("<script content>");
@@ -132,7 +131,7 @@ function test()
 
         function testStylesheetResource(next)
         {
-            var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+            createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
             createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
@@ -158,7 +157,7 @@ function test()
 
     function testRemoveStyleSheetFromModel(mockStyleSheetHeader, callback)
     {
-        var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+        createNetworkUISourceCodeProvider();
         var target = WebInspector.targetManager.mainTarget();
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
         target.cssModel._styleSheetAdded(mockStyleSheetHeader);
