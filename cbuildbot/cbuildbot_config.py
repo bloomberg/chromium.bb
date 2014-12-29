@@ -2455,26 +2455,30 @@ _release.add_config('fox_wtm2-release',
   hw_tests=[],
 )
 
+# TODO(akeshet) Eliminate the need for this once useflag inheritance is made
+# more intelligent, or once highdpi useflag is removed.
+_RELEASE_HIGHDPI_USEFLAGS = [f for f in _release.useflags if f != '-highdpi']
+
 _release.add_config('link-release',
   boards=['link'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
   important=True,
 )
 
 _release.add_config('quawks-release',
   boards=['quawks'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
 )
 
 _release.add_config('samus-release',
   _base_configs['samus'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
   important=True,
 )
 
 _release.add_config('swanky-release',
   boards=['swanky'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
 )
 
 # TODO(fdeng): As a pilot experiment of crbug.com/441606
@@ -2495,7 +2499,7 @@ _release_freon = _release.derive(
 _release_freon.add_config('link_freon-release',
   _base_configs['link_freon'],
   boards=['link_freon'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
   important=True,
 )
 
@@ -2511,22 +2515,22 @@ _critical_for_chrome_boards = frozenset([
 
 _arm_release.add_config('peach_pi-release',
   boards=['peach_pi'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
 )
 
 _arm_release.add_config('nyan-release',
   boards=['nyan'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
 )
 
 _arm_release.add_config('nyan_big-release',
   boards=['nyan_big'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
 )
 
 _arm_release.add_config('nyan_blaze-release',
   boards=['nyan_blaze'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
 )
 
 # Now generate generic release configs if we haven't created anything more
@@ -2707,7 +2711,7 @@ _release.add_config('rush-release',
 _release.add_config('rush_ryu-release',
   non_testable_builder,
   boards=['rush_ryu'],
-  useflags=_release['useflags'] + ['highdpi'],
+  useflags=_RELEASE_HIGHDPI_USEFLAGS,
   hw_tests=[],
 )
 

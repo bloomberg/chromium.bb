@@ -584,6 +584,16 @@ class CBuildBotTest(cros_test_lib.TestCase):
                             constants.OFFICIAL_MANIFEST,
                             msg % build_name)
 
+  def testNoShadowedUseflags(self):
+    """Configs should not have both useflags x and -x."""
+    msg = ('%s contains useflag %s and -%s.')
+    for build_name, config in cbuildbot_config.config.iteritems():
+      useflag_set = set(config['useflags'])
+      for flag in useflag_set:
+        if not flag.startswith('-'):
+          self.assertFalse('-' + flag in useflag_set,
+                           msg % (build_name, flag, flag))
+
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
 
