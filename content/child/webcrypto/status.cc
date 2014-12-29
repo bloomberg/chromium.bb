@@ -182,12 +182,12 @@ Status Status::ErrorAesCtrInputTooLongCounterRepeated() {
 }
 
 Status Status::ErrorDataTooLarge() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The provided data is too large");
 }
 
 Status Status::ErrorDataTooSmall() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The provided data is too small");
 }
 
