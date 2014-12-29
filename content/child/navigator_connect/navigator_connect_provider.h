@@ -69,7 +69,7 @@ class NavigatorConnectProvider : public blink::WebNavigatorConnectProvider,
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_loop_;
   typedef blink::WebCallbacks<void, void> ConnectCallback;
-  IDMap<ConnectCallback> requests_;
+  IDMap<ConnectCallback, IDMapOwnPointer> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorConnectProvider);
 };
