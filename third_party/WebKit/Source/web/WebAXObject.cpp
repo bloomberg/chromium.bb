@@ -1120,6 +1120,26 @@ WebAXObject WebAXObject::rowHeader() const
     return WebAXObject(toAXTableRow(m_private.get())->headerObject());
 }
 
+void WebAXObject::rowHeaders(WebVector<WebAXObject>& rowHeaderElements) const
+{
+    if (isDetached())
+        return;
+
+    if (!m_private->isAXTable())
+        return;
+
+    AXObject::AccessibilityChildrenVector headers;
+    toAXTable(m_private.get())->rowHeaders(headers);
+
+    size_t headerCount = headers.size();
+    WebVector<WebAXObject> result(headerCount);
+
+    for (size_t i = 0; i < headerCount; i++)
+        result[i] = WebAXObject(headers[i]);
+
+    rowHeaderElements.swap(result);
+}
+
 unsigned WebAXObject::columnIndex() const
 {
     if (isDetached())
@@ -1140,6 +1160,26 @@ WebAXObject WebAXObject::columnHeader() const
         return WebAXObject();
 
     return WebAXObject(toAXTableColumn(m_private.get())->headerObject());
+}
+
+void WebAXObject::columnHeaders(WebVector<WebAXObject>& columnHeaderElements) const
+{
+    if (isDetached())
+        return;
+
+    if (!m_private->isAXTable())
+        return;
+
+    AXObject::AccessibilityChildrenVector headers;
+    toAXTable(m_private.get())->columnHeaders(headers);
+
+    size_t headerCount = headers.size();
+    WebVector<WebAXObject> result(headerCount);
+
+    for (size_t i = 0; i < headerCount; i++)
+        result[i] = WebAXObject(headers[i]);
+
+    columnHeaderElements.swap(result);
 }
 
 unsigned WebAXObject::cellColumnIndex() const

@@ -194,6 +194,8 @@ public:
     BLINK_EXPORT WebAXObject headerContainerObject() const;
     BLINK_EXPORT WebAXObject rowAtIndex(unsigned rowIndex) const;
     BLINK_EXPORT WebAXObject columnAtIndex(unsigned columnIndex) const;
+    BLINK_EXPORT void rowHeaders(WebVector<WebAXObject>&) const;
+    BLINK_EXPORT void columnHeaders(WebVector<WebAXObject>&) const;
 
     // For a table row
     BLINK_EXPORT unsigned rowIndex() const;

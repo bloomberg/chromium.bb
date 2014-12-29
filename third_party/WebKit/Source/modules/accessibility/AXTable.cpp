@@ -468,6 +468,20 @@ void AXTable::columnHeaders(AccessibilityChildrenVector& headers)
     }
 }
 
+void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
+{
+    if (!m_renderer)
+        return;
+
+    updateChildrenIfNecessary();
+
+    unsigned rowCount = m_rows.size();
+    for (unsigned r = 0; r < rowCount; r++) {
+        if (AXObject* header = toAXTableRow(m_rows[r].get())->headerObject())
+            headers.append(header);
+    }
+}
+
 void AXTable::cells(AXObject::AccessibilityChildrenVector& cells)
 {
     if (!m_renderer)

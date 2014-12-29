@@ -73,6 +73,7 @@ public:
     AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
 
     void columnHeaders(AccessibilityChildrenVector&);
+    void rowHeaders(AccessibilityChildrenVector&);
 
     // an object that contains, as children, all the objects that act as headers
     AXObject* headerContainer();
