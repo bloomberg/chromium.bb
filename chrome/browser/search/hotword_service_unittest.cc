@@ -26,6 +26,10 @@
 #include "extensions/common/one_shot_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 namespace {
 
 class MockAudioHistoryHandler : public HotwordAudioHistoryHandler {
@@ -133,8 +137,19 @@ class HotwordServiceTest :
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kDisableExperimentalHotwording);
     }
+#if defined(OS_CHROMEOS)
+    // Tests on chromeos need to have the handler initialized.
+    chromeos::CrasAudioHandler::InitializeForTesting();
+#endif
 
     extensions::ExtensionServiceTestBase::SetUp();
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    DCHECK(chromeos::CrasAudioHandler::IsInitialized());
+    chromeos::CrasAudioHandler::Shutdown();
+#endif
   }
 
   base::FieldTrialList field_trial_list_;
