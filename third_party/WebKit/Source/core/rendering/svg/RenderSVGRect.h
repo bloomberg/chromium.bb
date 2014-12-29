@@ -49,6 +49,8 @@ private:
     bool definitelyHasSimpleStroke() const;
 
 private:
+    FloatRect m_innerStrokeRect;
+    FloatRect m_outerStrokeRect;
     bool m_usePathFallback;
 };
 

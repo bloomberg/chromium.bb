@@ -47,6 +47,8 @@ void RenderSVGRect::updateShapeFromElement()
     // Before creating a new object we need to clear the cached bounding box
     // to avoid using garbage.
     m_fillBoundingBox = FloatRect();
+    m_innerStrokeRect = FloatRect();
+    m_outerStrokeRect = FloatRect();
     m_usePathFallback = false;
     SVGRectElement* rect = toSVGRectElement(element());
     ASSERT(rect);
@@ -73,9 +75,19 @@ void RenderSVGRect::updateShapeFromElement()
     }
 
     m_fillBoundingBox = FloatRect(FloatPoint(rect->x()->currentValue()->value(lengthContext), rect->y()->currentValue()->value(lengthContext)), boundingBoxSize);
-    m_strokeBoundingBox = m_fillBoundingBox;
-    if (style()->svgStyle().hasStroke())
-        m_strokeBoundingBox.inflate(strokeWidth() / 2);
+
+    // To decide if the stroke contains a point we create two rects which represent the inner and
+    // the outer stroke borders. A stroke contains the point, if the point is between them.
+    m_innerStrokeRect = m_fillBoundingBox;
+    m_outerStrokeRect = m_fillBoundingBox;
+
+    if (style()->svgStyle().hasStroke()) {
+        float strokeWidth = this->strokeWidth();
+        m_innerStrokeRect.inflate(-strokeWidth / 2);
+        m_outerStrokeRect.inflate(strokeWidth / 2);
+    }
+
+    m_strokeBoundingBox = m_outerStrokeRect;
 }
 
 bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
@@ -88,15 +100,7 @@ bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
         return RenderSVGShape::shapeDependentStrokeContains(point);
     }
 
-    const float halfStrokeWidth = this->strokeWidth() / 2;
-    FloatRect outerStrokeRect = m_fillBoundingBox;
-    outerStrokeRect.inflate(halfStrokeWidth);
-    if (!outerStrokeRect.contains(point, FloatRect::InsideOrOnStroke))
-        return false;
-
-    FloatRect innerStrokeRect = m_fillBoundingBox;
-    innerStrokeRect.inflate(-halfStrokeWidth);
-    return !innerStrokeRect.contains(point, FloatRect::InsideButNotOnStroke);
+    return m_outerStrokeRect.contains(point, FloatRect::InsideOrOnStroke) && !m_innerStrokeRect.contains(point, FloatRect::InsideButNotOnStroke);
 }
 
 bool RenderSVGRect::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
