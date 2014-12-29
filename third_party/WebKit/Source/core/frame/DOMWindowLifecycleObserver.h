@@ -42,8 +42,6 @@ public:
     explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
     virtual ~DOMWindowLifecycleObserver();
 
-    LocalDOMWindow* window() const;
-
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }

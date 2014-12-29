@@ -97,7 +97,7 @@ GamepadList* NavigatorGamepad::gamepads()
 {
     if (!m_gamepads)
         m_gamepads = GamepadList::create();
-    if (window()) {
+    if (frame() && frame()->domWindow()) {
         startUpdating();
         sampleGamepads<Gamepad>(m_gamepads.get());
     }
@@ -116,13 +116,15 @@ void NavigatorGamepad::trace(Visitor* visitor)
 void NavigatorGamepad::didUpdateData()
 {
     // We should stop listening once we detached.
-    ASSERT(window());
+    ASSERT(frame());
+    ASSERT(frame()->domWindow());
 
     // We register to the dispatcher before sampling gamepads so we need to check if we actually have an event listener.
     if (!m_hasEventListener)
         return;
 
-    if (window()->document()->activeDOMObjectsAreStopped() || window()->document()->activeDOMObjectsAreSuspended())
+    Document* document = frame()->domWindow()->document();
+    if (document->activeDOMObjectsAreStopped() || document->activeDOMObjectsAreSuspended())
         return;
 
     const GamepadDispatcher::ConnectionChange& change = GamepadDispatcher::instance().latestConnectionChange();
@@ -142,12 +144,13 @@ void NavigatorGamepad::didUpdateData()
 
 void NavigatorGamepad::dispatchOneEvent()
 {
-    ASSERT(window());
+    ASSERT(frame());
+    ASSERT(frame()->domWindow());
     ASSERT(!m_pendingEvents.isEmpty());
 
     Gamepad* gamepad = m_pendingEvents.takeFirst();
     const AtomicString& eventName = gamepad->connected() ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
-    window()->dispatchEvent(GamepadEvent::create(eventName, false, true, gamepad));
+    frame()->domWindow()->dispatchEvent(GamepadEvent::create(eventName, false, true, gamepad));
 
     if (!m_pendingEvents.isEmpty())
         m_dispatchOneEventRunner.runAsync();

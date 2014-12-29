@@ -50,9 +50,4 @@ DOMWindowLifecycleObserver::~DOMWindowLifecycleObserver()
 {
 }
 
-LocalDOMWindow* DOMWindowLifecycleObserver::window() const
-{
-    return static_cast<LocalDOMWindow*>(lifecycleContext());
-}
-
 } // namespace blink
