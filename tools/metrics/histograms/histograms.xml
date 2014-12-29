@@ -43830,6 +43830,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="Console evaluated"/>
   <int value="9" label="File saved in workspace"/>
   <int value="10" label="Device mode enabled"/>
+  <int value="11" label="Animations playback rate changed"/>
 </enum>
 
 <enum name="DevToolsPanel" type="int">
