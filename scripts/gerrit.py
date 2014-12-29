@@ -166,6 +166,9 @@ def FilteredQuery(opts, query):
   """Query gerrit and filter/clean up the results"""
   ret = []
 
+  if opts.branch is not None:
+    query += ' branch:%s' % opts.branch
+
   helper, _ = GetGerrit(opts)
   for cl in helper.Query(query, raw=True, bypass_cache=False):
     # Gerrit likes to return a stats record too.
@@ -401,6 +404,8 @@ Actions:"""
                       help='Show what would be done, but do not make changes')
   parser.add_argument('-v', '--verbose', default=False, action='store_true',
                       help='Be more verbose in output')
+  parser.add_argument('-b', '--branch',
+                      help='Limit output to the specific branch')
   parser.add_argument('args', nargs='+')
   opts = parser.parse_args(argv)
 
