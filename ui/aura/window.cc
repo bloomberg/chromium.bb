@@ -384,9 +384,9 @@ gfx::Rect Window::GetBoundsInRootWindow() const {
   //             do for now.
   if (!GetRootWindow())
     return bounds();
-  gfx::Point origin = bounds().origin();
-  ConvertPointToTarget(parent_, GetRootWindow(), &origin);
-  return gfx::Rect(origin, bounds().size());
+  gfx::Rect bounds_in_root(bounds().size());
+  ConvertRectToTarget(this, GetRootWindow(), &bounds_in_root);
+  return bounds_in_root;
 }
 
 gfx::Rect Window::GetBoundsInScreen() const {

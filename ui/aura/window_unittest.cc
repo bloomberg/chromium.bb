@@ -246,6 +246,12 @@ class DestroyWindowDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(DestroyWindowDelegate);
 };
 
+void OffsetBounds(Window* window, int horizontal, int vertical) {
+  gfx::Rect bounds = window->bounds();
+  bounds.Offset(horizontal, vertical);
+  window->SetBounds(bounds);
+}
+
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
@@ -1080,6 +1086,74 @@ TEST_F(WindowTest, GetBoundsInRootWindow) {
   // The |child| window is moved to the 0,0 in screen coordinates.
   // |GetBoundsInRootWindow()| should return 0,0.
   child->SetBounds(gfx::Rect(100, 100, 100, 100));
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
+}
+
+TEST_F(WindowTest, GetBoundsInRootWindowWithLayers) {
+  scoped_ptr<Window> viewport(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 300, 300), root_window()));
+
+  scoped_ptr<Window> widget(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 200, 200), viewport.get()));
+
+  scoped_ptr<Window> child(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), widget.get()));
+
+  // Sanity check.
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
+
+  // The |child| window's screen bounds should move along with the |viewport|.
+  OffsetBounds(viewport.get(), -100, -100);
+  EXPECT_EQ("-100,-100 100x100", child->GetBoundsInRootWindow().ToString());
+
+  OffsetBounds(widget.get(), 50, 50);
+  EXPECT_EQ("-50,-50 100x100", child->GetBoundsInRootWindow().ToString());
+
+  // The |child| window is moved to the 0,0 in screen coordinates.
+  // |GetBoundsInRootWindow()| should return 0,0.
+  OffsetBounds(child.get(), 50, 50);
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
+}
+
+TEST_F(WindowTest, GetBoundsInRootWindowWithLayersAndTranslations) {
+  scoped_ptr<Window> viewport(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 300, 300), root_window()));
+
+  scoped_ptr<Window> widget(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 200, 200), viewport.get()));
+
+  scoped_ptr<Window> child(
+      CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), widget.get()));
+
+  // Sanity check.
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
+
+  // The |child| window's screen bounds should move along with the |viewport|.
+  viewport->SetBounds(gfx::Rect(-100, -100, 300, 300));
+  EXPECT_EQ("-100,-100 100x100", child->GetBoundsInRootWindow().ToString());
+
+  widget->SetBounds(gfx::Rect(50, 50, 200, 200));
+  EXPECT_EQ("-50,-50 100x100", child->GetBoundsInRootWindow().ToString());
+
+  // The |child| window is moved to the 0,0 in screen coordinates.
+  // |GetBoundsInRootWindow()| should return 0,0.
+  child->SetBounds(gfx::Rect(50, 50, 100, 100));
+  EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
+
+  gfx::Transform transform1;
+  transform1.Translate(-10, 20);
+  viewport->SetTransform(transform1);
+  EXPECT_EQ("-10,20 100x100", child->GetBoundsInRootWindow().ToString());
+
+  gfx::Transform transform2;
+  transform2.Translate(40, 100);
+  widget->SetTransform(transform2);
+  EXPECT_EQ("30,120 100x100", child->GetBoundsInRootWindow().ToString());
+
+  // Testing potentially buggy place
+  gfx::Transform transform3;
+  transform3.Translate(-30, -120);
+  child->SetTransform(transform3);
   EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
 }
 
