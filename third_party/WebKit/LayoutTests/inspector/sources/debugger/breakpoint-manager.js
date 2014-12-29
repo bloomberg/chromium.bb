@@ -242,7 +242,7 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     InspectorTest.addResult("  Adding UISourceCode: " + url);
     var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
     var binding = breakpointManager._debuggerWorkspaceBinding;
-    var uiSourceCode = binding._networkWorkspaceBinding.addFileForURL(url, contentProvider);
+    var uiSourceCode = binding._networkProject.addFileForURL(url, contentProvider);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
         breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);

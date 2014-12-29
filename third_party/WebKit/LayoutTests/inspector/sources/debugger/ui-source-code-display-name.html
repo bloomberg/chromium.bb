@@ -17,11 +17,11 @@ function test()
     }
 
     var workspace = new WebInspector.Workspace();
-    workspace.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(workspace, WebInspector.networkMapping);
+    workspace.networkProject = new WebInspector.NetworkProject(workspace, WebInspector.networkMapping);
 
     function addNetworkFile(url)
     {
-        return workspace.networkWorkspaceBinding.addFileForURL(url, createContentProvider(url));
+        return workspace.networkProject.addFileForURL(url, createContentProvider(url));
     }
 
     function dumpUISourceCodeDisplayName(url)

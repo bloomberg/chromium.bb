@@ -29,7 +29,7 @@ function test()
     function addNetworkUISourceCode(url, content)
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, content);
-        var uiSourceCode = InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, contentProvider, false);
+        var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, false);
         return uiSourceCode;
     }
 

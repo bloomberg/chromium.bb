@@ -14,7 +14,7 @@ function test()
         mockTarget.debuggerModel.reset();
         InspectorTest.addResult("  Resetting workspace.");
         breakpointManager._debuggerWorkspaceBinding._reset(mockTarget);
-        breakpointManager._debuggerWorkspaceBinding._networkWorkspaceBinding.reset();
+        breakpointManager._debuggerWorkspaceBinding._networkProject.reset();
     }
 
     function createWorkspace()

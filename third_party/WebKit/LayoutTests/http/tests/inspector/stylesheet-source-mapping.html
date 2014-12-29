@@ -14,7 +14,7 @@ function test()
     var target = WebInspector.targetManager.mainTarget();
     var cssModel = new WebInspector.CSSStyleModel(target);
     target.cssModel = cssModel;
-    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkWorkspaceBinding);
+    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";

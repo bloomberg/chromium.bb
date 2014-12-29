@@ -11,9 +11,9 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testTargetManager = new WebInspector.TargetManager();
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
     InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
-    InspectorTest.testNetworkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
-    InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkWorkspaceBinding);
-    InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkWorkspaceBinding);
+    InspectorTest.testNetworkProject = new WebInspector.NetworkProject(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
+    InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
     if (ignoreEvents)
         return;
     InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
@@ -61,7 +61,7 @@ InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, coun
 InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 {
     var mockContentProvider = new WebInspector.StaticContentProvider(type, content);
-    InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, mockContentProvider);
+    InspectorTest.testNetworkProject.addFileForURL(url, mockContentProvider);
 }
 
 InspectorTest._defaultWorkspaceEventHandler = function(event)
