@@ -17,8 +17,8 @@ namespace {
 template<typename L, typename R>
 bool SafeCast(L left, R* right) {
   DCHECK(right);
-  static_assert(sizeof(left) == sizeof(right),
-                "must add support for crazy data types");
+  COMPILE_ASSERT(sizeof(left) == sizeof(right),
+                 must_add_support_for_crazy_data_types);
   if (left > static_cast<L>(std::numeric_limits<R>::max()))
     return false;
   *right = static_cast<L>(left);

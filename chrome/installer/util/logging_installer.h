@@ -24,9 +24,8 @@ const int kMaxInstallerLogFileSize = 1024 * 1024;
 // truncation on every update.
 const int kTruncatedInstallerLogFileSize = kMaxInstallerLogFileSize / 2;
 
-static_assert(kTruncatedInstallerLogFileSize < kMaxInstallerLogFileSize,
-              "kTruncatedInstallerLogFileSize should be less than "
-              "kMaxInstallerLogFileSize");
+COMPILE_ASSERT(kTruncatedInstallerLogFileSize < kMaxInstallerLogFileSize,
+               kTruncatedInstallerLogFileSize_not_lt_kMaxInstallerLogFileSize);
 
 enum TruncateResult {
   LOGFILE_UNTOUCHED,

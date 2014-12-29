@@ -1500,9 +1500,9 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
 
     uint32 higher_products = 0;
-    static_assert(
+    COMPILE_ASSERT(
         sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
-        "too many distribution types");
+        too_many_distribution_types_);
     const Products& products = installer_state.products();
     for (Products::const_iterator it = products.begin(); it < products.end();
          ++it) {
@@ -1520,8 +1520,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
 
     if (higher_products != 0) {
-      static_assert(BrowserDistribution::NUM_TYPES == 4,
-                    "add support for new products here");
+      COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 4,
+                     add_support_for_new_products_here_);
       const uint32 kBrowserBit = 1 << BrowserDistribution::CHROME_BROWSER;
       int message_id = 0;
 
