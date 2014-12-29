@@ -285,6 +285,12 @@ onload = function() {
     obj.setAttribute("src", "ppapi_nacl_tests_pnacl_nonsfi.nmf");
     obj.setAttribute("type", "application/x-nacl");
     obj.setAttribute("mode", mode);
+  } else if (mode == "mojo") {
+    obj = document.createElement("EMBED");
+    obj.setAttribute("src",
+                     "test_data/ppapi/tests/mojo/pnacl/ppapi_tests_mojo.nmf");
+    obj.setAttribute("type", "application/x-pnacl");
+    obj.setAttribute("mode", mode);
   } else {
     var mimeType = "application/x-ppapi-tests";
     if (mimeType in navigator.mimeTypes) {
@@ -297,6 +303,7 @@ onload = function() {
           '<span class="err_msg">Test plug-in is not registered.</span>';
     }
   }
+
   if (obj) {
     obj.setAttribute("width", 80);
     obj.setAttribute("height", 80);

@@ -20,6 +20,7 @@
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_renderer_messages.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
@@ -27,6 +28,9 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_support.h"
+#include "mojo/nacl/mojo_syscall.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
@@ -423,6 +427,26 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   std::string file_path_str = params.nexe_file_path_metadata.AsUTF8Unsafe();
   args->nexe_desc = NaClDescCreateWithFilePathMetadata(nexe_file,
                                                        file_path_str.c_str());
+
+#if defined(OS_POSIX)
+  if (params.enable_mojo) {
+#if !defined(OS_MACOSX)
+    // Don't call mojo::embedder::Init on Mac; it's already been called from
+    // ChromeMain() (see chrome/app/chrome_exe_main_mac.cc).
+    mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>());
+#endif
+    // InjectMojo adds a file descriptor to the process that allows Mojo calls
+    // to use an implementation defined outside the NaCl sandbox. See
+    // //mojo/nacl for implementation details.
+    InjectMojo(nap);
+  } else {
+    // When Mojo isn't enabled, we inject a file descriptor that intentionally
+    // fails on any imc_sendmsg() call to make debugging easier.
+    InjectDisabledMojo(nap);
+  }
+#else
+  InjectDisabledMojo(nap);
+#endif
 
   int exit_status;
   if (!NaClChromeMainStart(nap, args, &exit_status))

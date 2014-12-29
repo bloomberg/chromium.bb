@@ -1990,6 +1990,7 @@
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app',
+                '../ppapi/ppapi_tests_mojo.gyp:ppapi_tests_mojo',
               ],
               'conditions': [
                 ['chromeos==1', {

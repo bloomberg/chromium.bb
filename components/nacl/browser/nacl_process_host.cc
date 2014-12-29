@@ -821,6 +821,8 @@ bool NaClProcessHost::StartNaClExecution() {
     params.version = NaClBrowser::GetDelegate()->GetVersionString();
     params.enable_debug_stub = enable_debug_stub_ &&
         NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
+    params.enable_mojo = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableNaClMojo);
 
     const ChildProcessData& data = process_->GetData();
     if (!ShareHandleToSelLdr(data.handle,

@@ -1,0 +1,4 @@
+Pepper Mojo tests are split apart from the rest of the Pepper tests because:
+  - They require additional Mojo dependencies to work, and
+  - Mojo libraries require building with C++11 support, which is only supported
+    by pnacl-clang.

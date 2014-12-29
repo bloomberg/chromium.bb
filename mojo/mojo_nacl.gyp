@@ -40,7 +40,7 @@
           ],
         },
         {
-          'target_name': 'monacl_sel',
+          'target_name': 'monacl_syscall',
           'type': 'static_library',
           'defines': [
             '<@(nacl_defines)',
@@ -50,11 +50,42 @@
           ],
           'sources': [
             '<(monacl_codegen_dir)/mojo_syscall.cc',
+          ],
+        },
+        {
+          'target_name': 'monacl_syscall_win64',
+          'type': 'static_library',
+          'defines': [
+            '<@(nacl_defines)',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            '<(monacl_codegen_dir)/mojo_syscall.cc',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            }
+          },
+        },
+        {
+          'target_name': 'monacl_sel',
+          'type': 'static_library',
+          'defines': [
+            '<@(nacl_defines)',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
             'nacl/monacl_sel_main.cc',
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
             'monacl_codegen',
+            'monacl_syscall',
           ],
         },
         {

@@ -1548,3 +1548,57 @@ IN_PROC_BROWSER_TEST_F(TransitionalNonSfiPackagedAppTest,
                        MAYBE_PNACL_TRANSITIONAL_NONSFI(SuccessfulLoad)) {
   RunTests();
 }
+
+class MojoPPAPITest : public InProcessBrowserTest {
+ public:
+  MojoPPAPITest() : InProcessBrowserTest() { }
+  virtual ~MojoPPAPITest() { }
+
+  void RunTestInternal() {
+    base::FilePath document_root;
+    ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
+    net::SpawnedTestServer http_server(net::SpawnedTestServer::TYPE_HTTP,
+                                       net::SpawnedTestServer::kLocalhost,
+                                       document_root);
+    ASSERT_TRUE(http_server.Start());
+
+    std::string query = "files/test_case.html?testcase=Mojo&mode=mojo";
+    GURL test_url = http_server.GetURL(query);
+
+    PPAPITestMessageHandler handler;
+    content::JavascriptTestObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        &handler);
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    ASSERT_TRUE(observer.Run()) << handler.error_message();
+    result_ = handler.message();
+  }
+
+  void RunTest() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableNaClMojo);
+    RunTestInternal();
+    EXPECT_STREQ("PASS", result_.c_str());
+  }
+  void RunTestWithoutFlag() {
+    RunTestInternal();
+    EXPECT_STREQ("Plugin crashed. 'NaCl module crashed'", result_.c_str());
+  }
+ private:
+  std::string result_;
+};
+
+#if defined(OS_POSIX)
+#define MAYBE_MOJO(test_name) test_name
+#else
+#define MAYBE_MOJO(test_name) DISABLED_##test_name
+#endif
+
+IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MOJO(Mojo)) {
+  RunTest();
+}
+
+IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MOJO(MojoFailsWithoutFlag)) {
+  RunTestWithoutFlag();
+}

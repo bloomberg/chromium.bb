@@ -79,6 +79,9 @@ struct NaClStartParams {
   bool enable_debug_stub;
   bool enable_ipc_proxy;
 
+  // Enables plugin code to use Mojo APIs. See mojo/nacl for details.
+  bool enable_mojo;
+
   NaClAppProcessType process_type;
 
   // For NaCl <-> renderer crash information reporting.

@@ -12,6 +12,9 @@ const char kDisablePnaclCrashThrottling[]   = "disable-pnacl-crash-throttling";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
+// Enables Mojo support for Native Client plugins.
+const char kEnableNaClMojo[]                = "enable-nacl-mojo";
+
 // Enables Non-SFI mode, in which programs can be run without NaCl's SFI
 // sandbox.
 const char kEnableNaClNonSfiMode[]          = "enable-nacl-nonsfi-mode";
