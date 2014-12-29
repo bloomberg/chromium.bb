@@ -21,6 +21,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -197,14 +198,12 @@ void RecoveryComponentInstaller::OnUpdateError(int error) {
 }
 
 #if defined(OS_WIN)
-void WaitForInstallToComplete(base::ProcessHandle process_handle,
+void WaitForInstallToComplete(base::Process process,
                               const base::FilePath& installer_folder,
                               PrefService* prefs) {
   int installer_exit_code = 0;
   const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
-  if (base::WaitForExitCodeWithTimeout(process_handle,
-                                       &installer_exit_code,
-                                       kMaxWaitTime) &&
+  if (process.WaitForExitWithTimeout(kMaxWaitTime, &installer_exit_code) &&
       installer_exit_code == EXIT_CODE_ELEVATION_NEEDED) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -213,23 +212,22 @@ void WaitForInstallToComplete(base::ProcessHandle process_handle,
                    installer_folder,
                    prefs));
   }
-  base::CloseProcessHandle(process_handle);
 }
 
 bool RecoveryComponentInstaller::RunInstallCommand(
     const base::CommandLine& cmdline,
     const base::FilePath& installer_folder) const {
-  base::ProcessHandle process_handle;
   base::LaunchOptions options;
   options.start_hidden = true;
-  if (!base::LaunchProcess(cmdline, options, &process_handle))
+  base::Process process = base::LaunchProcess(cmdline, options);
+  if (!process.IsValid())
     return false;
 
   // Let worker pool thread wait for us so we don't block Chrome shutdown.
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&WaitForInstallToComplete,
-                 process_handle, installer_folder, prefs_),
+                 base::Passed(&process), installer_folder, prefs_),
       true);
 
   // Returns true regardless of install result since from updater service
@@ -241,7 +239,7 @@ bool RecoveryComponentInstaller::RunInstallCommand(
 bool RecoveryComponentInstaller::RunInstallCommand(
     const base::CommandLine& cmdline,
     const base::FilePath&) const {
-  return base::LaunchProcess(cmdline, base::LaunchOptions(), NULL);
+  return base::LaunchProcess(cmdline, base::LaunchOptions()).IsValid();
 }
 #endif
 

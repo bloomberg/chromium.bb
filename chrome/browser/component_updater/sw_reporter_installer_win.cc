@@ -204,19 +204,17 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
 void LaunchAndWaitForExit(const base::FilePath& exe_path,
                           const std::string& version) {
   const base::CommandLine reporter_command_line(exe_path);
-  base::ProcessHandle scan_reporter_process = base::kNullProcessHandle;
-  if (!base::LaunchProcess(reporter_command_line,
-                           base::LaunchOptions(),
-                           &scan_reporter_process)) {
+  base::Process scan_reporter_process =
+      base::LaunchProcess(reporter_command_line, base::LaunchOptions());
+  if (!scan_reporter_process.IsValid()) {
     ReportUmaStep(SW_REPORTER_FAILED_TO_START);
     return;
   }
   ReportUmaStep(SW_REPORTER_START_EXECUTION);
 
   int exit_code = -1;
-  bool success = base::WaitForExitCode(scan_reporter_process, &exit_code);
+  bool success = scan_reporter_process.WaitForExit(&exit_code);
   DCHECK(success);
-  scan_reporter_process = base::kNullProcessHandle;
   // It's OK if this doesn't complete, the work will continue on next startup.
   BrowserThread::PostTask(
       BrowserThread::UI,
