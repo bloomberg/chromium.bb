@@ -911,6 +911,32 @@ def delete_keys(keys):
   return {k: delete_key() for k in keys}
 
 
+def append_useflags(useflags):
+  """Used to append a set of useflags to existing useflags.
+
+  Useflags that shadow prior use flags will cause the prior flag to be removed.
+  (e.g. appending '-foo' to 'foo' will cause 'foo' to be removed)
+
+  Usage:
+    new_config = base_config.derive(useflags=append_useflags(['foo', '-bar'])
+
+  Args:
+    useflags: List of string useflags to append.
+  """
+  assert isinstance(useflags, (list, set))
+  shadowed_useflags = {'-' + flag for flag in useflags
+                       if not flag.startswith('-')}
+  shadowed_useflags.update({flag[1:] for flag in useflags
+                            if flag.startswith('-')})
+  def handler(old_useflags):
+    new_useflags = set(old_useflags or [])
+    new_useflags.update(useflags)
+    new_useflags.difference_update(shadowed_useflags)
+    return sorted(list(new_useflags))
+
+  return handler
+
+
 # TODO(mtennant): Rename this BuildConfig?
 class _config(dict):
   """Dictionary of explicit configuration settings for a cbuildbot config
@@ -943,6 +969,9 @@ class _config(dict):
   def derive(self, *args, **kwargs):
     """Create a new config derived from this one.
 
+    Note: If an override is callable, it will be called and passed the prior
+    value for the given key (or None) to compute the new value.
+
     Args:
       args: Mapping instances to mixin.
       kwargs: Settings to inject; see _settings for valid values.
@@ -950,18 +979,22 @@ class _config(dict):
     Returns:
       A new _config instance.
     """
-    inherits, overrides = args, kwargs
+    inherits = list(args)
+    inherits.append(kwargs)
     new_config = copy.deepcopy(self)
+
     for update_config in inherits:
-      new_config.update(update_config)
+      for k, v in update_config.iteritems():
+        if callable(v):
+          new_config[k] = v(new_config.get(k))
+        else:
+          new_config[k] = v
 
-    new_config.update(overrides)
+      keys_to_delete = [k for k in new_config if
+                        new_config[k] is _delete_key_sentinel]
 
-    keys_to_delete = [k for k in new_config if
-                      new_config[k] is _delete_key_sentinel]
-
-    for k in keys_to_delete:
-      new_config.pop(k, None)
+      for k in keys_to_delete:
+        new_config.pop(k, None)
 
     return copy.deepcopy(new_config)
 

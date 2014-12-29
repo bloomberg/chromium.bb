@@ -81,6 +81,23 @@ class ConfigClassTest(cros_test_lib.TestCase):
         cbuildbot_config.delete_keys(base_config))
     self.assertEqual(inherited_config_2, {'qzr': 'flp'})
 
+  def testCallableOverrides(self):
+    append_foo = lambda x: x + 'foo' if x else 'foo'
+    base_config = cbuildbot_config._config()
+    inherited_config_1 = base_config.derive(foo=append_foo)
+    inherited_config_2 = inherited_config_1.derive(foo=append_foo)
+    self.assertEqual(inherited_config_1, {'foo': 'foo'})
+    self.assertEqual(inherited_config_2, {'foo': 'foofoo'})
+
+  def testAppendUseflags(self):
+    base_config = cbuildbot_config._config()
+    inherited_config_1 = base_config.derive(
+        useflags=cbuildbot_config.append_useflags(['foo', 'bar', '-baz']))
+    inherited_config_2 = inherited_config_1.derive(
+        useflags=cbuildbot_config.append_useflags(['-bar', 'baz']))
+    self.assertEqual(inherited_config_1.useflags, ['-baz', 'bar', 'foo'])
+    self.assertEqual(inherited_config_2.useflags, ['-bar', 'baz', 'foo'])
+
 
 class CBuildBotTest(cros_test_lib.TestCase):
   """General tests of cbuildbot_config with respect to cbuildbot."""
