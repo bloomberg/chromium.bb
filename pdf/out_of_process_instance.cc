@@ -40,7 +40,6 @@
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "v8/include/v8.h"
 
 namespace chrome_pdf {
 
@@ -278,15 +277,6 @@ OutOfProcessInstance::~OutOfProcessInstance() {
 bool OutOfProcessInstance::Init(uint32_t argc,
                                 const char* argn[],
                                 const char* argv[]) {
-  v8::StartupData natives;
-  v8::StartupData snapshot;
-  pp::PDF::GetV8ExternalSnapshotData(this, &natives.data, &natives.raw_size,
-                                     &snapshot.data, &snapshot.raw_size);
-  if (natives.data) {
-    v8::V8::SetNativesDataBlob(&natives);
-    v8::V8::SetSnapshotDataBlob(&snapshot);
-  }
-
   // Check if the PDF is being loaded in the PDF chrome extension. We only allow
   // the plugin to be put into "full frame" mode when it is being loaded in the
   // extension because this enables some features that we don't want pages

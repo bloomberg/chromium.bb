@@ -14,6 +14,7 @@
 #include "pdf/out_of_process_instance.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/cpp/private/pdf.h"
+#include "v8/include/v8.h"
 
 bool g_sdk_initialized_via_pepper = false;
 
@@ -97,6 +98,15 @@ bool PDFModule::Init() {
 
 pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
   if (!g_sdk_initialized_via_pepper) {
+    v8::StartupData natives;
+    v8::StartupData snapshot;
+    pp::PDF::GetV8ExternalSnapshotData(pp::InstanceHandle(instance),
+                                       &natives.data, &natives.raw_size,
+                                       &snapshot.data, &snapshot.raw_size);
+    if (natives.data) {
+      v8::V8::SetNativesDataBlob(&natives);
+      v8::V8::SetSnapshotDataBlob(&snapshot);
+    }
     if (!chrome_pdf::InitializeSDK())
       return NULL;
     g_sdk_initialized_via_pepper = true;
