@@ -30,8 +30,6 @@
 #include "core/rendering/svg/RenderSVGRect.h"
 #include "core/svg/SVGRectElement.h"
 
-#include <cmath>
-
 namespace blink {
 
 RenderSVGRect::RenderSVGRect(SVGRectElement* node)
@@ -91,18 +89,14 @@ bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
     }
 
     const float halfStrokeWidth = this->strokeWidth() / 2;
-    const float halfWidth = m_fillBoundingBox.width() / 2;
-    const float halfHeight = m_fillBoundingBox.height() / 2;
-
-    const FloatPoint fillBoundingBoxCenter = FloatPoint(m_fillBoundingBox.x() + halfWidth, m_fillBoundingBox.y() + halfHeight);
-    const float absDeltaX = std::abs(point.x() - fillBoundingBoxCenter.x());
-    const float absDeltaY = std::abs(point.y() - fillBoundingBoxCenter.y());
-
-    if (!(absDeltaX <= halfWidth + halfStrokeWidth && absDeltaY <= halfHeight + halfStrokeWidth))
+    FloatRect outerStrokeRect = m_fillBoundingBox;
+    outerStrokeRect.inflate(halfStrokeWidth);
+    if (!outerStrokeRect.contains(point, FloatRect::InsideOrOnStroke))
         return false;
 
-    return (halfWidth - halfStrokeWidth <= absDeltaX)
-        || (halfHeight - halfStrokeWidth <= absDeltaY);
+    FloatRect innerStrokeRect = m_fillBoundingBox;
+    innerStrokeRect.inflate(-halfStrokeWidth);
+    return !innerStrokeRect.contains(point, FloatRect::InsideButNotOnStroke);
 }
 
 bool RenderSVGRect::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
