@@ -96,10 +96,10 @@ public:
         if (!element.hasActiveAnimations())
             return animationPlayers;
 
-        for (const auto& player : element.activeAnimations()->players()) {
-            ASSERT(player.key->source());
-            if (player.key->source()->isCurrent())
-                animationPlayers.append(player.key);
+        for (const auto& player : element.document().timeline().getAnimationPlayers()) {
+            ASSERT(player->source());
+            if (toAnimation(player->source())->target() == element && (player->source()->isCurrent() || player->source()->isInEffect()))
+                animationPlayers.append(player);
         }
         return animationPlayers;
     }

@@ -106,7 +106,7 @@ WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> AnimationTimeline::getAnim
 {
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> animationPlayers;
     for (const auto& player : m_players) {
-        if (player->source() && player->source()->isCurrent())
+        if (player->source() && (player->source()->isCurrent() || player->source()->isInEffect()))
             animationPlayers.append(player);
     }
     std::sort(animationPlayers.begin(), animationPlayers.end(), compareAnimationPlayers);

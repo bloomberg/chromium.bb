@@ -86,4 +86,23 @@ test(function() {
 
 }, 'getAnimationPlayers() with delays');
 
+test(function() {
+    assert_equals(document.timeline.getAnimationPlayers().length, 0);
+    assert_equals(container.getAnimationPlayers().length, 0);
+    assert_equals(element.getAnimationPlayers().length, 0);
+
+    var player = element.animate([], {duration: 1000, delay: 500, fill: 'both'});
+    assert_equals(document.timeline.getAnimationPlayers().length, 1);
+    assert_equals(document.timeline.getAnimationPlayers()[0], player);
+    assert_equals(container.getAnimationPlayers().length, 0);
+    assert_equals(element.getAnimationPlayers().length, 1);
+    assert_equals(element.getAnimationPlayers()[0], player);
+
+    player.finish();
+    assert_equals(document.timeline.getAnimationPlayers().length, 1);
+    // assert_equals(container.getAnimationPlayers().length, 1);
+    // assert_equals(element.getAnimationPlayers().length, 1);
+
+}, 'getAnimationPlayers() - in effect animations');
+
 </script>
