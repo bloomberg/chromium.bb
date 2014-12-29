@@ -149,6 +149,18 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return ColorStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
         break;
 
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderTopRightRadius:
+        range = ValueRangeNonNegative;
+        // Fall through
+    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyObjectPosition:
+        if (LengthPairStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPairStyleInterpolation::canCreateFrom(*toCSSValue))
+            return LengthPairStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+        break;
+
     case CSSPropertyTransformOrigin:
         if (LengthPoint3DStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPoint3DStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
