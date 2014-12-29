@@ -412,7 +412,6 @@
       'geometry/DoublePoint.h',
       'geometry/DoubleSize.cpp',
       'geometry/DoubleSize.h',
-      'geometry/FloatBoxExtent.h',
       'geometry/FloatPoint.cpp',
       'geometry/FloatPoint.h',
       'geometry/FloatPoint3D.cpp',

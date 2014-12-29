@@ -32,8 +32,8 @@
 #define HarfBuzzShaper_h
 
 #include "hb.h"
-#include "platform/geometry/FloatBoxExtent.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -63,7 +63,7 @@ public:
     float totalWidth() { return m_totalWidth; }
     int offsetForPosition(float targetX);
     FloatRect selectionRect(const FloatPoint&, int height, int from, int to);
-    FloatBoxExtent glyphBoundingBox() const { return m_glyphBoundingBox; }
+    const FloatRect& glyphBoundingBox() const { return m_glyphBoundingBox; }
 
 private:
     class HarfBuzzRun {
@@ -156,7 +156,7 @@ private:
     ForTextEmphasisOrNot m_forTextEmphasis;
 
     float m_totalWidth;
-    FloatBoxExtent m_glyphBoundingBox;
+    FloatRect m_glyphBoundingBox;
     HashSet<const SimpleFontData*>* m_fallbackFonts;
 
     friend struct CachedShapingResults;

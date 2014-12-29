@@ -780,10 +780,10 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
     if (!shaper.shape())
         return 0;
 
-    glyphBounds->setTop(floorf(-shaper.glyphBoundingBox().top()));
-    glyphBounds->setBottom(ceilf(shaper.glyphBoundingBox().bottom()));
-    glyphBounds->setLeft(std::max<int>(0, floorf(-shaper.glyphBoundingBox().left())));
-    glyphBounds->setRight(std::max<int>(0, ceilf(shaper.glyphBoundingBox().right() - shaper.totalWidth())));
+    glyphBounds->setTop(ceilf(-shaper.glyphBoundingBox().y()));
+    glyphBounds->setBottom(ceilf(shaper.glyphBoundingBox().maxY()));
+    glyphBounds->setLeft(std::max<int>(0, ceilf(-shaper.glyphBoundingBox().x())));
+    glyphBounds->setRight(std::max<int>(0, ceilf(shaper.glyphBoundingBox().maxX() - shaper.totalWidth())));
 
     return shaper.totalWidth();
 }
