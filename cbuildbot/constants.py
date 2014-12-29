@@ -48,8 +48,9 @@ WATERFALL_EXTERNAL = 'chromiumos'
 WATERFALL_TRYBOT = 'chromiumos.tryserver'
 WATERFALL_RELEASE = 'chromeos_release'
 WATERFALL_BRANCH = 'chromeos.branch'
-# This waterfall is not yet using cidb.
+# These waterfalls are not yet using cidb.
 WATERFALL_CHROMIUM = 'chromiumos.chromium'
+WATERFALL_CHROME = 'chromeos.chrome'
 
 CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
                          WATERFALL_EXTERNAL,
@@ -67,6 +68,7 @@ RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'
 BRANCH_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.branch'
 CHROMIUM_DASHBOARD = ('https://uberchromegw.corp.google.com/'
                       'i/chromiumos.chromium')
+CHROME_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.chrome'
 
 # Waterfall to dashboard URL mapping.
 WATERFALL_TO_DASHBOARD = {
@@ -76,6 +78,7 @@ WATERFALL_TO_DASHBOARD = {
     WATERFALL_RELEASE: RELEASE_DASHBOARD,
     WATERFALL_BRANCH: BRANCH_DASHBOARD,
     WATERFALL_CHROMIUM: CHROMIUM_DASHBOARD,
+    WATERFALL_CHROME: CHROME_DASHBOARD,
 }
 
 # Builder status strings
