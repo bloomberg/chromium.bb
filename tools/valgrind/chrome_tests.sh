@@ -9,11 +9,10 @@
 export THISDIR=`dirname $0`
 ARGV_COPY="$@"
 
-# We need to set CHROME_VALGRIND iff using Memcheck or TSan-Valgrind:
+# We need to set CHROME_VALGRIND iff using Memcheck:
 #   tools/valgrind/chrome_tests.sh --tool memcheck
 # or
 #   tools/valgrind/chrome_tests.sh --tool=memcheck
-# (same for "--tool=tsan")
 tool="memcheck"  # Default to memcheck.
 while (( "$#" ))
 do
@@ -34,14 +33,6 @@ NEEDS_DRMEMORY=0
 case "$tool" in
   "memcheck")
     NEEDS_VALGRIND=1
-    ;;
-  "tsan" | "tsan_rv")
-    if [ "`uname -s`" == CYGWIN* ]
-    then
-      NEEDS_PIN=1
-    else
-      NEEDS_VALGRIND=1
-    fi
     ;;
   "drmemory" | "drmemory_light" | "drmemory_full" | "drmemory_pattern")
     NEEDS_DRMEMORY=1
@@ -94,29 +85,6 @@ then
     export DRMEMORY_COMMAND="$DRMEMORY_PATH/unpacked/bin/drmemory.exe"
   fi
 fi
-
-if [ "$NEEDS_PIN" == "1" ]
-then
-  if [ -z "$PIN_COMMAND" ]
-  then
-    # Set up PIN_COMMAND to invoke TSan.
-    TSAN_PATH="$THISDIR/../../third_party/tsan"
-    TSAN_SFX="$TSAN_PATH/tsan-x86-windows-sfx.exe"
-    echo "$TSAN_SFX"
-    if [ ! -f $TSAN_SFX ]
-    then
-      echo "Can't find ThreadSanitizer executables."
-      echo "See http://www.chromium.org/developers/how-tos/using-valgrind/threadsanitizer/threadsanitizer-on-windows"
-      echo "for the instructions on how to get them."
-      exit 1
-    fi
-
-    chmod +x "$TSAN_SFX"  # Cygwin won't run it without +x.
-    "$TSAN_SFX" -o"$TSAN_PATH"/unpacked -y
-    export PIN_COMMAND="$TSAN_PATH/unpacked/tsan-x86-windows/tsan.bat"
-  fi
-fi
-
 
 PYTHONPATH=$THISDIR/../python/google python \
            "$THISDIR/chrome_tests.py" $ARGV_COPY
