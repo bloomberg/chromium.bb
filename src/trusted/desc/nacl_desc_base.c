@@ -210,7 +210,6 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
   NaClDescXferableDataDescInternalize,
   NaClDescInternalizeNotImplemented,  /* imc socket */
   NaClDescQuotaInternalize,           /* quota wrapper */
-  NaClDescInternalizeNotImplemented,  /* device: postmessage */
   NaClDescInternalizeNotImplemented,  /* custom */
   NaClDescNullInternalize,
 };
@@ -234,7 +233,6 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_TRANSFERABLE_DATA_SOCKET);
     MAP(NACL_DESC_IMC_SOCKET);
     MAP(NACL_DESC_QUOTA);
-    MAP(NACL_DESC_DEVICE_POSTMESSAGE);
     MAP(NACL_DESC_CUSTOM);
     MAP(NACL_DESC_NULL);
   }
