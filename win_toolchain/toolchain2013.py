@@ -150,7 +150,7 @@ def ExtractIso(iso_path):
   # TODO(scottmg): Do this (and exe) manually with python code.
   # Note that at the beginning of main() we set the working directory to 7z's
   # location so that 7z can find its codec dll.
-  RunOrDie('7z x "%s" -y "-o%s" >nul' % (iso_path, target_path))
+  RunOrDie('7z x "%s" -y "-o%s"' % (iso_path, target_path))
   return target_path
 
 
@@ -431,7 +431,7 @@ def DoTreeMirror(target_dir, tree_sha1):
   local_zip = DownloadUsingGsutil(tree_sha1 + '.zip')
   sys.stdout.write('Extracting %s...\n' % local_zip)
   sys.stdout.flush()
-  RunOrDie('7z x "%s" -y "-o%s" >nul' % (local_zip, target_dir))
+  RunOrDie('7z x "%s" -y "-o%s"' % (local_zip, target_dir))
 
 
 def main():

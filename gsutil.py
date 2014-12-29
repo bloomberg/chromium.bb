@@ -28,7 +28,9 @@ DEFAULT_FALLBACK_GSUTIL = os.path.join(
 
 
 class SubprocessError(Exception):
-  pass
+  def __init__(self, message=None, code=0):
+    super(SubprocessError, self).__init__(message)
+    self.code = code
 
 
 class InvalidGsutilError(Exception):
@@ -46,7 +48,7 @@ def call(args, verbose=True, **kwargs):
       sys.stdout.write(line)
   code = proc.wait()
   if code:
-    raise SubprocessError('%s failed with %s' % (args, code))
+    raise SubprocessError('%s failed with %s' % (args, code), code)
   return ''.join(out)
 
 
@@ -125,7 +127,11 @@ def run_gsutil(force_version, fallback, target, args):
   else:
     gsutil_bin = fallback
   cmd = [sys.executable, gsutil_bin] + args
-  os.execv(cmd[0], cmd)
+  try:
+    call(cmd)
+  except SubprocessError as e:
+    return e.code
+  return 0
 
 
 def parse_args():
@@ -145,7 +151,7 @@ def parse_args():
 
 def main():
   force_version, fallback, target, args = parse_args()
-  run_gsutil(force_version, fallback, target, args)
+  return run_gsutil(force_version, fallback, target, args)
 
 if __name__ == '__main__':
   sys.exit(main())
