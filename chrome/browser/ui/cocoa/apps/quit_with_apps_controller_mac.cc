@@ -149,16 +149,18 @@ bool QuitWithAppsController::ShouldQuit() {
       }
     }
 
-    // Quit immediately if there are no windows/hosted apps open or
-    // the confirmation has been suppressed.
-    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0) &&
+    // Quit immediately if there are no packaged app windows or hosted apps open
+    // or the confirmation has been suppressed. Ignore panels.
+    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
+            extensions::AppWindow::WINDOW_TYPE_DEFAULT) &&
         !hosted_apps_open) {
       return true;
     }
   } else {
     // Quit immediately if there are no windows or the confirmation has been
     // suppressed.
-    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(0))
+    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
+            extensions::AppWindow::WINDOW_TYPE_DEFAULT))
       return true;
   }
 
