@@ -196,7 +196,8 @@ function test()
 
                 uiLocationToRawLocation: function(uiSourceCode, lineNumber)
                 {
-                    return new WebInspector.DebuggerModel.Location(mockTarget, uiSourceCode.networkURL(), lineNumber - 10, 0);
+                    var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+                    return new WebInspector.DebuggerModel.Location(mockTarget, networkURL, lineNumber - 10, 0);
                 },
 
                 isIdentity: function()
@@ -270,7 +271,8 @@ function test()
 
                     uiLocationToRawLocation: function(uiSourceCode, lineNumber)
                     {
-                        return new WebInspector.DebuggerModel.Location(mockTarget, uiSourceCodeA.networkURL(), lineNumber - 10, 0);
+                        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodeA);
+                        return new WebInspector.DebuggerModel.Location(mockTarget, networkURL, lineNumber - 10, 0);
                     },
 
                     isIdentity: function()

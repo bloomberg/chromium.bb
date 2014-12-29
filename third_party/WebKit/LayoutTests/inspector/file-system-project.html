@@ -77,14 +77,14 @@ function test()
                 dumpUISourceCodeLocations(uiSourceCodes, 5);
                 InspectorTest.addResult("UISourceCode uri to url mappings:");
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    var url = uiSourceCodes[i].networkURL();
+                    var url = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
                     if (!url)
                         continue;
-                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].networkURL());
+                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + url);
                 }
                 InspectorTest.addResult("UISourceCode url to uri mappings:");
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    var url = uiSourceCodes[i].networkURL();
+                    var url = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
                     if (!url)
                         continue;
                     var uri = InspectorTest.testWorkspace.uiSourceCodeForURL(url).uri();

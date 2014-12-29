@@ -36,8 +36,10 @@ function test()
     {
         var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
         InspectorTest.addResult("UISourceCode uri to url mappings:");
-        for (var i = 0; i < uiSourceCodes.length; ++i)
-            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].networkURL());
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
+            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
+        }
     }
 
     function fileSystemAdded(event)
@@ -57,7 +59,8 @@ function test()
             InspectorTest.addResult("Null uiLocation");
             return;
         }
-        InspectorTest.addResult(uiLocation.uiSourceCode.networkURL() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
+        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
+        InspectorTest.addResult(networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
     }
 
     InspectorTest.createWorkspace();
@@ -65,7 +68,7 @@ function test()
     var target = WebInspector.targetManager.mainTarget();
     cssModel = new WebInspector.CSSStyleModel(target, InspectorTest.testWorkspace);
     target.cssModel = cssModel;
-    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
+    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkWorkspaceBinding);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."

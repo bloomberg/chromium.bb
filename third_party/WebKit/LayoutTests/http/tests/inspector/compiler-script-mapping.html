@@ -80,13 +80,15 @@ function test()
     function uiSourceCodeAdded(event)
     {
         var uiSourceCode = event.data;
-        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + uiSourceCode.networkURL());
+        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + networkURL);
     }
 
     function uiSourceCodeRemoved(event)
     {
         var uiSourceCode = event.data;
-        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + uiSourceCode.networkURL());
+        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + networkURL);
     }
 
     InspectorTest.runTestSuite([
@@ -280,7 +282,8 @@ function test()
 
             function firstUISourceCodeAdded(uiSourceCode)
             {
-                if (!uiSourceCode.networkURL()) {
+                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+                if (!networkURL) {
                     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
                     return;
                 }
@@ -289,7 +292,8 @@ function test()
 
             function secondUISourceCodeAdded(uiSourceCode)
             {
-                if (!uiSourceCode.networkURL()) {
+                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+                if (!networkURL) {
                     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
                     return;
                 }

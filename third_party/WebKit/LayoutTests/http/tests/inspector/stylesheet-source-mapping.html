@@ -14,7 +14,7 @@ function test()
     var target = WebInspector.targetManager.mainTarget();
     var cssModel = new WebInspector.CSSStyleModel(target);
     target.cssModel = cssModel;
-    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
+    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkWorkspaceBinding);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
@@ -28,9 +28,10 @@ function test()
     function locationsUpdated()
     {
         var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, 2, 3));
-        if (uiLocation.uiSourceCode.networkURL().indexOf(".scss") === -1)
+        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
+        if (networkURL.indexOf(".scss") === -1)
             return;
-        finalMappedLocation = uiLocation.uiSourceCode.networkURL() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
+        finalMappedLocation = networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
         join();
     }
 

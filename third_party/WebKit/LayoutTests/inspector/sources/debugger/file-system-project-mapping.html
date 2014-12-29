@@ -91,8 +91,10 @@ function test()
             {
                 var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
                 InspectorTest.addResult("UISourceCode uri to url mappings:");
-                for (var i = 0; i < uiSourceCodes.length; ++i)
-                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + uiSourceCodes[i].networkURL());
+                for (var i = 0; i < uiSourceCodes.length; ++i) {
+                    var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
+                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
+                }
             }
 
             var fileSystemPath = "/var/www";
@@ -146,7 +148,8 @@ function test()
                 manager.addFiles(fileSystemPath, files);
                 dumpFileSystemUISourceCodesMappings();
 
-                InspectorTest.testFileSystemMapping.removeMappingForURL(networkUISourceCode.networkURL());
+                var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
+                InspectorTest.testFileSystemMapping.removeMappingForURL(networkURL);
                 next();
             }
         },
@@ -292,7 +295,7 @@ function test()
             
             function didShowScriptSource(sourceFrame)
             {
-                var scriptURL = sourceFrame._uiSourceCode.networkURL();
+                var scriptURL = InspectorTest.testNetworkMapping.networkURL(sourceFrame._uiSourceCode);
 
                 var fileContent = "function f()\n{\n    return 0;\n}\n";
                 var fileSystemPath = "/var/www";
@@ -451,14 +454,15 @@ function test()
             function renameNextFile()
             {
                 var uiSourceCode = uiSourceCodes[index];
-                oldURL = uiSourceCode.networkURL();
+                oldURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
                 uiSourceCodes[index].rename("newName.js", fileRenamed);
             }
 
             function fileRenamed()
             {
                 var uiSourceCode = uiSourceCodes[index];
-                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + uiSourceCode.networkURL());
+                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + networkURL);
                 ++index;
                 if (index < uiSourceCodes.length)
                     renameNextFile();
