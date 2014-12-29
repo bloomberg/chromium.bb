@@ -74,6 +74,70 @@ void ExecuteCreateSession(
 
 namespace {
 
+void OnGetSession(const base::WeakPtr<size_t>& session_remaining_count,
+                  const base::Closure& all_get_session_func,
+                  base::ListValue* session_list,
+                  const Status& status,
+                  scoped_ptr<base::Value> value,
+                  const std::string& session_id) {
+
+  if (!session_remaining_count)
+    return;
+
+  (*session_remaining_count)--;
+
+  scoped_ptr<base::DictionaryValue> session(new base::DictionaryValue());
+  session->Set("sessionId", new base::StringValue(session_id));
+  session->Set("capabilities", value->DeepCopy());
+  session_list->Append(session.release());
+
+  if (!*session_remaining_count) {
+    all_get_session_func.Run();
+  }
+}
+
+}  // namespace
+
+void ExecuteGetSessions(const Command& session_capabilities_command,
+                        SessionThreadMap* session_thread_map,
+                        const base::DictionaryValue& params,
+                        const std::string& session_id,
+                        const CommandCallback& callback) {
+
+  size_t get_remaining_count = session_thread_map->size();
+  base::WeakPtrFactory<size_t> weak_ptr_factory(&get_remaining_count);
+  scoped_ptr<base::ListValue> session_list(new base::ListValue());
+
+  if (!get_remaining_count) {
+    callback.Run(Status(kOk), session_list.Pass(), session_id);
+    return;
+  }
+
+  base::RunLoop run_loop;
+
+  for (SessionThreadMap::const_iterator iter = session_thread_map->begin();
+       iter != session_thread_map->end();
+       ++iter) {
+    session_capabilities_command.Run(params,
+                                     iter->first,
+                                     base::Bind(
+                                               &OnGetSession,
+                                               weak_ptr_factory.GetWeakPtr(),
+                                               run_loop.QuitClosure(),
+                                               session_list.get()));
+  }
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      run_loop.QuitClosure(),
+      base::TimeDelta::FromSeconds(10));
+  base::MessageLoop::current()->SetNestableTasksAllowed(true);
+  run_loop.Run();
+
+  callback.Run(Status(kOk), session_list.Pass(), session_id);
+}
+
+namespace {
+
 void OnSessionQuit(const base::WeakPtr<size_t>& quit_remaining_count,
                    const base::Closure& all_quit_func,
                    const Status& status,

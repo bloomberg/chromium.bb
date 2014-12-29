@@ -35,6 +35,14 @@ void ExecuteCreateSession(
     const std::string& session_id,
     const CommandCallback& callback);
 
+// Gets all sessions
+void ExecuteGetSessions(
+    const Command& session_capabilities_command,
+    SessionThreadMap* session_thread_map,
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    const CommandCallback& callback);
+
 // Quits all sessions.
 void ExecuteQuitAll(
     const Command& quit_command,

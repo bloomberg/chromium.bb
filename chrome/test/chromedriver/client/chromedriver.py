@@ -217,6 +217,9 @@ class ChromeDriver(object):
   def SwitchToParentFrame(self):
     self.ExecuteCommand(Command.SWITCH_TO_PARENT_FRAME)
 
+  def GetSessions(self):
+    return self.ExecuteCommand(Command.GET_SESSIONS)
+
   def GetTitle(self):
     return self.ExecuteCommand(Command.GET_TITLE)
 

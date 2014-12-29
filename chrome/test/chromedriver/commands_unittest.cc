@@ -51,6 +51,100 @@ TEST(CommandsTest, GetStatus) {
 
 namespace {
 
+void ExecuteStubGetSession(int* count,
+                           const base::DictionaryValue& params,
+                           const std::string& session_id,
+                           const CommandCallback& callback) {
+  if (*count == 0) {
+    EXPECT_STREQ("id", session_id.c_str());
+  } else {
+    EXPECT_STREQ("id2", session_id.c_str());
+  }
+  (*count)++;
+
+  scoped_ptr<base::DictionaryValue> capabilities(new base::DictionaryValue());
+
+  capabilities->Set("capability1", new base::StringValue("test1"));
+  capabilities->Set("capability2", new base::StringValue("test2"));
+
+  callback.Run(Status(kOk), capabilities.Pass(), session_id);
+}
+
+void OnGetSessions(const Status& status,
+                   scoped_ptr<base::Value> value,
+                   const std::string& session_id) {
+  ASSERT_EQ(kOk, status.code());
+  ASSERT_TRUE(value.get());
+  base::ListValue* sessions;
+  ASSERT_TRUE(value->GetAsList(&sessions));
+  ASSERT_EQ(static_cast<size_t>(2), sessions->GetSize());
+
+  base::DictionaryValue* session1;
+  base::DictionaryValue* session2;
+  ASSERT_TRUE(sessions->GetDictionary(0, &session1));
+  ASSERT_TRUE(sessions->GetDictionary(1, &session2));
+
+  ASSERT_EQ(static_cast<size_t>(2), session1->size());
+  ASSERT_EQ(static_cast<size_t>(2), session2->size());
+
+  std::string session1_id;
+  std::string session2_id;
+  base::DictionaryValue* session1_capabilities;
+  base::DictionaryValue* session2_capabilities;
+
+  ASSERT_TRUE(session1->GetString("sessionId", &session1_id));
+  ASSERT_TRUE(session2->GetString("sessionId", &session2_id));
+  ASSERT_TRUE(session1->GetDictionary("capabilities", &session1_capabilities));
+  ASSERT_TRUE(session2->GetDictionary("capabilities", &session2_capabilities));
+
+  ASSERT_EQ((size_t) 2, session1_capabilities->size());
+  ASSERT_EQ((size_t) 2, session2_capabilities->size());
+  ASSERT_EQ("id", session1_id);
+  ASSERT_EQ("id2", session2_id);
+
+  std::string session1_capability1;
+  std::string session1_capability2;
+  std::string session2_capability1;
+  std::string session2_capability2;
+
+  ASSERT_TRUE(session1_capabilities->GetString("capability1",
+    &session1_capability1));
+  ASSERT_TRUE(session1_capabilities->GetString("capability2",
+    &session1_capability2));
+  ASSERT_TRUE(session2_capabilities->GetString("capability1",
+    &session2_capability1));
+  ASSERT_TRUE(session2_capabilities->GetString("capability2",
+    &session2_capability2));
+
+  ASSERT_EQ("test1", session1_capability1);
+  ASSERT_EQ("test2", session1_capability2);
+  ASSERT_EQ("test1", session2_capability1);
+  ASSERT_EQ("test2", session2_capability2);
+}
+
+}  // namespace
+
+TEST(CommandsTest, GetSessions) {
+  SessionThreadMap map;
+  Session session("id");
+  Session session2("id2");
+  map[session.id] = make_linked_ptr(new base::Thread("1"));
+  map[session2.id] = make_linked_ptr(new base::Thread("2"));
+
+  int count = 0;
+
+  Command cmd = base::Bind(&ExecuteStubGetSession, &count);
+
+  base::DictionaryValue params;
+  base::MessageLoop loop;
+
+  ExecuteGetSessions(cmd, &map, params, std::string(),
+                     base::Bind(&OnGetSessions));
+  ASSERT_EQ(2, count);
+}
+
+namespace {
+
 void ExecuteStubQuit(
     int* count,
     const base::DictionaryValue& params,

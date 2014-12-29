@@ -15,6 +15,7 @@ class _Method(object):
 class Command(object):
   NEW_SESSION = (_Method.POST, '/session')
   GET_SESSION_CAPABILITIES = (_Method.GET, '/session/:sessionId')
+  GET_SESSIONS = (_Method.GET, '/sessions')
   QUIT = (_Method.DELETE, '/session/:sessionId')
   GET_CURRENT_WINDOW_HANDLE = (_Method.GET, '/session/:sessionId/window_handle')
   GET_WINDOW_HANDLES = (_Method.GET, '/session/:sessionId/window_handles')
