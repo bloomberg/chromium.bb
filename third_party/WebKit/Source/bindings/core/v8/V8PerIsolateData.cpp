@@ -205,23 +205,23 @@ bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::V
     return templ->HasInstance(value);
 }
 
-v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
+v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Local<v8::Value> value)
 {
-    v8::Handle<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_domTemplateMapForMainWorld);
+    v8::Local<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_domTemplateMapForMainWorld);
     if (!wrapper.IsEmpty())
         return wrapper;
     return findInstanceInPrototypeChain(info, value, m_domTemplateMapForNonMainWorld);
 }
 
-v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, DOMTemplateMap& domTemplateMap)
+v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Local<v8::Value> value, DOMTemplateMap& domTemplateMap)
 {
     if (value.IsEmpty() || !value->IsObject())
-        return v8::Handle<v8::Object>();
+        return v8::Local<v8::Object>();
     DOMTemplateMap::iterator result = domTemplateMap.find(info);
     if (result == domTemplateMap.end())
-        return v8::Handle<v8::Object>();
-    v8::Handle<v8::FunctionTemplate> templ = result->value.Get(isolate());
-    return v8::Handle<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);
+        return v8::Local<v8::Object>();
+    v8::Local<v8::FunctionTemplate> templ = result->value.Get(isolate());
+    return v8::Local<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);
 }
 
 static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& info)

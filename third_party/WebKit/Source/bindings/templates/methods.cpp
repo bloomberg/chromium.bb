@@ -128,7 +128,7 @@ if (!isUndefinedOrNull(info[{{argument.index}}])) {
                   (argument.index + 1)) | indent(8)}}
         return;
     }
-    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
+    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 } else {
     {{argument.name}} = nullptr;
 }
@@ -139,7 +139,7 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
               (argument.index + 1)) | indent }}
     return;
 }
-{{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
+{{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% endif %}{# argument.idl_type == 'EventListener' #}
 {% elif argument.is_variadic_wrapper_type %}
@@ -149,7 +149,7 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
                                    (argument.index + 1, argument.idl_type)) | indent(8)}}
         return;
     }
-    {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
+    {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Local<v8::Object>::Cast(info[i])));
 }
 {% elif argument.is_dictionary %}
 {% if not argument.use_permissive_dictionary_conversion %}
@@ -450,7 +450,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     if (contextData && contextData->activityLogger()) {
     {% endif %}
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value> > loggerArgs = toImplArguments<v8::Local<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
     }
     {% endif %}

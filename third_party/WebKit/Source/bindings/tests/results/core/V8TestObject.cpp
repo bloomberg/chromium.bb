@@ -6674,7 +6674,7 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
             return;
         }
-        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
     impl->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg);
 }
@@ -6696,7 +6696,7 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
                 V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
                 return;
             }
-            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
         } else {
             optionalTestCallbackInterfaceArg = nullptr;
         }
@@ -6724,7 +6724,7 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."));
             return;
         }
-        testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+        testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
     impl->voidMethodTestCallbackInterfaceOrNullArg(testCallbackInterfaceArg);
 }
@@ -7675,7 +7675,7 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCall
                 exceptionState.throwIfNeeded();
                 return;
             }
-            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
+            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
         }
     }
     impl->voidMethodVariadicTestInterfaceEmptyArg(variadicTestInterfaceEmptyArgs);
@@ -7707,7 +7707,7 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
                 exceptionState.throwIfNeeded();
                 return;
             }
-            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
+            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
         }
     }
     impl->voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(testInterfaceEmptyArg, variadicTestInterfaceEmptyArgs);
@@ -7732,7 +7732,7 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::F
                 exceptionState.throwIfNeeded();
                 return;
             }
-            variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
+            variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
         }
     }
     impl->voidMethodVariadicTestInterfaceGarbageCollectedArg(variadicTestInterfaceGarbageCollectedArg);
@@ -7757,7 +7757,7 @@ static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(const
                 exceptionState.throwIfNeeded();
                 return;
             }
-            variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
+            variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
         }
     }
     impl->voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg(variadicTestInterfaceWillBeGarbageCollectedArg);
@@ -8920,7 +8920,7 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingAccessForAllWorldsMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value> > loggerArgs = toImplArguments<v8::Local<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethod(info);
@@ -9636,7 +9636,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value> > loggerArgs = toImplArguments<v8::Local<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -9656,7 +9656,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value> > loggerArgs = toImplArguments<v8::Local<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
@@ -9676,7 +9676,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value> > loggerArgs = toImplArguments<v8::Local<v8::Value> >(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -9779,7 +9779,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
             exceptionState.throwIfNeeded();
             return;
         }
-        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
     impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg, exceptionState);
     if (exceptionState.hadException()) {
@@ -9807,7 +9807,7 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
                 exceptionState.throwIfNeeded();
                 return;
             }
-            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
         } else {
             optionalTestCallbackInterfaceArg = nullptr;
         }
@@ -10172,7 +10172,7 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethod(c
                 exceptionState.throwIfNeeded();
                 return;
             }
-            testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
+            testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
         }
     }
     impl->typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg(testInterfaceEmptyArg);
@@ -11126,19 +11126,19 @@ v8::Local<v8::FunctionTemplate> V8TestObject::domTemplate(v8::Isolate* isolate)
     return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestObjectTemplate);
 }
 
-bool V8TestObject::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+bool V8TestObject::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Handle<v8::Object> V8TestObject::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+v8::Local<v8::Object> V8TestObject::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestObject* V8TestObject::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestObject* V8TestObject::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
 void V8TestObject::installConditionallyEnabledProperties(v8::Local<v8::Object> instanceObject, v8::Isolate* isolate)

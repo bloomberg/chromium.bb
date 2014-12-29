@@ -422,7 +422,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
     }
 
     {# The findInstanceInPrototypeChain() call above only returns a non-empty handle if info.This() is an Object. #}
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), v8::Handle<v8::Object>::Cast(info.This()), name, v8Value);
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), v8::Local<v8::Object>::Cast(info.This()), name, v8Value);
 }
 
 static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -689,9 +689,9 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {##############################################################################}
 {% block configure_shadow_object_template %}
 {% if interface_name == 'Window' %}
-static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate)
+static void configureShadowObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v8::Isolate* isolate)
 {
-    V8DOMConfiguration::installAttributes(isolate, templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes));
+    V8DOMConfiguration::installAttributes(isolate, templ, v8::Local<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes));
 
     // Install a security handler with V8.
     templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
@@ -729,7 +729,7 @@ static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
 static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
     "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, V8DOMConfiguration::OnInstance,
 };
-V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration, isolate);
+V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Local<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration, isolate);
 {%- endmacro %}
 
 
@@ -754,7 +754,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 
 {##############################################################################}
 {% block has_instance %}
-bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+bool {{v8_class}}::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     {% if is_array_buffer_or_view %}
     return v8Value->Is{{interface_name}}();
@@ -764,7 +764,7 @@ bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isola
 }
 
 {% if not is_array_buffer_or_view %}
-v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
@@ -776,7 +776,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {##############################################################################}
 {% block to_impl %}
 {% if interface_name == 'ArrayBuffer' %}
-{{cpp_class}}* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
+{{cpp_class}}* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsArrayBuffer());
     v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
@@ -802,7 +802,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 }
 
 {% elif interface_name == 'ArrayBufferView' %}
-{{cpp_class}}* V8ArrayBufferView::toImpl(v8::Handle<v8::Object> object)
+{{cpp_class}}* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsArrayBufferView());
     ScriptWrappable* scriptWrappable = toScriptWrappable(object);
@@ -835,7 +835,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 }
 
 {% elif is_array_buffer_or_view %}
-{{cpp_class}}* {{v8_class}}::toImpl(v8::Handle<v8::Object> object)
+{{cpp_class}}* {{v8_class}}::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->Is{{interface_name}}());
     ScriptWrappable* scriptWrappable = toScriptWrappable(object);
@@ -855,9 +855,9 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 
 {##############################################################################}
 {% block to_impl_with_type_check %}
-{{cpp_class}}* {{v8_class}}::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{{cpp_class}}* {{v8_class}}::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
 {% endblock %}
@@ -890,7 +890,7 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 {##############################################################################}
 {% block to_active_dom_object %}
 {% if is_active_dom_object %}
-ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
+ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Local<v8::Object> wrapper)
 {
     return toImpl(wrapper);
 }

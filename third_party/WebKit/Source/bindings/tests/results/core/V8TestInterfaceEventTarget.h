@@ -26,14 +26,14 @@ public:
 
 class V8TestInterfaceEventTarget {
 public:
-    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceEventTarget* toImpl(v8::Handle<v8::Object> object)
+    static TestInterfaceEventTarget* toImpl(v8::Local<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterfaceEventTarget>();
     }
-    static TestInterfaceEventTarget* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceEventTarget* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);

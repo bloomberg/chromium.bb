@@ -29,12 +29,12 @@ const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = { gin::kEmbedderBli
 template<>
 const WrapperTypeInfo& TestUint8ClampedArray::s_wrapperTypeInfo = V8Uint8ClampedArray::wrapperTypeInfo;
 
-bool V8Uint8ClampedArray::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+bool V8Uint8ClampedArray::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return v8Value->IsUint8ClampedArray();
 }
 
-TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Handle<v8::Object> object)
+TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsUint8ClampedArray());
     ScriptWrappable* scriptWrappable = toScriptWrappable(object);
@@ -48,9 +48,9 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Handle<v8::Object> object
     return typedArray->toImpl<TestUint8ClampedArray>();
 }
 
-TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
 void V8Uint8ClampedArray::refObject(ScriptWrappable* scriptWrappable)

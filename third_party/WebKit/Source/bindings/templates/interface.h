@@ -42,18 +42,18 @@ public:
     };
 
     {% endif %}
-    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     {% if is_array_buffer_or_view %}
-    static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object);
+    static {{cpp_class}}* toImpl(v8::Local<v8::Object> object);
     {% else %}
-    static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
+    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object)
+    static {{cpp_class}}* toImpl(v8::Local<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<{{cpp_class}}>();
     }
     {% endif %}
-    static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     {% if has_partial_interface %}
     static WrapperTypeInfo wrapperTypeInfo;
     {% else %}
@@ -75,7 +75,7 @@ public:
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
     {% endif %}
     {% if is_active_dom_object %}
-    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
+    static ActiveDOMObject* toActiveDOMObject(v8::Local<v8::Object>);
     {% endif %}
     {% if interface_name == 'Window' %}
     static v8::Local<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*);

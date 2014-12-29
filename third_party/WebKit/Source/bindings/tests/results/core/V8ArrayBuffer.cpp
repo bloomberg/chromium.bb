@@ -29,12 +29,12 @@ const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = { gin::kEmbedderBlink, 0,
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestArrayBuffer::s_wrapperTypeInfo = V8ArrayBuffer::wrapperTypeInfo;
 
-bool V8ArrayBuffer::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+bool V8ArrayBuffer::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return v8Value->IsArrayBuffer();
 }
 
-TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
+TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsArrayBuffer());
     v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
@@ -59,9 +59,9 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
     return buffer.get();
 }
 
-TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
 void V8ArrayBuffer::refObject(ScriptWrappable* scriptWrappable)

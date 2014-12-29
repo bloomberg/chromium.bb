@@ -20,14 +20,14 @@ namespace blink {
 
 class V8TestInterfaceGarbageCollected {
 public:
-    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceGarbageCollected* toImpl(v8::Handle<v8::Object> object)
+    static TestInterfaceGarbageCollected* toImpl(v8::Local<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterfaceGarbageCollected>();
     }
-    static TestInterfaceGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);

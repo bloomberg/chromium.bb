@@ -19,14 +19,14 @@ namespace blink {
 
 class V8TestInterfaceCustomConstructor {
 public:
-    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+    static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceCustomConstructor* toImpl(v8::Handle<v8::Object> object)
+    static TestInterfaceCustomConstructor* toImpl(v8::Local<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterfaceCustomConstructor>();
     }
-    static TestInterfaceCustomConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceCustomConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);

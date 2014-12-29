@@ -52,7 +52,7 @@ typedef v8::Local<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
 typedef void (*RefObjectFunction)(ScriptWrappable*);
 typedef void (*DerefObjectFunction)(ScriptWrappable*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
-typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
+typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
 typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Local<v8::Object>, v8::Isolate*);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Local<v8::Object>, v8::Isolate*);
@@ -154,7 +154,7 @@ struct WrapperTypeInfo {
             installConditionallyEnabledPropertiesFunction(prototypeTemplate, isolate);
     }
 
-    ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object> object) const
+    ActiveDOMObject* toActiveDOMObject(v8::Local<v8::Object> object) const
     {
         if (!toActiveDOMObjectFunction)
             return 0;

@@ -91,19 +91,19 @@ v8::Local<v8::FunctionTemplate> V8SVGTestInterface::domTemplate(v8::Isolate* iso
     return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8SVGTestInterfaceTemplate);
 }
 
-bool V8SVGTestInterface::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+bool V8SVGTestInterface::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Handle<v8::Object> V8SVGTestInterface::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
+v8::Local<v8::Object> V8SVGTestInterface::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
 void V8SVGTestInterface::refObject(ScriptWrappable* scriptWrappable)
