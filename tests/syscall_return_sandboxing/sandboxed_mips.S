@@ -8,8 +8,6 @@
  * Assume 32-byte trampoline slots, 16-byte bundles.
  */
 #define GETTIMEOFDAY_ADDR 0x10500
-#define STORE_MASK $t7
-#define JUMP_MASK  $t6
 #define BREAK_INST .word 0xd
 
         .data
@@ -21,25 +19,17 @@ SyscallReturnIsSandboxed:
         .set noreorder
 
         addiu $sp, $sp, -24
-        and   $sp, $sp, STORE_MASK
         sw    $ra, 20($sp)
         lui   $a0, %hi(timebuf)
-
         addiu $a0, $a0, %lo(timebuf)
         addu  $a1, $zero, $zero
         lui   $ra, %hi(bad)
         addiu $ra, $ra, %lo(bad)
-
         lui   $a2, %hi(GETTIMEOFDAY_ADDR)
         addiu $a2, $a2, %lo(GETTIMEOFDAY_ADDR)
-        and   $a2, $a2, JUMP_MASK
         jr    $a2
-
         nop
-        nop
-        nop
-        nop
-
+        .p2align 4
         /* Expected return address */
         b done
         nop
@@ -50,19 +40,14 @@ SyscallReturnIsSandboxed:
 bad:
         BREAK_INST  /* Abort */
         BREAK_INST
-
         BREAK_INST
         BREAK_INST
         BREAK_INST
         BREAK_INST
-
 done:
         ori   $v0, $zero, 1 /* Indicate success */
         lw    $ra, 20($sp)
         addiu $sp, $sp, 24
-        and   $sp, $sp, STORE_MASK
-
-        and   $ra, $ra, JUMP_MASK
         jr    $ra
         nop
 

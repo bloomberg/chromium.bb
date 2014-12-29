@@ -97,10 +97,9 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
         ".p2align 4\n"
         ".global crash_at_known_address\n"
         "crash_at_known_address:\n"
-        "and $zero, $zero, $t7\n"
         ".global prog_ctr_at_crash\n"
         "prog_ctr_at_crash:\n"
-        "sw $t0, 0($zero)\n"
+        "break\n"
         ".popsection\n");
 #else
 # error Unsupported architecture
