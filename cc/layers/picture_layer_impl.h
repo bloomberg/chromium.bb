@@ -59,10 +59,9 @@ class CC_EXPORT PictureLayerImpl
   void AppendQuads(RenderPass* render_pass,
                    const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
-  void UpdateTiles(const Occlusion& occlusion_in_content_space,
+  bool UpdateTiles(const Occlusion& occlusion_in_content_space,
                    bool resourceless_software_draw) override;
   void NotifyTileStateChanged(const Tile* tile) override;
-  void DidBecomeActive() override;
   void DidBeginTracing() override;
   void ReleaseResources() override;
   skia::RefPtr<SkPicture> GetPicture() override;
@@ -115,7 +114,7 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
-  void UpdateTilePriorities(const Occlusion& occlusion_in_content_space);
+  bool UpdateTilePriorities(const Occlusion& occlusion_in_content_space);
   virtual bool ShouldAdjustRasterScale() const;
   virtual void RecalculateRasterScales();
   void CleanUpTilingsOnActiveLayer(

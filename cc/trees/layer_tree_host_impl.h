@@ -505,6 +505,8 @@ class CC_EXPORT LayerTreeHostImpl
       scoped_ptr<ResourcePool>* resource_pool,
       scoped_ptr<ResourcePool>* staging_resource_pool);
 
+  bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -523,8 +525,6 @@ class CC_EXPORT LayerTreeHostImpl
       active_animation_controllers() const {
     return animation_registrar_->active_animation_controllers();
   }
-
-  bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
   LayerTreeHostImplClient* client_;
   Proxy* proxy_;

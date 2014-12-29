@@ -1815,8 +1815,13 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
   active_tree_->DidBecomeActive();
   ActivateAnimations();
-  if (settings_.impl_side_painting)
+  if (settings_.impl_side_painting) {
     client_->RenewTreePriority();
+    // If we have any picture layers, then by activating we also modified tile
+    // priorities.
+    if (!picture_layers_.empty())
+      DidModifyTilePriorities();
+  }
 
   client_->OnCanDrawStateChanged(CanDraw());
   client_->DidActivateSyncTree();

@@ -208,8 +208,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual RenderPassId FirstContributingRenderPassId() const;
   virtual RenderPassId NextContributingRenderPassId(RenderPassId id) const;
 
-  virtual void UpdateTiles(const Occlusion& occlusion_in_layer_space,
-                           bool resourceless_software_draw) {}
+  // Updates the layer's tiles. This should return true if meaningful work was
+  // done. That is, if an early-out was hit and as a result the internal state
+  // of tiles didn't change, this function should return false.
+  virtual bool UpdateTiles(const Occlusion& occlusion_in_layer_space,
+                           bool resourceless_software_draw);
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 
   virtual ScrollbarLayerImplBase* ToScrollbarLayer();

@@ -560,6 +560,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
     typedef LayerIterator<LayerImpl> LayerIteratorType;
     LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
     size_t layers_updated_count = 0;
+    bool tile_priorities_updated = false;
     for (LayerIteratorType it =
              LayerIteratorType::Begin(&render_surface_layer_list_);
          it != end;
@@ -574,8 +575,8 @@ bool LayerTreeImpl::UpdateDrawProperties() {
                             : Occlusion();
 
       if (it.represents_itself()) {
-        layer->UpdateTiles(occlusion_in_content_space,
-                           resourceless_software_draw);
+        tile_priorities_updated |= layer->UpdateTiles(
+            occlusion_in_content_space, resourceless_software_draw);
         ++layers_updated_count;
       }
 
@@ -586,19 +587,23 @@ bool LayerTreeImpl::UpdateDrawProperties() {
       }
 
       if (layer->mask_layer()) {
-        layer->mask_layer()->UpdateTiles(occlusion_in_content_space,
-                                         resourceless_software_draw);
+        tile_priorities_updated |= layer->mask_layer()->UpdateTiles(
+            occlusion_in_content_space, resourceless_software_draw);
         ++layers_updated_count;
       }
       if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
-        layer->replica_layer()->mask_layer()->UpdateTiles(
-            occlusion_in_content_space, resourceless_software_draw);
+        tile_priorities_updated |=
+            layer->replica_layer()->mask_layer()->UpdateTiles(
+                occlusion_in_content_space, resourceless_software_draw);
         ++layers_updated_count;
       }
 
       if (occlusion_tracker)
         occlusion_tracker->LeaveLayer(it);
     }
+
+    if (tile_priorities_updated)
+      DidModifyTilePriorities();
 
     TRACE_EVENT_END1("cc", "LayerTreeImpl::UpdateTilePriorities",
                      "layers_updated_count", layers_updated_count);

@@ -335,6 +335,11 @@ RenderPassId LayerImpl::NextContributingRenderPassId(RenderPassId id) const {
   return RenderPassId(0, 0);
 }
 
+bool LayerImpl::UpdateTiles(const Occlusion& occlusion_in_layer_space,
+                            bool resourceless_software_draw) {
+  return false;
+}
+
 void LayerImpl::GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
                                       gfx::Size* resource_size) const {
   NOTREACHED();
