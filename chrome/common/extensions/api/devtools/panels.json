@@ -47,6 +47,44 @@
         ]
       },
       {
+        "id": "SourcesPanel",
+        "type": "object",
+        "description": "Represents the Sources panel.",
+        "events": [
+          {
+            "name": "onSelectionChanged",
+            "description": "Fired when an object is selected in the panel."
+          }
+        ],
+        "functions": [
+          {
+            "name": "createSidebarPane",
+            "type": "function",
+            "description": "Creates a pane within panel's sidebar.",
+            "parameters": [
+              {
+                "name": "title",
+                "type": "string",
+                "description": "Text that is displayed in sidebar caption."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "A callback invoked when the sidebar is created.",
+                "optional": true,
+                "parameters": [
+                  {
+                    "name": "result",
+                    "description": "An ExtensionSidebarPane object for created sidebar pane.",
+                    "$ref": "ExtensionSidebarPane"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "ExtensionPanel",
         "type": "object",
         "description": "Represents a panel created by extension.",
