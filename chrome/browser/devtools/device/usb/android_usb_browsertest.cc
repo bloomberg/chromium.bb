@@ -521,8 +521,6 @@ class MockUsbService : public UsbService {
     devices_.push_back(new MockUsbDevice<AndroidTraits>());
   }
 
-  ~MockUsbService() override {}
-
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();
     return nullptr;
@@ -538,9 +536,6 @@ class MockUsbService : public UsbService {
 
 class MockBreakingUsbService : public UsbService {
  public:
-  MockBreakingUsbService() {}
-  ~MockBreakingUsbService() {}
-
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();
     return nullptr;
@@ -555,8 +550,6 @@ class MockBreakingUsbService : public UsbService {
 class MockUsbServiceForCheckingTraits : public UsbService {
  public:
   MockUsbServiceForCheckingTraits() : step_(0) {}
-
-  ~MockUsbServiceForCheckingTraits() override {}
 
   scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();

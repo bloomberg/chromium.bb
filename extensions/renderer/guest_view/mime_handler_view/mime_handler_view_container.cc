@@ -56,10 +56,9 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
                    base::WeakPtr<MimeHandlerViewContainer> container)
     : gin::NamedPropertyInterceptor(isolate, this),
       container_(container) {}
-  virtual ~ScriptableObject() {}
 
   // gin::Wrappable
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override {
     return gin::Wrappable<ScriptableObject>::GetObjectTemplateBuilder(isolate)
         .AddNamedPropertyInterceptor();
