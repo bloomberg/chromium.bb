@@ -30,7 +30,7 @@
 #define Path_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/RoundedRect.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
@@ -132,7 +132,7 @@ public:
 
     void addRoundedRect(const FloatRect&, const FloatSize& roundingRadii);
     void addRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
-    void addRoundedRect(const RoundedRect&);
+    void addRoundedRect(const FloatRoundedRect&);
 
     void addPath(const Path&, const AffineTransform&);
 

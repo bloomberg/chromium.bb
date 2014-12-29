@@ -31,7 +31,7 @@
 
 #include "core/rendering/shapes/BoxShape.h"
 
-#include "platform/geometry/RoundedRect.h"
+#include "platform/geometry/FloatRoundedRect.h"
 
 #include <gtest/gtest.h>
 
@@ -41,7 +41,7 @@ class BoxShapeTest : public ::testing::Test {
 protected:
     BoxShapeTest() { }
 
-    PassOwnPtr<Shape> createBoxShape(const RoundedRect& bounds, float shapeMargin)
+    PassOwnPtr<Shape> createBoxShape(const FloatRoundedRect& bounds, float shapeMargin)
     {
         return Shape::createLayoutBoxShape(bounds, TopToBottomWritingMode, shapeMargin);
     }
@@ -80,7 +80,7 @@ using namespace blink;
  */
 TEST_F(BoxShapeTest, zeroRadii)
 {
-    OwnPtr<Shape> shape = createBoxShape(RoundedRect(0, 0, 100, 50), 10);
+    OwnPtr<Shape> shape = createBoxShape(FloatRoundedRect(0, 0, 100, 50), 10);
     EXPECT_FALSE(shape->isEmpty());
 
     EXPECT_EQ(LayoutRect(-10, -10, 120, 70), shape->shapeMarginLogicalBoundingBox());
@@ -124,8 +124,8 @@ TEST_F(BoxShapeTest, zeroRadii)
  */
 TEST_F(BoxShapeTest, getIntervals)
 {
-    const RoundedRect::Radii cornerRadii(IntSize(10, 15), IntSize(10, 20), IntSize(25, 15), IntSize(20, 30));
-    OwnPtr<Shape> shape = createBoxShape(RoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
+    const FloatRoundedRect::Radii cornerRadii(IntSize(10, 15), IntSize(10, 20), IntSize(25, 15), IntSize(20, 30));
+    OwnPtr<Shape> shape = createBoxShape(FloatRoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
     EXPECT_FALSE(shape->isEmpty());
 
     EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapeMarginLogicalBoundingBox());

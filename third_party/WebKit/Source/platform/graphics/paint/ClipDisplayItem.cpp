@@ -5,7 +5,7 @@
 #include "config.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 
-#include "platform/geometry/RoundedRect.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -16,7 +16,7 @@ void ClipDisplayItem::replay(GraphicsContext* context)
 {
     context->save();
     context->clipRect(m_clipRect, NotAntiAliased, m_operation);
-    for (RoundedRect roundedRect : m_roundedRectClips)
+    for (FloatRoundedRect roundedRect : m_roundedRectClips)
         context->clipRoundedRect(roundedRect, m_operation);
 }
 
@@ -24,7 +24,7 @@ void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     WebVector<SkRRect> webRoundedRects(m_roundedRectClips.size());
     for (size_t i = 0; i < m_roundedRectClips.size(); ++i) {
-        RoundedRect::Radii rectRadii = m_roundedRectClips[i].radii();
+        FloatRoundedRect::Radii rectRadii = m_roundedRectClips[i].radii();
         SkVector skRadii[4];
         skRadii[SkRRect::kUpperLeft_Corner].set(SkIntToScalar(rectRadii.topLeft().width()),
             SkIntToScalar(rectRadii.topLeft().height()));

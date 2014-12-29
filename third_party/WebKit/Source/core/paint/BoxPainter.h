@@ -11,6 +11,7 @@
 namespace blink {
 
 class BackgroundImageGeometry;
+class FloatRoundedRect;
 class LayoutPoint;
 struct PaintInfo;
 class RenderBox;
@@ -30,7 +31,7 @@ public:
     static void paintFillLayerExtended(RenderBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0, bool skipBaseColor = false);
     static void calculateBackgroundImageGeometry(RenderBoxModelObject&, const RenderLayerModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, RenderObject* = 0);
     static InterpolationQuality chooseInterpolationQuality(RenderBoxModelObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);
-    static void clipRoundedInnerRect(GraphicsContext*, const LayoutRect&, const RoundedRect& clipRect);
+    static void clipRoundedInnerRect(GraphicsContext*, const LayoutRect&, const FloatRoundedRect& clipRect);
     static bool paintNinePieceImage(RenderBoxModelObject&, GraphicsContext*, const LayoutRect&, const RenderStyle*, const NinePieceImage&, CompositeOperator = CompositeSourceOver);
     static void paintBorder(RenderBoxModelObject&, const PaintInfo&, const LayoutRect&, const RenderStyle*, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const RenderStyle*, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
@@ -41,28 +42,28 @@ private:
     void paintRootBoxFillLayers(const PaintInfo&);
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, CompositeOperator, RenderObject* backgroundObject, bool skipBaseColor = false);
     static void paintRootBackgroundColor(RenderObject&, const PaintInfo&, const LayoutRect&, const Color&);
-    static RoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(RenderObject&, GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox*, const LayoutSize&, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
-    static RoundedRect getBackgroundRoundedRect(RenderObject&, const LayoutRect&, InlineFlowBox*, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
+    static FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(RenderObject&, GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox*, const LayoutSize&, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
+    static FloatRoundedRect getBackgroundRoundedRect(RenderObject&, const LayoutRect&, InlineFlowBox*, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
         bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
     static bool isDocumentElementWithOpaqueBackground(RenderObject&);
     static void applyBoxShadowForBackground(GraphicsContext*, RenderObject&);
     static bool fixedBackgroundPaintsInLocalCoordinates(const RenderObject&);
     static IntSize calculateFillTileSize(const RenderBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
-    static void paintTranslucentBorderSides(RenderObject&, GraphicsContext*, const RenderStyle*, const RoundedRect& outerBorder, const RoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
+    static void paintTranslucentBorderSides(RenderObject&, GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
         const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);
     static LayoutRect borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance);
-    static void paintOneBorderSide(RenderObject&, GraphicsContext*, const RenderStyle*, const RoundedRect& outerBorder, const RoundedRect& innerBorder,
-        const IntRect& sideRect, BoxSide, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge[],
+    static void paintOneBorderSide(RenderObject&, GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
+        const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge[],
         const Path*, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor = 0);
-    static void paintBorderSides(RenderObject&, GraphicsContext*, const RenderStyle*, const RoundedRect& outerBorder, const RoundedRect& innerBorder,
+    static void paintBorderSides(RenderObject&, GraphicsContext*, const RenderStyle*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
         const IntPoint& innerBorderAdjustment, const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance,
         bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false, const Color* overrideColor = 0);
     static void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, const BorderEdge[],
         float thickness, float drawThickness, BoxSide, const RenderStyle*,
         Color, EBorderStyle, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
-    static void clipBorderSidePolygon(GraphicsContext*, const RoundedRect& outerBorder, const RoundedRect& innerBorder,
+    static void clipBorderSidePolygon(GraphicsContext*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
         BoxSide, bool firstEdgeMatches, bool secondEdgeMatches);
-    static void clipBorderSideForComplexInnerPath(GraphicsContext*, const RoundedRect&, const RoundedRect&, BoxSide, const BorderEdge[]);
+    static void clipBorderSideForComplexInnerPath(GraphicsContext*, const FloatRoundedRect&, const FloatRoundedRect&, BoxSide, const BorderEdge[]);
 
     LayoutRect boundsForDrawingRecorder(const LayoutPoint& paintOffset);
 

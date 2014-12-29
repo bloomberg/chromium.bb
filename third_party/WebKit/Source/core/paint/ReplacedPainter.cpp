@@ -68,7 +68,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         } else {
             // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
             paintInfo.context->save();
-            RoundedRect roundedInnerRect = m_renderReplaced.style()->getRoundedInnerBorderFor(paintRect,
+            FloatRoundedRect roundedInnerRect = m_renderReplaced.style()->getRoundedInnerBorderFor(paintRect,
                 m_renderReplaced.paddingTop() + m_renderReplaced.borderTop(), m_renderReplaced.paddingBottom() + m_renderReplaced.borderBottom(), m_renderReplaced.paddingLeft() + m_renderReplaced.borderLeft(), m_renderReplaced.paddingRight() + m_renderReplaced.borderRight(), true, true);
             BoxPainter::clipRoundedInnerRect(paintInfo.context, paintRect, roundedInnerRect);
         }

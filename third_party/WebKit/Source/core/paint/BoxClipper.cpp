@@ -31,7 +31,7 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
         return;
 
     LayoutRect clipRect = isControlClip ? m_box.controlClipRect(m_accumulatedOffset) : m_box.overflowClipRect(m_accumulatedOffset);
-    RoundedRect clipRoundedRect(0, 0, 0, 0);
+    FloatRoundedRect clipRoundedRect(0, 0, 0, 0);
     bool hasBorderRadius = m_box.style()->hasBorderRadius();
     if (hasBorderRadius)
         clipRoundedRect = m_box.style()->getRoundedInnerBorderFor(LayoutRect(m_accumulatedOffset, m_box.size()));
@@ -43,7 +43,7 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
 
         LayoutRect conservativeClipRect = clipRect;
         if (hasBorderRadius)
-            conservativeClipRect.intersect(clipRoundedRect.radiusCenterRect());
+            conservativeClipRect.intersect(LayoutRect(clipRoundedRect.radiusCenterRect()));
         conservativeClipRect.moveBy(-m_accumulatedOffset);
         if (m_box.hasLayer())
             conservativeClipRect.move(m_box.scrolledContentOffset());

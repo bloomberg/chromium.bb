@@ -67,7 +67,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/LayoutBoxExtent.h"
-#include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -1019,10 +1018,10 @@ public:
         setBorderRadius(LengthSize(Length(s.width(), Fixed), Length(s.height(), Fixed)));
     }
 
-    RoundedRect getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
-    RoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
+    FloatRoundedRect getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
+    FloatRoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
 
-    RoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect,
+    FloatRoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect,
         int topWidth, int bottomWidth, int leftWidth, int rightWidth, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const;
 
     void setBorderLeftWidth(unsigned v) { SET_VAR(surround, border.m_left.m_width, v); }

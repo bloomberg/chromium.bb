@@ -5,7 +5,6 @@
 #include "config.h"
 #include "platform/graphics/paint/FloatClipDisplayItem.h"
 
-#include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "third_party/skia/include/core/SkScalar.h"

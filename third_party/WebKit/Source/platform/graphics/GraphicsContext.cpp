@@ -30,7 +30,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -705,7 +704,7 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
     }
 }
 
-static inline IntRect areaCastingShadowInHole(const IntRect& holeRect, int shadowBlur, int shadowSpread, const IntSize& shadowOffset)
+static inline FloatRect areaCastingShadowInHole(const FloatRect& holeRect, int shadowBlur, int shadowSpread, const IntSize& shadowOffset)
 {
     IntRect bounds(holeRect);
 
@@ -719,12 +718,12 @@ static inline IntRect areaCastingShadowInHole(const IntRect& holeRect, int shado
     return unionRect(bounds, offsetBounds);
 }
 
-void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges)
+void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges)
 {
     if (contextDisabled())
         return;
 
-    IntRect holeRect(rect.rect());
+    FloatRect holeRect(rect.rect());
     holeRect.inflate(-shadowSpread);
 
     if (holeRect.isEmpty()) {
@@ -750,8 +749,8 @@ void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shad
 
     Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
 
-    IntRect outerRect = areaCastingShadowInHole(rect.rect(), shadowBlur, shadowSpread, shadowOffset);
-    RoundedRect roundedHole(holeRect, rect.radii());
+    FloatRect outerRect = areaCastingShadowInHole(rect.rect(), shadowBlur, shadowSpread, shadowOffset);
+    FloatRoundedRect roundedHole(holeRect, rect.radii());
 
     save();
     if (rect.isRounded()) {
@@ -1339,8 +1338,8 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color)
     drawRect(r, paint);
 }
 
-void GraphicsContext::fillBetweenRoundedRects(const IntRect& outer, const IntSize& outerTopLeft, const IntSize& outerTopRight, const IntSize& outerBottomLeft, const IntSize& outerBottomRight,
-    const IntRect& inner, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color& color)
+void GraphicsContext::fillBetweenRoundedRects(const FloatRect& outer, const FloatSize& outerTopLeft, const FloatSize& outerTopRight, const FloatSize& outerBottomLeft, const FloatSize& outerBottomRight,
+    const FloatRect& inner, const FloatSize& innerTopLeft, const FloatSize& innerTopRight, const FloatSize& innerBottomLeft, const FloatSize& innerBottomRight, const Color& color)
 {
     ASSERT(m_canvas);
     if (contextDisabled())
@@ -1365,14 +1364,14 @@ void GraphicsContext::fillBetweenRoundedRects(const IntRect& outer, const IntSiz
         m_trackedRegion.didDrawBounded(this, rrOuter.getBounds(), paint);
 }
 
-void GraphicsContext::fillBetweenRoundedRects(const RoundedRect& outer, const RoundedRect& inner, const Color& color)
+void GraphicsContext::fillBetweenRoundedRects(const FloatRoundedRect& outer, const FloatRoundedRect& inner, const Color& color)
 {
     fillBetweenRoundedRects(outer.rect(), outer.radii().topLeft(), outer.radii().topRight(), outer.radii().bottomLeft(), outer.radii().bottomRight(),
         inner.rect(), inner.radii().topLeft(), inner.radii().topRight(), inner.radii().bottomLeft(), inner.radii().bottomRight(), color);
 }
 
-void GraphicsContext::fillRoundedRect(const IntRect& rect, const IntSize& topLeft, const IntSize& topRight,
-    const IntSize& bottomLeft, const IntSize& bottomRight, const Color& color)
+void GraphicsContext::fillRoundedRect(const FloatRect& rect, const FloatSize& topLeft, const FloatSize& topRight,
+    const FloatSize& bottomLeft, const FloatSize& bottomRight, const Color& color)
 {
     ASSERT(m_canvas);
     if (contextDisabled())
@@ -1463,7 +1462,7 @@ void GraphicsContext::strokeEllipse(const FloatRect& ellipse)
     drawOval(ellipse, immutableState()->strokePaint());
 }
 
-void GraphicsContext::clipRoundedRect(const RoundedRect& rect, SkRegion::Op regionOp)
+void GraphicsContext::clipRoundedRect(const FloatRoundedRect& rect, SkRegion::Op regionOp)
 {
     if (contextDisabled())
         return;
@@ -1474,7 +1473,7 @@ void GraphicsContext::clipRoundedRect(const RoundedRect& rect, SkRegion::Op regi
     }
 
     SkVector radii[4];
-    RoundedRect::Radii wkRadii = rect.radii();
+    FloatRoundedRect::Radii wkRadii = rect.radii();
     setRadii(radii, wkRadii.topLeft(), wkRadii.topRight(), wkRadii.bottomRight(), wkRadii.bottomLeft());
 
     SkRRect r;
@@ -1523,7 +1522,7 @@ void GraphicsContext::clipPolygon(size_t numPoints, const FloatPoint* points, bo
     clipPath(path, antialiased ? AntiAliased : NotAntiAliased);
 }
 
-void GraphicsContext::clipOutRoundedRect(const RoundedRect& rect)
+void GraphicsContext::clipOutRoundedRect(const FloatRoundedRect& rect)
 {
     if (contextDisabled())
         return;
@@ -1646,7 +1645,7 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, Compos
     setCompositeOperation(previousOperator);
 }
 
-void GraphicsContext::fillRoundedRect(const RoundedRect& rect, const Color& color)
+void GraphicsContext::fillRoundedRect(const FloatRoundedRect& rect, const Color& color)
 {
     if (contextDisabled())
         return;
@@ -1657,7 +1656,7 @@ void GraphicsContext::fillRoundedRect(const RoundedRect& rect, const Color& colo
         fillRect(rect.rect(), color);
 }
 
-void GraphicsContext::fillRectWithRoundedHole(const IntRect& rect, const RoundedRect& roundedHoleRect, const Color& color)
+void GraphicsContext::fillRectWithRoundedHole(const FloatRect& rect, const FloatRoundedRect& roundedHoleRect, const Color& color)
 {
     if (contextDisabled())
         return;
@@ -1753,7 +1752,7 @@ void GraphicsContext::setPathFromPoints(SkPath* path, size_t numPoints, const Fl
     }
 }
 
-void GraphicsContext::setRadii(SkVector* radii, IntSize topLeft, IntSize topRight, IntSize bottomRight, IntSize bottomLeft)
+void GraphicsContext::setRadii(SkVector* radii, FloatSize topLeft, FloatSize topRight, FloatSize bottomRight, FloatSize bottomLeft)
 {
     radii[SkRRect::kUpperLeft_Corner].set(SkIntToScalar(topLeft.width()),
         SkIntToScalar(topLeft.height()));

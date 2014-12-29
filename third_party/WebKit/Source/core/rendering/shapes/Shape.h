@@ -33,12 +33,13 @@
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/StyleImage.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/Path.h"
 #include "platform/text/WritingMode.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
+class FloatRoundedRect;
 
 struct LineSegment {
     LineSegment()
@@ -74,7 +75,7 @@ public:
     static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, float margin);
     static PassOwnPtr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, float margin);
     static PassOwnPtr<Shape> createEmptyRasterShape(WritingMode, float margin);
-    static PassOwnPtr<Shape> createLayoutBoxShape(const RoundedRect&, WritingMode, float margin);
+    static PassOwnPtr<Shape> createLayoutBoxShape(const FloatRoundedRect&, WritingMode, float margin);
 
     virtual ~Shape() { }
 

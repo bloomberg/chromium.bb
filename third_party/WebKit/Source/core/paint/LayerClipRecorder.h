@@ -40,7 +40,7 @@ public:
 private:
 
     void collectRoundedRectClips(RenderLayer&, const LayerPaintingInfo& localPaintingInfo, GraphicsContext*, const LayoutPoint& fragmentOffset, PaintLayerFlags,
-        BorderRadiusClippingRule, Vector<RoundedRect>& roundedRectClips);
+        BorderRadiusClippingRule, Vector<FloatRoundedRect>& roundedRectClips);
 
     GraphicsContext* m_graphicsContext;
     const RenderLayerModelObject* m_renderer;

@@ -58,6 +58,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/TransformState.h"
 #include <algorithm>
 #include <math.h>
@@ -3886,8 +3887,8 @@ PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerMode
     if (style()->hasBorderRadius()) {
         // If a border-radius exists and width/height is smaller than radius width/height,
         // we need to fully invalidate to cover the changed radius.
-        RoundedRect oldRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), oldBorderBoxSize));
-        RoundedRect newRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), newBorderBoxSize));
+        FloatRoundedRect oldRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), oldBorderBoxSize));
+        FloatRoundedRect newRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), newBorderBoxSize));
         if (oldRoundedRect.radii() != newRoundedRect.radii())
             return PaintInvalidationBorderBoxChange;
     }

@@ -6,7 +6,6 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"

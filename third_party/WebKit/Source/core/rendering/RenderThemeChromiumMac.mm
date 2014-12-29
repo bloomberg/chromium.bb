@@ -45,6 +45,7 @@
 #import "core/rendering/style/ShadowList.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/SharedBuffer.h"
+#import "platform/geometry/FloatRoundedRect.h"
 #import "platform/graphics/BitmapImage.h"
 #import "platform/graphics/GraphicsContextStateSaver.h"
 #import "platform/graphics/Image.h"
@@ -1270,7 +1271,7 @@ bool RenderThemeChromiumMac::paintSliderTrack(RenderObject* o, const PaintInfo& 
     int fillRadiusSize = (sliderTrackWidth - sliderTrackBorderWidth) / 2;
     IntSize fillRadius(fillRadiusSize, fillRadiusSize);
     IntRect fillBounds = enclosedIntRect(unzoomedRect);
-    RoundedRect fillRect(fillBounds, fillRadius, fillRadius, fillRadius, fillRadius);
+    FloatRoundedRect fillRect(fillBounds, fillRadius, fillRadius, fillRadius, fillRadius);
     paintInfo.context->fillRoundedRect(fillRect, fillColor);
 
     IntSize shadowOffset(isVerticalSlider ? 1 : 0,

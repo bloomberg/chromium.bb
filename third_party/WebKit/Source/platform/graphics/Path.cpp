@@ -388,7 +388,7 @@ void Path::addEllipse(const FloatRect& rect)
     m_path.addOval(rect);
 }
 
-void Path::addRoundedRect(const RoundedRect& r)
+void Path::addRoundedRect(const FloatRoundedRect& r)
 {
     addRoundedRect(r.rect(), r.radii().topLeft(), r.radii().topRight(), r.radii().bottomLeft(), r.radii().bottomRight());
 }

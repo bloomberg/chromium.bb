@@ -7,14 +7,13 @@
 
 #include "SkRegion.h"
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
-
-class RoundedRect;
 
 class PLATFORM_EXPORT ClipDisplayItem : public DisplayItem {
 public:
@@ -26,7 +25,7 @@ public:
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
-    Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
+    Vector<FloatRoundedRect>& roundedRectClips() { return m_roundedRectClips; }
 
 protected:
     ClipDisplayItem(DisplayItemClient client, Type type, const IntRect& clipRect, SkRegion::Op operation)
@@ -38,7 +37,7 @@ private:
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
     IntRect m_clipRect;
-    Vector<RoundedRect> m_roundedRectClips;
+    Vector<FloatRoundedRect> m_roundedRectClips;
     SkRegion::Op m_operation;
 };
 

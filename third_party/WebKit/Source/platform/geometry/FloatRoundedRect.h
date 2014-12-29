@@ -32,9 +32,10 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/geometry/RoundedRect.h"
 
 namespace blink {
+
+class FloatQuad;
 
 class PLATFORM_EXPORT FloatRoundedRect {
 public:
@@ -49,7 +50,7 @@ public:
         {
         }
 
-        Radii(const RoundedRect::Radii& intRadii)
+        Radii(const FloatRoundedRect::Radii& intRadii)
             : m_topLeft(intRadii.topLeft())
             , m_topRight(intRadii.topRight())
             , m_bottomLeft(intRadii.bottomLeft())
@@ -74,6 +75,8 @@ public:
         void shrink(float topWidth, float bottomWidth, float leftWidth, float rightWidth) { expand(-topWidth, -bottomWidth, -leftWidth, -rightWidth); }
         void shrink(float size) { shrink(size, size, size, size); }
 
+        void includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
+
     private:
         FloatSize m_topLeft;
         FloatSize m_topRight;
@@ -94,9 +97,13 @@ public:
     void setRadii(const Radii& radii) { m_radii = radii; }
 
     void move(const FloatSize& size) { m_rect.move(size); }
-    void inflate(float size) { m_rect.inflate(size);  }
+    void inflateWithRadii(int size);
+    void inflate(float size) { m_rect.inflate(size); }
     void expandRadii(float size) { m_radii.expand(size); }
     void shrinkRadii(float size) { m_radii.shrink(size); }
+
+    // Returns a quickly computed rect enclosed by the rounded rect.
+    FloatRect radiusCenterRect() const;
 
     FloatRect topLeftCorner() const
     {
@@ -117,6 +124,15 @@ public:
 
     bool xInterceptsAtY(float y, float& minXIntercept, float& maxXIntercept) const;
 
+    void includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
+
+    // Tests whether the quad intersects any part of this rounded rectangle.
+    // This only works for convex quads.
+    bool intersectsQuad(const FloatQuad&) const;
+
+    void adjustRadii();
+    bool isRenderable() const;
+
 private:
     FloatRect m_rect;
     Radii m_radii;
@@ -126,6 +142,13 @@ inline bool operator==(const FloatRoundedRect::Radii& a, const FloatRoundedRect:
 {
     return a.topLeft() == b.topLeft() && a.topRight() == b.topRight() && a.bottomLeft() == b.bottomLeft() && a.bottomRight() == b.bottomRight();
 }
+
+
+inline bool operator!=(const FloatRoundedRect::Radii& a, const FloatRoundedRect::Radii& b)
+{
+    return !(a == b);
+}
+
 
 inline bool operator==(const FloatRoundedRect& a, const FloatRoundedRect& b)
 {

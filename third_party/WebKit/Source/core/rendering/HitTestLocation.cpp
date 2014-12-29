@@ -22,6 +22,8 @@
 #include "config.h"
 #include "core/rendering/HitTestLocation.h"
 
+#include "platform/geometry/FloatRoundedRect.h"
+
 namespace blink {
 
 HitTestLocation::HitTestLocation()
@@ -147,7 +149,7 @@ bool HitTestLocation::intersects(const FloatRect& rect) const
     return intersectsRect(rect);
 }
 
-bool HitTestLocation::intersects(const RoundedRect& rect) const
+bool HitTestLocation::intersects(const FloatRoundedRect& rect) const
 {
     return rect.intersectsQuad(m_transformedRect);
 }

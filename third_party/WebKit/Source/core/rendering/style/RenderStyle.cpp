@@ -887,9 +887,9 @@ void RenderStyle::setBoxShadow(PassRefPtr<ShadowList> s)
     rareNonInheritedData.access()->m_boxShadow = s;
 }
 
-static RoundedRect::Radii calcRadiiFor(const BorderData& border, IntSize size)
+static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize size)
 {
-    return RoundedRect::Radii(
+    return FloatRoundedRect::Radii(
         IntSize(valueForLength(border.topLeft().width(), size.width()),
             valueForLength(border.topLeft().height(), size.height())),
         IntSize(valueForLength(border.topRight().width(), size.width()),
@@ -917,19 +917,18 @@ short RenderStyle::verticalBorderSpacing() const { return inherited->vertical_bo
 void RenderStyle::setHorizontalBorderSpacing(short v) { SET_VAR(inherited, horizontal_border_spacing, v); }
 void RenderStyle::setVerticalBorderSpacing(short v) { SET_VAR(inherited, vertical_border_spacing, v); }
 
-RoundedRect RenderStyle::getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+FloatRoundedRect RenderStyle::getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
-    IntRect snappedBorderRect(pixelSnappedIntRect(borderRect));
-    RoundedRect roundedRect(snappedBorderRect);
+    FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
     if (hasBorderRadius()) {
-        RoundedRect::Radii radii = calcRadiiFor(surround->border, snappedBorderRect.size());
+        FloatRoundedRect::Radii radii = calcRadiiFor(surround->border, borderRect.size());
         radii.scale(calcBorderRadiiConstraintScaleFor(borderRect, radii));
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
     }
     return roundedRect;
 }
 
-RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+FloatRoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     bool horizontal = isHorizontalWritingMode();
 
@@ -941,7 +940,7 @@ RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect, 
     return getRoundedInnerBorderFor(borderRect, topWidth, bottomWidth, leftWidth, rightWidth, includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
+FloatRoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
     int topWidth, int bottomWidth, int leftWidth, int rightWidth, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     LayoutRect innerRect(borderRect.x() + leftWidth,
@@ -949,10 +948,10 @@ RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
                borderRect.width() - leftWidth - rightWidth,
                borderRect.height() - topWidth - bottomWidth);
 
-    RoundedRect roundedRect(pixelSnappedIntRect(innerRect));
+    FloatRoundedRect roundedRect(pixelSnappedIntRect(innerRect));
 
     if (hasBorderRadius()) {
-        RoundedRect::Radii radii = getRoundedBorderFor(borderRect).radii();
+        FloatRoundedRect::Radii radii = getRoundedBorderFor(borderRect).radii();
         radii.shrink(topWidth, bottomWidth, leftWidth, rightWidth);
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
     }

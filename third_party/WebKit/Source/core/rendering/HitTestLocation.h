@@ -25,13 +25,14 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/geometry/RoundedRect.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
+
+class FloatRoundedRect;
 
 class HitTestLocation {
 public:
@@ -65,7 +66,7 @@ public:
 
     bool intersects(const LayoutRect&) const;
     bool intersects(const FloatRect&) const;
-    bool intersects(const RoundedRect&) const;
+    bool intersects(const FloatRoundedRect&) const;
     bool containsPoint(const FloatPoint&) const;
 
     const FloatPoint& transformedPoint() const { return m_transformedPoint; }

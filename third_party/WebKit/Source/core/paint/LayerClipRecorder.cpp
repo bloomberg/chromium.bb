@@ -51,7 +51,7 @@ static bool inContainingBlockChain(RenderLayer* startLayer, RenderLayer* endLaye
 }
 
 void LayerClipRecorder::collectRoundedRectClips(RenderLayer& renderLayer, const LayerPaintingInfo& localPaintingInfo, GraphicsContext* context, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags,
-    BorderRadiusClippingRule rule, Vector<RoundedRect>& roundedRectClips)
+    BorderRadiusClippingRule rule, Vector<FloatRoundedRect>& roundedRectClips)
 {
     // If the clip rect has been tainted by a border radius, then we have to walk up our layer chain applying the clips from
     // any layers with overflow. The condition for being able to apply these clips is that the overflow object be in our
