@@ -13,6 +13,8 @@ class WebMessagePortChannel;
 class WebString;
 class WebURL;
 
+typedef WebCallbacks<void, void> WebNavigatorConnectCallbacks;
+
 class WebNavigatorConnectProvider {
 public:
     virtual ~WebNavigatorConnectProvider() { }
@@ -21,8 +23,9 @@ public:
     // successful the service can communicate with the client over the given
     // channel. The origin isn't passed as WebSecurityOrigin because that would
     // be a layering violation (platform/ code shouldn't depend on web/ code).
-    // Ownership of the WebMessagePortChannel and WebCallbacks is transferred to the provider.
-    virtual void connect(const WebURL&, const WebString& origin, WebMessagePortChannel*, WebCallbacks<void, void>*) { }
+    // Ownership of the WebMessagePortChannel and WebNavigatorConnectCallbacks
+    // objects are both transferred to the provider.
+    virtual void connect(const WebURL&, const WebString& origin, WebMessagePortChannel*, WebNavigatorConnectCallbacks*) { }
 };
 
 } // namespace blink

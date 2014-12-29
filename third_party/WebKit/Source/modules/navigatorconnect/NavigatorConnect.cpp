@@ -11,14 +11,13 @@
 #include "core/dom/MessageChannel.h"
 #include "core/dom/MessagePort.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCallbacks.h"
 #include "public/platform/WebNavigatorConnectProvider.h"
 
 namespace blink {
 
 namespace {
 
-class ConnectCallbacks : public WebCallbacks<void, void> {
+class ConnectCallbacks : public WebNavigatorConnectCallbacks {
 public:
     ConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<MessagePort> port)
         : m_resolver(resolver), m_port(port)
