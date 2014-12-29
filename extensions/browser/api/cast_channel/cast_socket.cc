@@ -361,19 +361,21 @@ int CastSocketImpl::DoTcpConnect() {
   return rv;
 }
 
-int CastSocketImpl::DoTcpConnectComplete(int result) {
-  VLOG_WITH_CONNECTION(1) << "DoTcpConnectComplete: " << result;
-  if (result == net::OK) {
-    // Enable TCP protocol-level keep-alive.
-    bool result = tcp_socket_->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
-    LOG_IF(WARNING, !result) << "Failed to SetKeepAlive.";
-    logger_->LogSocketEventWithRv(
-        channel_id_, proto::TCP_SOCKET_SET_KEEP_ALIVE, result ? 1 : 0);
+int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
+  VLOG_WITH_CONNECTION(1) << "DoTcpConnectComplete: " << connect_result;
+  if (connect_result == net::OK) {
+    // Enable TCP-level keep-alive handling.
+    // TODO(kmarshall): Remove TCP keep-alive once protocol-level ping handling
+    // is in place.
+    bool keep_alive = tcp_socket_->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
+    LOG_IF(WARNING, !keep_alive) << "Failed to SetKeepAlive.";
+    logger_->LogSocketEventWithRv(channel_id_, proto::TCP_SOCKET_SET_KEEP_ALIVE,
+                                  keep_alive ? 1 : 0);
     SetConnectState(proto::CONN_STATE_SSL_CONNECT);
   } else {
     SetErrorState(CHANNEL_ERROR_CONNECT_ERROR);
   }
-  return result;
+  return connect_result;
 }
 
 int CastSocketImpl::DoSslConnect() {
