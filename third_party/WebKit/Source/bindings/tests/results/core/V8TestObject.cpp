@@ -980,7 +980,7 @@ static void serializedScriptValueAttributeAttributeGetter(const v8::PropertyCall
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, impl->serializedScriptValueAttribute() ? impl->serializedScriptValueAttribute()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    v8SetReturnValue(info, impl->serializedScriptValueAttribute() ? impl->serializedScriptValueAttribute()->deserialize() : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void serializedScriptValueAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1285,7 +1285,7 @@ static void arrayBufferAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    TestArrayBuffer* cppValue = v8Value->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(v8Value)) : 0;
+    TestArrayBuffer* cppValue = v8Value->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(v8Value)) : 0;
     impl->setArrayBufferAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1314,7 +1314,7 @@ static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    DOMFloat32Array* cppValue = v8Value->IsFloat32Array() ? V8Float32Array::toImpl(v8::Handle<v8::Float32Array>::Cast(v8Value)) : 0;
+    DOMFloat32Array* cppValue = v8Value->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(v8Value)) : 0;
     impl->setFloat32ArrayAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1343,7 +1343,7 @@ static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    DOMUint8Array* cppValue = v8Value->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(v8Value)) : 0;
+    DOMUint8Array* cppValue = v8Value->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(v8Value)) : 0;
     impl->setUint8ArrayAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1710,7 +1710,7 @@ static void eventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     EventListener* cppValue(impl->eventHandlerAttribute());
-    v8SetReturnValue(info, cppValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    v8SetReturnValue(info, cppValue ? v8::Local<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->executionContext())) : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2069,7 +2069,7 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::PropertyCallbac
         }
     }
     String cppValue(impl->cachedStringOrNoneAttribute());
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.isNull() ? v8::Handle<v8::Value>(v8::Null(info.GetIsolate())) : v8String(info.GetIsolate(), cppValue));
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.isNull() ? v8::Local<v8::Value>(v8::Null(info.GetIsolate())) : v8String(info.GetIsolate(), cppValue));
     v8SetReturnValueStringOrNull(info, cppValue, info.GetIsolate());
 }
 
@@ -6049,7 +6049,7 @@ static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestArrayBuffer* arrayBufferArg;
     {
-        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0;
+        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
     }
     impl->voidMethodArrayBufferArg(arrayBufferArg);
 }
@@ -6070,7 +6070,7 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestArrayBuffer* arrayBufferArg;
     {
-        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0;
+        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
     }
     impl->voidMethodArrayBufferOrNullArg(arrayBufferArg);
 }
@@ -6091,7 +6091,7 @@ static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestArrayBufferView* arrayBufferViewArg;
     {
-        arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Handle<v8::ArrayBufferView>::Cast(info[0])) : 0;
+        arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Local<v8::ArrayBufferView>::Cast(info[0])) : 0;
     }
     impl->voidMethodArrayBufferViewArg(arrayBufferViewArg);
 }
@@ -6112,7 +6112,7 @@ static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DOMFloat32Array* float32ArrayArg;
     {
-        float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Handle<v8::Float32Array>::Cast(info[0])) : 0;
+        float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(info[0])) : 0;
     }
     impl->voidMethodFloat32ArrayArg(float32ArrayArg);
 }
@@ -6133,7 +6133,7 @@ static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DOMInt32Array* int32ArrayArg;
     {
-        int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Handle<v8::Int32Array>::Cast(info[0])) : 0;
+        int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Local<v8::Int32Array>::Cast(info[0])) : 0;
     }
     impl->voidMethodInt32ArrayArg(int32ArrayArg);
 }
@@ -6154,7 +6154,7 @@ static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     DOMUint8Array* uint8ArrayArg;
     {
-        uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(info[0])) : 0;
+        uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(info[0])) : 0;
     }
     impl->voidMethodUint8ArrayArg(uint8ArrayArg);
 }
@@ -6917,7 +6917,7 @@ static void promiseMethodWithoutExceptionStateMethodCallback(const v8::FunctionC
 static void serializedScriptValueMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, impl->serializedScriptValueMethod() ? impl->serializedScriptValueMethod()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    v8SetReturnValue(info, impl->serializedScriptValueMethod() ? impl->serializedScriptValueMethod()->deserialize() : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void serializedScriptValueMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

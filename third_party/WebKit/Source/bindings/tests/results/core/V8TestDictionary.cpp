@@ -379,7 +379,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (uint8ArrayMemberValue.IsEmpty() || uint8ArrayMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        DOMUint8Array* uint8ArrayMember = uint8ArrayMemberValue->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(uint8ArrayMemberValue)) : 0;
+        DOMUint8Array* uint8ArrayMember = uint8ArrayMemberValue->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(uint8ArrayMemberValue)) : 0;
         if (!uint8ArrayMember && !uint8ArrayMemberValue->IsNull()) {
             exceptionState.throwTypeError("member uint8ArrayMember is not of type Uint8Array.");
             return;
