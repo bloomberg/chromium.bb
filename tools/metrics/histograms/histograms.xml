@@ -40937,11 +40937,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.ApplicationMaxConsecutiveBytesDiscard">
+  <obsolete>
+    Deprecated as of 12/2014, replaced by
+    WebRTC.ApplicationMaxConsecutiveBytesDiscard.v2.
+  </obsolete>
   <owner>guoweis@chromium.org</owner>
   <summary>
     The maximum consecutive discarded bytes caused by not enough buffer
     available in WebRTC's socket implementation.  This happens when WebRTC
     IpcPacketSocket's throttling mechanism kicks in.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.ApplicationMaxConsecutiveBytesDiscard.v2">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    The maximum consecutive discarded bytes caused by not enough buffer
+    available in WebRTC's socket implementation.  This happens when WebRTC
+    IpcPacketSocket's throttling mechanism kicks in. The maximum bucket is
+    expanded from previous version to provide more insight when upper layer
+    feeds a lot of packets.
   </summary>
 </histogram>
 
