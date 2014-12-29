@@ -40,10 +40,11 @@ function test()
     fileSystemMapping.addFileSystem("/var/www");
     fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
     var workspace = new WebInspector.Workspace(fileSystemMapping);
+    var networkMapping = new WebInspector.NetworkMapping(workspace, fileSystemMapping);
 
     function dumpHasMappingForURL(url)
     {
-        var result = workspace.hasMappingForURL(url)
+        var result = networkMapping.hasMappingForURL(url)
         if (result)
             InspectorTest.addResult("    url " + url + " is mapped.");
         else
@@ -52,13 +53,13 @@ function test()
 
     function dumpUISourceCodeForURL(url)
     {
-        var uiSourceCode = workspace.uiSourceCodeForURL(url)
+        var uiSourceCode = networkMapping.uiSourceCodeForURL(url)
         InspectorTest.addResult("    url " + url + " is mapped to " + (uiSourceCode ? uiSourceCode.uri() : null));
     }
 
     function dumpURLForPath(fileSystemPath, filePath)
     {
-        var url = workspace.urlForPath(fileSystemPath, filePath)
+        var url = networkMapping.urlForPath(fileSystemPath, filePath)
         InspectorTest.addResult("    path " + fileSystemPath + " / " + filePath + " is mapped to " + (url ? url : null));
     }
     

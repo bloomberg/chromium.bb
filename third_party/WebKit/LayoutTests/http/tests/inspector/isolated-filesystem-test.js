@@ -3,8 +3,8 @@ var initialize_IsolatedFileSystemTest = function() {
 InspectorTest.createIsolatedFileSystemManager = function(workspace)
 {
     var manager = new MockIsolatedFileSystemManager();
-    manager.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(manager, workspace);
     manager.fileSystemMapping = InspectorTest.testFileSystemMapping;
+    manager.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(manager, workspace, InspectorTest.testNetworkMapping);
     return manager;
 }
 

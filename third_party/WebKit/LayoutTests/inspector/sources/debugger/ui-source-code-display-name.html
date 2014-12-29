@@ -17,7 +17,7 @@ function test()
     }
 
     var workspace = new WebInspector.Workspace();
-    workspace.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(workspace);
+    workspace.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(workspace, WebInspector.networkMapping);
 
     function addNetworkFile(url)
     {

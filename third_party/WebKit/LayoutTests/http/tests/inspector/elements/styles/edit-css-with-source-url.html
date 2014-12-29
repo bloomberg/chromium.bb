@@ -3,6 +3,7 @@
 <script src="../../inspector-test.js"></script>
 <script src="../../debugger-test.js"></script>
 <script src="../../elements-test.js"></script>
+<script src="../../workspace-test.js"></script>
 <script src="../../isolated-filesystem-test.js"></script>
 <script>
 function loadStylesheet(line0, line1, line2)
@@ -19,14 +20,10 @@ function loadStylesheet(line0, line1, line2)
 function test()
 {
     var manager;
-    var cssModel;
     function createObjects()
     {
-        InspectorTest.testFileSystemMapping = new WebInspector.FileSystemMapping();
-        InspectorTest.testFileSystemMapping._fileSystemMappingSetting = new InspectorTest.MockSetting({});
-        InspectorTest.testExcludedFolderManager = new WebInspector.ExcludedFolderManager();
-        WebInspector.workspace._fileSystemMapping = InspectorTest.testFileSystemMapping;
-        manager = InspectorTest.createIsolatedFileSystemManager(WebInspector.workspace);
+        InspectorTest.createWorkspace(true);
+        manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
     }
 
     InspectorTest.runTestSuite([
@@ -49,7 +46,7 @@ function test()
             InspectorTest.addResult("Adding file system mapping.");
             InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost:8000/inspector/elements/styles/", "/");
             manager.addFiles(fileSystemPath, files);
-            var uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
+            var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "foo.css");
             InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)

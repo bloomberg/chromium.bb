@@ -119,7 +119,7 @@ function test()
                 networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode("http://localhost", "html/foo.js");
                 InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
                 InspectorTest.addResult("Adding mapping between network and file system resources.");
-                InspectorTest.testWorkspace.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceBinding);
+                InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceBinding);
                 setting = InspectorTest.testFileSystemMapping._fileSystemMappingSetting;
                 InspectorTest.addResult("Emulate reloading inspector.");
                 createObjects(step2);
@@ -135,7 +135,7 @@ function test()
                 dumpFileSystemUISourceCodesMappings();
                 InspectorTest.addResult("Removing mapping between network and file system resources.");
                 uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
-                InspectorTest.testWorkspace.removeMapping(uiSourceCode);
+                InspectorTest.testNetworkMapping.removeMapping(uiSourceCode);
 
                 InspectorTest.addResult("Emulate reloading inspector.");
                 createObjects(step3);
