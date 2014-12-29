@@ -4,14 +4,14 @@
   // http://en.wikipedia.org/wiki/Hash-based_message_authentication_code
   {
     "hash": "sha-1",
-    "key": "",
+    "key": "00",
     "message": "",
     // openssl dgst -sha1 -hmac "" < /dev/null
     "mac": "fbdb1d1b18aa6c08324b7d64b71fb76370690e1d"
   },
   {
     "hash": "sha-256",
-    "key": "",
+    "key": "00",
     "message": "",
     // openssl dgst -sha256 -hmac "" < /dev/null
     "mac": "b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad"

@@ -216,13 +216,7 @@ class HmacImplementation : public AlgorithmImplementation {
                                 blink::WebCryptoKeyUsageMask usages,
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override {
-    const blink::WebCryptoHmacKeyAlgorithmParams* params =
-        algorithm.hmacParams();
-
-    return ImportKeyRaw(
-        key_data,
-        CreateHmacImportAlgorithm(params->hash().id(), params->lengthBits()),
-        extractable, usages, key);
+    return ImportKeyRawOpenSsl(key_data, algorithm, extractable, usages, key);
   }
 
   Status GetKeyLength(const blink::WebCryptoAlgorithm& key_length_algorithm,

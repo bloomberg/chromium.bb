@@ -209,6 +209,9 @@ class CONTENT_EXPORT Status {
   // Attempted to generate an HMAC key using a key length of 0.
   static Status ErrorGenerateHmacKeyLengthZero();
 
+  // Attempted to import an HMAC key containing no data.
+  static Status ErrorHmacImportEmptyKey();
+
   // Attempted to derive an HMAC key with zero length.
   static Status ErrorGetHmacKeyLengthZero();
 

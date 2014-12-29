@@ -247,6 +247,11 @@ Status Status::ErrorGenerateHmacKeyLengthZero() {
                 "HMAC key length must not be zero");
 }
 
+Status Status::ErrorHmacImportEmptyKey() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "HMAC key data must not be empty");
+}
+
 Status Status::ErrorGetHmacKeyLengthZero() {
   return Status(blink::WebCryptoErrorTypeType,
                 "HMAC key length must not be zero");

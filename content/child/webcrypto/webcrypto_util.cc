@@ -231,6 +231,9 @@ Status GetHmacImportKeyLengthBits(
     const blink::WebCryptoHmacImportParams* params,
     unsigned int key_data_byte_length,
     unsigned int* keylen_bits) {
+  if (key_data_byte_length == 0)
+    return Status::ErrorHmacImportEmptyKey();
+
   // Make sure that the key data's length can be represented in bits without
   // overflow.
   base::CheckedNumeric<unsigned int> checked_keylen_bits(key_data_byte_length);
