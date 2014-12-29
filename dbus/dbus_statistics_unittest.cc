@@ -15,13 +15,9 @@ class DBusStatisticsTest : public testing::Test {
   DBusStatisticsTest() {
   }
 
-  virtual void SetUp() override {
-    statistics::Initialize();
-  }
+  void SetUp() override { statistics::Initialize(); }
 
-  virtual void TearDown() override {
-    statistics::Shutdown();
-  }
+  void TearDown() override { statistics::Shutdown(); }
 
  protected:
   void AddTestMethodCalls() {

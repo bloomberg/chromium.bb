@@ -49,7 +49,7 @@ class PropertyTest : public testing::Test {
     }
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Make the main thread not to allow IO.
     base::ThreadRestrictions::SetIOAllowed(false);
 
@@ -87,7 +87,7 @@ class PropertyTest : public testing::Test {
     properties_->GetAll();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     bus_->ShutdownOnDBusThreadAndBlock();
 
     // Shut down the service.

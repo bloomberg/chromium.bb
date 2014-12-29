@@ -21,7 +21,7 @@ class EndToEndSyncTest : public testing::Test {
   EndToEndSyncTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Start the test service;
     TestService::Options options;
     test_service_.reset(new TestService(options));
@@ -40,7 +40,7 @@ class EndToEndSyncTest : public testing::Test {
     ASSERT_FALSE(client_bus_->HasDBusThread());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     test_service_->ShutdownAndBlock();
     test_service_->Stop();
     client_bus_->ShutdownAndBlock();

@@ -28,7 +28,7 @@ class SignalSenderVerificationTest : public testing::Test {
         on_ownership_called_(false) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     base::StatisticsRecorder::Initialize();
 
     // Make the main thread not to allow IO.
@@ -94,7 +94,7 @@ class SignalSenderVerificationTest : public testing::Test {
     ASSERT_FALSE(latest_name_owner_.empty());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     bus_->ShutdownOnDBusThreadAndBlock();
 
     // Shut down the service.

@@ -29,7 +29,7 @@ class MockTest : public testing::Test {
   MockTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a mock bus.
     Bus::Options options;
     options.bus_type = Bus::SYSTEM;
@@ -66,9 +66,7 @@ class MockTest : public testing::Test {
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
   }
 
-  virtual void TearDown() {
-    mock_bus_->ShutdownAndBlock();
-  }
+  void TearDown() override { mock_bus_->ShutdownAndBlock(); }
 
   // Called when the response is received.
   void OnResponse(Response* response) {

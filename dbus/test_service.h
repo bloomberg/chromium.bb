@@ -46,7 +46,7 @@ class TestService : public base::Thread {
   static const int kNumMethodsToExport;
 
   explicit TestService(const Options& options);
-  virtual ~TestService();
+  ~TestService() override;
 
   // Starts the service in a separate thread.
   // Returns true if the thread is started successfully.
@@ -106,7 +106,7 @@ class TestService : public base::Thread {
                   bool success);
 
   // base::Thread override.
-  virtual void Run(base::MessageLoop* message_loop) override;
+  void Run(base::MessageLoop* message_loop) override;
 
   //
   // Exported methods.

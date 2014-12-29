@@ -35,7 +35,7 @@ const int kHugePayloadSize = 64 << 20;  // 64 MB
 // ExportedObject.
 class EndToEndAsyncTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     // Make the main thread not to allow IO.
     base::ThreadRestrictions::SetIOAllowed(false);
 
@@ -112,7 +112,7 @@ class EndToEndAsyncTest : public testing::Test {
     run_loop_->Run();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     bus_->ShutdownOnDBusThreadAndBlock();
 
     // Shut down the service.
@@ -582,7 +582,7 @@ class SignalMultipleHandlerTest : public EndToEndAsyncTest {
   SignalMultipleHandlerTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Set up base class.
     EndToEndAsyncTest::SetUp();
 
