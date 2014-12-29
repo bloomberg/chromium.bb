@@ -17,13 +17,13 @@ class JavaScriptAppModalDialogViewsX11
  public:
   explicit JavaScriptAppModalDialogViewsX11(
       app_modal::JavaScriptAppModalDialog* parent);
-  virtual ~JavaScriptAppModalDialogViewsX11();
+  ~JavaScriptAppModalDialogViewsX11() override;
 
   // JavaScriptAppModalDialogViews:
-  virtual void ShowAppModalDialog() override;
+  void ShowAppModalDialog() override;
 
   // views::DialogDelegate:
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
  private:
   // Blocks events to other browser windows while the dialog is open.

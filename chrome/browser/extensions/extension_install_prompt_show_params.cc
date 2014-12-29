@@ -35,12 +35,9 @@ class ExtensionInstallPromptShowParams::WebContentsDestructionObserver
         params_(params) {
   }
 
-  virtual ~WebContentsDestructionObserver() {
-  }
+  ~WebContentsDestructionObserver() override {}
 
-  virtual void WebContentsDestroyed() override {
-    params_->WebContentsDestroyed();
-  }
+  void WebContentsDestroyed() override { params_->WebContentsDestroyed(); }
 
  private:
   // Not owned.

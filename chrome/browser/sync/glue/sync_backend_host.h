@@ -133,11 +133,11 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // The ready_task will be run when configuration is done with the
   // set of all types that failed configuration (i.e., if its argument
   // is non-empty, then an error was encountered).
-  virtual void ConfigureDataTypes(
+  void ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(syncer::ModelTypeSet,
-                                syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+          ready_task,
       const base::Callback<void()>& retry_callback) override = 0;
 
   // Turns on encryption of all present and future sync data.

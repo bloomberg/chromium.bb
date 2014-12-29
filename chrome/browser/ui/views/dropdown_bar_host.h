@@ -85,8 +85,8 @@ class DropdownBarHost : public ui::AcceleratorTarget,
                         views::View* focused_now) override;
 
   // Overridden from ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) = 0;
-  virtual bool CanHandleAccelerators() const = 0;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override = 0;
+  bool CanHandleAccelerators() const override = 0;
 
   // gfx::AnimationDelegate implementation:
   void AnimationProgressed(const gfx::Animation* animation) override;

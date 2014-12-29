@@ -35,8 +35,8 @@ class MultiClientStatusChangeChecker
   void OnStateChanged() override;
 
   // StatusChangeChecker implementations and stubs.
-  virtual bool IsExitConditionSatisfied() = 0;
-  virtual std::string GetDebugMessage() const = 0;
+  bool IsExitConditionSatisfied() override = 0;
+  std::string GetDebugMessage() const override = 0;
 
  protected:
   const std::vector<ProfileSyncService*>& services() { return services_; }

@@ -23,7 +23,7 @@ class ProfileSigninConfirmationDelegate;
 // A cross-platform interface for invoking various tab modal dialogs/bubbles.
 class TabDialogs : public base::SupportsUserData::Data {
  public:
-  virtual ~TabDialogs() {}
+  ~TabDialogs() override {}
 
   // Creates a platform specific instance, and attaches it to |contents|.
   // If an instance is already attached, does nothing.

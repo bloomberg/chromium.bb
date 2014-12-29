@@ -85,11 +85,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
 
-  virtual size_t GetLineCount() const override;
-  virtual const autofill::Suggestion& GetSuggestionAt(
-      size_t row) const override;
-  virtual const base::string16& GetElidedValueAt(size_t row) const override;
-  virtual const base::string16& GetElidedLabelAt(size_t row) const override;
+  size_t GetLineCount() const override;
+  const autofill::Suggestion& GetSuggestionAt(size_t row) const override;
+  const base::string16& GetElidedValueAt(size_t row) const override;
+  const base::string16& GetElidedLabelAt(size_t row) const override;
 #if !defined(OS_ANDROID)
   const gfx::FontList& GetValueFontListForRow(size_t index) const override;
   const gfx::FontList& GetLabelFontList() const override;

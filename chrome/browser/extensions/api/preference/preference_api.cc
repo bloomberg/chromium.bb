@@ -170,9 +170,9 @@ class InvertBooleanTransformer : public PrefTransformerInterface {
 
 class NetworkPredictionTransformer : public PrefTransformerInterface {
  public:
-  virtual base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
-                                              std::string* error,
-                                              bool* bad_message) override {
+  base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
+                                      std::string* error,
+                                      bool* bad_message) override {
     bool bool_value = false;
     const bool pref_found = extension_pref->GetAsBoolean(&bool_value);
     DCHECK(pref_found) << "Preference not found.";
@@ -185,7 +185,7 @@ class NetworkPredictionTransformer : public PrefTransformerInterface {
     }
   }
 
-  virtual base::Value* BrowserToExtensionPref(
+  base::Value* BrowserToExtensionPref(
       const base::Value* browser_pref) override {
     int int_value = chrome_browser_net::NETWORK_PREDICTION_DEFAULT;
     const bool pref_found = browser_pref->GetAsInteger(&int_value);

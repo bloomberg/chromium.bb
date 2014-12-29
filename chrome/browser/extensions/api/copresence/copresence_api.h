@@ -126,7 +126,7 @@ class CopresenceSetAuthTokenFunction : public ChromeUIThreadExtensionFunction {
                              COPRESENCE_SETAUTHTOKEN);
 
  protected:
-  virtual ~CopresenceSetAuthTokenFunction() {}
+  ~CopresenceSetAuthTokenFunction() override {}
   ExtensionFunction::ResponseAction Run() override;
 };
 

@@ -26,7 +26,7 @@ class TabModalConfirmDialog : public TabModalConfirmDialogCloseDelegate {
 
   // TabModalConfirmDialogCloseDelegate:
   // Closes the dialog.
-  virtual void CloseDialog() = 0;
+  void CloseDialog() override = 0;
 
  protected:
   ~TabModalConfirmDialog() override {}

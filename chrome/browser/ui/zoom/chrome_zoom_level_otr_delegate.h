@@ -24,7 +24,7 @@ class ChromeZoomLevelOTRDelegate : public content::ZoomLevelDelegate {
  public:
   ChromeZoomLevelOTRDelegate(
       base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager);
-  virtual ~ChromeZoomLevelOTRDelegate();
+  ~ChromeZoomLevelOTRDelegate() override;
 
   // content::ZoomLevelDelegate
   void InitHostZoomMap(content::HostZoomMap* host_zoom_map) override;

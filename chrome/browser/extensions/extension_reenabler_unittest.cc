@@ -105,7 +105,7 @@ class CallbackHelper {
 class ExtensionReenablerUnitTest : public ExtensionServiceTestBase {
  public:
   ExtensionReenablerUnitTest() {}
-  ~ExtensionReenablerUnitTest() {}
+  ~ExtensionReenablerUnitTest() override {}
 
  private:
   void SetUp() override;

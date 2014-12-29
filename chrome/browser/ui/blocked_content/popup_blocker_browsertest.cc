@@ -99,7 +99,7 @@ class BrowserActivationObserver : public chrome::BrowserListObserver {
         observed_(false) {
     BrowserList::AddObserver(this);
   }
-  virtual ~BrowserActivationObserver() { BrowserList::RemoveObserver(this); }
+  ~BrowserActivationObserver() override { BrowserList::RemoveObserver(this); }
 
   void WaitForActivation() {
     if (observed_)
@@ -110,7 +110,7 @@ class BrowserActivationObserver : public chrome::BrowserListObserver {
 
  private:
   // chrome::BrowserListObserver:
-  virtual void OnBrowserSetLastActive(Browser* browser) override {
+  void OnBrowserSetLastActive(Browser* browser) override {
     if (browser == browser_)
       return;
     if (browser->host_desktop_type() != browser_->host_desktop_type())

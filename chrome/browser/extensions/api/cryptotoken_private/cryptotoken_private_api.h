@@ -29,8 +29,8 @@ class CryptotokenPrivateRequestPermissionFunction
   DECLARE_EXTENSION_FUNCTION("cryptotokenPrivate.requestPermission",
                              CRYPTOTOKENPRIVATE_REQUESTPERMISSION)
  protected:
-  virtual ~CryptotokenPrivateRequestPermissionFunction() override {}
-  virtual ResponseAction Run() override;
+  ~CryptotokenPrivateRequestPermissionFunction() override {}
+  ResponseAction Run() override;
 
  private:
   ChromeExtensionFunctionDetails chrome_details_;

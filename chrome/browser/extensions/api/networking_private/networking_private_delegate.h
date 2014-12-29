@@ -82,7 +82,7 @@ class NetworkingPrivateDelegate : public KeyedService {
   // to the delegate. Otherwise they will fail with a NotSupported error.
   explicit NetworkingPrivateDelegate(
       scoped_ptr<VerifyDelegate> verify_delegate);
-  virtual ~NetworkingPrivateDelegate();
+  ~NetworkingPrivateDelegate() override;
 
   // Asynchronous methods
   virtual void GetProperties(const std::string& guid,

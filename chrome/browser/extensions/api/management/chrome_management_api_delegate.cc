@@ -130,7 +130,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
         new ExtensionInstallPrompt(details_.GetAssociatedWebContents()));
     install_prompt_->ConfirmReEnable(this, extension);
   }
-  virtual ~ManagementSetEnabledFunctionInstallPromptDelegate() {}
+  ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
 
  protected:
   // ExtensionInstallPrompt::Delegate.

@@ -48,7 +48,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   void OnPerformAction(views::Combobox* combobox) override;
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Called asynchronously to calculate and update the size of the app displayed
   // in the dialog.

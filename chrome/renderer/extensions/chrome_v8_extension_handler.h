@@ -22,7 +22,7 @@ class ChromeV8ExtensionHandler : public IPC::Listener {
   ~ChromeV8ExtensionHandler() override;
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message) = 0;
+  bool OnMessageReceived(const IPC::Message& message) override = 0;
 
  protected:
   explicit ChromeV8ExtensionHandler(ScriptContext* context);

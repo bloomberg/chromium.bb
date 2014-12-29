@@ -17,7 +17,7 @@ class InlineInstallPrivateInstallFunction
   InlineInstallPrivateInstallFunction();
 
  protected:
-  virtual ~InlineInstallPrivateInstallFunction() override;
+  ~InlineInstallPrivateInstallFunction() override;
 
   ResponseAction Run() override;
 

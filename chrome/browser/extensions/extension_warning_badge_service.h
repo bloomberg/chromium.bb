@@ -24,7 +24,7 @@ class ExtensionWarningBadgeService : public KeyedService,
                                      public base::NonThreadSafe {
  public:
   explicit ExtensionWarningBadgeService(Profile* profile);
-  virtual ~ExtensionWarningBadgeService();
+  ~ExtensionWarningBadgeService() override;
 
   static ExtensionWarningBadgeService* Get(content::BrowserContext* context);
 

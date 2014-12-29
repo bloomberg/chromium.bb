@@ -12,11 +12,11 @@
 class AppModalDialogHelper : public content::WebContentsObserver {
  public:
   explicit AppModalDialogHelper(content::WebContents* dialog_host);
-  virtual ~AppModalDialogHelper();
+  ~AppModalDialogHelper() override;
 
  private:
   // Overridden from WebContentsObserver:
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   content::WebContents* popup_;
 

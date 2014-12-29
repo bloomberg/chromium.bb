@@ -24,7 +24,7 @@ class UtilityMessageHandler;
 class ChromeContentUtilityClient : public content::ContentUtilityClient {
  public:
   ChromeContentUtilityClient();
-  virtual ~ChromeContentUtilityClient();
+  ~ChromeContentUtilityClient() override;
 
   void UtilityThreadStarted() override;
   bool OnMessageReceived(const IPC::Message& message) override;

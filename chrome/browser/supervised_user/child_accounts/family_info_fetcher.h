@@ -77,7 +77,7 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
                     const std::string& account_id,
                     OAuth2TokenService* token_service,
                     net::URLRequestContextGetter* request_context);
-  virtual ~FamilyInfoFetcher();
+  ~FamilyInfoFetcher() override;
 
   // Public so tests can use them.
   static std::string RoleToString(FamilyMemberRole role);
@@ -88,18 +88,18 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
 
  private:
   // OAuth2TokenService::Observer implementation:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokensLoaded() override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
 
   // OAuth2TokenService::Consumer implementation:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   static bool ParseMembers(const base::ListValue* list,
                            std::vector<FamilyMember>* members);

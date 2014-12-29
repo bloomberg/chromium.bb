@@ -21,12 +21,12 @@ class BlacklistFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<BlacklistFactory>;
 
   BlacklistFactory();
-  virtual ~BlacklistFactory();
+  ~BlacklistFactory() override;
 
   // BrowserContextKeyedServiceFactory
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(BlacklistFactory);

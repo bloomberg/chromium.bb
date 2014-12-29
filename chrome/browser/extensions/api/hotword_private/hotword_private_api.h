@@ -198,10 +198,10 @@ class HotwordPrivateGetLocalizedStringsFunction
                              HOTWORDPRIVATE_GETLOCALIZEDSTRINGS)
 
  protected:
-  virtual ~HotwordPrivateGetLocalizedStringsFunction() {}
+  ~HotwordPrivateGetLocalizedStringsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateSetAudioHistoryEnabledFunction
@@ -211,10 +211,10 @@ class HotwordPrivateSetAudioHistoryEnabledFunction
                              HOTWORDPRIVATE_SETAUDIOHISTORYENABLED)
 
  protected:
-  virtual ~HotwordPrivateSetAudioHistoryEnabledFunction() {}
+  ~HotwordPrivateSetAudioHistoryEnabledFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void SetResultAndSendResponse(bool success, bool new_enabled_value);
 };
@@ -226,10 +226,10 @@ class HotwordPrivateGetAudioHistoryEnabledFunction
                              HOTWORDPRIVATE_GETAUDIOHISTORYENABLED)
 
  protected:
-  virtual ~HotwordPrivateGetAudioHistoryEnabledFunction() {}
+  ~HotwordPrivateGetAudioHistoryEnabledFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void SetResultAndSendResponse(bool success, bool new_enabled_value);
 };

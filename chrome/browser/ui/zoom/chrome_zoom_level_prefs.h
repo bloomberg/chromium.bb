@@ -48,7 +48,7 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
       const base::FilePath& profile_path,
       const base::FilePath& partition_path,
       base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager);
-  virtual ~ChromeZoomLevelPrefs();
+  ~ChromeZoomLevelPrefs() override;
 
   static std::string GetHashForTesting(const base::FilePath& relative_path);
 

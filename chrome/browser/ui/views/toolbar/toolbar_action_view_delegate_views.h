@@ -48,7 +48,7 @@ class ToolbarActionViewDelegateViews : public ToolbarActionViewDelegate {
   virtual void CleanupPopup() {}
 
  protected:
-  virtual ~ToolbarActionViewDelegateViews() {}
+  ~ToolbarActionViewDelegateViews() override {}
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_VIEWS_H_

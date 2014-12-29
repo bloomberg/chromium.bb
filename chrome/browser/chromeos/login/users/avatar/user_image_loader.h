@@ -69,7 +69,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   typedef std::map<const ImageDecoder*, ImageInfo> ImageInfoMap;
 
-  virtual ~UserImageLoader();
+  ~UserImageLoader() override;
 
   // Reads the image from |image_info.file_path| and starts the decoding
   // process. This method may only be invoked via the |background_task_runner_|.
@@ -82,9 +82,9 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // ImageDecoder::Delegate implementation. These callbacks will only be invoked
   // via the |background_task_runner_|.
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // The foreground task runner on which |this| is instantiated, Start() is
   // called and LoadedCallbacks are invoked.

@@ -83,7 +83,7 @@ class ChromeNativeAppWindowViews
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
-  virtual void SetInterceptAllKeys(bool want_all_keys) override;
+  void SetInterceptAllKeys(bool want_all_keys) override;
 
   // NativeAppWindowViews implementation.
   void InitializeWindow(

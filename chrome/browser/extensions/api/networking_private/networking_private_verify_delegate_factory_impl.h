@@ -13,7 +13,7 @@ class NetworkingPrivateVerifyDelegateFactoryImpl
     : public NetworkingPrivateDelegateFactory::VerifyDelegateFactory {
  public:
   NetworkingPrivateVerifyDelegateFactoryImpl();
-  virtual ~NetworkingPrivateVerifyDelegateFactoryImpl();
+  ~NetworkingPrivateVerifyDelegateFactoryImpl() override;
 
   scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> CreateDelegate()
       override;

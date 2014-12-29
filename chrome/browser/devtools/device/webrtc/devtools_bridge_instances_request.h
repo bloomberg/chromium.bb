@@ -31,7 +31,7 @@ class DevToolsBridgeInstancesRequest
   };
 
   explicit DevToolsBridgeInstancesRequest(Delegate* delegate);
-  ~DevToolsBridgeInstancesRequest();
+  ~DevToolsBridgeInstancesRequest() override;
 
   // Implementation of GCDApiFlowRequest.
   void OnGCDAPIFlowError(local_discovery::GCDApiFlow::Status status) override;

@@ -28,7 +28,7 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   ~PermissionInfobarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual base::string16 GetMessageText() const = 0;
+  base::string16 GetMessageText() const override = 0;
 
   infobars::InfoBarDelegate::Type GetInfoBarType() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;

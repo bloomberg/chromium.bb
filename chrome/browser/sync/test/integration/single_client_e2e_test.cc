@@ -8,7 +8,7 @@ class SingleClientE2ETest : public SyncTest {
  public:
   SingleClientE2ETest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientE2ETest() override {}
-  virtual bool TestUsesSelfNotifications() override { return false; }
+  bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientE2ETest);

@@ -38,10 +38,10 @@ class ChromeBrowserMainExtraPartsMetrics
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // DisplayObserver overrides.
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t changed_metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t changed_metrics) override;
 
   // FirstWebContentsProfilerDelegate overrides.
   void ProfilerFinishedCollectingMetrics() override;

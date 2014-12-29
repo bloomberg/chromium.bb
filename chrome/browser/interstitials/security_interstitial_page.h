@@ -22,7 +22,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
   SecurityInterstitialPage(content::WebContents* web_contents,
                            const GURL& url);
-  virtual ~SecurityInterstitialPage();
+  ~SecurityInterstitialPage() override;
 
   // Creates an interstitial and shows it.
   virtual void Show();

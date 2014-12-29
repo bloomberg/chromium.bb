@@ -46,7 +46,7 @@ class SignInObserver : public SigninTracker::Observer {
     EXPECT_TRUE(seen_);
   }
 
-  virtual void SigninFailed(const GoogleServiceAuthError& error) override {
+  void SigninFailed(const GoogleServiceAuthError& error) override {
     DVLOG(1) << "Google signin failed.";
     seen_ = true;
     if (!running_)
@@ -55,10 +55,9 @@ class SignInObserver : public SigninTracker::Observer {
     running_ = false;
   }
 
-  virtual void MergeSessionComplete(
-      const GoogleServiceAuthError& error) override {}
+  void MergeSessionComplete(const GoogleServiceAuthError& error) override {}
 
-  virtual void SigninSuccess() override {
+  void SigninSuccess() override {
     DVLOG(1) << "Google signin succeeded.";
     seen_ = true;
     signed_in_ = true;

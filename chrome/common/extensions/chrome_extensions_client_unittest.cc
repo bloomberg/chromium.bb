@@ -18,7 +18,7 @@ namespace extensions {
 
 class ChromeExtensionsClientTest : public testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     extensions_client_.reset(new ChromeExtensionsClient());
     ExtensionsClient::Set(extensions_client_.get());
   }

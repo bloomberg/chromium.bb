@@ -19,7 +19,7 @@ class DevToolsBridgeClientBrowserTest::GCDApiFlowMock
     test_->flows_[id_] = this;
   }
 
-  ~GCDApiFlowMock() { test_->flows_.erase(id_); }
+  ~GCDApiFlowMock() override { test_->flows_.erase(id_); }
 
   // Passes request's data to the JS test. Result will be passed back
   // in MessageHandler::Response.

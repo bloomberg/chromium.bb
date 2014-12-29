@@ -69,7 +69,6 @@ class TestPermissionContext : public PermissionContextBase {
 class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
  protected:
   PermissionContextBaseTests() {}
-  virtual ~PermissionContextBaseTests() {}
 
   // Accept or dismiss the permission bubble or infobar.
   void RespondToPermission(TestPermissionContext* context,
@@ -155,7 +154,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
  private:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
     PermissionBubbleManager::CreateForWebContents(web_contents());

@@ -43,7 +43,7 @@ class InfoBarResponder : public infobars::InfoBarManager::Observer {
     infobar_service_->AddObserver(this);
   }
 
-  virtual ~InfoBarResponder() { infobar_service_->RemoveObserver(this); }
+  ~InfoBarResponder() override { infobar_service_->RemoveObserver(this); }
 
   // infobars::InfoBarManager::Observer
   void OnInfoBarAdded(infobars::InfoBar* infobar) override {

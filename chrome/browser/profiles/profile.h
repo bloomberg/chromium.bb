@@ -240,7 +240,7 @@ class Profile : public content::BrowserContext {
   virtual PrefService* GetOffTheRecordPrefs() = 0;
 
   // Returns the main request context.
-  virtual net::URLRequestContextGetter* GetRequestContext() override = 0;
+  net::URLRequestContextGetter* GetRequestContext() override = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.

@@ -321,8 +321,8 @@ class DeveloperPrivateChooseEntryFunction : public ChromeAsyncExtensionFunction,
                   int file_type_index);
 
   // EntryPickerClient functions.
-  virtual void FileSelected(const base::FilePath& path) = 0;
-  virtual void FileSelectionCanceled() = 0;
+  void FileSelected(const base::FilePath& path) override = 0;
+  void FileSelectionCanceled() override = 0;
 };
 
 

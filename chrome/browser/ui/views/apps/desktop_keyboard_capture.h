@@ -13,7 +13,7 @@
 class DesktopKeyboardCapture : public views::WidgetObserver {
  public:
   explicit DesktopKeyboardCapture(views::Widget* widget);
-  ~DesktopKeyboardCapture();
+  ~DesktopKeyboardCapture() override;
 
  private:
   // views::WidgetObserver implementation.

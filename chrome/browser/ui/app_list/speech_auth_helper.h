@@ -27,7 +27,7 @@ class SpeechAuthHelper : public OAuth2TokenService::Consumer,
                          public OAuth2TokenService::Observer {
  public:
   explicit SpeechAuthHelper(Profile* profile, base::Clock* clock);
-  ~SpeechAuthHelper();
+  ~SpeechAuthHelper() override;
 
   // Returns the current auth token. If the auth service is not available, or
   // there was a failure in obtaining a token, return the empty string.

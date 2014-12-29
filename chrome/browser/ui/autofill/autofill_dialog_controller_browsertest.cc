@@ -278,13 +278,13 @@ class NavEntryCommittedObserver : public content::WindowedNotificationObserver {
 class AutofillDialogControllerTest : public InProcessBrowserTest {
  public:
   AutofillDialogControllerTest() : controller_(NULL) {}
-  virtual ~AutofillDialogControllerTest() {}
+  ~AutofillDialogControllerTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
     InitializeController();
   }

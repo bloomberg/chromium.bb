@@ -52,7 +52,7 @@ class SpeechRecognizer::EventListener
 
  private:
   friend class base::RefCountedThreadSafe<SpeechRecognizer::EventListener>;
-  ~EventListener();
+  ~EventListener() override;
 
   void NotifyRecognitionStateChanged(SpeechRecognitionState new_state);
 

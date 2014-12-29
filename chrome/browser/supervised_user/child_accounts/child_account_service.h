@@ -31,7 +31,7 @@ class ChildAccountService : public KeyedService,
                             public SigninManagerBase::Observer,
                             public SupervisedUserService::Delegate {
  public:
-  virtual ~ChildAccountService();
+  ~ChildAccountService() override;
 
   void Init();
 
@@ -41,7 +41,7 @@ class ChildAccountService : public KeyedService,
   void SetIsChildAccount(bool is_child_account);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   friend class ChildAccountServiceFactory;
@@ -50,22 +50,22 @@ class ChildAccountService : public KeyedService,
   explicit ChildAccountService(Profile* profile);
 
   // SupervisedUserService::Delegate implementation.
-  virtual bool SetActive(bool active) override;
-  virtual base::FilePath GetBlacklistPath() const override;
-  virtual GURL GetBlacklistURL() const override;
-  virtual std::string GetSafeSitesCx() const override;
+  bool SetActive(bool active) override;
+  base::FilePath GetBlacklistPath() const override;
+  GURL GetBlacklistURL() const override;
+  std::string GetSafeSitesCx() const override;
 
   // SigninManagerBase::Observer implementation.
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // FamilyInfoFetcher::Consumer implementation.
-  virtual void OnGetFamilyMembersSuccess(
+  void OnGetFamilyMembersSuccess(
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) override;
-  virtual void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
+  void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
 
   void StartFetchingServiceFlags(const std::string& account_id);
   void CancelFetchingServiceFlags();

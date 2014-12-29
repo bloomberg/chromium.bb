@@ -219,7 +219,7 @@ class PrefMatchChecker : public StatusChangeChecker {
   ~PrefMatchChecker() override;
 
   // StatusChangeChecker implementation.
-  virtual bool IsExitConditionSatisfied() = 0;
+  bool IsExitConditionSatisfied() override = 0;
   std::string GetDebugMessage() const override;
 
   // Wait for condition to become true.

@@ -208,7 +208,7 @@ class DownloadMetadataManager::ManagerContext
   // A mapping of download IDs to their corresponding data.
   typedef std::map<uint32_t, ItemData> ItemDataMap;
 
-  virtual ~ManagerContext();
+  ~ManagerContext() override;
 
   // Clears the |pending_items_| mapping, removing observers in the process.
   void ClearPendingItems();

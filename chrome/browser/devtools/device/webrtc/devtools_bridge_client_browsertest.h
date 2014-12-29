@@ -17,7 +17,7 @@ class WebUIMessageHandler;
 class DevToolsBridgeClientBrowserTest : public WebUIBrowserTest {
  public:
   DevToolsBridgeClientBrowserTest();
-  ~DevToolsBridgeClientBrowserTest();
+  ~DevToolsBridgeClientBrowserTest() override;
 
   // InProcessBrowserTest overrides.
   void SetUpOnMainThread() override;

@@ -16,7 +16,7 @@ class ChromeContentBrowserClientPluginsPart
     : public ChromeContentBrowserClientParts {
  public:
   ChromeContentBrowserClientPluginsPart();
-  virtual ~ChromeContentBrowserClientPluginsPart();
+  ~ChromeContentBrowserClientPluginsPart() override;
 
   // Corresponding to the ChromeContentBrowserClient function of the same name.
   static bool IsPluginAllowedToUseDevChannelAPIs(

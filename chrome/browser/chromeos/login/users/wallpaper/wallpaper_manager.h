@@ -35,7 +35,7 @@ class WallpaperManager : public wallpaper::WallpaperManagerBase {
   class PendingWallpaper;
 
   WallpaperManager();
-  virtual ~WallpaperManager();
+  ~WallpaperManager() override;
 
   // Get pointer to singleton WallpaperManager instance, create it if necessary.
   static WallpaperManager* Get();

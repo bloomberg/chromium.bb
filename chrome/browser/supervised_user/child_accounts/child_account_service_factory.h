@@ -22,10 +22,10 @@ class ChildAccountServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ChildAccountServiceFactory>;
 
   ChildAccountServiceFactory();
-  virtual ~ChildAccountServiceFactory();
+  ~ChildAccountServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ChildAccountServiceFactory);

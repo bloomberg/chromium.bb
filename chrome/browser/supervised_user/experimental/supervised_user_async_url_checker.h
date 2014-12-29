@@ -36,7 +36,7 @@ class SupervisedUserAsyncURLChecker : net::URLFetcherDelegate {
   SupervisedUserAsyncURLChecker(net::URLRequestContextGetter* context,
                                 const std::string& cx,
                                 size_t cache_size);
-  virtual ~SupervisedUserAsyncURLChecker();
+  ~SupervisedUserAsyncURLChecker() override;
 
   // Returns whether |callback| was run synchronously.
   bool CheckURL(const GURL& url, const CheckCallback& callback);
@@ -51,7 +51,7 @@ class SupervisedUserAsyncURLChecker : net::URLFetcherDelegate {
   };
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   net::URLRequestContextGetter* context_;
   std::string cx_;

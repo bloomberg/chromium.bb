@@ -231,7 +231,7 @@ class DevToolsAndroidBridge : public KeyedService {
   class DiscoveryRequest;
   class RemotePageTarget;
 
-  virtual ~DevToolsAndroidBridge();
+  ~DevToolsAndroidBridge() override;
 
   void StartDeviceListPolling();
   void StopDeviceListPolling();

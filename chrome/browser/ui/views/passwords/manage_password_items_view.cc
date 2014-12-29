@@ -104,7 +104,7 @@ class ManagePasswordItemsView::PasswordFormRow : public views::ButtonListener,
  public:
   PasswordFormRow(ManagePasswordItemsView* host,
                   const autofill::PasswordForm* password_form);
-  ~PasswordFormRow() = default;
+  ~PasswordFormRow() override = default;
 
   void AddRow(views::GridLayout* layout);
 

@@ -15,7 +15,7 @@ using content::BrowserThread;
 class SingleClientDirectorySyncTest : public SyncTest {
  public:
   SingleClientDirectorySyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientDirectorySyncTest() {}
+  ~SingleClientDirectorySyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientDirectorySyncTest);

@@ -47,7 +47,7 @@ class DownloadMetadataManager : public content::DownloadManager::Observer {
   // asynchronous tasks.
   explicit DownloadMetadataManager(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-  virtual ~DownloadMetadataManager();
+  ~DownloadMetadataManager() override;
 
   // Adds |download_manager| to the set observed by the metadata manager.
   void AddDownloadManager(content::DownloadManager* download_manager);

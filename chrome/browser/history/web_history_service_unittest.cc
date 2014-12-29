@@ -210,7 +210,7 @@ class WebHistoryServiceTest : public testing::Test {
  public:
   WebHistoryServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD) {}
-  virtual ~WebHistoryServiceTest() {}
+  ~WebHistoryServiceTest() override {}
 
   void SetUp() override {
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
