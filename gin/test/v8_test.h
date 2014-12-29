@@ -20,10 +20,10 @@ class IsolateHolder;
 class V8Test : public testing::Test {
  public:
   V8Test();
-  virtual ~V8Test();
+  ~V8Test() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<IsolateHolder> instance_;
