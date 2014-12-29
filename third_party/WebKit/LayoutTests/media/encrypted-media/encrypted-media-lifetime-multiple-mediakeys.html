@@ -143,8 +143,9 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    // Should be 1 MediaKeySession, the session for |mediaKeys|.
-                    assert_equals(numActiveDOMObjectsCreated(), 1);
+                    // Should be 1 MediaKeySession, the session for |mediaKeys|
+                    // and DOMTimer.
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2);
                     assert_equals(typeof mediaKeys.createSession, 'function');
 
                     // Release the last MediaKeys object created.
@@ -158,7 +159,7 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 0);
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 1);
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

@@ -89,7 +89,7 @@
                     // asynchronously should free up the last PromiseResolver.
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 3, 'After gc()');
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 4, 'After gc()');
 
                     // Now drop references to 2 of the sessions. Even though we
                     // don't have a reference, MediaKeys is still around (and
@@ -101,7 +101,7 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 3, 'After second gc()');
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 4, 'After second gc()');
 
                     // Now drop the reference to MediaKeys. It and the 2
                     // unreferenced sessions should be collected. Since
@@ -116,14 +116,14 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 1);
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2);
 
                     // Drop the reference to the last session. It should get
                     // collected now since MediaKeys is gone.
                     mediaKeySession3 = null;
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 0);
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 1);
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

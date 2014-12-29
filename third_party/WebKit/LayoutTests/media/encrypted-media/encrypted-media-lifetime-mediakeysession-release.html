@@ -86,12 +86,12 @@
                     return createGCPromise();
                 }).then(function(result) {
                     // Only mediaKeySession2 should remain.
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'mediaKeySession1 not collected');
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'mediaKeySession1 not collected');
 
                     mediaKeySession2 = null;
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 0, 'mediaKeySession2 not collected');
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 1, 'mediaKeySession2 not collected');
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

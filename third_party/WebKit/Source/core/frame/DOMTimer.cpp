@@ -123,6 +123,7 @@ int DOMTimer::timeoutID() const
 void DOMTimer::fired()
 {
     ExecutionContext* context = executionContext();
+    ASSERT(context);
     context->setTimerNestingLevel(m_nestingLevel);
     ASSERT(!context->activeDOMObjectsAreSuspended());
     // Only the first execution of a multi-shot timer should get an affirmative user gesture indicator.
@@ -152,12 +153,11 @@ void DOMTimer::fired()
 
     WTF_LOG(Timers, "DOMTimer::fired: m_timeoutID = %d, one-shot, m_action = %p", m_timeoutID, m_action.get());
 
-    // Delete timer before executing the action for one-shot timers.
+    RefPtrWillBeRawPtr<DOMTimer> protect(this);
+
+    // Unregister the timer from ExecutionContext before executing the action
+    // for one-shot timers.
     OwnPtr<ScheduledAction> action = m_action.release();
-
-    LifecycleContext<ExecutionContext>::Observer observer(context);
-
-    // This timer is being deleted; no access to member variables allowed after this point.
     context->removeTimeoutByID(m_timeoutID);
 
     action->execute(context);
@@ -165,8 +165,9 @@ void DOMTimer::fired()
     InspectorInstrumentation::didFireTimer(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 
-    if (observer.lifecycleContext())
-        context->setTimerNestingLevel(0);
+    // ExecutionContext might be already gone when we executed action->execute().
+    if (executionContext())
+        executionContext()->setTimerNestingLevel(0);
 }
 
 void DOMTimer::contextDestroyed()

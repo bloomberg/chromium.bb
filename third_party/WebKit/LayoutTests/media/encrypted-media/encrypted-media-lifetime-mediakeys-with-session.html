@@ -71,7 +71,7 @@
                     assert_equals(typeof mediaKeys.createSession, 'function');
                     // Ensure that MediaKeySession (but not PromiseResolver) is
                     // still around.
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'After gc()');
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'After gc()');
 
                     // Drop reference to the MediaKeys object and run gc()
                     // again. Object should be collected this time. Since
@@ -86,7 +86,7 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numActiveDOMObjectsCreated(), 0);
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 1);
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);
