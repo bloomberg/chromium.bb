@@ -387,11 +387,6 @@ crbug.com/316147 [ Win ] http/tests/history/back-to-post.html [ Failure Pass ]
 
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
-crbug.com/444921 fast/text/complex-text-opacity.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/antialiasedtext/fast/text/complex-text-opacity.html [ NeedsRebaseline ]
-crbug.com/444921 virtual/slimmingpaint/fast/text/complex-text-opacity.html [ NeedsRebaseline ]
-crbug.com/444921 fast/repaint/stacked-diacritics.html [ NeedsRebaseline ]
-
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-overflow.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
