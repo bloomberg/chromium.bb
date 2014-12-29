@@ -45,15 +45,25 @@ def GetSuppressions():
 
   supp_filename = JOIN(suppressions_root, "memcheck", "suppressions.txt")
   vg_common = ReadSuppressionsFromFile(supp_filename)
-  result['common_suppressions'] = vg_common
+  supp_filename = JOIN(suppressions_root, "tsan", "suppressions.txt")
+  tsan_common = ReadSuppressionsFromFile(supp_filename)
+  result['common_suppressions'] = vg_common + tsan_common
 
   supp_filename = JOIN(suppressions_root, "memcheck", "suppressions_linux.txt")
   vg_linux = ReadSuppressionsFromFile(supp_filename)
-  result['linux_suppressions'] = vg_linux
+  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_linux.txt")
+  tsan_linux = ReadSuppressionsFromFile(supp_filename)
+  result['linux_suppressions'] = vg_linux + tsan_linux
 
   supp_filename = JOIN(suppressions_root, "memcheck", "suppressions_mac.txt")
   vg_mac = ReadSuppressionsFromFile(supp_filename)
-  result['mac_suppressions'] = vg_mac
+  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_mac.txt")
+  tsan_mac = ReadSuppressionsFromFile(supp_filename)
+  result['mac_suppressions'] = vg_mac + tsan_mac
+
+  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_win32.txt")
+  tsan_win = ReadSuppressionsFromFile(supp_filename)
+  result['win_suppressions'] = tsan_win
 
   supp_filename = JOIN(suppressions_root, "drmemory", "suppressions.txt")
   result['drmem_suppressions'] = ReadSuppressionsFromFile(supp_filename)
@@ -137,6 +147,7 @@ def FilenameToTool(filename):
   """Return the name of the tool that a file is related to, or None.
 
   Example mappings:
+    tools/valgrind/tsan/suppressions.txt -> tsan
     tools/valgrind/drmemory/suppressions.txt -> drmemory
     tools/valgrind/drmemory/suppressions_full.txt -> drmemory
     tools/valgrind/memcheck/suppressions.txt -> memcheck
@@ -145,7 +156,7 @@ def FilenameToTool(filename):
   filename = os.path.abspath(filename)
   parts = filename.split(os.sep)
   tool = parts[-2]
-  if tool in ('drmemory', 'memcheck'):
+  if tool in ('drmemory', 'memcheck', 'tsan'):
     return tool
   return None
 
@@ -155,6 +166,7 @@ def ReadSuppressionsFromFile(filename):
   tool_to_parser = {
     "drmemory":  ReadDrMemorySuppressions,
     "memcheck":  ReadValgrindStyleSuppressions,
+    "tsan":      ReadValgrindStyleSuppressions,
   }
   tool = FilenameToTool(filename)
   assert tool in tool_to_parser, (
@@ -176,14 +188,15 @@ def ReadSuppressionsFromFile(filename):
 class ValgrindStyleSuppression(Suppression):
   """A suppression using the Valgrind syntax.
 
-  Most tools, even ones that are not Valgrind-based, use this syntax.
+  Most tools, even ones that are not Valgrind-based, use this syntax, ie
+  TSan, etc.
 
   Attributes:
     Same as Suppression.
   """
 
   def __init__(self, description, type, stack, defined_at):
-    """Creates a suppression using the Memcheck syntax."""
+    """Creates a suppression using the Memcheck and TSan, syntax."""
     regex = '{\n.*\n%s\n' % type
     for line in stack:
       if line == ELLIPSIS:
@@ -283,14 +296,17 @@ def ReadValgrindStyleSuppressions(lines, supp_descriptor):
       cur_descr = line
       continue
     elif not cur_type:
-      if not line.startswith("Memcheck:"):
+      if (not line.startswith("Memcheck:") and
+          not line.startswith("ThreadSanitizer:")):
         raise SuppressionError(
-            'Expected "Memcheck:TYPE", got "%s"' % line,
+            'Expected "Memcheck:TYPE" or "ThreadSanitizer:TYPE", '
+            'got "%s"' % line,
             "%s:%d" % (supp_descriptor, nline))
       supp_type = line.split(':')[1]
       if not supp_type in ["Addr1", "Addr2", "Addr4", "Addr8",
                            "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
                            "Value1", "Value2", "Value4", "Value8",
+                           "Race", "UnlockNonLocked", "InvalidLock",
                            "Unaddressable", "Uninitialized"]:
         raise SuppressionError('Unknown suppression type "%s"' % supp_type,
                                "%s:%d" % (supp_descriptor, nline))
@@ -319,6 +335,7 @@ def PresubmitCheckSuppressions(supps):
     if re.search("<.*suppression.name.here>", s.description):
       # Suppression name line is
       # <insert_a_suppression_name_here> for Memcheck,
+      # <Put your suppression name here> for TSan,
       # name=<insert_a_suppression_name_here> for DrMemory
       errors.append(
           SuppressionError(
@@ -347,6 +364,9 @@ def PresubmitCheck(input_api, output_api):
                    if sup_regex.search(f.LocalPath())]
 
   errors = []
+
+  # TODO(timurrrr): warn on putting suppressions into a wrong file,
+  # e.g. TSan suppression in a memcheck file.
 
   for f in filenames:
     try:
@@ -609,6 +629,17 @@ def SelfTest():
     fun:expression
   }"""
 
+  test_tsan_stack = """{
+    test
+    ThreadSanitizer:Race
+    fun:absolutly
+    fun:brilliant
+    obj:condition
+    fun:detection
+    fun:expression
+  }"""
+
+
   positive_memcheck_suppressions_1 = [
     "{\nzzz\nMemcheck:Leak\nfun:absolutly\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*ly\n}",
@@ -649,6 +680,11 @@ def SelfTest():
     "{\nzzz\nMemcheck:Addr4\n...\nfun:detection\n}",
   ]
 
+  positive_tsan_suppressions = [
+    "{\nzzz\nThreadSanitizer:Race\n...\nobj:condition\n}",
+    "{\nzzz\nThreadSanitizer:Race\nfun:absolutly\n}",
+  ]
+
   negative_memcheck_suppressions_1 = [
     "{\nzzz\nMemcheck:Leak\nfun:abnormal\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*liant\n}",
@@ -687,6 +723,11 @@ def SelfTest():
     "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
   ]
 
+  negative_tsan_suppressions = [
+    "{\nzzz\nThreadSanitizer:Leak\nfun:absolutly\n}",
+    "{\nzzz\nThreadSanitizer:Race\nfun:brilliant\n}",
+  ]
+
   TestStack(test_memcheck_stack_1,
             positive_memcheck_suppressions_1,
             negative_memcheck_suppressions_1)
@@ -699,6 +740,8 @@ def SelfTest():
   TestStack(test_memcheck_stack_4,
             positive_memcheck_suppressions_4,
             negative_memcheck_suppressions_4)
+  TestStack(test_tsan_stack, positive_tsan_suppressions,
+            negative_tsan_suppressions)
 
   # TODO(timurrrr): add TestFailPresubmit tests.
 
@@ -889,6 +932,7 @@ def SelfTest():
 
   # Test FilenameToTool.
   filenames_to_tools = {
+    "tools/valgrind/tsan/suppressions.txt": "tsan",
     "tools/valgrind/drmemory/suppressions.txt": "drmemory",
     "tools/valgrind/drmemory/suppressions_full.txt": "drmemory",
     "tools/valgrind/memcheck/suppressions.txt": "memcheck",

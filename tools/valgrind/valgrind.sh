@@ -29,6 +29,13 @@ setup_memcheck() {
                       "--num-callers=30")
 }
 
+setup_tsan() {
+  RUN_COMMAND="valgrind-tsan.sh"
+  IGNORE_FILE="$THISDIR/tsan/ignores.txt"
+  DEFAULT_TOOL_FLAGS=("--announce-threads" "--pure-happens-before=yes" \
+                      "--ignore=$IGNORE_FILE")
+}
+
 setup_unknown() {
   echo "Unknown tool \"$TOOL_NAME\" specified, the result is not guaranteed"
   DEFAULT_TOOL_FLAGS=()
@@ -58,6 +65,7 @@ fi
 
 case $TOOL_NAME in
   memcheck*)  setup_memcheck "$1";;
+  tsan*)      setup_tsan;;
   *)          setup_unknown;;
 esac
 
