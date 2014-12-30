@@ -31,7 +31,7 @@ protected:
         // when called within.
         ASSERT(!ThreadState::current()->isInGC() || Heap::containedInHeapOrOrphanedPage(header));
 
-        if (toDerived()->checkSkipForObjectInTerminatingThreadHeap(objectPointer))
+        if (!toDerived()->shouldMarkObject(objectPointer))
             return;
 
         // If you hit this ASSERT, it means that there is a dangling pointer
@@ -93,7 +93,7 @@ protected:
     {
         if (!objectPointer)
             return false;
-        if (toDerived()->checkSkipForObjectInTerminatingThreadHeap(objectPointer))
+        if (!toDerived()->shouldMarkObject(objectPointer))
             return false;
 #if ENABLE(ASSERT)
         if (isMarked(objectPointer))
@@ -117,7 +117,7 @@ protected:
     {                                                                              \
         if (!objectPointer)                                                        \
             return false;                                                          \
-        if (toDerived()->checkSkipForObjectInTerminatingThreadHeap(objectPointer)) \
+        if (!toDerived()->shouldMarkObject(objectPointer))                         \
             return false;                                                          \
         if (isMarked(objectPointer))                                               \
             return false;                                                          \
@@ -130,7 +130,7 @@ protected:
     {                                                                              \
         if (!objectPointer)                                                        \
             return false;                                                          \
-        if (toDerived()->checkSkipForObjectInTerminatingThreadHeap(objectPointer)) \
+        if (!toDerived()->shouldMarkObject(objectPointer))                         \
             return false;                                                          \
         HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);   \
         if (header->isMarked())                                                    \

@@ -58,10 +58,10 @@ public:
 protected:
     // Methods to be called from MarkingVisitorImpl.
 
-    inline bool checkSkipForObjectInTerminatingThreadHeap(const void*)
+    inline bool shouldMarkObject(const void*)
     {
         // As this is global marking visitor, we need to mark all objects.
-        return false;
+        return true;
     }
 
 #if ENABLE(GC_PROFILE_MARKING)

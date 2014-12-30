@@ -549,6 +549,109 @@ private:
     }
 };
 
+class ThreadPersistentHeapTester : public ThreadedTesterBase {
+public:
+    static void test()
+    {
+        ThreadedTesterBase::test(new ThreadPersistentHeapTester);
+    }
+
+protected:
+    class Local final : public GarbageCollected<Local> {
+    public:
+        Local() { }
+
+        void trace(Visitor* visitor) { }
+    };
+
+    class BookEnd;
+
+    class PersistentStore {
+    public:
+        static PersistentStore* create(int count, int* gcCount, BookEnd* bookend)
+        {
+            return new PersistentStore(count, gcCount, bookend);
+        }
+
+        void advance()
+        {
+            (*m_gcCount)++;
+            m_store.removeLast();
+            // Remove reference to BookEnd when there are no Persistent<Local>s left.
+            // The BookEnd object will then be swept out at the next GC, and pre-finalized,
+            // causing this PersistentStore instance to be destructed, along with
+            // the Persistent<BookEnd>. It being the very last Persistent<>, causing the
+            // GC loop in ThreadState::detach() to terminate.
+            if (!m_store.size())
+                m_bookend = nullptr;
+        }
+
+    private:
+        PersistentStore(int count, int* gcCount, BookEnd* bookend)
+        {
+            m_gcCount = gcCount;
+            m_bookend = bookend;
+            for (int i = 0; i < count; ++i)
+                m_store.append(Persistent<ThreadPersistentHeapTester::Local>(new ThreadPersistentHeapTester::Local()));
+        }
+
+        Vector<Persistent<Local>> m_store;
+        Persistent<BookEnd> m_bookend;
+        int* m_gcCount;
+    };
+
+    class BookEnd final : public GarbageCollected<BookEnd> {
+        USING_PRE_FINALIZER(BookEnd, dispose);
+    public:
+        BookEnd()
+            : m_store(nullptr)
+        {
+            ThreadState::current()->registerPreFinalizer(*this);
+        }
+
+        void initialize(PersistentStore* store)
+        {
+            m_store = store;
+        }
+
+        void dispose()
+        {
+            delete m_store;
+        }
+
+        void trace(Visitor* visitor)
+        {
+            ASSERT(m_store);
+            m_store->advance();
+        }
+
+    private:
+        PersistentStore* m_store;
+    };
+
+    virtual void runThread() override
+    {
+        ThreadState::attach();
+
+        const int iterations = 5;
+        int gcCount = 0;
+        BookEnd* bookend = new BookEnd();
+        PersistentStore* store = PersistentStore::create(iterations, &gcCount, bookend);
+        bookend->initialize(store);
+
+        bookend = nullptr;
+        store = nullptr;
+
+        // Upon thread detach, GCs will run until all persistents have been
+        // released. We verify that the draining of persistents proceeds
+        // as expected by dropping one Persistent<> per GC until there
+        // are none left.
+        ThreadState::detach();
+        EXPECT_EQ(iterations, gcCount);
+        atomicDecrement(&m_threadsToFinish);
+    }
+};
+
 // The accounting for memory includes the memory used by rounding up object
 // sizes. This is done in a different way on 32 bit and 64 bit, so we have to
 // have some slack in the tests.
@@ -1516,6 +1619,11 @@ TEST(HeapTest, Threading)
 TEST(HeapTest, ThreadedWeakness)
 {
     ThreadedWeaknessTester::test();
+}
+
+TEST(HeapTest, ThreadPersistent)
+{
+    ThreadPersistentHeapTester::test();
 }
 
 TEST(HeapTest, BasicFunctionality)
