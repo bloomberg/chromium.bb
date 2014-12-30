@@ -85,7 +85,7 @@ def extract_frames(video, directory, full_resolution):
         if full_resolution:
             scale = ''
         command = ['ffmpeg', '-v', 'debug', '-i', video, '-vsync',  '0',
-                   '-vf', decimate + '=hi=0:lo=0:frac=0' + scale,
+                   '-vf', decimate + '=0:0:0:0' + scale,
                    os.path.join(directory, 'img-%d.png')]
         logging.debug(' '.join(command))
         lines = []
