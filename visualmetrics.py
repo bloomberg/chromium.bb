@@ -316,12 +316,17 @@ def clean_directory(directory):
 def is_orange_frame(file, orange_file):
     orange = False
     if os.path.isfile(orange_file):
-        command = 'convert "{0}" ( "{1}" -gravity Center -crop 80x50%+0+0 -resize 200x200! ) miff:- | ' \
-                  'compare -metric AE - -fuzz 10% null:'.format(orange_file, file)
+        command = ('convert "{0}" "(" "{1}" -gravity Center -crop 80x50%+0+0 ' \
+                   '-resize "200x200!" ")" miff:- | ' \
+                   'compare -metric AE - -fuzz 10% null:').format(
+                orange_file, file)
+        logging.debug(command)
         compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
         out, err = compare.communicate()
         if re.match('^[0-9]+$', err):
             different_pixels = int(err)
+            logging.debug('{0} is {1:.2f}% orange'.format(
+                    file, 100 - different_pixels/400.0))
             if different_pixels < 100:
                 orange = True
 
