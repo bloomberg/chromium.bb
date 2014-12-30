@@ -21,7 +21,6 @@ _ACTION_NAMES_WHITE_LIST = (
   '',
   'RunSmoothness',
   'RunPageInteractions',
-  'RunNavigateSteps',
 )
 
 

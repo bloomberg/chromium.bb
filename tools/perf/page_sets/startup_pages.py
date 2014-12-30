@@ -15,6 +15,10 @@ class StartedPage(page_module.Page):
   def RunNavigateSteps(self, action_runner):
     action_runner.Wait(10)
 
+  def RunPageInteractions(self, action_runner):
+    self.RunPageInteractions(action_runner)
+
+
 class StartupPagesPageSet(page_set_module.PageSet):
 
   """ Pages for testing starting Chrome with a URL.

@@ -52,4 +52,4 @@ class StartWithUrl(Startup):
 
   def __init__(self, cold=False):
     super(StartWithUrl, self).__init__(cold=cold,
-                                       action_name_to_run='RunNavigateSteps')
+                                       action_name_to_run='RunPageInteractions')
