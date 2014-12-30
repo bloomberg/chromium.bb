@@ -342,9 +342,21 @@ setup_tty(struct weston_launcher *launcher, int tty)
 		goto err_close;
 	}
 
+	/*
+	 * SIGRTMIN is used as global VT-acquire+release signal. Note that
+	 * SIGRT* must be tested on runtime, as their exact values are not
+	 * known at compile-time. POSIX requires 32 of them to be available.
+	 */
+	if (SIGRTMIN > SIGRTMAX) {
+		weston_log("not enough RT signals available: %u-%u\n",
+			   SIGRTMIN, SIGRTMAX);
+		ret = -EINVAL;
+		goto err_close;
+	}
+
 	mode.mode = VT_PROCESS;
-	mode.relsig = SIGUSR1;
-	mode.acqsig = SIGUSR1;
+	mode.relsig = SIGRTMIN;
+	mode.acqsig = SIGRTMIN;
 	if (ioctl(launcher->tty, VT_SETMODE, &mode) < 0) {
 		weston_log("failed to take control of vt handling\n");
 		goto err_close;
@@ -352,7 +364,7 @@ setup_tty(struct weston_launcher *launcher, int tty)
 
 	loop = wl_display_get_event_loop(launcher->compositor->wl_display);
 	launcher->vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, launcher);
+		wl_event_loop_add_signal(loop, SIGRTMIN, vt_handler, launcher);
 	if (!launcher->vt_source)
 		goto err_close;
 
