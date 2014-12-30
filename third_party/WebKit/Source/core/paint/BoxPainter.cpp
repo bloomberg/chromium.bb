@@ -1938,7 +1938,8 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
                     // when painting the shadow. On the other hand, it introduces subpixel gaps along the
                     // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
                     // by one pixel.
-                    if (hasOpaqueBackground) {
+                    // When Slimming Paint is enabled, turn off this heuristic. See crbug.com/382491 for details.
+                    if (hasOpaqueBackground && !RuntimeEnabledFeatures::slimmingPaintEnabled()) {
                         // FIXME: The function to decide on the policy based on the transform should be a named function.
                         // FIXME: It's not clear if this check is right. What about integral scale factors?
                         // FIXME: See crbug.com/382491. The use of getCTM may also be wrong because it does not include
