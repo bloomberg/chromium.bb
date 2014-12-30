@@ -51,7 +51,7 @@ weston_logind_activate_vt(struct weston_logind *wl, int vt);
 int
 weston_logind_connect(struct weston_logind **out,
 		      struct weston_compositor *compositor,
-		      const char *seat_id, int tty);
+		      const char *seat_id, int tty, bool sync_drm);
 
 void
 weston_logind_destroy(struct weston_logind *wl);
@@ -107,7 +107,7 @@ weston_logind_activate_vt(struct weston_logind *wl, int vt)
 static inline int
 weston_logind_connect(struct weston_logind **out,
 		      struct weston_compositor *compositor,
-		      const char *seat_id, int tty)
+		      const char *seat_id, int tty, bool sync_drm)
 {
 	return -ENOSYS;
 }

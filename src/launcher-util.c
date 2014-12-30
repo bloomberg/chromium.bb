@@ -386,7 +386,7 @@ weston_launcher_activate_vt(struct weston_launcher *launcher, int vt)
 
 struct weston_launcher *
 weston_launcher_connect(struct weston_compositor *compositor, int tty,
-			const char *seat_id)
+			const char *seat_id, bool sync_drm)
 {
 	struct weston_launcher *launcher;
 	struct wl_event_loop *loop;
@@ -418,7 +418,7 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty,
 		}
 	} else {
 		r = weston_logind_connect(&launcher->logind, compositor,
-					  seat_id, tty);
+					  seat_id, tty, sync_drm);
 		if (r < 0) {
 			launcher->logind = NULL;
 			if (geteuid() == 0) {

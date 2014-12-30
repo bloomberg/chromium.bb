@@ -51,6 +51,7 @@
 
 struct weston_logind {
 	struct weston_compositor *compositor;
+	bool sync_drm;
 	char *seat;
 	char *sid;
 	unsigned int vtnr;
@@ -315,8 +316,12 @@ get_active_cb(DBusPendingCall *pending, void *data)
 		goto err_unref;
 
 	dbus_message_iter_get_basic(&sub, &b);
-	if (!b)
-		weston_logind_set_active(wl, false);
+
+	/* If the backend requested DRM master-device synchronization, we only
+	 * wake-up the compositor once the master-device is up and running. For
+	 * other backends, we immediately forward the Active-change event. */
+	if (!wl->sync_drm || !b)
+		weston_logind_set_active(wl, b);
 
 err_unref:
 	dbus_message_unref(m);
@@ -490,7 +495,7 @@ device_paused(struct weston_logind *wl, DBusMessage *m)
 	if (!strcmp(type, "pause"))
 		weston_logind_pause_device_complete(wl, major, minor);
 
-	if (major == DRM_MAJOR)
+	if (wl->sync_drm && major == DRM_MAJOR)
 		weston_logind_set_active(wl, false);
 }
 
@@ -516,7 +521,7 @@ device_resumed(struct weston_logind *wl, DBusMessage *m)
 	 * there is no need for us to handle this event for evdev. For DRM, we
 	 * notify the compositor to wake up. */
 
-	if (major == DRM_MAJOR)
+	if (wl->sync_drm && major == DRM_MAJOR)
 		weston_logind_set_active(wl, true);
 }
 
@@ -835,7 +840,7 @@ weston_logind_destroy_vt(struct weston_logind *wl)
 WL_EXPORT int
 weston_logind_connect(struct weston_logind **out,
 		      struct weston_compositor *compositor,
-		      const char *seat_id, int tty)
+		      const char *seat_id, int tty, bool sync_drm)
 {
 	struct weston_logind *wl;
 	struct wl_event_loop *loop;
@@ -849,6 +854,7 @@ weston_logind_connect(struct weston_logind **out,
 	}
 
 	wl->compositor = compositor;
+	wl->sync_drm = sync_drm;
 
 	wl->seat = strdup(seat_id);
 	if (!wl->seat) {
