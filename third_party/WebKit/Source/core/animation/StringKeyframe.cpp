@@ -163,7 +163,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
     case CSSPropertyTransformOrigin:
         if (LengthPoint3DStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPoint3DStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+            return LengthPoint3DStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
         break;
 
     default:

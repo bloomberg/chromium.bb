@@ -17,9 +17,9 @@ bool LengthPoint3DStyleInterpolation::canCreateFrom(const CSSValue& value)
         return false;
     const CSSValueList& valueList = toCSSValueList(value);
     return valueList.length() == 3
-        && toCSSPrimitiveValue(valueList.item(0))->isLength()
-        && toCSSPrimitiveValue(valueList.item(1))->isLength()
-        && toCSSPrimitiveValue(valueList.item(2))->isLength();
+        && LengthStyleInterpolation::canCreateFrom(*valueList.item(0))
+        && LengthStyleInterpolation::canCreateFrom(*valueList.item(1))
+        && LengthStyleInterpolation::canCreateFrom(*valueList.item(2));
 }
 
 PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPoint3DStyleInterpolation::lengthPoint3DtoInterpolableValue(const CSSValue& value)
@@ -48,7 +48,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthPoint3DStyleInterpolation::interpolableVa
     const int sizeOfList = 3;
 
     for (size_t i = 0; i < sizeOfList; i++)
-        result->append(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), ValueRangeNonNegative));
+        result->append(LengthStyleInterpolation::interpolableValueToLength(lengthPoint3D->get(i), ValueRangeAll));
 
     return result.release();
 }

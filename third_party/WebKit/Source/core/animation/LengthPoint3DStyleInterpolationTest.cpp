@@ -81,4 +81,15 @@ TEST_F(AnimationLengthPoint3DStyleInterpolationTest, MultipleValuePoint3D)
     testPrimitiveValue(value, 10, 30, 20, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_EMS);
 }
 
+TEST_F(AnimationLengthPoint3DStyleInterpolationTest, NegativeValuePoint3D)
+{
+    RefPtrWillBeRawPtr<CSSValueList> lengthPoint3DPx = CSSValueList::createCommaSeparated();
+    lengthPoint3DPx->append(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PX));
+    lengthPoint3DPx->append(CSSPrimitiveValue::create(-30, CSSPrimitiveValue::CSS_PERCENTAGE));
+    lengthPoint3DPx->append(CSSPrimitiveValue::create(-20, CSSPrimitiveValue::CSS_EMS));
+    RefPtrWillBeRawPtr<CSSValue> value = roundTrip(lengthPoint3DPx.release());
+    testPrimitiveValue(value, -10, -30, -20, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_EMS);
+}
+
+
 }
