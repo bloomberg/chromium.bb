@@ -100,7 +100,8 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
   }
 }
 
-TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
+// http://crbug.com/425745
+TEST_F(MacUtilTest, DISABLED_TestExcludeFileFromBackups) {
   // The file must already exist in order to set its exclusion property.
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
