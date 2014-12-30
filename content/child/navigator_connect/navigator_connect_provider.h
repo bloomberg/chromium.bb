@@ -18,8 +18,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
-template <typename T1, typename T2>
-class WebCallbacks;
 class WebMessagePortChannel;
 class WebString;
 }
@@ -50,7 +48,7 @@ class NavigatorConnectProvider : public blink::WebNavigatorConnectProvider,
   virtual void connect(const blink::WebURL& target_url,
                        const blink::WebString& origin,
                        blink::WebMessagePortChannel* port,
-                       blink::WebCallbacks<void, void>* callbacks);
+                       blink::WebNavigatorConnectCallbacks* callbacks);
 
   void OnMessageReceived(const IPC::Message& msg);
 
@@ -68,7 +66,7 @@ class NavigatorConnectProvider : public blink::WebNavigatorConnectProvider,
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_loop_;
-  typedef blink::WebCallbacks<void, void> ConnectCallback;
+  typedef blink::WebNavigatorConnectCallbacks ConnectCallback;
   IDMap<ConnectCallback, IDMapOwnPointer> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorConnectProvider);

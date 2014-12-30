@@ -11,7 +11,6 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/navigator_connect_messages.h"
 #include "content/common/navigator_connect_types.h"
-#include "third_party/WebKit/public/platform/WebCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
@@ -67,7 +66,7 @@ void NavigatorConnectProvider::connect(
     const blink::WebURL& target_url,
     const blink::WebString& origin,
     blink::WebMessagePortChannel* port,
-    blink::WebCallbacks<void, void>* callbacks) {
+    blink::WebNavigatorConnectCallbacks* callbacks) {
   int request_id = requests_.Add(callbacks);
 
   WebMessagePortChannelImpl* webchannel =
