@@ -55,7 +55,7 @@ static unsigned nextSequenceNumber()
 PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationNode* content)
 {
     RefPtrWillBeRawPtr<AnimationPlayer> player = adoptRefWillBeNoop(new AnimationPlayer(executionContext, timeline, content));
-    player->uncancel();
+    player->play();
     timeline.document()->compositorPendingAnimations().add(player.get());
     player->suspendIfNeeded();
     return player.release();
@@ -79,6 +79,7 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_compositorPending(true)
     , m_compositorGroup(0)
     , m_currentTimePending(false)
+    , m_stateIsBeingUpdated(false)
 {
     if (m_content) {
         if (m_content->player()) {
@@ -483,7 +484,16 @@ void AnimationPlayer::play()
     if (!playing())
         m_startTime = nullValue();
 
-    uncancel();
+    if (playStateInternal() == Idle) {
+        // We may not go into the pending state, but setting it to something other
+        // than Idle here will force an update.
+        ASSERT(isNull(m_startTime));
+        m_playState = Pending;
+        m_held = true;
+        m_holdTime = 0;
+    }
+
+    m_finished = false;
     unpauseInternal();
     if (!m_content)
         return;
@@ -492,7 +502,6 @@ void AnimationPlayer::play()
         setCurrentTimeInternal(0, TimingUpdateOnDemand);
     else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd()))
         setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
-    m_finished = false;
 }
 
 void AnimationPlayer::reverse()
@@ -501,7 +510,6 @@ void AnimationPlayer::reverse()
         return;
     }
 
-    uncancel();
     setPlaybackRateInternal(-m_playbackRate);
     play();
 }
@@ -517,8 +525,6 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "AnimationPlayer has source content whose end time is infinity.");
         return;
     }
-
-    uncancel();
 
     double newCurrentTime = m_playbackRate < 0 ? 0 : sourceEnd();
     setCurrentTimeInternal(newCurrentTime, TimingUpdateOnDemand);
@@ -739,20 +745,17 @@ void AnimationPlayer::cancel()
         toAnimation(m_content.get())->downgradeToNormalAnimation();
 }
 
-void AnimationPlayer::uncancel()
+void AnimationPlayer::beginUpdatingState()
 {
-    PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
+    // Nested calls are not allowed!
+    ASSERT(!m_stateIsBeingUpdated);
+    m_stateIsBeingUpdated = true;
+}
 
-    if (playStateInternal() != Idle)
-        return;
-
-    // We may not go into the pending state, but setting it to something other
-    // than Idle here will force an update.
-    ASSERT(isNull(m_startTime));
-    m_playState = Pending;
-    m_held = true;
-    m_holdTime = 0;
-    m_finished = false;
+void AnimationPlayer::endUpdatingState()
+{
+    ASSERT(m_stateIsBeingUpdated);
+    m_stateIsBeingUpdated = false;
 }
 
 AnimationPlayer::PlayStateUpdateScope::PlayStateUpdateScope(AnimationPlayer& player, TimingUpdateReason reason, CompositorPendingChange compositorPendingChange)
@@ -760,6 +763,7 @@ AnimationPlayer::PlayStateUpdateScope::PlayStateUpdateScope(AnimationPlayer& pla
     , m_initial(m_player->playStateInternal())
     , m_compositorPendingChange(compositorPendingChange)
 {
+    m_player->beginUpdatingState();
     m_player->updateCurrentTimingState(reason);
 }
 
@@ -810,6 +814,7 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
         ASSERT_NOT_REACHED();
         break;
     }
+    m_player->endUpdatingState();
 }
 
 

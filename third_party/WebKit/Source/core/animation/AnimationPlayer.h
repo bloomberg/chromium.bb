@@ -171,10 +171,11 @@ private:
     double calculateCurrentTime() const;
 
     void unpauseInternal();
-    void uncancel();
     void setPlaybackRateInternal(double);
     void updateCurrentTimingState(TimingUpdateReason);
 
+    void beginUpdatingState();
+    void endUpdatingState();
 
     AnimationPlayState m_playState;
     double m_playbackRate;
@@ -248,6 +249,7 @@ private:
     int m_compositorGroup;
 
     bool m_currentTimePending;
+    bool m_stateIsBeingUpdated;
 };
 
 } // namespace blink
