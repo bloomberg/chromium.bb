@@ -199,11 +199,6 @@ class CC_EXPORT PictureLayerTiling {
     gfx::Rect geometry_rect() const;
     // Texture rect (in texels) for geometry_rect
     gfx::RectF texture_rect() const;
-    gfx::Size texture_size() const;
-
-    // Full rect (including borders) of the current tile, always in the space
-    // of content_rect, regardless of the contents scale of the tiling.
-    gfx::Rect full_tile_geometry_rect() const;
 
     Tile* operator->() const { return current_tile_; }
     Tile* operator*() const { return current_tile_; }

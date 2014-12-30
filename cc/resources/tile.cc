@@ -18,14 +18,14 @@ Tile::Id Tile::s_next_id_ = 0;
 
 Tile::Tile(TileManager* tile_manager,
            RasterSource* raster_source,
-           const gfx::Size& tile_size,
+           const gfx::Size& desired_texture_size,
            const gfx::Rect& content_rect,
            float contents_scale,
            int layer_id,
            int source_frame_number,
            int flags)
     : RefCountedManaged<Tile>(tile_manager),
-      size_(tile_size),
+      desired_texture_size_(desired_texture_size),
       content_rect_(content_rect),
       contents_scale_(contents_scale),
       layer_id_(layer_id),

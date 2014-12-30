@@ -130,8 +130,6 @@ class PictureLayerTilingIteratorTest : public testing::Test {
       EXPECT_GE(texture_rect.y(), 0);
       EXPECT_LE(texture_rect.right(), client_.TileSize().width());
       EXPECT_LE(texture_rect.bottom(), client_.TileSize().height());
-
-      EXPECT_EQ(iter.texture_size(), client_.TileSize());
     }
 
     // The entire rect must be filled by geometry from the tiling.

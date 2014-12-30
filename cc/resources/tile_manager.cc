@@ -522,7 +522,7 @@ void TileManager::AssignGpuMemoryToTiles(
     MemoryUsage memory_required_by_tile_to_be_scheduled;
     if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
-          tile->size(), resource_pool_->resource_format());
+          tile->desired_texture_size(), resource_pool_->resource_format());
     }
 
     bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
@@ -658,7 +658,7 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
 
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
   scoped_ptr<ScopedResource> resource =
-      resource_pool_->AcquireResource(tile->size());
+      resource_pool_->AcquireResource(tile->desired_texture_size());
   const ScopedResource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.
@@ -746,21 +746,17 @@ void TileManager::OnRasterTaskCompleted(
   client_->NotifyTileStateChanged(tile);
 }
 
-scoped_refptr<Tile> TileManager::CreateTile(RasterSource* raster_source,
-                                            const gfx::Size& tile_size,
-                                            const gfx::Rect& content_rect,
-                                            float contents_scale,
-                                            int layer_id,
-                                            int source_frame_number,
-                                            int flags) {
-  scoped_refptr<Tile> tile = make_scoped_refptr(new Tile(this,
-                                                         raster_source,
-                                                         tile_size,
-                                                         content_rect,
-                                                         contents_scale,
-                                                         layer_id,
-                                                         source_frame_number,
-                                                         flags));
+scoped_refptr<Tile> TileManager::CreateTile(
+    RasterSource* raster_source,
+    const gfx::Size& desired_texture_size,
+    const gfx::Rect& content_rect,
+    float contents_scale,
+    int layer_id,
+    int source_frame_number,
+    int flags) {
+  scoped_refptr<Tile> tile = make_scoped_refptr(
+      new Tile(this, raster_source, desired_texture_size, content_rect,
+               contents_scale, layer_id, source_frame_number, flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile.get();
@@ -907,7 +903,8 @@ TileManager::MemoryUsage TileManager::MemoryUsage::FromConfig(
 TileManager::MemoryUsage TileManager::MemoryUsage::FromTile(const Tile* tile) {
   const TileDrawInfo& draw_info = tile->draw_info();
   if (draw_info.resource_) {
-    return MemoryUsage::FromConfig(tile->size(), draw_info.resource_->format());
+    return MemoryUsage::FromConfig(draw_info.resource_->size(),
+                                   draw_info.resource_->format());
   }
   return MemoryUsage();
 }

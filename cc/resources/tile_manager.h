@@ -114,7 +114,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   void UpdateVisibleTiles();
 
   scoped_refptr<Tile> CreateTile(RasterSource* raster_source,
-                                 const gfx::Size& tile_size,
+                                 const gfx::Size& desired_texture_size,
                                  const gfx::Rect& content_rect,
                                  float contents_scale,
                                  int layer_id,
@@ -131,7 +131,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
-      draw_info.resource_ = resource_pool_->AcquireResource(tiles[i]->size());
+      draw_info.resource_ =
+          resource_pool_->AcquireResource(tiles[i]->desired_texture_size());
     }
   }
 

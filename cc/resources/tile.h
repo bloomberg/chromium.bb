@@ -127,7 +127,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   size_t GPUMemoryUsageInBytes() const;
 
-  gfx::Size size() const { return size_; }
+  gfx::Size desired_texture_size() const { return desired_texture_size_; }
 
   void set_tiling_index(int i, int j) {
     tiling_i_index_ = i;
@@ -146,7 +146,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   // Methods called by by tile manager.
   Tile(TileManager* tile_manager,
        RasterSource* raster_source,
-       const gfx::Size& tile_size,
+       const gfx::Size& desired_texture_size,
        const gfx::Rect& content_rect,
        float contents_scale,
        int layer_id,
@@ -157,7 +157,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   bool HasRasterTask() const { return !!raster_task_.get(); }
 
   scoped_refptr<RasterSource> raster_source_;
-  gfx::Size size_;
+  gfx::Size desired_texture_size_;
   gfx::Rect content_rect_;
   float contents_scale_;
   bool is_occluded_[NUM_TREES];

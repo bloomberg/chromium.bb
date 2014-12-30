@@ -372,12 +372,6 @@ gfx::RectF PictureLayerTilingSet::CoverageIterator::texture_rect() const {
   return tiling_iter_.texture_rect();
 }
 
-gfx::Size PictureLayerTilingSet::CoverageIterator::texture_size() const {
-  if (!tiling_iter_)
-    return gfx::Size();
-  return tiling_iter_.texture_size();
-}
-
 Tile* PictureLayerTilingSet::CoverageIterator::operator->() const {
   if (!tiling_iter_)
     return NULL;

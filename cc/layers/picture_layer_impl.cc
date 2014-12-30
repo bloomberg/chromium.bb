@@ -342,15 +342,10 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
           TileDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
-          quad->SetNew(shared_quad_state,
-                       geometry_rect,
-                       opaque_rect,
-                       visible_geometry_rect,
-                       draw_info.get_resource_id(),
-                       texture_rect,
-                       iter.texture_size(),
-                       draw_info.contents_swizzled(),
-                       nearest_neighbor_);
+          quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
+                       visible_geometry_rect, draw_info.get_resource_id(),
+                       texture_rect, draw_info.resource_size(),
+                       draw_info.contents_swizzled(), nearest_neighbor_);
           has_draw_quad = true;
           break;
         }
@@ -371,9 +366,10 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           PictureDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
           quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
-                       visible_geometry_rect, texture_rect, iter.texture_size(),
-                       nearest_neighbor_, format, iter->content_rect(),
-                       iter->contents_scale(), raster_source_);
+                       visible_geometry_rect, texture_rect,
+                       iter->desired_texture_size(), nearest_neighbor_, format,
+                       iter->content_rect(), iter->contents_scale(),
+                       raster_source_);
           has_draw_quad = true;
           break;
         }
@@ -789,7 +785,7 @@ void PictureLayerImpl::GetContentsResourceId(
   }
 
   *resource_id = draw_info.get_resource_id();
-  *resource_size = iter.texture_size();
+  *resource_size = draw_info.resource_size();
 }
 
 void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {

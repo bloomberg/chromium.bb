@@ -126,8 +126,6 @@ class CC_EXPORT PictureLayerTilingSet {
     gfx::Rect geometry_rect() const;
     // Texture rect (in texels) for geometry_rect
     gfx::RectF texture_rect() const;
-    // Texture size in texels
-    gfx::Size texture_size() const;
 
     Tile* operator->() const;
     Tile* operator*() const;
