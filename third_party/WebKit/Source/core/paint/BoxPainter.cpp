@@ -74,7 +74,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
         return;
 
     RenderStyle* style = m_renderBox.style();
-    BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), m_renderBox.backgroundShouldAlwaysBeClipped(), paintInfo.context);
+    BoxDecorationData boxDecorationData(m_renderBox, paintInfo.context);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.
@@ -231,6 +231,7 @@ void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, RenderObj
 // include scales applied at raster time, such as the device zoom.
 static LayoutRect shrinkRectByOnePixel(GraphicsContext* context, const LayoutRect& rect)
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
     LayoutRect shrunkRect = rect;
     AffineTransform transform = context->getCTM();
     shrunkRect.inflateX(-static_cast<LayoutUnit>(ceil(1 / transform.xScale())));

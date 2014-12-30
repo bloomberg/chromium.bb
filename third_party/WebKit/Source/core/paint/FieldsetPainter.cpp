@@ -40,7 +40,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     if (recorder.canUseCachedDrawing())
         return;
 
-    BoxDecorationData boxDecorationData(*m_renderFieldset.style(), m_renderFieldset.canRenderBorderImage(), m_renderFieldset.backgroundHasOpaqueTopLayer(), m_renderFieldset.backgroundShouldAlwaysBeClipped(), paintInfo.context);
+    BoxDecorationData boxDecorationData(m_renderFieldset, paintInfo.context);
 
     if (boxDecorationData.bleedAvoidance() == BackgroundBleedNone)
         BoxPainter::paintBoxShadow(paintInfo, paintRect, m_renderFieldset.style(), Normal);

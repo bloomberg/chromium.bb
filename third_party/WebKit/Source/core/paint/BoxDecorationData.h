@@ -10,13 +10,13 @@
 
 namespace blink {
 
-class RenderStyle;
+class RenderBox;
 class GraphicsContext;
 
 // Information extracted from RenderStyle for box painting.
 class BoxDecorationData {
 public:
-    BoxDecorationData(const RenderStyle&, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext*);
+    BoxDecorationData(const RenderBox&, GraphicsContext*);
 
     Color backgroundColor;
     bool hasBackground;
@@ -25,7 +25,7 @@ public:
     BackgroundBleedAvoidance bleedAvoidance() { return static_cast<BackgroundBleedAvoidance>(m_bleedAvoidance); }
 
 private:
-    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const RenderStyle&, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext*);
+    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const RenderBox&, GraphicsContext*);
     bool borderObscuresBackgroundEdge(const RenderStyle&, const FloatSize& contextScale) const;
     unsigned m_bleedAvoidance : 2; // BackgroundBleedAvoidance
 };

@@ -1,5 +1,3 @@
-
-
 crbug.com/443780 virtual/slimmingpaint/fast/events/option-tab.html [ Failure ]
 crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-click-hyperlink.html [ Failure ]
 crbug.com/443780 virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
@@ -138,6 +136,30 @@ crbug.com/411164 [ Win ] http/tests/serviceworker/registration-on-insecure-origi
 # crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
+
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-circle.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-huge-assert.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-percent.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-wide-border-01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-wide-border-05.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-with-composited-child.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusAllStylesAllCorners.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusArcs01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusDouble02.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusDouble03.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusGroove01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusGroove02.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusInset01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusInvalidColor.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusOutset01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusRidge01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusSolid01.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusSolid02.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/borderRadiusSolid03.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/overflow/border-radius-clipping.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/overflow/overflow-update-transform.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/table/table-with-border-radius.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-border.html [ NeedsRebaseline ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 # crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]

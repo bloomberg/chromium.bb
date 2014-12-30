@@ -5,33 +5,45 @@
 #include "config.h"
 #include "core/paint/BoxDecorationData.h"
 
+#include "core/rendering/RenderBox.h"
 #include "core/rendering/style/BorderEdge.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
-BoxDecorationData::BoxDecorationData(const RenderStyle& style, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext* context)
+BoxDecorationData::BoxDecorationData(const RenderBox& renderBox, GraphicsContext* context)
 {
-    backgroundColor = style.visitedDependentColor(CSSPropertyBackgroundColor);
-    hasBackground = backgroundColor.alpha() || style.hasBackgroundImage();
-    ASSERT(hasBackground == style.hasBackground());
-    hasBorder = style.hasBorder();
-    hasAppearance = style.hasAppearance();
+    backgroundColor = renderBox.style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    hasBackground = backgroundColor.alpha() || renderBox.style()->hasBackgroundImage();
+    ASSERT(hasBackground == renderBox.style()->hasBackground());
+    hasBorder = renderBox.style()->hasBorder();
+    hasAppearance = renderBox.style()->hasAppearance();
 
-    m_bleedAvoidance = determineBackgroundBleedAvoidance(style, canRenderBorderImage, backgroundHasOpaqueTopLayer, backgroundShouldAlwaysBeClipped, context);
+    m_bleedAvoidance = determineBackgroundBleedAvoidance(renderBox, context);
 }
 
-BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const RenderStyle& style, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext* context)
+BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const RenderBox& renderBox, GraphicsContext* context)
 {
+    if (renderBox.isDocumentElement())
+        return BackgroundBleedNone;
+
     if (!hasBackground)
         return BackgroundBleedNone;
 
-    if (!hasBorder || !style.hasBorderRadius() || canRenderBorderImage) {
-        if (backgroundShouldAlwaysBeClipped)
+    if (!hasBorder || !renderBox.style()->hasBorderRadius() || renderBox.canRenderBorderImage()) {
+        if (renderBox.backgroundShouldAlwaysBeClipped())
             return BackgroundBleedClipBackground;
         return BackgroundBleedNone;
     }
+
+    // If display lists are enabled (via Slimming Paint), then simply clip the background and do not
+    // perform advanced bleed-avoidance heuristics. These heuristics are not correct in the presence
+    // of impl-side rasterization or layerization, since the actual pixel-relative scaling and rotation
+    // of the content is not known to Blink.
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return BackgroundBleedClipBackground;
 
     // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
     // rasterized, and should not be relied on to make decisions about bleeding.
@@ -52,9 +64,9 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     if (contextScaling.height() > 1)
         contextScaling.setHeight(1);
 
-    if (borderObscuresBackgroundEdge(style, contextScaling))
+    if (borderObscuresBackgroundEdge(*renderBox.style(), contextScaling))
         return BackgroundBleedShrinkBackground;
-    if (!hasAppearance && style.borderObscuresBackground() && backgroundHasOpaqueTopLayer)
+    if (!hasAppearance && renderBox.style()->borderObscuresBackground() && renderBox.backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
     return BackgroundBleedClipBackground;
