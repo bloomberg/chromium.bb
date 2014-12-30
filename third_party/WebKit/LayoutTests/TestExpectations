@@ -47,9 +47,6 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
-crbug.com/445611 [ Mac Win Linux ] fast/dom/Range/getClientRects.html [ NeedsRebaseline ]
-crbug.com/445611 [ Mac Win Linux ] fast/transforms/bounding-rect-zoom.html [ NeedsRebaseline ]
-
 # These tests require virtual-viewport mode to be enabled. Remove this expectation once virtual-viewport
 # lands on desktop platforms.
 crbug.com/148816 [ Mac Win Linux ] fast/dom/Window/window-scaled-viewport-properties.html [ Pass Failure ]

@@ -170,22 +170,22 @@ FAIL rects[6].width should be 171. Was 148.
 FAIL rects[6].height should be 18. Was 19.
 Test 8
 PASS rects.length is 4
-FAIL rects[0].left should be 168. Was 168.5107421875.
-FAIL rects[0].top should be 1678. Was 1625.7960205078125.
-FAIL rects[0].width should be 269. Was 257.528564453125.
-FAIL rects[0].height should be 316. Was 301.7777099609375.
-FAIL rects[1].left should be 137. Was 137.8689727783203.
-FAIL rects[1].top should be 1704. Was 1651.5074462890625.
-FAIL rects[1].width should be 271. Was 257.528564453125.
-FAIL rects[1].height should be 317. Was 301.77783203125.
-FAIL rects[2].left should be 107. Was 107.22718811035156.
-FAIL rects[2].top should be 1729. Was 1677.218994140625.
-FAIL rects[2].width should be 246. Was 258.81414794921875.
-FAIL rects[2].height should be 289. Was 303.309814453125.
-FAIL rects[3].left should be 76. Was 76.58541107177734.
-FAIL rects[3].top should be 1755. Was 1702.9305419921875.
-FAIL rects[3].width should be 212. Was 173.32339477539062.
-FAIL rects[3].height should be 247. Was 201.4259033203125.
+PASS rects[0].left is 168
+FAIL rects[0].top should be 1678. Was 1625.
+FAIL rects[0].width should be 269. Was 259.
+FAIL rects[0].height should be 316. Was 303.
+PASS rects[1].left is 137
+FAIL rects[1].top should be 1704. Was 1651.
+FAIL rects[1].width should be 271. Was 259.
+FAIL rects[1].height should be 317. Was 303.
+PASS rects[2].left is 107
+FAIL rects[2].top should be 1729. Was 1677.
+FAIL rects[2].width should be 246. Was 260.
+FAIL rects[2].height should be 289. Was 304.
+PASS rects[3].left is 76
+FAIL rects[3].top should be 1755. Was 1702.
+FAIL rects[3].width should be 212. Was 174.
+FAIL rects[3].height should be 247. Was 203.
 Test 9
 FAIL rects.length should be 1. Was 0.
 FAIL rects[0].left should be 8. Threw exception TypeError: Cannot read property 'left' of undefined
