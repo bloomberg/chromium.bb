@@ -2,6 +2,7 @@ Tests list of user metrics codes and invocations.
 
 recordActionTaken:
 {
+    AnimationsPlaybackRateChanged : 11
     AuditsStarted : 7
     ConsoleEvaluated : 8
     DeviceModeEnabled : 10
