@@ -242,6 +242,12 @@ CONTENT_EXPORT std::string Base64EncodeUrlSafe(const base::StringPiece& input);
 CONTENT_EXPORT std::string Base64EncodeUrlSafe(
     const std::vector<uint8_t>& input);
 
+// Converts a JWK "key_ops" array to the corresponding WebCrypto usages. Used by
+// testing.
+CONTENT_EXPORT Status
+GetWebCryptoUsagesFromJwkKeyOpsForTest(const base::ListValue* key_ops,
+                                       blink::WebCryptoKeyUsageMask* usages);
+
 }  // namespace webcrypto
 
 }  // namespace content

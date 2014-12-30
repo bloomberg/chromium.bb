@@ -467,7 +467,8 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
   if (!dict->GetList("key_ops", &key_ops))
     return ::testing::AssertionFailure() << "Missing 'key_ops'";
   blink::WebCryptoKeyUsageMask key_ops_mask = 0;
-  Status status = GetWebCryptoUsagesFromJwkKeyOps(key_ops, &key_ops_mask);
+  Status status =
+      GetWebCryptoUsagesFromJwkKeyOpsForTest(key_ops, &key_ops_mask);
   if (status.IsError())
     return ::testing::AssertionFailure() << "Failure extracting 'key_ops'";
   if (key_ops_mask != use_mask_expected)

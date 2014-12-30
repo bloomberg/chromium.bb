@@ -4,11 +4,8 @@
 
 #include "content/child/webcrypto/webcrypto_util.h"
 
-#include <set>
-
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "base/strings/stringprintf.h"
 #include "content/child/webcrypto/status.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -57,82 +54,6 @@ Status GetShaBlockSizeBits(const blink::WebCryptoAlgorithm& algorithm,
 }
 
 }  // namespace
-
-struct JwkToWebCryptoUsage {
-  const char* const jwk_key_op;
-  const blink::WebCryptoKeyUsage webcrypto_usage;
-};
-
-// Keep this ordered according to the definition
-// order of WebCrypto's "recognized key usage
-// values".
-//
-// This is not required for spec compliance,
-// however it makes the ordering of key_ops match
-// that of WebCrypto's Key.usages.
-const JwkToWebCryptoUsage kJwkWebCryptoUsageMap[] = {
-    {"encrypt", blink::WebCryptoKeyUsageEncrypt},
-    {"decrypt", blink::WebCryptoKeyUsageDecrypt},
-    {"sign", blink::WebCryptoKeyUsageSign},
-    {"verify", blink::WebCryptoKeyUsageVerify},
-    {"deriveKey", blink::WebCryptoKeyUsageDeriveKey},
-    {"deriveBits", blink::WebCryptoKeyUsageDeriveBits},
-    {"wrapKey", blink::WebCryptoKeyUsageWrapKey},
-    {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey}};
-
-bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
-                              blink::WebCryptoKeyUsage* usage) {
-  for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
-    if (kJwkWebCryptoUsageMap[i].jwk_key_op == key_op) {
-      *usage = kJwkWebCryptoUsageMap[i].webcrypto_usage;
-      return true;
-    }
-  }
-  return false;
-}
-
-// Composes a Web Crypto usage mask from an array of JWK key_ops values.
-Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
-                                       blink::WebCryptoKeyUsageMask* usages) {
-  // This set keeps track of all unrecognized key_ops values.
-  std::set<std::string> unrecognized_usages;
-
-  *usages = 0;
-  for (size_t i = 0; i < key_ops->GetSize(); ++i) {
-    std::string key_op;
-    if (!key_ops->GetString(i, &key_op)) {
-      return Status::ErrorJwkMemberWrongType(
-          base::StringPrintf("key_ops[%d]", static_cast<int>(i)), "string");
-    }
-
-    blink::WebCryptoKeyUsage usage;
-    if (JwkKeyOpToWebCryptoUsage(key_op, &usage)) {
-      // Ensure there are no duplicate usages.
-      if (*usages & usage)
-        return Status::ErrorJwkDuplicateKeyOps();
-      *usages |= usage;
-    }
-
-    // Reaching here means the usage was unrecognized. Such usages are skipped
-    // over, however they are kept track of in a set to ensure there were no
-    // duplicates.
-    if (!unrecognized_usages.insert(key_op).second)
-      return Status::ErrorJwkDuplicateKeyOps();
-  }
-  return Status::Success();
-}
-
-// Composes a JWK key_ops List from a Web Crypto usage mask.
-// Note: Caller must assume ownership of returned instance.
-base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
-    blink::WebCryptoKeyUsageMask usages) {
-  base::ListValue* jwk_key_ops = new base::ListValue();
-  for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
-    if (usages & kJwkWebCryptoUsageMap[i].webcrypto_usage)
-      jwk_key_ops->AppendString(kJwkWebCryptoUsageMap[i].jwk_key_op);
-  }
-  return jwk_key_ops;
-}
 
 blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(id, NULL);
