@@ -1754,14 +1754,14 @@ void GraphicsContext::setPathFromPoints(SkPath* path, size_t numPoints, const Fl
 
 void GraphicsContext::setRadii(SkVector* radii, FloatSize topLeft, FloatSize topRight, FloatSize bottomRight, FloatSize bottomLeft)
 {
-    radii[SkRRect::kUpperLeft_Corner].set(SkIntToScalar(topLeft.width()),
-        SkIntToScalar(topLeft.height()));
-    radii[SkRRect::kUpperRight_Corner].set(SkIntToScalar(topRight.width()),
-        SkIntToScalar(topRight.height()));
-    radii[SkRRect::kLowerRight_Corner].set(SkIntToScalar(bottomRight.width()),
-        SkIntToScalar(bottomRight.height()));
-    radii[SkRRect::kLowerLeft_Corner].set(SkIntToScalar(bottomLeft.width()),
-        SkIntToScalar(bottomLeft.height()));
+    radii[SkRRect::kUpperLeft_Corner].set(SkFloatToScalar(topLeft.width()),
+        SkFloatToScalar(topLeft.height()));
+    radii[SkRRect::kUpperRight_Corner].set(SkFloatToScalar(topRight.width()),
+        SkFloatToScalar(topRight.height()));
+    radii[SkRRect::kLowerRight_Corner].set(SkFloatToScalar(bottomRight.width()),
+        SkFloatToScalar(bottomRight.height()));
+    radii[SkRRect::kLowerLeft_Corner].set(SkFloatToScalar(bottomLeft.width()),
+        SkFloatToScalar(bottomLeft.height()));
 }
 
 PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(ColorFilter colorFilter)
