@@ -75,14 +75,12 @@ function test()
     {
         InspectorTest.addResult("Is drawer visible: " + WebInspector.inspectorView.drawerVisible());
         InspectorTest.addResult("Selected view in drawer: " + WebInspector.inspectorView.selectedViewInDrawer());
-        promisePane._recordButton.element.click();
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step4));
     }
 
     function step4()
     {
-        promisePane._refreshButton.element.click();
-        InspectorTest.runAfterPendingDispatches(step5);
+        InspectorTest.addSniffer(promisePane._throttler, "_processCompletedForTests", step5);
     }
 
     function step5()

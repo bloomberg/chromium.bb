@@ -206,7 +206,8 @@ InspectorTest.dumpDataGridIntoString = function(dataGrid)
             if (!col.offsetHeight)
                 continue;
             var index = textCols.length;
-            var text = padding(col) + col.textContent;
+            var content = col.textContent || (col.firstChild && col.firstChild.title) || "";
+            var text = padding(col) + content;
             textWidths[index] = Math.max(textWidths[index] || 0, text.length);
             textCols[index] = text;
         }

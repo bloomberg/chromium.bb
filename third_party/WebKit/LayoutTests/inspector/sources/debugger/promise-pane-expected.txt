@@ -4,7 +4,7 @@ Tests promise pane view.
 Set timer for test function.
 Is drawer visible: true
 Selected view in drawer: promises
-promise-pane.html:16   | rejected | <number> ms | |
-  promise-pane.html:36 | resolved | <number> ms | |
-promise-pane.html:24   | resolved | <number> ms | |
+Rejected  | func1   | promise-pane.html:16 | promise-pane.html:16 | <number> ms | |
+Fulfilled |   func3 | promise-pane.html:36 |                      | <number> ms | |
+Fulfilled | func2   | promise-pane.html:24 | promise-pane.html:38 | <number> ms | |
 
