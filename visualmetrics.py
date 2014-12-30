@@ -316,7 +316,7 @@ def clean_directory(directory):
 def is_orange_frame(file, orange_file):
     orange = False
     if os.path.isfile(orange_file):
-        command = ('convert "{0}" "(" "{1}" -gravity Center -crop 80x50%+0+0 ' \
+        command = ('convert "{0}" "(" "{1}" -gravity Center -crop 80x33%+0+0 ' \
                    '-resize "200x200!" ")" miff:- | ' \
                    'compare -metric AE - -fuzz 10% null:').format(
                 orange_file, file)
