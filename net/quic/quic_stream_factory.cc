@@ -428,6 +428,11 @@ int QuicStreamFactory::Job::DoConnect() {
     return ERR_CONNECTION_CLOSED;
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoConnect1"));
+
   session_->StartReading();
   if (!session_->connection()->connected()) {
     return ERR_QUIC_PROTOCOL_ERROR;
@@ -435,6 +440,12 @@ int QuicStreamFactory::Job::DoConnect() {
   bool require_confirmation =
       factory_->require_confirmation() || is_post_ ||
       was_alternate_protocol_recently_broken_;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::Job::DoConnect2"));
+
   rv = session_->CryptoConnect(
       require_confirmation,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
