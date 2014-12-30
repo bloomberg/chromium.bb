@@ -475,7 +475,7 @@
         }],
         ['disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
-            '../mojo/mojo_nacl.gyp:mojo_nacl',
+            '../mojo/mojo_nacl_untrusted.gyp:libmojo',
             '../mojo/mojo_nacl.gyp:monacl_codegen',
             '../mojo/mojo_nacl.gyp:monacl_sel',
             '../mojo/mojo_nacl.gyp:monacl_shell',

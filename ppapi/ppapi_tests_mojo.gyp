@@ -39,7 +39,7 @@
         ],
       },
       'dependencies': [
-        '../mojo/mojo_nacl.gyp:mojo_nacl',
+        '../mojo/mojo_nacl_untrusted.gyp:libmojo',
         '../mojo/mojo_nacl.gyp:monacl_codegen',
         '../native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         'native_client/native_client.gyp:ppapi_lib',
