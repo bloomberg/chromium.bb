@@ -106,15 +106,8 @@ public class AppMenuHandler {
         Point pt = new Point();
         mActivity.getWindowManager().getDefaultDisplay().getSize(pt);
 
-        int menuStartPadding = 0;
-        if (mDelegate.getMenuButtonStartPaddingDimenId() != 0) {
-            menuStartPadding = mActivity.getResources().getDimensionPixelSize(
-                    mDelegate.getMenuButtonStartPaddingDimenId());
-        }
-
         mAppMenu.show(
-                wrapper, anchorView, isByHardwareButton, rotation,
-                appRect, pt.y, menuStartPadding);
+                wrapper, anchorView, isByHardwareButton, rotation, appRect, pt.y);
         mAppMenuDragHelper.onShow(startDragging);
         UmaBridge.menuShow();
         return true;

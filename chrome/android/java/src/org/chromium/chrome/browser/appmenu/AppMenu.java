@@ -87,10 +87,9 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      * @param screenRotation Current device screen rotation.
      * @param visibleDisplayFrame The display area rect in which AppMenu is supposed to fit in.
      * @param screenHeight Current device screen height.
-     * @param menuButtonStartPaddingPx The start padding that should be applied to the menu button.
      */
     void show(Context context, View anchorView, boolean isByHardwareButton, int screenRotation,
-            Rect visibleDisplayFrame, int screenHeight, int menuButtonStartPaddingPx) {
+            Rect visibleDisplayFrame, int screenHeight) {
         mPopup = new ListPopupWindow(context, null, android.R.attr.popupMenuStyle);
         mPopup.setModal(true);
         mPopup.setAnchorView(anchorView);
@@ -154,9 +153,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
-        mAdapter = new AppMenuAdapter(
-                this, menuItems, LayoutInflater.from(context),
-                false, menuButtonStartPaddingPx);
+        mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context));
         mPopup.setAdapter(mAdapter);
 
         setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight, sizingPadding);
