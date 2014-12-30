@@ -42,8 +42,7 @@ namespace autofill {
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      card_unmask_view_(nullptr),
-      weak_pointer_factory_(this) {
+      unmask_controller_(web_contents) {
   DCHECK(web_contents);
 
 #if !defined(OS_ANDROID)
@@ -65,8 +64,6 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
 }
 
 ChromeAutofillClient::~ChromeAutofillClient() {
-  if (card_unmask_view_)
-    card_unmask_view_->ControllerGone();
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
   // requires that the WebContents instance still be valid and it is not at
   // this point (in particular, the WebContentsImpl destructor has already
@@ -111,29 +108,14 @@ void ChromeAutofillClient::ShowAutofillSettings() {
 #endif  // #if defined(OS_ANDROID)
 }
 
-void ChromeAutofillClient::ShowUnmaskPrompt() {
-  card_unmask_view_ = CardUnmaskPromptView::CreateAndShow(this);
+void ChromeAutofillClient::ShowUnmaskPrompt(
+    const CreditCard& card,
+    base::WeakPtr<CardUnmaskDelegate> delegate) {
+  unmask_controller_.ShowPrompt(card, delegate);
 }
 
-content::WebContents* ChromeAutofillClient::GetWebContents() {
-  return web_contents();
-}
-
-void ChromeAutofillClient::OnUnmaskDialogClosed() {
-  card_unmask_view_ = nullptr;
-}
-
-void ChromeAutofillClient::OnUnmaskResponse(const base::string16& cvc) {
-  card_unmask_view_->DisableAndWaitForVerification();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChromeAutofillClient::OnVerificationFailure,
-                            weak_pointer_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(2));
-}
-
-void ChromeAutofillClient::OnVerificationFailure() {
-  if (card_unmask_view_)
-    card_unmask_view_->VerificationFailed();
+void ChromeAutofillClient::OnUnmaskVerificationResult(bool success) {
+  unmask_controller_.OnVerificationResult(success);
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCard(

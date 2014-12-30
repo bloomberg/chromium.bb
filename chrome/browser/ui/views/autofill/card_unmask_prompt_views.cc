@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
@@ -30,7 +29,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::TextfieldController {
  public:
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller)
-      : controller_(controller), cvc_(nullptr), message_label_(nullptr) {}
+      : controller_(controller), cvc_input_(nullptr), message_label_(nullptr) {}
 
   ~CardUnmaskPromptViews() override {
     if (controller_)
@@ -45,27 +44,29 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // CardUnmaskPromptView
   void ControllerGone() override {
     controller_ = nullptr;
-    GetWidget()->Close();
+    ClosePrompt();
   }
 
   void DisableAndWaitForVerification() override {
-    cvc_->SetEnabled(false);
+    cvc_input_->SetEnabled(false);
     message_label_->SetText(base::ASCIIToUTF16("Verifying..."));
     message_label_->SetVisible(true);
     GetDialogClientView()->UpdateDialogButtons();
     Layout();
   }
 
-  void VerificationSucceeded() override {
-    // TODO(estade): implement.
-  }
-
-  void VerificationFailed() override {
-    cvc_->SetEnabled(true);
-    message_label_->SetText(
-        base::ASCIIToUTF16("Verification error. Please try again."));
-    message_label_->SetVisible(true);
-    GetDialogClientView()->UpdateDialogButtons();
+  void GotVerificationResult(bool success) override {
+    if (success) {
+      message_label_->SetText(base::ASCIIToUTF16("Success!"));
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
+                                base::Unretained(this)),
+          base::TimeDelta::FromSeconds(1));
+    } else {
+      cvc_input_->SetEnabled(true);
+      message_label_->SetText(base::ASCIIToUTF16("Verification error."));
+      GetDialogClientView()->UpdateDialogButtons();
+    }
     Layout();
   }
 
@@ -75,11 +76,19 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     return this;
   }
 
+  // views::View
+  gfx::Size GetPreferredSize() const override {
+    // Must hardcode a width so the label knows where to wrap. TODO(estade):
+    // This can lead to a weird looking dialog if we end up getting allocated
+    // more width than we ask for, e.g. if the title is super long.
+    const int kWidth = 250;
+    return gfx::Size(kWidth, GetHeightForWidth(kWidth));
+  }
+
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
 
   base::string16 GetWindowTitle() const override {
-    // TODO(estade): fix this.
-    return base::ASCIIToUTF16("Unlocking Visa - 1111");
+    return controller_->GetWindowTitle();
   }
 
   void DeleteDelegate() override { delete this; }
@@ -104,14 +113,11 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
     DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
 
-    base::string16 input_text;
-    base::TrimWhitespace(cvc_->text(), base::TRIM_ALL, &input_text);
-    return cvc_->enabled() && input_text.size() == 3 &&
-           base::ContainsOnlyChars(input_text,
-                                   base::ASCIIToUTF16("0123456789"));
+    return cvc_input_->enabled() &&
+        controller_->InputTextIsValid(cvc_input_->text());
   }
 
-  views::View* GetInitiallyFocusedView() override { return cvc_; }
+  views::View* GetInitiallyFocusedView() override { return cvc_input_; }
 
   bool Cancel() override {
     return true;
@@ -121,7 +127,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     if (!controller_)
       return true;
 
-    controller_->OnUnmaskResponse(cvc_->text());
+    controller_->OnUnmaskResponse(cvc_input_->text());
     return false;
   }
 
@@ -136,28 +142,32 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     if (has_children())
       return;
 
-    // TODO(estade): for amex, text and CVC image should be different.
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 19, 0, 5));
-    AddChildView(new views::Label(base::ASCIIToUTF16(
-        "Enter the three digit verification code from the back of your credit "
-        "card")));
+    views::Label* instructions =
+        new views::Label(controller_->GetInstructionsMessage());
+
+    instructions->SetMultiLine(true);
+    instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(instructions);
 
     views::View* cvc_container = new views::View();
     cvc_container->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
     AddChildView(cvc_container);
 
-    cvc_ = new views::Textfield();
-    cvc_->set_controller(this);
-    cvc_->set_placeholder_text(
+    cvc_input_ = new views::Textfield();
+    cvc_input_->set_controller(this);
+    cvc_input_->set_placeholder_text(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
-    cvc_->set_default_width_in_chars(10);
-    cvc_container->AddChildView(cvc_);
+    cvc_input_->set_default_width_in_chars(10);
+    cvc_container->AddChildView(cvc_input_);
 
     views::ImageView* cvc_image = new views::ImageView();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    cvc_image->SetImage(rb.GetImageSkiaNamed(IDR_CREDIT_CARD_CVC_HINT));
+
+    cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
+
     cvc_container->AddChildView(cvc_image);
 
     message_label_ = new views::Label();
@@ -165,9 +175,11 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     message_label_->SetVisible(false);
   }
 
+  void ClosePrompt() { GetWidget()->Close(); }
+
   CardUnmaskPromptController* controller_;
 
-  views::Textfield* cvc_;
+  views::Textfield* cvc_input_;
 
   // TODO(estade): this is a temporary standin in place of some spinner UI
   // as well as a better error message.

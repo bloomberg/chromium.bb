@@ -68,6 +68,9 @@ class CreditCard : public AutofillDataModel {
   // the invalid card "4garbage" will be Visa, which has an IIN of 4.
   static const char* GetCreditCardType(const base::string16& number);
 
+  // Type strings are defined at the bottom of this file, e.g. kVisaCard.
+  void SetTypeForMaskedCard(const char* type);
+
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,
                         const std::string& app_locale,

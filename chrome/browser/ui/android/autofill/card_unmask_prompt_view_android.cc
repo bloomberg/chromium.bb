@@ -64,13 +64,13 @@ void CardUnmaskPromptViewAndroid::DisableAndWaitForVerification() {
   Java_CardUnmaskBridge_disableAndWaitForVerification(env, java_object_.obj());
 }
 
-void CardUnmaskPromptViewAndroid::VerificationSucceeded() {
-  // TODO(estade): implement.
-}
-
-void CardUnmaskPromptViewAndroid::VerificationFailed() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CardUnmaskBridge_verificationFailed(env, java_object_.obj());
+void CardUnmaskPromptViewAndroid::GotVerificationResult(bool success) {
+  if (success) {
+    // TODO(estade): implement.
+  } else {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_CardUnmaskBridge_verificationFailed(env, java_object_.obj());
+  }
 }
 
 // static

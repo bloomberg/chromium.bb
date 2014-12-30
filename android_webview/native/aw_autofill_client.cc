@@ -184,7 +184,13 @@ void AwAutofillClient::ShowAutofillSettings() {
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::ShowUnmaskPrompt() {
+void AwAutofillClient::ShowUnmaskPrompt(
+    const autofill::CreditCard& card,
+    base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::OnUnmaskVerificationResult(bool success) {
   NOTIMPLEMENTED();
 }
 

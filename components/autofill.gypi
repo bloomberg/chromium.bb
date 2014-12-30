@@ -147,6 +147,7 @@
         'autofill/core/browser/autofill_type.h',
         'autofill/core/browser/autofill_xml_parser.cc',
         'autofill/core/browser/autofill_xml_parser.h',
+        'autofill/core/browser/card_unmask_delegate.h',
         'autofill/core/browser/contact_info.cc',
         'autofill/core/browser/contact_info.h',
         'autofill/core/browser/credit_card.cc',

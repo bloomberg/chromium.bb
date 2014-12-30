@@ -10,8 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
+#include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -36,8 +35,7 @@ class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
       public content::WebContentsObserver,
-      public ui_zoom::ZoomObserver,
-      public CardUnmaskPromptController {
+      public ui_zoom::ZoomObserver {
  public:
   ~ChromeAutofillClient() override;
 
@@ -50,7 +48,9 @@ class ChromeAutofillClient
   PrefService* GetPrefs() override;
   void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
-  void ShowUnmaskPrompt() override;
+  void ShowUnmaskPrompt(const CreditCard& card,
+                        base::WeakPtr<CardUnmaskDelegate> delegate) override;
+  void OnUnmaskVerificationResult(bool success) override;
   void ConfirmSaveCreditCard(const base::Closure& save_card_callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
@@ -90,11 +90,6 @@ class ChromeAutofillClient
     dialog_controller_ = dialog_controller;
   }
 
-  // CardUnmaskPromptController implementation.
-  content::WebContents* GetWebContents() override;
-  void OnUnmaskDialogClosed() override;
-  void OnUnmaskResponse(const base::string16& cvc) override;
-
  private:
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Creates |bridge_wrapper_|, which is responsible for dealing with Keystone
@@ -105,14 +100,12 @@ class ChromeAutofillClient
   void UnregisterFromKeystoneNotifications();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-  // The CVC the user entered failed to authenticate the masked card.
-  void OnVerificationFailure();
-
   explicit ChromeAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeAutofillClient>;
 
   base::WeakPtr<AutofillDialogController> dialog_controller_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
+  CardUnmaskPromptControllerImpl unmask_controller_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Listens to Keystone notifications and passes relevant ones on to the
@@ -124,10 +117,6 @@ class ChromeAutofillClient
   // scoped_ptr.
   AutofillKeystoneBridgeWrapper* bridge_wrapper_;
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-  CardUnmaskPromptView* card_unmask_view_;
-
-  base::WeakPtrFactory<ChromeAutofillClient> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

@@ -31,7 +31,12 @@ void TestAutofillClient::HideRequestAutocompleteDialog() {
 void TestAutofillClient::ShowAutofillSettings() {
 }
 
-void TestAutofillClient::ShowUnmaskPrompt() {
+void TestAutofillClient::ShowUnmaskPrompt(
+    const CreditCard& card,
+    base::WeakPtr<CardUnmaskDelegate> delegate) {
+}
+
+void TestAutofillClient::OnUnmaskVerificationResult(bool success) {
 }
 
 void TestAutofillClient::ConfirmSaveCreditCard(

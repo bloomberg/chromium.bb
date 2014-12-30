@@ -19,8 +19,7 @@ class CardUnmaskPromptView {
 
   virtual void ControllerGone() = 0;
   virtual void DisableAndWaitForVerification() = 0;
-  virtual void VerificationSucceeded() = 0;
-  virtual void VerificationFailed() = 0;
+  virtual void GotVerificationResult(bool success) = 0;
 
  protected:
   CardUnmaskPromptView();

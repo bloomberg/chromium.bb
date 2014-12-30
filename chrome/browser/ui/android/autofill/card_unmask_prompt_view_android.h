@@ -26,8 +26,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
   // CardUnmaskPromptView implementation.
   void ControllerGone() override;
   void DisableAndWaitForVerification() override;
-  void VerificationSucceeded() override;
-  void VerificationFailed() override;
+  void GotVerificationResult(bool success) override;
 
   static bool Register(JNIEnv* env);
 

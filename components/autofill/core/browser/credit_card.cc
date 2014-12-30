@@ -300,6 +300,11 @@ const char* CreditCard::GetCreditCardType(const base::string16& number) {
   return kGenericCard;
 }
 
+void CreditCard::SetTypeForMaskedCard(const char* type) {
+  DCHECK_EQ(MASKED_WALLET_CARD, record_type());
+  type_ = type;
+}
+
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {

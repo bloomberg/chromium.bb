@@ -83,6 +83,8 @@
       'browser/ui/autofill/autofill_popup_view.h',
       'browser/ui/autofill/autofill_popup_view_delegate.h',
       'browser/ui/autofill/card_unmask_prompt_controller.h',
+      'browser/ui/autofill/card_unmask_prompt_controller_impl.cc',
+      'browser/ui/autofill/card_unmask_prompt_controller_impl.h',
       'browser/ui/autofill/card_unmask_prompt_view.cc',
       'browser/ui/autofill/card_unmask_prompt_view.h',
       'browser/ui/autofill/chrome_autofill_client.cc',

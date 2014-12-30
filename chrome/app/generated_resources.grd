@@ -10994,6 +10994,13 @@ Chrome ran out of memory.
         </message>
       </if>
 
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
+        Enter the three digit verification code from the back of your credit card
+      </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the card unmasking dialog for amex cards.">
+        Enter the four digit verification code from the front of your credit card
+      </message>
+
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
         Appearance
       </message>

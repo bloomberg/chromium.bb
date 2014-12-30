@@ -19,6 +19,7 @@
 namespace autofill {
 class AutofillMetrics;
 class AutofillPopupDelegate;
+class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
 class PasswordGenerator;
@@ -61,7 +62,10 @@ class AwAutofillClient : public autofill::AutofillClient,
   virtual PrefService* GetPrefs() override;
   virtual void HideRequestAutocompleteDialog() override;
   virtual void ShowAutofillSettings() override;
-  virtual void ShowUnmaskPrompt() override;
+  virtual void ShowUnmaskPrompt(
+      const autofill::CreditCard& card,
+      base::WeakPtr<autofill::CardUnmaskDelegate> delegate) override;
+  virtual void OnUnmaskVerificationResult(bool success) override;
   virtual void ConfirmSaveCreditCard(
       const base::Closure& save_card_callback) override;
   virtual bool HasCreditCardScanFeature() override;

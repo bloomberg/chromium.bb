@@ -25,7 +25,9 @@ class TestAutofillClient : public AutofillClient {
   PrefService* GetPrefs() override;
   void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
-  void ShowUnmaskPrompt() override;
+  void ShowUnmaskPrompt(const CreditCard& card,
+                        base::WeakPtr<CardUnmaskDelegate> delegate) override;
+  void OnUnmaskVerificationResult(bool success) override;
   void ConfirmSaveCreditCard(const base::Closure& save_card_callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -27,7 +28,8 @@ class AutofillManager;
 // this logic. See http://crbug.com/51644
 
 // Delegate for in-browser Autocomplete and Autofill display and selection.
-class AutofillExternalDelegate : public AutofillPopupDelegate {
+class AutofillExternalDelegate : public AutofillPopupDelegate,
+                                 public CardUnmaskDelegate {
  public:
   // Creates an AutofillExternalDelegate for the specified AutofillManager and
   // AutofillDriver.
@@ -44,6 +46,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
                            int identifier) override;
   void RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
+
+  // CardUnmaskDelegate implementation.
+  void OnUnmaskResponse(const base::string16& cvc) override;
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
@@ -114,6 +119,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Pings the renderer.
   void PingRenderer();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+  // FIXME
+  void OnUnmaskVerificationResult(bool success);
 
   AutofillManager* manager_;  // weak.
 
