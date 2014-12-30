@@ -33,7 +33,7 @@ class ExecutableNotFound(Exception): pass
 class BadBinary(Exception): pass
 
 class ChromeTests:
-  SLOW_TOOLS = ["memcheck", "tsan", "tsan_rv", "drmemory"]
+  SLOW_TOOLS = ["memcheck", "drmemory"]
   LAYOUT_TESTS_DEFAULT_CHUNK_SIZE = 300
 
   def __init__(self, options, args, test):
