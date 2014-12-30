@@ -1,0 +1,42 @@
+<!-- This is a test for crbug.com/412440, tests meaningful information in
+WebGL context creation error message. -->
+<script src="../../../resources/js-test.js"></script>
+<canvas id="webgl-canvas" width="200" height="200" class="nomargin"></canvas>
+<script>
+function main()
+{
+  if (!window.testRunner) {
+    testFailed("Requires window.testRunner");
+  } else {
+    initTest();
+  }
+}
+
+function initTest() {
+  var canvas = document.getElementById("webgl-canvas");
+  testRunner.forceNextWebGLContextCreationToFail();
+  canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
+  var gl = canvas.getContext("webgl");
+  testRunner.dumpAsText();
+}
+
+function onContextCreationError(e) {
+  var vendorInfoStr = "VendorInfo = ";
+  var renderInfoStr = "RendererInfo = ";
+  var driverInfoStr = "DriverInfo = ";
+  var stringIndex = e.statusMessage.search(vendorInfoStr) + vendorInfoStr.length;
+  var vendorInfo = e.statusMessage.substring(stringIndex, e.statusMessage.search(renderInfoStr) - 2);
+  stringIndex = e.statusMessage.search(renderInfoStr) + renderInfoStr.length;
+  var rendererInfo = e.statusMessage.substring(stringIndex, e.statusMessage.search(driverInfoStr) - 2 );
+  stringIndex = e.statusMessage.search(driverInfoStr) + driverInfoStr.length;
+  var driverInfo = e.statusMessage.substring(stringIndex, e.statusMessage.length - 1);
+  if((e.statusMessage.search("GPUInfoCollectionFailure") != -1) ||
+        vendorInfo.length > 0 ||
+        rendererInfo.length > 0 ||
+        driverInfo.length > 0)
+    testPassed("Status message displayed for webglcontextcreationerror");
+  else
+    testFailed("Context creation error test failed");
+}
+main();
+</script>

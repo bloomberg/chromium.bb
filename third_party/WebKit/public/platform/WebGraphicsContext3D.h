@@ -64,6 +64,7 @@ struct WebGLInfo {
     WebString vendorInfo;
     WebString rendererInfo;
     WebString driverVersion;
+    WebString contextInfoCollectionFailure;
 };
 
 // This interface abstracts the operations performed by the

@@ -87,13 +87,32 @@ PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTML
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(wgc3dAttributes, 0, &glInfo));
     if (!context || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
-        String statusMessage("Could not create a WebGL context for VendorInfo = ");
-        statusMessage.append(glInfo.vendorInfo);
-        statusMessage.append(", RendererInfo = ");
-        statusMessage.append(glInfo.rendererInfo);
-        statusMessage.append(", DriverInfo = ");
-        statusMessage.append(glInfo.driverVersion);
-        statusMessage.append(".");
+        String statusMessage;
+        if (!glInfo.contextInfoCollectionFailure.isEmpty()) {
+            statusMessage.append("Could not create a WebGL context. ");
+            statusMessage.append(glInfo.contextInfoCollectionFailure);
+        } else {
+            statusMessage.append("Could not create a WebGL context");
+            if (!glInfo.vendorInfo.isEmpty()) {
+                statusMessage.append(" VendorInfo = ");
+                statusMessage.append(glInfo.vendorInfo);
+            } else {
+                statusMessage.append(" VendorInfo = Not Available");
+            }
+            if (!glInfo.rendererInfo.isEmpty()) {
+                statusMessage.append(", RendererInfo = ");
+                statusMessage.append(glInfo.rendererInfo);
+            } else {
+                statusMessage.append(", RendererInfo = Not Available");
+            }
+            if (!glInfo.driverVersion.isEmpty()) {
+                statusMessage.append(", DriverInfo = ");
+                statusMessage.append(glInfo.driverVersion);
+            } else {
+                statusMessage.append(", DriverInfo = Not Available");
+            }
+            statusMessage.append(".");
+        }
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, statusMessage));
         return nullptr;
     }
