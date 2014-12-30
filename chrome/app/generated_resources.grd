@@ -1831,8 +1831,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Temporary status shown when a user has clicked to open a downloaded file.">
         Opening <ph name="FILE">$1<ex>image.jpg</ex></ph>...
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Text that appears under the downloaded files that have been cancelled.">
-        Cancelled
+      <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Text that appears under the downloaded files that have been canceled.">
+        Canceled
       </message>
       <message name="IDS_DOWNLOAD_STATUS_REMOVED" desc="Text that appears under the downloaded files that have been removed.">
         Removed
@@ -1966,8 +1966,8 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
       <message name="IDS_DOWNLOAD_TAB_CANCELLED"
-               desc="Text that appears next to the downloaded files that have been cancelled">
-        Cancelled
+               desc="Text that appears next to the downloaded files that have been canceled">
+        Canceled
       </message>
       <message name="IDS_DOWNLOAD_FILE_REMOVED"
                desc="Text that appears next to the downloaded files that have been removed">
@@ -7035,8 +7035,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_DOWNLOAD_ERROR_SHORT" desc="The placeholder text when there was an error download a missing plug-in.">
         <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download failed.
       </message>
-      <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user cancelled downloading the plug-in.">
-        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download was cancelled.
+      <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user canceled downloading the plug-in.">
+        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download was canceled.
       </message>
       <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plug-in.">
         When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished installing, reload the page to activate it.

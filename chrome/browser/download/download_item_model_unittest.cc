@@ -164,7 +164,7 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
     { content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM,
       "Failed - Bad certificate" },
     { content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED,
-      "Cancelled" },
+      "Canceled" },
     { content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN,
       "Failed - Shutdown" },
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
