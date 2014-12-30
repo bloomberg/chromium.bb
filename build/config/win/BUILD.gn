@@ -18,8 +18,6 @@ config("sdk") {
     "WIN32",
     "_SECURE_ATL",
   ]
-
-  include_dirs = system_include_dirs
 }
 
 # Sets the default Windows build version. This is separated because some

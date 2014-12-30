@@ -82,13 +82,6 @@ template("midl") {
       idl_target_platform,
       "/Oicf",
     ]
-
-    foreach(include, system_include_dirs) {
-      args += [
-        "/I",
-        include,
-      ]
-    }
   }
 
   source_set(target_name) {

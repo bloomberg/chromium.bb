@@ -135,9 +135,16 @@ def main():
           vc_bin_dir = os.path.realpath(path)
           break
 
-    # TODO(scottmg|thakis|dpranke): Is there an equivalent to
-    # msvs_system_include_dirs that we need to inject into INCLUDE here?
+    # The Windows SDK include directories must be first. They both have a sal.h,
+    # and the SDK one is newer and the SDK uses some newer features from it not
+    # present in the Visual Studio one.
 
+    if win_sdk_path:
+      additional_includes = ('{sdk_dir}\\Include\\shared;' +
+                             '{sdk_dir}\\Include\\um;' +
+                             '{sdk_dir}\\Include\\winrt;').format(
+                                  sdk_dir=win_sdk_path)
+      env['INCLUDE'] = additional_includes + env['INCLUDE']
     env_block = _FormatAsEnvironmentBlock(env)
     with open('environment.' + arch, 'wb') as f:
       f.write(env_block)
