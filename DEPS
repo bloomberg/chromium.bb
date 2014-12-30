@@ -553,6 +553,16 @@ hooks = [
     ],
   },
   {
+    # This downloads SDK extras and puts them in the
+    # third_party/android_tools/sdk/extras directory on the bots. Developers
+    # need to manually install these packages and accept the ToS.
+    'name': 'sdkextras',
+    'pattern': '.',
+    # Make sure to add package to .gitignore in third_party/android_tools.
+    'action': ['python', 'src/build/download_sdk_extras.py',
+               'google_google_play_services_21.0.0'],
+  },
+  {
     # Downloads the Debian Wheezy sysroot to chrome/installer/linux if needed.
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
