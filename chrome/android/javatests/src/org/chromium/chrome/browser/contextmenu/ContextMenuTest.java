@@ -223,7 +223,9 @@ public class ContextMenuTest extends ChromeShellTestBase {
         assertEquals("Copied image URL is not correct", expectedUrl, getClipboardText());
     }
 
-    @MediumTest
+    // http://crbug.com/445444
+    @FlakyTest
+    // @MediumTest
     @Feature({"Browser"})
     public void testCopyEmailAddress() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActiveTab();
