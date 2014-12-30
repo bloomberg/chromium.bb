@@ -80,7 +80,7 @@ def extract_frames(video, directory, full_resolution):
     ok = False
     logging.info("Extracting frames from " + video + " to " + directory)
     decimate = get_decimate_filter()
-    if filter is not None:
+    if decimate is not None:
         scale = ',scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)'
         if full_resolution:
             scale = ''
