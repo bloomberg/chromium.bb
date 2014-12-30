@@ -24,6 +24,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsDistanceFieldTextEnabled() override;
   bool IsZeroCopyEnabled() override;
   bool IsOneCopyEnabled() override;
+  bool IsElasticOverscrollEnabled() override;
   uint32 GetImageTextureTarget() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;

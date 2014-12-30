@@ -2078,11 +2078,12 @@ void RenderViewImpl::initializeLayerTreeView() {
 
   bool use_threaded_event_handling = true;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Development flag because many events are still unhandled on Mac.
-  // http://crbug.com/138003
-  use_threaded_event_handling =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedEventHandlingMac);
+  // Disable threaded event handling if content is not handling the elastic
+  // overscroll effect. This includes the cases where the elastic overscroll
+  // effect is being handled by Blink (because of command line flags) and older
+  // operating system versions which do not have an elastic overscroll effect
+  // (SnowLeopard, which has Aqua scrollbars which need synchronous updates).
+  use_threaded_event_handling = compositor_deps_->IsElasticOverscrollEnabled();
 #endif
   if (use_threaded_event_handling) {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();

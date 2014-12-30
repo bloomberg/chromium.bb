@@ -187,6 +187,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsDistanceFieldTextEnabled() override;
   bool IsZeroCopyEnabled() override;
   bool IsOneCopyEnabled() override;
+  bool IsElasticOverscrollEnabled() override;
   uint32 GetImageTextureTarget() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
@@ -590,6 +591,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
   bool is_one_copy_enabled_;
+  bool is_elastic_overscroll_enabled_;
   unsigned use_image_texture_target_;
 
   std::map<int, mojo::MessagePipeHandle> pending_render_frame_connects_;

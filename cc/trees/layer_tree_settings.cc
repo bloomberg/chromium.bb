@@ -61,6 +61,7 @@ LayerTreeSettings::LayerTreeSettings()
       strict_layer_property_change_checking(false),
       use_one_copy(false),
       use_zero_copy(false),
+      enable_elastic_overscroll(false),
       use_image_texture_target(GL_TEXTURE_2D),
       ignore_root_layer_flings(false),
       scheduled_raster_task_limit(32),

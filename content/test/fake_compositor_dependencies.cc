@@ -41,6 +41,10 @@ bool FakeCompositorDependencies::IsOneCopyEnabled() {
   return true;
 }
 
+bool FakeCompositorDependencies::IsElasticOverscrollEnabled() {
+  return false;
+}
+
 uint32 FakeCompositorDependencies::GetImageTextureTarget() {
   return GL_TEXTURE_2D;
 }

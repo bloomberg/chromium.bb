@@ -1159,7 +1159,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // Send mouse wheel events and their disposition to the compositor thread, so
   // that they can be used to produce the elastic overscroll effect on Mac.
   if (input_event->type == WebInputEvent::MouseWheel) {
-    ObserveWheelEventOnAndResult(
+    ObserveWheelEventAndResult(
         static_cast<const WebMouseWheelEvent&>(*input_event), processed);
   }
 
@@ -2203,15 +2203,10 @@ bool RenderWidget::WillHandleGestureEvent(
   return false;
 }
 
-void RenderWidget::ObserveWheelEventOnAndResult(
+void RenderWidget::ObserveWheelEventAndResult(
     const blink::WebMouseWheelEvent& wheel_event,
     bool event_processed) {
-  bool observe_wheel_event = false;
-#if defined(OS_MACOSX)
-  observe_wheel_event = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableThreadedEventHandlingMac);
-#endif
-  if (!observe_wheel_event)
+  if (!compositor_deps_->IsElasticOverscrollEnabled())
     return;
 
   // Blink does not accurately compute scroll bubbling or overscroll. For now,

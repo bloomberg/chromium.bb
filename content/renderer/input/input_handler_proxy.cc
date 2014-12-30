@@ -192,14 +192,12 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
   input_handler_->BindToClient(this);
   smooth_scroll_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSmoothScrolling);
-
-#if defined(OS_MACOSX)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedEventHandlingMac)) {
-    scroll_elasticity_controller_.reset(new InputScrollElasticityController(
-        input_handler_->CreateScrollElasticityHelper()));
+  cc::ScrollElasticityHelper* scroll_elasticity_helper =
+      input_handler_->CreateScrollElasticityHelper();
+  if (scroll_elasticity_helper) {
+    scroll_elasticity_controller_.reset(
+        new InputScrollElasticityController(scroll_elasticity_helper));
   }
-#endif
 }
 
 InputHandlerProxy::~InputHandlerProxy() {}

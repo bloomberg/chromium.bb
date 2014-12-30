@@ -197,7 +197,8 @@ void RenderWidgetCompositor::Initialize() {
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
-  settings.report_overscroll_only_for_scrollable_axes = true;
+  settings.report_overscroll_only_for_scrollable_axes =
+      !compositor_deps_->IsElasticOverscrollEnabled();
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint);
@@ -248,6 +249,8 @@ void RenderWidgetCompositor::Initialize() {
       compositor_deps_->IsDistanceFieldTextEnabled();
   settings.use_zero_copy = compositor_deps_->IsZeroCopyEnabled();
   settings.use_one_copy = compositor_deps_->IsOneCopyEnabled();
+  settings.enable_elastic_overscroll =
+      compositor_deps_->IsElasticOverscrollEnabled();
   settings.use_image_texture_target = compositor_deps_->GetImageTextureTarget();
 
   settings.calculate_top_controls_position =
@@ -405,9 +408,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.scrollbar_fade_delay_ms = 500;
   settings.scrollbar_fade_resize_delay_ms = 500;
   settings.scrollbar_fade_duration_ms = 300;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  if (cmd->HasSwitch(switches::kEnableThreadedEventHandlingMac))
-    settings.report_overscroll_only_for_scrollable_axes = false;
 #endif
 
   if (cmd->HasSwitch(switches::kEnableLowResTiling))

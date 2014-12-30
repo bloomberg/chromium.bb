@@ -146,6 +146,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #endif
 
@@ -534,6 +535,15 @@ void RenderThreadImpl::Init() {
   is_one_copy_enabled_ = command_line.HasSwitch(switches::kEnableOneCopy);
 #else
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  is_elastic_overscroll_enabled_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedEventHandlingMac) &&
+      base::mac::IsOSLionOrLater();
+#else
+  is_elastic_overscroll_enabled_ = false;
 #endif
 
   use_image_texture_target_ = GL_TEXTURE_2D;
@@ -1337,6 +1347,10 @@ bool RenderThreadImpl::IsZeroCopyEnabled() {
 
 bool RenderThreadImpl::IsOneCopyEnabled() {
   return is_one_copy_enabled_;
+}
+
+bool RenderThreadImpl::IsElasticOverscrollEnabled() {
+  return is_elastic_overscroll_enabled_;
 }
 
 uint32 RenderThreadImpl::GetImageTextureTarget() {
