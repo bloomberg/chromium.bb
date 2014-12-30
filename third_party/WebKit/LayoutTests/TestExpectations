@@ -213,6 +213,25 @@ crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/med
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-idl.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-removetrack.html [ Skip ]
 
+crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOnlyFailure ]
+crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure ]
+crbug.com/443804 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
+crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ Failure ]
+crbug.com/443804 virtual/slimmingpaint/fast/css/user-drag-none.html [ Crash ]
+crbug.com/444591 virtual/slimmingpaint/fast/css/object-fit-img-svg2.html [ Crash ]
+crbug.com/444591 virtual/slimmingpaint/fast/css/vertical-align-baseline-replaced.html [ Crash ]
+crbug.com/444591 virtual/slimmingpaint/fast/css/object-fit-img-svg.html [ Crash ]
+crbug.com/444591 virtual/slimmingpaint/fast/css/object-position-svg.html [ Crash ]
+crbug.com/444591 virtual/slimmingpaint/fast/images/mask-box-image-crash.html [ Crash ]
+crbug.com/444591 virtual/slimmingpaint/fast/css/mask-missing-image-crash.html [ Failure ]
+crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Failure ]
+crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/font-weight-1.html [ ImageOnlyFailure ]
+crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/fontfaceset-add-remove-while-loading.html [ Failure ]
+crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/transformed-mask.html [ ImageOnlyFailure ]
+
+crbug.com/382491 virtual/slimmingpaint/fast/css/background-clip-radius-values.html [ NeedsRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/css/shadow-multiple.html [ NeedsRebaseline ]
+
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-optional-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
@@ -1417,7 +1436,6 @@ crbug.com/433324 inspector/sources/debugger/debugger-es6-harmony-scopes.html [ S
 
 crbug.com/435240 virtual/slimmingpaint/fast/images/favicon-as-image.html [ ImageOnlyFailure ]
 crbug.com/435240 virtual/slimmingpaint/fast/images/exif-orientation-image-document.html [ ImageOnlyFailure ]
-crbug.com/435246 virtual/slimmingpaint/fast/images/mask-box-image-crash.html [ ImageOnlyFailure ]
 crbug.com/435246 virtual/slimmingpaint/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
 crbug.com/436551 virtual/slimmingpaint/fast/images/icon-decoding.html [ ImageOnlyFailure ]
 

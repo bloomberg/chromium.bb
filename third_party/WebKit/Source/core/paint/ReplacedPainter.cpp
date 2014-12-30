@@ -23,11 +23,13 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderReplaced.location();
+    LayoutRect paintRect(adjustedPaintOffset, m_renderReplaced.size());
 
     if (m_renderReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
         m_renderReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
+        RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderReplaced, paintInfo.phase, paintRect);
         m_renderReplaced.paintMask(paintInfo, adjustedPaintOffset);
         return;
     }
@@ -35,7 +37,6 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     if (paintInfo.phase == PaintPhaseClippingMask && (!m_renderReplaced.hasLayer() || !m_renderReplaced.layer()->hasCompositedClippingMask()))
         return;
 
-    LayoutRect paintRect = LayoutRect(adjustedPaintOffset, m_renderReplaced.size());
     if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderReplaced.style()->outlineWidth())
         ObjectPainter(m_renderReplaced).paintOutline(paintInfo, paintRect);
 
