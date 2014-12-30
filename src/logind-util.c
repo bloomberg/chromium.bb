@@ -287,13 +287,35 @@ weston_logind_set_active(struct weston_logind *wl, bool active)
 }
 
 static void
+parse_active(struct weston_logind *wl, DBusMessage *m, DBusMessageIter *iter)
+{
+	DBusMessageIter sub;
+	dbus_bool_t b;
+
+	if (dbus_message_iter_get_arg_type(iter) != DBUS_TYPE_VARIANT)
+		return;
+
+	dbus_message_iter_recurse(iter, &sub);
+
+	if (dbus_message_iter_get_arg_type(&sub) != DBUS_TYPE_BOOLEAN)
+		return;
+
+	dbus_message_iter_get_basic(&sub, &b);
+
+	/* If the backend requested DRM master-device synchronization, we only
+	 * wake-up the compositor once the master-device is up and running. For
+	 * other backends, we immediately forward the Active-change event. */
+	if (!wl->sync_drm || !b)
+		weston_logind_set_active(wl, b);
+}
+
+static void
 get_active_cb(DBusPendingCall *pending, void *data)
 {
 	struct weston_logind *wl = data;
+	DBusMessageIter iter;
 	DBusMessage *m;
-	DBusMessageIter iter, sub;
 	int type;
-	dbus_bool_t b;
 
 	dbus_pending_call_unref(wl->pending_active);
 	wl->pending_active = NULL;
@@ -303,27 +325,10 @@ get_active_cb(DBusPendingCall *pending, void *data)
 		return;
 
 	type = dbus_message_get_type(m);
-	if (type != DBUS_MESSAGE_TYPE_METHOD_RETURN)
-		goto err_unref;
+	if (type == DBUS_MESSAGE_TYPE_METHOD_RETURN &&
+	    dbus_message_iter_init(m, &iter))
+		parse_active(wl, m, &iter);
 
-	if (!dbus_message_iter_init(m, &iter) ||
-	    dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_VARIANT)
-		goto err_unref;
-
-	dbus_message_iter_recurse(&iter, &sub);
-
-	if (dbus_message_iter_get_arg_type(&sub) != DBUS_TYPE_BOOLEAN)
-		goto err_unref;
-
-	dbus_message_iter_get_basic(&sub, &b);
-
-	/* If the backend requested DRM master-device synchronization, we only
-	 * wake-up the compositor once the master-device is up and running. For
-	 * other backends, we immediately forward the Active-change event. */
-	if (!wl->sync_drm || !b)
-		weston_logind_set_active(wl, b);
-
-err_unref:
 	dbus_message_unref(m);
 }
 
@@ -408,7 +413,6 @@ property_changed(struct weston_logind *wl, DBusMessage *m)
 {
 	DBusMessageIter iter, sub, entry;
 	const char *interface, *name;
-	dbus_bool_t b;
 
 	if (!dbus_message_iter_init(m, &iter) ||
 	    dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING)
@@ -433,12 +437,8 @@ property_changed(struct weston_logind *wl, DBusMessage *m)
 			goto error;
 
 		if (!strcmp(name, "Active")) {
-			if (dbus_message_iter_get_arg_type(&entry) == DBUS_TYPE_BOOLEAN) {
-				dbus_message_iter_get_basic(&entry, &b);
-				if (!b)
-					weston_logind_set_active(wl, false);
-				return;
-			}
+			parse_active(wl, m, &entry);
+			return;
 		}
 
 		dbus_message_iter_next(&sub);
