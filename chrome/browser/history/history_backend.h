@@ -20,11 +20,11 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/thumbnail_database.h"
-#include "chrome/browser/history/visit_tracker.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
+#include "components/history/core/browser/thumbnail_database.h"
+#include "components/history/core/browser/visit_tracker.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "sql/init_status.h"
 

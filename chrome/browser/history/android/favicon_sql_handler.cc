@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/history/thumbnail_database.h"
+#include "components/history/core/browser/thumbnail_database.h"
 
 using base::Time;
 

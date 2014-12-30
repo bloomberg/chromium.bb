@@ -14,10 +14,10 @@
 #include "chrome/browser/history/android/visit_sql_handler.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/thumbnail_database.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/thumbnail_database.h"
 #include "sql/connection.h"
 
 

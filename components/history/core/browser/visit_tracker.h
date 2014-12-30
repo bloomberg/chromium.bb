@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
-#define CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISIT_TRACKER_H__
+#define COMPONENTS_HISTORY_CORE_BROWSER_VISIT_TRACKER_H__
 
 #include <map>
 #include <vector>
@@ -63,4 +63,4 @@ class VisitTracker {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_VISIT_TRACKER_H__

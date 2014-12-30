@@ -15,9 +15,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/thumbnail_database.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/thumbnail_database.h"
 
 namespace history {
 

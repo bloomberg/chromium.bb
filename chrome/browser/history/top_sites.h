@@ -9,10 +9,12 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/history/history_service.h"
+#include "base/observer_list.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/common/thumbnail_score.h"
+#include "content/public/browser/notification_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 

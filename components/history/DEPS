@@ -4,6 +4,7 @@ include_rules = [
   "+components/query_parser",
   "+net",
   "+sql",
+  "+third_party/sqlite",
   "+ui/base",
   "+ui/gfx",
 ]

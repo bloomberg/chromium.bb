@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/visit_database.h"
+#include "components/history/core/browser/visit_database.h"
 
 #include <algorithm>
 #include <limits>
@@ -11,11 +11,11 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/history/visit_filter.h"
-#include "chrome/common/url_constants.h"
 #include "components/history/core/browser/url_database.h"
+#include "components/history/core/browser/visit_filter.h"
 #include "sql/statement.h"
 #include "ui/base/page_transition_types.h"
+#include "url/url_constants.h"
 
 namespace history {
 

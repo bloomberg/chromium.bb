@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_TOP_SITES_CACHE_H_
-#define CHROME_BROWSER_HISTORY_TOP_SITES_CACHE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_CACHE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_CACHE_H_
 
 #include <map>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/history/url_utils.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/url_utils.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -167,4 +167,4 @@ class TopSitesCache {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_TOP_SITES_CACHE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_CACHE_H_

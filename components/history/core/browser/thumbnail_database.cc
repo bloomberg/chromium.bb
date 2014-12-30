@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/thumbnail_database.h"
+#include "components/history/core/browser/thumbnail_database.h"
 
 #include <algorithm>
 #include <string>
@@ -25,7 +25,7 @@
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -1171,7 +1171,7 @@ sql::InitStatus ThumbnailDatabase::InitImpl(const base::FilePath& db_name) {
   // TODO(shess): Failing Begin() implies that something serious is
   // wrong with the database.  Raze() may be in order.
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // Exclude the thumbnails file from backups.
   base::mac::SetFileBackupExclusion(db_name);
 #endif

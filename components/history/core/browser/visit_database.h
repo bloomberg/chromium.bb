@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISIT_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_VISIT_DATABASE_H_
 
 #include <vector>
 
@@ -230,4 +230,4 @@ class VisitDatabase {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_VISIT_DATABASE_H_

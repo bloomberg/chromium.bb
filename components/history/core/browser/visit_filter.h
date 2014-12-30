@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_VISIT_FILTER_H_
-#define CHROME_BROWSER_HISTORY_VISIT_FILTER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISIT_FILTER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_VISIT_FILTER_H_
 
 #include <vector>
 
@@ -162,4 +162,4 @@ class VisitFilter {
 
 }  // history
 
-#endif  // CHROME_BROWSER_HISTORY_VISIT_FILTER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_VISIT_FILTER_H_

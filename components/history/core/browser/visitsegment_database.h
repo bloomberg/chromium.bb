@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
 
 #include "base/basictypes.h"
 #include "components/history/core/browser/history_types.h"
@@ -89,4 +89,4 @@ class VisitSegmentDatabase {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_

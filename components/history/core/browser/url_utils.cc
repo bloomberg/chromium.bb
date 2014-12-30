@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/url_utils.h"
+#include "components/history/core/browser/url_utils.h"
 
 #include <algorithm>
 
@@ -31,7 +31,7 @@ int GetURLCharPriority(char ch) {
 // as a separator, so e.g., "test" < "test-case" would be enforced by
 // "test/..." < "test-case/...". We also force "?" < "/", so "test?query" <
 // "test/stuff". Since the routine is merely lexicographical string comparison
-// with remapping of chracter ordering, so it is a valid strict-weak ordering.
+// with remapping of character ordering, so it is a valid strict-weak ordering.
 bool CanonicalURLStringCompare(const std::string& s1, const std::string& s2) {
   const std::string::value_type* ch1 = s1.c_str();
   const std::string::value_type* ch2 = s2.c_str();

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/history/core/browser/in_memory_url_index_types.h"
+
 #include <algorithm>
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/in_memory_url_index_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::UTF8ToUTF16;
