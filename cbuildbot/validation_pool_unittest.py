@@ -1648,13 +1648,17 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     """Test that a CL is rejected if its approvals were pulled."""
     def _ReloadPatches(patches):
       reloaded = copy.deepcopy(patches)
-      self.PatchObject(reloaded[1], 'HasApproval', return_value=False)
+      approvals = {('VRIF', '1'): False}
+      backup = reloaded[1].HasApproval
+      self.PatchObject(
+          reloaded[1], 'HasApproval',
+          side_effect=lambda *args: approvals.get(args, backup(*args)))
       return reloaded
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      _ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
-    error = validation_pool.PatchNotCommitReady(self.patches[1])
-    self.assertEqualNotifyArg(error, self.patches[1], 'error')
+    message = 'CL:2 is not marked Verified=+1.'
+    self.assertEqualNotifyArg(message, self.patches[1], 'error')
 
   def testAlreadyMerged(self):
     """Test that a CL that was chumped during the run was not rejected."""
@@ -1670,7 +1674,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      _ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
-    error = validation_pool.PatchModified(self.patches[1])
+    error = validation_pool.PatchModified(self.patches[1],
+                                          self.patches[1].patch_number + 1)
     self.assertEqualNotifyArg(error, self.patches[1], 'error')
 
 

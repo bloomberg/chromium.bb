@@ -479,20 +479,20 @@ def GetGerritPatchInfoWithPatchQueries(patches):
   """
   seen = set()
   results = []
+  order = {k.ToGerritQueryText(): idx for (idx, k) in enumerate(patches)}
   for remote in constants.CHANGE_PREFIX.keys():
     helper = GetGerritHelper(remote)
-    raw_ids = [x.ToGerritQueryText() for x in patches
-               if x.remote == remote]
-    for _k, change in helper.QueryMultipleCurrentPatchset(raw_ids):
+    raw_ids = [x.ToGerritQueryText() for x in patches if x.remote == remote]
+    for k, change in helper.QueryMultipleCurrentPatchset(raw_ids):
       # return a unique list, while maintaining the ordering of the first
       # seen instance of each patch.  Do this to ensure whatever ordering
       # the user is trying to enforce, we honor; lest it break on
       # cherry-picking.
       if change.id not in seen:
-        results.append(change)
+        results.append((order[k], change))
         seen.add(change.id)
 
-  return results
+  return [change for _idx, change in sorted(results)]
 
 
 def GetGerritHelper(remote=None, gob=None, **kwargs):

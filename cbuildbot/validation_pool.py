@@ -107,26 +107,21 @@ class InternalCQError(cros_patch.PatchException):
     return 'failed to apply due to a CQ issue: %s' % (self.message,)
 
 
-class NoMatchingChangeFoundException(Exception):
-  """Raised if we try to apply a non-existent change."""
-
-
-class ChangeNotInManifestException(Exception):
-  """Raised if we try to apply a not-in-manifest change."""
-
-
-class PatchNotCommitReady(cros_patch.PatchException):
-  """Raised if a patch is not marked as commit ready."""
-
-  def ShortExplanation(self):
-    return 'isn\'t marked as Commit-Ready anymore.'
+class InconsistentReloadException(Exception):
+  """Raised if patches applied by the CQ cannot be found anymore."""
 
 
 class PatchModified(cros_patch.PatchException):
   """Raised if a patch is modified while the CQ is running."""
 
+  def __init__(self, patch, patch_number):
+    cros_patch.PatchException.__init__(self, patch)
+    self.new_patch_number = patch_number
+    self.args = (patch, patch_number)
+
   def ShortExplanation(self):
-    return 'was modified while the CQ was in the middle of testing it.'
+    return ('was modified while the CQ was in the middle of testing it. '
+            'Patch set %s was uploaded.' % self.new_patch_number)
 
 
 class PatchRejected(cros_patch.PatchException):
@@ -484,7 +479,7 @@ class PatchSeries(object):
         if self._is_submitting:
           raise PatchRejected(dep_change)
         else:
-          raise PatchNotCommitReady(dep_change)
+          raise dep_change.GetMergeException() or PatchRejected(dep_change)
 
       unsatisfied.append(dep_change)
 
@@ -1808,13 +1803,7 @@ class ValidationPool(object):
           closed_or_throttled=not throttled_ok)
 
     # Filter out changes that were modified during the CQ run.
-    unmodified_changes, errors = self.FilterModifiedChanges(changes)
-
-    # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in
-    # case the patch status changed during the CQ run.
-    filtered_changes = [x for x in unmodified_changes if x.IsMergeable()]
-    for change in set(unmodified_changes) - set(filtered_changes):
-      errors[change] = PatchNotCommitReady(change)
+    filtered_changes, errors = self.FilterModifiedChanges(changes)
 
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool,
                                is_submitting=True)
@@ -1876,8 +1865,8 @@ class ValidationPool(object):
     Returns:
       This returns a tuple (unmodified_changes, errors).
 
-      unmodified_changes: A reloaded list of changes, only including unmodified
-                          and unsubmitted changes.
+      unmodified_changes: A reloaded list of changes, only including mergeable,
+                          unmodified and unsubmitted changes.
       errors: A dictionary. This dictionary will contain all patches that have
         encountered errors, and map them to the associated exception object.
     """
@@ -1887,16 +1876,32 @@ class ValidationPool(object):
     unmodified_changes, errors = [], {}
     reloaded_changes = list(cls.ReloadChanges(changes))
     old_changes = cros_patch.PatchCache(changes)
-    for change in reloaded_changes:
-      if change.IsAlreadyMerged():
+
+    if list(changes) != list(reloaded_changes):
+      logging.error('Changes: %s', map(str, changes))
+      logging.error('Reloaded changes: %s', map(str, reloaded_changes))
+      for change in set(changes) - set(reloaded_changes):
+        logging.error('%s disappeared after reloading', change)
+      for change in set(reloaded_changes) - set(changes):
+        logging.error('%s appeared after reloading', change)
+      raise InconsistentReloadException()
+
+    for reloaded_change in reloaded_changes:
+      old_change = old_changes[reloaded_change]
+      if reloaded_change.IsAlreadyMerged():
         logging.warning('%s is already merged. It was most likely chumped '
-                        'during the current CQ run.', change)
-      elif change.patch_number != old_changes[change].patch_number:
+                        'during the current CQ run.', reloaded_change)
+      elif reloaded_change.patch_number != old_change.patch_number:
         # If users upload new versions of a CL while the CQ is in-flight, then
         # their CLs are no longer tested. These CLs should be rejected.
-        errors[change] = PatchModified(change)
+        errors[old_change] = PatchModified(reloaded_change,
+                                           reloaded_change.patch_number)
+      elif not reloaded_change.IsMergeable():
+        # Get the reason why this change is not mergeable anymore.
+        errors[old_change] = reloaded_change.GetMergeException()
+        errors[old_change].patch = old_change
       else:
-        unmodified_changes.append(change)
+        unmodified_changes.append(old_change)
 
     return unmodified_changes, errors
 

@@ -339,31 +339,29 @@ class DirectGerritHelperTest(cros_test_lib.TestCase):
   """Unittests for GerritHelper that use the real Chromium instance."""
 
   # A big list of real changes.
-  CHANGES = [235893, 231790, 231647, 234645, 234543, 234544, 231792, 234644,
-             232356, 231791, 229428, 233864, 233865]
+  CHANGES = ['235893', '*189165', '231790', '*190026', '231647', '234645']
 
   def testMultipleChangeDetail(self):
     """Test ordering of results in GetMultipleChangeDetail"""
-    changes = self.CHANGES
+    changes = [x for x in self.CHANGES if not x.startswith('*')]
     helper = gerrit.GetCrosExternal()
     results = list(helper.GetMultipleChangeDetail([str(x) for x in changes]))
-    gerrit_numbers = [x['_number'] for x in results]
+    gerrit_numbers = [str(x['_number']) for x in results]
     self.assertEqual(changes, gerrit_numbers)
 
   def testQueryMultipleCurrentPatchset(self):
     """Test ordering of results in QueryMultipleCurrentPatchset"""
-    changes = self.CHANGES
+    changes = [x for x in self.CHANGES if not x.startswith('*')]
     helper = gerrit.GetCrosExternal()
-    results = list(helper.QueryMultipleCurrentPatchset(
-        [str(x) for x in changes]))
-    self.assertEqual(changes, [long(x.gerrit_number) for _, x in results])
-    self.assertEqual(changes, [long(x) for x, _ in results])
+    results = list(helper.QueryMultipleCurrentPatchset(changes))
+    self.assertEqual(changes, [x.gerrit_number for _, x in results])
+    self.assertEqual(changes, [x for x, _ in results])
 
   def testGetGerritPatchInfo(self):
     """Test ordering of results in GetGerritPatchInfo"""
     changes = self.CHANGES
-    results = list(gerrit.GetGerritPatchInfo([str(x) for x in changes]))
-    self.assertEqual(changes, [long(x.gerrit_number) for x in results])
+    results = list(gerrit.GetGerritPatchInfo(changes))
+    self.assertEqual(changes, [x.gerrit_number_str for x in results])
 
 
 if __name__ == '__main__':
