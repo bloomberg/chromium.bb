@@ -163,8 +163,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._JsonUri('gs://foo/bar'),
                      'gs://foo/bar.json')
 
-
-  @osutils.TempDirDecorator
   def testGeneratorUri(self):
     """Validate that we can correctly decide which au-generator.zip to use."""
 
