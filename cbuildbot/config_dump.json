@@ -232,6 +232,9 @@
         "name": "amd64-generic-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "amd64-generic-grouped-pre-cq": {
@@ -417,6 +420,9 @@
         "name": "amd64-generic-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -460,6 +466,9 @@
         "name": "amd64-generic_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "amd64-generic_freon-no-vmtest-pre-cq": {
@@ -531,6 +540,9 @@
         "name": "amd64-generic_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -569,6 +581,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "arm-generic-full": {
@@ -592,6 +607,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -683,6 +701,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "arm-generic_freon-chromium-pfq": {
@@ -727,6 +748,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -805,6 +829,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "arm64-generic-chromium-pfq": {
@@ -825,6 +852,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "arm64-generic-full": {
@@ -848,6 +878,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -926,6 +959,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "auron-b-full-group": {
@@ -955,7 +991,11 @@
                 "name": "auron_lulu-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
             },
             {
                 "archive_build_debug": true,
@@ -980,6 +1020,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -997,7 +1040,11 @@
         "name": "auron-b-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron-b-release-group": {
         "archive_build_debug": true,
@@ -1182,7 +1229,11 @@
         "name": "auron-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -1305,7 +1356,11 @@
         "name": "auron-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron-full-group": {
         "archive_build_debug": true,
@@ -1334,7 +1389,11 @@
                 "name": "auron-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
             },
             {
                 "archive_build_debug": true,
@@ -1359,6 +1418,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -1385,6 +1447,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -1402,7 +1467,11 @@
         "name": "auron-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron-no-vmtest-pre-cq": {
         "archive": false,
@@ -2018,9 +2087,10 @@
         "name": "auron-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_cid-chrome-pfq": {
         "boards": [
@@ -2060,7 +2130,11 @@
         "name": "auron_cid-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_cid-full": {
         "archive_build_debug": true,
@@ -2081,7 +2155,11 @@
         "name": "auron_cid-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron_cid-no-vmtest-pre-cq": {
         "archive": false,
@@ -2500,9 +2578,10 @@
         "name": "auron_cid-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_lulu-chrome-pfq": {
         "boards": [
@@ -2542,7 +2621,11 @@
         "name": "auron_lulu-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_lulu-full": {
         "archive_build_debug": true,
@@ -2563,7 +2646,11 @@
         "name": "auron_lulu-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron_lulu-no-vmtest-pre-cq": {
         "archive": false,
@@ -2982,9 +3069,10 @@
         "name": "auron_lulu-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_paine-chrome-pfq": {
         "boards": [
@@ -3024,7 +3112,11 @@
         "name": "auron_paine-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_paine-full": {
         "archive_build_debug": true,
@@ -3045,7 +3137,11 @@
         "name": "auron_paine-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron_paine-no-vmtest-pre-cq": {
         "archive": false,
@@ -3464,9 +3560,10 @@
         "name": "auron_paine-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_yuna-chrome-pfq": {
         "boards": [
@@ -3506,7 +3603,11 @@
         "name": "auron_yuna-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_yuna-full": {
         "archive_build_debug": true,
@@ -3527,7 +3628,11 @@
         "name": "auron_yuna-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "auron_yuna-no-vmtest-pre-cq": {
         "archive": false,
@@ -3946,9 +4051,10 @@
         "name": "auron_yuna-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "bayleybay-chrome-pfq": {
         "boards": [
@@ -3987,7 +4093,10 @@
         "name": "bayleybay-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "bayleybay-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -4110,6 +4219,9 @@
         "name": "bayleybay-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "bayleybay-no-vmtest-pre-cq": {
@@ -4528,6 +4640,9 @@
         "name": "bayleybay-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -4829,6 +4944,9 @@
                 "name": "panther-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -4854,6 +4972,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -4871,6 +4992,9 @@
         "name": "beltino-a-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "beltino-a-release-group": {
@@ -5054,6 +5178,9 @@
                 "name": "monroe-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -5079,6 +5206,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -5105,6 +5235,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -5122,6 +5255,9 @@
         "name": "beltino-b-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "beltino-b-release-group": {
@@ -5365,7 +5501,10 @@
         "name": "beltino-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "beltino-firmware": {
         "archive_build_debug": true,
@@ -5422,6 +5561,9 @@
         "name": "beltino-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "beltino-no-vmtest-pre-cq": {
@@ -5839,6 +5981,9 @@
         "name": "beltino-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -5881,7 +6026,11 @@
         "name": "bobcat-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "profile": "minimal",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "bobcat-full": {
         "archive_build_debug": true,
@@ -5901,7 +6050,11 @@
         ],
         "name": "bobcat-full",
         "prebuilts": "public",
+        "profile": "minimal",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "bobcat-no-vmtest-pre-cq": {
@@ -6309,8 +6462,12 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "bobcat-tot-chromium-pfq-informational",
+        "profile": "minimal",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -6375,7 +6532,10 @@
         "name": "butterfly-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "butterfly-firmware": {
         "archive_build_debug": true,
@@ -6432,6 +6592,9 @@
         "name": "butterfly-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "butterfly-no-vmtest-pre-cq": {
@@ -6861,6 +7024,9 @@
         "name": "butterfly-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -6902,7 +7068,10 @@
         "name": "candy-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "candy-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -7025,6 +7194,9 @@
         "name": "candy-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "candy-no-vmtest-pre-cq": {
@@ -7452,6 +7624,9 @@
         "name": "candy-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -7517,7 +7692,10 @@
         "name": "clapper-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "clapper-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -7640,6 +7818,9 @@
         "name": "clapper-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "clapper-no-vmtest-pre-cq": {
@@ -8067,6 +8248,9 @@
         "name": "clapper-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -8164,7 +8348,10 @@
         "name": "cranky-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "cranky-full": {
         "archive_build_debug": true,
@@ -8185,6 +8372,9 @@
         "name": "cranky-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "cranky-no-vmtest-pre-cq": {
@@ -8612,6 +8802,9 @@
         "name": "cranky-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -8787,6 +8980,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -8819,6 +9015,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -8846,6 +9045,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -8873,6 +9075,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -8892,6 +9097,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -9530,6 +9738,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy-webrtc-chrome-pfq-informational": {
@@ -9613,6 +9824,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_freon-full": {
@@ -9636,6 +9850,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -10058,6 +10275,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_skate-chrome-pfq": {
@@ -10107,6 +10327,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_skate-firmware": {
@@ -10167,6 +10390,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -10589,6 +10815,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_spring-chrome-pfq": {
@@ -10634,6 +10863,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_spring-deprecated-pre-cq": {
@@ -10724,6 +10956,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -11177,6 +11412,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_winter-chrome-pfq": {
@@ -11222,6 +11460,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy_winter-full": {
@@ -11245,6 +11486,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -11667,6 +11911,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "duck-chrome-pfq": {
@@ -11698,7 +11945,6 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "internal": true,
@@ -11707,7 +11953,12 @@
         "name": "duck-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "sync_chrome": false,
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "duck-deprecated-pre-cq": {
         "archive": false,
@@ -11743,7 +11994,6 @@
             "duck"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -11755,8 +12005,13 @@
         ],
         "name": "duck-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "duck-grouped-pre-cq": {
         "archive": false,
@@ -12201,11 +12456,13 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "duck-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "enguarde-chrome-pfq": {
         "boards": [
@@ -12244,7 +12501,10 @@
         "name": "enguarde-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "enguarde-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -12367,6 +12627,9 @@
         "name": "enguarde-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "enguarde-no-vmtest-pre-cq": {
@@ -12794,6 +13057,9 @@
         "name": "enguarde-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -12835,7 +13101,10 @@
         "name": "expresso-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "expresso-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -12958,6 +13227,9 @@
         "name": "expresso-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "expresso-no-vmtest-pre-cq": {
@@ -13385,6 +13657,9 @@
         "name": "expresso-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -13494,7 +13769,10 @@
         "name": "falco-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "falco-firmware": {
         "archive_build_debug": true,
@@ -13551,6 +13829,9 @@
         "name": "falco-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "falco-no-vmtest-pre-cq": {
@@ -13981,6 +14262,9 @@
         "name": "falco-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -14022,7 +14306,10 @@
         "name": "falco_li-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "falco_li-full": {
         "archive_build_debug": true,
@@ -14043,6 +14330,9 @@
         "name": "falco_li-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "falco_li-no-vmtest-pre-cq": {
@@ -14470,6 +14760,9 @@
         "name": "falco_li-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -14511,7 +14804,10 @@
         "name": "fox_wtm2-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "fox_wtm2-full": {
         "archive_build_debug": true,
@@ -14532,6 +14828,9 @@
         "name": "fox_wtm2-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "fox_wtm2-no-vmtest-pre-cq": {
@@ -14948,6 +15247,9 @@
         "name": "fox_wtm2-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -14958,7 +15260,6 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "internal": true,
@@ -14967,7 +15268,12 @@
         "name": "gizmo-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "sync_chrome": false,
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "gizmo-full": {
         "archive_build_debug": true,
@@ -14975,7 +15281,6 @@
             "gizmo"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -14987,8 +15292,13 @@
         ],
         "name": "gizmo-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "gizmo-no-vmtest-pre-cq": {
         "archive": false,
@@ -15096,11 +15406,13 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "gizmo-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "glimmer-chrome-pfq": {
         "boards": [
@@ -15139,7 +15451,10 @@
         "name": "glimmer-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "glimmer-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -15262,6 +15577,9 @@
         "name": "glimmer-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "glimmer-no-vmtest-pre-cq": {
@@ -15689,6 +16007,9 @@
         "name": "glimmer-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -15730,7 +16051,10 @@
         "name": "gnawty-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "gnawty-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -15853,6 +16177,9 @@
         "name": "gnawty-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "gnawty-no-vmtest-pre-cq": {
@@ -16280,6 +16607,9 @@
         "name": "gnawty-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -16373,6 +16703,9 @@
                 "name": "stout-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -16397,6 +16730,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -16414,6 +16750,9 @@
         "name": "ivybridge-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "ivybridge-release-group": {
@@ -16607,7 +16946,11 @@
         "name": "jecht-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "jecht-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -16730,7 +17073,11 @@
         "name": "jecht-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "jecht-full-group": {
         "archive_build_debug": true,
@@ -16759,7 +17106,11 @@
                 "name": "jecht-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
             }
         ],
         "chrome_sdk": true,
@@ -16775,7 +17126,11 @@
         "name": "jecht-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "jecht-no-vmtest-pre-cq": {
         "archive": false,
@@ -17289,9 +17644,10 @@
         "name": "jecht-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "kayle-chrome-pfq": {
         "boards": [
@@ -17330,18 +17686,27 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
+        "dev_manifest": "kayle.xml",
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "images": [
+            "base"
+        ],
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
         "name": "kayle-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "kayle-full": {
@@ -17350,21 +17715,25 @@
             "kayle"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
+        "dev_manifest": "kayle.xml",
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "git_sync": true,
         "image_test": true,
         "images": [
-            "base",
-            "test",
-            "factory_install"
+            "base"
         ],
         "name": "kayle-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -17787,11 +18156,21 @@
         "chrome_rev": "tot",
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
+        "dev_manifest": "kayle.xml",
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "images": [
+            "base"
+        ],
         "name": "kayle-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "kip-chrome-pfq": {
@@ -17831,7 +18210,10 @@
         "name": "kip-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "kip-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -17954,6 +18336,9 @@
         "name": "kip-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "kip-no-vmtest-pre-cq": {
@@ -18381,6 +18766,9 @@
         "name": "kip-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -18414,7 +18802,6 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "internal": true,
@@ -18423,7 +18810,12 @@
         "name": "lemmings-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "sync_chrome": false,
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "lemmings-full": {
         "archive_build_debug": true,
@@ -18431,7 +18823,6 @@
             "lemmings"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -18443,8 +18834,13 @@
         ],
         "name": "lemmings-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "lemmings-no-vmtest-pre-cq": {
         "archive": false,
@@ -18841,11 +19237,13 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "lemmings-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "leon-chrome-pfq": {
         "boards": [
@@ -18884,7 +19282,10 @@
         "name": "leon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "leon-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -19007,6 +19408,9 @@
         "name": "leon-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "leon-no-vmtest-pre-cq": {
@@ -19435,6 +19839,9 @@
         "name": "leon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -19476,7 +19883,10 @@
         "name": "link-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "link-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -19599,6 +20009,9 @@
         "name": "link-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "link-no-vmtest-pre-cq": {
@@ -20032,6 +20445,9 @@
         "name": "link-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -20097,7 +20513,11 @@
         "name": "link_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "link_freon-full": {
         "archive_build_debug": true,
@@ -20118,7 +20538,11 @@
         "name": "link_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "link_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -20538,9 +20962,10 @@
         "name": "link_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "lumpy-chrome-perf": {
         "boards": [
@@ -20611,7 +21036,10 @@
         "name": "lumpy-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "lumpy-deprecated-pre-cq": {
         "archive": false,
@@ -20699,6 +21127,9 @@
         "name": "lumpy-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "lumpy-grouped-pre-cq": {
@@ -21212,6 +21643,9 @@
         "name": "lumpy-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -21393,7 +21827,10 @@
         "name": "mccloud-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "mccloud-full": {
         "archive_build_debug": true,
@@ -21414,6 +21851,9 @@
         "name": "mccloud-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "mccloud-no-vmtest-pre-cq": {
@@ -21841,6 +22281,9 @@
         "name": "mccloud-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -21883,7 +22326,11 @@
         "name": "mccloud_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "mccloud_freon-full": {
         "archive_build_debug": true,
@@ -21904,7 +22351,11 @@
         "name": "mccloud_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "mccloud_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -22323,9 +22774,10 @@
         "name": "mccloud_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "mipseb-n32-generic-chromium-pfq": {
         "boards": [
@@ -22345,6 +22797,10 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n32-generic-full": {
@@ -22368,7 +22824,11 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n32-generic-no-vmtest-pre-cq": {
@@ -22449,6 +22909,10 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-chromium-pfq": {
@@ -22469,6 +22933,10 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-full": {
@@ -22492,7 +22960,11 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-no-vmtest-pre-cq": {
@@ -22573,6 +23045,10 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-o32-generic-chromium-pfq": {
@@ -22593,6 +23069,10 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-o32-generic-full": {
@@ -22616,7 +23096,11 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-o32-generic-no-vmtest-pre-cq": {
@@ -22697,6 +23181,10 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n32-generic-chromium-pfq": {
@@ -22717,6 +23205,10 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n32-generic-full": {
@@ -22740,7 +23232,11 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n32-generic-no-vmtest-pre-cq": {
@@ -22821,6 +23317,10 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-chromium-pfq": {
@@ -22841,6 +23341,10 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-full": {
@@ -22864,7 +23368,11 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-no-vmtest-pre-cq": {
@@ -22945,6 +23453,10 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-o32-generic-chromium-pfq": {
@@ -22974,7 +23486,6 @@
             "mipsel-o32-generic"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -22986,9 +23497,13 @@
         ],
         "name": "mipsel-o32-generic-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -23124,10 +23639,14 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "mipsel-o32-generic-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "mixed-a-pre-cq": {
@@ -23414,7 +23933,10 @@
         "name": "monroe-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "monroe-firmware": {
         "archive_build_debug": true,
@@ -23471,6 +23993,9 @@
         "name": "monroe-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "monroe-no-vmtest-pre-cq": {
@@ -23899,6 +24424,9 @@
         "name": "monroe-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -23941,7 +24469,11 @@
         "name": "monroe_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "monroe_freon-full": {
         "archive_build_debug": true,
@@ -23962,7 +24494,11 @@
         "name": "monroe_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "monroe_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -24381,9 +24917,10 @@
         "name": "monroe_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "nyan-chrome-pfq": {
         "boards": [
@@ -24428,6 +24965,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan-full": {
@@ -24451,6 +24991,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -24483,6 +25026,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -24510,6 +25056,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -24537,6 +25086,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -24564,6 +25116,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -24583,6 +25138,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -25261,6 +25819,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_big-chrome-pfq": {
@@ -25306,6 +25867,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_big-full": {
@@ -25329,6 +25893,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -25751,6 +26318,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_blaze-chrome-pfq": {
@@ -25796,6 +26366,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_blaze-full": {
@@ -25819,6 +26392,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -26241,6 +26817,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_freon-chrome-pfq": {
@@ -26286,6 +26865,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_freon-full": {
@@ -26309,6 +26891,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -26731,6 +27316,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_kitty-chrome-pfq": {
@@ -26776,6 +27364,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_kitty-full": {
@@ -26799,6 +27390,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -27221,6 +27815,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "panther-chrome-pfq": {
@@ -27260,7 +27857,10 @@
         "name": "panther-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "panther-firmware": {
         "archive_build_debug": true,
@@ -27317,6 +27917,9 @@
         "name": "panther-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "panther-no-vmtest-pre-cq": {
@@ -27757,6 +28360,9 @@
         "name": "panther-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -27854,7 +28460,11 @@
         "name": "panther_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "panther_freon-full": {
         "archive_build_debug": true,
@@ -27875,7 +28485,11 @@
         "name": "panther_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "panther_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -28294,9 +28908,10 @@
         "name": "panther_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "panther_moblab-chrome-pfq": {
         "boards": [
@@ -28336,7 +28951,11 @@
         "name": "panther_moblab-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "panther_moblab-full": {
         "archive_build_debug": true,
@@ -28357,7 +28976,11 @@
         "name": "panther_moblab-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "panther_moblab-no-vmtest-pre-cq": {
         "archive": false,
@@ -28775,9 +29398,10 @@
         "name": "panther_moblab-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "parrot-chrome-perf": {
         "boards": [
@@ -28842,7 +29466,10 @@
         "name": "parrot-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "parrot-firmware": {
         "archive_build_debug": true,
@@ -28899,6 +29526,9 @@
         "name": "parrot-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "parrot-no-vmtest-pre-cq": {
@@ -29484,6 +30114,9 @@
         "name": "parrot-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -29525,7 +30158,10 @@
         "name": "parrot_ivb-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "parrot_ivb-full": {
         "archive_build_debug": true,
@@ -29546,6 +30182,9 @@
         "name": "parrot_ivb-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "parrot_ivb-no-vmtest-pre-cq": {
@@ -29971,6 +30610,9 @@
         "name": "parrot_ivb-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -30012,7 +30654,10 @@
         "name": "parry-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "parry-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -30135,6 +30780,9 @@
         "name": "parry-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "parry-no-vmtest-pre-cq": {
@@ -30562,6 +31210,9 @@
         "name": "parry-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -30595,6 +31246,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -30622,6 +31276,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -30641,6 +31298,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -30838,6 +31498,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "peach_pi-firmware": {
@@ -30898,6 +31561,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -31320,6 +31986,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "peach_pit-chrome-pfq": {
@@ -31365,6 +32034,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "peach_pit-firmware": {
@@ -31425,6 +32097,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -31851,6 +32526,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "peppy-chrome-pfq": {
@@ -31890,7 +32568,10 @@
         "name": "peppy-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "peppy-firmware": {
         "archive_build_debug": true,
@@ -31947,6 +32628,9 @@
         "name": "peppy-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "peppy-no-vmtest-pre-cq": {
@@ -32378,6 +33062,9 @@
         "name": "peppy-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -32421,7 +33108,11 @@
         "name": "peppy_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "peppy_freon-full": {
         "archive_build_debug": true,
@@ -32442,7 +33133,11 @@
         "name": "peppy_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "peppy_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -32862,9 +33557,10 @@
         "name": "peppy_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "pineview-full-group": {
         "archive_build_debug": true,
@@ -32893,6 +33589,9 @@
                 "name": "x86-mario-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -32918,6 +33617,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -32944,6 +33646,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -32969,6 +33674,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -32994,6 +33702,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -33011,6 +33722,9 @@
         "name": "pineview-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "pineview-release-group": {
@@ -33583,7 +34297,10 @@
         "name": "quawks-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "quawks-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -33706,6 +34423,9 @@
         "name": "quawks-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "quawks-no-vmtest-pre-cq": {
@@ -34133,6 +34853,9 @@
         "name": "quawks-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -34164,6 +34887,9 @@
                 "name": "rambi-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -34189,6 +34915,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -34215,6 +34944,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -34241,6 +34973,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -34258,6 +34993,9 @@
         "name": "rambi-a-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "rambi-a-release-group": {
@@ -34541,6 +35279,9 @@
                 "name": "glimmer-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -34566,6 +35307,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -34592,6 +35336,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -34618,6 +35365,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -34635,6 +35385,9 @@
         "name": "rambi-b-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "rambi-b-release-group": {
@@ -34918,6 +35671,9 @@
                 "name": "squawks-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -34943,6 +35699,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -34969,6 +35728,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -34995,6 +35757,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -35012,6 +35777,9 @@
         "name": "rambi-c-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "rambi-c-release-group": {
@@ -35305,7 +36073,10 @@
         "name": "rambi-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "rambi-d-full-group": {
         "archive_build_debug": true,
@@ -35334,6 +36105,9 @@
                 "name": "cranky-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -35359,6 +36133,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -35376,6 +36153,9 @@
         "name": "rambi-d-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "rambi-d-release-group": {
@@ -35681,6 +36461,9 @@
         "name": "rambi-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "rambi-no-vmtest-pre-cq": {
@@ -36111,6 +36894,9 @@
         "name": "rambi-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -36167,6 +36953,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "rush-full": {
@@ -36190,6 +36979,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -36589,6 +37381,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "rush_ryu-chrome-pfq": {
@@ -36635,6 +37430,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "rush_ryu-deprecated-pre-cq": {
@@ -36688,6 +37486,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -37134,6 +37935,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "samus-chrome-pfq": {
@@ -37174,7 +37978,11 @@
         "name": "samus-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "samus-deprecated-pre-cq": {
         "archive": false,
@@ -37326,7 +38134,11 @@
         "name": "samus-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "samus-grouped-pre-cq": {
         "archive": false,
@@ -37776,9 +38588,10 @@
         "name": "samus-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "sandybridge-full-group": {
         "archive_build_debug": true,
@@ -37807,6 +38620,9 @@
                 "name": "parrot-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -37832,6 +38648,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -37858,6 +38677,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -37884,6 +38706,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -37901,6 +38726,9 @@
         "name": "sandybridge-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "sandybridge-release-group": {
@@ -38197,7 +39025,10 @@
         "name": "slippy-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "slippy-firmware": {
         "archive_build_debug": true,
@@ -38254,6 +39085,9 @@
         "name": "slippy-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "slippy-full-group": {
@@ -38283,6 +39117,9 @@
                 "name": "peppy-full",
                 "prebuilts": "public",
                 "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false
             },
             {
@@ -38308,6 +39145,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -38334,6 +39174,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -38360,6 +39203,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -38385,6 +39231,9 @@
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -38402,6 +39251,9 @@
         "name": "slippy-full-group",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "slippy-no-vmtest-pre-cq": {
@@ -39133,6 +39985,9 @@
         "name": "slippy-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -39174,7 +40029,10 @@
         "name": "squawks-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "squawks-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -39297,6 +40155,9 @@
         "name": "squawks-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "squawks-no-vmtest-pre-cq": {
@@ -39724,6 +40585,9 @@
         "name": "squawks-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -39759,7 +40623,6 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "internal": true,
@@ -39768,9 +40631,13 @@
         "name": "storm-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "storm-firmware": {
@@ -39816,7 +40683,6 @@
             "storm"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -39828,9 +40694,13 @@
         ],
         "name": "storm-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -40247,10 +41117,14 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "storm-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "stout-chrome-pfq": {
@@ -40290,7 +41164,10 @@
         "name": "stout-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "stout-firmware": {
         "archive_build_debug": true,
@@ -40347,6 +41224,9 @@
         "name": "stout-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "stout-no-vmtest-pre-cq": {
@@ -40777,6 +41657,9 @@
         "name": "stout-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -40818,7 +41701,10 @@
         "name": "stumpy-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "stumpy-firmware": {
         "archive_build_debug": true,
@@ -40875,6 +41761,9 @@
         "name": "stumpy-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "stumpy-no-vmtest-pre-cq": {
@@ -41318,6 +42207,9 @@
         "name": "stumpy-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -41360,7 +42252,11 @@
         "name": "stumpy_moblab-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "stumpy_moblab-full": {
         "archive_build_debug": true,
@@ -41381,7 +42277,11 @@
         "name": "stumpy_moblab-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "stumpy_moblab-no-vmtest-pre-cq": {
         "archive": false,
@@ -41801,9 +42701,10 @@
         "name": "stumpy_moblab-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "swanky-chrome-pfq": {
         "boards": [
@@ -41842,7 +42743,10 @@
         "name": "swanky-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "swanky-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -41965,6 +42869,9 @@
         "name": "swanky-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "swanky-no-vmtest-pre-cq": {
@@ -42392,6 +43299,9 @@
         "name": "swanky-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -42521,7 +43431,10 @@
         "name": "tricky-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "tricky-full": {
         "archive_build_debug": true,
@@ -42542,6 +43455,9 @@
         "name": "tricky-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "tricky-no-vmtest-pre-cq": {
@@ -42969,6 +43885,9 @@
         "name": "tricky-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -43011,7 +43930,11 @@
         "name": "tricky_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "tricky_freon-full": {
         "archive_build_debug": true,
@@ -43032,7 +43955,11 @@
         "name": "tricky_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "tricky_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -43451,9 +44378,10 @@
         "name": "tricky_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "urara-chrome-pfq": {
         "boards": [
@@ -43486,7 +44414,6 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "internal": true,
@@ -43495,9 +44422,13 @@
         "name": "urara-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "urara-full": {
@@ -43506,7 +44437,6 @@
             "urara"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -43518,9 +44448,13 @@
         ],
         "name": "urara-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -43918,10 +44852,14 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "urara-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron-b-full-group": {
@@ -43953,6 +44891,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -43972,6 +44913,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -44103,6 +45047,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -44130,6 +45077,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             },
@@ -44157,6 +45107,9 @@
                 "tests_supported": false,
                 "trybot_list": true,
                 "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
                 "usepkg_build_packages": false,
                 "vm_tests": []
             }
@@ -44176,6 +45129,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -44423,6 +45379,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_jerry-full": {
@@ -44446,6 +45405,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -44868,6 +45830,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_mighty-chrome-pfq": {
@@ -44913,6 +45878,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_mighty-full": {
@@ -44936,6 +45904,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -45358,6 +46329,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_pinky-chrome-pfq": {
@@ -45404,6 +46378,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_pinky-full": {
@@ -45427,6 +46404,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -45850,6 +46830,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_speedy-chrome-pfq": {
@@ -45895,6 +46878,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_speedy-full": {
@@ -45918,6 +46904,9 @@
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -46340,6 +47329,9 @@
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "whirlwind-chrome-pfq": {
@@ -46373,7 +47365,6 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "internal": true,
@@ -46382,9 +47373,13 @@
         "name": "whirlwind-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "whirlwind-full": {
@@ -46393,7 +47388,6 @@
             "whirlwind"
         ],
         "build_type": "full",
-        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
         "git_sync": true,
@@ -46405,9 +47399,13 @@
         ],
         "name": "whirlwind-full",
         "prebuilts": "public",
+        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false,
         "vm_tests": []
     },
@@ -46823,10 +47821,14 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "whirlwind-tot-chromium-pfq-informational",
+        "sync_chrome": false,
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "winky-chrome-pfq": {
@@ -46866,7 +47868,10 @@
         "name": "winky-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "winky-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -46989,6 +47994,9 @@
         "name": "winky-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "winky-no-vmtest-pre-cq": {
@@ -47416,6 +48424,9 @@
         "name": "winky-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -47457,7 +48468,10 @@
         "name": "wolf-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "wolf-firmware": {
         "archive_build_debug": true,
@@ -47514,6 +48528,9 @@
         "name": "wolf-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "wolf-no-vmtest-pre-cq": {
@@ -47946,6 +48963,9 @@
         "name": "wolf-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -47994,7 +49014,11 @@
         "name": "x32-generic-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false
     },
     "x32-generic-full": {
         "archive_build_debug": true,
@@ -48015,7 +49039,11 @@
         "name": "x32-generic-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "usepkg_toolchain": false
     },
     "x32-generic-incremental": {
         "boards": [
@@ -48114,6 +49142,10 @@
         "name": "x32-generic-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -48155,7 +49187,10 @@
         "name": "x86-alex-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-alex-full": {
         "archive_build_debug": true,
@@ -48176,6 +49211,9 @@
         "name": "x86-alex-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-alex-no-vmtest-pre-cq": {
@@ -48755,6 +49793,9 @@
         "name": "x86-alex-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -48796,7 +49837,10 @@
         "name": "x86-alex_he-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-alex_he-full": {
         "archive_build_debug": true,
@@ -48817,6 +49861,9 @@
         "name": "x86-alex_he-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-alex_he-no-vmtest-pre-cq": {
@@ -49238,6 +50285,9 @@
         "name": "x86-alex_he-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -49316,6 +50366,9 @@
         "name": "x86-generic-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-generic-grouped-pre-cq": {
@@ -49500,6 +50553,9 @@
         "name": "x86-generic-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -49541,7 +50597,10 @@
         "name": "x86-mario-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-mario-factory": {
         "archive_build_debug": true,
@@ -49640,6 +50699,9 @@
         "name": "x86-mario-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-mario-no-vmtest-pre-cq": {
@@ -50094,6 +51156,9 @@
         "name": "x86-mario-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -50113,7 +51178,10 @@
         "name": "x86-pineview-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-pineview-full": {
         "archive_build_debug": true,
@@ -50134,6 +51202,9 @@
         "name": "x86-pineview-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-pineview-no-vmtest-pre-cq": {
@@ -50205,6 +51276,9 @@
         "name": "x86-pineview-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -50262,7 +51336,10 @@
         "name": "x86-zgb-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-zgb-full": {
         "archive_build_debug": true,
@@ -50283,6 +51360,9 @@
         "name": "x86-zgb-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-zgb-no-vmtest-pre-cq": {
@@ -50862,6 +51942,9 @@
         "name": "x86-zgb-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -50903,7 +51986,10 @@
         "name": "x86-zgb_he-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-zgb_he-full": {
         "archive_build_debug": true,
@@ -50924,6 +52010,9 @@
         "name": "x86-zgb_he-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "x86-zgb_he-no-vmtest-pre-cq": {
@@ -51345,6 +52434,9 @@
         "name": "x86-zgb_he-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -51386,7 +52478,10 @@
         "name": "zako-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "zako-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -51509,6 +52604,9 @@
         "name": "zako-full",
         "prebuilts": "public",
         "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "usepkg_build_packages": false
     },
     "zako-no-vmtest-pre-cq": {
@@ -51936,6 +53034,9 @@
         "name": "zako-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": [
             "smoke_suite"
         ]
@@ -51978,7 +53079,11 @@
         "name": "zako_freon-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     },
     "zako_freon-full": {
         "archive_build_debug": true,
@@ -51999,7 +53104,11 @@
         "name": "zako_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "zako_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -52418,8 +53527,9 @@
         "name": "zako_freon-tot-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
     }
 }
