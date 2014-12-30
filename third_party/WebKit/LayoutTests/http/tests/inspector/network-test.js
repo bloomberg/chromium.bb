@@ -94,11 +94,11 @@ InspectorTest.HARPropertyFormatters = {
     timings: "formatAsTypeName",
     version: "formatAsTypeName",
     wait: "formatAsTypeName",
+    _transferSize: "formatAsTypeName",
     _error: "skip",
 };
 
 // addObject checks own properties only, so make a deep copy rather than use prototype.
-
 InspectorTest.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(InspectorTest.HARPropertyFormatters));
 InspectorTest.HARPropertyFormattersWithSize.size = "formatAsTypeName";
 

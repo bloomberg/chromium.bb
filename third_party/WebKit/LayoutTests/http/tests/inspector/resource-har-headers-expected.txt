@@ -45,6 +45,7 @@ HAR:{
         url : "http://example.com/inspector-test.js"
     }
     response : {
+        _transferSize : <number>
         bodySize : 500
         content : {
             compression : 500

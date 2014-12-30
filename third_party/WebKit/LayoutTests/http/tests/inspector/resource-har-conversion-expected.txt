@@ -26,6 +26,7 @@ Page reloaded.
                 url : "http://127.0.0.1:8000/inspector/resource-har-conversion.html"
             }
             response : {
+                _transferSize : <number>
                 bodySize : <number>
                 content : {
                     mimeType : "text/html"
@@ -89,6 +90,7 @@ Page reloaded.
                 url : "http://127.0.0.1:8000/inspector/inspector-test.js"
             }
             response : {
+                _transferSize : <number>
                 bodySize : <number>
                 content : {
                     mimeType : "application/x-javascript"
@@ -152,6 +154,7 @@ Page reloaded.
                 url : "http://127.0.0.1:8000/inspector/network-test.js"
             }
             response : {
+                _transferSize : <number>
                 bodySize : <number>
                 content : {
                     mimeType : "application/x-javascript"
@@ -192,6 +195,7 @@ Page reloaded.
                 url : "http://127.0.0.1:8000/inspector/resources/post-target.cgi"
             }
             response : {
+                _transferSize : <number>
                 bodySize : <number>
                 content : {
                     compression : <number>
