@@ -847,63 +847,87 @@ TEST_F(DataReductionProxyProtocolTest, OnResolveProxyHandler) {
   EXPECT_FALSE(other_proxy_info.is_empty());
 
   // Direct
-   net::ProxyInfo direct_proxy_info;
-   direct_proxy_info.UseDirect();
-   EXPECT_TRUE(direct_proxy_info.is_direct());
+  net::ProxyInfo direct_proxy_info;
+  direct_proxy_info.UseDirect();
+  EXPECT_TRUE(direct_proxy_info.is_direct());
 
-   // Empty retry info map
-   net::ProxyRetryInfoMap empty_proxy_retry_info;
+  // Empty retry info map
+  net::ProxyRetryInfoMap empty_proxy_retry_info;
 
-   // Retry info map with the data reduction proxy;
-   net::ProxyRetryInfoMap data_reduction_proxy_retry_info;
-   net::ProxyRetryInfo retry_info;
-   retry_info.current_delay = base::TimeDelta::FromSeconds(1000);
-   retry_info.bad_until = base::TimeTicks().Now() + retry_info.current_delay;
-   retry_info.try_while_bad = false;
-   data_reduction_proxy_retry_info[
-       data_reduction_proxy_info.proxy_server().ToURI()] = retry_info;
+  // Retry info map with the data reduction proxy;
+  net::ProxyRetryInfoMap data_reduction_proxy_retry_info;
+  net::ProxyRetryInfo retry_info;
+  retry_info.current_delay = base::TimeDelta::FromSeconds(1000);
+  retry_info.bad_until = base::TimeTicks().Now() + retry_info.current_delay;
+  retry_info.try_while_bad = false;
+  data_reduction_proxy_retry_info[
+     data_reduction_proxy_info.proxy_server().ToURI()] = retry_info;
 
-   net::ProxyInfo result;
+  net::ProxyInfo result;
 
-   // The data reduction proxy is used. It should be used afterwards.
-   result.Use(data_reduction_proxy_info);
-   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                         proxy_config_direct, empty_proxy_retry_info,
-                         &test_params, &result);
-   EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
+  // The data reduction proxy is used. It should be used afterwards.
+  result.Use(data_reduction_proxy_info);
+  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &result);
+  EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
 
-   // Another proxy is used. It should be used afterwards.
-   result.Use(other_proxy_info);
-   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                         proxy_config_direct, empty_proxy_retry_info,
-                         &test_params, &result);
-   EXPECT_EQ(other_proxy_info.proxy_server(), result.proxy_server());
+  // Another proxy is used. It should be used afterwards.
+  result.Use(other_proxy_info);
+  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &result);
+  EXPECT_EQ(other_proxy_info.proxy_server(), result.proxy_server());
 
-   // A direct connection is used. The data reduction proxy should be used
-   // afterwards.
-   // Another proxy is used. It should be used afterwards.
-   result.Use(direct_proxy_info);
-   net::ProxyConfig::ID prev_id = result.config_id();
-   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                         proxy_config_direct, empty_proxy_retry_info,
-                         &test_params, &result);
-   EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
-   // Only the proxy list should be updated, not he proxy info.
-   EXPECT_EQ(result.config_id(), prev_id);
+  // A direct connection is used. The data reduction proxy should be used
+  // afterwards.
+  // Another proxy is used. It should be used afterwards.
+  result.Use(direct_proxy_info);
+  net::ProxyConfig::ID prev_id = result.config_id();
+  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &result);
+  EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
+  // Only the proxy list should be updated, not he proxy info.
+  EXPECT_EQ(result.config_id(), prev_id);
 
-   // A direct connection is used, but the data reduction proxy is on the retry
-   // list. A direct connection should be used afterwards.
-   result.Use(direct_proxy_info);
-   prev_id = result.config_id();
-   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                         proxy_config_direct, data_reduction_proxy_retry_info,
-                         &test_params, &result);
-   EXPECT_TRUE(result.proxy_server().is_direct());
-   EXPECT_EQ(result.config_id(), prev_id);
+  // A direct connection is used, but the data reduction proxy is on the retry
+  // list. A direct connection should be used afterwards.
+  result.Use(direct_proxy_info);
+  prev_id = result.config_id();
+  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, data_reduction_proxy_retry_info,
+                       &test_params, &result);
+  EXPECT_TRUE(result.proxy_server().is_direct());
+  EXPECT_EQ(result.config_id(), prev_id);
 
+  // Test that ws:// and wss:// URLs bypass the data reduction proxy.
+  OnResolveProxyHandler(GURL("ws://echo.websocket.org/"),
+                       load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &other_proxy_info);
+  EXPECT_FALSE(other_proxy_info.is_direct());
 
-  // Without DataCompressionProxyCriticalBypass Finch trial set, should never
-  // bypass.
+  OnResolveProxyHandler(GURL("ws://echo.websocket.org/"),
+                       load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &data_reduction_proxy_info);
+  EXPECT_TRUE(data_reduction_proxy_info.is_direct());
+
+  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"),
+                       load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &other_proxy_info);
+  EXPECT_FALSE(other_proxy_info.is_direct());
+
+  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"),
+                       load_flags, data_reduction_proxy_config,
+                       proxy_config_direct, empty_proxy_retry_info,
+                       &test_params, &data_reduction_proxy_info);
+  EXPECT_TRUE(data_reduction_proxy_info.is_direct());
+
+  // Without DataCompressionProxyCriticalBypass Finch trial set, the
+  // BYPASS_DATA_REDUCTION_PROXY load flag should be ignored.
   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
                         proxy_config_direct, empty_proxy_retry_info,
                         &test_params, &data_reduction_proxy_info);

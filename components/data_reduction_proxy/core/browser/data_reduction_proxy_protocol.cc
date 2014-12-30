@@ -159,14 +159,16 @@ void OnResolveProxyHandler(const GURL& url,
       result->UseProxyList(data_reduction_proxy_info.proxy_list());
   }
 
-  if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
-      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() &&
-      !result->is_empty() &&
-      !result->is_direct() &&
-      params &&
-      params->IsDataReductionProxy(
-          result->proxy_server().host_port_pair(), NULL)) {
-    result->UseDirect();
+  if (url.SchemeIsWSOrWSS() ||
+      ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
+       DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial())) {
+    if (!result->is_empty() &&
+        !result->is_direct() &&
+        params &&
+        params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
+                                     NULL)) {
+      result->UseDirect();
+    }
   }
 }
 
