@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
@@ -398,7 +399,9 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue(ev.isShiftPressed());
     }
 
-    @SmallTest
+    // http://crbug.com/445499
+    @FlakyTest
+    // @SmallTest
     @Feature({"TextInput", "Main"})
     public void testKeyCodesWhileComposingText() throws Throwable {
         DOMUtils.focusNode(mWebContents, "textarea");
@@ -468,7 +471,9 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("", mConnection.getTextBeforeCursor(9, 0));
     }
 
-    @SmallTest
+    // http://crbug.com/445499
+    @FlakyTest
+    // @SmallTest
     @Feature({"TextInput", "Main"})
     public void testKeyCodesWhileSwipingText() throws Throwable {
         DOMUtils.focusNode(mWebContents, "textarea");
