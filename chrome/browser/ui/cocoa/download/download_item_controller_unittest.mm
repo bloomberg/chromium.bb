@@ -97,16 +97,22 @@ class DownloadItemControllerTest : public CocoaProfileTest {
   }
 
   DownloadItemController* CreateItemController() {
-    base::RunLoop run_loop;
-    base::scoped_nsobject<DownloadItemController> item(
-        [[DownloadItemControllerWithInitCallback alloc]
-            initWithDownload:download_item_.get()
-                       shelf:shelf_.get()
-                initCallback:run_loop.QuitClosure()]);
+    // In OSX 10.10, the owner of a nib file is retain/autoreleased during the
+    // initialization of the nib. Wrapping the constructor in an
+    // autoreleasepool ensures that tests can control the destruction timing of
+    // the DownloadItemController.
+    @autoreleasepool {
+      base::RunLoop run_loop;
+      base::scoped_nsobject<DownloadItemController> item(
+          [[DownloadItemControllerWithInitCallback alloc]
+              initWithDownload:download_item_.get()
+                         shelf:shelf_.get()
+                  initCallback:run_loop.QuitClosure()]);
 
-    [[test_window() contentView] addSubview:[item view]];
-    run_loop.Run();
-    return item.release();
+      [[test_window() contentView] addSubview:[item view]];
+      run_loop.Run();
+      return item.release();
+    }
   }
 
  protected:
