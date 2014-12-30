@@ -126,12 +126,11 @@ class DomDistillerStore : public syncer::SyncableService,
   bool UpdateEntry(const ArticleEntry& entry) override;
   bool RemoveEntry(const ArticleEntry& entry) override;
 
-  virtual void UpdateAttachments(
-      const std::string& entry_id,
-      scoped_ptr<ArticleAttachmentsData> attachments_data,
-      const UpdateAttachmentsCallback& callback) override;
-  virtual void GetAttachments(const std::string& entry_id,
-                              const GetAttachmentsCallback& callback) override;
+  void UpdateAttachments(const std::string& entry_id,
+                         scoped_ptr<ArticleAttachmentsData> attachments_data,
+                         const UpdateAttachmentsCallback& callback) override;
+  void GetAttachments(const std::string& entry_id,
+                      const GetAttachmentsCallback& callback) override;
 
   bool GetEntryById(const std::string& entry_id, ArticleEntry* entry) override;
   bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) override;

@@ -113,7 +113,6 @@ class TestSuggestionsStore : public suggestions::SuggestionsStore {
   TestSuggestionsStore() {
     cached_suggestions = CreateSuggestionsProfile();
   }
-  virtual ~TestSuggestionsStore() {}
   bool LoadSuggestions(SuggestionsProfile* suggestions) override {
     if (cached_suggestions.suggestions_size()) {
       *suggestions = cached_suggestions;

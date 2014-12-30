@@ -22,7 +22,7 @@ class GoogleURLTrackerMapEntry : public infobars::InfoBarManager::Observer {
       GoogleURLTracker* google_url_tracker,
       infobars::InfoBarManager* infobar_manager,
       scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper);
-  virtual ~GoogleURLTrackerMapEntry();
+  ~GoogleURLTrackerMapEntry() override;
 
   bool has_infobar_delegate() const { return !!infobar_delegate_; }
   GoogleURLTrackerInfoBarDelegate* infobar_delegate() {

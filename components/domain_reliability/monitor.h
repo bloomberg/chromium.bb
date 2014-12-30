@@ -61,7 +61,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   // Must be called from the pref thread if |MoveToNetworkThread| was not
   // called, or from the network thread if it was called.
-  virtual ~DomainReliabilityMonitor();
+  ~DomainReliabilityMonitor() override;
 
   // Must be called before |InitURLRequestContext| on the same thread on which
   // the Monitor was constructed. Moves (most of) the Monitor to the network
@@ -99,7 +99,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   void OnCompleted(net::URLRequest* request, bool started);
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Called to remove browsing data. With CLEAR_BEACONS, leaves contexts in

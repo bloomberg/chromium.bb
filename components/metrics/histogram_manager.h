@@ -27,7 +27,7 @@ namespace metrics {
 class HistogramManager : public base::HistogramFlattener {
  public:
   HistogramManager();
-  ~HistogramManager();
+  ~HistogramManager() override;
 
   // Snapshot all histograms to record the delta into |uma_proto_| and then
   // returns the serialized protobuf representation of the record in |data|.

@@ -45,7 +45,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
-  virtual void LoadProfiles() override {
+  void LoadProfiles() override {
     std::vector<AutofillProfile*> profiles;
     web_profiles_.release(&profiles);
     WDResult<std::vector<AutofillProfile*> > result(AUTOFILL_PROFILES_RESULT,
@@ -55,15 +55,13 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   // Overridden to avoid a trip to the database.
-  virtual void LoadCreditCards() override {}
+  void LoadCreditCards() override {}
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
   }
 
-  virtual bool IsAutofillEnabled() const override {
-    return autofill_enabled_;
-  }
+  bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
  private:
   void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {

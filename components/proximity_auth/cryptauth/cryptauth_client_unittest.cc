@@ -112,7 +112,6 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
         url_request_context_(
             new net::TestURLRequestContextGetter(new base::NullTaskRunner())),
         serialized_request_(std::string()) {}
-  virtual ~ProximityAuthCryptAuthClientTest() {}
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

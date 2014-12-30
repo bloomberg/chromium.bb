@@ -19,7 +19,7 @@ class CryptAuthAccountTokenFetcher : public CryptAuthAccessTokenFetcher,
   // |token_service| is not owned, and must outlive this object.
   CryptAuthAccountTokenFetcher(OAuth2TokenService* token_service,
                                const std::string& account_id);
-  virtual ~CryptAuthAccountTokenFetcher();
+  ~CryptAuthAccountTokenFetcher() override;
 
   // CryptAuthAccessTokenFetcher:
   void FetchAccessToken(const AccessTokenCallback& callback) override;

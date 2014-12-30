@@ -104,10 +104,10 @@ class MockableTimeBackoffEntry : public net::BackoffEntry {
   MockableTimeBackoffEntry(const net::BackoffEntry::Policy* const policy,
                            MockableTime* time);
 
-  virtual ~MockableTimeBackoffEntry();
+  ~MockableTimeBackoffEntry() override;
 
  protected:
-  virtual base::TimeTicks ImplGetTimeNow() const override;
+  base::TimeTicks ImplGetTimeNow() const override;
 
  private:
   MockableTime* time_;

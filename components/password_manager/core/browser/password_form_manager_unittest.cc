@@ -95,15 +95,14 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
                                            true);
   }
 
-  virtual bool ShouldFilterAutofillResult(
-      const autofill::PasswordForm& form) override {
+  bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override {
     if (form == form_to_filter_)
       return true;
     return false;
   }
 
-  virtual PrefService* GetPrefs() override { return &prefs_; }
-  virtual PasswordStore* GetPasswordStore() override { return password_store_; }
+  PrefService* GetPrefs() override { return &prefs_; }
+  PasswordStore* GetPasswordStore() override { return password_store_; }
 
   void SetFormToFilter(const autofill::PasswordForm& form) {
     form_to_filter_ = form;
@@ -113,7 +112,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   base::WeakPtr<PasswordManagerDriver> driver() { return driver_->AsWeakPtr(); }
 
-  virtual autofill::AutofillManager* GetAutofillManagerForMainFrame() override {
+  autofill::AutofillManager* GetAutofillManagerForMainFrame() override {
     return mock_driver()->mock_autofill_manager();
   }
 

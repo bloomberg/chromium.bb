@@ -15,7 +15,7 @@ namespace dom_distiller {
 
 class WebContentsMainFrameObserverTest
     : public content::RenderViewHostTestHarness {
-  virtual void SetUp() override {
+  void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
         web_contents());

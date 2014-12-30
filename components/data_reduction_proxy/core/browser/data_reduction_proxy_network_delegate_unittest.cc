@@ -26,14 +26,7 @@
 namespace data_reduction_proxy {
 namespace {
 
-class TestNetworkDelegate : public net::NetworkDelegateImpl {
- public:
-  TestNetworkDelegate() {
-  }
-
-  virtual ~TestNetworkDelegate() {
-  }
-};
+using TestNetworkDelegate = net::NetworkDelegateImpl;
 
 const char kChromeProxyHeader[] = "chrome-proxy";
 

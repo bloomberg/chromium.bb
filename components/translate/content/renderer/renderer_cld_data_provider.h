@@ -40,7 +40,7 @@ class RendererCldDataProvider : public IPC::Listener {
   // This method is defined as virtual in order to force the implementation to
   // define the specific IPC message(s) that it handles.
   // The default implementation does nothing and returns false.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Invoked by the renderer process to request that CLD data be obtained and
   // that CLD be initialized with it. The implementation is expected to

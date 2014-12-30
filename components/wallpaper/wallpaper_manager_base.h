@@ -223,7 +223,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
                                                const std::string& file);
 
   WallpaperManagerBase();
-  virtual ~WallpaperManagerBase();
+  ~WallpaperManagerBase() override;
 
   // Returns the appropriate wallpaper resolution for all root windows.
   virtual WallpaperResolution GetAppropriateResolution() = 0;
@@ -250,10 +250,9 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   virtual void InitializeWallpaper() = 0;
 
   // NotificationObserver overrides:
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override = 0;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override = 0;
 
   // Removes all |user_id| related wallpaper info and saved wallpapers.
   virtual void RemoveUserWallpaperInfo(const std::string& user_id) = 0;

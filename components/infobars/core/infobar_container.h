@@ -65,7 +65,7 @@ class InfoBarContainer : public InfoBarManager::Observer {
   };
 
   explicit InfoBarContainer(Delegate* delegate);
-  virtual ~InfoBarContainer();
+  ~InfoBarContainer() override;
 
   // Changes the InfoBarManager for which this container is showing infobars.
   // This will hide all current infobars, remove them from the container, add

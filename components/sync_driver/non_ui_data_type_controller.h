@@ -33,8 +33,8 @@ class NonUIDataTypeController : public DataTypeController {
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  virtual syncer::ModelType type() const = 0;
-  virtual syncer::ModelSafeGroup model_safe_group() const = 0;
+  syncer::ModelType type() const override = 0;
+  syncer::ModelSafeGroup model_safe_group() const override = 0;
   ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;

@@ -31,7 +31,6 @@ class ProximityAuthCryptAuthAccountTokenFetcherTest : public testing::Test {
       : fetcher_(&token_service_, kAccountId) {
     token_service_.AddAccount(kAccountId);
   }
-  virtual ~ProximityAuthCryptAuthAccountTokenFetcherTest() {}
 
   FakeOAuth2TokenService token_service_;
   CryptAuthAccountTokenFetcher fetcher_;
