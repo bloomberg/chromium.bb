@@ -518,6 +518,8 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("childAtIndex", &WebAXObjectProxy::ChildAtIndex)
       .SetMethod("elementAtPoint", &WebAXObjectProxy::ElementAtPoint)
       .SetMethod("tableHeader", &WebAXObjectProxy::TableHeader)
+      .SetMethod("rowHeaderAtIndex", &WebAXObjectProxy::RowHeaderAtIndex)
+      .SetMethod("columnHeaderAtIndex", &WebAXObjectProxy::ColumnHeaderAtIndex)
       .SetMethod("rowIndexRange", &WebAXObjectProxy::RowIndexRange)
       .SetMethod("columnIndexRange", &WebAXObjectProxy::ColumnIndexRange)
       .SetMethod("cellForColumnAndRow", &WebAXObjectProxy::CellForColumnAndRow)
@@ -888,6 +890,28 @@ v8::Handle<v8::Object> WebAXObjectProxy::TableHeader() {
     return v8::Handle<v8::Object>();
 
   return factory_->GetOrCreate(obj);
+}
+
+v8::Handle<v8::Object> WebAXObjectProxy::RowHeaderAtIndex(unsigned index) {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebVector<blink::WebAXObject> headers;
+  accessibility_object_.rowHeaders(headers);
+  size_t headerCount = headers.size();
+  if (index >= headerCount)
+    return v8::Handle<v8::Object>();
+
+  return factory_->GetOrCreate(headers[index]);
+}
+
+v8::Handle<v8::Object> WebAXObjectProxy::ColumnHeaderAtIndex(unsigned index) {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebVector<blink::WebAXObject> headers;
+  accessibility_object_.columnHeaders(headers);
+  size_t headerCount = headers.size();
+  if (index >= headerCount)
+    return v8::Handle<v8::Object>();
+
+  return factory_->GetOrCreate(headers[index]);
 }
 
 std::string WebAXObjectProxy::RowIndexRange() {

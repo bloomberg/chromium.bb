@@ -106,6 +106,8 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   v8::Handle<v8::Object> ChildAtIndex(int index);
   v8::Handle<v8::Object> ElementAtPoint(int x, int y);
   v8::Handle<v8::Object> TableHeader();
+  v8::Handle<v8::Object> RowHeaderAtIndex(unsigned index);
+  v8::Handle<v8::Object> ColumnHeaderAtIndex(unsigned index);
   std::string RowIndexRange();
   std::string ColumnIndexRange();
   v8::Handle<v8::Object> CellForColumnAndRow(int column, int row);
