@@ -14,7 +14,7 @@ function test() {
         var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
         request.setResourceType(type);
         request.requestId = id;
-        request.startTime = startTime;
+        request.setIssueTime(startTime);
         request.endTime = endTime;
         target._appendRequest(request);
         target.refresh();
