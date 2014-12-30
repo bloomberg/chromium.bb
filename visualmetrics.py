@@ -775,7 +775,7 @@ if '__main__' == __name__:
     if options.histogram is not None:
         histogram_file = options.histogram
     else:
-        histogram_file = os.path.join(temp_dir, 'histograms.json.gz')
+        histogram_file = os.path.join(directory, 'histograms.json.gz')
 
     # Set up logging
     log_level = logging.CRITICAL
