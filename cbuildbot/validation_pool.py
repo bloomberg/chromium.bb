@@ -1274,9 +1274,11 @@ class ValidationPool(object):
     if builder_run is not None:
       build_id, db = builder_run.GetCIDBHandle()
       if db:
-        # We must leave enough time before the deadline to allow us to extend
-        # the deadline in case we hit this timeout.
-        timeout = db.GetTimeToDeadline(build_id) - cls.EXTENSION_TIMEOUT_BUFFER
+        time_to_deadline = db.GetTimeToDeadline(build_id)
+        if time_to_deadline is not None:
+          # We must leave enough time before the deadline to allow us to extend
+          # the deadline in case we hit this timeout.
+          timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
 
     end_time = time.time() + timeout
     # How long to wait until if the tree is throttled and we want to be more
