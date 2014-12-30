@@ -236,10 +236,10 @@ class GerritHelper(object):
       kwargs['change'] = change
       change = None
     elif change and cros_patch.ParseFullChangeID(change):
-      project, branch, change_id = cros_patch.ParseFullChangeID(change)
-      kwargs['change'] = change_id
-      kwargs['project'] = project
-      kwargs['branch'] = branch
+      change = cros_patch.ParseFullChangeID(change)
+      kwargs['change'] = change.change_id
+      kwargs['project'] = change.project
+      kwargs['branch'] = change.branch
       change = None
 
     if change and query_kwds.get('change'):

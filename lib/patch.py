@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import calendar
+import collections
 import os
 import random
 import re
@@ -103,6 +104,10 @@ def ParseChangeID(text, error_ok=True):
   return text if valid else None
 
 
+FullChangeId = collections.namedtuple(
+    'FullChangeId', ('project', 'branch', 'change_id'))
+
+
 def ParseFullChangeID(text, error_ok=True):
   """Checks if |text| conforms to the full change-ID format and parses it.
 
@@ -135,7 +140,7 @@ def ParseFullChangeID(text, error_ok=True):
 
     return None
 
-  return project, branch, change_id
+  return FullChangeId(project, branch, change_id)
 
 
 class PatchException(Exception):
@@ -441,9 +446,8 @@ def ParsePatchDep(text, no_change_id=False, no_sha1=False,
       raise ValueError(
           'ParsePatchDep: Full Change-ID is not allowed: %r.' % original_text)
 
-    project, branch, change_id = parsed
-    return PatchQuery(remote, project=project, tracking_branch=branch,
-                        change_id=change_id)
+    return PatchQuery(remote, project=parsed.project,
+                      tracking_branch=parsed.branch, change_id=parsed.change_id)
 
   parsed = ParseChangeID(text)
   if parsed:

@@ -773,6 +773,8 @@ class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
 class TestFormatting(cros_test_lib.TestCase):
   """Test formatting of output."""
 
+  VALID_CHANGE_ID = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
+
   def _assertResult(self, functor, value, expected=None, raises=False,
                     **kwargs):
     if raises:
@@ -793,7 +795,7 @@ class TestFormatting(cros_test_lib.TestCase):
       self._assertResult(functor, value, expected, **kwargs)
 
 
-  def TestGerritNumber(self):
+  def testGerritNumber(self):
     """Tests that we can pasre a Gerrit number."""
     self._assertGood(cros_patch.ParseGerritNumber,
         [('12345',) * 2, ('12',) * 2, ('123',) * 2])
@@ -803,10 +805,9 @@ class TestFormatting(cros_test_lib.TestCase):
         ['is', 'i1325', '01234567', '012345a', '**12345', '+123', '/0123'],
         error_ok=False)
 
-  def TestChangeID(self):
+  def testChangeID(self):
     """Tests that we can parse a change-ID."""
-    self._assertGood(cros_patch.ParseChangeID,
-        [('I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',) * 2])
+    self._assertGood(cros_patch.ParseChangeID, [(self.VALID_CHANGE_ID,) * 2])
 
     # Change-IDs too short/long, with unexpected characters in it.
     self._assertBad(
@@ -815,7 +816,7 @@ class TestFormatting(cros_test_lib.TestCase):
          'I123'.ljust(42, '0')],
         error_ok=False)
 
-  def TestSHA1(self):
+  def testSHA1(self):
     """Tests that we can parse a SHA1 hash."""
     self._assertGood(cros_patch.ParseSHA1,
                      [('1' * 40,) * 2,
@@ -827,14 +828,20 @@ class TestFormatting(cros_test_lib.TestCase):
         ['0abcg', 'Z', '**a', '+123', '1234ab' * 10],
         error_ok=False)
 
-  def TestFullChangeID(self):
+  def testFullChangeID(self):
     """Tests that we can parse a full change-ID."""
-    change_id = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
-    self._assertGood(cros_patch.ParseFullChangeID,
-        [('foo~bar~%s' % change_id, ('foo', 'bar', change_id)),
+    change_id = self.VALID_CHANGE_ID
+    self._assertGood(
+        cros_patch.ParseFullChangeID,
+        (('foo~bar~%s' % change_id,
+          cros_patch.FullChangeId('foo', 'bar', change_id)),
          ('foo/bar/baz~refs/heads/_my-branch_~%s' % change_id,
-          ('foo/bar/baz', '_my-branch_', change_id))])
+          cros_patch.FullChangeId('foo/bar/baz', 'refs/heads/_my-branch_',
+                                  change_id))))
 
+  def testInvalidFullChangeID(self):
+    """Should throw an error on bad inputs."""
+    change_id = self.VALID_CHANGE_ID
     self._assertBad(
         cros_patch.ParseFullChangeID,
         ['foo', 'foo~bar', 'foo~bar~baz', 'foo~refs/bar~%s' % change_id],
@@ -842,7 +849,7 @@ class TestFormatting(cros_test_lib.TestCase):
 
   def testParsePatchDeps(self):
     """Tests that we can parse the dependency specified by the user."""
-    change_id = 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1'
+    change_id = self.VALID_CHANGE_ID
     vals = ['CL:12345', 'project~branch~%s' % change_id, change_id,
             change_id[1:]]
     for val in vals:
