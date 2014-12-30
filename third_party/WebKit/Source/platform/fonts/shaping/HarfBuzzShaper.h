@@ -87,17 +87,12 @@ private:
         unsigned startIndex() const { return m_startIndex; }
         unsigned numCharacters() const { return m_numCharacters; }
         unsigned numGlyphs() const { return m_numGlyphs; }
-        uint16_t* glyphs() { return &m_glyphs[0]; }
-        float* advances() { return &m_advances[0]; }
-        FloatSize* offsets() { return &m_offsets[0]; }
-        bool hasGlyphToCharacterIndexes() const
-        {
-            // Ensure that we have enough space to map each glyph to an index.
-            // FIXME: https://crbug.com/337886
-            return m_glyphToCharacterIndexes.size() >= m_numGlyphs;
-        }
+        uint16_t* glyphs() { ASSERT(m_numGlyphs); return &m_glyphs[0]; }
+        float* advances() { ASSERT(m_numGlyphs); return &m_advances[0]; }
+        FloatSize* offsets() { ASSERT(m_numGlyphs); return &m_offsets[0]; }
         uint16_t* glyphToCharacterIndexes()
         {
+            ASSERT(m_numGlyphs);
             return &m_glyphToCharacterIndexes[0];
         }
         float width() { return m_width; }

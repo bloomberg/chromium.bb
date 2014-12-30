@@ -317,7 +317,6 @@ int HarfBuzzShaper::HarfBuzzRun::characterIndexForXPosition(float targetX)
 float HarfBuzzShaper::HarfBuzzRun::xPositionForOffset(unsigned offset)
 {
     ASSERT(offset < m_numCharacters);
-    ASSERT(hasGlyphToCharacterIndexes());
     unsigned glyphIndex = 0;
     float position = 0;
     if (rtl()) {
