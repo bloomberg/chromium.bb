@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body id="body">
+
+<table id="table1">
+  <thead>
+  <tr>
+    <th>No</th>
+    <th>Month</th>
+    <th>Expenses</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <th>1</th>
+    <td>Jan</td>
+    <td>100</td>
+  </tr>
+  <tr>
+    <th>2</th>
+    <td>Feb</td>
+    <td>150</td>
+  </tr>
+   <tr>
+    <th>3</th>
+    <td>Mar</td>
+    <td>200</td>
+  </tr>
+  </tbody>
+</table>
+
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+
+    description("Check whether column and row headers are reported correctly");
+
+    if (window.accessibilityController) {
+        var table = accessibilityController.accessibleElementById("table1");
+        // Row headers
+        shouldBeTrue("table.rowHeaderAtIndex(0).isEqual(table.cellForColumnAndRow(0, 0))");
+        shouldBeTrue("table.rowHeaderAtIndex(1).isEqual(table.cellForColumnAndRow(0, 1))");
+        shouldBeTrue("table.rowHeaderAtIndex(2).isEqual(table.cellForColumnAndRow(0, 2))");
+        shouldBeTrue("table.rowHeaderAtIndex(3).isEqual(table.cellForColumnAndRow(0, 3))");
+
+        // Column headers
+        shouldBeTrue("table.columnHeaderAtIndex(0).isEqual(table.cellForColumnAndRow(0, 0))");
+        shouldBeTrue("table.columnHeaderAtIndex(1).isEqual(table.cellForColumnAndRow(1, 0))");
+        shouldBeTrue("table.columnHeaderAtIndex(2).isEqual(table.cellForColumnAndRow(2, 0))");
+    }
+
+</script>
+
+</body>
+</html>
