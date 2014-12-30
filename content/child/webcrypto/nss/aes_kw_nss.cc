@@ -6,7 +6,7 @@
 
 #include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
-#include "content/child/webcrypto/nss/aes_key_nss.h"
+#include "content/child/webcrypto/nss/aes_algorithm_nss.h"
 #include "content/child/webcrypto/nss/key_nss.h"
 #include "content/child/webcrypto/nss/sym_key_nss.h"
 #include "content/child/webcrypto/nss/util_nss.h"

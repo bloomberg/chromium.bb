@@ -10,7 +10,7 @@
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/generate_key_result.h"
-#include "content/child/webcrypto/openssl/ec_key_openssl.h"
+#include "content/child/webcrypto/openssl/ec_algorithm_openssl.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/openssl/util_openssl.h"
 #include "content/child/webcrypto/status.h"

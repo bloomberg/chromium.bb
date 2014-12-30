@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/webcrypto/openssl/aes_key_openssl.h"
+#include "content/child/webcrypto/nss/aes_algorithm_nss.h"
 
 #include "base/logging.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
-#include "content/child/webcrypto/openssl/key_openssl.h"
-#include "content/child/webcrypto/openssl/sym_key_openssl.h"
+#include "content/child/webcrypto/nss/key_nss.h"
+#include "content/child/webcrypto/nss/sym_key_nss.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -17,13 +17,18 @@ namespace content {
 
 namespace webcrypto {
 
-AesAlgorithm::AesAlgorithm(blink::WebCryptoKeyUsageMask all_key_usages,
+AesAlgorithm::AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
+                           blink::WebCryptoKeyUsageMask all_key_usages,
                            const std::string& jwk_suffix)
-    : all_key_usages_(all_key_usages), jwk_suffix_(jwk_suffix) {
+    : import_mechanism_(import_mechanism),
+      all_key_usages_(all_key_usages),
+      jwk_suffix_(jwk_suffix) {
 }
 
-AesAlgorithm::AesAlgorithm(const std::string& jwk_suffix)
-    : all_key_usages_(blink::WebCryptoKeyUsageEncrypt |
+AesAlgorithm::AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
+                           const std::string& jwk_suffix)
+    : import_mechanism_(import_mechanism),
+      all_key_usages_(blink::WebCryptoKeyUsageEncrypt |
                       blink::WebCryptoKeyUsageDecrypt |
                       blink::WebCryptoKeyUsageWrapKey |
                       blink::WebCryptoKeyUsageUnwrapKey),
@@ -43,9 +48,9 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  return GenerateSecretKeyOpenSsl(
+  return GenerateSecretKeyNss(
       blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
-      extractable, usages, keylen_bits, result);
+      extractable, usages, keylen_bits, CKM_AES_KEY_GEN, result);
 }
 
 Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
@@ -59,7 +64,6 @@ Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
       return Status::ErrorUnsupportedImportKeyFormat();
   }
 }
-
 Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
                                   const blink::WebCryptoAlgorithm& algorithm,
                                   bool extractable,
@@ -73,9 +77,9 @@ Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
   // No possibility of overflow.
   unsigned int keylen_bits = keylen_bytes * 8;
 
-  return ImportKeyRawOpenSsl(key_data, blink::WebCryptoKeyAlgorithm::createAes(
-                                           algorithm.id(), keylen_bits),
-                             extractable, usages, key);
+  return ImportKeyRawNss(key_data, blink::WebCryptoKeyAlgorithm::createAes(
+                                       algorithm.id(), keylen_bits),
+                         extractable, usages, import_mechanism_, key);
 }
 
 Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
@@ -95,14 +99,14 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
 
 Status AesAlgorithm::ExportKeyRaw(const blink::WebCryptoKey& key,
                                   std::vector<uint8_t>* buffer) const {
-  *buffer = SymKeyOpenSsl::Cast(key)->raw_key_data();
+  *buffer = SymKeyNss::Cast(key)->raw_key_data();
   return Status::Success();
 }
 
 Status AesAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
                                   std::vector<uint8_t>* buffer) const {
-  const std::vector<uint8_t>& raw_data =
-      SymKeyOpenSsl::Cast(key)->raw_key_data();
+  SymKeyNss* sym_key = SymKeyNss::Cast(key);
+  const std::vector<uint8_t>& raw_data = sym_key->raw_key_data();
 
   WriteSecretKeyJwk(CryptoData(raw_data),
                     MakeJwkAesAlgorithmName(jwk_suffix_, raw_data.size()),
@@ -114,7 +118,7 @@ Status AesAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
 Status AesAlgorithm::SerializeKeyForClone(
     const blink::WebCryptoKey& key,
     blink::WebVector<uint8_t>* key_data) const {
-  key_data->assign(SymKeyOpenSsl::Cast(key)->serialized_key_data());
+  key_data->assign(SymKeyNss::Cast(key)->serialized_key_data());
   return Status::Success();
 }
 

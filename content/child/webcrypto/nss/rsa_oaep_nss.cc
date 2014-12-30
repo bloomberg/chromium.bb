@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/key_nss.h"
-#include "content/child/webcrypto/nss/rsa_key_nss.h"
+#include "content/child/webcrypto/nss/rsa_hashed_algorithm_nss.h"
 #include "content/child/webcrypto/nss/util_nss.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"

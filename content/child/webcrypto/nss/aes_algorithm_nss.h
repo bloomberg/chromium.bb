@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEBCRYPTO_OPENSSL_AES_OPENSSL_H_
-#define CONTENT_CHILD_WEBCRYPTO_OPENSSL_AES_OPENSSL_H_
+#ifndef CONTENT_CHILD_WEBCRYPTO_NSS_AES_ALGORITHM_NSS_H_
+#define CONTENT_CHILD_WEBCRYPTO_NSS_AES_ALGORITHM_NSS_H_
+
+#include <pkcs11t.h>
 
 #include "content/child/webcrypto/algorithm_implementation.h"
 
@@ -15,18 +17,22 @@ namespace webcrypto {
 // creation and export.
 class AesAlgorithm : public AlgorithmImplementation {
  public:
+  // Constructs an AES algorithm whose keys will be imported using the NSS
+  // mechanism |import_mechanism|.
   // |all_key_usages| is the set of all WebCrypto key usages that are
   // allowed for imported or generated keys. |jwk_suffix| is the suffix
   // used when constructing JWK names for the algorithm. For instance A128CBC
   // is the JWK name for 128-bit AES-CBC. The |jwk_suffix| in this case would
   // be "CBC".
-  AesAlgorithm(blink::WebCryptoKeyUsageMask all_key_usages,
+  AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
+               blink::WebCryptoKeyUsageMask all_key_usages,
                const std::string& jwk_suffix);
 
-  // This is the same as the other AesAlgorithm constructor where
-  // |all_key_usages| is pre-filled to values for encryption/decryption
+  // This is the same as the other AesAlgorithm constructor, however
+  // |all_key_usages| is pre-filled with values for encryption/decryption
   // algorithms (supports usages for: encrypt, decrypt, wrap, unwrap).
-  explicit AesAlgorithm(const std::string& jwk_suffix);
+  AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
+               const std::string& jwk_suffix);
 
   Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                      bool extractable,
@@ -71,6 +77,7 @@ class AesAlgorithm : public AlgorithmImplementation {
                       unsigned int* length_bits) const override;
 
  private:
+  const CK_MECHANISM_TYPE import_mechanism_;
   const blink::WebCryptoKeyUsageMask all_key_usages_;
   const std::string jwk_suffix_;
 };
@@ -79,4 +86,4 @@ class AesAlgorithm : public AlgorithmImplementation {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_WEBCRYPTO_OPENSSL_AES_OPENSSL_H_
+#endif  // CONTENT_CHILD_WEBCRYPTO_NSS_AES_ALGORITHM_NSS_H_

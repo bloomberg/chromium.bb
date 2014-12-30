@@ -5,7 +5,6 @@
 #include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
-#include "content/child/webcrypto/openssl/rsa_key_openssl.h"
 #include "content/child/webcrypto/openssl/rsa_sign_openssl.h"
 #include "content/child/webcrypto/openssl/util_openssl.h"
 #include "content/child/webcrypto/status.h"

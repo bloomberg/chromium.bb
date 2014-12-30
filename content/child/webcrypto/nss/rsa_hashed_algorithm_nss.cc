@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/webcrypto/nss/rsa_key_nss.h"
+#include "content/child/webcrypto/nss/rsa_hashed_algorithm_nss.h"
 
 #include <secasn1.h>
 
@@ -460,8 +460,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
        SEC_ASN1_INTEGER, offsetof(RsaPublicKeyData, exponent),
       },
       {
-       0,
-      }};
+       0, }};
 
   // DER-encode the public key.
   crypto::ScopedSECItem pubkey_der(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/webcrypto/openssl/rsa_key_openssl.h"
+#include "content/child/webcrypto/openssl/rsa_hashed_algorithm_openssl.h"
 #include "content/child/webcrypto/openssl/rsa_sign_openssl.h"
 #include "content/child/webcrypto/status.h"
 

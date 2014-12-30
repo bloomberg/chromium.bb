@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEBCRYPTO_NSS_RSA_KEY_NSS_H_
-#define CONTENT_CHILD_WEBCRYPTO_NSS_RSA_KEY_NSS_H_
+#ifndef CONTENT_CHILD_WEBCRYPTO_NSS_RSA_HASHED_ALGORITHM_NSS_H_
+#define CONTENT_CHILD_WEBCRYPTO_NSS_RSA_HASHED_ALGORITHM_NSS_H_
 
 #include <pkcs11t.h>
 
@@ -100,4 +100,4 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_WEBCRYPTO_NSS_RSA_KEY_NSS_H_
+#endif  // CONTENT_CHILD_WEBCRYPTO_NSS_RSA_HASHED_ALGORITHM_NSS_H_
