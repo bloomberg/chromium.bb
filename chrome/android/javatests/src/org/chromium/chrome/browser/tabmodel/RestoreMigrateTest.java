@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.google.android.apps.chrome;
+package org.chromium.chrome.browser.tabmodel;
 
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.tabmodel.TabList;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.util.StreamUtil;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -81,7 +78,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         assertTrue("Could not create tab 3 file", tab3.createNewFile());
 
         // Build the TabPersistentStore which will try to move the files.
-        MockTabModelSelector selector = new MockTabModelSelector(0, 0);
+        MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
         TabPersistentStore store = new TabPersistentStore(selector, 0,
                 getInstrumentation().getTargetContext(), null, null);
         TabPersistentStore.waitForMigrationToFinish();
@@ -143,7 +140,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         assertTrue("Could not create new state file", newStateFile.createNewFile());
 
         // Build the TabPersistentStore which will try to move the files.
-        MockTabModelSelector selector = new MockTabModelSelector(0, 0);
+        MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
         TabPersistentStore store = new TabPersistentStore(selector, 0,
                 getInstrumentation().getTargetContext(), null, null);
         TabPersistentStore.waitForMigrationToFinish();
@@ -188,7 +185,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         assertTrue("Could not create other file", otherFile.createNewFile());
 
         // Build the TabPersistentStore which will try to move the files.
-        MockTabModelSelector selector = new MockTabModelSelector(0, 0);
+        MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
         TabPersistentStore store = new TabPersistentStore(selector, 0,
                 getInstrumentation().getTargetContext(), null, null);
         TabPersistentStore.waitForMigrationToFinish();
@@ -216,13 +213,13 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testFindsMaxIdProperly() throws IOException {
-        TabModelSelector selector0 = new MockTabModelSelector(1, 1);
-        TabModelSelector selector1 = new MockTabModelSelector(1, 1);
+        TabModelSelector selector0 = new MockTabModelSelector(1, 1, null);
+        TabModelSelector selector1 = new MockTabModelSelector(1, 1, null);
 
         writeStateFile(selector0, 0);
         writeStateFile(selector1, 1);
 
-        TabModelSelector selectorIn = new MockTabModelSelector(0, 0);
+        TabModelSelector selectorIn = new MockTabModelSelector(0, 0, null);
         TabPersistentStore storeIn = new TabPersistentStore(selectorIn, 0,
                 getInstrumentation().getTargetContext(), null, null);
 
@@ -239,14 +236,14 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testOnlyLoadsSingleModel() throws IOException {
-        TabModelSelector selector0 = new MockTabModelSelector(3, 3);
-        TabModelSelector selector1 = new MockTabModelSelector(2, 1);
+        TabModelSelector selector0 = new MockTabModelSelector(3, 3, null);
+        TabModelSelector selector1 = new MockTabModelSelector(2, 1, null);
 
         writeStateFile(selector0, 0);
         writeStateFile(selector1, 1);
 
-        TabModelSelector selectorIn0 = new MockTabModelSelector(0, 0);
-        TabModelSelector selectorIn1 = new MockTabModelSelector(0, 0);
+        TabModelSelector selectorIn0 = new MockTabModelSelector(0, 0, null);
+        TabModelSelector selectorIn1 = new MockTabModelSelector(0, 0, null);
 
         TabPersistentStore storeIn0 = new TabPersistentStore(selectorIn0, 0,
                 getInstrumentation().getTargetContext(), null, null);

@@ -14,17 +14,35 @@ import java.util.ArrayList;
  * Almost empty implementation to mock a TabModel. It only handles tab creation and queries.
  */
 public class MockTabModel extends EmptyTabModel {
+    /**
+     * Used to create different kinds of Tabs.  If a MockTabModelDelegate is not provided, regular
+     * Tabs are produced.
+     */
+    public interface MockTabModelDelegate  {
+        /**
+         * Creates a Tab.
+         * @param id ID of the Tab.
+         * @param incognito Whether the Tab is incognito.
+         * @return Tab that is created.
+         */
+        public Tab createTab(int id, boolean incognito);
+    }
+
     private int mIndex = TabModel.INVALID_TAB_INDEX;
 
     private final ArrayList<Tab> mTabs = new ArrayList<Tab>();
     private final boolean mIncognito;
+    private final MockTabModelDelegate mDelegate;
 
-    public MockTabModel(boolean incognito) {
+    public MockTabModel(boolean incognito, MockTabModelDelegate delegate) {
         mIncognito = incognito;
+        mDelegate = delegate;
     }
 
     public void addTab(int id) {
-        mTabs.add(new Tab(id, isIncognito(), null, null));
+        Tab tab = mDelegate == null
+                ? new Tab(id, isIncognito(), null, null) : mDelegate.createTab(id, isIncognito());
+        mTabs.add(tab);
     }
 
     @Override

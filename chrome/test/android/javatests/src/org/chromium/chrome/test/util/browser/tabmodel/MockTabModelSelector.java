@@ -16,14 +16,14 @@ import org.chromium.content_public.browser.LoadUrlParams;
  * Mock of a basic {@link TabModelSelector}. It supports 2 {@link TabModel}: standard and incognito.
  */
 public class MockTabModelSelector extends TabModelSelectorBase {
-
     // Offsetting the id compared to the index helps greatly when debugging.
     public static final int ID_OFFSET = 1000;
     public static final int INCOGNITO_ID_OFFSET = 2000;
 
-    public MockTabModelSelector(int tabCount, int incognitoTabCount) {
+    public MockTabModelSelector(
+            int tabCount, int incognitoTabCount, MockTabModel.MockTabModelDelegate delegate) {
         super();
-        MockTabModel tabModel = new MockTabModel(false);
+        MockTabModel tabModel = new MockTabModel(false, delegate);
         if (tabCount > 0) {
             for (int i = 0; i < tabCount; i++) {
                 tabModel.addTab(ID_OFFSET + i);
@@ -31,7 +31,7 @@ public class MockTabModelSelector extends TabModelSelectorBase {
             TabModelUtils.setIndex(tabModel, 0);
         }
 
-        MockTabModel incognitoTabModel = new MockTabModel(true);
+        MockTabModel incognitoTabModel = new MockTabModel(true, delegate);
         if (incognitoTabCount > 0) {
             for (int i = 0; i < incognitoTabCount; i++) {
                 incognitoTabModel.addTab(INCOGNITO_ID_OFFSET + tabCount + i);
