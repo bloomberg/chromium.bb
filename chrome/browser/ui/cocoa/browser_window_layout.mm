@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace chrome {
@@ -57,6 +58,13 @@ const CGFloat kLocationBarRightOffset = 35;
 @end
 
 @implementation BrowserWindowLayout
+
+- (instancetype)init {
+  if ((self = [super init])) {
+    parameters_.isOSYosemiteOrLater = base::mac::IsOSYosemiteOrLater();
+  }
+  return self;
+}
 
 - (chrome::LayoutOutput)computeLayout {
   memset(&output_, 0, sizeof(chrome::LayoutOutput));
@@ -190,10 +198,12 @@ const CGFloat kLocationBarRightOffset = 35;
       0, maxY_ - chrome::kTabStripHeight, width, chrome::kTabStripHeight);
   maxY_ = NSMinY(layout.frame);
 
-  // In Yosemite fullscreen, manually add the traffic light buttons to the tab
-  // strip.
+  // In Yosemite, there is no longer an exit fullscreen button in the top-right
+  // corner of the OSX Menu Bar. Instead, a Cocoa application's toolbar is
+  // expected to have traffic lights. Chrome doesn't use an NSToolbar, so it
+  // needs to manually add the traffic lights to the tab strip.
   layout.addCustomWindowControls =
-      parameters_.inAnyFullscreen && base::mac::IsOSYosemiteOrLater();
+      parameters_.inAnyFullscreen && parameters_.isOSYosemiteOrLater;
 
   // Set left indentation based on fullscreen mode status.
   if (!parameters_.inAnyFullscreen || layout.addCustomWindowControls)
@@ -379,6 +389,14 @@ const CGFloat kLocationBarRightOffset = 35;
     totalHeight += parameters_.bookmarkBarHeight;
 
   return totalHeight;
+}
+
+@end
+
+@implementation BrowserWindowLayout (ExposedForTesting)
+
+- (void)setOSYosemiteOrLater:(BOOL)osYosemiteOrLater {
+  parameters_.isOSYosemiteOrLater = osYosemiteOrLater;
 }
 
 @end

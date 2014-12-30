@@ -72,6 +72,9 @@ struct LayoutParameters {
 
   BOOL hasDownloadShelf;
   CGFloat downloadShelfHeight;
+
+  // This parameter exists so that unit tests can configure the OS version.
+  BOOL isOSYosemiteOrLater;
 };
 
 // The parameters required to lay out the tab strip and its components.
@@ -132,6 +135,9 @@ struct LayoutOutput {
   CGFloat maxY_;
 }
 
+// Designated initializer.
+- (instancetype)init;
+
 // Performs the layout computation and returns the results. This method is fast
 // and does not perform any caching.
 - (chrome::LayoutOutput)computeLayout;
@@ -168,7 +174,10 @@ struct LayoutOutput {
 
 - (void)setHasDownloadShelf:(BOOL)hasDownloadShelf;
 - (void)setDownloadShelfHeight:(CGFloat)downloadShelfHeight;
+@end
 
+@interface BrowserWindowLayout (ExposedForTesting)
+- (void)setOSYosemiteOrLater:(BOOL)osYosemiteOrLater;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_LAYOUT_H_

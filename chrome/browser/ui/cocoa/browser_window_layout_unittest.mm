@@ -32,9 +32,22 @@ class BrowserWindowLayoutTest : public testing::Test {
     [layout setPageInfoBubblePointY:13];
     [layout setHasDownloadShelf:YES];
     [layout setDownloadShelfHeight:44];
+    [layout setOSYosemiteOrLater:NO];
   }
 
   base::scoped_nsobject<BrowserWindowLayout> layout;
+
+  // Updates the layout parameters with the state associated with a typical
+  // fullscreened window.
+  void ApplyStandardFullscreenLayoutParameters() {
+    // Content view has same size as window in AppKit Fullscreen.
+    [layout setContentViewSize:NSMakeSize(600, 622)];
+    [layout setInAnyFullscreen:YES];
+    [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
+    [layout setFullscreenMenubarOffset:0];
+    [layout setFullscreenToolbarFraction:0];
+    [layout setFullscreenButtonFrame:NSZeroRect];
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowLayoutTest);
@@ -61,13 +74,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViews) {
 }
 
 TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
-  // Content view has same size as window in AppKit Fullscreen.
-  [layout setContentViewSize:NSMakeSize(600, 622)];
-  [layout setInAnyFullscreen:YES];
-  [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
-  [layout setFullscreenMenubarOffset:0];
-  [layout setFullscreenToolbarFraction:0];
-  [layout setFullscreenButtonFrame:NSZeroRect];
+  ApplyStandardFullscreenLayoutParameters();
 
   chrome::LayoutOutput output = [layout computeLayout];
 
@@ -76,6 +83,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
   EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 589, 63, 28),
                            output.tabStripLayout.avatarFrame));
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 553, 600, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame));
@@ -90,14 +98,21 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
       NSEqualRects(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame));
 }
 
+// In fullscreen mode for Yosemite, the tab strip's left indent should be
+// sufficiently large to accomodate the addition of traffic light buttons.
+TEST_F(BrowserWindowLayoutTest, TestYosemiteFullscreenTrafficLights) {
+  ApplyStandardFullscreenLayoutParameters();
+  [layout setOSYosemiteOrLater:YES];
+
+  chrome::LayoutOutput output = [layout computeLayout];
+
+  EXPECT_EQ(70, output.tabStripLayout.leftIndent);
+  EXPECT_TRUE(output.tabStripLayout.addCustomWindowControls);
+}
+
 TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
-  // Content view has same size as window in AppKit Fullscreen.
-  [layout setContentViewSize:NSMakeSize(600, 622)];
-  [layout setInAnyFullscreen:YES];
-  [layout setFullscreenButtonFrame:NSZeroRect];
-  [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
+  ApplyStandardFullscreenLayoutParameters();
   [layout setFullscreenMenubarOffset:-10];
-  [layout setFullscreenToolbarFraction:0];
 
   chrome::LayoutOutput output = [layout computeLayout];
 
@@ -106,6 +121,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
   EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 579, 63, 28),
                            output.tabStripLayout.avatarFrame));
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 543, 600, 32), output.toolbarFrame));
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame));
