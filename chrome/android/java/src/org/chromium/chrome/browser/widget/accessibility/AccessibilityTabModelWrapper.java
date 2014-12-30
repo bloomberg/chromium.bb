@@ -13,7 +13,9 @@ import android.widget.ListView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 
 /**
@@ -29,9 +31,8 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     private ImageButton mIncognitoButton;
 
     private TabModelSelector mTabModelSelector;
-    private TabModelSelector.ChangeListener mTabModelChangeListener =
-            new TabModelSelector.ChangeListener() {
-
+    private TabModelSelectorObserver mTabModelSelectorObserver =
+            new EmptyTabModelSelectorObserver() {
         @Override
         public void onChange() {
             getAdapter().notifyDataSetChanged();
@@ -107,11 +108,11 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
      */
     public void setTabModelSelector(TabModelSelector modelSelector) {
         if (mIsAttachedToWindow) {
-            mTabModelSelector.unregisterChangeListener(mTabModelChangeListener);
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         }
         mTabModelSelector = modelSelector;
         if (mIsAttachedToWindow) {
-            modelSelector.registerChangeListener(mTabModelChangeListener);
+            modelSelector.addObserver(mTabModelSelectorObserver);
         }
         setStateBasedOnModel();
     }
@@ -153,7 +154,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
     @Override
     protected void onAttachedToWindow() {
-        mTabModelSelector.registerChangeListener(mTabModelChangeListener);
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
         mIsAttachedToWindow = true;
         super.onAttachedToWindow();
     }

@@ -20,6 +20,7 @@ public interface TabModelSelector {
     /**
      * Interface of listener that get notified on changes in the {@link TabModel}s.
      */
+    // TODO(tedchoc): Remove this once all callers have switched to TabModelSelectorObserver.
     public interface ChangeListener {
         /**
          * Called whenever the {@link TabModel} has changed.
@@ -138,13 +139,27 @@ public interface TabModelSelector {
      * can be registered at the same time.
      * @param changeListener The {@link TabModelSelector.ChangeListener} to notify.
      */
+    // TODO(tedchoc): Remove this once all callers switch to addObserver.
     void registerChangeListener(ChangeListener changeListener);
 
     /**
      * Unregisters the listener.
      * @param changeListener The {@link TabModelSelector.ChangeListener} to remove.
      */
+    // TODO(tedchoc): Remove this once all callers switch to removeObserver.
     void unregisterChangeListener(ChangeListener changeListener);
+
+    /**
+     * Add an observer to be notified of changes to the TabModelSelector.
+     * @param observer The {@link TabModelSelectorObserver} to notify.
+     */
+    void addObserver(TabModelSelectorObserver observer);
+
+    /**
+     * Removes an observer of TabModelSelector changes..
+     * @param observer The {@link TabModelSelectorObserver} to remove.
+     */
+    void removeObserver(TabModelSelectorObserver observer);
 
     /**
      * Calls {@link TabModel#commitAllTabClosures()} on all {@link TabModel}s owned by this

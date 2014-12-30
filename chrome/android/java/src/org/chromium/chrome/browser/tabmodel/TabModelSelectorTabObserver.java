@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tabmodel;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector.ChangeListener;
 
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
     private final TabModelSelector mTabModelSelector;
     private final TabModelObserver mTabModelObserver;
 
-    private ChangeListener mChangeListener;
+    private TabModelSelectorObserver mSelectorObserver;
     private boolean mIsDestroyed;
 
     /**
@@ -49,7 +48,7 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
 
         List<TabModel> tabModels = selector.getModels();
         if (tabModels.isEmpty()) {
-            mChangeListener = new ChangeListener() {
+            mSelectorObserver = new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onNewTabCreated(Tab tab) {
                     assert false : "onChange should have happened and unregistered this listener.";
@@ -57,12 +56,12 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
 
                 @Override
                 public void onChange() {
-                    mTabModelSelector.unregisterChangeListener(this);
-                    mChangeListener = null;
+                    mTabModelSelector.removeObserver(this);
+                    mSelectorObserver = null;
                     registerModelObservers();
                 }
             };
-            mTabModelSelector.registerChangeListener(mChangeListener);
+            mTabModelSelector.addObserver(mSelectorObserver);
         } else {
             registerModelObservers();
         }
@@ -87,9 +86,9 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
     public void destroy() {
         mIsDestroyed = true;
 
-        if (mChangeListener != null) {
-            mTabModelSelector.unregisterChangeListener(mChangeListener);
-            mChangeListener = null;
+        if (mSelectorObserver != null) {
+            mTabModelSelector.removeObserver(mSelectorObserver);
+            mSelectorObserver = null;
         }
 
         List<TabModel> tabModels = mTabModelSelector.getModels();
