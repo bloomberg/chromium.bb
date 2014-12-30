@@ -31,6 +31,7 @@
 #include "core/rendering/style/BorderEdge.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/DataEquivalency.h"
+#include "core/rendering/style/PathStyleMotionPath.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/ShadowList.h"
@@ -825,13 +826,16 @@ bool RenderStyle::hasWillChangeCompositingHint() const
     return false;
 }
 
-inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& transformOperations, RenderStyle::ApplyTransformOrigin applyOrigin)
+inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& transformOperations, RenderStyle::ApplyTransformOrigin applyOrigin, RenderStyle::ApplyMotionPath applyMotionPath)
 {
     // transform-origin brackets the transform with translate operations.
     // Optimize for the case where the only transform is a translation, since the transform-origin is irrelevant
     // in that case.
     if (applyOrigin != RenderStyle::IncludeTransformOrigin)
         return false;
+
+    if (applyMotionPath == RenderStyle::IncludeMotionPath)
+        return true;
 
     unsigned size = transformOperations.size();
     for (unsigned i = 0; i < size; ++i) {
@@ -847,15 +851,17 @@ inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& tr
     return false;
 }
 
-void RenderStyle::applyTransform(TransformationMatrix& transform, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin) const
+void RenderStyle::applyTransform(TransformationMatrix& transform, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
 {
-    applyTransform(transform, FloatRect(FloatPoint(), FloatSize(borderBoxSize)), applyOrigin);
+    applyTransform(transform, FloatRect(FloatPoint(), FloatSize(borderBoxSize)), applyOrigin, applyMotionPath);
 }
 
-void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin) const
+void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
 {
+    if (!hasMotionPath())
+        applyMotionPath = ExcludeMotionPath;
     const Vector<RefPtr<TransformOperation> >& transformOperations = rareNonInheritedData->m_transform->m_operations.operations();
-    bool applyTransformOrigin = requireTransformOrigin(transformOperations, applyOrigin);
+    bool applyTransformOrigin = requireTransformOrigin(transformOperations, applyOrigin, applyMotionPath);
 
     float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
     float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
@@ -866,6 +872,9 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
             transformOriginZ());
     }
 
+    if (applyMotionPath == RenderStyle::IncludeMotionPath)
+        applyMotionPathTransform(transform);
+
     unsigned size = transformOperations.size();
     for (unsigned i = 0; i < size; ++i)
         transformOperations[i]->apply(transform, boundingBox.size());
@@ -875,6 +884,25 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
             -floatValueForLength(transformOriginY(), boundingBox.height()) - offsetY,
             -transformOriginZ());
     }
+}
+
+void RenderStyle::applyMotionPathTransform(TransformationMatrix& transform) const
+{
+    const StyleMotionData& motionData = rareNonInheritedData->m_transform->m_motion;
+    ASSERT(motionData.m_path && motionData.m_path->isPathStyleMotionPath());
+    const PathStyleMotionPath& motionPath = toPathStyleMotionPath(*motionData.m_path);
+    float pathLength = motionPath.length();
+    float length = clampTo<float>(floatValueForLength(motionData.m_position, pathLength), 0, pathLength);
+
+    FloatPoint point;
+    float angle;
+    if (!motionPath.path().pointAndNormalAtLength(length, point, angle))
+        return;
+    if (motionData.m_rotationType == MotionRotationFixed)
+        angle = 0;
+
+    transform.translate(point.x(), point.y());
+    transform.rotate(angle + motionData.m_rotation);
 }
 
 void RenderStyle::setTextShadow(PassRefPtr<ShadowList> s)

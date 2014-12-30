@@ -40,6 +40,7 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderLayer.h"
 
@@ -247,8 +248,11 @@ void Animation::notifyElementDestroyed()
 
 bool Animation::isCandidateForAnimationOnCompositor(double playerPlaybackRate) const
 {
-    if (!effect() || !m_target)
+    if (!effect()
+        || !m_target
+        || (m_target->renderStyle() && m_target->renderStyle()->hasMotionPath()))
         return false;
+
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect(), playerPlaybackRate);
 }
 

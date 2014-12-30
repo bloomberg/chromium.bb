@@ -765,7 +765,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(RenderObject* renderer
         box = pixelSnappedIntRect(toRenderBox(renderer)->borderBoxRect());
 
     TransformationMatrix transform;
-    style.applyTransform(transform, LayoutSize(box.size()), RenderStyle::ExcludeTransformOrigin);
+    style.applyTransform(transform, LayoutSize(box.size()), RenderStyle::ExcludeTransformOrigin, RenderStyle::ExcludeMotionPath);
 
     // FIXME: Need to print out individual functions (https://bugs.webkit.org/show_bug.cgi?id=23924)
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
