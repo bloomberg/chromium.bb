@@ -1549,6 +1549,7 @@ IN_PROC_BROWSER_TEST_F(TransitionalNonSfiPackagedAppTest,
   RunTests();
 }
 
+#if !defined(DISABLE_NACL)
 class MojoPPAPITest : public InProcessBrowserTest {
  public:
   MojoPPAPITest() : InProcessBrowserTest() { }
@@ -1602,3 +1603,4 @@ IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MOJO(Mojo)) {
 IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MOJO(MojoFailsWithoutFlag)) {
   RunTestWithoutFlag();
 }
+#endif
