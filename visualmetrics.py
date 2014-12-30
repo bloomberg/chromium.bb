@@ -276,8 +276,10 @@ def eliminate_duplicate_frames(directory, viewport):
 def get_decimate_filter():
     decimate = None
     try:
-        filters = subprocess.check_output(['ffmpeg', '-filters'], stderr=subprocess.STDOUT)
-        lines = filters.split("\n")
+        command = ['ffmpeg', '-filters']
+        out = 'command not found'
+        out = subprocess.check_output(command, stderr=subprocess.STDOUT)
+        lines = out.split("\n")
         match = re.compile('(?P<filter>[\w]*decimate).*V->V.*Remove near-duplicate frames')
         for line in lines:
             m = re.search(match, line)
@@ -286,6 +288,8 @@ def get_decimate_filter():
                 decimate = m.groupdict().get('filter')
                 break
     except:
+        logging.critical('Error running `{0}`: {1}'.format(
+                ' '.join(command), out))
         decimate = None
     return decimate
 
@@ -684,7 +688,7 @@ def check_config():
     ok = True
 
     print 'ffmpeg:  ',
-    if get_decimate_filter() is not None:
+    if check_process('ffmpeg -version', 'ffmpeg'):
         print 'OK'
     else:
         print 'FAIL'
