@@ -559,8 +559,7 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
     if (!shapeHarfBuzzRuns())
         return false;
 
-    if (m_harfBuzzRuns.last()->hasGlyphToCharacterIndexes()
-        && glyphBuffer && !fillGlyphBuffer(glyphBuffer))
+    if (glyphBuffer && !fillGlyphBuffer(glyphBuffer))
         return false;
 
     return true;
@@ -817,8 +816,8 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
     for (unsigned i = 0; i < m_harfBuzzRuns.size(); ++i) {
         unsigned runIndex = m_run.rtl() ? m_harfBuzzRuns.size() - i - 1 : i;
         HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
-        const SimpleFontData* currentFontData = currentRun->fontData();
 
+        const SimpleFontData* currentFontData = currentRun->fontData();
         FontPlatformData* platformData = const_cast<FontPlatformData*>(&currentFontData->platformData());
         HarfBuzzFace* face = platformData->harfBuzzFace();
         if (!face)
@@ -880,14 +879,13 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 
 void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb_buffer_t* harfBuzzBuffer)
 {
+    // Skip runs that only contain control characters.
+    if (!currentRun->numGlyphs())
+        return;
+
     const SimpleFontData* currentFontData = currentRun->fontData();
     hb_glyph_info_t* glyphInfos = hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
     hb_glyph_position_t* glyphPositions = hb_buffer_get_glyph_positions(harfBuzzBuffer, 0);
-
-    if (!currentRun->hasGlyphToCharacterIndexes()) {
-        // FIXME: https://crbug.com/337886
-        return;
-    }
 
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
@@ -1055,10 +1053,9 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
     float advanceSoFar = 0;
     for (unsigned runIndex = 0; runIndex < numRuns; ++runIndex) {
         HarfBuzzRun* currentRun = m_harfBuzzRuns[m_run.ltr() ? runIndex : numRuns - runIndex - 1].get();
-        if (!currentRun->hasGlyphToCharacterIndexes()) {
-            // FIXME: bug 337886, 359664
+        // Skip runs that only contain control characters.
+        if (!currentRun->numGlyphs())
             continue;
-        }
         advanceSoFar += (m_forTextEmphasis == ForTextEmphasis)
             ? fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun, advanceSoFar)
             : fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, advanceSoFar);
