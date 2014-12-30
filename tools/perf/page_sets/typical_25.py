@@ -12,7 +12,7 @@ class Typical25Page(page_module.Page):
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/typical_25.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

@@ -13,7 +13,7 @@ class Top10MobilePage(page_module.Page):
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/top_10_mobile.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

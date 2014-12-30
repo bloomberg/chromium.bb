@@ -14,7 +14,7 @@ class ToughPinchZoomCasesPage(page_module.Page):
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/tough_pinch_zoom_cases.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'PinchAction', is_smooth=True)
     action_runner.PinchPage()
@@ -68,7 +68,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
     action_runner.NavigateToPage(self)
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'PinchAction', is_smooth=True)
     action_runner.PinchPage(left_anchor_ratio=0.1, top_anchor_ratio=0.3)
@@ -102,7 +102,7 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
     action_runner.NavigateToPage(self)
     action_runner.WaitForElement(text='Home')
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'PinchAction', is_smooth=True)
     action_runner.PinchElement(selector='[id="110031535020051778989-tab-bar"]')
@@ -233,7 +233,7 @@ class YahooAnswersPage(ToughPinchZoomCasesPage):
       url='http://answers.yahoo.com',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'PinchAction', is_smooth=True)
     action_runner.PinchElement(selector='#ya-content-apps')

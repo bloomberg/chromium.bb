@@ -13,7 +13,7 @@ class ToughSchedulingCasesPage(page_module.Page):
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/tough_scheduling_cases.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -295,7 +295,7 @@ class Page19(ToughSchedulingCasesPage):
       url='file://tough_scheduling_cases/split_animation.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(3)
 
 
@@ -308,7 +308,7 @@ class Page20(ToughSchedulingCasesPage):
       url='file://tough_scheduling_cases/simple_touch_drag.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(
@@ -338,7 +338,7 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
 
     self.bounce = bounce
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     if self.bounce:
       interaction = action_runner.BeginGestureInteraction(
           'ScrollBounceAction', is_smooth=True)
@@ -363,7 +363,7 @@ class SynchronizedScrollOffsetPage(ToughSchedulingCasesPage):
       url='file://tough_scheduling_cases/sync_scroll_offset.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollBounceAction', is_smooth=True)
     action_runner.ScrollBouncePage()

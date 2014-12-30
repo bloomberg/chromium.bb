@@ -39,7 +39,7 @@ class AnimatedPage(page.Page):
       url='file://animated_page.html',
       page_set=page_set, base_dir=page_set.base_dir)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(.2)
 
 
@@ -175,7 +175,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
         super(FailPage, self).__init__(
             url='file://blank.html',
             page_set=page_set, base_dir=page_set.base_dir)
-      def RunSmoothness(self, _):
+      def RunPageInteractions(self, _):
         raise exceptions.IntentionalException
 
     class FakePowerMetric(power.PowerMetric):

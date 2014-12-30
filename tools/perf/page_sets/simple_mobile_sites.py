@@ -24,7 +24,7 @@ class SimpleScrollPage(SimplePage):
   def __init__(self, url, page_set):
     super(SimpleScrollPage, self).__init__(url=url, page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     # Make the scroll longer to reduce noise.
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)

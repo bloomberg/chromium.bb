@@ -254,7 +254,7 @@ class Top2012Q3Page(page.Page):
         url=url, page_set=ps, credentials_path = 'data/credentials.json')
     self.archive_data_file = 'data/2012Q3.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

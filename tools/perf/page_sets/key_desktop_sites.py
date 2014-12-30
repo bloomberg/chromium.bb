@@ -12,7 +12,7 @@ class KeyDesktopSitesPage(page_module.Page):
         url=url, page_set=page_set, credentials_path = 'data/credentials.json')
     self.archive_data_file = 'data/key_desktop_sites.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -44,7 +44,7 @@ class GmailPage(KeyDesktopSitesPage):
       }'''
     self.credentials = 'google'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -81,7 +81,7 @@ class GoogleDrivePage(KeyDesktopSitesPage):
       }'''
     self.credentials = 'google'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -104,7 +104,7 @@ class GoogleDocPage(KeyDesktopSitesPage):
       }'''
     self.credentials = 'google'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

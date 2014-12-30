@@ -16,7 +16,7 @@ class ToughCanvasCasesPage(page_module.Page):
     action_runner.WaitForJavaScriptCondition(
         "document.readyState == 'complete'")
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(5)
 
 

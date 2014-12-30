@@ -100,7 +100,7 @@ class ScrollingPage(page_module.Page):
   def __init__(self, url, page_set, base_dir):
     super(ScrollingPage, self).__init__(url, page_set, base_dir)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     # Add 0.5s gap between when Gesture records are issued to when we actually
@@ -122,7 +122,7 @@ class SmoothGestureTest(page_test_test_case.PageTestTestCase):
       def __init__(self):
         # pylint: disable=bad-super-call
         super(ScrollingGestureTestMeasurement, self).__init__(
-          'RunSmoothness', False)
+          'RunPageInteractions', False)
 
       def WillRunActions(self, _page, tab):
         options = tracing_options.TracingOptions()

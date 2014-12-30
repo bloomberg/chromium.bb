@@ -118,7 +118,7 @@ class _OilpanGCTimesBase(page_test.PageTest):
 
 class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):
   def __init__(self):
-    super(OilpanGCTimesForSmoothness, self).__init__('RunSmoothness')
+    super(OilpanGCTimesForSmoothness, self).__init__('RunPageInteractions')
     self._interaction = None
 
   def WillRunActions(self, page, tab):

@@ -27,7 +27,7 @@ class MapsPage(page_module.Page):
     action_runner.NavigateToPage(self)
     action_runner.Wait(3)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.WaitForJavaScriptCondition('window.testDone', 120)
 
 

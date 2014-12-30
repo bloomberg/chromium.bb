@@ -10,7 +10,7 @@ class Alexa1To10000Page(Page):
   def __init__(self, url, page_set):
     super(Alexa1To10000Page, self).__init__(url=url, page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

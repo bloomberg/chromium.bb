@@ -9,7 +9,7 @@ class ImageDecodingCasesPage(page_module.Page):
   def __init__(self, url, page_set):
     super(ImageDecodingCasesPage, self).__init__(url=url, page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(5)
 
 class ImageDecodingCasesPageSet(page_set_module.PageSet):

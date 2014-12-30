@@ -7,13 +7,13 @@ from telemetry.page import page_set as page_set_module
 
 class ToughFiltersCasesPage(page_module.Page):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(10)
 
 
 class PirateMarkPage(page_module.Page):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.EvaluateJavaScript(
         'document.getElementById("benchmarkButtonText").click()')
     action_runner.Wait(10)

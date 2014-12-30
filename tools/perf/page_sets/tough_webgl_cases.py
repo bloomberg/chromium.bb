@@ -25,7 +25,7 @@ class ToughWebglCasesPage(page_module.Page):
         'document.readyState == "complete"')
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(5)
 
 

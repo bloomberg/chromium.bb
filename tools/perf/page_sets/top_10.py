@@ -12,7 +12,7 @@ class SimpleScrollPage(page_module.Page):
         credentials_path='data/credentials.json')
     self.credentials = credentials
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

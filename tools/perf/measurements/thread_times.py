@@ -9,7 +9,7 @@ from telemetry.web_perf.metrics import layout
 
 class ThreadTimes(page_test.PageTest):
   def __init__(self, report_silk_details=False,
-               action_name_to_run='RunSmoothness'):
+               action_name_to_run='RunPageInteractions'):
     super(ThreadTimes, self).__init__(action_name_to_run=action_name_to_run)
     self._timeline_controller = None
     self._report_silk_details = report_silk_details

@@ -17,7 +17,7 @@ class ToughAnimationCasesPage(page_module.Page):
     if self._need_measurement_ready:
       action_runner.WaitForJavaScriptCondition('window.measurementReady')
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(10)
 
 class ToughAnimationCasesPageSet(page_set_module.PageSet):

@@ -17,7 +17,7 @@ class KeyHitTestCasesPage(page_module.Page):
     action_runner.NavigateToPage(self)
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(2)
     for _ in xrange(100):
         self.TapButton(action_runner)

@@ -17,7 +17,7 @@ class KeySilkCasesPage(page_module.Page):
     action_runner.NavigateToPage(self)
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
@@ -33,7 +33,7 @@ class Page1(KeySilkCasesPage):
       url='http://groupcloned.com/test/plain/list-recycle-transform.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(selector='#scrollable')
@@ -49,7 +49,7 @@ class Page2(KeySilkCasesPage):
       url='http://groupcloned.com/test/plain/list-animation-simple.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(2)
 
 
@@ -66,7 +66,7 @@ class Page3(KeySilkCasesPage):
       url='http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(selector='#container')
@@ -85,7 +85,7 @@ class Page4(KeySilkCasesPage):
       url='http://jsfiddle.net/3yDKh/15/show/',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(3)
 
 
@@ -102,7 +102,7 @@ class Page5(KeySilkCasesPage):
 
     self.gpu_raster = True
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(4)
 
 
@@ -118,7 +118,7 @@ class Page6(KeySilkCasesPage):
       url='http://jsfiddle.net/3yDKh/16/show/',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(3)
 
 
@@ -135,7 +135,7 @@ class Page7(KeySilkCasesPage):
       url='http://jsfiddle.net/R8DX9/4/show/',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(3)
 
 
@@ -152,7 +152,7 @@ class Page8(KeySilkCasesPage):
       url='http://jsfiddle.net/rF9Gh/7/show/',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(3)
 
 
@@ -170,7 +170,7 @@ class Page9(KeySilkCasesPage):
 
     self.gpu_raster = True
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(4)
 
 
@@ -188,7 +188,7 @@ class Page10(KeySilkCasesPage):
 
     self.gpu_raster = True
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(4)
 
 
@@ -206,7 +206,7 @@ class Page11(KeySilkCasesPage):
 
     self.gpu_raster = True
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(4)
 
 
@@ -219,7 +219,7 @@ class Page12(KeySilkCasesPage):
       url='http://jsfiddle.net/ugkd4/10/show/',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(5)
 
 
@@ -234,7 +234,7 @@ class Page13(KeySilkCasesPage):
 
     self.gpu_raster = True
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(4)
 
 
@@ -249,7 +249,7 @@ class Page14(KeySilkCasesPage):
 
     self.gpu_raster = True
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(4)
 
 
@@ -262,7 +262,7 @@ class Page15(KeySilkCasesPage):
       url='file://key_silk_cases/font_wipe.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(5)
 
 
@@ -290,7 +290,7 @@ class Page16(KeySilkCasesPage):
         'document.getElementsByClassName("message").length < 18')
     interaction.End()
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SwipeToDismiss(action_runner)
 
 
@@ -305,7 +305,7 @@ class Page17(KeySilkCasesPage):
     action_runner.NavigateToPage(self)
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.StressHideyBars(action_runner)
 
   def StressHideyBars(self, action_runner):
@@ -337,7 +337,7 @@ class Page18(KeySilkCasesPage):
     action_runner.NavigateToPage(self)
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     for _ in xrange(6):
       self.ToggleDrawer(action_runner)
 
@@ -374,7 +374,7 @@ class Page19(KeySilkCasesPage):
     action_runner.Wait(2)
     self.ToggleDrawer(action_runner)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.SlideDrawer(action_runner)
 
   def SlideDrawer(self, action_runner):
@@ -398,7 +398,7 @@ class Page20(KeySilkCasesPage):
       url='file://key_silk_cases/infinite_scrolling.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(
@@ -427,7 +427,7 @@ class GwsExpansionPage(KeySilkCasesPage):
     action_runner.ExecuteJavaScript(
         "document.getElementById('%s').scrollIntoView()" % card_id)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.ExpandKnowledgeCard(action_runner)
 
 
@@ -474,7 +474,7 @@ class Page22(KeySilkCasesPage):
         'document.getElementsByClassName("fHa").length > 0')
     action_runner.Wait(2)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(selector='#mainContent')
@@ -493,7 +493,7 @@ class Page23(KeySilkCasesPage):
       url='http://jsbin.com/UVIgUTa/38/quiet',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage(
@@ -523,7 +523,7 @@ class Page24(KeySilkCasesPage):
         'document.getElementById(":h") != null')
     action_runner.Wait(1)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(
@@ -546,7 +546,7 @@ class Page25(KeySilkCasesPage):
         'document.getElementById(":h") != null')
     action_runner.Wait(1)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'SwipeAction', is_smooth=True)
     action_runner.SwipeElement(
@@ -573,7 +573,7 @@ class Page26(KeySilkCasesPage):
         'document.getElementsByClassName("tweet").length > 0')
     action_runner.Wait(1)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage(distance=5000)
@@ -595,7 +595,7 @@ class SVGIconRaster(KeySilkCasesPage):
         'loaded = true')
     action_runner.Wait(1)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     for i in xrange(9):
       button_func = ('document.getElementById("demo").$.'
                      'buttons.children[%d]') % i
@@ -625,7 +625,7 @@ class UpdateHistoryState(KeySilkCasesPage):
     action_runner.WaitForJavaScriptCondition(
         'window.__history_state_loaded == true;')
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginInteraction('animation_interaction',
         is_smooth=True)
     action_runner.Wait(5) # JS runs the animation continuously on the page
@@ -641,7 +641,7 @@ class SilkFinance(KeySilkCasesPage):
       url='file://key_silk_cases/silk_finance.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginInteraction('animation_interaction',
         is_smooth=True)
     action_runner.Wait(10) # animation runs automatically

@@ -23,7 +23,7 @@ class ToughCompositorScrollPage(ToughCompositorPage):
   def __init__(self, url, page_set):
     super(ToughCompositorScrollPage, self).__init__(url=url, page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     # Make the scroll longer to reduce noise.
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
@@ -35,7 +35,7 @@ class ToughCompositorWaitPage(ToughCompositorPage):
   def __init__(self, url, page_set):
     super(ToughCompositorWaitPage, self).__init__(url=url, page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     # We scroll back and forth a few times to reduce noise in the tests.
     action_runner.Wait(8)
 

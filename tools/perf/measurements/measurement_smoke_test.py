@@ -19,7 +19,6 @@ from telemetry.util import classes
 # crbug.com/418375
 _ACTION_NAMES_WHITE_LIST = (
   '',
-  'RunSmoothness',
   'RunPageInteractions',
 )
 

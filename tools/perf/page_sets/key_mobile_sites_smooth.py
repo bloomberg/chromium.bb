@@ -17,7 +17,7 @@ def _IssueMarkerAndScroll(action_runner):
 def _CreatePageClassWithSmoothInteractions(page_cls):
   class DerivedSmoothPage(page_cls):  # pylint: disable=W0232
 
-    def RunSmoothness(self, action_runner):
+    def RunPageInteractions(self, action_runner):
       _IssueMarkerAndScroll(action_runner)
   return DerivedSmoothPage
 
@@ -31,13 +31,13 @@ class KeyMobileSitesSmoothPage(page_module.Page):
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_mobile_sites.json'
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     _IssueMarkerAndScroll(action_runner)
 
 
 class GmailSmoothPage(key_mobile_sites_pages.GmailPage):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(element_function=(
@@ -52,7 +52,7 @@ class GmailSmoothPage(key_mobile_sites_pages.GmailPage):
 
 class GroupClonedSmoothPage(key_mobile_sites_pages.GroupClonedPage):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage(
@@ -68,7 +68,7 @@ class GroupClonedSmoothPage(key_mobile_sites_pages.GroupClonedPage):
 class GroupClonedListImagesPage(
   key_mobile_sites_pages.GroupClonedListImagesPage):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage(
@@ -82,7 +82,7 @@ class GroupClonedListImagesPage(
 class GoogleNewsMobile2SmoothPage(
   key_mobile_sites_pages.GoogleNewsMobile2Page):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(
@@ -97,7 +97,7 @@ class GoogleNewsMobile2SmoothPage(
 class AmazonNicolasCageSmoothPage(
   key_mobile_sites_pages.AmazonNicolasCagePage):
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollElement(

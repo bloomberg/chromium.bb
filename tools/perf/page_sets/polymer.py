@@ -30,7 +30,7 @@ class PolymerCalculatorPage(PolymerPage):
           'demo.html'),
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     self.TapButton(action_runner)
     self.SlidePanel(action_runner)
 
@@ -82,7 +82,7 @@ class PolymerShadowPage(PolymerPage):
       url='http://www.polymer-project.org/components/paper-shadow/demo.html',
       page_set=page_set)
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.ExecuteJavaScript(
         "document.getElementById('fab').scrollIntoView()")
     action_runner.Wait(5)
@@ -129,7 +129,7 @@ class PolymerSampler(PolymerPage):
     action_runner.WaitForJavaScriptCondition(
         'window.__polymer_ready')
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     #TODO(wiltzius) Add interactions for input elements and shadow pages
     if self.scrolling_page:
       # Only bother scrolling the page if its been marked as worthwhile
