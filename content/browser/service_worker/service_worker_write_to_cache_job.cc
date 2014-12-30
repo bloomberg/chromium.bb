@@ -124,6 +124,11 @@ bool ServiceWorkerWriteToCacheJob::ReadRawData(
     net::IOBuffer* buf,
     int buf_size,
     int *bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ServiceWorkerWriteToCacheJob::ReadRawData"));
+
   net::URLRequestStatus status = ReadNetData(buf, buf_size, bytes_read);
   SetStatus(status);
   if (status.is_io_pending())

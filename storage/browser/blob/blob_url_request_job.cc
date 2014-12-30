@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -88,6 +89,11 @@ void BlobURLRequestJob::Kill() {
 bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
                                     int dest_size,
                                     int* bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 BlobURLRequestJob::ReadRawData"));
+
   DCHECK_NE(dest_size, 0);
   DCHECK(bytes_read);
   DCHECK_GE(remaining_bytes_, 0);

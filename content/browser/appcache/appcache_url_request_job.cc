@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache.h"
@@ -420,6 +421,11 @@ int AppCacheURLRequestJob::GetResponseCode() const {
 
 bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                         int *bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 AppCacheURLRequestJob::ReadRawData"));
+
   DCHECK(is_delivering_appcache_response());
   DCHECK_NE(buf_size, 0);
   DCHECK(bytes_read);

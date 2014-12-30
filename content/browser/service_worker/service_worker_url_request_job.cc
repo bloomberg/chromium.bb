@@ -150,6 +150,11 @@ void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
 
 bool ServiceWorkerURLRequestJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int *bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ServiceWorkerURLRequestJob::ReadRawData"));
+
   DCHECK(buf);
   DCHECK_GE(buf_size, 0);
   DCHECK(bytes_read);

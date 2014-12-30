@@ -931,7 +931,18 @@ void URLFetcherCore::InformDelegateUploadProgressInDelegateThread(
 }
 
 void URLFetcherCore::InformDelegateDownloadProgress() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLFetcherCore::InformDelegateDownloadProgress1"));
+
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLFetcherCore::InformDelegateDownloadProgress2"));
+
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(

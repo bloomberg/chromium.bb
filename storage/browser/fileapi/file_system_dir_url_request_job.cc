@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -47,6 +48,11 @@ FileSystemDirURLRequestJob::~FileSystemDirURLRequestJob() {
 
 bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
                                              int *bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 FileSystemDirURLRequestJob::ReadRawData"));
+
   int count = std::min(dest_size, static_cast<int>(data_.size()));
   if (count > 0) {
     memcpy(dest->data(), data_.data(), count);

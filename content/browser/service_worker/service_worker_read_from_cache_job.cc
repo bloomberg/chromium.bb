@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
+#include "base/profiler/scoped_tracker.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -121,6 +122,11 @@ bool ServiceWorkerReadFromCacheJob::ReadRawData(
     net::IOBuffer* buf,
     int buf_size,
     int *bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ServiceWorkerReadFromCacheJob::ReadRawData"));
+
   DCHECK_NE(buf_size, 0);
   DCHECK(bytes_read);
   DCHECK(!reader_->IsReadPending());

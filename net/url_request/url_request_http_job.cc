@@ -1281,6 +1281,11 @@ bool URLRequestHttpJob::ShouldFixMismatchedContentLength(int rv) const {
 
 bool URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size,
                                     int* bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLRequestHttpJob::ReadRawData1"));
+
   DCHECK_NE(buf_size, 0);
   DCHECK(bytes_read);
   DCHECK(!read_in_progress_);
@@ -1294,8 +1299,15 @@ bool URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size,
 
   if (rv >= 0) {
     *bytes_read = rv;
-    if (!rv)
+    if (!rv) {
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "423948 URLRequestHttpJob::ReadRawData2"));
+
       DoneWithRequest(FINISHED);
+    }
     return true;
   }
 
