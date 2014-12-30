@@ -3372,11 +3372,18 @@
                 # "/Oy /Oy-" and warnings about overriding.
                 'AdditionalOptions': ['/Oy-'],
               }],
+              ['asan==0', {
+                # Put data in separate COMDATs. This allows the linker
+                # to put bit-identical constants at the same address even if
+                # they're unrelated constants, which saves binary size.
+                # This optimization can't be used when ASan is enabled because
+                # it is not compatible with the ASan ODR checker.
+                'AdditionalOptions': ['/Gw'],
+              }],
             ],
             'AdditionalOptions': [
                 '/d2Zi+',  # Improve debugging of Release builds.
                 '/Zc:inline',  # Remove unreferenced COMDAT (faster links).
-                '/Gw',  # Put data in separate COMDATs.
                 '<@(win_release_extra_cflags)',
             ],
           },
