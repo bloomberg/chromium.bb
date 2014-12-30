@@ -362,7 +362,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inp
     return false;
 }
 
-void WebDevToolsAgentImpl::didLayout()
+void WebDevToolsAgentImpl::willLayout()
 {
     m_webViewDidLayoutOnceAfterLoad = true;
 }

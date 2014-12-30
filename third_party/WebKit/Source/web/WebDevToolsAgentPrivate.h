@@ -51,8 +51,8 @@ public:
     // DevTools may handle input event from WebViewImpl.
     virtual bool handleInputEvent(Page*, const WebInputEvent&) = 0;
 
-    // Notification from WebViewImpl after layout.
-    virtual void didLayout() = 0;
+    // Notification from WebViewImpl before layout.
+    virtual void willLayout() = 0;
 };
 
 } // namespace blink
