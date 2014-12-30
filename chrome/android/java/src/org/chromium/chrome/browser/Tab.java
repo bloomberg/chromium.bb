@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,6 +21,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.TabState.WebContentsState;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -42,11 +45,13 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.TopControlsState;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.Clipboard;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -87,6 +92,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Tab {
     public static final int INVALID_TAB_ID = -1;
 
+    /** Used for logging. */
+    private static final String TAG = "Tab";
+
     /** Used for automatically generating tab ids. */
     private static final AtomicInteger sIdCounter = new AtomicInteger();
 
@@ -98,13 +106,17 @@ public class Tab {
     /** Whether or not this tab is an incognito tab. */
     private final boolean mIncognito;
 
-    /** An Application {@link Context}.  Unlike {@link #mContext}, this is the only one that is
-     * publicly exposed to help prevent leaking the {@link Activity}. */
+    /**
+     * An Application {@link Context}.  Unlike {@link #mContext}, this is the only one that is
+     * publicly exposed to help prevent leaking the {@link Activity}.
+     */
     private final Context mApplicationContext;
 
-    /** The {@link Context} used to create {@link View}s and other Android components.  Unlike
+    /**
+     * The {@link Context} used to create {@link View}s and other Android components.  Unlike
      * {@link #mApplicationContext}, this is not publicly exposed to help prevent leaking the
-     * {@link Activity}. */
+     * {@link Activity}.
+     */
     private final Context mContext;
 
     /** Gives {@link Tab} a way to interact with the Android window. */
@@ -122,14 +134,10 @@ public class Tab {
     /** The sync id of the Tab if session sync is enabled. */
     private int mSyncId;
 
-    /**
-     * The {@link ContentViewCore} showing the current page or {@code null} if the tab is frozen.
-     */
+    /** {@link ContentViewCore} showing the current page, or {@code null} if the tab is frozen. */
     private ContentViewCore mContentViewCore;
 
-    /**
-     * A list of Tab observers.  These are used to broadcast Tab events to listeners.
-     */
+    /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
 
     // Content layer Observers and Delegates
@@ -174,6 +182,36 @@ public class Tab {
      * be moved to the background.
      */
     private final TabLaunchType mLaunchType;
+
+    /**
+     * Navigation state of the WebContents as returned by nativeGetContentsStateAsByteBuffer(),
+     * stored to be inflated on demand using unfreezeContents(). If this is not null, there is no
+     * WebContents around. Upon tab switch WebContents will be unfrozen and the variable will be set
+     * to null.
+     */
+    private WebContentsState mFrozenContentsState;
+
+    /**
+     * URL load to be performed lazily when the Tab is next shown.
+     */
+    private LoadUrlParams mPendingLoadParams;
+
+    /**
+     * URL of the page currently loading. Used as a fall-back in case tab restore fails.
+     */
+    private String mUrl;
+
+    /**
+     * The external application that this Tab is associated with (null if not associated with any
+     * app). Allows reusing of tabs opened from the same application.
+     */
+    private String mAppAssociatedWith;
+
+    /**
+     * Keeps track of whether the Tab should be kept in the TabModel after the user hits "back".
+     * Used by Document mode to keep track of whether we want to remove the tab when user hits back.
+     */
+    private boolean mShouldPreserve;
 
     private FullscreenManager mFullscreenManager;
     private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
@@ -345,6 +383,14 @@ public class Tab {
                 observer.onContextualActionBarVisibilityChanged(Tab.this, false);
             }
         }
+
+        @Override
+        public void onImeEvent() {
+            // Some text was set in the page. Don't reuse it if a tab is
+            // open from the same external application, we might lose some
+            // user data.
+            mAppAssociatedWith = null;
+        }
     }
 
     private class TabContextMenuPopulator extends ContextMenuPopulatorWrapper {
@@ -464,6 +510,20 @@ public class Tab {
      */
     public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window,
             TabLaunchType type) {
+        this(id, parentId, incognito, context, window, type, null);
+    }
+
+    /**
+     * Creates an instance of a {@link Tab}.
+     * @param id          The id this tab should be identified with.
+     * @param parentId    The id id of the tab that caused this tab to be opened.
+     * @param incognito   Whether or not this tab is incognito.
+     * @param context     An instance of a {@link Context}.
+     * @param window      An instance of a {@link WindowAndroid}.
+     * @param frozenState State containing information about this Tab, if it was persisted.
+     */
+    public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window,
+            TabLaunchType type, TabState frozenState) {
         // We need a valid Activity Context to build the ContentView with.
         assert context == null || context instanceof Activity;
 
@@ -479,6 +539,27 @@ public class Tab {
             mNumPixel16DP = (int) (DeviceDisplayInfo.create(mContext).getDIPScale() * 16);
         }
         if (mNumPixel16DP == 0) mNumPixel16DP = 16;
+
+        // Restore data from the TabState, if it existed.
+        if (frozenState == null) {
+            assert type != TabLaunchType.FROM_RESTORE;
+        } else {
+            assert type == TabLaunchType.FROM_RESTORE;
+            restoreFieldsFromState(frozenState);
+        }
+    }
+
+    /**
+     * Restores member fields from the given TabState.
+     * @param state TabState containing information about this Tab.
+     */
+    protected void restoreFieldsFromState(TabState state) {
+        assert state != null;
+        mAppAssociatedWith = state.openerAppId;
+        mFrozenContentsState = state.contentsState;
+        mSyncId = (int) state.syncId;
+        mShouldPreserve = state.shouldPreserve;
+        mUrl = state.getVirtualUrlFromState();
     }
 
     /**
@@ -554,6 +635,12 @@ public class Tab {
         try {
             TraceEvent.begin("Tab.loadUrl");
             removeSadTabIfPresent();
+
+            // Clear the app association if the user navigated to a different page from the omnibox.
+            if ((params.getTransitionType() & PageTransition.FROM_ADDRESS_BAR)
+                    == PageTransition.FROM_ADDRESS_BAR) {
+                mAppAssociatedWith = null;
+            }
 
             // We load the URL from the tab rather than directly from the ContentView so the tab has
             // a chance of using a prerenderer page is any.
@@ -639,13 +726,22 @@ public class Tab {
         if (!isInitialized()) return null;
         TabState tabState = new TabState();
         tabState.contentsState = getWebContentsState();
+        tabState.openerAppId = getAppAssociatedWith();
         tabState.parentId = getParentId();
+        tabState.shouldPreserve = shouldPreserve();
         tabState.syncId = getSyncId();
         return tabState;
     }
 
+    /** @return WebContentsState representing the state of the WebContents (navigations, etc.) */
+    public WebContentsState getFrozenContentsState() {
+        return mFrozenContentsState;
+    }
+
     /** Returns an object representing the state of the Tab's WebContents. */
     protected TabState.WebContentsState getWebContentsState() {
+        if (mFrozenContentsState != null) return mFrozenContentsState;
+
         // Native call returns null when buffer allocation needed to serialize the state failed.
         ByteBuffer buffer = getWebContentsStateAsByteBuffer();
         if (buffer == null) return null;
@@ -657,7 +753,17 @@ public class Tab {
 
     /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
     protected ByteBuffer getWebContentsStateAsByteBuffer() {
-        return TabState.getContentsStateAsByteBuffer(this);
+        if (mPendingLoadParams == null) {
+            return TabState.getContentsStateAsByteBuffer(this);
+        } else {
+            Referrer referrer = mPendingLoadParams.getReferrer();
+            return TabState.createSingleNavigationStateAsByteBuffer(
+                    mPendingLoadParams.getUrl(),
+                    referrer != null ? referrer.getUrl() : null,
+                    // Policy will be ignored for null referrer url, 0 is just a placeholder.
+                    referrer != null ? referrer.getPolicy() : 0,
+                    isIncognito());
+        }
     }
 
     /**
@@ -1092,11 +1198,19 @@ public class Tab {
     }
 
     /**
-     * @return The url associated with the tab.
+     * @return The URL associated with the tab.
      */
     @CalledByNative
     public String getUrl() {
-        return getWebContents() != null ? getWebContents().getUrl() : "";
+        String url = getWebContents() != null ? getWebContents().getUrl() : "";
+
+        // If we have a ContentView, or a NativePage, or the url is not empty, we have a WebContents
+        // so cache the WebContent's url. If not use the cached version.
+        if (getContentViewCore() != null || getNativePage() != null || !TextUtils.isEmpty(url)) {
+            mUrl = url;
+        }
+
+        return mUrl != null ? mUrl : "";
     }
 
     /**
@@ -1128,10 +1242,66 @@ public class Tab {
 
     /**
      * Loads the tab if it's not loaded (e.g. because it was killed in background).
+     * This will trigger a regular load for tabs with pending lazy first load (tabs opened in
+     * background on low-memory devices).
      * @return true iff the Tab handled the request.
      */
     @CalledByNative
     public boolean loadIfNeeded() {
+        if (mContext == null) {
+            Log.e(TAG, "Tab couldn't be loaded because Context was null.");
+            return false;
+        }
+
+        if (mPendingLoadParams != null) {
+            assert isFrozen();
+            initContentViewCore(ContentViewUtil.createNativeWebContents(isIncognito(), isHidden()));
+            loadUrl(mPendingLoadParams);
+            mPendingLoadParams = null;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Restores the WebContents from its saved state.
+     * @return Whether or not the restoration was successful.
+     */
+    public boolean unfreezeContents() {
+        try {
+            TraceEvent.begin("Tab.unfreezeContents");
+            assert mFrozenContentsState != null;
+            assert getContentViewCore() == null;
+
+            boolean forceNavigate = false;
+            long webContents = mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
+            if (webContents == 0) {
+                // State restore failed, just create a new empty web contents as that is the best
+                // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
+                // an error page instead of a blank page in that case (and the last loaded URL).
+                webContents = ContentViewUtil.createNativeWebContents(isIncognito(), isHidden());
+                forceNavigate = true;
+            }
+
+            mFrozenContentsState = null;
+            initContentViewCore(webContents);
+
+            if (forceNavigate) {
+                String url = TextUtils.isEmpty(mUrl) ? UrlConstants.NTP_URL : mUrl;
+                loadUrl(new LoadUrlParams(url, PageTransition.GENERATED));
+            }
+            return !forceNavigate;
+        } finally {
+            TraceEvent.end("Tab.unfreezeContents");
+        }
+    }
+
+    /**
+     * TODO(dfalcantara): Make this function accurate with hide() and show() calls.
+     * @return Whether or not the tab is hidden.
+     */
+    public boolean isHidden() {
         return false;
     }
 
@@ -1265,8 +1435,6 @@ public class Tab {
     protected void onFaviconAvailable(Bitmap icon) {
         boolean needUpdate = false;
         String url = getUrl();
-        if (url == null) return;
-
         boolean pageUrlChanged = !url.equals(mFaviconUrl);
 
         // This method will be called multiple times if the page has more than one favicon.
@@ -1387,6 +1555,59 @@ public class Tab {
     }
 
     /**
+     * @return Whether the Tab should be preserved in Android's Recents list when users hit "back".
+     */
+    public boolean shouldPreserve() {
+        return mShouldPreserve;
+    }
+
+    /**
+     * Sets whether the Tab should be preserved in Android's Recents list when users hit "back".
+     * @param preserve Whether the tab should be preserved.
+     */
+    public void setShouldPreserve(boolean preserve) {
+        mShouldPreserve = preserve;
+    }
+
+    /**
+     * @return Parameters that should be used for a lazily loaded Tab.  May be null.
+     */
+    protected LoadUrlParams getPendingLoadParams() {
+        return mPendingLoadParams;
+    }
+
+    /**
+     * @param params Parameters that should be used for a lazily loaded Tab.
+     */
+    protected void setPendingLoadParams(LoadUrlParams params) {
+        mPendingLoadParams = params;
+        mUrl = params.getUrl();
+    }
+
+    /**
+     * @see #setAppAssociatedWith(String) for more information.
+     * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
+     *
+     * @return The id of the application associated with that tab (null if not
+     *         associated with an app).
+     */
+    public String getAppAssociatedWith() {
+        return mAppAssociatedWith;
+    }
+
+    /**
+     * Associates this tab with the external app with the specified id. Once a Tab is associated
+     * with an app, it is reused when a new page is opened from that app (unless the user typed in
+     * the location bar or in the page, in which case the tab is dissociated from any app)
+     * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
+     *
+     * @param appId The ID of application associated with the tab.
+     */
+    public void setAppAssociatedWith(String appId) {
+        mAppAssociatedWith = appId;
+    }
+
+    /**
      * Validates {@code id} and increments the internal counter to make sure future ids don't
      * collide.
      * @param id The current id.  Maybe {@link #INVALID_TAB_ID}.
@@ -1404,7 +1625,11 @@ public class Tab {
      * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
      */
     public void createHistoricalTab() {
-        nativeCreateHistoricalTab(mNativeTabAndroid);
+        if (!isFrozen()) {
+            nativeCreateHistoricalTab(mNativeTabAndroid);
+        } else if (mFrozenContentsState != null) {
+            mFrozenContentsState.createHistoricalTab();
+        }
     }
 
     /**

@@ -32,7 +32,8 @@ public interface TabDelegate {
             LoadUrlParams loadUrlParams, PendingDocumentData documentParams);
 
     /**
-     * Creates a frozen Tab for the Entry.
+     * Creates a frozen Tab for the Entry.  This Tab is not meant to be used or unfrozen -- it is
+     * only used as a placeholder until the real Tab can be created.
      * @param entry Entry containing TabState.
      * @return A frozen Tab.
      */
