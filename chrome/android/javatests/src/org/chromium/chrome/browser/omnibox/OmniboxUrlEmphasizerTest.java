@@ -321,4 +321,91 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
         spans[0].assertIsColoredSpan("invalidurl", 0,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
     }
+
+    /**
+     * Verify that the origin index is calculated correctly for HTTP and HTTPS
+     * URLs by OmniboxUrlEmphasizer.getOriginEndIndex().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testHTTPAndHTTPSUrlsOriginEndIndex() {
+        String url;
+
+        url = "http://www.google.com/";
+        assertEquals("Unexpected origin end index for url " + url + ":",
+                "http://www.google.com".length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "https://www.google.com/";
+        assertEquals("Unexpected origin end index for url " + url + ":",
+                "https://www.google.com".length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "http://www.news.com/dir/a/b/c/page.html?foo=bar";
+        assertEquals("Unexpected origin end index for url " + url + ":",
+                "http://www.news.com".length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "http://www.test.com?foo=bar";
+        assertEquals("Unexpected origin end index for url " + url + ":",
+                "http://www.test.com".length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+    }
+
+    /**
+     * Verify that the origin index is calculated correctly for data URLs by
+     * OmniboxUrlEmphasizer.getOriginEndIndex().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testDataUrlsOriginEndIndex() {
+        String url;
+
+        // Data URLs have no origin.
+        url = "data:ABC123";
+        assertEquals("Unexpected origin end index for url " + url + ":", 0,
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "data:kf94hfJEj#N";
+        assertEquals("Unexpected origin end index for url " + url + ":", 0,
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "data:text/plain;charset=utf-8;base64,dGVzdA==";
+        assertEquals("Unexpected origin end index for url " + url + ":", 0,
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+    }
+
+    /**
+     * Verify that the origin index is calculated correctly for URLS other than
+     * HTTP, HTTPS and data by OmniboxUrlEmphasizer.getOriginEndIndex().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testOtherUrlsOriginEndIndex() {
+        String url;
+
+        // In non-HTTP/HTTPS/data URLs, the whole URL is considered the origin.
+        url = "file://my/pc/somewhere/foo.html";
+        assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "about:blank";
+        assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "chrome://version";
+        assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "chrome-native://bookmarks";
+        assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+
+        url = "invalidurl";
+        assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+    }
 }

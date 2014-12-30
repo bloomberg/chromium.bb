@@ -9,10 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,6 +76,85 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         }
     }
 
+    private static class ElidedUrlTextView extends TextView {
+        // The number of lines to display when the URL is truncated. This number
+        // should still allow the origin to be displayed. NULL before
+        // setUrlAfterLayout() is called.
+        private Integer mTruncatedUrlLinesToDisplay;
+
+        // If true, the text view will show the truncated text. If false, it
+        // will show the full, expanded text.
+        private boolean mIsShowingTruncatedText = true;
+
+        // The profile to use when getting the end index for the origin.
+        private Profile mProfile = null;
+
+        /** Constructor for inflating from XML. */
+        public ElidedUrlTextView(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            setMaxLines(Integer.MAX_VALUE);
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            assert mProfile != null : "setProfile() must be called before layout.";
+
+            // Lay out the URL in a StaticLayout that is the same size as our final
+            // container.
+            Layout layout = getLayout();
+            int originEndIndex =
+                    OmniboxUrlEmphasizer.getOriginEndIndex(getText().toString(), mProfile);
+
+            // Find the range of lines containing the origin.
+            int originEndLineIndex = 0;
+            while (originEndLineIndex < layout.getLineCount()
+                    && layout.getLineEnd(originEndLineIndex) < originEndIndex) {
+                originEndLineIndex++;
+            }
+
+            // Display an extra line so we don't accidentally hide the origin with
+            // ellipses
+            int lastLineIndexToDisplay = originEndLineIndex + 1;
+
+            // Since lastLineToDisplay is an index, add 1 to get the maximum number
+            // of lines. This will always be at least 2 lines (when the origin is
+            // fully contained on line 0).
+            mTruncatedUrlLinesToDisplay = lastLineIndexToDisplay + 1;
+
+            if (updateMaxLines()) super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+
+        /**
+         * Sets the profile to use when calculating the end index of the origin.
+         * Must be called before layout.
+         *
+         * @param profile The profile to use when coloring the URL.
+         */
+        public void setProfile(Profile profile) {
+            mProfile = profile;
+        }
+
+        /**
+         * Toggles truncating/expanding the URL text. If the URL text is not
+         * truncated, has no effect.
+         */
+        public void toggleTruncation() {
+            mIsShowingTruncatedText = !mIsShowingTruncatedText;
+            updateMaxLines();
+        }
+
+        private boolean updateMaxLines() {
+            int maxLines = Integer.MAX_VALUE;
+            if (mIsShowingTruncatedText) maxLines = mTruncatedUrlLinesToDisplay;
+            if (maxLines != getMaxLines()) {
+                setMaxLines(maxLines);
+                return true;
+            }
+            return false;
+        }
+    }
+
     private static final int MAX_TABLET_DIALOG_WIDTH_DP = 400;
 
     private final Context mContext;
@@ -87,7 +168,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private final LinearLayout mContainer;
 
     // UI elements in the dialog.
-    private final TextView mUrlTitle;
+    private final ElidedUrlTextView mUrlTitle;
     private final TextView mUrlConnectionMessage;
     private final LinearLayout mPermissionsList;
     private final Button mCopyUrlButton;
@@ -102,6 +183,17 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
     private String mFullUrl;
+
+    // A parsed version of mFullUrl. Is null if the URL is invalid/cannot be
+    // parsed.
+    private URI mParsedUrl;
+
+    // Whether or not this page is an internal chrome page (e.g. the
+    // chrome://settings page).
+    private boolean mIsInternalPage;
+
+    // The security level of the page (a valid ToolbarModelSecurityLevel).
+    private int mSecurityLevel;
 
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
@@ -120,8 +212,10 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.website_settings, null);
 
-        mUrlTitle = (TextView) mContainer
-                .findViewById(R.id.website_settings_url);
+        mUrlTitle = (ElidedUrlTextView) mContainer.findViewById(R.id.website_settings_url);
+        mUrlTitle.setProfile(mProfile);
+        mUrlTitle.setOnClickListener(this);
+
         mUrlConnectionMessage = (TextView) mContainer
                 .findViewById(R.id.website_settings_connection_message);
         mPermissionsList = (LinearLayout) mContainer
@@ -176,6 +270,26 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 nativeDestroy(mNativeWebsiteSettingsPopup);
             }
         });
+
+        // Work out the URL and connection message.
+        mFullUrl = mWebContents.getVisibleUrl();
+        try {
+            mParsedUrl = new URI(mFullUrl);
+            mIsInternalPage = UrlUtilities.isInternalScheme(mParsedUrl);
+        } catch (URISyntaxException e) {
+            mParsedUrl = null;
+            mIsInternalPage = false;
+        }
+        mSecurityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
+
+        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
+        OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
+                mSecurityLevel, mIsInternalPage, true);
+        mUrlTitle.setText(urlBuilder);
+
+        // Set the URL connection message now, and the URL after layout (so it
+        // can calculate its ideal height).
+        mUrlConnectionMessage.setText(getUrlConnectionMessage());
     }
 
     /**
@@ -245,25 +359,14 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     }
 
     /**
-     * Updates the details (URL title and connection message) displayed in the popup.
-     *
-     * @param isInternalPage Whether or not this page is an internal chrome page (e.g. the
-     *                       chrome://settings page).
+     * Gets the styled connection message to display below the URL.
      */
-    @CalledByNative
-    private void updatePageDetails(boolean isInternalPage) {
-        mFullUrl = mWebContents.getVisibleUrl();
-        int securityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
-        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
-        OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
-                securityLevel, isInternalPage, true);
-        mUrlTitle.setText(urlBuilder);
-
+    private Spannable getUrlConnectionMessage() {
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
-        if (securityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
+        if (mSecurityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
             messageBuilder.append(mContext.getResources().getString(
-                    getConnectionMessageId(securityLevel, isInternalPage)));
+                    getConnectionMessageId(mSecurityLevel, mIsInternalPage)));
         } else {
             String originToDisplay;
             try {
@@ -287,7 +390,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             messageBuilder.setSpan(boldSpan, 0, leadingText.length(),
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
-        mUrlConnectionMessage.setText(messageBuilder);
+        return messageBuilder;
     }
 
     /**
@@ -405,6 +508,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             // TODO(sashab,finnur): Make this open the Website Settings dialog.
             assert false : "No Website Settings here!";
             mDialog.dismiss();
+        } else if (view == mUrlTitle) {
+            // Expand/collapse the displayed URL title.
+            mUrlTitle.toggleTruncation();
         }
     }
 

@@ -126,6 +126,8 @@ public class OmniboxUrlEmphasizer {
 
     /**
      * Modifies the given URL to emphasize the TLD and second domain.
+     * TODO(sashab): Make this take an EmphasizeComponentsResponse object to
+     *               prevent calling parseForEmphasizeComponents() again.
      *
      * @param url The URL spannable to add emphasis to. This variable is
      *            modified.
@@ -247,6 +249,53 @@ public class OmniboxUrlEmphasizer {
      */
     public static UrlEmphasisSpan[] getEmphasisSpans(Spannable url) {
         return url.getSpans(0, url.length(), UrlEmphasisSpan.class);
+    }
+
+    /**
+     * Returns the index of the first character containing non-origin
+     * information, or 0 if the URL does not contain an origin.
+     *
+     * For "data" URLs, the URL is not considered to contain an origin.
+     * For non-http and https URLs, the whole URL is considered the origin.
+     *
+     * For example, HTTP and HTTPS urls return the index of the first character
+     * after the domain:
+     *   http://www.google.com/?q=foo => 21 (up to the 'm' in google.com)
+     *   https://www.google.com/?q=foo => 22
+     *
+     * Data urls always return 0, since they do not contain an origin:
+     *   data:kf94hfJEj#N => 0
+     *
+     * Other URLs treat the whole URL as an origin:
+     *   file://my/pc/somewhere/foo.html => 31
+     *   about:blank => 11
+     *   chrome://version => 18
+     *   chrome-native://bookmarks => 25
+     *   invalidurl => 10
+     *
+     * TODO(sashab): Make this take an EmphasizeComponentsResponse object to
+     *               prevent calling parseForEmphasizeComponents() again.
+     *
+     * @param url The URL to find the last origin character in.
+     * @param profile The profile visiting this URL (used for parsing the URL).
+     * @return The index of the last character containing origin information.
+     */
+    public static int getOriginEndIndex(String url, Profile profile) {
+        EmphasizeComponentsResponse emphasizeResponse =
+                parseForEmphasizeComponents(profile, url.toString());
+        if (!emphasizeResponse.hasScheme()) return url.length();
+
+        int startSchemeIndex = emphasizeResponse.schemeStart;
+        int endSchemeIndex = emphasizeResponse.schemeStart + emphasizeResponse.schemeLength;
+        String scheme = url.subSequence(startSchemeIndex, endSchemeIndex).toString().toLowerCase();
+
+        if (scheme.equals("http") || scheme.equals("https")) {
+            return emphasizeResponse.hostStart + emphasizeResponse.hostLength;
+        } else if (scheme.equals("data")) {
+            return 0;
+        } else {
+            return url.length();
+        }
     }
 
     private static native int[] nativeParseForEmphasizeComponents(Profile profile, String text);

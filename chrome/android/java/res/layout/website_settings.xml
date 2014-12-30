@@ -18,10 +18,11 @@
         android:paddingEnd="@dimen/website_settings_popup_padding_sides"
         android:paddingStart="@dimen/website_settings_popup_padding_sides" >
 
-        <TextView
+        <view class="org.chromium.chrome.browser.WebsiteSettingsPopup$ElidedUrlTextView"
             android:id="@+id/website_settings_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
             android:lineSpacingExtra="4dp"
             android:paddingTop="16dp"
             android:textColor="@color/url_emphasis_default_text"

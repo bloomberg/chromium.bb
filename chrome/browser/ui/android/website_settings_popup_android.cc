@@ -80,13 +80,6 @@ void WebsiteSettingsPopupAndroid::OnPermissionSettingChanged(JNIEnv* env,
 void WebsiteSettingsPopupAndroid::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  Java_WebsiteSettingsPopup_updatePageDetails(
-      env,
-      popup_jobject_.obj(),
-      identity_info.connection_status ==
-          WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE);
-
   Java_WebsiteSettingsPopup_showDialog(env, popup_jobject_.obj());
 }
 
