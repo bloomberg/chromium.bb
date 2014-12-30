@@ -30,12 +30,14 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
 
 namespace blink {
 
 static const double initialFrameDelay = 0.025;
+static const double animationPolicyOnceDuration = 3.000;
 
 #if !ENABLE(OILPAN)
 // Every entry-point that calls updateAnimations() should instantiate a
@@ -58,6 +60,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     , m_frameSchedulingState(Idle)
     , m_documentOrderIndexesDirty(false)
     , m_wakeupTimer(this, &SMILTimeContainer::wakeupTimerFired)
+    , m_animationPolicyOnceTimer(this, &SMILTimeContainer::animationPolicyTimerFired)
     , m_ownerSVGElement(owner)
 #if ENABLE(ASSERT)
     , m_preventScheduledAnimationsChanges(false)
@@ -68,6 +71,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
 SMILTimeContainer::~SMILTimeContainer()
 {
     cancelAnimationFrame();
+    cancelAnimationPolicyTimer();
     ASSERT(!m_wakeupTimer.isActive());
 #if ENABLE(ASSERT)
     ASSERT(!m_preventScheduledAnimationsChanges);
@@ -152,7 +156,8 @@ SMILTime SMILTimeContainer::elapsed() const
 
 bool SMILTimeContainer::isPaused() const
 {
-    return m_pauseTime;
+    // If animation policy is "none", it is always paused.
+    return m_pauseTime || animationPolicy() == ImageAnimationPolicyNoAnimation;
 }
 
 bool SMILTimeContainer::isStarted() const
@@ -163,6 +168,10 @@ bool SMILTimeContainer::isStarted() const
 void SMILTimeContainer::begin()
 {
     RELEASE_ASSERT(!m_beginTime);
+
+    if (!handleAnimationPolicy(RestartOnceTimerIfNotPaused))
+        return;
+
     double now = currentTime();
 
     // If 'm_presetStartTime' is set, the timeline was modified via setElapsed() before the document began.
@@ -194,6 +203,9 @@ void SMILTimeContainer::begin()
 
 void SMILTimeContainer::pause()
 {
+    if (!handleAnimationPolicy(CancelOnceTimer))
+        return;
+
     ASSERT(!isPaused());
     m_pauseTime = currentTime();
 
@@ -206,6 +218,9 @@ void SMILTimeContainer::pause()
 
 void SMILTimeContainer::resume()
 {
+    if (!handleAnimationPolicy(RestartOnceTimer))
+        return;
+
     ASSERT(isPaused());
     m_resumeTime = currentTime();
 
@@ -220,6 +235,9 @@ void SMILTimeContainer::setElapsed(SMILTime time)
         m_presetStartTime = time.value();
         return;
     }
+
+    if (!handleAnimationPolicy(RestartOnceTimerIfNotPaused))
+        return;
 
     cancelAnimationFrame();
 
@@ -293,6 +311,56 @@ void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
         m_frameSchedulingState = Idle;
         updateAnimationsAndScheduleFrameIfNeeded(elapsed());
     }
+}
+
+void SMILTimeContainer::scheduleAnimationPolicyTimer()
+{
+    m_animationPolicyOnceTimer.startOneShot(animationPolicyOnceDuration, FROM_HERE);
+}
+
+void SMILTimeContainer::cancelAnimationPolicyTimer()
+{
+    if (m_animationPolicyOnceTimer.isActive())
+        m_animationPolicyOnceTimer.stop();
+}
+
+void SMILTimeContainer::animationPolicyTimerFired(Timer<SMILTimeContainer>*)
+{
+    pause();
+}
+
+ImageAnimationPolicy SMILTimeContainer::animationPolicy() const
+{
+    Settings* settings = document().settings();
+    if (!settings)
+        return ImageAnimationPolicyAllowed;
+
+    return settings->imageAnimationPolicy();
+}
+
+bool SMILTimeContainer::handleAnimationPolicy(AnimationPolicyOnceAction onceAction)
+{
+    ImageAnimationPolicy policy = animationPolicy();
+    // If the animation policy is "none", control is not allowed.
+    // returns false to exit flow.
+    if (policy == ImageAnimationPolicyNoAnimation)
+        return false;
+    // If the animation policy is "once",
+    if (policy == ImageAnimationPolicyAnimateOnce) {
+        switch (onceAction) {
+        case RestartOnceTimerIfNotPaused:
+            if (isPaused())
+                break;
+            /* fall through */
+        case RestartOnceTimer:
+            scheduleAnimationPolicyTimer();
+            break;
+        case CancelOnceTimer:
+            cancelAnimationPolicyTimer();
+            break;
+        }
+    }
+    return true;
 }
 
 void SMILTimeContainer::updateDocumentOrderIndexes()

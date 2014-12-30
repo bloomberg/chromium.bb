@@ -75,6 +75,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
     , m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled())
     , m_originalImageColorProfilesEnabled(RuntimeEnabledFeatures::imageColorProfilesEnabled())
+    , m_originalImageAnimationPolicy(settings->imageAnimationPolicy())
 {
 }
 
@@ -97,6 +98,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->genericFontFamilySettings().reset();
     RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled);
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(m_originalImageColorProfilesEnabled);
+    settings->setImageAnimationPolicy(m_originalImageAnimationPolicy);
 }
 
 #if ENABLE(OILPAN)
@@ -438,4 +440,16 @@ void InternalSettings::setPrimaryHoverType(const String& type, ExceptionState& e
     settings()->setPrimaryHoverType(hoverType);
 }
 
+void InternalSettings::setImageAnimationPolicy(const String& policy, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    if (equalIgnoringCase(policy, "allowed"))
+        settings()->setImageAnimationPolicy(ImageAnimationPolicyAllowed);
+    else if (equalIgnoringCase(policy, "once"))
+        settings()->setImageAnimationPolicy(ImageAnimationPolicyAnimateOnce);
+    else if (equalIgnoringCase(policy, "none"))
+        settings()->setImageAnimationPolicy(ImageAnimationPolicyNoAnimation);
+    else
+        exceptionState.throwDOMException(SyntaxError, "The image animation policy provided ('" + policy + "') is invalid.");
+}
 }

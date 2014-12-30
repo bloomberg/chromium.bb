@@ -29,6 +29,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/svg/animation/SMILTime.h"
 #include "platform/Timer.h"
+#include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -84,10 +85,24 @@ private:
         AnimationFrame
     };
 
+    enum AnimationPolicyOnceAction {
+        // Restart OnceTimer if the timeline is not paused.
+        RestartOnceTimerIfNotPaused,
+        // Restart OnceTimer.
+        RestartOnceTimer,
+        // Cancel OnceTimer.
+        CancelOnceTimer
+    };
+
     bool isTimelineRunning() const;
     void scheduleAnimationFrame(SMILTime fireTime);
     void cancelAnimationFrame();
     void wakeupTimerFired(Timer<SMILTimeContainer>*);
+    void scheduleAnimationPolicyTimer();
+    void cancelAnimationPolicyTimer();
+    void animationPolicyTimerFired(Timer<SMILTimeContainer>*);
+    ImageAnimationPolicy animationPolicy() const;
+    bool handleAnimationPolicy(AnimationPolicyOnceAction);
     void updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime = false);
     SMILTime updateAnimations(SMILTime elapsed, bool seekToTime = false);
     void serviceOnNextFrame();
@@ -110,6 +125,7 @@ private:
     bool m_documentOrderIndexesDirty;
 
     Timer<SMILTimeContainer> m_wakeupTimer;
+    Timer<SMILTimeContainer> m_animationPolicyOnceTimer;
 
     using ElementAttributePair = pair<RawPtrWillBeWeakMember<SVGElement>, QualifiedName>;
     using AnimationsLinkedHashSet = WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<SVGSMILElement>>;

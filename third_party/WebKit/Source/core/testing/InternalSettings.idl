@@ -49,6 +49,7 @@
     [RaisesException] void setPrimaryPointerType(DOMString pointer);
     [RaisesException] void setAvailableHoverTypes(DOMString types);
     [RaisesException] void setPrimaryHoverType(DOMString type);
+    [RaisesException] void setImageAnimationPolicy(DOMString policy);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start.  These setters should
