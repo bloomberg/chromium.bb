@@ -343,7 +343,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           TileDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
           quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
-                       visible_geometry_rect, draw_info.get_resource_id(),
+                       visible_geometry_rect, draw_info.resource_id(),
                        texture_rect, draw_info.resource_size(),
                        draw_info.contents_swizzled(), nearest_neighbor_);
           has_draw_quad = true;
@@ -376,11 +376,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         case TileDrawInfo::SOLID_COLOR_MODE: {
           SolidColorDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-          quad->SetNew(shared_quad_state,
-                       geometry_rect,
-                       visible_geometry_rect,
-                       draw_info.get_solid_color(),
-                       false);
+          quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
+                       draw_info.solid_color(), false);
           has_draw_quad = true;
           break;
         }
@@ -784,7 +781,7 @@ void PictureLayerImpl::GetContentsResourceId(
     return;
   }
 
-  *resource_id = draw_info.get_resource_id();
+  *resource_id = draw_info.resource_id();
   *resource_size = draw_info.resource_size();
 }
 

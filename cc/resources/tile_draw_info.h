@@ -26,7 +26,7 @@ class CC_EXPORT TileDrawInfo {
 
   bool IsReadyToDraw() const;
 
-  ResourceProvider::ResourceId get_resource_id() const {
+  ResourceProvider::ResourceId resource_id() const {
     DCHECK(mode_ == RESOURCE_MODE);
     DCHECK(resource_);
     return resource_->id();
@@ -38,7 +38,7 @@ class CC_EXPORT TileDrawInfo {
     return resource_->size();
   }
 
-  SkColor get_solid_color() const {
+  SkColor solid_color() const {
     DCHECK(mode_ == SOLID_COLOR_MODE);
     return solid_color_;
   }
