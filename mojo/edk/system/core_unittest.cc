@@ -8,8 +8,10 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/core_test_base.h"
 
 namespace mojo {
@@ -1274,6 +1276,38 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ph));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch));
+}
+
+struct TestAsyncWaiter {
+  TestAsyncWaiter() : result(MOJO_RESULT_UNKNOWN) {}
+
+  void Awake(MojoResult r) { result = r; }
+
+  MojoResult result;
+};
+
+TEST_F(CoreTest, AsyncWait) {
+  TestAsyncWaiter waiter;
+  MockHandleInfo info;
+  MojoHandle h = CreateMockHandle(&info);
+
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            core()->AsyncWait(h, MOJO_HANDLE_SIGNAL_READABLE,
+                              base::Bind(&TestAsyncWaiter::Awake,
+                                         base::Unretained(&waiter))));
+  EXPECT_EQ(0u, info.GetAddedAwakableSize());
+
+  info.AllowAddAwakable(true);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->AsyncWait(h, MOJO_HANDLE_SIGNAL_READABLE,
+                              base::Bind(&TestAsyncWaiter::Awake,
+                                         base::Unretained(&waiter))));
+  EXPECT_EQ(1u, info.GetAddedAwakableSize());
+
+  EXPECT_FALSE(info.GetAddedAwakableAt(0)->Awake(MOJO_RESULT_BUSY, 0));
+  EXPECT_EQ(MOJO_RESULT_BUSY, waiter.result);
+
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
 }
 
 // TODO(vtl): Test |DuplicateBufferHandle()| and |MapBuffer()|.

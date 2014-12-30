@@ -7,12 +7,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/perf_log.h"
 
 namespace mojo {
@@ -44,9 +48,16 @@ TestSupportImpl::~TestSupportImpl() {
 }
 
 void TestSupportImpl::LogPerfResult(const char* test_name,
+                                    const char* sub_test_name,
                                     double value,
                                     const char* units) {
-  base::LogPerfResult(test_name, value, units);
+  DCHECK(test_name);
+  if (sub_test_name) {
+    std::string name = base::StringPrintf("%s/%s", test_name, sub_test_name);
+    base::LogPerfResult(name.c_str(), value, units);
+  } else {
+    base::LogPerfResult(test_name, value, units);
+  }
 }
 
 FILE* TestSupportImpl::OpenSourceRootRelativeFile(const char* relative_path) {

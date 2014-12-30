@@ -6,9 +6,12 @@ define("mojo/public/js/connection", [
   "mojo/public/js/connector",
   "mojo/public/js/core",
   "mojo/public/js/router",
-], function(connector, core, routerModule) {
+], function(connector, core, router) {
 
-  // TODO(hansmuller): the proxy connection_ property should connection$
+  var Router = router.Router;
+  var TestConnector = connector.TestConnector;
+  var TestRouter = router.TestRouter;
+
   // TODO(hansmuller): the proxy receiver_ property should be receiver$
 
   function BaseConnection(localStub, remoteProxy, router) {
@@ -44,7 +47,7 @@ define("mojo/public/js/connection", [
 
   function Connection(
       handle, localFactory, remoteFactory, routerFactory, connectorFactory) {
-    var routerClass = routerFactory || routerModule.Router;
+    var routerClass = routerFactory || Router;
     var router = new routerClass(handle, connectorFactory);
     var remoteProxy = remoteFactory && new remoteFactory(router);
     var localStub = localFactory && new localFactory(remoteProxy);
@@ -54,73 +57,86 @@ define("mojo/public/js/connection", [
   Connection.prototype = Object.create(BaseConnection.prototype);
 
   // The TestConnection subclass is only intended to be used in unit tests.
-
   function TestConnection(handle, localFactory, remoteFactory) {
     Connection.call(this,
                     handle,
                     localFactory,
                     remoteFactory,
-                    routerModule.TestRouter,
-                    connector.TestConnector);
+                    TestRouter,
+                    TestConnector);
   }
 
   TestConnection.prototype = Object.create(Connection.prototype);
 
-  function createOpenConnection(stub, proxy) {
-    var messagePipe = core.createMessagePipe();
-    // TODO(hansmuller): Check messagePipe.result.
-    var router = new routerModule.Router(messagePipe.handle0);
+  // Called by the generated interface Proxy constructor classes.
+  function initProxyInstance(proxy, proxyInterface, receiver) {
+    Object.defineProperty(proxy, 'local$', {
+      get: function() {
+        return proxy.connection$ &&
+          proxy.connection$.local && proxy.connection$.local.delegate$
+      },
+      set: function(value) {
+        // TODO: what if the connection hasn't been created yet?
+        if (proxy.connection$ && proxy.connection$.local) {
+          proxy.connection$.local.delegate$ = value;
+          value.remote$ = proxy;
+        }
+      }
+    });
+    // TODO(hansmuller): Temporary, for Chrome backwards compatibility.
+    if (receiver instanceof Router)
+      proxy.receiver_ = receiver;
+  }
+
+  function createEmptyProxy() {
+    var proxy = {};
+    initProxyInstance(proxy);
+    return proxy;
+  }
+
+  function createOpenConnection(
+      messagePipeHandle, clientImpl, localInterface, remoteInterface) {
+    var stubClass = localInterface && localInterface.stubClass
+    var proxyClass = remoteInterface && remoteInterface.proxyClass;
+    var stub = stubClass &&
+        (clientImpl ? new stubClass(clientImpl) : new stubClass);
+    var proxy = proxyClass ? new proxyClass : createEmptyProxy();
+    var router = new Router(messagePipeHandle);
     var connection = new BaseConnection(stub, proxy, router);
-    connection.messagePipeHandle = messagePipe.handle1;
+    proxy.connection$ = connection;
+    if (clientImpl) {
+      clientImpl.connection$ = connection;
+      clientImpl.remote$ = proxy;
+    }
     return connection;
   }
 
-  function getProxyConnection(proxy, proxyInterface) {
-    if (!proxy.connection_) {
-      var stub = proxyInterface.client && new proxyInterface.client.stubClass;
-      proxy.connection_ = createOpenConnection(stub, proxy);
-    }
-    return proxy.connection_;
+  // Return a message pipe handle.
+  function bindProxyClient(clientImpl, localInterface, remoteInterface) {
+    var messagePipe = core.createMessagePipe();
+    if (messagePipe.result != core.RESULT_OK)
+      throw new Error("createMessagePipe failed " + messagePipe.result);
+
+    createOpenConnection(
+      messagePipe.handle0, clientImpl, localInterface, remoteInterface);
+    return messagePipe.handle1;
   }
 
-  function getStubConnection(stub, proxyInterface) {
-    if (!stub.connection_) {
-      var proxy = proxyInterface.client && new proxyInterface.client.proxyClass;
-      stub.connection_ = createOpenConnection(stub, proxy);
-    }
-    return stub.connection_;
-  }
+  // Return a proxy.
+  function bindProxyHandle(proxyHandle, localInterface, remoteInterface) {
+    if (!core.isHandle(proxyHandle))
+      throw new Error("Not a handle " + proxyHandle);
 
-  function initProxyInstance(proxy, proxyInterface, receiver) {
-    if (proxyInterface.client) {
-      Object.defineProperty(proxy, 'client$', {
-        get: function() {
-          var connection = getProxyConnection(proxy, proxyInterface);
-          return connection.local && connection.local.delegate$
-        },
-        set: function(value) {
-          var connection = getProxyConnection(proxy, proxyInterface);
-          if (connection.local)
-            connection.local.delegate$ = value;
-        }
-      });
-    }
-    if (receiver instanceof routerModule.Router) {
-      // TODO(hansmuller): Temporary, for Chrome backwards compatibility.
-      proxy.receiver_ = receiver;
-    } else if (receiver) {
-      var router = new routerModule.Router(receiver);
-      var stub = proxyInterface.client && new proxyInterface.client.stubClass;
-      proxy.connection_  = new BaseConnection(stub, proxy, router);
-      proxy.connection_.messagePipeHandle = receiver;
-    }
+    var connection = createOpenConnection(
+        proxyHandle, undefined, localInterface, remoteInterface);
+    return connection.remote;
   }
 
   var exports = {};
   exports.Connection = Connection;
   exports.TestConnection = TestConnection;
-  exports.getProxyConnection = getProxyConnection;
-  exports.getStubConnection = getStubConnection;
+  exports.bindProxyHandle = bindProxyHandle;
+  exports.bindProxyClient = bindProxyClient;
   exports.initProxyInstance = initProxyInstance;
   return exports;
 });

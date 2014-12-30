@@ -125,7 +125,6 @@ HTMLDocument::~HTMLDocument() {
 }
 
 void HTMLDocument::OnEmbed(
-    ViewManager* view_manager,
     View* root,
     mojo::ServiceProviderImpl* embedee_service_provider_impl,
     scoped_ptr<mojo::ServiceProvider> embedder_service_provider) {

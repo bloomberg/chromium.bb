@@ -54,10 +54,10 @@ const (
 	MOJO_RESULT_BUSY                             = -16
 	MOJO_RESULT_SHOULD_WAIT                      = -17
 
-	MOJO_HANDLE_SIGNAL_NONE     MojoHandleSignals = 0
-	MOJO_HANDLE_SIGNAL_READABLE                   = 1 << 0
-	MOJO_HANDLE_SIGNAL_WRITABLE                   = 1 << 1
-	MOJO_HANDLE_SIGNAL_PEER_CLOSED                = 1 << 2
+	MOJO_HANDLE_SIGNAL_NONE        MojoHandleSignals = 0
+	MOJO_HANDLE_SIGNAL_READABLE                      = 1 << 0
+	MOJO_HANDLE_SIGNAL_WRITABLE                      = 1 << 1
+	MOJO_HANDLE_SIGNAL_PEER_CLOSED                   = 1 << 2
 
 	MOJO_WRITE_MESSAGE_FLAG_NONE       MojoWriteMessageFlags = 0
 	MOJO_READ_MESSAGE_FLAG_NONE        MojoReadMessageFlags  = 0
@@ -88,6 +88,18 @@ type DataPipeOptions struct {
 	elemSize uint32
 	// The capacity of the data pipe in bytes. Must be a multiple of elemSize.
 	capacity uint32
+}
+
+type MojoHandleSignalsState struct {
+	SatisfiedSignals   MojoHandleSignals
+	SatisfiableSignals MojoHandleSignals
+}
+
+func NewMojoHandleSignalsState(cstate C.struct_MojoHandleSignalsState) MojoHandleSignalsState {
+	return MojoHandleSignalsState{
+		MojoHandleSignals(cstate.satisfied_signals),
+		MojoHandleSignals(cstate.satisfiable_signals),
+	}
 }
 
 func (opts *DataPipeOptions) cType() *C.struct_MojoCreateDataPipeOptions {
@@ -157,6 +169,16 @@ func (opts *DuplicateBufferHandleOptions) cType() *C.struct_MojoDuplicateBufferH
 	return &cOpts
 }
 
+func (m MojoHandleSignals) IsReadable() bool {
+	return (m & MOJO_HANDLE_SIGNAL_READABLE) != 0
+}
+func (m MojoHandleSignals) IsWritable() bool {
+	return (m & MOJO_HANDLE_SIGNAL_WRITABLE) != 0
+}
+func (m MojoHandleSignals) IsClosed() bool {
+	return (m & MOJO_HANDLE_SIGNAL_PEER_CLOSED) != 0
+}
+
 // Convenience functions to convert Go types to their equivalent C types.
 func (m MojoHandle) cType() C.MojoHandle {
 	return (C.MojoHandle)(m)
@@ -166,6 +188,9 @@ func (m MojoDeadline) cType() C.MojoDeadline {
 }
 func (m MojoHandleSignals) cType() C.MojoHandleSignals {
 	return (C.MojoHandleSignals)(m)
+}
+func (m MojoHandleSignalsState) cType() C.struct_MojoHandleSignalsState {
+	return C.struct_MojoHandleSignalsState{m.SatisfiedSignals.cType(), m.SatisfiableSignals.cType()}
 }
 func (m MojoWriteMessageFlags) cType() C.MojoWriteMessageFlags {
 	return (C.MojoWriteMessageFlags)(m)
@@ -194,6 +219,7 @@ func (m MojoDuplicateBufferHandleOptionsFlags) cType() C.MojoDuplicateBufferHand
 func (m MojoMapBufferFlags) cType() C.MojoMapBufferFlags {
 	return (C.MojoMapBufferFlags)(m)
 }
+
 func cArrayMojoHandle(m []MojoHandle) *C.MojoHandle {
 	if len(m) == 0 {
 		return nil
@@ -206,6 +232,7 @@ func cArrayMojoHandleSignals(m []MojoHandleSignals) *C.MojoHandleSignals {
 	}
 	return (*C.MojoHandleSignals)(&m[0])
 }
+
 func cArrayBytes(m []byte) unsafe.Pointer {
 	if len(m) == 0 {
 		return nil

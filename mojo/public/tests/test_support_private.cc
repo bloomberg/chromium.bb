@@ -13,12 +13,19 @@ static mojo::test::TestSupport* g_test_support = NULL;
 extern "C" {
 
 void MojoTestSupportLogPerfResult(const char* test_name,
+                                  const char* sub_test_name,
                                   double value,
                                   const char* units) {
-  if (g_test_support)
-    g_test_support->LogPerfResult(test_name, value, units);
-  else
-    printf("[no test runner]\t%s\t%g\t%s\n", test_name, value, units);
+  if (g_test_support) {
+    g_test_support->LogPerfResult(test_name, sub_test_name, value, units);
+  } else {
+    if (sub_test_name) {
+      printf("[no test runner]\t%s/%s\t%g\t%s\n", test_name, sub_test_name,
+             value, units);
+    } else {
+      printf("[no test runner]\t%s\t%g\t%s\n", test_name, value, units);
+    }
+  }
 }
 
 FILE* MojoTestSupportOpenSourceRootRelativeFile(const char* relative_path) {

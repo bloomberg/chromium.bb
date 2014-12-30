@@ -45,6 +45,8 @@
     'edk/system/awakable.h',
     'edk/system/awakable_list.cc',
     'edk/system/awakable_list.h',
+    'edk/system/async_waiter.cc',
+    'edk/system/async_waiter.h',
     'edk/system/channel.cc',
     'edk/system/channel.h',
     'edk/system/channel_endpoint.cc',

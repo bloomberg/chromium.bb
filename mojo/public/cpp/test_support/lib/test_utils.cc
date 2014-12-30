@@ -69,6 +69,7 @@ bool DiscardMessage(const MessagePipeHandle& handle) {
 }
 
 void IterateAndReportPerf(const char* test_name,
+                          const char* sub_test_name,
                           PerfTestSingleIteration single_iteration,
                           void* closure) {
   // TODO(vtl): These should be specifiable using command-line flags.
@@ -86,7 +87,7 @@ void IterateAndReportPerf(const char* test_name,
     end_time = GetTimeTicksNow();
   } while (end_time - start_time < kPerftestTimeMicroseconds);
 
-  MojoTestSupportLogPerfResult(test_name,
+  MojoTestSupportLogPerfResult(test_name, sub_test_name,
                                1000000.0 * iterations / (end_time - start_time),
                                "iterations/second");
 }

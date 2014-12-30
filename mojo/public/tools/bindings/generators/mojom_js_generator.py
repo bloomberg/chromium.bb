@@ -223,6 +223,30 @@ def JavaScriptValidateHandleParams(packed_field):
   return "%s, %s" % (field_offset, nullable)
 
 
+
+
+def JavaScriptProxyMethodParameterValue(parameter):
+  name = parameter.name;
+  if (IsInterfaceParameter(parameter)):
+   type = JavaScriptType(parameter.kind)
+   return "core.isHandle(%s) ? %s : connection.bindProxyClient" \
+       "(%s, %s, %s.client)" % (name, name, name, type, type)
+  if (IsInterfaceRequestParameter(parameter)):
+   type = JavaScriptType(parameter.kind.kind)
+   return "core.isHandle(%s) ? %s : connection.bindProxyClient" \
+       "(%s, %s.client, %s)" % (name, name, name, type, type)
+  return name;
+
+def JavaScriptStubMethodParameterValue(parameter):
+  name = parameter.name;
+  if (IsInterfaceParameter(parameter)):
+   type = JavaScriptType(parameter.kind)
+   return "connection.bindProxyHandle(%s, %s.client, %s)" % (name, type, type)
+  if (IsInterfaceRequestParameter(parameter)):
+   type = JavaScriptType(parameter.kind.kind)
+   return "connection.bindProxyHandle(%s, %s, %s.client)" % (name, type, type)
+  return name;
+
 def TranslateConstants(token):
   if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
     # Both variable and enum constants are constructed like:
@@ -292,6 +316,8 @@ class Generator(generator.Generator):
     "js_type": JavaScriptType,
     "is_interface_request_parameter": IsInterfaceRequestParameter,
     "is_interface_parameter": IsInterfaceParameter,
+    "js_proxy_method_parameter_value": JavaScriptProxyMethodParameterValue,
+    "js_stub_method_parameter_value": JavaScriptStubMethodParameterValue,
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
     "validate_handle_params": JavaScriptValidateHandleParams,

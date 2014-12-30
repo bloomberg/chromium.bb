@@ -80,8 +80,8 @@ class RootObserver : public ViewObserver {
   // Overridden from ViewObserver:
   void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_);
-    static_cast<ViewManagerClientImpl*>(
-        ViewPrivate(root_).view_manager())->RootDestroyed(root_);
+    static_cast<ViewManagerClientImpl*>(root_->view_manager())
+        ->RootDestroyed(root_);
     view->RemoveObserver(this);
     delete this;
   }
@@ -100,7 +100,9 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
       next_id_(1),
       delegate_(delegate),
       root_(nullptr),
+      capture_view_(nullptr),
       focused_view_(nullptr),
+      activated_view_(nullptr),
       binding_(this, handle.Pass()),
       service_(binding_.client()),
       delete_on_error_(delete_on_error) {
@@ -125,13 +127,6 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
     delete non_owned[i];
 
   delegate_->OnViewManagerDisconnected(this);
-}
-
-Id ViewManagerClientImpl::CreateView() {
-  DCHECK(connected_);
-  const Id view_id = MakeTransportId(connection_id_, ++next_id_);
-  service_->CreateView(view_id, ActionCompletedCallbackWithErrorCode());
-  return view_id;
 }
 
 void ViewManagerClientImpl::DestroyView(Id view_id) {
@@ -228,6 +223,13 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
 
+Id ViewManagerClientImpl::CreateViewOnServer() {
+  DCHECK(connected_);
+  const Id view_id = MakeTransportId(connection_id_, ++next_id_);
+  service_->CreateView(view_id, ActionCompletedCallbackWithErrorCode());
+  return view_id;
+}
+
 const std::string& ViewManagerClientImpl::GetEmbedderURL() const {
   return creator_url_;
 }
@@ -243,6 +245,12 @@ View* ViewManagerClientImpl::GetViewById(Id id) {
 
 View* ViewManagerClientImpl::GetFocusedView() {
   return focused_view_;
+}
+
+View* ViewManagerClientImpl::CreateView() {
+  View* view = new View(this, CreateViewOnServer());
+  AddView(view);
+  return view;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -279,7 +287,7 @@ void ViewManagerClientImpl::OnEmbed(
   window_manager_->GetFocusedAndActiveViews(
       base::Bind(&ViewManagerClientImpl::OnGotFocusedAndActiveViews,
                  base::Unretained(this)));
-  delegate_->OnEmbed(this, root_, exported_services, remote.Pass());
+  delegate_->OnEmbed(root_, exported_services, remote.Pass());
 }
 
 void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {
@@ -380,7 +388,21 @@ void ViewManagerClientImpl::OnViewInputEvent(
 // ViewManagerClientImpl, WindowManagerClient implementation:
 
 void ViewManagerClientImpl::OnCaptureChanged(Id old_capture_view_id,
-                                             Id new_capture_view_id) {}
+                                             Id new_capture_view_id) {
+  View* gained_capture = GetViewById(new_capture_view_id);
+  View* lost_capture = GetViewById(old_capture_view_id);
+  if (lost_capture) {
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(lost_capture).observers(),
+                      OnViewFocusChanged(gained_capture, lost_capture));
+  }
+  capture_view_ = gained_capture;
+  if (gained_capture) {
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(gained_capture).observers(),
+                      OnViewFocusChanged(gained_capture, lost_capture));
+  }
+}
 
 void ViewManagerClientImpl::OnFocusChanged(Id old_focused_view_id,
                                            Id new_focused_view_id) {
@@ -399,8 +421,22 @@ void ViewManagerClientImpl::OnFocusChanged(Id old_focused_view_id,
   }
 }
 
-void ViewManagerClientImpl::OnActiveWindowChanged(Id old_focused_window,
-                                                  Id new_focused_window) {}
+void ViewManagerClientImpl::OnActiveWindowChanged(Id old_active_view_id,
+                                                  Id new_active_view_id) {
+  View* activated = GetViewById(new_active_view_id);
+  View* deactivated = GetViewById(old_active_view_id);
+  if (deactivated) {
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(deactivated).observers(),
+                      OnViewActivationChanged(activated, deactivated));
+  }
+  activated_view_ = activated;
+  if (activated) {
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(activated).observers(),
+                      OnViewActivationChanged(activated, deactivated));
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OnConnectionError, private:
@@ -441,6 +477,10 @@ void ViewManagerClientImpl::OnGotFocusedAndActiveViews(uint32 focused_view_id,
                                                        uint32 active_view_id) {
   if (GetViewById(focused_view_id) != focused_view_)
     OnFocusChanged(focused_view_ ? focused_view_->id() : 0, focused_view_id);
+  if (GetViewById(active_view_id) != activated_view_) {
+    OnActiveWindowChanged(activated_view_ ? activated_view_->id() : 0,
+                          active_view_id);
+  }
 }
 
 }  // namespace mojo

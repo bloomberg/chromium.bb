@@ -208,5 +208,11 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
   return MOJO_RESULT_OK;
 }
 
+MojoResult AsyncWait(MojoHandle handle,
+                     MojoHandleSignals signals,
+                     base::Callback<void(MojoResult)> callback) {
+  return internal::g_core->AsyncWait(handle, signals, callback);
+}
+
 }  // namespace embedder
 }  // namespace mojo

@@ -53,14 +53,17 @@ struct Frame {
 };
 
 interface SurfaceClient {
+  // This sets the id namespace for this connection. This method will be invoked
+  // exactly once when a new connection is established.
+  SetIdNamespace(uint32 id_namespace);
   ReturnResources(array<ReturnedResource> resources);
 };
 
 [Client=SurfaceClient]
 interface Surface {
-  // The id is created by the client and must be unique and contain the
-  // connection's namespace in the upper 32 bits.
-  CreateSurface(SurfaceId id, Size size);
+  // The id's local field is allocated by the caller and must be unique. The
+  // id_namespace field on the id may be 0 or this connection's namespace.
+  CreateSurface(SurfaceId id);
 
   // The client can only submit frames to surfaces created with this
   // connection.  After the submitted frame is drawn for the first time, the

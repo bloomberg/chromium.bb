@@ -5,113 +5,76 @@
 define("mojo/services/public/js/service_provider", [
   "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/public/js/connection",
-  "mojo/public/js/core",
-], function(spInterfaceModule, connectionModule, coreModule) {
+], function(serviceProviderMojom, connection) {
 
-  // Implementation of the Mojo ServiceProvider interface.
-  function connectToServiceImpl(serviceName, serviceHandle) {
-    var provider = this.providers_.get(serviceName);
-    if (!provider) {
-      this.pendingRequests_.set(serviceName, serviceHandle);
-      return;
-    }
-
-    var serviceConnection = new connectionModule.Connection(
-      serviceHandle,
-      provider.service.stubClass,
-      provider.service.client && provider.service.client.proxyClass);
-
-    serviceConnection.local.delegate$ =
-      new provider.factory(serviceConnection.remote);
-
-    provider.connections.push(serviceConnection);
-  }
+  const ServiceProviderInterface = serviceProviderMojom.ServiceProvider;
 
   function checkServiceProvider(sp) {
-    if (!sp.connections_)
+    if (!sp.providers_)
       throw new Error("Service was closed");
   }
 
   class ServiceProvider {
     constructor(service) {
-      if (!(service instanceof spInterfaceModule.ServiceProvider.proxyClass))
+      if (!(service instanceof ServiceProviderInterface.proxyClass))
         throw new Error("service must be a ServiceProvider proxy");
+      service.local$ = this; // Implicitly sets this.remote$ to service.
+      this.providers_ = new Map(); // serviceName => see provideService() below
+      this.pendingRequests_ = new Map(); // serviceName => serviceHandle
+    }
 
-      service.client$ = {
-        connectToService: connectToServiceImpl.bind(this)
-      };
+    // Incoming requests
+    connectToService(serviceName, serviceHandle) {
+      if (!this.providers_) // We're closed.
+        return;
 
-      this.connections_ = new Map();
-      this.providers_ = new Map();
-      this.pendingRequests_ = new Map();
-      this.connection_ = null;
-      this.connection_ = service.getConnection$();
+      var provider = this.providers_.get(serviceName);
+      if (!provider) {
+        this.pendingRequests_.set(serviceName, serviceHandle);
+        return;
+      }
+      var proxy = connection.bindProxyHandle(
+          serviceHandle, provider.service, provider.service.client);
+      proxy.local$ = new provider.factory(proxy);
+      provider.connections.push(proxy.connection$);
     }
 
     provideService(service, factory) {
-      // TODO(hansmuller): if !factory, remove provider and close its
-      // connections.
       checkServiceProvider(this);
 
       var provider = {
         service: service, // A JS bindings interface object.
-        factory: factory, // factory(clientProxy) => interface implemntation.
+        factory: factory, // factory(clientProxy) => interface implemntation
         connections: [],
       };
       this.providers_.set(service.name, provider);
 
       if (this.pendingRequests_.has(service.name)) {
-        connectToServiceImpl(service.name, pendingRequests_.get(service.name));
+        this.connectToService(service.name, pendingRequests_.get(service.name));
         pendingRequests_.delete(service.name);
       }
-
       return this;
     }
 
-    connectToService(service, client) {
+    // Outgoing requests
+    requestService(interfaceObject, clientImpl) {
       checkServiceProvider(this);
-      if (!service.name)
+      if (!interfaceObject.name)
         throw new Error("Invalid service parameter");
+      if (!clientImpl && interfaceObject.client)
+        throw new Error("Client implementation must be provided");
 
-      var serviceConnection = this.connections_.get(service.name);
-      if (serviceConnection)
-        return serviceConnection.remote;
-
-      var pipe = coreModule.createMessagePipe();
-      this.connection_.remote.connectToService(service.name, pipe.handle1);
-      var clientClass = client && service.client.stubClass;
-      var serviceConnection = new connectionModule.Connection(
-        pipe.handle0, clientClass, service.proxyClass);
-      if (serviceConnection.local)
-        serviceConnection.local.delegate$ = client;
-
-      this.connections_.set(service.name, serviceConnection);
-      return serviceConnection.remote;
+      if (!clientImpl)
+        clientImpl = {};
+      var messagePipeHandle = connection.bindProxyClient(
+          clientImpl, interfaceObject.client, interfaceObject);
+      this.remote$.connectToService(interfaceObject.name, messagePipeHandle);
+      return clientImpl.remote$;
     };
 
     close() {
-      if (!this.connection_)
-        return;
-
-      try {
-        // Outgoing connections
-        this.connections_.forEach(function(connection, serviceName) {
-          connection.close();
-        });
-        // Incoming connections
-        this.providers_.forEach(function(provider, serviceName) {
-          provider.connections.forEach(function(connection) {
-            connection.close();
-          });
-        });
-        this.connection_.close();
-      } finally {
-        this.connections_ = null;
-        this.providers_ = null;
-        this.pendingRequests_ = null;
-        this.connection_ = null;
-        this.handle_ = null;
-      }
+      this.providers_ = null;
+      this.pendingRequests_ = null;
     }
   }
 

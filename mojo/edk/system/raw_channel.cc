@@ -76,19 +76,25 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
     void** serialization_data) {
   DCHECK(HavePlatformHandlesToSend());
 
-  TransportData* transport_data = message_queue_.front()->transport_data();
+  MessageInTransit* message = message_queue_.front();
+  TransportData* transport_data = message->transport_data();
   embedder::PlatformHandleVector* all_platform_handles =
       transport_data->platform_handles();
   *num_platform_handles =
       all_platform_handles->size() - platform_handles_offset_;
   *platform_handles = &(*all_platform_handles)[platform_handles_offset_];
-  size_t serialization_data_offset =
-      transport_data->platform_handle_table_offset();
-  DCHECK_GT(serialization_data_offset, 0u);
-  serialization_data_offset +=
-      platform_handles_offset_ * serialized_platform_handle_size_;
-  *serialization_data =
-      static_cast<char*>(transport_data->buffer()) + serialization_data_offset;
+
+  if (serialized_platform_handle_size_ > 0) {
+    size_t serialization_data_offset =
+        transport_data->platform_handle_table_offset();
+    DCHECK_GT(serialization_data_offset, 0u);
+    serialization_data_offset +=
+        platform_handles_offset_ * serialized_platform_handle_size_;
+    *serialization_data = static_cast<char*>(transport_data->buffer()) +
+                          serialization_data_offset;
+  } else {
+    *serialization_data = nullptr;
+  }
 }
 
 void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {

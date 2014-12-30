@@ -4,13 +4,20 @@
 
 define("mojo/public/js/router", [
   "mojo/public/js/codec",
+  "mojo/public/js/core",
   "mojo/public/js/connector",
   "mojo/public/js/validator",
-], function(codec, connector, validator) {
+], function(codec, core, connector, validator) {
+
+  var Connector = connector.Connector;
+  var MessageReader = codec.MessageReader;
+  var Validator = validator.Validator;
 
   function Router(handle, connectorFactory) {
+    if (!core.isHandle(handle))
+      throw new Error("Router constructor: Not a handle");
     if (connectorFactory === undefined)
-      connectorFactory = connector.Connector;
+      connectorFactory = Connector;
     this.connector_ = new connectorFactory(handle);
     this.incomingReceiver_ = null;
     this.nextRequestID_ = 0;
@@ -71,7 +78,7 @@ define("mojo/public/js/router", [
 
   Router.prototype.handleIncomingMessage_ = function(message) {
     var noError = validator.validationError.NONE;
-    var messageValidator = new validator.Validator(message);
+    var messageValidator = new Validator(message);
     var err = messageValidator.validateMessageHeader();
     for (var i = 0; err === noError && i < this.payloadValidators_.length; ++i)
       err = this.payloadValidators_[i](messageValidator);
@@ -92,7 +99,7 @@ define("mojo/public/js/router", [
         this.close();
       }
     } else if (message.isResponse()) {
-      var reader = new codec.MessageReader(message);
+      var reader = new MessageReader(message);
       var requestID = reader.requestID;
       var completer = this.completers_.get(requestID);
       this.completers_.delete(requestID);

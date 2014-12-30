@@ -4,18 +4,21 @@
 
 # distutils language = c++
 
-cimport c_core
+cimport c_async_waiter
 cimport c_environment
+cimport c_export  # needed so the init function gets exported
+cimport c_thunks
 
 
 from libc.stdint cimport uintptr_t
 
+
 def SetSystemThunks(system_thunks_as_object):
   """Bind the basic Mojo Core functions.
   """
-  cdef const c_core.MojoSystemThunks* system_thunks = (
-      <const c_core.MojoSystemThunks*><uintptr_t>system_thunks_as_object)
-  c_core.MojoSetSystemThunks(system_thunks)
+  cdef const c_thunks.MojoSystemThunks* system_thunks = (
+      <const c_thunks.MojoSystemThunks*><uintptr_t>system_thunks_as_object)
+  c_thunks.MojoSetSystemThunks(system_thunks)
 
 
 cdef class RunLoop(object):
@@ -53,13 +56,13 @@ cdef class RunLoop(object):
 
 # We use a wrapping class to be able to call the C++ class PythonAsyncWaiter
 # across module boundaries.
-cdef class _AsyncWaiter(object):
+cdef class AsyncWaiter(object):
   cdef c_environment.CEnvironment* _cenvironment
-  cdef c_environment.PythonAsyncWaiter* _c_async_waiter
+  cdef c_async_waiter.PythonAsyncWaiter* _c_async_waiter
 
   def __init__(self):
     self._cenvironment = new c_environment.CEnvironment()
-    self._c_async_waiter = new c_environment.PythonAsyncWaiter()
+    self._c_async_waiter = c_environment.NewAsyncWaiter()
 
   def __dealloc__(self):
     del self._c_async_waiter
@@ -70,6 +73,3 @@ cdef class _AsyncWaiter(object):
 
   def CancelWait(self, wait_id):
     self._c_async_waiter.CancelWait(wait_id)
-
-
-ASYNC_WAITER = _AsyncWaiter()

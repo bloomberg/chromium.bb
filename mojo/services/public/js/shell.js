@@ -4,16 +4,27 @@
 
 define("mojo/services/public/js/shell", [
   "mojo/public/js/core",
+  "mojo/public/js/connection",
   "mojo/public/interfaces/application/shell.mojom",
   "mojo/public/interfaces/application/service_provider.mojom",
-  "mojo/services/public/js/service_provider",
-], function(coreModule, shellInterfaceModule, spInterfaceModule, spModule) {
+  "mojo/services/public/js/service_provider"
+], function(core,
+            connection,
+            shellMojom,
+            serviceProviderMojom,
+            serviceProvider) {
+
+  const ServiceProvider = serviceProvider.ServiceProvider;
+  const ServiceProviderInterface = serviceProviderMojom.ServiceProvider;
+  const ShellInterface = shellMojom.Shell;
 
   class Shell {
     constructor(shellHandle, app) {
       this.shellHandle = shellHandle;
-      this.proxy = new shellInterfaceModule.Shell.proxyClass(shellHandle);
-      this.proxy.client$ = app;
+      this.proxy = connection.bindProxyHandle(
+          shellHandle, ShellInterface.client, ShellInterface);
+      this.proxy.local$ = app; // The app is the shell's client.
+      // TODO: call this serviceProviders_
       this.applications_ = new Map();
     }
 
@@ -22,15 +33,15 @@ define("mojo/services/public/js/shell", [
       if (application)
         return application;
 
-      var spProxy = new spInterfaceModule.ServiceProvider.proxyClass;
-      this.proxy.connectToApplication(url, spProxy);
-      application = new spModule.ServiceProvider(spProxy);
+      var returnValue = {};
+      this.proxy.connectToApplication(url, returnValue);
+      application = new ServiceProvider(returnValue.remote$);
       this.applications_.set(url, application);
       return application;
     }
 
     connectToService(url, service, client) {
-      return this.connectToApplication(url).connectToService(service, client);
+      return this.connectToApplication(url).requestService(service, client);
     };
 
     close() {
@@ -38,7 +49,7 @@ define("mojo/services/public/js/shell", [
         application.close();
       });
       this.applications_.clear();
-      coreModule.close(this.shellHandle);
+      core.close(this.shellHandle);
     }
   }
 

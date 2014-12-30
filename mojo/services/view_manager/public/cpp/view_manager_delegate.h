@@ -18,21 +18,17 @@ class ViewManager;
 class ViewManagerDelegate {
  public:
   // Called when the application implementing this interface is embedded at
-  // |root|. |view_manager| is an implementation of an object bound to a
-  // connection to the view manager service. The object is valid until
+  // |root|. Every embed results in a new ViewManager and root View being
+  // created. |root| and it's corresponding ViewManager are valid until
   // OnViewManagerDisconnected() is called with the same object.
-  // This function is called for every embed, but there will be a unique
-  // instance of |view_manager| only for every unique connection. See
-  // the class description of ViewManager for some rules about when a new
-  // connection is made.
+  //
   // |exported_services| is an object that the delegate can add services to
   // expose to the embedder. |imported_services| exposes the services offered by
   // the embedder to the delegate. Note that if a different application is
   // subsequently embedded at |root|, the pipe(s) connecting |imported_services|
   // to the embedder and any services obtained from it are not broken and will
   // continue to be valid.
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
+  virtual void OnEmbed(View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) = 0;
 

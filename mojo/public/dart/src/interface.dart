@@ -8,15 +8,18 @@ abstract class Interface {
   core.MojoMessagePipeEndpoint _endpoint;
   core.MojoHandle _handle;
   List _sendQueue;
+  bool _isOpen;
 
-  Message handleMessage(MessageReader reader, Function messageHandler);
+  Message handleMessage(MessageReader reader);
 
   Interface(this._endpoint) {
     _sendQueue = [];
     _handle = new core.MojoHandle(_endpoint.handle);
+    _isOpen = false;
   }
 
-  StreamSubscription<int> listen(Function messageHandler) {
+  StreamSubscription<int> listen() {
+    _isOpen = true;
     return _handle.listen((int mojoSignal) {
       if (core.MojoHandleSignals.isReadable(mojoSignal)) {
         // Query how many bytes are available.
@@ -42,10 +45,10 @@ abstract class Interface {
         var reader = new MessageReader(message);
 
         // Prepare the response.
-        var response_message = handleMessage(reader, messageHandler);
+        var responseMessage = handleMessage(reader);
         // If there's a response, queue it up for sending.
-        if (response_message != null) {
-          _sendQueue.add(response_message);
+        if (responseMessage != null) {
+          _sendQueue.add(responseMessage);
           if ((_sendQueue.length > 0) && !_handle.writeEnabled()) {
             _handle.enableWriteEvents();
           }
@@ -53,8 +56,10 @@ abstract class Interface {
       }
       if (core.MojoHandleSignals.isWritable(mojoSignal)) {
         if (_sendQueue.length > 0) {
-          var response_message = _sendQueue.removeAt(0);
-          _endpoint.write(response_message.buffer);
+          var responseMessage = _sendQueue.removeAt(0);
+          _endpoint.write(responseMessage.buffer,
+                          responseMessage.buffer.lengthInBytes,
+                          responseMessage.handles);
           if (!_endpoint.status.isOk) {
             throw new Exception("message pipe write failed");
           }
@@ -77,10 +82,27 @@ abstract class Interface {
     return builder.finish();
   }
 
-  Message buildResponseWithID(Type t, int name, int id, Object response) {
+  Message buildResponseWithID(
+      Type t, int name, int id, int flags, Object response) {
     var builder = new MessageWithRequestIDBuilder(
-        name, align(getEncodedSize(t)), id);
+        name, align(getEncodedSize(t)), id, flags);
     builder.encodeStruct(t, response);
     return builder.finish();
   }
+
+  void enqueueMessage(Type t, int name, Object msg) {
+    var builder = new MessageBuilder(name, align(getEncodedSize(t)));
+    builder.encodeStruct(t, msg);
+    var message = builder.finish();
+    _sendQueue.add(message);
+    if (!_handle.writeEnabled()) {
+      _handle.enableWriteEvents();
+    }
+  }
+
+  Future enqueueMessageWithRequestID(Type t, int name, int id, Object msg) {
+    throw new Exception("The client Mixin should not expect a response");
+  }
+
+  bool get isOpen => _isOpen;
 }

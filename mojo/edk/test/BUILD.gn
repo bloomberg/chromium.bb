@@ -4,7 +4,6 @@
 
 import("../mojo_edk.gni")
 
-# GYP version: mojo/edk/mojo_edk.gyp:mojo_common_test_support
 mojo_edk_source_set("test_support") {
   testonly = true
   sources = [
@@ -24,7 +23,6 @@ mojo_edk_source_set("test_support") {
   mojo_edk_deps = [ "mojo/edk/system" ]
 }
 
-# GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_unittests
 mojo_edk_source_set("run_all_unittests") {
   testonly = true
   sources = [
@@ -43,7 +41,6 @@ mojo_edk_source_set("run_all_unittests") {
   mojo_sdk_deps = [ "mojo/public/c/test_support" ]
 }
 
-# GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_perftests
 mojo_edk_source_set("run_all_perftests") {
   testonly = true
   deps = [
@@ -61,7 +58,6 @@ mojo_edk_source_set("run_all_perftests") {
   ]
 }
 
-# GYP version: mojo/edk/mojo_edk.gyp:mojo_test_support_impl
 mojo_edk_source_set("test_support_impl") {
   testonly = true
   deps = [
@@ -80,7 +76,6 @@ mojo_edk_source_set("test_support_impl") {
 # Public SDK test targets follow. These targets are not defined within the
 # public SDK itself as running the unittests requires the EDK.
 
-# GYP version: mojo/mojo_base.gyp:mojo_public_application_unittests
 test("mojo_public_application_unittests") {
   deps = [
     ":run_all_unittests",
@@ -88,7 +83,6 @@ test("mojo_public_application_unittests") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_public_bindings_unittests
 test("mojo_public_bindings_unittests") {
   deps = [
     ":run_all_unittests",
@@ -96,7 +90,6 @@ test("mojo_public_bindings_unittests") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_public_environment_unittests
 test("mojo_public_environment_unittests") {
   deps = [
     ":run_all_unittests",
@@ -104,10 +97,23 @@ test("mojo_public_environment_unittests") {
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_public_system_perftests
 test("mojo_public_system_perftests") {
   deps = [
     ":run_all_perftests",
     "../../public/c/system/tests:perftests",
+  ]
+}
+
+test("mojo_public_system_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "../../public/cpp/system/tests",
+  ]
+}
+
+test("mojo_public_utility_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "../../public/cpp/utility/tests",
   ]
 }

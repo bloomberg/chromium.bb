@@ -39,7 +39,7 @@ class MOJO_SYSTEM_IMPL_EXPORT IncomingEndpoint : public ChannelEndpointClient {
   void OnDetachFromChannel(unsigned port) override;
 
  private:
-  virtual ~IncomingEndpoint();
+  ~IncomingEndpoint() override;
 
   base::Lock lock_;  // Protects the following members.
   scoped_refptr<ChannelEndpoint> endpoint_;

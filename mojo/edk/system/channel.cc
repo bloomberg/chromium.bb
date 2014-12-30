@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
+#include "mojo/edk/system/endpoint_relayer.h"
 #include "mojo/edk/system/transport_data.h"
 
 namespace mojo {
@@ -185,12 +186,56 @@ size_t Channel::GetSerializedEndpointSize() const {
   return sizeof(SerializedEndpoint);
 }
 
-void Channel::SerializeEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                                void* destination) {
+void Channel::SerializeEndpointWithClosedPeer(
+    void* destination,
+    MessageInTransitQueue* message_queue) {
+  // We can actually just pass no client to |SerializeEndpointWithLocalPeer()|.
+  SerializeEndpointWithLocalPeer(destination, message_queue, nullptr, 0);
+}
+
+scoped_refptr<ChannelEndpoint> Channel::SerializeEndpointWithLocalPeer(
+    void* destination,
+    MessageInTransitQueue* message_queue,
+    ChannelEndpointClient* endpoint_client,
+    unsigned endpoint_client_port) {
+  DCHECK(destination);
+  // Allow |endpoint_client| to be null, for use by
+  // |SerializeEndpointWithClosedPeer()|.
+
+  scoped_refptr<ChannelEndpoint> endpoint(new ChannelEndpoint(
+      endpoint_client, endpoint_client_port, message_queue));
+
   SerializedEndpoint* s = static_cast<SerializedEndpoint*>(destination);
   s->receiver_endpoint_id = AttachAndRunEndpoint(endpoint);
-  DVLOG(2) << "Serializing endpoint (remote ID = " << s->receiver_endpoint_id
-           << ")";
+  DVLOG(2) << "Serializing endpoint with local or closed peer (remote ID = "
+           << s->receiver_endpoint_id << ")";
+
+  return endpoint;
+}
+
+void Channel::SerializeEndpointWithRemotePeer(
+    void* destination,
+    MessageInTransitQueue* message_queue,
+    scoped_refptr<ChannelEndpoint> peer_endpoint) {
+  DCHECK(destination);
+  DCHECK(peer_endpoint);
+
+  DLOG(WARNING) << "Direct message pipe passing across multiple channels not "
+                   "yet implemented; will proxy";
+  // Create and set up an |EndpointRelayer| to proxy.
+  // TODO(vtl): If we were to own/track the relayer directly (rather than owning
+  // it via its |ChannelEndpoint|s), then we might be able to make
+  // |ChannelEndpoint|'s |client_| pointer a raw pointer.
+  scoped_refptr<EndpointRelayer> relayer(new EndpointRelayer());
+  scoped_refptr<ChannelEndpoint> endpoint(
+      new ChannelEndpoint(relayer.get(), 0, message_queue));
+  relayer->Init(endpoint.get(), peer_endpoint.get());
+  peer_endpoint->ReplaceClient(relayer.get(), 1);
+
+  SerializedEndpoint* s = static_cast<SerializedEndpoint*>(destination);
+  s->receiver_endpoint_id = AttachAndRunEndpoint(endpoint);
+  DVLOG(2) << "Serializing endpoint with remote peer (remote ID = "
+           << s->receiver_endpoint_id << ")";
 }
 
 scoped_refptr<IncomingEndpoint> Channel::DeserializeEndpoint(

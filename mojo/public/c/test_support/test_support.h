@@ -15,8 +15,15 @@
 extern "C" {
 #endif
 
+// |sub_test_name| is optional. If not null, it usually describes one particular
+// configuration of the test. For example, if |test_name| is "TestPacketRate",
+// |sub_test_name| could be "100BytesPerPacket".
+// When the perf data is visualized by the performance dashboard, data with
+// different |sub_test_name|s (but the same |test_name|) are depicted as
+// different traces on the same chart.
 MOJO_TEST_SUPPORT_EXPORT void MojoTestSupportLogPerfResult(
     const char* test_name,
+    const char* sub_test_name,
     double value,
     const char* units);
 

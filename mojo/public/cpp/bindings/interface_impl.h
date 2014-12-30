@@ -41,11 +41,13 @@ class InterfaceImpl : public Interface, public ErrorHandler {
   Client* client() { return binding_.client(); }
   internal::Router* internal_router() { return binding_.internal_router(); }
 
+  // Implements ErrorHandler.
+  //
   // Called when the client is no longer connected to this instance. NOTE: The
   // client() method continues to return a non-null pointer after this method
   // is called. After this method is called, any method calls made on client()
   // will be silently ignored.
-  virtual void OnConnectionError() {}
+  void OnConnectionError() override {}
 
   void set_delete_on_error(bool delete_on_error) {
     error_handler_impl_.set_delete_on_error(delete_on_error);

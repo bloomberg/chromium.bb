@@ -277,6 +277,9 @@ class InterfaceRequest(ReferenceKind):
 
   def __init__(self, kind=None):
     if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            "Interface request requires %r to be an interface." % kind.spec)
       ReferenceKind.__init__(self, 'r:' + kind.spec)
     else:
       ReferenceKind.__init__(self)

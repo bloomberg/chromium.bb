@@ -229,3 +229,11 @@ function writeData(handle, buffer, flags) { [native code] }
  *   }
  */
 function readData(handle, flags) { [native code] }
+
+/**
+ * True if the argument is a message or data pipe handle.
+ *
+ * @param {value} an arbitrary JS value.
+ * @return true or false
+ */
+function isHandle(value) { [native code] }

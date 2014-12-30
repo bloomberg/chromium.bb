@@ -124,6 +124,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
+    # This code is not shipped.
+    'mojo/public/third_party/ply': [
+        'UNKNOWN',
+    ],
     'native_client': [  # http://crbug.com/98099
         'UNKNOWN',
     ],

@@ -11,38 +11,18 @@
 
 #include <map>
 
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/lib/shared_ptr.h"
+#include "mojo/public/python/src/common.h"
+
 
 namespace mojo {
 namespace python {
+// Create a mojo::Closure from a callable python object. If an error occurs
+// while executing callable, the closure will quit the current run loop.
+Closure BuildClosure(PyObject* callable);
 
-// Create a mojo::Closure from a callable python object.
-mojo::Closure BuildClosure(PyObject* callable);
-
-class PythonAsyncWaiter {
- public:
-  PythonAsyncWaiter();
-  ~PythonAsyncWaiter();
-  MojoAsyncWaitID AsyncWait(MojoHandle handle,
-                            MojoHandleSignals signals,
-                            MojoDeadline deadline,
-                            PyObject* callable);
-
-  void CancelWait(MojoAsyncWaitID wait_id);
-
- private:
-  class AsyncWaiterRunnable;
-
-  typedef std::map<MojoAsyncWaitID,
-                   internal::SharedPtr<mojo::Callback<void(MojoResult)> > >
-      CallbackMap;
-
-  CallbackMap callbacks_;
-  const MojoAsyncWaiter* async_waiter_;
-};
+// Create a new PythonAsyncWaiter object. Ownership is passed to the caller.
+PythonAsyncWaiter* NewAsyncWaiter();
 
 }  // namespace python
 }  // namespace mojo

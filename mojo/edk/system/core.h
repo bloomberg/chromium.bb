@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,6 +49,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Looks up the dispatcher for the given handle. Returns null if the handle is
   // invalid.
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
+
+  // Watches on the given handle for the given signals, calling |callback| when
+  // a signal is satisfied or when all signals become unsatisfiable. |callback|
+  // must satisfy stringent requirements -- see |Awakable::Awake()| in
+  // awakable.h. In particular, it must not call any Mojo system functions.
+  MojoResult AsyncWait(MojoHandle handle,
+                       MojoHandleSignals signals,
+                       base::Callback<void(MojoResult)> callback);
 
   embedder::PlatformSupport* platform_support() const {
     return platform_support_.get();

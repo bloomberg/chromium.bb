@@ -155,7 +155,10 @@ class MojoDecoder {
   }
 
   core.RawMojoHandle decodeHandle() {
-    return handles[readUint32()];
+    int handleIndex = readUint32();
+    return (handleIndex == kEncodedInvalidHandleValue) ?
+           new core.RawMojoHandle(core.RawMojoHandle.INVALID) :
+           handles[handleIndex];
   }
 
   String decodeString() {
@@ -323,7 +326,7 @@ class MojoEncoder {
 
   void grow(int new_size) {
     Uint8List new_buffer = new Uint8List(new_size);
-    new_buffer.setRange(0, next, buffer.buffer.asUint8List());
+    new_buffer.setRange(0, buffer.lengthInBytes, buffer.buffer.asUint8List());
     buffer = new_buffer.buffer.asByteData();
   }
 
@@ -345,8 +348,12 @@ class MojoEncoder {
   }
 
   void encodeHandle(core.RawMojoHandle handle) {
-    handles.add(handle);
-    writeUint32(handles.length - 1);
+    if (handle.isValid) {
+      handles.add(handle);
+      writeUint32(handles.length - 1);
+    } else {
+      writeUint32(kEncodedInvalidHandleValue);
+    }
   }
 
   void encodeString(String val) {
@@ -740,4 +747,23 @@ class NullableHandle {
   static const int encodedSize = Handle.encodedSize;
   static const decode = Handle.decode;
   static const encode = Handle.encode;
+}
+
+
+class MapOf {
+  Object key;
+  Object val;
+
+  MapOf(this.key, this.val);
+
+  int encodedSize = 8;
+  Map decode(MojoDecoder decoder) => decoder.decodeMapPointer(key, val);
+  void encode(MojoEncoder encoder, Map map) {
+    encoder.encodeMapPointer(key, val, map);
+  }
+}
+
+
+class NullableMapOf extends MapOf {
+  NullableMapOf(Object key, Object val) : super(key, val);
 }

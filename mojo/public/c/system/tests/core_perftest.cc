@@ -212,23 +212,15 @@ class CorePerftest : public testing::Test {
     }
     readers.clear();
 
-    char test_name[200];
-    sprintf(test_name,
-            "MessagePipe_Threaded_Writes_%uw_%ur_%ubytes",
-            num_writers,
-            num_readers,
+    char sub_test_name[200];
+    sprintf(sub_test_name, "%uw_%ur_%ubytes", num_writers, num_readers,
             static_cast<unsigned>(num_bytes));
     mojo::test::LogPerfResult(
-        test_name,
+        "MessagePipe_Threaded_Writes", sub_test_name,
         1000000.0 * static_cast<double>(num_writes) / (end_time - start_time),
         "writes/second");
-    sprintf(test_name,
-            "MessagePipe_Threaded_Reads_%uw_%ur_%ubytes",
-            num_writers,
-            num_readers,
-            static_cast<unsigned>(num_bytes));
     mojo::test::LogPerfResult(
-        test_name,
+        "MessagePipe_Threaded_Reads", sub_test_name,
         1000000.0 * static_cast<double>(num_reads) / (end_time - start_time),
         "reads/second");
   }
@@ -258,11 +250,12 @@ class CorePerftest : public testing::Test {
 
 // A no-op test so we can compare performance.
 TEST_F(CorePerftest, NoOp) {
-  mojo::test::IterateAndReportPerf("NoOp", &CorePerftest::NoOp, this);
+  mojo::test::IterateAndReportPerf("Iterate_NoOp", nullptr, &CorePerftest::NoOp,
+                                   this);
 }
 
 TEST_F(CorePerftest, MessagePipe_CreateAndClose) {
-  mojo::test::IterateAndReportPerf("MessagePipe_CreateAndClose",
+  mojo::test::IterateAndReportPerf("MessagePipe_CreateAndClose", nullptr,
                                    &CorePerftest::MessagePipe_CreateAndClose,
                                    this);
 }
@@ -274,19 +267,19 @@ TEST_F(CorePerftest, MessagePipe_WriteAndRead) {
   char buffer[10000] = {0};
   buffer_ = buffer;
   num_bytes_ = 10u;
-  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead_10bytes",
+  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "10bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
   num_bytes_ = 100u;
-  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead_100bytes",
+  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "100bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
   num_bytes_ = 1000u;
-  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead_1000bytes",
+  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "1000bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
   num_bytes_ = 10000u;
-  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead_10000bytes",
+  mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "10000bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
   result = MojoClose(h0_);
@@ -299,8 +292,8 @@ TEST_F(CorePerftest, MessagePipe_EmptyRead) {
   MojoResult result = MojoCreateMessagePipe(NULL, &h0_, &h1_);
   MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
-  mojo::test::IterateAndReportPerf(
-      "MessagePipe_EmptyRead", &CorePerftest::MessagePipe_EmptyRead, this);
+  mojo::test::IterateAndReportPerf("MessagePipe_EmptyRead", nullptr,
+                                   &CorePerftest::MessagePipe_EmptyRead, this);
   result = MojoClose(h0_);
   assert(result == MOJO_RESULT_OK);
   result = MojoClose(h1_);

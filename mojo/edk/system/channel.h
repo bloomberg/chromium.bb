@@ -31,8 +31,9 @@ class PlatformSupport;
 
 namespace system {
 
-class ChannelEndpoint;
+class ChannelEndpointClient;
 class ChannelManager;
+class MessageInTransitQueue;
 
 // This class is mostly thread-safe. It must be created on an I/O thread.
 // |Init()| must be called on that same thread before it becomes thread-safe (in
@@ -105,21 +106,54 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                       ChannelEndpointId local_id,
                       ChannelEndpointId remote_id);
 
-  // Returns the size of a serialized endpoint (see |SerializeEndpoint()| and
+  // Returns the size of a serialized endpoint (see |SerializeEndpoint...()| and
   // |DeserializeEndpoint()| below). This value will remain constant for a given
   // instance of |Channel|.
   size_t GetSerializedEndpointSize() const;
 
-  // Serializes the given endpoint, writing to |destination| auxiliary
-  // information to be transmitted to the peer |Channel| via some other means.
-  // |destination| should point to a buffer of (at least) the size returned by
+  // Endpoint serialization methods: From the |Channel|'s point of view, there
+  // are three cases (discussed further below) and thus three methods.
+  //
+  // All three methods have a |destination| argument, which should be a buffer
+  // to which auxiliary information will be written and which should be
+  // transmitted to the peer |Channel| by some other means, but using this
+  // |Channel|. It should be a buffer of (at least) the size returned by
   // |GetSerializedEndpointSize()| (exactly that much data will be written).
-  void SerializeEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                         void* destination);
+  //
+  // All three also have a |message_queue| argument, which if non-null is the
+  // queue of messages already received by the endpoint to be serialized.
+  //
+  // Note that "serialize" really means "send" -- the |endpoint| will be sent
+  // "immediately". The contents of the |destination| buffer can then be used to
+  // claim the rematerialized endpoint from the peer |Channel|. (|destination|
+  // must be sent using this |Channel|, since otherwise it may be received
+  // before it is valid to the peer |Channel|.)
+  //
+  // Case 1: The endpoint's peer is already closed.
+  //
+  // Case 2: The endpoint's peer is local (i.e., it has a
+  // |ChannelEndpointClient| but no peer |ChannelEndpoint|).
+  //
+  // Case 3: The endpoint's peer is remote (i.e., it has a peer
+  // |ChannelEndpoint|). (This has two subcases: the peer endpoint may be on
+  // this |Channel| or another |Channel|.)
+  void SerializeEndpointWithClosedPeer(void* destination,
+                                       MessageInTransitQueue* message_queue);
+  // This one returns the |ChannelEndpoint| for the serialized endpoint (which
+  // can be used by, e.g., a |ProxyMessagePipeEndpoint|.
+  scoped_refptr<ChannelEndpoint> SerializeEndpointWithLocalPeer(
+      void* destination,
+      MessageInTransitQueue* message_queue,
+      ChannelEndpointClient* endpoint_client,
+      unsigned endpoint_client_port);
+  void SerializeEndpointWithRemotePeer(
+      void* destination,
+      MessageInTransitQueue* message_queue,
+      scoped_refptr<ChannelEndpoint> peer_endpoint);
 
   // Deserializes an endpoint that was sent from the peer |Channel| (using
-  // |SerializeEndpoint()|. |source| should be (a copy of) the data that
-  // |SerializeEndpoint()| wrote, and must be (at least)
+  // |SerializeEndpoint...()|. |source| should be (a copy of) the data that
+  // |SerializeEndpoint...()| wrote, and must be (at least)
   // |GetSerializedEndpointSize()| bytes. This returns the deserialized
   // |IncomingEndpoint| (which can be converted into a |MessagePipe|) or null on
   // error.
@@ -166,7 +200,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // thread.
   void HandleLocalError(const base::StringPiece& error_message);
 
-  // Helper for |SerializeEndpoint()|: Attaches the given (non-bootstrap)
+  // Helper for |SerializeEndpoint...()|: Attaches the given (non-bootstrap)
   // endpoint to this channel and runs it. This assigns the endpoint both local
   // and remote IDs. This will also send a |kSubtypeChannelAttachAndRunEndpoint|
   // message to the remote side to tell it to create an endpoint as well. This
@@ -189,7 +223,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Note: |ChannelEndpointClient|s (in particular, |MessagePipe|s) MUST NOT be
   // used under |lock_|. E.g., |lock_| can only be acquired after
   // |MessagePipe::lock_|, never before. Thus to call into a
-  // |ChannelEndpointClinet|, a reference should be acquired from
+  // |ChannelEndpointClient|, a reference should be acquired from
   // |local_id_to_endpoint_map_| under |lock_| and then the lock released.
   base::Lock lock_;  // Protects the members below.
 

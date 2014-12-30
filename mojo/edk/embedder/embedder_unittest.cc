@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
+#include "base/test/test_timeouts.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/test_embedder.h"
 #include "mojo/edk/system/test_utils.h"
@@ -155,6 +156,95 @@ TEST_F(EmbedderTest, ChannelsBasic) {
     client_channel.WaitForChannelCreationCompletion();
     EXPECT_TRUE(server_channel.channel_info());
     EXPECT_TRUE(client_channel.channel_info());
+  }
+
+  EXPECT_TRUE(test::Shutdown());
+}
+
+class TestAsyncWaiter {
+ public:
+  TestAsyncWaiter() : event_(true, false), wait_result_(MOJO_RESULT_UNKNOWN) {}
+
+  void Awake(MojoResult result) {
+    base::AutoLock l(wait_result_lock_);
+    wait_result_ = result;
+    event_.Signal();
+  }
+
+  bool TryWait() { return event_.TimedWait(TestTimeouts::action_timeout()); }
+
+  MojoResult wait_result() const {
+    base::AutoLock l(wait_result_lock_);
+    return wait_result_;
+  }
+
+ private:
+  base::WaitableEvent event_;
+
+  mutable base::Lock wait_result_lock_;
+  MojoResult wait_result_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAsyncWaiter);
+};
+
+void WriteHello(MessagePipeHandle pipe) {
+  static const char kHello[] = "hello";
+  CHECK_EQ(MOJO_RESULT_OK,
+           WriteMessageRaw(pipe, kHello, static_cast<uint32_t>(sizeof(kHello)),
+                           nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+}
+
+void CloseScopedHandle(ScopedMessagePipeHandle handle) {
+  // Do nothing and the destructor will close it.
+}
+
+TEST_F(EmbedderTest, AsyncWait) {
+  mojo::embedder::test::InitWithSimplePlatformSupport();
+
+  {
+    ScopedMessagePipeHandle client_mp;
+    ScopedMessagePipeHandle server_mp;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mojo::CreateMessagePipe(nullptr, &client_mp, &server_mp));
+
+    TestAsyncWaiter waiter;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                        base::Bind(&TestAsyncWaiter::Awake,
+                                   base::Unretained(&waiter))));
+
+    test_io_thread()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&WriteHello, server_mp.get()));
+    EXPECT_TRUE(waiter.TryWait());
+    EXPECT_EQ(MOJO_RESULT_OK, waiter.wait_result());
+
+    // If message is in the queue, it does't allow us to wait.
+    TestAsyncWaiter waiter_that_doesnt_wait;
+    EXPECT_EQ(
+        MOJO_RESULT_ALREADY_EXISTS,
+        AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                  base::Bind(&TestAsyncWaiter::Awake,
+                             base::Unretained(&waiter_that_doesnt_wait))));
+
+    char buffer[1000];
+    uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
+    CHECK_EQ(MOJO_RESULT_OK,
+             ReadMessageRaw(client_mp.get(), buffer, &num_bytes, nullptr,
+                            nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+
+    TestAsyncWaiter unsatisfiable_waiter;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              AsyncWait(client_mp.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                        base::Bind(&TestAsyncWaiter::Awake,
+                                   base::Unretained(&unsatisfiable_waiter))));
+
+    test_io_thread()->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&CloseScopedHandle, base::Passed(server_mp.Pass())));
+
+    EXPECT_TRUE(unsatisfiable_waiter.TryWait());
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              unsatisfiable_waiter.wait_result());
   }
 
   EXPECT_TRUE(test::Shutdown());

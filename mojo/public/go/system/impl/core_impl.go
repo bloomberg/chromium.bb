@@ -31,12 +31,32 @@ func (c *CoreImpl) Close(handle MojoHandle) MojoResult {
 	return (MojoResult)(C.MojoClose(handle.cType()))
 }
 
-func (c *CoreImpl) Wait(handle MojoHandle, signal MojoHandleSignals, deadline MojoDeadline) MojoResult {
-	return (MojoResult)(C.MojoWait(handle.cType(), signal.cType(), deadline.cType()))
+func (c *CoreImpl) Wait(handle MojoHandle, signal MojoHandleSignals, deadline MojoDeadline) (MojoResult, *MojoHandleSignalsState) {
+	var signal_states C.struct_MojoHandleSignalsState
+	result := C.MojoNewWait(handle.cType(), signal.cType(), deadline.cType(), &signal_states)
+	return MojoResult(result), &MojoHandleSignalsState{MojoHandleSignals(signal_states.satisfied_signals), MojoHandleSignals(signal_states.satisfiable_signals)}
 }
 
-func (c *CoreImpl) WaitMany(handles []MojoHandle, signals []MojoHandleSignals, deadline MojoDeadline) MojoResult {
-	return (MojoResult)(C.MojoWaitMany(cArrayMojoHandle(handles), cArrayMojoHandleSignals(signals), (C.uint32_t)(len(handles)), deadline.cType()))
+func (c *CoreImpl) WaitMany(handles []MojoHandle, signals []MojoHandleSignals, deadline MojoDeadline) (result MojoResult, index *uint32, state []MojoHandleSignalsState) {
+	// Set "-1" using the instructions from http://blog.golang.org/constants
+	cindex := ^C.uint32_t(0)
+	cstate := make([]C.struct_MojoHandleSignalsState, len(handles))
+
+	result = (MojoResult)(C.MojoNewWaitMany(cArrayMojoHandle(handles), cArrayMojoHandleSignals(signals), (C.uint32_t)(len(handles)), deadline.cType(), &cindex, &cstate[0]))
+
+	if uint32(cindex) < uint32(len(handles)) {
+		temp := uint32(cindex)
+		index = &temp
+	}
+
+	if result != MOJO_RESULT_INVALID_ARGUMENT && result != MOJO_RESULT_RESOURCE_EXHAUSTED {
+		state = make([]MojoHandleSignalsState, len(cstate))
+		for i, value := range cstate {
+			state[i] = NewMojoHandleSignalsState(value)
+		}
+	}
+
+	return
 }
 
 func (c *CoreImpl) CreateMessagePipe(opts *MessagePipeOptions) (MojoResult, MojoHandle, MojoHandle) {

@@ -119,7 +119,10 @@ class DataTest(unittest.TestCase):
     map_kind = mojom.Map(mojom.INT16, mojom.INT16)
     imported_module.kinds[map_kind.spec] = map_kind
 
-    interface_req = mojom.InterfaceRequest(mojom.INT16)
+    interface = mojom.Interface('TestInterface', module=module)
+    imported_module.kinds[interface.spec] = interface
+
+    interface_req = mojom.InterfaceRequest(interface)
     imported_module.kinds[interface_req.spec] = interface_req
 
     data.ImportFromData(module, imported_data)
@@ -127,3 +130,16 @@ class DataTest(unittest.TestCase):
     self.assertNotIn(array.spec, module.kinds)
     self.assertNotIn(map_kind.spec, module.kinds)
     self.assertNotIn(interface_req.spec, module.kinds)
+
+  def testNonInterfaceAsInterfaceRequest(self):
+    """Tests that a non-interface cannot be used for interface requests."""
+    module = mojom.Module('test_module', 'test_namespace')
+    interface = mojom.Interface('TestInterface', module=module)
+    method_dict = {
+        'name': 'Foo',
+        'parameters': [{'name': 'foo', 'kind': 'r:i32'}],
+    }
+    with self.assertRaises(Exception) as e:
+      data.MethodFromData(module, method_dict, interface)
+    self.assertEquals(e.exception.__str__(),
+                      'Interface request requires \'i32\' to be an interface.')

@@ -26,6 +26,14 @@ template("mojo_native_application") {
     assert(false, "Platform not supported.")
   }
 
+  if (is_android) {
+    # On android, use the stripped version of the library, because applications
+    # are always fetched over the network.
+    library_dir = "${root_out_dir}/lib.stripped"
+  } else {
+    library_dir = root_out_dir
+  }
+
   final_target_name = target_name
 
   shared_library(library_target_name) {
@@ -134,8 +142,9 @@ template("mojo_native_application") {
     deps = [
       ":${library_target_name}",
     ]
+
     sources = [
-      "${root_out_dir}/${library_name}",
+      "${library_dir}/${library_name}",
     ]
     outputs = [
       "${root_out_dir}/${output}",

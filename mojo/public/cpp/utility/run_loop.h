@@ -103,10 +103,6 @@ class RunLoop {
   // Returns true if a RunLoopHandler was notified.
   bool NotifyHandlers(MojoResult error, CheckDeadline check);
 
-  // Removes the first invalid handle. This is called if MojoWaitMany() finds an
-  // invalid handle. Returns true if a RunLoopHandler was notified.
-  bool RemoveFirstInvalidHandle(const WaitState& wait_state);
-
   // Returns the state needed to pass to WaitMany().
   WaitState GetWaitState(bool non_blocking) const;
 

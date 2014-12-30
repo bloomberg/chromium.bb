@@ -27,6 +27,9 @@ OutputSurfaceMojo::OutputSurfaceMojo(
 OutputSurfaceMojo::~OutputSurfaceMojo() {
 }
 
+void OutputSurfaceMojo::SetIdNamespace(uint32_t id_namespace) {
+}
+
 void OutputSurfaceMojo::ReturnResources(Array<ReturnedResourcePtr> resources) {
 }
 
@@ -43,8 +46,7 @@ void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
       surface_->DestroySurface(SurfaceId::From(surface_id_));
     }
     surface_id_ = id_allocator_.GenerateId();
-    surface_->CreateSurface(SurfaceId::From(surface_id_),
-                            Size::From(frame_size));
+    surface_->CreateSurface(SurfaceId::From(surface_id_));
     output_surface_mojo_client_->DidCreateSurface(surface_id_);
     surface_size_ = frame_size;
   }

@@ -123,7 +123,7 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult AddAwakableImplNoLock(Awakable* /*awakable*/,
+  MojoResult AddAwakableImplNoLock(Awakable* awakable,
                                    MojoHandleSignals /*signals*/,
                                    uint32_t /*context*/,
                                    HandleSignalsState* signals_state) override {
@@ -131,6 +131,11 @@ class MockDispatcher : public Dispatcher {
     lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
+    if (info_->IsAddAwakableAllowed()) {
+      info_->AwakableWasAdded(awakable);
+      return MOJO_RESULT_OK;
+    }
+
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
@@ -198,7 +203,8 @@ CoreTestBase_MockHandleInfo::CoreTestBase_MockHandleInfo()
       end_read_data_call_count_(0),
       add_awakable_call_count_(0),
       remove_awakable_call_count_(0),
-      cancel_all_awakables_call_count_(0) {
+      cancel_all_awakables_call_count_(0),
+      add_awakable_allowed_(false) {
 }
 
 CoreTestBase_MockHandleInfo::~CoreTestBase_MockHandleInfo() {
@@ -274,6 +280,16 @@ unsigned CoreTestBase_MockHandleInfo::GetCancelAllAwakablesCallCount() const {
   return cancel_all_awakables_call_count_;
 }
 
+size_t CoreTestBase_MockHandleInfo::GetAddedAwakableSize() const {
+  base::AutoLock locker(lock_);
+  return added_awakables_.size();
+}
+
+Awakable* CoreTestBase_MockHandleInfo::GetAddedAwakableAt(unsigned i) const {
+  base::AutoLock locker(lock_);
+  return added_awakables_[i];
+}
+
 void CoreTestBase_MockHandleInfo::IncrementCtorCallCount() {
   base::AutoLock locker(lock_);
   ctor_call_count_++;
@@ -342,6 +358,21 @@ void CoreTestBase_MockHandleInfo::IncrementRemoveAwakableCallCount() {
 void CoreTestBase_MockHandleInfo::IncrementCancelAllAwakablesCallCount() {
   base::AutoLock locker(lock_);
   cancel_all_awakables_call_count_++;
+}
+
+void CoreTestBase_MockHandleInfo::AllowAddAwakable(bool alllow) {
+  base::AutoLock locker(lock_);
+  add_awakable_allowed_ = alllow;
+}
+
+bool CoreTestBase_MockHandleInfo::IsAddAwakableAllowed() const {
+  base::AutoLock locker(lock_);
+  return add_awakable_allowed_;
+}
+
+void CoreTestBase_MockHandleInfo::AwakableWasAdded(Awakable* awakable) {
+  base::AutoLock locker(lock_);
+  added_awakables_.push_back(awakable);
 }
 
 }  // namespace test

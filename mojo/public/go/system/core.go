@@ -14,7 +14,7 @@ import (
 type Core interface {
 	// GetTimeTicksNow returns a monotonically increasing platform
 	// dependent tick count representing "right now". Resolution
-	// depends on the systemconfiguration.
+	// depends on the system configuration.
 	GetTimeTicksNow() t.MojoTimeTicks
 
 	// Close closes the given handle.
@@ -22,12 +22,21 @@ type Core interface {
 
 	// Wait waits on the given handle until a signal indicated by signals
 	// is satisfied or it becomes known that no signal indicated by
-	// signals will ever be satisified or until deadline has passed.
-	Wait(handle t.MojoHandle, signal t.MojoHandleSignals, deadline t.MojoDeadline) (result t.MojoResult)
+	// signals will ever be satisfied or until deadline has passed.
+	// Notes about return values:
+	//   |state| can be nil if the signal array could not be returned. This can
+	//       happen with errors such as MOJO_RESULT_INVALID_ARGUMENT.
+	Wait(handle t.MojoHandle, signal t.MojoHandleSignals, deadline t.MojoDeadline) (result t.MojoResult, state *t.MojoHandleSignalsState)
 
 	// WaitMany behaves as if Wait were called on each handle/signal pair
 	// simultaneously and completing when the first Wait would complete.
-	WaitMany(handles []t.MojoHandle, signals []t.MojoHandleSignals, deadline t.MojoDeadline) (result t.MojoResult)
+	// Notes about return values:
+	//   |index| can be nil if the error returned was not caused by a
+	//       particular handle. For example, the error MOJO_RESULT_DEADLINE_EXCEEDED
+  //       is not related to a particular handle.
+	//   |state| can be nil if the signal array could not be returned. This can
+	//       happen with errors such as MOJO_RESULT_INVALID_ARGUMENT.
+	WaitMany(handles []t.MojoHandle, signals []t.MojoHandleSignals, deadline t.MojoDeadline) (result t.MojoResult, index *uint32, state []t.MojoHandleSignalsState)
 
 	// CreateMessagePipe creates a message pipe which is a bidirectional
 	// communication channel for framed data (i.e., messages). Messages

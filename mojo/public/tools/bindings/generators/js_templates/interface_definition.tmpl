@@ -6,10 +6,6 @@
     connection.initProxyInstance(this, {{interface.name}}, receiver);
   }
 
-  {{interface.name}}Proxy.prototype.getConnection$ = function() {
-    return connection.getProxyConnection(this, {{interface.name}});
-  }
-
 {%- for method in interface.methods %}
   {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
 {%- for parameter in method.parameters -%}
@@ -18,19 +14,7 @@
 ) {
     var params = new {{interface.name}}_{{method.name}}_Params();
 {%- for parameter in method.parameters %}
-{%-   if parameter|is_interface_parameter %}
-    if ({{parameter.name}} instanceof {{parameter.kind|js_type}}.stubClass)
-      params.{{parameter.name}} = {{parameter.name}}.getConnection$().messagePipeHandle;
-    else
-      params.{{parameter.name}} = {{parameter.name}};
-{%-   elif parameter|is_interface_request_parameter %}
-    if ({{parameter.name}} instanceof {{parameter.kind.kind|js_type}}.proxyClass)
-      params.{{parameter.name}} = {{parameter.name}}.getConnection$().messagePipeHandle;
-    else
-      params.{{parameter.name}} = {{parameter.name}};
-{%-   else %}
-    params.{{parameter.name}} = {{parameter.name}};
-{%-   endif %}
+    params.{{parameter.name}} = {{parameter|js_proxy_method_parameter_value}};
 {%- endfor %}
 
 {%- if method.response_parameters == None %}
@@ -65,10 +49,6 @@
       this.delegate$ = delegate;
   }
 
-  {{interface.name}}Stub.prototype.getConnection$ = function() {
-    return connection.getStubConnection(this, {{interface.name}});
-  }
-
 {%- for method in interface.methods %}
 {% macro stub_method_parameters() -%}
 {%- for parameter in method.parameters -%}
@@ -77,7 +57,7 @@
 {%- endmacro %}
   {{interface.name}}Stub.prototype.{{method.name|stylize_method}} = function({{stub_method_parameters()}}) {
     if (this.delegate$.{{method.name|stylize_method}})
-      return this.delegate$.{{method.name|stylize_method}}({{stub_method_parameters()}});
+      return this.delegate$.{{method.name|stylize_method}}({{method.parameters|map('js_stub_method_parameter_value')|join(',')}});
   }
 {%- endfor %}
 

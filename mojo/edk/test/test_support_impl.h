@@ -17,6 +17,7 @@ class TestSupportImpl : public TestSupport {
   ~TestSupportImpl() override;
 
   void LogPerfResult(const char* test_name,
+                     const char* sub_test_name,
                      double value,
                      const char* units) override;
   FILE* OpenSourceRootRelativeFile(const char* relative_path) override;

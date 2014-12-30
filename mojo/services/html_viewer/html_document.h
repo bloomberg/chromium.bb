@@ -105,7 +105,6 @@ class HTMLDocument : public blink::WebViewClient,
 
   // ViewManagerDelegate methods:
   void OnEmbed(
-      mojo::ViewManager* view_manager,
       mojo::View* root,
       mojo::ServiceProviderImpl* embedee_service_provider_impl,
       scoped_ptr<mojo::ServiceProvider> embedder_service_provider) override;

@@ -31,7 +31,6 @@ class ViewPrivate {
 
   void set_id(Id id) { view_->id_ = id; }
 
-  ViewManager* view_manager() { return view_->manager_; }
   void set_view_manager(ViewManager* manager) {
     view_->manager_ = manager;
   }

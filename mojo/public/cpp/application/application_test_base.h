@@ -45,6 +45,11 @@ class ApplicationTestBase : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // True by default, which indicates a MessageLoop will automatically be
+  // created for the application.  Tests may override this function to prevent
+  // a default loop from being created.
+  virtual bool ShouldCreateDefaultRunLoop();
+
  private:
   // The application implementation instance, reconstructed for each test.
   ApplicationImpl* application_impl_;

@@ -20,11 +20,6 @@ struct URLRequest {
   // streams. For HTTP requests, the method must be set to "POST" or "PUT".
   array<handle<data_pipe_consumer>>? body;
 
-  // The number of bytes to be read from |body|. A Content-Length header of
-  // this value will be sent. Set to -1 if length is unknown, which will cause
-  // |body| to be uploaded using a chunked encoding.
-  int64 body_length = 0;
-
   // The buffer size of the data pipe returned in URLResponse's |body| member.
   // A value of 0 indicates that the default buffer size should be used.  This
   // value is just a suggestion. The URLLoader may choose to ignore this value.

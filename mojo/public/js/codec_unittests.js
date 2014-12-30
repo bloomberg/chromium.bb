@@ -15,6 +15,7 @@ define([
   testTypes();
   testAlign();
   testUtf8();
+  testTypedPointerValidation();
   this.result = "PASS";
 
   function testBar() {
@@ -254,5 +255,38 @@ define([
     expect(reader.messageName).toBe(messageName);
     var str2 = reader.decoder.decodeStringPointer();
     expect(str2).toEqual(str);
+  }
+
+  function testTypedPointerValidation() {
+    var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
+    function DummyClass() {};
+    var testCases = [
+      // method, args, invalid examples, valid examples
+      [encoder.encodeArrayPointer, [DummyClass], [75],
+          [[], null, undefined, new Uint8Array([])]],
+      [encoder.encodeStringPointer, [], [75, new String("foo")],
+          ["", "bar", null, undefined]],
+      [encoder.encodeMapPointer, [DummyClass, DummyClass], [75],
+          [new Map(), null, undefined]],
+    ];
+
+    testCases.forEach(function(test) {
+      var method = test[0];
+      var baseArgs = test[1];
+      var invalidExamples = test[2];
+      var validExamples = test[3];
+
+      var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
+      invalidExamples.forEach(function(invalid) {
+        expect(function() {
+          method.apply(encoder, baseArgs.concat(invalid));
+        }).toThrow();
+      });
+
+      validExamples.forEach(function(valid) {
+        var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
+        method.apply(encoder, baseArgs.concat(valid));
+      });
+    });
   }
 });

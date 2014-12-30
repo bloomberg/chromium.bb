@@ -29,3 +29,5 @@ M D UrF: Unread public/protected field: org.chromium.chrome.browser.document.Pen
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.nativeWebContents  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.originalIntent  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.url  In PendingDocumentData.java
+M V EI2: org.chromium.mojo.system.Core$WaitManyResult.setSignalStates(Core$HandleSignalsState[]) may expose internal representation by storing an externally mutable object into Core$WaitManyResult.mSignalStates  At Core.java
+M V EI: org.chromium.mojo.system.Core$WaitManyResult.getSignalStates() may expose internal representation by returning Core$WaitManyResult.mSignalStates  At Core.java

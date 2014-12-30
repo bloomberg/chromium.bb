@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/platform_support.h"
+#include "mojo/edk/system/async_waiter.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe.h"
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
@@ -95,6 +96,19 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
 
   base::AutoLock locker(handle_table_lock_);
   return handle_table_.GetDispatcher(handle);
+}
+
+MojoResult Core::AsyncWait(MojoHandle handle,
+                           MojoHandleSignals signals,
+                           base::Callback<void(MojoResult)> callback) {
+  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
+  DCHECK(dispatcher);
+
+  scoped_ptr<AsyncWaiter> waiter = make_scoped_ptr(new AsyncWaiter(callback));
+  MojoResult rv = dispatcher->AddAwakable(waiter.get(), signals, 0, nullptr);
+  if (rv == MOJO_RESULT_OK)
+    ignore_result(waiter.release());
+  return rv;
 }
 
 MojoTimeTicks Core::GetTimeTicksNow() {

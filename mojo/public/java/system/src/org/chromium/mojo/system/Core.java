@@ -26,7 +26,7 @@ public interface Core {
          *
          * @param signals the serialized signals.
          */
-        private HandleSignals(int signals) {
+        public HandleSignals(int signals) {
             super(signals);
         }
 
@@ -75,7 +75,7 @@ public interface Core {
         }
 
         /**
-         * @return a signal with no bit set.
+         * Returns a signal with no bit set.
          */
         public static HandleSignals none() {
             return new HandleSignals(FLAG_NONE);
@@ -84,45 +84,76 @@ public interface Core {
     }
 
     /**
-     * @return a platform-dependent monotonically increasing tick count representing "right now."
+     * Returns a platform-dependent monotonically increasing tick count representing "right now."
      */
     public long getTimeTicksNow();
 
     /**
-     * Waits on the given |handle| until the state indicated by |signals| is satisfied or until
-     * |deadline| has passed.
-     *
-     * @return |MojoResult.OK| if some signal in |signals| was satisfied (or is already satisfied).
-     *         <p>
-     *         |MojoResult.DEADLINE_EXCEEDED| if the deadline has passed without any of the signals
-     *         being satisfied.
-     *         <p>
-     *         |MojoResult.CANCELLED| if |handle| is closed concurrently by another thread.
-     *         <p>
-     *         |MojoResult.FAILED_PRECONDITION| if it is or becomes impossible that any flag in
-     *         |signals| will ever be satisfied (for example, if the other endpoint is close).
+     * Returned by wait functions to indicate the signaling state of handles.
      */
-    public int wait(Handle handle, HandleSignals signals, long deadline);
+    public static class HandleSignalsState {
+        /**
+         * Signals that were satisfied at some time // before the call returned.
+         */
+        private final HandleSignals mSatisfiedSignals;
+
+        /**
+         * Signals that are possible to satisfy. For example, if the return value was
+         * |MOJO_RESULT_FAILED_PRECONDITION|, you can use this field to determine which, if any, of
+         * the signals can still be satisfied.
+         */
+        private final HandleSignals mSatisfiableSignals;
+
+        /**
+         * Constructor.
+         */
+        public HandleSignalsState(
+                HandleSignals satisfiedSignals, HandleSignals satisfiableSignals) {
+            mSatisfiedSignals = satisfiedSignals;
+            mSatisfiableSignals = satisfiableSignals;
+        }
+
+        /**
+         * Returns the satisfiedSignals.
+         */
+        public HandleSignals getSatisfiedSignals() {
+            return mSatisfiedSignals;
+        }
+
+        /**
+         * Returns the satisfiableSignals.
+         */
+        public HandleSignals getSatisfiableSignals() {
+            return mSatisfiableSignals;
+        }
+    }
 
     /**
-     * Result for the |waitMany| method.
+     * Result for the |wait| method.
      */
-    public static class WaitManyResult {
-
+    public static class WaitResult {
         /**
-         * See |wait| for the different possible values.
+         * The result of the wait method.
+         * <p>
+         * |MojoResult.OK| if some signal in |signals| was satisfied (or is already satisfied).
+         * <p>
+         * |MojoResult.DEADLINE_EXCEEDED| if the deadline has passed without any of the signals
+         * being satisfied.
+         * <p>
+         * |MojoResult.CANCELLED| if |handle| is closed concurrently by another thread.
+         * <p>
+         * |MojoResult.FAILED_PRECONDITION| if it is or becomes impossible that any flag in
+         * |signals| will ever be satisfied (for example, if the other endpoint is closed).
          */
         private int mMojoResult;
-        /**
-         * If |mojoResult| is |MojoResult.OK|, |handleIndex| is the index of the handle for which
-         * some flag was satisfied (or is already satisfied). If |mojoResult| is
-         * |MojoResult.CANCELLED| or |MojoResult.FAILED_PRECONDITION|, |handleIndex| is the index of
-         * the handle for which the issue occurred.
-         */
-        private int mHandleIndex;
 
         /**
-         * @return the mojoResult
+         * The signaling state of handles.
+         */
+        private HandleSignalsState mHandleSignalsState;
+
+        /**
+         * Returns the mojoResult.
          */
         public int getMojoResult() {
             return mMojoResult;
@@ -136,7 +167,68 @@ public interface Core {
         }
 
         /**
-         * @return the handleIndex
+         * Returns the handleSignalsState.
+         */
+        public HandleSignalsState getHandleSignalsState() {
+            return mHandleSignalsState;
+        }
+
+        /**
+         * @param handleSignalsState the handleSignalsState to set
+         */
+        public void setHandleSignalsState(HandleSignalsState handleSignalsState) {
+            mHandleSignalsState = handleSignalsState;
+        }
+    }
+
+    /**
+     * Waits on the given |handle| until the state indicated by |signals| is satisfied or until
+     * |deadline| has passed.
+     *
+     * @return a |WaitResult|.
+     */
+    public WaitResult wait(Handle handle, HandleSignals signals, long deadline);
+
+    /**
+     * Result for the |waitMany| method.
+     */
+    public static class WaitManyResult {
+
+        /**
+         * See |wait| for the different possible values.
+         */
+        private int mMojoResult;
+
+        /**
+         * If |mojoResult| is |MojoResult.OK|, |handleIndex| is the index of the handle for which
+         * some flag was satisfied (or is already satisfied). If |mojoResult| is
+         * |MojoResult.CANCELLED| or |MojoResult.FAILED_PRECONDITION|, |handleIndex| is the index of
+         * the handle for which the issue occurred.
+         */
+        private int mHandleIndex;
+
+        /**
+         * The signaling state of handles. This array will not be set if |mojoResult| is
+         * |MOJO_RESULT_INVALID_ARGUMENT| or |MOJO_RESULT_RESOURCE_EXHAUSTED|
+         */
+        private HandleSignalsState[] mSignalStates;
+
+        /**
+         * Returns the mojoResult.
+         */
+        public int getMojoResult() {
+            return mMojoResult;
+        }
+
+        /**
+         * @param mojoResult the mojoResult to set
+         */
+        public void setMojoResult(int mojoResult) {
+            mMojoResult = mojoResult;
+        }
+
+        /**
+         * Returns the handleIndex.
          */
         public int getHandleIndex() {
             return mHandleIndex;
@@ -147,6 +239,20 @@ public interface Core {
          */
         public void setHandleIndex(int handleIndex) {
             mHandleIndex = handleIndex;
+        }
+
+        /**
+         * Returns the signalStates.
+         */
+        public HandleSignalsState[] getSignalStates() {
+            return mSignalStates;
+        }
+
+        /**
+         * @param signalStates the signalStates to set
+         */
+        public void setSignalStates(HandleSignalsState[] signalStates) {
+            mSignalStates = signalStates;
         }
     }
 

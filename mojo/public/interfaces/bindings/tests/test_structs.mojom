@@ -167,6 +167,101 @@ struct FloatNumberValues {
   double f9 = V9;
 };
 
+// Used to verify that various signed integer values can be encoded and
+// decoded correctly.
+
+struct IntegerNumberValues {
+  const int8 V0 = -128; // Minimum
+  const int8 V1 = -1;   // -1
+  const int8 V2 = 0;    // 0
+  const int8 V3 = 42;   // An arbitrary valid value.
+  const int8 V4 = 127;  // Maximum
+
+  const int16 V5 = -32768; // ...
+  const int16 V6 = -1;
+  const int16 V7 = 0;
+  const int16 V8 = 12345;
+  const int16 V9 = 32767;
+
+  // MSVC can't parse -2147483648 so V10 is intentionally off by one.
+  // See http://msdn.microsoft.com/en-us/library/4kh09110.aspx
+  // Tests may override V10.
+  const int32 V10 = -2147483647;
+  const int32 V11 = -1;
+  const int32 V12 = 0;
+  const int32 V13 = 1234567890;
+  const int32 V14 = 2147483647;
+
+  // The limits for JavaScript integers are +/- (2^53 - 1). 
+  const int64 V15 = -9007199254740991; // Number.MIN_SAFE_INTEGER
+  const int64 V16 = -1;
+  const int64 V17 = 0;
+  const int64 V18 = 1234567890123456;
+  const int64 V19 = 9007199254740991; // Number.MAX_SAFE_INTEGER
+
+  int8 f0 = V0;  
+  int8 f1 = V1;
+  int8 f2 = V2;  
+  int8 f3 = V3;  
+  int8 f4 = V4;  
+
+  int16 f5 = V5;
+  int16 f6 = V6;
+  int16 f7 = V7;
+  int16 f8 = V8;
+  int16 f9 = V9;
+
+  int32 f10 = V10;
+  int32 f11 = V11;
+  int32 f12 = V12;
+  int32 f13 = V13;
+  int32 f14 = V14;
+
+  int64 f15 = V15;
+  int64 f16 = V16;
+  int64 f17 = V17;
+  int64 f18 = V18;
+  int64 f19 = V19;
+};
+
+// Used to verify that various unsigned integer values can be encoded and
+// decoded correctly.
+
+struct UnsignedNumberValues {
+  const uint8 V0 = 0;    // Minimum = 0.
+  const uint8 V1 = 42;   // An arbitrary valid value.
+  const uint8 V2 = 0xFF; // Maximum
+
+  const uint16 V3 = 0; // ...
+  const uint16 V4 = 12345;
+  const uint16 V5 = 0xFFFF;
+
+  const uint32 V6 = 0;
+  const uint32 V7 = 1234567890;
+  const uint32 V8 = 0xFFFFFFFF;
+
+  // The limits for JavaScript integers are +/- (2^53 - 1). 
+  const uint64 V9 = 0;
+  const uint64 V10 = 1234567890123456;
+  const uint64 V11 = 9007199254740991; // Number.MAX_SAFE_INTEGER
+
+  uint8 f0 = V0;  
+  uint8 f1 = V1;
+  uint8 f2 = V2;  
+
+  uint16 f3 = V3;
+  uint16 f4 = V4;
+  uint16 f5 = V5;
+
+  uint32 f6 = V6;
+  uint32 f7  = V7;
+  uint32 f8 = V8;
+
+  uint64 f9 = V9;
+  uint64 f10 = V10;
+  uint64 f11 = V11;
+};
+
 // Used to verify that various (packed) boolean array values can be encoded
 // and decoded correctly.
 

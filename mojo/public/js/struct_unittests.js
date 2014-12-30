@@ -188,6 +188,50 @@ define([
     expect(decodedStruct.f9).toEqual(testStructs.FloatNumberValues.V9);
   }
 
+  function testIntegerNumberValues() {
+    var minInt32 = -2147483648; // See crbug.com/445618
+    var decodedStruct = structEncodeDecode(
+      new testStructs.IntegerNumberValues({f10: minInt32}));
+    expect(decodedStruct.f0).toEqual(testStructs.IntegerNumberValues.V0);
+    expect(decodedStruct.f1).toEqual(testStructs.IntegerNumberValues.V1);
+    expect(decodedStruct.f2).toEqual(testStructs.IntegerNumberValues.V2);
+    expect(decodedStruct.f3).toEqual(testStructs.IntegerNumberValues.V3);
+    expect(decodedStruct.f4).toEqual(testStructs.IntegerNumberValues.V4);
+    expect(decodedStruct.f5).toEqual(testStructs.IntegerNumberValues.V5);
+    expect(decodedStruct.f6).toEqual(testStructs.IntegerNumberValues.V6);
+    expect(decodedStruct.f7).toEqual(testStructs.IntegerNumberValues.V7);
+    expect(decodedStruct.f8).toEqual(testStructs.IntegerNumberValues.V8);
+    expect(decodedStruct.f9).toEqual(testStructs.IntegerNumberValues.V9);
+    expect(decodedStruct.f10).toEqual(minInt32);
+    expect(decodedStruct.f11).toEqual(testStructs.IntegerNumberValues.V11);
+    expect(decodedStruct.f12).toEqual(testStructs.IntegerNumberValues.V12);
+    expect(decodedStruct.f13).toEqual(testStructs.IntegerNumberValues.V13);
+    expect(decodedStruct.f14).toEqual(testStructs.IntegerNumberValues.V14);
+    expect(decodedStruct.f15).toEqual(testStructs.IntegerNumberValues.V15);
+    expect(decodedStruct.f16).toEqual(testStructs.IntegerNumberValues.V16);
+    expect(decodedStruct.f17).toEqual(testStructs.IntegerNumberValues.V17);
+    expect(decodedStruct.f18).toEqual(testStructs.IntegerNumberValues.V18);
+    expect(decodedStruct.f19).toEqual(testStructs.IntegerNumberValues.V19);
+  }
+
+  function testUnsignedNumberValues() {
+    var decodedStruct =
+        structEncodeDecode(new testStructs.UnsignedNumberValues);
+    expect(decodedStruct.f0).toEqual(testStructs.UnsignedNumberValues.V0);
+    expect(decodedStruct.f1).toEqual(testStructs.UnsignedNumberValues.V1);
+    expect(decodedStruct.f2).toEqual(testStructs.UnsignedNumberValues.V2);
+    expect(decodedStruct.f3).toEqual(testStructs.UnsignedNumberValues.V3);
+    expect(decodedStruct.f4).toEqual(testStructs.UnsignedNumberValues.V4);
+    expect(decodedStruct.f5).toEqual(testStructs.UnsignedNumberValues.V5);
+    expect(decodedStruct.f6).toEqual(testStructs.UnsignedNumberValues.V6);
+    expect(decodedStruct.f7).toEqual(testStructs.UnsignedNumberValues.V7);
+    expect(decodedStruct.f8).toEqual(testStructs.UnsignedNumberValues.V8);
+    expect(decodedStruct.f9).toEqual(testStructs.UnsignedNumberValues.V9);
+    expect(decodedStruct.f10).toEqual(testStructs.UnsignedNumberValues.V10);
+    expect(decodedStruct.f11).toEqual(testStructs.UnsignedNumberValues.V11);
+  }
+
+
   function testBitArrayValues() {
     var bitArraysStruct = new testStructs.BitArrayValues({
       // array<bool, 1> f0;
@@ -222,6 +266,8 @@ define([
   testMapKeyTypes();
   testMapValueTypes();
   testFloatNumberValues();
+  testIntegerNumberValues();
+  testUnsignedNumberValues();
   testBitArrayValues();
   this.result = "PASS";
 });

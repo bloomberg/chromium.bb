@@ -4,17 +4,19 @@
 
 define("mojo/services/public/js/application", [
   "services/js/app_bridge",
-  "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/services/public/js/service_provider",
   "mojo/services/public/js/shell",
-], function(appBridgeModule, spInterfaceModule, spModule, shellModule) {
+], function(appBridge, serviceProvider, shell) {
+
+  const ServiceProvider = serviceProvider.ServiceProvider;
+  const Shell = shell.Shell;
 
   class Application {
     constructor(shellHandle, url) {
       this.url = url;
       this.serviceProviders = [];
       this.shellHandle_ = shellHandle;
-      this.shell = new shellModule.Shell(shellHandle, {
+      this.shell = new Shell(shellHandle, {
         initialize: this.initialize.bind(this),
         acceptConnection: this.doAcceptConnection.bind(this),
       });
@@ -23,9 +25,8 @@ define("mojo/services/public/js/application", [
     initialize(args) {
     }
 
-    doAcceptConnection(url, spHandle) {
-      var service = new spInterfaceModule.ServiceProvider.proxyClass(spHandle);
-      var serviceProvider =  new spModule.ServiceProvider(service);
+    doAcceptConnection(url, serviceProviderProxy) {
+      var serviceProvider =  new ServiceProvider(serviceProviderProxy);
       this.serviceProviders.push(serviceProvider);
       this.acceptConnection(url, serviceProvider);
     }
@@ -38,7 +39,7 @@ define("mojo/services/public/js/application", [
         sp.close();
       });
       this.shell.close();
-      appBridgeModule.quit();
+      appBridge.quit();
     }
   }
 

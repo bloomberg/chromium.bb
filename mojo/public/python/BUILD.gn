@@ -16,19 +16,27 @@ group("python") {
 # GYP version: mojo.gyp:mojo_python_system
 python_binary_module("system") {
   python_base_module = "mojo"
+  configs = [ "../build/config:mojo_sdk" ]
+  deps = [
+    ":system_embedded",
+  ]
+}
+
+python_binary_source_set("system_embedded") {
   cython_sources = [
+    "mojo/c_async_waiter.pxd",
     "mojo/c_core.pxd",
+    "mojo/c_export.pxd",
+    "mojo/c_thunks.pxd",
     "mojo/system.pyx",
   ]
   configs = [ "../build/config:mojo_sdk" ]
   deps = [
     ":base",
-    "../c/environment",
     "../c/system",
-    "../cpp/environment:standalone",
+    "../cpp/bindings:callback",
     "../cpp/system",
     "../cpp/utility",
-    "../cpp/bindings:callback",
     "../platform/native:system",
   ]
 }
@@ -36,8 +44,9 @@ python_binary_module("system") {
 python_binary_module("system_impl") {
   python_base_module = "mojo"
   cython_sources = [
-    "mojo/c_core.pxd",
     "mojo/c_environment.pxd",
+    "mojo/c_export.pxd",
+    "mojo/c_thunks.pxd",
     "mojo/system_impl.pyx",
   ]
   sources = [
@@ -47,13 +56,29 @@ python_binary_module("system_impl") {
   configs = [ "../build/config:mojo_sdk" ]
   deps = [
     ":base",
+    ":python_common",
     "../c/environment",
     "../c/system",
+    "../cpp/bindings:callback",
     "../cpp/environment:standalone",
     "../cpp/system",
     "../cpp/utility",
-    "../cpp/bindings:callback",
     "../platform/native:system",
+  ]
+}
+
+python_binary_source_set("python_common") {
+  sources = [
+    "src/common.cc",
+    "src/common.h",
+  ]
+  configs = [ "../build/config:mojo_sdk" ]
+  deps = [
+    "../c/environment:environment",
+    "../cpp/bindings:callback",
+    "../cpp/environment:environment",
+    "../cpp/system:system",
+    "../cpp/utility",
   ]
 }
 

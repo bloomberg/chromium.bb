@@ -14,9 +14,10 @@ namespace mojo {
 namespace test {
 
 inline void LogPerfResult(const char* test_name,
+                          const char* sub_test_name,
                           double value,
                           const char* units) {
-  MojoTestSupportLogPerfResult(test_name, value, units);
+  MojoTestSupportLogPerfResult(test_name, sub_test_name, value, units);
 }
 
 // Opens text file relative to the source root for reading.

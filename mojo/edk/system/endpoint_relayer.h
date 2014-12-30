@@ -33,7 +33,7 @@ class MOJO_SYSTEM_IMPL_EXPORT EndpointRelayer : public ChannelEndpointClient {
   void OnDetachFromChannel(unsigned port) override;
 
  private:
-  virtual ~EndpointRelayer();
+  ~EndpointRelayer() override;
 
   // TODO(vtl): We could probably get away without the lock if we had a
   // thread-safe |scoped_refptr|.

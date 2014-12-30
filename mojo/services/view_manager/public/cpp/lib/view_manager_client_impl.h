@@ -39,7 +39,6 @@ class ViewManagerClientImpl : public ViewManager,
 
   // API exposed to the view implementations that pushes local changes to the
   // service.
-  Id CreateView();
   void DestroyView(Id view_id);
 
   // These methods take TransportIds. For views owned by the current connection,
@@ -83,11 +82,14 @@ class ViewManagerClientImpl : public ViewManager,
 
   typedef std::map<Id, View*> IdToViewMap;
 
+  Id CreateViewOnServer();
+
   // Overridden from ViewManager:
   const std::string& GetEmbedderURL() const override;
   View* GetRoot() override;
   View* GetViewById(Id id) override;
   View* GetFocusedView() override;
+  View* CreateView() override;
 
   // Overridden from ViewManagerClient:
   void OnEmbed(ConnectionSpecificId connection_id,
@@ -120,8 +122,8 @@ class ViewManagerClientImpl : public ViewManager,
   void OnCaptureChanged(Id old_capture_view_id,
                         Id new_capture_view_id) override;
   void OnFocusChanged(Id old_focused_view_id, Id new_focused_view_id) override;
-  void OnActiveWindowChanged(Id old_focused_window,
-                             Id new_focused_window) override;
+  void OnActiveWindowChanged(Id old_focused_view_id,
+                             Id new_focused_view_id) override;
 
   // ErrorHandler implementation.
   void OnConnectionError() override;
@@ -152,7 +154,9 @@ class ViewManagerClientImpl : public ViewManager,
 
   IdToViewMap views_;
 
+  View* capture_view_;
   View* focused_view_;
+  View* activated_view_;
 
   WindowManagerPtr window_manager_;
 

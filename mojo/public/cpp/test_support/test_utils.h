@@ -30,6 +30,7 @@ bool DiscardMessage(const MessagePipeHandle& handle);
 // amount of time and reports the number of iterations per unit time.)
 typedef void (*PerfTestSingleIteration)(void* closure);
 void IterateAndReportPerf(const char* test_name,
+                          const char* sub_test_name,
                           PerfTestSingleIteration single_iteration,
                           void* closure);
 

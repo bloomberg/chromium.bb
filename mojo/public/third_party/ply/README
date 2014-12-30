@@ -136,7 +136,7 @@ subset of basic language features. You should not convert PLY using
 2to3--it is not necessary and may in fact break the implementation.
 
 Example
-======= 
+=======
 
 Here is a simple example showing a PLY implementation of a calculator
 with variables.

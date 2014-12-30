@@ -117,6 +117,15 @@ MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                           ScopedPlatformHandle* platform_handle);
 
+// Start waiting the handle asynchronously. On success, |callback| will be
+// called exactly once, when |handle| satisfies a signal in |signals| or it
+// becomes known that it will never do so. |callback| will be executed on an
+// arbitrary thread. It must not call any Mojo system or embedder functions.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+AsyncWait(MojoHandle handle,
+          MojoHandleSignals signals,
+          base::Callback<void(MojoResult)> callback);
+
 }  // namespace embedder
 }  // namespace mojo
 

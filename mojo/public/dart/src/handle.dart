@@ -99,7 +99,7 @@ class MojoHandle extends Stream<int> {
   // Whether the handle has been added to the handle watcher.
   bool _eventHandlerAdded;
 
-  MojoHandle(this._handle) : 
+  MojoHandle(this._handle) :
       _signals = MojoHandleSignals.READABLE,
       _eventHandlerAdded = false {
     MojoResult result = RawMojoHandle.register(this);

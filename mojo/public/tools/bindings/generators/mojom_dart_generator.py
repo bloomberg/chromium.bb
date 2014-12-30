@@ -155,16 +155,20 @@ def CodecType(kind):
   if mojom.IsArrayKind(kind):
     array_type = "NullableArrayOf" if mojom.IsNullableKind(kind) else "ArrayOf"
     array_length = "" if kind.length is None else ", %d" % kind.length
-    element_type = "bindings.PackedBool" if mojom.IsBoolKind(kind.kind) \
-        else CodecType(kind.kind)
+    element_type = ElementCodecType(kind.kind)
     return "new bindings.%s(%s%s)" % (array_type, element_type, array_length)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return CodecType(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
     return _kind_to_codec_type[mojom.INT32]
+  if mojom.IsMapKind(kind):
+    map_type = "NullableMapOf" if mojom.IsNullableKind(kind) else "MapOf"
+    key_type = ElementCodecType(kind.key_kind)
+    value_type = ElementCodecType(kind.value_kind)
+    return "new bindings.%s(%s, %s)" % (map_type, key_type, value_type)
   return kind
 
-def MapCodecType(kind):
+def ElementCodecType(kind):
   return "bindings.PackedBool" if mojom.IsBoolKind(kind) else CodecType(kind)
 
 def DartDecodeSnippet(kind):
@@ -174,7 +178,7 @@ def DartDecodeSnippet(kind):
     return "decodeStructPointer(%s)" % DartType(kind)
   if mojom.IsMapKind(kind):
     return "decodeMapPointer(%s, %s)" % \
-        (MapCodecType(kind.key_kind), MapCodecType(kind.value_kind))
+        (ElementCodecType(kind.key_kind), ElementCodecType(kind.value_kind))
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "decodeArrayPointer(bindings.PackedBool)"
   if mojom.IsArrayKind(kind):
@@ -192,7 +196,7 @@ def DartEncodeSnippet(kind):
     return "encodeStructPointer(%s, " % DartType(kind)
   if mojom.IsMapKind(kind):
     return "encodeMapPointer(%s, %s, " % \
-        (MapCodecType(kind.key_kind), MapCodecType(kind.value_kind))
+        (ElementCodecType(kind.key_kind), ElementCodecType(kind.value_kind))
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "encodeArrayPointer(bindings.PackedBool, ";
   if mojom.IsArrayKind(kind):
@@ -258,6 +262,7 @@ class Generator(generator.Generator):
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "interfaces": self.module.interfaces,
       "imported_interfaces": self.GetImportedInterfaces(),
+      "imported_from": self.ImportedFrom(),
     }
 
   @UseJinja("dart_templates/module.lib.tmpl", filters=dart_filters)
@@ -287,9 +292,17 @@ class Generator(generator.Generator):
     return self.module.imports
 
   def GetImportedInterfaces(self):
-    interface_to_import = {};
+    interface_to_import = {}
     for each_import in self.module.imports:
       for each_interface in each_import["module"].interfaces:
         name = each_interface.name
         interface_to_import[name] = each_import["unique_name"] + "." + name
-    return interface_to_import;
+    return interface_to_import
+
+  def ImportedFrom(self):
+    interface_to_import = {}
+    for each_import in self.module.imports:
+      for each_interface in each_import["module"].interfaces:
+        name = each_interface.name
+        interface_to_import[name] = each_import["unique_name"] + "."
+    return interface_to_import

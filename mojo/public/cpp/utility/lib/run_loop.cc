@@ -144,32 +144,40 @@ void RunLoop::PostDelayedTask(const Closure& task, MojoTimeTicks delay) {
 
 bool RunLoop::Wait(bool non_blocking) {
   const WaitState wait_state = GetWaitState(non_blocking);
-  if (wait_state.handles.empty() && delayed_tasks_.empty()) {
-    Quit();
+  if (wait_state.handles.empty()) {
+    if (delayed_tasks_.empty())
+      Quit();
     return false;
   }
 
-  const MojoResult result = WaitMany(
-      wait_state.handles, wait_state.handle_signals, wait_state.deadline);
-  if (result >= 0) {
-    const size_t index = static_cast<size_t>(result);
-    assert(handler_data_.find(wait_state.handles[index]) !=
-           handler_data_.end());
-    handler_data_[wait_state.handles[index]].handler->OnHandleReady(
-        wait_state.handles[index]);
-    return true;
+  const WaitManyResult wmr =
+      WaitMany(wait_state.handles, wait_state.handle_signals,
+               wait_state.deadline, nullptr);
+
+  if (!wmr.IsIndexValid()) {
+    assert(wmr.result == MOJO_RESULT_DEADLINE_EXCEEDED);
+    return NotifyHandlers(MOJO_RESULT_DEADLINE_EXCEEDED, CHECK_DEADLINE);
   }
 
-  switch (result) {
+  Handle handle = wait_state.handles[wmr.index];
+  assert(handler_data_.find(handle) != handler_data_.end());
+  RunLoopHandler* handler = handler_data_[handle].handler;
+
+  switch (wmr.result) {
+    case MOJO_RESULT_OK:
+      handler->OnHandleReady(handle);
+      return true;
     case MOJO_RESULT_INVALID_ARGUMENT:
     case MOJO_RESULT_FAILED_PRECONDITION:
-      return RemoveFirstInvalidHandle(wait_state);
-    case MOJO_RESULT_DEADLINE_EXCEEDED:
-      return NotifyHandlers(MOJO_RESULT_DEADLINE_EXCEEDED, CHECK_DEADLINE);
+      // Remove the handle first, this way if OnHandleError() tries to remove
+      // the handle our iterator isn't invalidated.
+      handler_data_.erase(handle);
+      handler->OnHandleError(handle, wmr.result);
+      return true;
+    default:
+      assert(false);
+      return false;
   }
-
-  assert(false);
-  return false;
 }
 
 bool RunLoop::NotifyHandlers(MojoResult error, CheckDeadline check) {
@@ -202,26 +210,6 @@ bool RunLoop::NotifyHandlers(MojoResult error, CheckDeadline check) {
   }
 
   return notified;
-}
-
-bool RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
-  for (size_t i = 0; i < wait_state.handles.size(); ++i) {
-    const MojoResult result = mojo::Wait(wait_state.handles[i],
-                                         wait_state.handle_signals[i],
-                                         static_cast<MojoDeadline>(0));
-    if (result == MOJO_RESULT_INVALID_ARGUMENT ||
-        result == MOJO_RESULT_FAILED_PRECONDITION) {
-      // Remove the handle first, this way if OnHandleError() tries to remove
-      // the handle our iterator isn't invalidated.
-      assert(handler_data_.find(wait_state.handles[i]) != handler_data_.end());
-      RunLoopHandler* handler = handler_data_[wait_state.handles[i]].handler;
-      handler_data_.erase(wait_state.handles[i]);
-      handler->OnHandleError(wait_state.handles[i], result);
-      return true;
-    }
-    assert(MOJO_RESULT_DEADLINE_EXCEEDED == result || MOJO_RESULT_OK == result);
-  }
-  return false;
 }
 
 RunLoop::WaitState RunLoop::GetWaitState(bool non_blocking) const {

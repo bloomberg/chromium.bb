@@ -177,6 +177,7 @@ void MessageInTransit::SetTransportData(
   DCHECK(!dispatchers_);
 
   transport_data_ = transport_data.Pass();
+  UpdateTotalSize();
 }
 
 void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {

@@ -57,8 +57,10 @@ ApplicationDelegate* ApplicationTestBase::GetApplicationDelegate() {
 }
 
 void ApplicationTestBase::SetUpWithArgs(const Array<String>& args) {
-  // A run loop is needed for ApplicationImpl initialization and communication.
-  Environment::InstantiateDefaultRunLoop();
+  // A run loop is recommended for ApplicationImpl initialization and
+  // communication.
+  if (ShouldCreateDefaultRunLoop())
+    Environment::InstantiateDefaultRunLoop();
 
   // New applications are constructed for each test to avoid persisting state.
   application_impl_ = new ApplicationImpl(GetApplicationDelegate(),
@@ -75,7 +77,12 @@ void ApplicationTestBase::SetUp() {
 void ApplicationTestBase::TearDown() {
   SetShellHandle(application_impl_->UnbindShell());
   delete application_impl_;
-  Environment::DestroyDefaultRunLoop();
+  if (ShouldCreateDefaultRunLoop())
+    Environment::DestroyDefaultRunLoop();
+}
+
+bool ApplicationTestBase::ShouldCreateDefaultRunLoop() {
+  return true;
 }
 
 }  // namespace test

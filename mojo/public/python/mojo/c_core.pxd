@@ -13,15 +13,6 @@ from cpython.buffer cimport PyObject_GetBuffer
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from libc.stdint cimport int32_t, int64_t, uint32_t, uint64_t, uintptr_t
 
-cdef extern from "third_party/cython/python_export.h":
-  pass
-
-cdef extern from "mojo/public/platform/native/system_thunks.h" nogil:
-  cdef struct MojoSystemThunks:
-    pass
-
-cdef extern size_t MojoSetSystemThunks(const MojoSystemThunks* system_thunks)
-
 cdef extern from "mojo/public/c/system/core.h" nogil:
   # types.h
   ctypedef int64_t MojoTimeTicks
@@ -58,16 +49,23 @@ cdef extern from "mojo/public/c/system/core.h" nogil:
   const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE
   const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED
 
+  cdef struct MojoHandleSignalsState:
+    MojoHandleSignals satisfied_signals
+    MojoHandleSignals satisfiable_signals
+
   # functions.h
   MojoTimeTicks MojoGetTimeTicksNow()
   MojoResult MojoClose(MojoHandle handle)
-  MojoResult MojoWait(MojoHandle handle,
-                      MojoHandleSignals signals,
-                      MojoDeadline deadline)
-  MojoResult MojoWaitMany(const MojoHandle* handles,
-                          const MojoHandleSignals* signals,
-                          uint32_t num_handles,
-                          MojoDeadline deadline)
+  MojoResult MojoWait "MojoNewWait"(MojoHandle handle,
+                                    MojoHandleSignals signals,
+                                    MojoDeadline deadline,
+                                    MojoHandleSignalsState* signals_state)
+  MojoResult MojoWaitMany "MojoNewWaitMany"(const MojoHandle* handles,
+                                            const MojoHandleSignals* signals,
+                                            uint32_t num_handles,
+                                            MojoDeadline deadline,
+                                            uint32_t* result_index,
+                                            MojoHandleSignalsState* signals_states)
 
   # message_pipe.h
   ctypedef uint32_t MojoCreateMessagePipeOptionsFlags

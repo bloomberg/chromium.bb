@@ -121,7 +121,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe : public ChannelEndpointClient {
 
  private:
   MessagePipe();
-  virtual ~MessagePipe();
+  ~MessagePipe() override;
 
   // This is used internally by |WriteMessage()| and by |OnReadMessage()|.
   // |transports| may be non-null only if it's nonempty and |message| has no

@@ -181,13 +181,6 @@ bool OwnsView(ViewManager* manager, View* view) {
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 
-// static
-View* View::Create(ViewManager* view_manager) {
-  View* view = new View(view_manager);
-  static_cast<ViewManagerClientImpl*>(view_manager)->AddView(view);
-  return view;
-}
-
 void View::Destroy() {
   if (!OwnsView(manager_, this))
     return;
@@ -284,7 +277,7 @@ void View::AddChild(View* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
-    CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
+    CHECK_EQ(child->view_manager(), manager_);
   LocalAddChild(child);
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->AddChild(child->id(), id_);
@@ -294,7 +287,7 @@ void View::RemoveChild(View* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
-    CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
+    CHECK_EQ(child->view_manager(), manager_);
   LocalRemoveChild(child);
   if (manager_) {
     static_cast<ViewManagerClientImpl*>(manager_)->RemoveChild(child->id(),
@@ -330,7 +323,7 @@ bool View::Contains(View* child) const {
   if (child == this)
     return true;
   if (manager_)
-    CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
+    CHECK_EQ(child->view_manager(), manager_);
   for (View* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
@@ -423,10 +416,10 @@ View::~View() {
 ////////////////////////////////////////////////////////////////////////////////
 // View, private:
 
-View::View(ViewManager* manager)
+View::View(ViewManager* manager, Id id)
     : manager_(manager),
-      id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateView()),
-      parent_(NULL),
+      id_(id),
+      parent_(nullptr),
       visible_(false),
       drawn_(false) {
 }

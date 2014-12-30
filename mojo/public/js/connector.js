@@ -10,6 +10,8 @@ define("mojo/public/js/connector", [
 ], function(buffer, codec, core, support) {
 
   function Connector(handle) {
+    if (!core.isHandle(handle))
+      throw new Error("Connector: not a handle " + handle);
     this.handle_ = handle;
     this.dropWrites_ = false;
     this.error_ = false;

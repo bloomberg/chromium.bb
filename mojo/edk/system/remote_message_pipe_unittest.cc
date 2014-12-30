@@ -331,12 +331,19 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   // via |ep0| (i.e., sent using |mp0|, port 0) with this remote ID. Upon
   // receiving this message, |PassIncomingMessagePipe()| is used to obtain the
   // message pipe on the other side.
-  scoped_refptr<ChannelEndpoint> ep2;
-  scoped_refptr<MessagePipe> mp2(MessagePipe::CreateLocalProxy(&ep2));
+  scoped_refptr<MessagePipe> mp2(MessagePipe::CreateLocalLocal());
   ASSERT_TRUE(channels(0));
-  size_t endpoint_info_size = channels(0)->GetSerializedEndpointSize();
-  scoped_ptr<char[]> endpoint_info(new char[endpoint_info_size]);
-  channels(0)->SerializeEndpoint(ep2, endpoint_info.get());
+  size_t max_endpoint_info_size;
+  size_t max_platform_handle_count;
+  mp2->StartSerialize(1, channels(0), &max_endpoint_info_size,
+                      &max_platform_handle_count);
+  EXPECT_GT(max_endpoint_info_size, 0u);
+  ASSERT_EQ(0u, max_platform_handle_count);
+  scoped_ptr<char[]> endpoint_info(new char[max_endpoint_info_size]);
+  size_t endpoint_info_size;
+  mp2->EndSerialize(1, channels(0), endpoint_info.get(), &endpoint_info_size,
+                    nullptr);
+  EXPECT_EQ(max_endpoint_info_size, endpoint_info_size);
 
   waiter.Init();
   ASSERT_EQ(

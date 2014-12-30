@@ -60,4 +60,24 @@ public abstract class Flags<F extends Flags<F>> {
         return f;
     }
 
+    /**
+     * @see Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return mFlags;
+    }
+
+    /**
+     * @see Object#equals(Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        Flags<?> other = (Flags<?>) obj;
+        if (mFlags != other.mFlags) return false;
+        return true;
+    }
 }

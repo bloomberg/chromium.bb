@@ -23,6 +23,7 @@ class MOJO_TEST_SUPPORT_EXPORT TestSupport {
   static void Reset();
 
   virtual void LogPerfResult(const char* test_name,
+                             const char* sub_test_name,
                              double value,
                              const char* units) = 0;
   virtual FILE* OpenSourceRootRelativeFile(const char* relative_path) = 0;

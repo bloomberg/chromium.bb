@@ -4,6 +4,11 @@
 
 module mojo;
 
+// A surface ID is composed of two parts, a local part and a namespace. The
+// local part is allocated by the client using any scheme that avoids
+// duplicates. The namespace is allocated by the service and will be different
+// for each client (aka each connection to mojo.Surface).
 struct SurfaceId {
-  uint64 id;
+  uint32 local;
+  uint32 id_namespace;
 };
