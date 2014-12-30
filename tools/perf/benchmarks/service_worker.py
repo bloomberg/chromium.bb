@@ -182,6 +182,13 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
 # Disabled due to redness on the tree. crbug.com/442752
 @benchmark.Disabled
 class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
-  """Service Worker performance test using a micro benchmark page set"""
+  """This test measures the performance of pages using ServiceWorker.
+
+  As a page set, two benchamrk pages (many registration, many concurrent
+  fetching) and one application (Trained-to-thrill:
+  https://jakearchibald.github.io/trained-to-thrill/) are included. Execution
+  time of these pages will be shown as Speed Index, and TRACE_EVENTs are
+  subsidiary information to know more detail performance regression.
+  """
   test = _ServiceWorkerMicroBenchmarkMeasurement
   page_set = page_sets.ServiceWorkerMicroBenchmarkPageSet

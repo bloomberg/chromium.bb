@@ -47,6 +47,10 @@ class _RobohornetProMeasurement(page_test.PageTest):
 # benchmarks.
 @benchmark.Enabled('chromeos')
 class RobohornetPro(benchmark.Benchmark):
+  """Milliseconds to complete the RoboHornetPro demo by Microsoft.
+
+  http://ie.microsoft.com/testdrive/performance/robohornetpro/
+  """
   test = _RobohornetProMeasurement
 
   def CreatePageSet(self, options):

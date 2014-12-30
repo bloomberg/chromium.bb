@@ -112,7 +112,10 @@ class _KrakenMeasurement(page_test.PageTest):
 
 
 class Kraken(benchmark.Benchmark):
-  """Mozilla's Kraken JavaScript benchmark."""
+  """Mozilla's Kraken JavaScript benchmark.
+
+  http://krakenbenchmark.mozilla.org/
+  """
   test = _KrakenMeasurement
 
   def CreatePageSet(self, options):

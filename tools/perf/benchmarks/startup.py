@@ -8,6 +8,7 @@ from telemetry import benchmark
 
 
 class _StartupCold(benchmark.Benchmark):
+  """Measures cold startup time with a clean profile."""
   options = {'pageset_repeat': 5}
 
   def CreatePageTest(self, options):
@@ -15,6 +16,7 @@ class _StartupCold(benchmark.Benchmark):
 
 
 class _StartupWarm(benchmark.Benchmark):
+  """Measures warm startup time with a clean profile."""
   options = {'pageset_repeat': 20}
 
   def CreatePageTest(self, options):
@@ -24,12 +26,14 @@ class _StartupWarm(benchmark.Benchmark):
 @benchmark.Enabled('has tabs')
 @benchmark.Disabled('snowleopard') # crbug.com/336913
 class StartupColdBlankPage(_StartupCold):
+  """Measures cold startup time with a clean profile."""
   tag = 'cold'
   page_set = page_sets.BlankPageSet
 
 
 @benchmark.Enabled('has tabs')
 class StartupWarmBlankPage(_StartupWarm):
+  """Measures warm startup time with a clean profile."""
   tag = 'warm'
   page_set = page_sets.BlankPageSet
 

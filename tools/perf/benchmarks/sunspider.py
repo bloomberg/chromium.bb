@@ -125,7 +125,10 @@ class _SunspiderMeasurement(page_test.PageTest):
 
 
 class Sunspider(benchmark.Benchmark):
-  """Apple's SunSpider JavaScript benchmark."""
+  """Apple's SunSpider JavaScript benchmark.
+
+  http://www.webkit.org/perf/sunspider/sunspider.html
+  """
   test = _SunspiderMeasurement
 
   def CreatePageSet(self, options):

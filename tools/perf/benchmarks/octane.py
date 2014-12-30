@@ -130,7 +130,10 @@ class _OctaneMeasurement(page_test.PageTest):
 
 
 class Octane(benchmark.Benchmark):
-  """Google's Octane JavaScript benchmark."""
+  """Google's Octane JavaScript benchmark.
+
+  http://octane-benchmark.googlecode.com/svn/latest/index.html
+  """
   test = _OctaneMeasurement
 
   def CreatePageSet(self, options):

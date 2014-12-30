@@ -10,18 +10,39 @@ import page_sets
 
 @benchmark.Enabled('has tabs')
 class TabSwitchingTop10(benchmark.Benchmark):
+  """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
+
+  The histogram is a measure of the time between when a tab was requested to be
+  shown, and when first paint occurred. The script opens 10 pages in different
+  tabs, waits for them to load, and then switches to each tab and records the
+  metric. The pages were chosen from Alexa top ranking sites.
+  """
   test = tab_switching.TabSwitching
   page_set = page_sets.Top10PageSet
 
 
 @benchmark.Enabled('has tabs')
 class TabSwitchingTypical25(benchmark.Benchmark):
+  """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
+
+  The histogram is a measure of the time between when a tab was requested to be
+  shown, and when first paint occurred. The script opens 25 pages in different
+  tabs, waits for them to load, and then switches to each tab and records the
+  metric. The pages were chosen from Alexa top ranking sites.
+  """
   test = tab_switching.TabSwitching
   page_set = page_sets.Typical25PageSet
 
 
 @benchmark.Enabled('has tabs')
 class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
+  """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
+
+  The histogram is a measure of the time between when a tab was requested to be
+  shown, and when first paint occurred. The script opens 5 blank pages in
+  different tabs, waits for them to load, and then switches to each tab and
+  records the metric. Blank pages are use to detect unnecessary idle wakeups.
+  """
   test = tab_switching.TabSwitching
   page_set = page_sets.FiveBlankPagesPageSet
   options = {'pageset_repeat': 10}
@@ -29,6 +50,13 @@ class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
 
 @benchmark.Enabled('has tabs')
 class TabSwitchingToughEnergyCases(benchmark.Benchmark):
+  """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
+
+  The histogram is a measure of the time between when a tab was requested to be
+  shown, and when first paint occurred. The script opens each page in a
+  different tab, waits for them to load, and then switches to each tab and
+  records the metric. The pages were written by hand to stress energy usage.
+  """
   test = tab_switching.TabSwitching
   page_set = page_sets.ToughEnergyCasesPageSet
   options = {'pageset_repeat': 10}

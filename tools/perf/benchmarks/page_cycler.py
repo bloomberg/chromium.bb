@@ -36,33 +36,55 @@ class _PageCycler(benchmark.Benchmark):
 # work on CrOS.
 @benchmark.Enabled('chromeos')
 class PageCyclerDhtml(_PageCycler):
+  """Benchmarks for various DHTML operations like simple animations."""
   page_set = page_sets.DhtmlPageSet
 
 
 class PageCyclerIntlArFaHe(_PageCycler):
+  """Page load time for a variety of pages in Arabic, Farsi and Hebrew.
+
+  Runs against pages recorded in April, 2013.
+  """
   page_set = page_sets.IntlArFaHePageSet
 
 
 @benchmark.Disabled('win')  # crbug.com/388337
 class PageCyclerIntlEsFrPtBr(_PageCycler):
+  """Page load time for a pages in Spanish, French and Brazilian Portuguese.
+
+  Runs against pages recorded in April, 2013.
+  """
   page_set = page_sets.IntlEsFrPtBrPageSet
 
 
 class PageCyclerIntlHiRu(_PageCycler):
+  """Page load time benchmark for a variety of pages in Hindi and Russian.
+
+  Runs against pages recorded in April, 2013.
+  """
   page_set = page_sets.IntlHiRuPageSet
 
 
 @benchmark.Disabled('android', 'win')  # crbug.com/379564, crbug.com/330909
 class PageCyclerIntlJaZh(_PageCycler):
+  """Page load time benchmark for a variety of pages in Japanese and Chinese.
+
+  Runs against pages recorded in April, 2013.
+  """
   page_set = page_sets.IntlJaZhPageSet
 
 
 @benchmark.Disabled('xp')  # crbug.com/434366
 class PageCyclerIntlKoThVi(_PageCycler):
+  """Page load time for a variety of pages in Korean, Thai and Vietnamese.
+
+  Runs against pages recorded in April, 2013.
+  """
   page_set = page_sets.IntlKoThViPageSet
 
 
 class PageCyclerMorejs(_PageCycler):
+  """Page load for a variety of pages that were JavaScript heavy in 2009."""
   page_set = page_sets.MorejsPageSet
 
 
@@ -70,12 +92,19 @@ class PageCyclerMorejs(_PageCycler):
 # work on CrOS.
 @benchmark.Enabled('chromeos')
 class PageCyclerMoz(_PageCycler):
+  """Page load for mozilla's original page set. Recorded in December 2000."""
   page_set = page_sets.MozPageSet
 
 
 @benchmark.Disabled('linux', 'win', 'mac')  # crbug.com/353260
 class PageCyclerNetsimTop10(_PageCycler):
-  """Measures load time of the top 10 sites under simulated cable network."""
+  """Measures load time of the top 10 sites under simulated cable network.
+
+  Recorded in June, 2013.  Pages are loaded under the simplisticly simulated
+  bandwidth and RTT constraints of a cable modem (5Mbit/s down, 1Mbit/s up,
+  28ms RTT). Contention is realistically simulated, but slow start is not.
+  DNS lookups are 'free'.
+  """
   tag = 'netsim'
   page_set = page_sets.Top10PageSet
   options = {
@@ -96,16 +125,25 @@ class PageCyclerNetsimTop10(_PageCycler):
 
 @benchmark.Enabled('android')
 class PageCyclerTop10Mobile(_PageCycler):
+  """Page load time benchmark for the top 10 mobile web pages.
+
+  Runs against pages recorded in November, 2013.
+  """
   page_set = page_sets.Top10MobilePageSet
 
 
 @benchmark.Disabled
 class PageCyclerKeyMobileSites(_PageCycler):
+  """Page load time benchmark for key mobile sites."""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
 
 @benchmark.Disabled('android')  # crbug.com/357326
 class PageCyclerToughLayoutCases(_PageCycler):
+  """Page loading for the slowest layouts observed in the Alexa top 1 million.
+
+  Recorded in July 2013.
+  """
   page_set = page_sets.ToughLayoutCasesPageSet
 
 
@@ -113,6 +151,11 @@ class PageCyclerToughLayoutCases(_PageCycler):
 # cabug.com/341843: This test is always timing out on Android.
 @benchmark.Disabled('android', 'win')
 class PageCyclerTypical25(_PageCycler):
+  """Page load time benchmark for a 25 typical web pages.
+
+  Designed to represent typical, not highly optimized or highly popular web
+  sites. Runs against pages recorded in June, 2014.
+  """
   page_set = page_sets.Typical25PageSet
 
 

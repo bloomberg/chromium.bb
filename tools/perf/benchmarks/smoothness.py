@@ -17,6 +17,10 @@ class SmoothnessTop25(benchmark.Benchmark):
 
 
 class SmoothnessToughFiltersCases(benchmark.Benchmark):
+  """Measures frame rate and a variety of other statistics.
+
+  Uses a selection of pages making use of SVG and CSS Filter Effects.
+  """
   test = smoothness.Smoothness
   page_set = page_sets.ToughFiltersCasesPageSet
 
@@ -24,6 +28,10 @@ class SmoothnessToughFiltersCases(benchmark.Benchmark):
 # crbug.com/388877, crbug.com/396127
 @benchmark.Disabled('mac', 'win', 'android')
 class SmoothnessToughCanvasCases(benchmark.Benchmark):
+  """Measures frame rate and a variety of other statistics.
+
+  Uses a selection of pages making use of the 2D Canvas API.
+  """
   test = smoothness.Smoothness
   page_set = page_sets.ToughCanvasCasesPageSet
 
