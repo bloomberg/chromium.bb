@@ -10,9 +10,9 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ChromeSelectFilePolicy::ChromeSelectFilePolicy(

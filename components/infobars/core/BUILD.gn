@@ -16,6 +16,8 @@ static_library("core") {
     "infobar_manager.h",
     "infobars_switches.cc",
     "infobars_switches.h",
+    "simple_alert_infobar_delegate.cc",
+    "simple_alert_infobar_delegate.h",
   ]
 
   public_deps = [

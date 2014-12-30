@@ -35,6 +35,8 @@
         'infobars/core/infobar_manager.h',
         'infobars/core/infobars_switches.cc',
         'infobars/core/infobars_switches.h',
+        'infobars/core/simple_alert_infobar_delegate.cc',
+        'infobars/core/simple_alert_infobar_delegate.h',
       ],
     },
   ],

@@ -391,8 +391,6 @@
       'browser/infobars/infobar_service.h',
       'browser/infobars/insecure_content_infobar_delegate.cc',
       'browser/infobars/insecure_content_infobar_delegate.h',
-      'browser/infobars/simple_alert_infobar_delegate.cc',
-      'browser/infobars/simple_alert_infobar_delegate.h',
       'browser/install_verification/win/imported_module_verification.cc',
       'browser/install_verification/win/imported_module_verification.h',
       'browser/install_verification/win/install_verification.cc',

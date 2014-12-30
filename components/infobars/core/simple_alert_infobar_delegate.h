@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INFOBARS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_INFOBARS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
+#ifndef COMPONENTS_INFOBARS_CORE_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
+#define COMPONENTS_INFOBARS_CORE_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-class InfoBarService;
+namespace infobars {
+class InfoBarManager;
+}
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a simple alert infobar and delegate and adds the infobar to
-  // |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     int icon_id,  // May be |kNoIconID| if no icon is shown.
+  // |infobar_manager|. |icon_id| may be kNoIconID if no icon is shown.
+  static void Create(infobars::InfoBarManager* infobar_manager,
+                     int icon_id,
                      const base::string16& message,
                      bool auto_expire);
 
@@ -40,4 +42,4 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(SimpleAlertInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_INFOBARS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
+#endif  // COMPONENTS_INFOBARS_CORE_SIMPLE_ALERT_INFOBAR_DELEGATE_H_

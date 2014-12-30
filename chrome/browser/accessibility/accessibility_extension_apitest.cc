@@ -6,10 +6,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/test_switches.h"
+#include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "extensions/common/switches.h"
 
 // Times out on win syzyasan, http://crbug.com/166026

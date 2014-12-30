@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
+#include "components/infobars/core/simple_alert_infobar_delegate.h"
 
-#include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // static
-void SimpleAlertInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                        int icon_id,
-                                        const base::string16& message,
-                                        bool auto_expire) {
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+void SimpleAlertInfoBarDelegate::Create(
+    infobars::InfoBarManager* infobar_manager,
+    int icon_id,
+    const base::string16& message,
+    bool auto_expire) {
+  infobar_manager->AddInfoBar(
+      infobar_manager->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new SimpleAlertInfoBarDelegate(icon_id, message, auto_expire))));
 }
 
