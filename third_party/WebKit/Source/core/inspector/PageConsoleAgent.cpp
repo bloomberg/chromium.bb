@@ -103,6 +103,9 @@ ConsoleMessageStorage* PageConsoleAgent::messageStorage()
 void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorProxy)
 {
     WorkerGlobalScopeProxy* proxy = workerInspectorProxy->workerGlobalScopeProxy();
+    if (!proxy)
+        return;
+
     HashSet<WorkerGlobalScopeProxy*>::iterator iterator = m_workersWithEnabledConsole.find(proxy);
     bool workerAgentWasEnabled = iterator != m_workersWithEnabledConsole.end();
     if (workerAgentWasEnabled)
