@@ -969,6 +969,7 @@ crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/over
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
+crbug.com/445494 [ Mac ] fast/inline-block/003.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
 
