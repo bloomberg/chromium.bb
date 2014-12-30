@@ -41,16 +41,10 @@
 #if defined(__clang__)
 #define WTF_COMPILER_CLANG 1
 
-#define CLANG_PRAGMA(PRAGMA) _Pragma(PRAGMA)
-
 /* Specific compiler features */
 
 #define WTF_COMPILER_SUPPORTS_CXX_EXPLICIT_CONVERSIONS __has_feature(cxx_explicit_conversions)
 
-#endif
-
-#ifndef CLANG_PRAGMA
-#define CLANG_PRAGMA(PRAGMA)
 #endif
 
 /* COMPILER(MSVC) - Microsoft Visual C++ */
