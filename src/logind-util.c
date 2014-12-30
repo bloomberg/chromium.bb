@@ -692,14 +692,10 @@ signal_event(int fd, uint32_t mask, void *data)
 		return 0;
 	}
 
-	switch (sig.ssi_signo) {
-	case SIGUSR1:
+	if (sig.ssi_signo == (unsigned int)SIGRTMIN)
 		ioctl(wl->vt, VT_RELDISP, 1);
-		break;
-	case SIGUSR2:
+	else if (sig.ssi_signo == (unsigned int)SIGRTMIN + 1)
 		ioctl(wl->vt, VT_RELDISP, VT_ACKACQ);
-		break;
-	}
 
 	return 0;
 }
@@ -767,9 +763,21 @@ weston_logind_setup_vt(struct weston_logind *wl)
 		goto err_kbmode;
 	}
 
+	/*
+	 * SIGRTMIN is used as global VT-release signal, SIGRTMIN + 1 is used
+	 * as VT-acquire signal. Note that SIGRT* must be tested on runtime, as
+	 * their exact values are not known at compile-time. POSIX requires 32
+	 * of them to be available, though.
+	 */
+	if (SIGRTMIN + 1 > SIGRTMAX) {
+		weston_log("logind: not enough RT signals available: %u-%u\n",
+			   SIGRTMIN, SIGRTMAX);
+		return -EINVAL;
+	}
+
 	sigemptyset(&mask);
-	sigaddset(&mask, SIGUSR1);
-	sigaddset(&mask, SIGUSR2);
+	sigaddset(&mask, SIGRTMIN);
+	sigaddset(&mask, SIGRTMIN + 1);
 	sigprocmask(SIG_BLOCK, &mask, NULL);
 
 	wl->sfd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
@@ -790,8 +798,8 @@ weston_logind_setup_vt(struct weston_logind *wl)
 	}
 
 	mode.mode = VT_PROCESS;
-	mode.relsig = SIGUSR1;
-	mode.acqsig = SIGUSR2;
+	mode.relsig = SIGRTMIN;
+	mode.acqsig = SIGRTMIN + 1;
 	if (ioctl(wl->vt, VT_SETMODE, &mode) < 0) {
 		r = -errno;
 		weston_log("logind: cannot take over VT: %m\n");
