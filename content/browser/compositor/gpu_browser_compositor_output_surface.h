@@ -41,6 +41,9 @@ class GpuBrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed() override;
+  void OnSurfaceRecycled() override;
+  bool ShouldNotShowFramesAfterRecycle() const override;
+  bool should_not_show_frames_;
 #endif
 
   CommandBufferProxyImpl* GetCommandBufferProxy();

@@ -600,7 +600,6 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
     browser_compositor_->compositor()->SetRootLayer(
         root_layer_.get());
     browser_compositor_->accelerated_widget_mac()->SetNSView(this);
-    browser_compositor_->compositor()->SetVisible(true);
     browser_compositor_state_ = BrowserCompositorSuspended;
   }
 
@@ -636,7 +635,6 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
   // Destroy the BrowserCompositorView to transition Suspended -> Destroyed.
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
     browser_compositor_->accelerated_widget_mac()->ResetNSView();
-    browser_compositor_->compositor()->SetVisible(false);
     browser_compositor_->compositor()->SetScaleAndSize(1.0, gfx::Size(0, 0));
     browser_compositor_->compositor()->SetRootLayer(NULL);
     BrowserCompositorMac::Recycle(browser_compositor_.Pass());

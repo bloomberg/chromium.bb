@@ -279,17 +279,25 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   // associated with a RenderWidgetHostViewBase.
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
   DCHECK(IsDelegatedRendererEnabled());
-  gfx::AcceleratedWidget native_widget =
-      content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  ui::AcceleratedWidgetMacGotAcceleratedFrame(
-      native_widget,
-      params.surface_handle,
-      params.latency_info,
-      params.size,
-      params.scale_factor,
-      base::Bind(&OnSurfaceDisplayedCallback, params.surface_id),
-      &ack_params.disable_throttling,
-      &ack_params.renderer_id);
+
+  // If the frame was intended for an NSView that the gfx::AcceleratedWidget is
+  // no longer attached to, do not pass the frame along to the widget. Just ack
+  // it to the GPU process immediately, so we can proceed to the next frame.
+  bool should_not_show_frame =
+      content::ImageTransportFactory::GetInstance()
+          ->SurfaceShouldNotShowFramesAfterRecycle(params.surface_id);
+  if (should_not_show_frame) {
+    OnSurfaceDisplayedCallback(params.surface_id);
+  } else {
+    gfx::AcceleratedWidget native_widget =
+        content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
+            params.surface_id);
+    ui::AcceleratedWidgetMacGotAcceleratedFrame(
+        native_widget, params.surface_handle, params.latency_info, params.size,
+        params.scale_factor,
+        base::Bind(&OnSurfaceDisplayedCallback, params.surface_id),
+        &ack_params.disable_throttling, &ack_params.renderer_id);
+  }
   Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));
 #else
   NOTREACHED();

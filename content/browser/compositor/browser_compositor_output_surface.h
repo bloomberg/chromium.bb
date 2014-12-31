@@ -41,6 +41,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   virtual void OnSurfaceDisplayed() = 0;
+  virtual void OnSurfaceRecycled() = 0;
+  virtual bool ShouldNotShowFramesAfterRecycle() const = 0;
 #endif
 
  protected:

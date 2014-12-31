@@ -56,4 +56,11 @@ void NoTransportImageTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+#if defined(OS_MACOSX)
+bool NoTransportImageTransportFactory::SurfaceShouldNotShowFramesAfterRecycle(
+    int surface_id) const {
+  return false;
+}
+#endif
+
 }  // namespace content

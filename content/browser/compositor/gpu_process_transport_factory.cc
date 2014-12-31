@@ -417,6 +417,28 @@ void GpuProcessTransportFactory::OnSurfaceDisplayed(int surface_id) {
   if (surface)
     surface->OnSurfaceDisplayed();
 }
+
+void GpuProcessTransportFactory::OnCompositorRecycled(
+    ui::Compositor* compositor) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second;
+  DCHECK(data);
+  BrowserCompositorOutputSurface* surface =
+      output_surface_map_.Lookup(data->surface_id);
+  if (surface)
+    surface->OnSurfaceRecycled();
+}
+
+bool GpuProcessTransportFactory::SurfaceShouldNotShowFramesAfterRecycle(
+    int surface_id) const {
+  BrowserCompositorOutputSurface* surface =
+      output_surface_map_.Lookup(surface_id);
+  if (surface)
+    return surface->ShouldNotShowFramesAfterRecycle();
+  return false;
+}
 #endif
 
 scoped_refptr<cc::ContextProvider>

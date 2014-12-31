@@ -38,6 +38,8 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed() override;
+  void OnSurfaceRecycled() override;
+  bool ShouldNotShowFramesAfterRecycle() const override;
 #endif
 
   // On the software path we need to explicitly call the proxy to update the

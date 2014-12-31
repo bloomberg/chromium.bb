@@ -61,6 +61,14 @@ void SoftwareBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
   // See GpuBrowserCompositorOutputSurface for when and how this is used.
   NOTREACHED() << "Not expected for software surfaces.";
 }
+
+void SoftwareBrowserCompositorOutputSurface::OnSurfaceRecycled() {
+}
+
+bool SoftwareBrowserCompositorOutputSurface::ShouldNotShowFramesAfterRecycle()
+    const {
+  return false;
+}
 #endif
 
 }  // namespace content

@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/public/browser/context_factory.h"
@@ -45,7 +46,6 @@ BrowserCompositorMac::BrowserCompositorMac()
           accelerated_widget_mac_->accelerated_widget(),
           content::GetContextFactory(),
           RenderWidgetResizeHelper::Get()->task_runner()) {
-  compositor_.SetVisible(false);
 }
 
 BrowserCompositorMac::~BrowserCompositorMac() {}
@@ -61,6 +61,8 @@ scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
 void BrowserCompositorMac::Recycle(
     scoped_ptr<BrowserCompositorMac> compositor) {
   DCHECK(compositor);
+  content::ImageTransportFactory::GetInstance()->OnCompositorRecycled(
+      compositor->compositor());
 
   // It is an error to have a browser compositor continue to exist after
   // shutdown.
