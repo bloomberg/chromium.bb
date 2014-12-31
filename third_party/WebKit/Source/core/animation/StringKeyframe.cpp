@@ -176,8 +176,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyTransformOrigin:
         if (LengthPoint3DStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPoint3DStyleInterpolation::canCreateFrom(*toCSSValue))
             return LengthPoint3DStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
-            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
-        // FIXME: Handle percentages and 2D origins.
+        // FIXME: Handle 2D origins.
         useDefaultStyleInterpolation = false;
         break;
 
