@@ -88,9 +88,8 @@ class WaitAndExitDelegate : public base::PlatformThread::Delegate {
  public:
   explicit WaitAndExitDelegate(base::TimeDelta duration)
       : duration_(duration) {}
-  virtual ~WaitAndExitDelegate() override {}
 
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     base::PlatformThread::Sleep(duration_);
     _exit(0);
   }

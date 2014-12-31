@@ -22,7 +22,6 @@ class EsParserAdtsTest : public EsParserTestBase,
                          public testing::Test {
  public:
   EsParserAdtsTest();
-  virtual ~EsParserAdtsTest() {}
 
  protected:
   bool Process(const std::vector<Packet>& pes_packets, bool force_timing);

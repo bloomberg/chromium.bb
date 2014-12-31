@@ -13,9 +13,7 @@ class MPEG1AudioStreamParserTest
     : public StreamParserTestBase, public testing::Test {
  public:
   MPEG1AudioStreamParserTest()
-      : StreamParserTestBase(
-            scoped_ptr<StreamParser>(new MPEG1AudioStreamParser()).Pass()) {}
-  virtual ~MPEG1AudioStreamParserTest() {}
+      : StreamParserTestBase(make_scoped_ptr(new MPEG1AudioStreamParser())) {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of

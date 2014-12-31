@@ -26,9 +26,9 @@ class BoxReader;
 class MEDIA_EXPORT MP4StreamParser : public StreamParser {
  public:
   MP4StreamParser(const std::set<int>& audio_object_types, bool has_sbr);
-  virtual ~MP4StreamParser();
+  ~MP4StreamParser() override;
 
-  virtual void Init(
+  void Init(
       const InitCB& init_cb,
       const NewConfigCB& config_cb,
       const NewBuffersCB& new_buffers_cb,
@@ -37,8 +37,8 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
       const NewMediaSegmentCB& new_segment_cb,
       const base::Closure& end_of_segment_cb,
       const LogCB& log_cb) override;
-  virtual void Flush() override;
-  virtual bool Parse(const uint8* buf, int size) override;
+  void Flush() override;
+  bool Parse(const uint8* buf, int size) override;
 
  private:
   enum State {

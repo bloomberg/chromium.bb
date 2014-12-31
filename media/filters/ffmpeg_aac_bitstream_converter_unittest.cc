@@ -25,8 +25,6 @@ class FFmpegAACBitstreamConverterTest : public testing::Test {
     test_context_.extradata_size = sizeof(context_header_);
   }
 
-  virtual ~FFmpegAACBitstreamConverterTest() {}
-
   void CreatePacket(AVPacket* packet, const uint8* data, uint32 data_size) {
     // Create new packet sized of |data_size| from |data|.
     EXPECT_EQ(av_new_packet(packet, data_size), 0);

@@ -28,10 +28,10 @@ class PidState;
 class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
  public:
   explicit Mp2tStreamParser(bool sbr_in_mimetype);
-  virtual ~Mp2tStreamParser();
+  ~Mp2tStreamParser() override;
 
   // StreamParser implementation.
-  virtual void Init(
+  void Init(
       const InitCB& init_cb,
       const NewConfigCB& config_cb,
       const NewBuffersCB& new_buffers_cb,
@@ -40,8 +40,8 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
       const NewMediaSegmentCB& new_segment_cb,
       const base::Closure& end_of_segment_cb,
       const LogCB& log_cb) override;
-  virtual void Flush() override;
-  virtual bool Parse(const uint8* buf, int size) override;
+  void Flush() override;
+  bool Parse(const uint8* buf, int size) override;
 
  private:
   typedef std::map<int, PidState*> PidMap;

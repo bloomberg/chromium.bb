@@ -23,7 +23,6 @@ class EsParserMpeg1AudioTest : public EsParserTestBase,
                                public testing::Test {
  public:
   EsParserMpeg1AudioTest();
-  virtual ~EsParserMpeg1AudioTest() {}
 
  protected:
   bool Process(const std::vector<Packet>& pes_packets, bool force_timing);

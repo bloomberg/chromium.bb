@@ -33,17 +33,17 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
                const EmitBufferCB& emit_buffer_cb,
                bool sbr_in_mimetype);
-  virtual ~EsParserAdts();
+  ~EsParserAdts() override;
 
   // EsParser implementation.
-  virtual void Flush() override;
+  void Flush() override;
 
  private:
   struct AdtsFrame;
 
   // EsParser implementation.
-  virtual bool ParseFromEsQueue() override;
-  virtual void ResetInternal() override;
+  bool ParseFromEsQueue() override;
+  void ResetInternal() override;
 
   // Synchronize the stream on an ADTS syncword (consuming bytes from
   // |es_queue_| if needed).

@@ -60,7 +60,6 @@ GenerateFakeBuffers(const int* frame_pts_ms,
 class EsAdapterVideoTest : public testing::Test {
  public:
   EsAdapterVideoTest();
-  virtual ~EsAdapterVideoTest() {}
 
  protected:
   // Feed the ES adapter with the buffers from |buffer_queue|.

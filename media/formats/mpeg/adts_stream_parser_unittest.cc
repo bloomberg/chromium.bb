@@ -11,9 +11,7 @@ namespace media {
 class ADTSStreamParserTest : public StreamParserTestBase, public testing::Test {
  public:
   ADTSStreamParserTest()
-      : StreamParserTestBase(
-            scoped_ptr<StreamParser>(new ADTSStreamParser()).Pass()) {}
-  virtual ~ADTSStreamParserTest() {}
+      : StreamParserTestBase(make_scoped_ptr(new ADTSStreamParser())) {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of

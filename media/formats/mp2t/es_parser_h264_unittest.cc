@@ -25,7 +25,6 @@ class EsParserH264Test : public EsParserTestBase,
                          public testing::Test {
  public:
   EsParserH264Test() {}
-  virtual ~EsParserH264Test() {}
 
  protected:
   void LoadH264Stream(const char* filename);

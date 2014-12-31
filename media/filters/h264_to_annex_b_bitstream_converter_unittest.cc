@@ -13,7 +13,7 @@ class H264ToAnnexBBitstreamConverterTest : public testing::Test {
  protected:
   H264ToAnnexBBitstreamConverterTest() {}
 
-  virtual ~H264ToAnnexBBitstreamConverterTest() {}
+  ~H264ToAnnexBBitstreamConverterTest() override {}
 
  protected:
   mp4::AVCDecoderConfigurationRecord avc_config_;
