@@ -18,22 +18,6 @@ import java.util.List;
  */
 public interface TabModelSelector {
     /**
-     * Interface of listener that get notified on changes in the {@link TabModel}s.
-     */
-    // TODO(tedchoc): Remove this once all callers have switched to TabModelSelectorObserver.
-    public interface ChangeListener {
-        /**
-         * Called whenever the {@link TabModel} has changed.
-         */
-        void onChange();
-
-        /**
-         * Called when a new tab is created.
-         */
-        void onNewTabCreated(Tab tab);
-    }
-
-    /**
      * Set the current model. This won't cause an animation, but will still change the stack that is
      * currently visible if the tab switcher is open.
      */
@@ -133,21 +117,6 @@ public interface TabModelSelector {
      * @return specified tab or null if tab is not found
      */
     Tab getTabById(int id);
-
-    /**
-     * Registers a listener that get notified when the {@link TabModel} changes. Multiple listeners
-     * can be registered at the same time.
-     * @param changeListener The {@link TabModelSelector.ChangeListener} to notify.
-     */
-    // TODO(tedchoc): Remove this once all callers switch to addObserver.
-    void registerChangeListener(ChangeListener changeListener);
-
-    /**
-     * Unregisters the listener.
-     * @param changeListener The {@link TabModelSelector.ChangeListener} to remove.
-     */
-    // TODO(tedchoc): Remove this once all callers switch to removeObserver.
-    void unregisterChangeListener(ChangeListener changeListener);
 
     /**
      * Add an observer to be notified of changes to the TabModelSelector.

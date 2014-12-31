@@ -22,8 +22,8 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     private List<TabModel> mTabModels = Collections.emptyList();
     private int mActiveModelIndex = NORMAL_TAB_MODEL_INDEX;
-    private final ObserverList<ChangeListener> mObservers =
-            new ObserverList<ChangeListener>();
+    private final ObserverList<TabModelSelectorObserver> mObservers =
+            new ObserverList<TabModelSelectorObserver>();
 
     protected final void initialize(boolean startIncognito, TabModel... models) {
         // Only normal and incognito supported for now.
@@ -173,23 +173,13 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     }
 
     @Override
-    public void registerChangeListener(ChangeListener observer) {
+    public void addObserver(TabModelSelectorObserver observer) {
         if (!mObservers.hasObserver(observer)) mObservers.addObserver(observer);
     }
 
     @Override
-    public void unregisterChangeListener(ChangeListener observer) {
-        mObservers.removeObserver(observer);
-    }
-
-    @Override
-    public void addObserver(TabModelSelectorObserver observer) {
-        registerChangeListener(observer);
-    }
-
-    @Override
     public void removeObserver(TabModelSelectorObserver observer) {
-        unregisterChangeListener(observer);
+        mObservers.removeObserver(observer);
     }
 
     /**
@@ -197,7 +187,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
      * changed.
      */
     protected void notifyChanged() {
-        for (ChangeListener listener : mObservers) {
+        for (TabModelSelectorObserver listener : mObservers) {
             listener.onChange();
         }
     }
@@ -207,7 +197,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
      * @param tab The tab that has been created.
      */
     private void notifyNewTabCreated(Tab tab) {
-        for (ChangeListener listener : mObservers) {
+        for (TabModelSelectorObserver listener : mObservers) {
             listener.onNewTabCreated(tab);
         }
     }

@@ -4,11 +4,19 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import org.chromium.chrome.browser.tabmodel.TabModelSelector.ChangeListener;
+import org.chromium.chrome.browser.Tab;
 
 /**
  * Observes changes to the tab model selector.
  */
-public interface TabModelSelectorObserver extends ChangeListener {
+public interface TabModelSelectorObserver {
+    /**
+     * Called whenever the {@link TabModel} has changed.
+     */
+    void onChange();
 
+    /**
+     * Called when a new tab is created.
+     */
+    void onNewTabCreated(Tab tab);
 }
