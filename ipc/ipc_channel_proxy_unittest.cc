@@ -47,7 +47,6 @@ namespace {
 class QuitListener : public IPC::Listener {
  public:
   QuitListener() : bad_message_received_(false) {}
-  ~QuitListener() override {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(QuitListener, message)
@@ -76,7 +75,6 @@ class QuitListener : public IPC::Listener {
 class ChannelReflectorListener : public IPC::Listener {
  public:
   ChannelReflectorListener() : channel_(NULL) {}
-  ~ChannelReflectorListener() override {}
 
   void Init(IPC::Channel* channel) {
     DCHECK(!channel_);
@@ -380,10 +378,7 @@ TEST_F(IPCChannelProxyTest, BadMessageOnIPCThread) {
 
 class IPCChannelBadMessageTest : public IPCTestBase {
  public:
-  IPCChannelBadMessageTest() {}
-  virtual ~IPCChannelBadMessageTest() {}
-
-  virtual void SetUp() override {
+  void SetUp() override {
     IPCTestBase::SetUp();
 
     Init("ChannelProxyClient");
@@ -395,7 +390,7 @@ class IPCChannelBadMessageTest : public IPCTestBase {
     ASSERT_TRUE(StartClient());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     listener_.reset();
     IPCTestBase::TearDown();
   }
