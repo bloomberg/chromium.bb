@@ -351,12 +351,6 @@ public:
         m_raw = nullptr;
     }
 
-    template<typename U>
-    U* as() const
-    {
-        return static_cast<U*>(m_raw);
-    }
-
     void trace(Visitor* visitor)
     {
         STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non-garbage collected object should not be in Persistent");
@@ -567,12 +561,6 @@ public:
         T* result = m_raw;
         m_raw = nullptr;
         return result;
-    }
-
-    template<typename U>
-    U* as() const
-    {
-        return static_cast<U*>(m_raw);
     }
 
     bool operator!() const { return !m_raw; }
