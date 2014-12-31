@@ -240,16 +240,16 @@ PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
 static inline bool canHaveWhitespaceChildren(const RenderObject& parent)
 {
     // <button> should allow whitespace even though RenderFlexibleBox doesn't.
-    if (parent.isOfType(RenderObject::RenderObjectRenderButton))
+    if (parent.isRenderButton())
         return true;
 
     if (parent.isTable() || parent.isTableRow() || parent.isTableSection()
         || parent.isRenderTableCol() || parent.isFrameSet()
         || parent.isFlexibleBox() || parent.isRenderGrid()
         || parent.isSVGRoot()
-        || parent.isOfType(RenderObject::RenderObjectSVGContainer)
-        || parent.isOfType(RenderObject::RenderObjectSVGImage)
-        || parent.isOfType(RenderObject::RenderObjectSVGShape))
+        || parent.isSVGContainer()
+        || parent.isSVGImage()
+        || parent.isSVGShape())
         return false;
     return true;
 }

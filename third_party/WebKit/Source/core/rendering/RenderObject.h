@@ -1059,6 +1059,7 @@ public:
 
     DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
+protected:
     enum RenderObjectType {
         RenderObjectBr,
         RenderObjectCanvas,
@@ -1130,7 +1131,6 @@ public:
     };
     virtual bool isOfType(RenderObjectType type) const { return false; }
 
-protected:
     inline bool layerCreationAllowedForSubtree() const;
 
     // Overrides should call the superclass at the end. m_style will be 0 the first time
