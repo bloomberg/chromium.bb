@@ -5455,4 +5455,53 @@ TEST(HeapTest, TraceDeepEagerly)
 #endif
 }
 
+TEST(HeapTest, DequeExpand)
+{
+    // Test expansion of a HeapDeque<>'s buffer.
+
+    typedef HeapDeque<Member<IntWrapper>> IntDeque;
+
+    Persistent<IntDeque> deque = new IntDeque();
+
+    // Append a sequence, bringing about repeated expansions of the
+    // deque's buffer.
+    int i = 0;
+    for (; i < 60; ++i)
+        deque->append(IntWrapper::create(i));
+
+    EXPECT_EQ(60u, deque->size());
+    i = 0;
+    for (const auto& intWrapper : *deque) {
+        EXPECT_EQ(i, intWrapper->value());
+        i++;
+    }
+
+    // Remove most of the queued objects and have the buffer's start index
+    // 'point' somewhere into the buffer, just behind the end index.
+    for (i = 0; i < 50; ++i)
+        deque->takeFirst();
+
+    EXPECT_EQ(10u, deque->size());
+    i = 0;
+    for (const auto& intWrapper : *deque) {
+        EXPECT_EQ(50 + i, intWrapper->value());
+        i++;
+    }
+
+    // Append even more, eventually causing an expansion of the underlying
+    // buffer once the end index wraps around and reaches the start index.
+    for (i = 0; i < 70; ++i)
+        deque->append(IntWrapper::create(60 + i));
+
+    // Verify that the final buffer expansion copied the start and end segments
+    // of the old buffer to both ends of the expanded buffer, along with
+    // re-adjusting both start&end indices in terms of that expanded buffer.
+    EXPECT_EQ(80u, deque->size());
+    i = 0;
+    for (const auto& intWrapper : *deque) {
+        EXPECT_EQ(i + 50, intWrapper->value());
+        i++;
+    }
+}
+
 } // namespace blink

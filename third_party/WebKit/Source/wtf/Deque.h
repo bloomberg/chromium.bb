@@ -331,8 +331,16 @@ namespace WTF {
         size_t oldCapacity = m_buffer.capacity();
         T* oldBuffer = m_buffer.buffer();
         size_t newCapacity = std::max(static_cast<size_t>(16), oldCapacity + oldCapacity / 4 + 1);
-        if (m_buffer.expandBuffer(newCapacity))
+        if (m_buffer.expandBuffer(newCapacity)) {
+            if (m_start <= m_end) {
+                // No adjustments to be done.
+            } else {
+                size_t newStart = m_buffer.capacity() - (oldCapacity - m_start);
+                TypeOperations::moveOverlapping(oldBuffer + m_start, oldBuffer + oldCapacity, m_buffer.buffer() + newStart);
+                m_start = newStart;
+            }
             return;
+        }
         m_buffer.allocateBuffer(newCapacity);
         if (m_start <= m_end)
             TypeOperations::move(oldBuffer + m_start, oldBuffer + m_end, m_buffer.buffer() + m_start);
