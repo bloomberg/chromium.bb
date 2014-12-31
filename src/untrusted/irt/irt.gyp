@@ -33,7 +33,6 @@
       'irt_dev_getpid.c',
       'irt_exception_handling.c',
       'irt_dev_list_mappings.c',
-      'irt_nameservice.c',
       'irt_random.c',
 # support_srcs
       # We also get nc_init_private.c, nc_thread.c and nc_tsd.c via

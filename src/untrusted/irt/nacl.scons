@@ -42,7 +42,6 @@ irt_support_sources = [
     'irt_dev_getpid.c',
     'irt_exception_handling.c',
     'irt_dev_list_mappings.c',
-    'irt_nameservice.c',
     'irt_random.c',
     'irt_core_resource.c',
     ]

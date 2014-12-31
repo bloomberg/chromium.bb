@@ -23,7 +23,6 @@ static_library("nacl_dyncode_private") {
 static_library("nacl_random_private") {
   cflags_c = []
   sources = [
-    "irt_nameservice",
     "irt_random",
   ]
 
@@ -360,23 +359,6 @@ source_set("irt_random") {
   cflags_c = []
   sources = [
     "../../untrusted/irt/irt_random.c",
-  ]
-
-  if (cpu_arch == "pnacl") {
-    cflags_c += [
-      "-Wno-self-assign",
-      "-allow-asm",
-    ]
-  }
-
-  deps = [
-    "//native_client/build/config/nacl:nacl_base",
-  ]
-}
-source_set("irt_nameservice") {
-  cflags_c = []
-  sources = [
-    "../../untrusted/irt/irt_nameservice.c",
   ]
 
   if (cpu_arch == "pnacl") {

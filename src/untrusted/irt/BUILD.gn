@@ -31,7 +31,6 @@ executable("irt_core") {
     "irt_malloc.c",
     "irt_memory.c",
     "irt_mutex.c",
-    "irt_nameservice.c",
     "irt_private_pthread.c",
     "irt_private_tls.c",
     "irt_query_list.c",
