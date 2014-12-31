@@ -56,8 +56,7 @@ SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
     'cbuildbot/stages/test_stages_unittest.py': INSIDE,
     'cros/commands/cros_build_unittest.py': INSIDE,
-    # TODO: This should be INSIDE; needs upgraded pylint first.
-    'cros/commands/lint_unittest.py': SKIP,
+    'cros/commands/lint_unittest.py': INSIDE,
     'lib/filetype_unittest.py': INSIDE,
     'lib/upgrade_table_unittest.py': INSIDE,
     'scripts/cros_install_debug_syms_unittest.py': INSIDE,
