@@ -1974,7 +1974,7 @@ void Browser::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile) && window()->GetLocationBar())
-        window()->GetLocationBar()->InvalidatePageActions();
+        window()->GetLocationBar()->UpdatePageActions();
       break;
     }
 

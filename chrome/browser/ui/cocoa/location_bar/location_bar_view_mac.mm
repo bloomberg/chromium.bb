@@ -207,11 +207,6 @@ void LocationBarViewMac::UpdatePageActions() {
   [field_ setNeedsDisplay:YES];
 }
 
-void LocationBarViewMac::InvalidatePageActions() {
-  DeletePageActionDecorations();
-  Layout();
-}
-
 void LocationBarViewMac::UpdateBookmarkStarVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
 }
@@ -672,7 +667,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
 
   WebContents* web_contents = GetWebContents();
   if (!web_contents) {
-    DeletePageActionDecorations();  // Necessary?
+    DeletePageActionDecorations();
     return;
   }
 
@@ -680,12 +675,11 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
       extensions::TabHelper::FromWebContents(web_contents)->
           location_bar_controller()->GetCurrentActions();
 
-  if (new_page_actions != page_actions_) {
-    page_actions_.swap(new_page_actions);
+  if (PageActionsDiffer(new_page_actions)) {
     DeletePageActionDecorations();
-    for (size_t i = 0; i < page_actions_.size(); ++i) {
+    for (size_t i = 0; i < new_page_actions.size(); ++i) {
       page_action_decorations_.push_back(
-          new PageActionDecoration(this, browser_, page_actions_[i]));
+          new PageActionDecoration(this, browser_, new_page_actions[i]));
     }
 
     // Move rightmost extensions to the start.
@@ -699,6 +693,20 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     page_action_decorations_[i]->UpdateVisibility(
         GetToolbarModel()->input_in_progress() ? NULL : web_contents);
   }
+}
+
+bool LocationBarViewMac::PageActionsDiffer(
+    const std::vector<ExtensionAction*>& page_actions) const {
+  if (page_action_decorations_.size() != page_actions.size())
+    return true;
+
+  for (size_t index = 0; index < page_actions.size(); ++index) {
+    PageActionDecoration* decoration = page_action_decorations_[index];
+    if (decoration->GetPageAction() != page_actions[index])
+      return true;
+  }
+
+  return false;
 }
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {

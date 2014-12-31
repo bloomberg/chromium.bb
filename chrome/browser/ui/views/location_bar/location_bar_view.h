@@ -301,13 +301,18 @@ class LocationBarView : public LocationBar,
   // of at least one of the views in |content_setting_views_| changed.
   bool RefreshContentSettingViews();
 
-  // Deletes all page action views that we have created.
+  // Clears |page_action_views_| and removes the elements from the view
+  // hierarchy.
   void DeletePageActionViews();
 
   // Updates the views for the Page Actions, to reflect state changes for
   // PageActions. Returns true if the visibility of a PageActionWithBadgeView
   // changed, or PageActionWithBadgeView were created/destroyed.
   bool RefreshPageActionViews();
+
+  // Whether the page actions represented by |page_action_views_| differ
+  // in ordering or value from |page_actions|.
+  bool PageActionsDiffer(const PageActions& page_actions) const;
 
   // Updates the view for the zoom icon based on the current tab's zoom. Returns
   // true if the visibility of the view changed.
@@ -351,7 +356,6 @@ class LocationBarView : public LocationBar,
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdatePageActions() override;
-  void InvalidatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
@@ -472,9 +476,6 @@ class LocationBarView : public LocationBar,
 
   // The manage passwords icon.
   ManagePasswordsIconView* manage_passwords_icon_view_;
-
-  // The current page actions.
-  PageActions page_actions_;
 
   // The page action icon views.
   PageActionViews page_action_views_;

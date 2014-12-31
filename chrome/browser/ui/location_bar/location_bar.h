@@ -61,10 +61,6 @@ class LocationBar {
   // Updates the visibility of the bookmark star.
   virtual void UpdateBookmarkStarVisibility() = 0;
 
-  // Called when the page-action data needs to be refreshed, e.g. when an
-  // extension is unloaded or crashes.
-  virtual void InvalidatePageActions() = 0;
-
   // Shows the popup for the given |extension| and, if |grant_active_tab| is
   // true, grants the extension active tab permissions.
   // Returns true if a popup was shown.

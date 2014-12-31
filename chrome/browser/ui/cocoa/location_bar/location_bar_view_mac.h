@@ -66,7 +66,6 @@ class LocationBarViewMac : public LocationBar,
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdatePageActions() override;
-  void InvalidatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
@@ -203,6 +202,11 @@ class LocationBarViewMac : public LocationBar,
   // extension service.
   void RefreshPageActionDecorations();
 
+  // Whether the page actions represented by |page_action_decorations_| differ
+  // in ordering or value from |page_actions|.
+  bool PageActionsDiffer(
+      const std::vector<ExtensionAction*>& page_actions) const;
+
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
   bool RefreshContentSettingsDecorations();
@@ -244,9 +248,6 @@ class LocationBarViewMac : public LocationBar,
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.
   scoped_ptr<ZoomDecoration> zoom_decoration_;
-
-  // The installed page actions.
-  std::vector<ExtensionAction*> page_actions_;
 
   // Decorations for the installed Page Actions.
   ScopedVector<PageActionDecoration> page_action_decorations_;

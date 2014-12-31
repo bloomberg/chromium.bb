@@ -1083,15 +1083,14 @@ bool LocationBarView::RefreshPageActionViews() {
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.
-  if (page_actions_ != new_page_actions) {
+  if (PageActionsDiffer(new_page_actions)) {
     changed = true;
 
-    page_actions_.swap(new_page_actions);
-    DeletePageActionViews();  // Delete the old views (if any).
+    DeletePageActionViews();
 
     // Create the page action views.
-    for (PageActions::const_iterator i = page_actions_.begin();
-         i != page_actions_.end(); ++i) {
+    for (PageActions::const_iterator i = new_page_actions.begin();
+         i != new_page_actions.end(); ++i) {
       PageActionWithBadgeView* page_action_view = new PageActionWithBadgeView(
           delegate_->CreatePageActionImageView(this, *i));
       page_action_view->SetVisible(false);
@@ -1118,16 +1117,28 @@ bool LocationBarView::RefreshPageActionViews() {
       AddChildViewAt(*i, GetIndexOf(right_anchor));
   }
 
-  if (!page_action_views_.empty() && web_contents) {
-    for (PageActionViews::const_iterator i(page_action_views_.begin());
-         i != page_action_views_.end(); ++i) {
-      bool old_visibility = (*i)->visible();
-      (*i)->UpdateVisibility(
-          GetToolbarModel()->input_in_progress() ? NULL : web_contents);
-      changed |= old_visibility != (*i)->visible();
-    }
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    bool old_visibility = (*i)->visible();
+    (*i)->UpdateVisibility(
+        GetToolbarModel()->input_in_progress() ? NULL : web_contents);
+    changed |= old_visibility != (*i)->visible();
   }
   return changed;
+}
+
+bool LocationBarView::PageActionsDiffer(
+    const PageActions& page_actions) const {
+  if (page_action_views_.size() != page_actions.size())
+    return true;
+
+  for (size_t index = 0; index < page_actions.size(); ++index) {
+    PageActionWithBadgeView* view = page_action_views_[index];
+    if (view->image_view()->extension_action() != page_actions[index])
+      return true;
+  }
+
+  return false;
 }
 
 bool LocationBarView::RefreshZoomView() {
@@ -1292,10 +1303,6 @@ void LocationBarView::UpdatePageActions() {
     Layout();
     SchedulePaint();
   }
-}
-
-void LocationBarView::InvalidatePageActions() {
-  DeletePageActionViews();
 }
 
 void LocationBarView::UpdateBookmarkStarVisibility() {
