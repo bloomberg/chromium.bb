@@ -12,6 +12,8 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import java.lang.ref.WeakReference;
+
 /**
  * This class detects multi-finger tap and long-press events. This is provided since the stock
  * Android gesture-detectors only detect taps/long-presses made with one finger.
@@ -59,17 +61,28 @@ public class TapGestureDetector {
     /** Set to true whenever motion is detected in the gesture, or a long-touch is triggered. */
     private boolean mTapCancelled = false;
 
-    private class EventHandler extends Handler {
+    // This static inner class holds a WeakReference to the outer object, to avoid triggering the
+    // lint HandlerLeak warning.
+    private static class EventHandler extends Handler {
+        private final WeakReference<TapGestureDetector> mDetector;
+
+        public EventHandler(TapGestureDetector detector) {
+            mDetector = new WeakReference<TapGestureDetector>(detector);
+        }
+
         @Override
         public void handleMessage(Message message) {
-            mListener.onLongPress(mPointerCount);
-            mTapCancelled = true;
+            TapGestureDetector detector = mDetector.get();
+            if (detector != null) {
+                detector.mListener.onLongPress(detector.mPointerCount);
+                detector.mTapCancelled = true;
+            }
         }
     }
 
     public TapGestureDetector(Context context, OnTapListener listener) {
         mListener = listener;
-        mHandler = new EventHandler();
+        mHandler = new EventHandler(this);
         ViewConfiguration config = ViewConfiguration.get(context);
         int touchSlop = config.getScaledTouchSlop();
         mTouchSlopSquare = touchSlop * touchSlop;
