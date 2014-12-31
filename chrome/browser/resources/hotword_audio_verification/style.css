@@ -68,11 +68,17 @@ div.intro-text {
 }
 
 a {
+  -webkit-app-region: no-drag;
   color: rgb(66, 133, 244);
   text-decoration: none;
 }
 
+button {
+  -webkit-app-region: no-drag;
+}
+
 body {
+  -webkit-app-region: drag;
   background: #ddd;
 }
 
@@ -311,6 +317,7 @@ div.buttonbar {
 }
 
 .close {
+  -webkit-app-region: no-drag;
   background: -webkit-image-set(
       url(../images/ic-x-white-1x.png) 1x,
       url(../images/ic-x-white-2x.png) 2x)
