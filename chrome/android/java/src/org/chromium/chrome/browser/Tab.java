@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -36,6 +37,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTabViewFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
@@ -212,6 +214,18 @@ public class Tab {
      * Used by Document mode to keep track of whether we want to remove the tab when user hits back.
      */
     private boolean mShouldPreserve;
+
+    /**
+     * Indicates if the tab needs to be reloaded upon next display. This is set to true when the tab
+     * crashes while in background, or if a speculative restore in background gets cancelled before
+     * it completes.
+     */
+    private boolean mNeedsReload;
+
+    /**
+     * Whether or not the Tab is currently visible to the user.
+     */
+    private boolean mIsHidden = true;
 
     private FullscreenManager mFullscreenManager;
     private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
@@ -726,10 +740,10 @@ public class Tab {
         if (!isInitialized()) return null;
         TabState tabState = new TabState();
         tabState.contentsState = getWebContentsState();
-        tabState.openerAppId = getAppAssociatedWith();
-        tabState.parentId = getParentId();
-        tabState.shouldPreserve = shouldPreserve();
-        tabState.syncId = getSyncId();
+        tabState.openerAppId = mAppAssociatedWith;
+        tabState.parentId = mParentId;
+        tabState.shouldPreserve = mShouldPreserve;
+        tabState.syncId = mSyncId;
         return tabState;
     }
 
@@ -958,16 +972,64 @@ public class Tab {
     }
 
     /**
-     * Triggers the showing logic for the view backing this tab.
+     * Called on the foreground tab when the Activity showing the Tab gets started. This is called
+     * on both cold and warm starts.
      */
-    protected void show() {
-        if (mContentViewCore != null) mContentViewCore.onShow();
+    public void onActivityStart() {
+        show(TabSelectionType.FROM_USER);
+
+        // When resuming the activity, force an update to the fullscreen state to ensure a
+        // subactivity did not change the fullscreen configuration of this ChromeTab's renderer in
+        // the case where it was shared (i.e. via an EmbedContentViewActivity).
+        updateFullscreenEnabledState();
+    }
+
+    /**
+     * Called on the foreground tab when the Activity is stopped.
+     */
+    public void onActivityStop() {
+        hide();
+    }
+
+    /**
+     * Prepares the tab to be shown. This method is supposed to be called before the tab is
+     * displayed. It restores the ContentView if it is not available after the cold start and
+     * reloads the tab if its renderer has crashed.
+     * @param type Specifies how the tab was selected.
+     */
+    public final void show(TabSelectionType type) {
+        try {
+            TraceEvent.begin("Tab.show");
+            if (!isHidden()) return;
+            // Keep unsetting mIsHidden above loadIfNeeded(), so that we pass correct visibility
+            // when spawning WebContents in loadIfNeeded().
+            mIsHidden = false;
+
+            loadIfNeeded();
+            assert !isFrozen();
+
+            if (mContentViewCore != null) mContentViewCore.onShow();
+
+            showInternal(type);
+        } finally {
+            TraceEvent.end("Tab.show");
+        }
+    }
+
+    /**
+     * Called when the Tab is behing shown to perform any subclass-specific tasks.
+     * @param type Specifies how the tab was selected.
+     */
+    protected void showInternal(TabSelectionType type) {
     }
 
     /**
      * Triggers the hiding logic for the view backing the tab.
      */
-    protected void hide() {
+    public final void hide() {
+        if (isHidden()) return;
+        mIsHidden = true;
+
         if (mContentViewCore != null) mContentViewCore.onHide();
 
         // Clean up any fullscreen state that might impact other tabs.
@@ -977,6 +1039,14 @@ public class Tab {
             mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
             mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
         }
+
+        hideInternal();
+    }
+
+    /**
+     * Called when the Tab is being hidden to perform any subclass-specific tasks.
+     */
+    protected void hideInternal() {
     }
 
     /**
@@ -1188,6 +1258,8 @@ public class Tab {
 
         mPreviousFullscreenTopControlsOffsetY = Float.NaN;
         mPreviousFullscreenContentOffsetY = Float.NaN;
+
+        mNeedsReload = false;
     }
 
     /**
@@ -1261,7 +1333,44 @@ public class Tab {
             return true;
         }
 
-        return false;
+        restoreIfNeeded();
+        return true;
+    }
+
+    /**
+     * Loads a tab that was already loaded but since then was lost. This happens either when we
+     * unfreeze the tab from serialized state or when we reload a tab that crashed. In both cases
+     * the load codepath is the same (run in loadIfNecessary()) and the same caching policies of
+     * history load are used.
+     */
+    private final void restoreIfNeeded() {
+        try {
+            TraceEvent.begin("Tab.restoreIfNeeded");
+            if (isFrozen() && mFrozenContentsState != null) {
+                // Restore is needed for a tab that is loaded for the first time. WebContents will
+                // be restored from a saved state.
+                unfreezeContents();
+            } else if (mNeedsReload) {
+                // Restore is needed for a tab that was previously loaded, but its renderer was
+                // killed by the oom killer.
+                mNeedsReload = false;
+                requestRestoreLoad();
+            } else {
+                // No restore needed.
+                return;
+            }
+
+            loadIfNecessary();
+            restoreIfNeededInternal();
+        } finally {
+            TraceEvent.end("Tab.restoreIfNeeded");
+        }
+    }
+
+    /**
+     * Performs any subclass-specific tasks when the Tab is restored.
+     */
+    protected void restoreIfNeededInternal() {
     }
 
     /**
@@ -1298,11 +1407,10 @@ public class Tab {
     }
 
     /**
-     * TODO(dfalcantara): Make this function accurate with hide() and show() calls.
      * @return Whether or not the tab is hidden.
      */
     public boolean isHidden() {
-        return false;
+        return mIsHidden;
     }
 
     /**
@@ -1317,6 +1425,20 @@ public class Tab {
      */
     public void setClosing(boolean closing) {
         mIsClosing = closing;
+    }
+
+    /**
+     * @return Whether the Tab needs to be reloaded. {@see #mNeedsReload}
+     */
+    public boolean needsReload() {
+        return mNeedsReload;
+    }
+
+    /**
+     * Set whether the Tab needs to be reloaded. {@see #mNeedsReload}
+     */
+    protected void setNeedsReload(boolean needsReload) {
+        mNeedsReload = needsReload;
     }
 
     /**
@@ -1456,11 +1578,12 @@ public class Tab {
         for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
     }
     /**
-     * Called when the navigation entry containing the historyitem changed,
+     * Called when the navigation entry containing the history item changed,
      * for example because of a scroll offset or form field change.
      */
     @CalledByNative
     protected void onNavEntryChanged() {
+        mIsTabStateDirty = true;
     }
 
     /**

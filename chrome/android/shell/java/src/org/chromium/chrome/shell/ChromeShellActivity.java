@@ -26,6 +26,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.FileProviderHelper;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -236,16 +237,16 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
 
         if (mToolbar != null) mToolbar.hideSuggestions();
 
-        ContentViewCore viewCore = getActiveContentViewCore();
-        if (viewCore != null) viewCore.onHide();
+        Tab activeTab = getActiveTab();
+        if (activeTab != null) activeTab.onActivityStop();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        ContentViewCore viewCore = getActiveContentViewCore();
-        if (viewCore != null) viewCore.onShow();
+        Tab activeTab = getActiveTab();
+        if (activeTab != null) activeTab.onActivityStart();
 
         if (mSyncController != null) {
             mSyncController.onStart();
