@@ -188,6 +188,8 @@ private:
     unsigned m_stackDepth;
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(HTMLElementStack::ElementRecord);
+
 } // namespace blink
 
 #endif // HTMLElementStack_h
