@@ -44,7 +44,7 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'libvpx_revision': 'd3f3dcefb055656807e8a2f65a322bbb13cd05a4',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
-  'skia_revision': 'c187a3c8849ba5e409f79ead21cd5bc82173d9f8',
+  'skia_revision': '12157e19b48992066000f2dfe3bd28559245f34f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
