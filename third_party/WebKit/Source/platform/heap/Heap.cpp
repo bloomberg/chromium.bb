@@ -373,6 +373,8 @@ public:
     //    [ guard os page | ... payload ... | guard os page ]
     //    ^---{ aligned to blink page size }
     //
+    // The returned page memory region will be zeroed.
+    //
     static PageMemory* allocate(size_t payloadSize)
     {
         ASSERT(payloadSize > 0);
@@ -1042,7 +1044,11 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + sizeof(LargeObject<Header>) + headerPadding<Header>();
-    memset(headerAddress, 0, size);
+#if ENABLE(ASSERT)
+    // Verify that the allocated PageMemory is expectedly zeroed.
+    for (size_t i = 0; i < size; ++i)
+        ASSERT(!headerAddress[i]);
+#endif
     Header* header = new (NotNull, headerAddress) Header(size, gcInfo);
     Address result = headerAddress + sizeof(*header);
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
