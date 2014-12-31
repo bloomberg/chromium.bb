@@ -52,21 +52,6 @@ crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.htm
 crbug.com/148816 [ Mac Win Linux ] fast/dom/Window/window-scaled-viewport-properties.html [ Pass Failure ]
 crbug.com/148816 [ Mac Win Linux ] fast/dom/element-bounding-client-rect-relative-to-viewport.html [ Pass Failure ]
 
-# Need to be rebaselined once virtual-viewport pinch to zoom is turned on.
-crbug.com/148816 fast/dom/window-inner-size-scaling.html [ NeedsManualRebaseline ]
-crbug.com/148816 inspector/device-emulation/device-emulation-320-2x.html [ NeedsManualRebaseline ]
-crbug.com/148816 inspector/device-emulation/device-emulation-320.html [ NeedsManualRebaseline ]
-crbug.com/148816 inspector/device-emulation/device-emulation-restore.html [ NeedsManualRebaseline ]
-crbug.com/148816 inspector/layers/layer-tree-model.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/geometry/fixed-position-composited-page-scale.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ NeedsManualRebaseline ]
-crbug.com/148816 compositing/fixed-body-background-positioned.html [ NeedsManualRebaseline ]
-
 # Failing with virtual-viewport mode on, disable for now and fix ASAP
 crbug.com/428980 inspector/device-emulation/device-emulation-980-only-viewport.html [ Crash ]
 crbug.com/428980 inspector/device-emulation/device-emulation-320-only-viewport.html [ Crash ]
@@ -76,6 +61,7 @@ crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure 
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
 crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
 crbug.com/428980 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
+crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/basic/013.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/positioning/window-height-change.html [ ImageOnlyFailure ]
