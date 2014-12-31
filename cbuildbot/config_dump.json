@@ -725,6 +725,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "arm-generic_freon-full": {
@@ -8822,6 +8825,7 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": true,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
         ],
         "internal": true,
+        "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "daisy-chrome-perf",
         "overlays": "both",
@@ -8880,6 +8884,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy-factory": {
@@ -20980,6 +20987,7 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": true,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
         ],
         "internal": true,
+        "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "lumpy-chrome-perf",
         "overlays": "both",
@@ -29416,6 +29424,7 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": true,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
         ],
         "internal": true,
+        "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "parrot-chrome-perf",
         "overlays": "both",
@@ -50345,7 +50354,10 @@
         "name": "x86-generic-chromium-pfq",
         "overlays": "both",
         "prebuilts": "public",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "x86-generic-full": {
         "archive_build_debug": true,
