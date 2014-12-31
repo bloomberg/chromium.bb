@@ -918,16 +918,16 @@ PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    RenderBoxModelObject* renderBoxModelObject = this->renderBoxModelObject();
-    if (!renderBoxModelObject)
+    RenderObject* elementRenderer = renderer();
+    if (!elementRenderer || (!elementRenderer->isBoxModelObject() && !elementRenderer->isBR()))
         return ClientRectList::create();
 
     // FIXME: Handle SVG elements.
     // FIXME: Handle table/inline-table with a caption.
 
     Vector<FloatQuad> quads;
-    renderBoxModelObject->absoluteQuads(quads);
-    document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, *renderBoxModelObject);
+    elementRenderer->absoluteQuads(quads);
+    document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, *elementRenderer);
     return ClientRectList::create(quads);
 }
 
@@ -936,16 +936,17 @@ PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
     document().updateLayoutIgnorePendingStylesheets();
 
     Vector<FloatQuad> quads;
-    if (isSVGElement() && renderer() && !renderer()->isSVGRoot()) {
-        // Get the bounding rectangle from the SVG model.
-        SVGElement* svgElement = toSVGElement(this);
-        FloatRect localRect;
-        if (svgElement->getBoundingBox(localRect))
-            quads.append(renderer()->localToAbsoluteQuad(localRect));
-    } else {
-        // Get the bounding rectangle from the box model.
-        if (renderBoxModelObject())
-            renderBoxModelObject()->absoluteQuads(quads);
+    RenderObject* elementRenderer = renderer();
+    if (elementRenderer) {
+        if (isSVGElement() && !elementRenderer->isSVGRoot()) {
+            // Get the bounding rectangle from the SVG model.
+            SVGElement* svgElement = toSVGElement(this);
+            FloatRect localRect;
+            if (svgElement->getBoundingBox(localRect))
+                quads.append(elementRenderer->localToAbsoluteQuad(localRect));
+        } else if (elementRenderer->isBoxModelObject() || elementRenderer->isBR()) {
+            elementRenderer->absoluteQuads(quads);
+        }
     }
 
     if (quads.isEmpty())
@@ -955,8 +956,8 @@ PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].boundingBox());
 
-    ASSERT(renderer());
-    document().adjustFloatRectForScrollAndAbsoluteZoom(result, *renderer());
+    ASSERT(elementRenderer);
+    document().adjustFloatRectForScrollAndAbsoluteZoom(result, *elementRenderer);
     return ClientRect::create(result);
 }
 
