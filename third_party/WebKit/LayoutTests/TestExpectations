@@ -215,9 +215,6 @@ crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/font-weight-1.html [ Ima
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/fontfaceset-add-remove-while-loading.html [ Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/transformed-mask.html [ ImageOnlyFailure ]
 
-crbug.com/382491 virtual/slimmingpaint/fast/css/background-clip-radius-values.html [ NeedsRebaseline ]
-crbug.com/382491 virtual/slimmingpaint/fast/css/shadow-multiple.html [ NeedsRebaseline ]
-
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-optional-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
