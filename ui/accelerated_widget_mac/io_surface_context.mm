@@ -35,10 +35,8 @@ IOSurfaceContext::Get(Type type) {
   std::vector<CGLPixelFormatAttribute> attribs;
   attribs.push_back(kCGLPFADepthSize);
   attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
     attribs.push_back(kCGLPFAAllowOfflineRenderers);
-    attribs.push_back(static_cast<CGLPixelFormatAttribute>(1));
-  }
   attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
   GLint number_virtual_screens = 0;
   base::ScopedTypeRef<CGLPixelFormatObj> pixel_format;
