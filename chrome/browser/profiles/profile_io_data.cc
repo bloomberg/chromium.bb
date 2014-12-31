@@ -212,11 +212,8 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
 
 class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
  public:
-  DebugDevToolsInterceptor() {}
-  virtual ~DebugDevToolsInterceptor() {}
-
   // net::URLRequestInterceptor implementation.
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     base::FilePath path;
