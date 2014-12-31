@@ -196,8 +196,6 @@ class WrenchMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
       : SimpleMenuModel(delegate) {
     Build(browser);
   }
-  virtual ~HelpMenuModel() {
-  }
 
  private:
   void Build(Browser* browser) {
