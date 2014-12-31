@@ -1596,18 +1596,18 @@ _AddFullConfigs()
 # These remaining chromium pfq configs have eccentricities that are easier to
 # create manually.
 internal_chromium_pfq.add_config('mipsel-o32-generic-chromium-pfq',
-  non_testable_builder,
-  boards=['mipsel-o32-generic'],
+  _base_configs['mipsel-o32-generic'],
+  delete_keys(['chrome_sdk', 'sync_chrome']),
 )
 
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
+  _base_configs['amd64-generic'],
   disk_layout='2gb-rootfs',
-  boards=['amd64-generic'],
 )
 
 internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
+  _base_configs['amd64-generic_freon'],
   disk_layout='2gb-rootfs',
-  boards=['amd64-generic_freon'],
   vm_tests=[],
 )
 
@@ -1620,24 +1620,23 @@ _chrome_pfq_important_boards = frozenset([
 
 # TODO(akeshet): Replace this with a config named x86-alex-chrome-pfq.
 chrome_pfq.add_config('alex-chrome-pfq',
-  boards=['x86-alex'],
+  _base_configs['x86-alex'],
 )
 
 chrome_pfq.add_config('lumpy-chrome-pfq',
-  boards=['lumpy'],
+  _base_configs['lumpy'],
   afdo_generate=True,
   hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(
       minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
 )
 
 chrome_pfq.add_config('daisy_skate-chrome-pfq',
-  non_testable_builder,
-  boards=['daisy_skate'],
+  _base_configs['daisy_skate'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
 chrome_pfq.add_config('falco-chrome-pfq',
-  boards=['falco'],
+  _base_configs['falco'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
@@ -1772,13 +1771,8 @@ chromium_info.add_config('x32-generic-tot-chrome-pfq-informational',
   boards=['x32-generic'],
 )
 
-telemetry_info.add_config('x86-generic-telem-chrome-pfq-informational',
-  boards=['x86-generic'],
-)
-
-telemetry_info.add_config('amd64-generic-telem-chrome-pfq-informational',
-  boards=['amd64-generic'],
-)
+_CreateConfigsForBoards(telemetry_info, ['x86-generic', 'amd64-generic'],
+                        'telem-chrome-pfq-informational')
 
 chrome_info.add_config('alex-tot-chrome-pfq-informational',
   boards=['x86-alex'],
