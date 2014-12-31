@@ -14,7 +14,7 @@
 #include "ppapi/thunk/ppb_scrollbar_api.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebPluginScrollbarClient.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

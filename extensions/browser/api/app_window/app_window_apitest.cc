@@ -13,7 +13,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/base/base_window.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"

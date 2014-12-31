@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/autofill/test_popup_controller_common.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace autofill {
 

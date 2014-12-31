@@ -9,7 +9,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ValidationMessageBubble_jni.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using content::ContentViewCore;

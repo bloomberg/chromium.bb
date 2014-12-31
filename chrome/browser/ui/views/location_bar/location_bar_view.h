@@ -22,7 +22,7 @@
 #include "components/search_engines/template_url_service_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/drag_controller.h"
 

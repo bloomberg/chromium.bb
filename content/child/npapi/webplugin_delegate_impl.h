@@ -17,8 +17,8 @@
 #include "content/child/npapi/webplugin_delegate.h"
 #include "content/common/cursors/webcursor.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 namespace base {
 class FilePath;

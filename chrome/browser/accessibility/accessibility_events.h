@@ -8,7 +8,7 @@
 #include <string>
 #include "base/compiler_specific.h"
 #include "ui/accessibility/ax_enums.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class AccessibilityControlInfo;
 class AccessibilityMenuInfo;

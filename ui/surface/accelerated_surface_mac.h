@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"

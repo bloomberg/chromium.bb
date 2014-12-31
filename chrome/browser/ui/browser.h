@@ -42,7 +42,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(ENABLE_EXTENSIONS)

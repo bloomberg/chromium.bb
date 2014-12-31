@@ -10,9 +10,9 @@
 #include "base/native_library.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/gfx/rect.h"
 #include "ui/ozone/ozone_base_export.h"
 
 class SkBitmap;

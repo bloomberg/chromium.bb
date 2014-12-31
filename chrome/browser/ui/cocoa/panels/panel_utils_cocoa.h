@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cocoa_utils {
 

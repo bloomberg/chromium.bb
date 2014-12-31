@@ -17,7 +17,7 @@
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_url_interceptor.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
 namespace media {

@@ -4,7 +4,7 @@
 
 #include "ui/views/view_targeter_delegate.h"
 
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view.h"
 

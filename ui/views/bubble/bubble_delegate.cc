@@ -7,7 +7,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/focus/view_storage.h"

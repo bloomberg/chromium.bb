@@ -11,7 +11,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 class MouseEvent;

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/win/win_util.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 
 namespace views {

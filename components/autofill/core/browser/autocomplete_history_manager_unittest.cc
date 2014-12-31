@@ -22,7 +22,7 @@
 #include "components/webdata_services/web_data_service_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using base::ASCIIToUTF16;
 using testing::_;

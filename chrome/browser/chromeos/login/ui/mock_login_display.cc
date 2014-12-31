@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "components/user_manager/user.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {
 

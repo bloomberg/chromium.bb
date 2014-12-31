@@ -124,7 +124,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/menu_button.h"

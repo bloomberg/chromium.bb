@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 class BrowserView;

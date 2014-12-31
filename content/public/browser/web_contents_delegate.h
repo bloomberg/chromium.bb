@@ -19,8 +19,8 @@
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect_f.h"
 
 class GURL;
 

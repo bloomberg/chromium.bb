@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"

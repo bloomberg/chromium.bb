@@ -58,8 +58,8 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 using content::OpenURLParams;
 using content::Referrer;

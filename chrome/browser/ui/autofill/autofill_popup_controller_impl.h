@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace autofill {
 

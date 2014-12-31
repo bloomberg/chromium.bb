@@ -9,8 +9,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 namespace content {
 class CrossProcessFrameConnector;

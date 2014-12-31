@@ -39,7 +39,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace autofill {

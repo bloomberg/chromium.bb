@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class GURL;
 

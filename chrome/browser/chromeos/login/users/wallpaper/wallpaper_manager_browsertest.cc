@@ -35,8 +35,8 @@
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rect.h"
 
 using wallpaper::WallpaperLayout;
 using wallpaper::WallpaperInfo;

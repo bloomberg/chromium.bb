@@ -19,8 +19,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/base_window.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 class GURL;
 class NativePanel;

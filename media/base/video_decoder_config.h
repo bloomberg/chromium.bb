@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 namespace media {

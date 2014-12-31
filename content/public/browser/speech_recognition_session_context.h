@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

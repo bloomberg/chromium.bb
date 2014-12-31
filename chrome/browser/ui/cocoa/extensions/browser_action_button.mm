@@ -21,8 +21,8 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 NSString* const kBrowserActionButtonDraggingNotification =

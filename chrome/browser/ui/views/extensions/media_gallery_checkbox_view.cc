@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"

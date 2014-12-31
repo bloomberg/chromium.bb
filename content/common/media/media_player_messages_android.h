@@ -10,9 +10,9 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/base/android/media_player_android.h"
 #include "media/base/android/demuxer_stream_player_params.h"
-#include "ui/gfx/rect_f.h"
+#include "media/base/android/media_player_android.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT

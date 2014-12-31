@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

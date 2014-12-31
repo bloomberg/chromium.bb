@@ -11,7 +11,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/resources/display_item.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
 class SkDrawPictureCallback;

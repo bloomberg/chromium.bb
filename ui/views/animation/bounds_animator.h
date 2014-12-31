@@ -13,7 +13,7 @@
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 // static
 void StackedPanelDragHandler::HandleDrag(Panel* panel,

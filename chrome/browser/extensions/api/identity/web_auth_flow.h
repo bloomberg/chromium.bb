@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 class Profile;

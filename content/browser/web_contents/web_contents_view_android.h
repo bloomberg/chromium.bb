@@ -10,7 +10,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
 class ContentViewCoreImpl;

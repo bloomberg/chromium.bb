@@ -11,7 +11,7 @@
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/cdm_context.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
 

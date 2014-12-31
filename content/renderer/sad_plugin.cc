@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/blit.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

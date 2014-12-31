@@ -40,7 +40,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::BrowserThread;
 using content::DownloadItem;

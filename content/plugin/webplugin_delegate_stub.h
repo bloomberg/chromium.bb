@@ -13,8 +13,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
 struct PluginMsg_Init_Params;

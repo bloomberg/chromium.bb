@@ -6,7 +6,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/native_web_keyboard_event.h"  // For gmock.
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/rect.h"  // Only needed because gmock needs complete types.
+#include "ui/gfx/geometry/rect.h"  // Only needed because gmock needs complete types.
 
 namespace autofill {
 

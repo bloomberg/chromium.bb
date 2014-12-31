@@ -39,7 +39,7 @@
 #include "gpu/config/gpu_info.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 
 using blink::WebScreenInfo;

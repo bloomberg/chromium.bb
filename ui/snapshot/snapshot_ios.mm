@@ -5,8 +5,8 @@
 #include "ui/snapshot/snapshot.h"
 
 #include "base/callback.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 namespace ui {
 

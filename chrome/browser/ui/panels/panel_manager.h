@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class DetachedPanelCollection;
 class DockedPanelCollection;

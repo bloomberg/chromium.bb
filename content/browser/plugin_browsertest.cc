@@ -20,7 +20,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"

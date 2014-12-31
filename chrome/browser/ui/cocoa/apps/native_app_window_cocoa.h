@@ -17,7 +17,7 @@
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/common/draggable_region.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class ExtensionKeybindingRegistryCocoa;
 class NativeAppWindowCocoa;

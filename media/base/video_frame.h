@@ -12,7 +12,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 #if defined(OS_MACOSX)

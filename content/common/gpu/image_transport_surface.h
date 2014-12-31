@@ -16,8 +16,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ui/events/latency_info.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
 

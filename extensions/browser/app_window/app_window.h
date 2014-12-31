@@ -19,8 +19,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "ui/base/ui_base_types.h"  // WindowShowState
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 class GURL;
 class SkRegion;

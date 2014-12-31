@@ -13,7 +13,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
 #include "ui/message_center/views/toast_contents_view.h"

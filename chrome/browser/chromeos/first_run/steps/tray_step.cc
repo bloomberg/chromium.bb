@@ -9,7 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 namespace chromeos {

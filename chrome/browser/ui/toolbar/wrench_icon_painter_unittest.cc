@@ -11,7 +11,7 @@
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class WrenchIconPainterTest : public testing::Test,
     public WrenchIconPainter::Delegate {

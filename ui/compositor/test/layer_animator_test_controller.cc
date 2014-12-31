@@ -6,7 +6,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/gfx/frame_time.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 

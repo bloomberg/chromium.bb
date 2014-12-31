@@ -13,7 +13,7 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 

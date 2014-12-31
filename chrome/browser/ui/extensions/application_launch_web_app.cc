@@ -27,7 +27,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/browser_commands_mac.h"

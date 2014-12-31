@@ -7,7 +7,7 @@
 #include "chrome/common/badge_util.h"
 //#include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 IconWithBadgeImageSource::IconWithBadgeImageSource(
     const gfx::ImageSkia& icon,

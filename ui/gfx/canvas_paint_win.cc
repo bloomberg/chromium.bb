@@ -6,7 +6,7 @@
 #include "base/compiler_specific.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 

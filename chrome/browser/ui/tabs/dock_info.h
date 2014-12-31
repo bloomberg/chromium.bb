@@ -9,8 +9,8 @@
 
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 // DockInfo is used to do determine possible dock locations for a dragged
 // tab. To use DockInfo invoke GetDockInfoAtPoint. This returns a new

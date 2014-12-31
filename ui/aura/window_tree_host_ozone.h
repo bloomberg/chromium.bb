@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {

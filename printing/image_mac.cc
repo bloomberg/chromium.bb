@@ -8,7 +8,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "printing/metafile.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace printing {
 

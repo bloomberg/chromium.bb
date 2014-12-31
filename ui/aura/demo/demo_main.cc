@@ -20,7 +20,7 @@
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(USE_X11)

@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace views {
 

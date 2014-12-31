@@ -12,7 +12,7 @@
 #include "media/base/video_rotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
 

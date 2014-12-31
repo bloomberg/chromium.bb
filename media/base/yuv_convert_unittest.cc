@@ -14,7 +14,7 @@
 #include "media/base/simd/yuv_to_rgb_table.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 // Size of raw image.
 static const int kSourceWidth = 640;

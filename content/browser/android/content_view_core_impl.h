@@ -18,8 +18,8 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
 namespace ui {

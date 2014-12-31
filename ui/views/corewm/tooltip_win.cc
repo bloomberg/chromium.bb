@@ -10,7 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/corewm/cursor_height_provider_win.h"

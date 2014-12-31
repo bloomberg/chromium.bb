@@ -10,7 +10,7 @@
 #include "printing/metafile.h"
 #include "skia/ext/platform_device.h"
 #include "ui/gfx/gdi_util.h"  // EMF support
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 
 namespace {

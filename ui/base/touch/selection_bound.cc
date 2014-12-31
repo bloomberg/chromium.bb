@@ -8,7 +8,7 @@
 #include "cc/output/viewport_selection_bound.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 

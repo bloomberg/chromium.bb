@@ -16,8 +16,8 @@
 #include "jni/PasswordGenerationPopupBridge_jni.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect.h"
 
 namespace autofill {
 

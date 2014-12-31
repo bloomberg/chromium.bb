@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 using gpu::gles2::GLES2Interface;

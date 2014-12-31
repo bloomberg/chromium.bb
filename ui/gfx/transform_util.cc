@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 

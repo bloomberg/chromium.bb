@@ -5,11 +5,11 @@
 #ifndef UI_GFX_GDI_UTIL_H_
 #define UI_GFX_GDI_UTIL_H_
 
-#include <vector>
 #include <windows.h>
+#include <vector>
 
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/path.h"
 
 namespace gfx {

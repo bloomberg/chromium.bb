@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 

@@ -10,7 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 // A view that provides common functionality that many views will need:
 // - Automatic registration for mouse-moved events.

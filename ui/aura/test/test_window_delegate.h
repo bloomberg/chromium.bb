@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 namespace test {

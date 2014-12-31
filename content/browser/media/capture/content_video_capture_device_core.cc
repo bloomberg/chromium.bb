@@ -26,7 +26,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

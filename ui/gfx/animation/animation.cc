@@ -7,7 +7,7 @@
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

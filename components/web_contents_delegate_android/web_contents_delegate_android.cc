@@ -23,7 +23,7 @@
 #include "content/public/common/referrer.h"
 #include "jni/WebContentsDelegateAndroid_jni.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;

@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 class SkCanvas;

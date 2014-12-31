@@ -10,7 +10,7 @@
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_
 
 #include "base/strings/string16.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class FindBarController;
 class FindBarTesting;

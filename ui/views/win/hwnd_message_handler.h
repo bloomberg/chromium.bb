@@ -21,7 +21,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/events/event.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/win/window_impl.h"
 #include "ui/views/ime/input_method_delegate.h"

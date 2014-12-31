@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/tooltip_manager.h"
 
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
 

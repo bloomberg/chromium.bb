@@ -76,7 +76,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"

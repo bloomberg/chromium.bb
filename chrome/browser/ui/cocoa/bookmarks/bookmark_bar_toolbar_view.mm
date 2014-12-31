@@ -17,7 +17,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @interface BookmarkBarToolbarView (Private)

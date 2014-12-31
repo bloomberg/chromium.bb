@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 

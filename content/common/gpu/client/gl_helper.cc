@@ -24,7 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 using gpu::gles2::GLES2Interface;

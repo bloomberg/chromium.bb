@@ -55,7 +55,7 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 

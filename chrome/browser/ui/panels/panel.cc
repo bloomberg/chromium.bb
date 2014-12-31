@@ -40,8 +40,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 using base::UserMetricsAction;
 using content::RenderViewHost;

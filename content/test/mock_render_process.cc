@@ -4,7 +4,7 @@
 
 #include "content/test/mock_render_process.h"
 
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {

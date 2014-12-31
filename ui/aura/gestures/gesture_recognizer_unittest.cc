@@ -25,7 +25,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #include <queue>
 

@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 

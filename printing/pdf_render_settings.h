@@ -8,7 +8,7 @@
 #include "base/tuple.h"
 #include "ipc/ipc_param_traits.h"
 #include "printing/printing_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace printing {
 

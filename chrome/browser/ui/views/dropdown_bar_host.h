@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"
 
 class BrowserView;

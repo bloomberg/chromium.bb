@@ -8,8 +8,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect.h"
 
 namespace content {
 class WebContents;

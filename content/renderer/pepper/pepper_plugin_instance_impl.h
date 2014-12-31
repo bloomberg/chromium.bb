@@ -59,7 +59,7 @@
 #include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/latency_info.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 

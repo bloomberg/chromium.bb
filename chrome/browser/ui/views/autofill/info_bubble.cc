@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_border.h"

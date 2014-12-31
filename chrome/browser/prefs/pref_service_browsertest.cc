@@ -22,7 +22,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 typedef InProcessBrowserTest PreservedWindowPlacement;
 

@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
  public:

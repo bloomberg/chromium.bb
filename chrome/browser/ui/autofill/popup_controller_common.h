@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_AUTOFILL_POPUP_CONTROLLER_COMMON_H_
 
 #include "content/public/browser/render_widget_host.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;

@@ -32,7 +32,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 using ppapi::thunk::EnterResourceNoLock;

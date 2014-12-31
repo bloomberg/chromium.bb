@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #ifdef __OBJC__
 @class WebMenuRunner;

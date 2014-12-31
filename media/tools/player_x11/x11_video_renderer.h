@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 namespace media {

@@ -9,9 +9,9 @@
 #include "base/memory/singleton.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/common/bindings_policy.h"
-#include "ui/gfx/rect.h"
+#include "content/public/common/url_constants.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

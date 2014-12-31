@@ -31,7 +31,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gl/gl_surface.h"

@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/compositor/layer_animation_delegate.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {

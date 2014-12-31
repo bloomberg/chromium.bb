@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"

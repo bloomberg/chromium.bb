@@ -7,7 +7,7 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

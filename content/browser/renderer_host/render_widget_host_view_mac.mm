@@ -73,7 +73,7 @@
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"

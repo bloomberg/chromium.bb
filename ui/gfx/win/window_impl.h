@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/logging.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/win/msg_util.h"
 
 namespace gfx {

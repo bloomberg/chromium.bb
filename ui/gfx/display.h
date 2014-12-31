@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/rect.h"
 
 namespace gfx {
 

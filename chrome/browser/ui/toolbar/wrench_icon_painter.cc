@@ -10,8 +10,8 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rect.h"
 
 namespace {
 

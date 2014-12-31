@@ -13,7 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class NativePanelTesting;
 class StackedPanelCollection;

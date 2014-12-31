@@ -24,7 +24,7 @@
 #include "ui/compositor/test/test_layer_animation_observer.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/gfx/frame_time.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {

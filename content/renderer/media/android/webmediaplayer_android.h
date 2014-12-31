@@ -35,7 +35,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
 class SingleThreadTaskRunner;

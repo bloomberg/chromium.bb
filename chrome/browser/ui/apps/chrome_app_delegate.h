@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 class BrowserContext;

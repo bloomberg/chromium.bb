@@ -6,7 +6,7 @@
 
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/hit_test.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"

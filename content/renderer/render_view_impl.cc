@@ -184,9 +184,9 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "v8/include/v8.h"
 
@@ -200,7 +200,7 @@
 #include "net/android/network_library.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:

@@ -33,10 +33,10 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
-#include "ui/gfx/rect.h"
 
 namespace {
 

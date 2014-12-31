@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 struct _NPP;
 

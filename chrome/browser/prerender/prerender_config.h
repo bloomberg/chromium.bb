@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace prerender {
 

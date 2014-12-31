@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 

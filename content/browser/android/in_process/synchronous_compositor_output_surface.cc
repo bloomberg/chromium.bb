@@ -19,7 +19,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 

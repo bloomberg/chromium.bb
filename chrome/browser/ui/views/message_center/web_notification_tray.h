@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/widget/widget_observer.h"

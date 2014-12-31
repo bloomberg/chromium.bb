@@ -9,7 +9,7 @@
 #include "cc/animation/animation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {

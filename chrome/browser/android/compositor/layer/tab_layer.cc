@@ -20,9 +20,9 @@
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/point_f.h"
-#include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
 

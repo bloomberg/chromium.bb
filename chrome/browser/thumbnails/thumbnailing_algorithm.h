@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "ui/base/layout.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 class SkBitmap;

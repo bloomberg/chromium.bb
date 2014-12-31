@@ -69,7 +69,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"

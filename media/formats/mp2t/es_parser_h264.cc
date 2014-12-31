@@ -14,7 +14,7 @@
 #include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp2t/es_adapter_video.h"
 #include "media/formats/mp2t/mp2t_common.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 namespace media {

@@ -8,8 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/chromeos/ui_chromeos_export.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 namespace views {

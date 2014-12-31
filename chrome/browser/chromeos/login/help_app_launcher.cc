@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 using content::BrowserThread;

@@ -5,8 +5,8 @@
 #ifndef UI_VIEWS_WIN_HWND_UTIL_H_
 #define UI_VIEWS_WIN_HWND_UTIL_H_
 
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 
 namespace views {

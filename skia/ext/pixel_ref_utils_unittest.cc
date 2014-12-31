@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/src/core/SkOrderedReadBuffer.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace skia {

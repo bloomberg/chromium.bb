@@ -9,7 +9,7 @@
 #include <Vssym32.h>
 
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_aura.h"

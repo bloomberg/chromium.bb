@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
 
 #include "cc/output/compositor_frame.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 class WebInputEvent;

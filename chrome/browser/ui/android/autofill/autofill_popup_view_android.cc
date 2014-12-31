@@ -16,7 +16,7 @@
 #include "ui/base/android/window_android.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace autofill {
 

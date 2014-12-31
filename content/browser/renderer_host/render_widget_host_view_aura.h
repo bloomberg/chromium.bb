@@ -33,7 +33,7 @@
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
 

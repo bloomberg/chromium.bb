@@ -14,7 +14,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel_stack_window.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 @class BatchBoundsAnimationDelegate;
 class Panel;

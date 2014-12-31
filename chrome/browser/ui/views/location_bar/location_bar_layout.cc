@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
 

@@ -4,7 +4,7 @@
 
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace autofill {
 

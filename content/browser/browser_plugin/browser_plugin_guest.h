@@ -36,7 +36,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkBitmap;
 struct BrowserPluginHostMsg_Attach_Params;

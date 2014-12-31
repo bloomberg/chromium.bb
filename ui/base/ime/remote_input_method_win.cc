@@ -18,7 +18,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 namespace {

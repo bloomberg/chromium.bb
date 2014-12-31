@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/ui/views/panels/panel_view.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)

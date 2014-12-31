@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 using blink::WebFindOptions;
 using content::WebContents;

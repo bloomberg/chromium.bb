@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 // Some standard primary monitor sizes (no task bar).
 static const gfx::Rect p1024x768(0, 0, 1024, 768);

@@ -15,8 +15,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 using autofill::AutofillPopupView;
 

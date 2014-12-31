@@ -17,8 +17,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
 
 namespace views {

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_message.h"
 #include "media/base/video_decoder_config.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 namespace chromecast {

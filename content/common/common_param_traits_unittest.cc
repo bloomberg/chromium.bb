@@ -15,8 +15,8 @@
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
-#include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
 // Tests that serialize/deserialize correctly understand each other

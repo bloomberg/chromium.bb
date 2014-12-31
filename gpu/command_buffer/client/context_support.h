@@ -6,8 +6,8 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CONTEXT_SUPPORT_H_
 
 #include "base/callback.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/gfx/rect.h"
 
 namespace gpu {
 

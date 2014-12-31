@@ -70,7 +70,7 @@
 #include "net/test/python_utils.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(USE_AURA)
 #include "ash/shell.h"

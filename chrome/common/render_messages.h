@@ -36,8 +36,8 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
-#include "ui/gfx/rect.h"
 
 // Singly-included section for enums and custom IPC traits.
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_

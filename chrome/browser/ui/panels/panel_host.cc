@@ -31,8 +31,8 @@
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 using base::UserMetricsAction;
 

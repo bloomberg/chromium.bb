@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/platform_test.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 

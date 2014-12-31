@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {
 

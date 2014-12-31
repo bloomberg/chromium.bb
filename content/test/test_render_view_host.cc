@@ -22,7 +22,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 

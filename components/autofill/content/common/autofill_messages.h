@@ -22,8 +22,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
-#include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START AutofillMsgStart

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 AppListPositioner::AppListPositioner(const gfx::Display& display,
                                      const gfx::Size& window_size,

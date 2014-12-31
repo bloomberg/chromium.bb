@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/timer/timer.h"
 #include "cc/output/compositor_frame.h"
@@ -29,9 +29,9 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 
 class SkBitmap;

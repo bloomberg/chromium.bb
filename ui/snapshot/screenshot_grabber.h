@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/snapshot/screenshot_grabber_observer.h"
 #include "ui/snapshot/snapshot_export.h"
 

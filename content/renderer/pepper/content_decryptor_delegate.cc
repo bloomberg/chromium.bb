@@ -30,7 +30,7 @@
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using media::CdmPromise;
 using media::Decryptor;

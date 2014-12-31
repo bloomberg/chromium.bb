@@ -13,7 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 class Profile;

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 namespace internal {

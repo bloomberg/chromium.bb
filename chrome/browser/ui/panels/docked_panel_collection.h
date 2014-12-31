@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class PanelManager;
 

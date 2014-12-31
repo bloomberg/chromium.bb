@@ -11,8 +11,8 @@
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace base {

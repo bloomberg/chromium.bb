@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/common/password_form.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;

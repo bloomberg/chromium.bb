@@ -23,8 +23,8 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"

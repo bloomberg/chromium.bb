@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_elider.h"
 
 namespace {

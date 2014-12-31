@@ -24,8 +24,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/browser_child_process_host_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_process_messages.h"
@@ -47,7 +47,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #endif
 
 #if defined(OS_WIN)

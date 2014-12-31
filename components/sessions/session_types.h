@@ -17,7 +17,7 @@
 #include "components/sessions/sessions_export.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -26,7 +26,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 @class AvatarBaseController;
 class Browser;

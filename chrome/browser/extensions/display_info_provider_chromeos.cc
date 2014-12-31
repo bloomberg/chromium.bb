@@ -12,7 +12,7 @@
 #include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using ash::DisplayManager;
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_H_
 
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
 class BrowserFrame;

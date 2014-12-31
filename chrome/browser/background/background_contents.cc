@@ -17,7 +17,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::SiteInstance;
 using content::WebContents;

@@ -5,7 +5,7 @@
 #include "ui/compositor/test/test_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {

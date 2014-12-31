@@ -13,7 +13,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class Profile;
 

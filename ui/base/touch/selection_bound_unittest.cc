@@ -5,7 +5,7 @@
 #include "ui/base/touch/selection_bound.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 

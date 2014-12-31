@@ -19,7 +19,7 @@
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 struct LatencyInfo;

@@ -15,7 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/widget/tooltip_manager.h"

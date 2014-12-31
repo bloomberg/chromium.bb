@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/gl/gpu_preference.h"
 
 // TODO(port): this typedef is obviously incorrect on non-Windows

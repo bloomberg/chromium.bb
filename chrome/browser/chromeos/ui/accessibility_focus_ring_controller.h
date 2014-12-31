@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
 #include "ui/compositor/compositor_animation_observer.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 class Compositor;

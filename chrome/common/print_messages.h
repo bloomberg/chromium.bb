@@ -15,9 +15,9 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 #ifndef CHROME_COMMON_PRINT_MESSAGES_H_
 #define CHROME_COMMON_PRINT_MESSAGES_H_

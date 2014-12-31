@@ -46,7 +46,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace autofill {

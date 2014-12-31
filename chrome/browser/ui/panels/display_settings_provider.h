@@ -7,7 +7,7 @@
 
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 // Encapsulates the logic to provide display settings support, including the
 // information for:

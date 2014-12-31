@@ -5,8 +5,8 @@
 // Multiply-included message file, hence no include guard
 
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/attributed_string_coder.h"

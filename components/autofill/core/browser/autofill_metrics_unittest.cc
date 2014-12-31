@@ -24,7 +24,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/webdata/common/web_data_results.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;

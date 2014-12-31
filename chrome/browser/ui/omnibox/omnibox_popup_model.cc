@@ -19,8 +19,8 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupModel

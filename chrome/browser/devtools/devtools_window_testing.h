@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class Browser;
 class Profile;

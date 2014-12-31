@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
 

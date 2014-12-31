@@ -29,7 +29,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/view_type_utils.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::BrowserThread;
 

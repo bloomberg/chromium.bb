@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_NATIVE_THEME_DELEGATE_H_
 #define UI_VIEWS_NATIVE_THEME_DELEGATE_H_
 
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/views_export.h"
 

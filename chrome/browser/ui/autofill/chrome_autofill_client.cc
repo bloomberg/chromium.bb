@@ -27,7 +27,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "content/public/browser/render_view_host.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chromium_application.h"

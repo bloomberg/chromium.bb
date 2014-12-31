@@ -24,8 +24,8 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/common_theme.h"
 

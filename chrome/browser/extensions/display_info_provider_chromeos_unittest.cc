@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 namespace {

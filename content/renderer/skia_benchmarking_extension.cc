@@ -26,7 +26,7 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
 #include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "v8/include/v8.h"
 

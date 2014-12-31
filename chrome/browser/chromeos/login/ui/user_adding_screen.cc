@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 #if !defined(USE_ATHENA)

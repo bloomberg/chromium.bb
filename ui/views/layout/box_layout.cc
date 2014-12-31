@@ -4,7 +4,7 @@
 
 #include "ui/views/layout/box_layout.h"
 
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
 namespace views {

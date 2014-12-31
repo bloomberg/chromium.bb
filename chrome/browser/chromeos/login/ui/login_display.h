@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

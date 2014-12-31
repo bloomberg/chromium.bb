@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class Panel;
 @class PanelWindowControllerCocoa;

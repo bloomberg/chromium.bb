@@ -37,7 +37,7 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 

@@ -10,7 +10,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/platform_test.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 namespace {

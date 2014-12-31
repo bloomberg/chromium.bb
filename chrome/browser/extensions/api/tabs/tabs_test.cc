@@ -29,7 +29,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 

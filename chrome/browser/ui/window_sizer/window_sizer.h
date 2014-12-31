@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class Browser;
 

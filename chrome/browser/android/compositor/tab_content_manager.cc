@@ -22,7 +22,7 @@
 #include "jni/TabContentManager_jni.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace {

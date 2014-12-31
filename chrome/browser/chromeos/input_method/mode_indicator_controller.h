@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {

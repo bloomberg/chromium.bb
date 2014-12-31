@@ -69,7 +69,7 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"

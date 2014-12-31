@@ -6,7 +6,7 @@
 #define PRINTING_PAGE_SETUP_H_
 
 #include "printing/printing_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace printing {
 

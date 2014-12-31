@@ -14,7 +14,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "media/audio/audio_parameters.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 #define IPC_MESSAGE_START SpeechRecognitionMsgStart
 

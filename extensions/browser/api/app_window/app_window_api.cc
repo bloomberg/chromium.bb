@@ -29,7 +29,7 @@
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace app_window = extensions::core_api::app_window;

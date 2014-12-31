@@ -13,7 +13,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkBitmap;
 
