@@ -16,6 +16,7 @@
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorState.h"
@@ -173,7 +174,7 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForKeyframes
 
     if (!animationName.isNull()) {
         // CSS Animations
-        const StyleRuleKeyframes* keyframes = cssAnimations.matchScopedKeyframesRule(&styleResolver, element, animationName.impl());
+        const StyleRuleKeyframes* keyframes = styleResolver.findKeyframesRule(element, animationName);
         keyframeRule = buildObjectForStyleRuleKeyframes(keyframes);
     } else {
         // Web Animations

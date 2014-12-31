@@ -197,11 +197,6 @@ public:
 
     const AtomicString getAnimationNameForInspector(const AnimationPlayer&);
 
-    // FIXME: This method is only used here and in the legacy animations
-    // implementation. It should be made private or file-scope when the legacy
-    // engine is removed.
-    static const StyleRuleKeyframes* matchScopedKeyframesRule(StyleResolver*, const Element*, const StringImpl*);
-
     static const StylePropertyShorthand& animatableProperties();
     static bool isAllowedAnimation(CSSPropertyID);
     static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(const Element* animatingElement, Element&, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);

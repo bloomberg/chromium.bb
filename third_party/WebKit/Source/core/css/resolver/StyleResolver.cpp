@@ -61,6 +61,7 @@
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 #include "core/css/resolver/MatchResult.h"
 #include "core/css/resolver/MediaQueryResult.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/css/resolver/StyleResolverParentScope.h"
@@ -126,6 +127,21 @@ static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector
     RefPtrWillBeRawPtr<FontFace> fontFace = FontFace::create(document, fontFaceRule);
     if (fontFace)
         cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
+}
+
+static void collectScopedResolversForHostedShadowTrees(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+{
+    ElementShadow* shadow = element->shadow();
+    if (!shadow)
+        return;
+
+    // Adding scoped resolver for active shadow roots for shadow host styling.
+    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+        if (shadowRoot->numberOfStyles() > 0) {
+            if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
+                resolvers.append(resolver);
+        }
+    }
 }
 
 StyleResolver::StyleResolver(Document& document)
@@ -1022,33 +1038,18 @@ void StyleResolver::resolveScopedStyles(const Element* element, WillBeHeapVector
         resolvers.append(scopedResolver);
 }
 
-void StyleResolver::collectScopedResolversForHostedShadowTrees(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+const StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, const AtomicString& animationName)
 {
-    ElementShadow* shadow = element->shadow();
-    if (!shadow)
-        return;
-
-    // Adding scoped resolver for active shadow roots for shadow host styling.
-    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
-        if (shadowRoot->numberOfStyles() > 0) {
-            if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
-                resolvers.append(resolver);
-        }
-    }
-}
-
-void StyleResolver::styleTreeResolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
-{
-    TreeScope& treeScope = element->treeScope();
-
-    // Add resolvers for shadow roots hosted by the given element.
+    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolvers;
     collectScopedResolversForHostedShadowTrees(element, resolvers);
+    if (ScopedStyleResolver* scopedResolver = element->treeScope().scopedStyleResolver())
+        resolvers.append(scopedResolver);
 
-    // Add resolvers while walking up DOM tree from the given element.
-    for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
-        if (scopedResolver->treeScope() == treeScope)
-            resolvers.append(scopedResolver);
+    for (size_t i = 0; i < resolvers.size(); ++i) {
+        if (const StyleRuleKeyframes* keyframesRule = resolvers[i]->keyframeStylesForAnimation(animationName.impl()))
+            return keyframesRule;
     }
+    return nullptr;
 }
 
 template <StyleResolver::StyleApplicationPass pass>

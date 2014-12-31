@@ -22,6 +22,7 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
+#include "core/css/ElementRuleCollector.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
@@ -30,7 +31,6 @@
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/TreeBoundaryCrossingRules.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
-#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResourceLoader.h"
 #include "platform/heap/Handle.h"
@@ -50,10 +50,10 @@ class CSSValue;
 class ContainerNode;
 class Document;
 class Element;
-class ElementRuleCollector;
 class Interpolation;
 class MediaQueryEvaluator;
 class RuleData;
+class ScopedStyleResolver;
 class StyleKeyframe;
 class StylePropertySet;
 class StyleResolverStats;
@@ -130,7 +130,7 @@ public:
 
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-    void styleTreeResolveScopedKeyframesRules(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
+    const StyleRuleKeyframes* findKeyframesRule(const Element*, const AtomicString& animationName);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
     enum CSSRuleFilter {
@@ -228,7 +228,6 @@ private:
     void applyCallbackSelectors(StyleResolverState&);
 
     void resolveScopedStyles(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
-    void collectScopedResolversForHostedShadowTrees(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
 
     enum StyleApplicationPass {
         HighPriorityProperties,

@@ -33,6 +33,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceCache.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"

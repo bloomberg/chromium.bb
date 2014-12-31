@@ -88,7 +88,7 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
 {
     // When the animating element is null, use its parent for scoping purposes.
     const Element* elementForScoping = animatingElement ? animatingElement : &element;
-    const StyleRuleKeyframes* keyframesRule = CSSAnimations::matchScopedKeyframesRule(resolver, elementForScoping, name.impl());
+    const StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
     if (!keyframesRule)
         return;
 
@@ -198,27 +198,6 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
 }
 
 } // namespace
-
-const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver* resolver, const Element* element, const StringImpl* animationName)
-{
-    // FIXME: This is all implementation detail of style resolver, CSSAnimations shouldn't be reaching into any of it.
-    if (element->document().styleEngine()->onlyDocumentHasStyles()) {
-        if (ScopedStyleResolver* resolver = element->document().scopedStyleResolver())
-            return resolver->keyframeStylesForAnimation(animationName);
-        return nullptr;
-    }
-
-    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> stack;
-    resolver->styleTreeResolveScopedKeyframesRules(element, stack);
-    if (stack.isEmpty())
-        return nullptr;
-
-    for (size_t i = 0; i < stack.size(); ++i) {
-        if (const StyleRuleKeyframes* keyframesRule = stack.at(i)->keyframeStylesForAnimation(animationName))
-            return keyframesRule;
-    }
-    return nullptr;
-}
 
 CSSAnimations::CSSAnimations()
 {
