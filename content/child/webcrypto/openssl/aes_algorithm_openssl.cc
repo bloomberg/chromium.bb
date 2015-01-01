@@ -8,7 +8,7 @@
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
-#include "content/child/webcrypto/openssl/sym_key_openssl.h"
+#include "content/child/webcrypto/openssl/util_openssl.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -43,7 +43,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  return GenerateSecretKeyOpenSsl(
+  return GenerateWebCryptoSecretKey(
       blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
       extractable, usages, keylen_bits, result);
 }
@@ -73,9 +73,10 @@ Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
   // No possibility of overflow.
   unsigned int keylen_bits = keylen_bytes * 8;
 
-  return ImportKeyRawOpenSsl(key_data, blink::WebCryptoKeyAlgorithm::createAes(
-                                           algorithm.id(), keylen_bits),
-                             extractable, usages, key);
+  return CreateWebCryptoSecretKey(
+      key_data,
+      blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
+      extractable, usages, key);
 }
 
 Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,

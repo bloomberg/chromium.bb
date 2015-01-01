@@ -316,8 +316,6 @@
       'child/webcrypto/openssl/rsa_sign_openssl.h',
       'child/webcrypto/openssl/rsa_ssa_openssl.cc',
       'child/webcrypto/openssl/sha_openssl.cc',
-      'child/webcrypto/openssl/sym_key_openssl.cc',
-      'child/webcrypto/openssl/sym_key_openssl.h',
       'child/webcrypto/openssl/util_openssl.cc',
       'child/webcrypto/openssl/util_openssl.h',
     ],
