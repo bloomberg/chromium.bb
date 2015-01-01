@@ -20,7 +20,7 @@ namespace ipc_fuzzer {
 class ReplayProcess : public IPC::Listener {
  public:
   ReplayProcess();
-  virtual ~ReplayProcess();
+  ~ReplayProcess() override;
 
   // Set up command line, logging, IO thread. Returns true on success, false
   // otherwise.
@@ -37,8 +37,8 @@ class ReplayProcess : public IPC::Listener {
   void Run();
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
  private:
   void SendNextMessage();
