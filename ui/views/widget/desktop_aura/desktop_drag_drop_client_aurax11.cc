@@ -431,11 +431,12 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
 }
 
 DesktopDragDropClientAuraX11::~DesktopDragDropClientAuraX11() {
-  g_live_client_map.Get().erase(xwindow_);
-  // Make sure that all observers are unregistered from source and target
-  // windows. This may be necessary when the parent native widget gets destroyed
-  // while a drag operation is in progress.
+  // This is necessary when the parent native widget gets destroyed while a drag
+  // operation is in progress.
+  move_loop_->EndMoveLoop();
   NotifyDragLeave();
+
+  g_live_client_map.Get().erase(xwindow_);
 }
 
 // static

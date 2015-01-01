@@ -2055,10 +2055,7 @@ class BookmarkBarViewTest22 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(pkotwicz): Enable on Desktop Linux once crbug.com/438365 is fixed.
-#define MAYBE_CloseSourceBrowserDuringDrag DISABLED_CloseSourceBrowserDuringDrag
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 // This test times out on Windows. TODO(pkotwicz): Find out why.
 #define MAYBE_CloseSourceBrowserDuringDrag DISABLED_CloseSourceBrowserDuringDrag
 #else

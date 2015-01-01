@@ -50,9 +50,8 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 
 void X11WholeScreenMoveLoop::DispatchMouseMovement() {
-  if (!weak_factory_.HasWeakPtrs())
+  if (!last_motion_in_screen_)
     return;
-  weak_factory_.InvalidateWeakPtrs();
   delegate_->OnMouseMovement(last_motion_in_screen_->location(),
                              last_motion_in_screen_->flags(),
                              last_motion_in_screen_->time_stamp());
@@ -75,12 +74,13 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
   ui::EventType type = ui::EventTypeFromNative(xev);
   switch (type) {
     case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_DRAGGED: {
+      bool dispatch_mouse_event = !last_motion_in_screen_.get();
       last_motion_in_screen_.reset(
           static_cast<ui::MouseEvent*>(ui::EventFromNative(xev).release()));
       last_motion_in_screen_->set_location(
           ui::EventSystemLocationFromNative(xev));
-      if (!weak_factory_.HasWeakPtrs()) {
+      if (dispatch_mouse_event) {
         // Post a task to dispatch mouse movement event when control returns to
         // the message loop. This allows smoother dragging since the events are
         // dispatched without waiting for the drag widget updates.
@@ -90,6 +90,7 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
                        weak_factory_.GetWeakPtr()));
       }
       return ui::POST_DISPATCH_NONE;
+    }
     case ui::ET_MOUSE_RELEASED: {
       int button = (xev->type == ButtonRelease)
           ? xev->xbutton.button
@@ -167,6 +168,8 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     should_reset_mouse_flags_ = true;
   }
 
+  base::WeakPtr<X11WholeScreenMoveLoop> alive(weak_factory_.GetWeakPtr());
+
   in_move_loop_ = true;
   canceled_ = false;
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
@@ -174,6 +177,10 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
+
+  if (!alive)
+    return false;
+
   nested_dispatcher_ = old_dispatcher.Pass();
   return !canceled_;
 }
