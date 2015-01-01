@@ -4,5 +4,5 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#registration-option-list-dictionary
 dictionary RegistrationOptions {
-    USVString scope = "/";
+    USVString scope;
 };

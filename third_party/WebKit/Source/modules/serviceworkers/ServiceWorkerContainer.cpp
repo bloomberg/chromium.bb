@@ -133,17 +133,22 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-    KURL patternURL = executionContext->completeURL(options.scope());
-    patternURL.removeFragmentIdentifier();
-    if (!documentOrigin->canRequest(patternURL)) {
-        resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
-        return promise;
-    }
-
     KURL scriptURL = executionContext->completeURL(url);
     scriptURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(scriptURL)) {
         resolver->reject(DOMException::create(SecurityError, "The origin of the script must match the current origin."));
+        return promise;
+    }
+
+    KURL patternURL;
+    if (options.scope().isNull())
+        patternURL = KURL(scriptURL, "./");
+    else
+        patternURL = executionContext->completeURL(options.scope());
+    patternURL.removeFragmentIdentifier();
+
+    if (!documentOrigin->canRequest(patternURL)) {
+        resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
         return promise;
     }
 
