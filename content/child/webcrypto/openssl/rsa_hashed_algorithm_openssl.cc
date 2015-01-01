@@ -210,7 +210,7 @@ Status RsaHashedAlgorithm::GenerateKey(
   blink::WebCryptoKey private_key;
 
   // Note that extractable is unconditionally set to true. This is because per
-  // the WebCrypto spec generated public keys are always public.
+  // the WebCrypto spec generated public keys are always extractable.
   status = CreateWebCryptoRsaPublicKey(public_pkey.Pass(), algorithm.id(),
                                        params->hash(), true, public_usages,
                                        &public_key);

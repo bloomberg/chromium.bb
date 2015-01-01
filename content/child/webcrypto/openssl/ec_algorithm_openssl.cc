@@ -260,7 +260,7 @@ Status EcAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                                              params->namedCurve());
 
   // Note that extractable is unconditionally set to true. This is because per
-  // the WebCrypto spec generated public keys are always public.
+  // the WebCrypto spec generated public keys are always extractable.
   status = CreateWebCryptoPublicKey(public_pkey.Pass(), key_algorithm, true,
                                     public_usages, &public_key);
   if (status.IsError())
