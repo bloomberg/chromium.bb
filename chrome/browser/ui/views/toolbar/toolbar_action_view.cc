@@ -117,8 +117,7 @@ void ToolbarActionView::UpdateState() {
   else if (state() == views::CustomButton::STATE_DISABLED)
     SetState(views::CustomButton::STATE_NORMAL);
 
-  gfx::ImageSkia icon = *view_controller_->GetIcon(web_contents).ToImageSkia();
-
+  gfx::ImageSkia icon(view_controller_->GetIcon(web_contents).AsImageSkia());
   if (!icon.isNull()) {
     if (!enabled)
       icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
