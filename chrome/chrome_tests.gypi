@@ -848,7 +848,6 @@
       'browser/chrome_plugin_interactive_test.cc',
       'browser/extensions/api/extension_action/browser_action_interactive_test.cc',
       'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
-      'browser/extensions/api/tabs/tabs_interactive_test.cc',
       'browser/extensions/browsertest_util.cc',
       'browser/extensions/extension_apitest.cc',
       'browser/extensions/extension_browsertest.cc',
@@ -879,10 +878,6 @@
       'browser/ui/panels/base_panel_browser_test.h',
       'browser/ui/panels/detached_panel_browsertest.cc',
       'browser/ui/panels/docked_panel_browsertest.cc',
-      'browser/ui/panels/panel_browsertest.cc',
-      'browser/ui/panels/panel_drag_browsertest.cc',
-      'browser/ui/panels/panel_resize_browsertest.cc',
-      'browser/ui/panels/stacked_panel_browsertest.cc',
       'browser/ui/panels/test_panel_active_state_observer.cc',
       'browser/ui/panels/test_panel_active_state_observer.h',
       'browser/ui/panels/test_panel_mouse_watcher.cc',
@@ -916,6 +911,17 @@
       'test/base/view_event_test_platform_part_mac.mm',
       'test/ppapi/ppapi_interactive_browsertest.cc',
     ],
+    # Panels sources not related to UI toolkit. ChromeOS doesn't use panels.
+    'chrome_interactive_ui_test_panels_sources': [
+      'browser/ui/panels/detached_panel_browsertest.cc',
+      'browser/ui/panels/docked_panel_browsertest.cc',
+      'browser/ui/panels/panel_browsertest.cc',
+      'browser/ui/panels/panel_resize_browsertest.cc',
+    ],
+    'chrome_interactive_ui_test_panels_views_sources': [
+      'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
+      'browser/ui/views/panels/panel_view_browsertest.cc',
+    ],
     'chrome_interactive_ui_test_views_sources': [
       '../ui/views/controls/webview/webview_interactive_uitest.cc',
       '../ui/views/corewm/desktop_capture_controller_unittest.cc',
@@ -933,8 +939,6 @@
       'browser/ui/views/menu_test_base.h',
       'browser/ui/views/menu_model_adapter_test.cc',
       'browser/ui/views/menu_view_drag_and_drop_test.cc',
-      'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
-      'browser/ui/views/panels/panel_view_browsertest.cc',
       'browser/ui/views/passwords/manage_passwords_icon_view_browsertest.cc',
       'browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc',
       'browser/ui/views/toolbar/toolbar_button_test.cc',
@@ -1012,6 +1016,24 @@
       'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc',
       'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h',
       'test/data/chromeos/service_login.html',
+    ],
+    'chrome_interactive_ui_test_ash_sources': [
+      '../ash/drag_drop/drag_drop_interactive_uitest.cc',
+      '../ash/wm/ash_native_cursor_manager_interactive_uitest.cc',
+      'browser/ui/window_sizer/window_sizer_ash_uitest.cc',
+    ],
+    'chrome_interactive_ui_test_non_desktop_linux_sources': [
+      # TODO(port): Everything here times out. Attempts have been made to fix
+      # the individual failures, but each time I disable a test from these
+      # suites, it seems like one or another starts timing out too.
+      'browser/extensions/api/tabs/tabs_interactive_test.cc',
+    ],
+    'chrome_interactive_ui_test_non_linux_and_chromeos_sources': [
+      # TODO(port): Disable all the interactive panel tests on all linux
+      # platforms. These are badly busted on linux_aura, also time out
+      # when run under openbox. ChromeOS doesn't use this panels code.
+      'browser/ui/panels/panel_drag_browsertest.cc',
+      'browser/ui/panels/stacked_panel_browsertest.cc',
     ],
     'chrome_automation_client_lib_sources': [
       '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/js.cc',
@@ -1415,7 +1437,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="linux" and use_aura==1', {
+        ['OS=="linux"', {
           # TODO(gbillock): aura linux does not support the automation for
           # SendMouseMoveNotifyWhenDone
           'sources!': [
@@ -1426,33 +1448,23 @@
           'dependencies': [
             '../build/linux/system.gyp:ssl',
           ],
-        }],
-        ['OS=="linux" and chromeos==0', {
-          'sources!': [
-            # TODO(port): Disable all the interactive panel tests on all linux
-            # platforms. These are badly busted on linux_aura, also time out
-            # when run under openbox.
-            #
-            # Merge this back into the next block post switch to linux_aura.
-            'browser/ui/panels/panel_drag_browsertest.cc',
-            'browser/ui/panels/stacked_panel_browsertest.cc',
+        }, {  # Non-Linux platforms (Linux includes ChromeOS here).
+          'sources': [
+            '<@(chrome_interactive_ui_test_non_linux_and_chromeos_sources)',
           ],
         }],
-        ['OS=="linux" and use_aura==1 and chromeos==0', {
+        ['OS=="linux" and chromeos==0', {
           'sources!': [
             # TODO(port): Everything here times out. Attempts have been made to
             # fix the individual failures, but each time I disable a test from
             # these suites, it seems like one or another starts timing out too.
-            'browser/extensions/api/tabs/tabs_interactive_test.cc',
-            'browser/ui/views/keyboard_access_browsertest.cc',
+            'browser/ui/views/keyboard_access_browsertest.cc',  # Views except Mac views.
           ],
+        }, {  # Everything but desktop Linux.
+          'sources': [ '<@(chrome_interactive_ui_test_non_desktop_linux_sources)' ],
         }],
         ['use_ash==1', {
-          'sources': [
-            '../ash/drag_drop/drag_drop_interactive_uitest.cc',
-            '../ash/wm/ash_native_cursor_manager_interactive_uitest.cc',
-            'browser/ui/window_sizer/window_sizer_ash_uitest.cc',
-          ],
+          'sources': [ '<@(chrome_interactive_ui_test_ash_sources)' ],
         }],
         ['OS != "mac"', {
           'sources': [ '<@(chrome_interactive_ui_test_non_mac_sources)' ],
@@ -1537,18 +1549,18 @@
             '../ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc',
             '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
 
-            # chromeos does not use cross-platform panels
-            'browser/ui/panels/detached_panel_browsertest.cc',
-            'browser/ui/panels/docked_panel_browsertest.cc',
-            'browser/ui/panels/panel_browsertest.cc',
-            'browser/ui/panels/panel_drag_browsertest.cc',
-            'browser/ui/panels/panel_resize_browsertest.cc',
-            'browser/ui/panels/stacked_panel_browsertest.cc',
-            'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
-            'browser/ui/views/panels/panel_view_browsertest.cc',
-
             # Use only the _chromeos version on ChromeOS.
             'test/base/view_event_test_platform_part_ash.cc',
+          ],
+        }, {  # Non-ChromeOS.
+          # ChromeOS doesn't use panels, everybody else does.
+          'sources': [ '<@(chrome_interactive_ui_test_panels_sources)' ],
+          'conditions': [
+            [ 'toolkit_views==1', {
+              'sources': [
+                '<@(chrome_interactive_ui_test_panels_views_sources)',
+              ],
+            }],
           ],
         }],
         ['chromeos==1 and branding=="Chrome"', {
