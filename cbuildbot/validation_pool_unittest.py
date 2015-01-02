@@ -154,6 +154,9 @@ class TestPatchSeries(MoxBase):
   def _ValidateTransactionCall(self, _changes):
     yield
 
+  def setUp(self):
+    self.StartPatcher(parallel_unittest.ParallelMock())
+
   def GetPatchSeries(self, helper_pool=None):
     if helper_pool is None:
       helper_pool = self.MakeHelper(cros_internal=True, cros=True)
