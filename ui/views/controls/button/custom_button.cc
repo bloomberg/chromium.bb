@@ -252,10 +252,6 @@ void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   SetState(STATE_NORMAL);
-  /*
-  ui::KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.key_code(),
-                         accelerator.modifiers());
-                         */
   // TODO(beng): remove once NotifyClick takes ui::Event.
   ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED,
                                  gfx::Point(),
