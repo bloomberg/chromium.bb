@@ -162,6 +162,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   static GLSurface* GetCurrent();
 
+  // Called when the swap interval for the associated context changes.
+  virtual void OnSetSwapInterval(int interval);
+
  protected:
   virtual ~GLSurface();
   static bool InitializeOneOffImplementation(GLImplementation impl,

@@ -29,7 +29,8 @@ GLContextEGL::GLContextEGL(GLShareGroup* share_group)
       context_(NULL),
       display_(NULL),
       config_(NULL),
-      unbind_fbo_on_makecurrent_(false) {
+      unbind_fbo_on_makecurrent_(false),
+      swap_interval_(1) {
 }
 
 bool GLContextEGL::Initialize(
@@ -125,6 +126,8 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  surface->OnSetSwapInterval(swap_interval_);
+
   release_current.Cancel();
   return true;
 }
@@ -183,6 +186,9 @@ void GLContextEGL::OnSetSwapInterval(int interval) {
   if (!eglSwapInterval(display_, interval)) {
     LOG(ERROR) << "eglSwapInterval failed with error "
                << GetLastEGLErrorString();
+  } else {
+    swap_interval_ = interval;
+    GLSurface::GetCurrent()->OnSetSwapInterval(interval);
   }
 }
 

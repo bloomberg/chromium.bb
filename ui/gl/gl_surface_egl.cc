@@ -57,6 +57,14 @@ using ui::GetLastEGLErrorString;
 
 namespace gfx {
 
+#if defined(OS_WIN)
+unsigned int NativeViewGLSurfaceEGL::current_swap_generation_ = 0;
+unsigned int NativeViewGLSurfaceEGL::swaps_this_generation_ = 0;
+unsigned int NativeViewGLSurfaceEGL::last_multiswap_generation_ = 0;
+
+const unsigned int MULTISWAP_FRAME_VSYNC_THRESHOLD = 60;
+#endif
+
 namespace {
 
 EGLConfig g_config;
@@ -341,13 +349,16 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
       surface_(NULL),
       supports_post_sub_buffer_(false),
       config_(NULL),
-      size_(1, 1) {
+      size_(1, 1),
+      swap_interval_(1) {
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
 #endif
 
 #if defined(OS_WIN)
+  vsync_override_ = false;
+  swap_generation_ = 0;
   RECT windowRect;
   if (GetClientRect(window_, &windowRect))
     size_ = gfx::Rect(windowRect).size();
@@ -505,6 +516,41 @@ bool NativeViewGLSurfaceEGL::SwapBuffers() {
       "width", GetSize().width(),
       "height", GetSize().height());
 
+#if defined(OS_WIN)
+  if (swap_interval_ != 0) {
+    // This code is a simple way of enforcing that we only vsync if one surface
+    // is swapping per frame. This provides single window cases a stable refresh
+    // while allowing multi-window cases to not slow down due to multiple syncs
+    // on a single thread. A better way to fix this problem would be to have
+    // each surface present on its own thread.
+
+    if (current_swap_generation_ == swap_generation_) {
+      if (swaps_this_generation_ > 1)
+        last_multiswap_generation_ = current_swap_generation_;
+      swaps_this_generation_ = 0;
+      current_swap_generation_++;
+    }
+
+    swap_generation_ = current_swap_generation_;
+
+    if (swaps_this_generation_ != 0 ||
+        (current_swap_generation_ - last_multiswap_generation_ <
+            MULTISWAP_FRAME_VSYNC_THRESHOLD)) {
+      // Override vsync settings and switch it off
+      if (!vsync_override_) {
+        eglSwapInterval(GetDisplay(), 0);
+        vsync_override_ = true;
+      }
+    } else if (vsync_override_) {
+      // Only one window swapping, so let the normal vsync setting take over
+      eglSwapInterval(GetDisplay(), swap_interval_);
+      vsync_override_ = false;
+    }
+
+    swaps_this_generation_++;
+  }
+#endif
+
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
              << GetLastEGLErrorString();
@@ -583,6 +629,10 @@ bool NativeViewGLSurfaceEGL::PostSubBuffer(
 
 VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
   return vsync_provider_.get();
+}
+
+void NativeViewGLSurfaceEGL::OnSetSwapInterval(int interval) {
+  swap_interval_ = interval;
 }
 
 NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
