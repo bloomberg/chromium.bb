@@ -5,7 +5,6 @@
 #ifndef CC_TREES_LAYER_TREE_IMPL_H_
 #define CC_TREES_LAYER_TREE_IMPL_H_
 
-#include <list>
 #include <set>
 #include <string>
 #include <vector>
@@ -49,7 +48,7 @@ struct PendingPageScaleAnimation;
 struct RendererCapabilities;
 struct SelectionHandle;
 
-typedef std::list<UIResourceRequest> UIResourceRequestQueue;
+typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
 typedef SyncedProperty<AdditionGroup<gfx::Vector2dF>> SyncedElasticOverscroll;
 
 class CC_EXPORT LayerTreeImpl {

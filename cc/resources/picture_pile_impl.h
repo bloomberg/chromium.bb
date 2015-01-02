@@ -5,7 +5,6 @@
 #ifndef CC_RESOURCES_PICTURE_PILE_IMPL_H_
 #define CC_RESOURCES_PICTURE_PILE_IMPL_H_
 
-#include <list>
 #include <map>
 #include <set>
 #include <vector>

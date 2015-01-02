@@ -1086,10 +1086,7 @@ bool LayerTreeImpl::IsUIResourceOpaque(UIResourceId uid) const {
 }
 
 void LayerTreeImpl::ProcessUIResourceRequestQueue() {
-  while (ui_resource_request_queue_.size() > 0) {
-    UIResourceRequest req = ui_resource_request_queue_.front();
-    ui_resource_request_queue_.pop_front();
-
+  for (const auto& req : ui_resource_request_queue_) {
     switch (req.GetType()) {
       case UIResourceRequest::UIResourceCreate:
         layer_tree_host_impl_->CreateUIResource(req.GetId(), req.GetBitmap());
@@ -1102,6 +1099,7 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
         break;
     }
   }
+  ui_resource_request_queue_.clear();
 
   // If all UI resource evictions were not recreated by processing this queue,
   // then another commit is required.

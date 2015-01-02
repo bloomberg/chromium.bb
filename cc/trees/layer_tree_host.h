@@ -6,7 +6,6 @@
 #define CC_TREES_LAYER_TREE_HOST_H_
 
 #include <limits>
-#include <list>
 #include <set>
 #include <string>
 #include <vector>
@@ -383,7 +382,7 @@ class CC_EXPORT LayerTreeHost {
   UIResourceClientMap ui_resource_client_map_;
   int next_ui_resource_id_;
 
-  typedef std::list<UIResourceRequest> UIResourceRequestQueue;
+  typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
   UIResourceRequestQueue ui_resource_request_queue_;
 
   void RecordGpuRasterizationHistogram();

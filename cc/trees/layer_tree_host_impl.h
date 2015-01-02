@@ -5,7 +5,6 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_IMPL_H_
 #define CC_TREES_LAYER_TREE_HOST_IMPL_H_
 
-#include <list>
 #include <set>
 #include <string>
 #include <vector>

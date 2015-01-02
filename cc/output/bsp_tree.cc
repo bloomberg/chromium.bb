@@ -4,7 +4,6 @@
 
 #include "cc/output/bsp_tree.h"
 
-#include <list>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

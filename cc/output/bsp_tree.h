@@ -5,7 +5,6 @@
 #ifndef CC_OUTPUT_BSP_TREE_H_
 #define CC_OUTPUT_BSP_TREE_H_
 
-#include <list>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

@@ -5,7 +5,6 @@
 #ifndef CC_DEBUG_RENDERING_STATS_H_
 #define CC_DEBUG_RENDERING_STATS_H_
 
-#include <list>
 #include <vector>
 
 #include "base/basictypes.h"
