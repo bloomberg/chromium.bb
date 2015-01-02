@@ -24,6 +24,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.TabState.WebContentsState;
 import org.chromium.chrome.browser.banners.AppBannerManager;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
@@ -53,6 +54,7 @@ import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.Clipboard;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -93,6 +95,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Tab {
     public static final int INVALID_TAB_ID = -1;
+    private static final long INVALID_TIMESTAMP = -1;
 
     /** Used for logging. */
     private static final String TAG = "Tab";
@@ -226,6 +229,22 @@ public class Tab {
      * Whether or not the Tab is currently visible to the user.
      */
     private boolean mIsHidden = true;
+
+    /**
+     * The last time this tab was shown or the time of its initialization if it wasn't yet shown.
+     */
+    private long mTimestampMillis = INVALID_TIMESTAMP;
+
+    /**
+     * Title of the ContentViews webpage.Always update mTitle through updateTitle() so that it also
+     * updates mIsTitleDirectionRtl correctly.
+     */
+    private String mTitle;
+
+    /**
+     * Indicates if mTitle should be displayed from right to left.
+     */
+    private boolean mIsTitleDirectionRtl;
 
     private FullscreenManager mFullscreenManager;
     private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
@@ -385,6 +404,11 @@ public class Tab {
      */
     protected class TabContentViewClient extends ContentViewClient {
         @Override
+        public void onUpdateTitle(String title) {
+            updateTitle(title);
+        }
+
+        @Override
         public void onContextualActionBarShown() {
             for (TabObserver observer : mObservers) {
                 observer.onContextualActionBarVisibilityChanged(Tab.this, true);
@@ -432,6 +456,11 @@ public class Tab {
         }
 
         @Override
+        public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+            if (isMainFrame) didFinishPageLoad();
+        }
+
+        @Override
         public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
                 String description, String failingUrl) {
             for (TabObserver observer : mObservers) {
@@ -444,6 +473,8 @@ public class Tab {
         public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
                 boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                 boolean isIframeSrcdoc) {
+            if (isMainFrame) didStartPageLoad(validatedUrl, isErrorPage);
+
             for (TabObserver observer : mObservers) {
                 observer.onDidStartProvisionalLoadForFrame(Tab.this, frameId, parentFrameId,
                         isMainFrame, validatedUrl, isErrorPage, isIframeSrcdoc);
@@ -453,15 +484,27 @@ public class Tab {
         @Override
         public void didCommitProvisionalLoadForFrame(long frameId, boolean isMainFrame, String url,
                 int transitionType) {
+            if (isMainFrame) {
+                mIsTabStateDirty = true;
+                updateTitle();
+            }
+
             for (TabObserver observer : mObservers) {
                 observer.onDidCommitProvisionalLoadForFrame(
                         Tab.this, frameId, isMainFrame, url, transitionType);
             }
+
+            notifyPageUrlChanged();
         }
 
         @Override
         public void didNavigateMainFrame(String url, String baseUrl,
                 boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
+            FullscreenManager fullscreenManager = getFullscreenManager();
+            if (isNavigationToDifferentPage && fullscreenManager != null) {
+                fullscreenManager.setPersistentFullscreenMode(false);
+            }
+
             for (TabObserver observer : mObservers) {
                 observer.onDidNavigateMainFrame(
                         Tab.this, url, baseUrl, isNavigationToDifferentPage,
@@ -479,6 +522,9 @@ public class Tab {
 
         @Override
         public void didAttachInterstitialPage() {
+            getInfoBarContainer().setVisibility(View.INVISIBLE);
+            showRenderedPage();
+
             for (TabObserver observer : mObservers) {
                 observer.onDidAttachInterstitialPage(Tab.this);
             }
@@ -486,6 +532,8 @@ public class Tab {
 
         @Override
         public void didDetachInterstitialPage() {
+            getInfoBarContainer().setVisibility(View.VISIBLE);
+
             for (TabObserver observer : mObservers) {
                 observer.onDidDetachInterstitialPage(Tab.this);
             }
@@ -573,7 +621,12 @@ public class Tab {
         mFrozenContentsState = state.contentsState;
         mSyncId = (int) state.syncId;
         mShouldPreserve = state.shouldPreserve;
+        mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
+
+        mTitle = state.getDisplayTitleFromState();
+        mIsTitleDirectionRtl = LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
+                == LocalizationUtils.RIGHT_TO_LEFT;
     }
 
     /**
@@ -744,6 +797,7 @@ public class Tab {
         tabState.parentId = mParentId;
         tabState.shouldPreserve = mShouldPreserve;
         tabState.syncId = mSyncId;
+        tabState.timestampMillis = mTimestampMillis;
         return tabState;
     }
 
@@ -1011,6 +1065,10 @@ public class Tab {
             if (mContentViewCore != null) mContentViewCore.onShow();
 
             showInternal(type);
+
+            // Updating the timestamp has to happen after the showInternal() call since subclasses
+            // may use it for logging.
+            mTimestampMillis = System.currentTimeMillis();
         } finally {
             TraceEvent.end("Tab.show");
         }
@@ -1076,6 +1134,8 @@ public class Tab {
      * Hides the current {@link NativePage}, if any, and shows the {@link ContentViewCore}'s view.
      */
     protected void showRenderedPage() {
+        updateTitle();
+
         if (mNativePage == null) return;
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
@@ -1084,18 +1144,104 @@ public class Tab {
     }
 
     /**
-     * Initializes this {@link Tab}.
+     * Initializes the ChromeTab after construction.
+     * @param nativeWebContents native WebContents object if available or 0 when creating a brand
+     *                          new tab
+     * @param tabContentManager A TabContentManager instance or {@code null} if the layer should not
+     *                          be attached to one.
+     * @param initiallyHidden   true iff the tab being initialized is created in background
      */
-    public void initialize() {
+    public void initialize(long nativeWebContents, TabContentManager tabContentManager,
+            boolean initiallyHidden) {
+        try {
+            TraceEvent.begin("Tab.initialize");
+            internalInit(tabContentManager);
+
+            if (getFrozenContentsState() == null && getPendingLoadParams() == null) {
+                boolean existingWebContents = nativeWebContents != 0;
+                // There is no frozen WebContents state or pending lazy load, create new
+                // WebContents.
+                if (nativeWebContents == 0) {
+                    nativeWebContents =
+                            ContentViewUtil.createNativeWebContents(isIncognito(), initiallyHidden);
+                }
+                initContentViewCore(nativeWebContents);
+                if (existingWebContents) {
+                    WebContents webContents = getWebContents();
+                    assert webContents != null;
+                    if (webContents.isLoadingToDifferentDocument()) {
+                        didStartPageLoad(webContents.getUrl(), false);
+                    }
+                }
+            }
+            if (mTimestampMillis == INVALID_TIMESTAMP) {
+                mTimestampMillis = System.currentTimeMillis();
+            }
+        } finally {
+            TraceEvent.end("Tab.initialize");
+        }
+    }
+
+    /**
+     * Handles common post-construction initialization.
+     * @param contentViewCore   ContentViewCore object to attach to the tab.
+     * @param tabContentManager A TabContentManager instance or {@code null} if the layer should not
+     *                          be attached to one.
+     */
+    public void initialize(ContentViewCore contentViewCore, TabContentManager tabContentManager) {
+        try {
+            TraceEvent.begin("Tab.initialize");
+            internalInit(tabContentManager);
+            setContentViewCore(contentViewCore);
+            if (mTimestampMillis == INVALID_TIMESTAMP) {
+                mTimestampMillis = System.currentTimeMillis();
+            }
+        } finally {
+            TraceEvent.end("Tab.initialize");
+        }
+    }
+
+    /**
+     * Perform any subclass-specific initialization tasks.
+     */
+    protected void internalInit(TabContentManager tabContentManager) {
         initializeNative();
+    }
+
+    /**
+     * Called when a page has started loading.
+     * @param validatedUrl URL being loaded.
+     * @param showingErrorPage Whether an error page is being shown.
+     */
+    protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
+        updateTitle();
+        removeSadTabIfPresent();
+        mInfoBarContainer.onPageStarted();
+
+        if (getContentViewCore() != null) {
+            getContentViewCore().stopCurrentAccessibilityNotifications();
+        }
+
+        clearHungRendererState();
+    }
+
+    /**
+     * Called when a page has finished loading.
+     */
+    protected void didFinishPageLoad() {
+        mIsTabStateDirty = true;
+        updateTitle();
+        updateFullscreenEnabledState();
     }
 
     /**
      * Builds the native counterpart to this class.  Meant to be overridden by subclasses to build
      * subclass native counterparts instead.  Subclasses should not call this via super and instead
      * rely on the native class to create the JNI association.
+     *
+     * TODO(dfalcantara): Make this function harder to access.
      */
-    protected void initializeNative() {
+    public void initializeNative() {
         if (mNativeTabAndroid == 0) nativeInit();
         assert mNativeTabAndroid != 0;
     }
@@ -1235,6 +1381,9 @@ public class Tab {
      * this method is called.  Once this call is made this {@link Tab} should no longer be used.
      */
     public void destroy() {
+        // Update the title before destroying the tab. http://b/5783092
+        updateTitle();
+
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
         mObservers.clear();
 
@@ -1290,9 +1439,67 @@ public class Tab {
      */
     @CalledByNative
     public String getTitle() {
-        if (mNativePage != null) return mNativePage.getTitle();
-        if (getWebContents() != null) return getWebContents().getTitle();
-        return "";
+        if (mTitle == null) updateTitle();
+        return mTitle;
+    }
+
+    private void updateTitle() {
+        if (isFrozen()) return;
+
+        // When restoring the tabs, the title will no longer be populated, so request it from the
+        // ContentViewCore or NativePage (if present).
+        String title = "";
+        if (mNativePage != null) title = mNativePage.getTitle();
+        if (getWebContents() != null) title = getWebContents().getTitle();
+        updateTitle(title);
+    }
+
+    /**
+     * Cache the title for the current page.
+     *
+     * {@link ContentViewClient#onUpdateTitle} is unreliable, particularly for navigating backwards
+     * and forwards in the history stack, so pull the correct title whenever the page changes.
+     * onUpdateTitle is only called when the title of a navigation entry changes. When the user goes
+     * back a page the navigation entry exists with the correct title, thus the title is not
+     * actually changed, and no notification is sent.
+     * @param title Title of the page.
+     */
+    private void updateTitle(String title) {
+        if (TextUtils.equals(mTitle, title)) return;
+
+        mIsTabStateDirty = true;
+        mTitle = title;
+        mIsTitleDirectionRtl = LocalizationUtils.getFirstStrongCharacterDirection(title)
+                == LocalizationUtils.RIGHT_TO_LEFT;
+        notifyPageTitleChanged();
+    }
+
+    protected void notifyPageTitleChanged() {
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onTitleUpdated(this);
+        }
+    }
+
+    protected void notifyFaviconChanged() {
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onFaviconUpdated(this);
+        }
+    }
+
+    private void notifyPageUrlChanged() {
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onUrlUpdated(this);
+        }
+    }
+
+    /**
+     * @return True if the tab title should be displayed from right to left.
+     */
+    public boolean isTitleDirectionRtl() {
+        return mIsTitleDirectionRtl;
     }
 
     /**
@@ -1493,10 +1700,15 @@ public class Tab {
             mInfoBarContainer.removeFromParentView();
         }
         mContentViewCore.destroy();
-
         mContentViewCore = null;
+
         mWebContentsDelegate = null;
-        mWebContentsObserver = null;
+
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.detachFromWebContents();
+            mWebContentsObserver = null;
+        }
+
         mVoiceSearchTabHelper = null;
 
         assert mNativeTabAndroid != 0;
@@ -1728,6 +1940,13 @@ public class Tab {
      */
     public void setAppAssociatedWith(String appId) {
         mAppAssociatedWith = appId;
+    }
+
+    /**
+     * @return See {@link #mTimestampMillis}.
+     */
+    protected long getTimestampMillis() {
+        return mTimestampMillis;
     }
 
     /**

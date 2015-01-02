@@ -322,6 +322,16 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (mTab != null) {
+            updateFavicon();
+            updateTabTitle();
+            mTab.addObserver(mTabObserver);
+        }
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (mTab != null) mTab.removeObserver(mTabObserver);
@@ -435,8 +445,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             if (Math.abs(getTranslationX()) < mFlingCommitDistance) return false;
 
             double velocityMagnitude = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
-            long closeTime = (long) Math.abs((getWidth() / velocityMagnitude)) *
-                    VELOCITY_SCALING_FACTOR;
+            long closeTime = (long) Math.abs((getWidth() / velocityMagnitude))
+                    * VELOCITY_SCALING_FACTOR;
             runSwipeAnimation(Math.min(closeTime, mDefaultAnimationDurationMs));
             mCanScrollListener.setCanScroll(true);
             return true;

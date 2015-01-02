@@ -275,7 +275,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         if (entry.tabState != null && isNativeInitialized()
                 && (entry.placeholderTab == null || !entry.placeholderTab.isInitialized())) {
             entry.placeholderTab = mTabDelegate.createFrozenTab(entry);
-            entry.placeholderTab.initialize();
+            entry.placeholderTab.initializeNative();
         }
 
         // Create a placeholder Tab that just has the ID.
