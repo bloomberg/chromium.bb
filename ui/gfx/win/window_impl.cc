@@ -266,8 +266,13 @@ LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
 
   // Handle the message if it's in our message map; otherwise, let the system
   // handle it.
-  if (!ProcessWindowMessage(hwnd, message, w_param, l_param, result))
+  if (!ProcessWindowMessage(hwnd, message, w_param, l_param, result)) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl DefWindowProc"));
+
     result = DefWindowProc(hwnd, message, w_param, l_param);
+  }
 
   return result;
 }

@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 
 namespace gfx {
 
@@ -30,6 +31,11 @@ BOOL SingletonHwnd::ProcessWindowMessage(HWND window,
                                          LPARAM lparam,
                                          LRESULT& result,
                                          DWORD msg_map_id) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 SingletonHwnd::ProcessWindowMessage"));
+
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
                     OnWndProc(window, message, wparam, lparam));
