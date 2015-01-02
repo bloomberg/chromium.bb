@@ -103,7 +103,8 @@ cr.define('options', function() {
      * @private
      */
     inputFieldChanged_: function(opt_event) {
-      var disabled = !$('name-on-card').value && !$('credit-card-number').value;
+      var disabled = !$('name-on-card').value.trim() &&
+              !$('credit-card-number').value.trim();
       $('autofill-edit-credit-card-apply-button').disabled = disabled;
     },
 
