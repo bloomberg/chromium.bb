@@ -29,6 +29,7 @@
 #include <sys/mman.h>
 
 #include "native_client/src/include/elf32.h"
+#include "native_client/src/untrusted/nacl/getcwd.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 struct dirent;
@@ -205,7 +206,7 @@ int chdir(const char *path) {
   return errno_call(NACL_SYSCALL(chdir)(path));
 }
 
-char *getcwd(char *buffer, size_t len) {
+char *__getcwd_without_malloc(char *buffer, size_t len) {
   int retval = NACL_SYSCALL(getcwd)(buffer, len);
   if (retval != 0) {
     errno = -retval;

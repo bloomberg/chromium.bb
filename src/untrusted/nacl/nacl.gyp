@@ -26,6 +26,7 @@
       'fsync.c',
       'ftruncate.c',
       'getcwd.c',
+      'getcwd_without_malloc.c',
       'getdents.c',
       'gethostname.c',
       'getpagesize.c',

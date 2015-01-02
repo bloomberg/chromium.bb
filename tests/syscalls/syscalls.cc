@@ -173,6 +173,33 @@ bool test_getcwd() {
   ASSERT_EQ_MSG(rtn, dirname, "getcwd() failed to return dirname");
   ASSERT_NE_MSG(strlen(dirname), 0, "getcwd() failed to set valid dirname");
 
+  // Call with size == 0 and buf == NULL should return a malloc'd buffer
+  char *rtn2 = getcwd(NULL, 0);
+  ASSERT_NE(rtn2, NULL);
+  ASSERT_EQ(strcmp(rtn, rtn2), 0);
+  free(rtn2);
+
+  // Call with buf == NULL and non-zero size should return a malloc'd buffer
+  // that is 'size' bytes long.
+  rtn2 = getcwd(NULL, PATH_MAX*2);
+  ASSERT_NE(rtn2, NULL);
+  ASSERT_EQ(strcmp(rtn, rtn2), 0);
+  // Overwrite all bytes in the allocation. We have no way to verify that
+  // the allocation really is this big but memory sanitisers should fail here
+  // if it's not.
+  memset(rtn2, 0xba, PATH_MAX*2);
+  free(rtn2);
+
+  // Call with size == 0 and buf != NULL should fail (with EINVAL)
+  rtn = getcwd(dirname, 0);
+  ASSERT_EQ(rtn, NULL);
+  ASSERT_EQ(errno, EINVAL);
+
+  // Check that when size is too small ERANGE gets set
+  rtn = getcwd(dirname, 1);
+  ASSERT_EQ(rtn, NULL);
+  ASSERT_EQ(errno, ERANGE);
+
   // Calculate parent folder.
   strncpy(parent, dirname, PATH_MAX);
   char *basename_start = strrchr(parent, '/');

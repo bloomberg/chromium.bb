@@ -31,6 +31,7 @@
 #include "native_client/src/public/linux_syscalls/poll.h"
 #include "native_client/src/public/linux_syscalls/sys/prctl.h"
 #include "native_client/src/public/linux_syscalls/sys/socket.h"
+#include "native_client/src/untrusted/nacl/getcwd.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
 
@@ -297,7 +298,7 @@ int chdir(const char *path) {
   return errno_value_call(linux_syscall1(__NR_chdir, (uintptr_t) path));
 }
 
-char *getcwd(char *buffer, size_t len) {
+char *__getcwd_without_malloc(char *buffer, size_t len) {
   int rc = errno_value_call(
       linux_syscall2(__NR_getcwd, (uintptr_t) buffer, len));
   if (rc == -1)
