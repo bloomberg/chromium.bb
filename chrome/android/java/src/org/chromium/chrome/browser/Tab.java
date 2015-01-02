@@ -1303,7 +1303,7 @@ public class Tab {
             // initialized.
             WebContents webContents = mContentViewCore.getWebContents();
             mInfoBarContainer = new InfoBarContainer(
-                    (Activity) mContext, getId(), mContentViewCore.getContainerView(), webContents);
+                    mContext, getId(), mContentViewCore.getContainerView(), webContents);
         } else {
             mInfoBarContainer.onParentViewChanged(getId(), mContentViewCore.getContainerView());
         }
