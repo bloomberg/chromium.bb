@@ -191,10 +191,10 @@ class DeviceUtilsNewImplTest(mock_calls.TestCase):
         self.adb, default_timeout=10, default_retries=0)
     self.watchMethodCalls(self.call.adb, ignore=['GetDeviceSerial'])
 
-  def ShellError(self, output=None, exit_code=1):
+  def ShellError(self, output=None, status=1):
     def action(cmd, *args, **kwargs):
-      raise device_errors.AdbCommandFailedError(
-          cmd, output, exit_code, str(self.device))
+      raise device_errors.AdbShellCommandFailedError(
+          cmd, output, status, str(self.device))
     if output is None:
       output = 'Permission denied\n'
     return action

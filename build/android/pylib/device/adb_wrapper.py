@@ -222,12 +222,12 @@ class AdbWrapper(object):
         status = int(output[output_end+1:])
       except ValueError:
         logging.warning('exit status of shell command %r missing.', command)
-        raise device_errors.AdbCommandFailedError(
-            args, output, device_serial=self._device_serial)
+        raise device_errors.AdbShellCommandFailedError(
+            command, output, status=None, device_serial=self._device_serial)
       output = output[:output_end]
       if status != expect_status:
-        raise device_errors.AdbCommandFailedError(
-            args, output, status, self._device_serial)
+        raise device_errors.AdbShellCommandFailedError(
+            command, output, status=status, device_serial=self._device_serial)
     return output
 
   def Ls(self, path, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
