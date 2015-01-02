@@ -11,6 +11,7 @@ PluginTest.PluginSingleRangeRequest
 PluginTest.PluginThreadAsyncCall
 PluginTest.PrivateDisabled
 PluginTest.ScheduleTimer
+PluginTest.SelfDelete*
 
 # crbug.com/419396
 WebRtcBrowserTest.CallWithDataAndMedia
