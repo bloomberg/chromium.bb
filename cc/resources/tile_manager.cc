@@ -232,6 +232,7 @@ TileManager::TileManager(
           task_runner_.get(),
           base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
                      base::Unretained(this))),
+      eviction_priority_queue_is_up_to_date_(false),
       did_notify_ready_to_activate_(false),
       did_notify_ready_to_draw_(false) {
   tile_task_runner_->SetClient(this);
