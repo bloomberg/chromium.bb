@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
@@ -292,7 +293,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     return false;
   }
 
-  void StartTestScript(base::ProcessHandle* test_process,
+  void StartTestScript(base::Process* test_process,
                        int debug_stub_port) {
     // We call a python script that speaks to the debug stub, and
     // lets the app continue, so that the load progress event completes.
@@ -304,11 +305,11 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     cmd.AppendArg(base::IntToString(debug_stub_port));
     cmd.AppendArg("continue");
     LOG(INFO) << cmd.GetCommandLineString();
-    base::LaunchProcess(cmd, base::LaunchOptions(), test_process);
+    *test_process = base::LaunchProcess(cmd, base::LaunchOptions());
   }
 
   void RunWithTestDebugger(const base::FilePath::StringType& test_url) {
-    base::ProcessHandle test_script;
+    base::Process test_script;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
         base::Bind(&NaClBrowserTestPnaclDebug::StartTestScript,
@@ -320,7 +321,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     nacl::NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
     int exit_code;
     LOG(INFO) << "Waiting for script to exit (which waits for embed to die).";
-    base::WaitForExitCode(test_script, &exit_code);
+    test_script.WaitForExit(&exit_code);
     EXPECT_EQ(0, exit_code);
   }
 };

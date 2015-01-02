@@ -482,7 +482,7 @@ bool NaClProcessHost::Send(IPC::Message* msg) {
   return process_->Send(msg);
 }
 
-bool NaClProcessHost::LaunchNaClGdb() {
+void NaClProcessHost::LaunchNaClGdb() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)
@@ -522,7 +522,7 @@ bool NaClProcessHost::LaunchNaClGdb() {
     cmd_line.AppendArg("--command");
     cmd_line.AppendArgNative(script.value());
   }
-  return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
+  base::LaunchProcess(cmd_line, base::LaunchOptions());
 }
 
 bool NaClProcessHost::LaunchSelLdr() {

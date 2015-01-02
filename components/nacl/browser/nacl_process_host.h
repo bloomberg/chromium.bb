@@ -96,7 +96,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   content::BrowserPpapiHost* browser_ppapi_host() { return ppapi_host_.get(); }
 
  private:
-  bool LaunchNaClGdb();
+  void LaunchNaClGdb();
 
   // Mark the process as using a particular GDB debug stub port and notify
   // listeners (if the port is not kGdbDebugStubPortUnknown).
