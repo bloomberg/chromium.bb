@@ -26,22 +26,22 @@ class SecureHashSHA256OpenSSL : public SecureHash {
     SHA256_Init(&ctx_);
   }
 
-  virtual ~SecureHashSHA256OpenSSL() {
+  ~SecureHashSHA256OpenSSL() override {
     OPENSSL_cleanse(&ctx_, sizeof(ctx_));
   }
 
-  virtual void Update(const void* input, size_t len) override {
+  void Update(const void* input, size_t len) override {
     SHA256_Update(&ctx_, static_cast<const unsigned char*>(input), len);
   }
 
-  virtual void Finish(void* output, size_t len) override {
+  void Finish(void* output, size_t len) override {
     ScopedOpenSSLSafeSizeBuffer<SHA256_DIGEST_LENGTH> result(
         static_cast<unsigned char*>(output), len);
     SHA256_Final(result.safe_buffer(), &ctx_);
   }
 
-  virtual bool Serialize(Pickle* pickle) override;
-  virtual bool Deserialize(PickleIterator* data_iterator) override;
+  bool Serialize(Pickle* pickle) override;
+  bool Deserialize(PickleIterator* data_iterator) override;
 
  private:
   SHA256_CTX ctx_;
