@@ -342,7 +342,7 @@ TEST_F(KernelProxyTest, FDPathMapping) {
   EXPECT_STREQ("/foo/bar", text);
 }
 
-TEST_F(KernelProxyTest, MemMountIO) {
+TEST_F(KernelProxyTest, BasicReadWrite) {
   char text[1024];
   int fd1, fd2, fd3;
   int len;
@@ -411,7 +411,7 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_STREQ("HELLOWORLD", text);
 }
 
-TEST_F(KernelProxyTest, MemMountFTruncate) {
+TEST_F(KernelProxyTest, FTruncate) {
   char text[1024];
   int fd1, fd2;
 
@@ -438,7 +438,7 @@ TEST_F(KernelProxyTest, MemMountFTruncate) {
   EXPECT_EQ(EACCES, errno);
 }
 
-TEST_F(KernelProxyTest, MemMountTruncate) {
+TEST_F(KernelProxyTest, Truncate) {
   char text[1024];
   int fd1;
 
@@ -462,7 +462,7 @@ TEST_F(KernelProxyTest, MemMountTruncate) {
   EXPECT_EQ(EACCES, errno);
 }
 
-TEST_F(KernelProxyTest, MemMountLseek) {
+TEST_F(KernelProxyTest, Lseek) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
   ASSERT_EQ(9, ki_write(fd, "Some text", 9));
@@ -495,7 +495,7 @@ TEST_F(KernelProxyTest, CloseTwice) {
   EXPECT_EQ(0, ki_close(fd2));
 }
 
-TEST_F(KernelProxyTest, MemMountDup) {
+TEST_F(KernelProxyTest, Dup) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR, 0777);
   ASSERT_GT(fd, -1);
 
@@ -570,6 +570,49 @@ TEST_F(KernelProxyTest, Lstat) {
   // Still legal to stat a file that is write-only.
   EXPECT_EQ(0, ki_chmod("/foo", 0222));
   EXPECT_EQ(0, ki_lstat("/foo", &buf));
+}
+
+TEST_F(KernelProxyTest, Chmod) {
+  ASSERT_EQ(-1, ki_chmod("/foo", 0222));
+  ASSERT_EQ(errno, ENOENT);
+
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0770);
+  ASSERT_GT(fd, -1);
+
+  struct stat buf;
+  ASSERT_EQ(0, ki_stat("/foo", &buf));
+  ASSERT_EQ(0770, buf.st_mode & 0777);
+
+  ASSERT_EQ(0, ki_chmod("/foo", 0222));
+  ASSERT_EQ(0, ki_stat("/foo", &buf));
+  ASSERT_EQ(0222, buf.st_mode & 0777);
+
+  // Check that passing mode bits other than permissions
+  // is ignored.
+  ASSERT_EQ(0, ki_chmod("/foo", S_IFBLK | 0222));
+  ASSERT_EQ(0, ki_stat("/foo", &buf));
+  EXPECT_TRUE(S_ISREG(buf.st_mode));
+  ASSERT_EQ(0222, buf.st_mode & 0777);
+}
+
+TEST_F(KernelProxyTest, Fchmod) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR, 0770);
+  ASSERT_GT(fd, -1);
+
+  struct stat buf;
+  ASSERT_EQ(0, ki_stat("/foo", &buf));
+  ASSERT_EQ(0770, buf.st_mode & 0777);
+
+  ASSERT_EQ(0, ki_fchmod(fd, 0222));
+  ASSERT_EQ(0, ki_stat("/foo", &buf));
+  ASSERT_EQ(0222, buf.st_mode & 0777);
+
+  // Check that passing mode bits other than permissions
+  // is ignored.
+  ASSERT_EQ(0, ki_fchmod(fd, S_IFBLK | 0222));
+  ASSERT_EQ(0, ki_stat("/foo", &buf));
+  EXPECT_TRUE(S_ISREG(buf.st_mode));
+  ASSERT_EQ(0222, buf.st_mode & 0777);
 }
 
 TEST_F(KernelProxyTest, OpenDirectory) {

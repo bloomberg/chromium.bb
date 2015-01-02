@@ -341,7 +341,7 @@ int KernelProxy::chmod(const char* path, mode_t mode) {
     return -1;
   }
 
-  error = node->Fchmod(mode);
+  error = node->Fchmod(mode & S_MODEBITS);
   if (error) {
     errno = error;
     return -1;
