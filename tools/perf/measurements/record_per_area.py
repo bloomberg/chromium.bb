@@ -11,7 +11,7 @@ from telemetry.value import scalar
 
 class RecordPerArea(page_test.PageTest):
   def __init__(self, start_wait_time=2):
-    super(RecordPerArea, self).__init__('', True)
+    super(RecordPerArea, self).__init__('RunPageInteractions', True)
     self._start_wait_time = start_wait_time
 
   def CustomizeBrowserOptions(self, options):
