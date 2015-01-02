@@ -27,36 +27,36 @@
 
 namespace {
 
-bool KillProcess(base::ProcessHandle process_id) {
+bool KillProcess(base::ProcessHandle process_id, bool kill_gracefully) {
 #if defined(OS_POSIX)
-  kill(process_id, SIGKILL);
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(30);
-  while (base::TimeTicks::Now() < deadline) {
-    pid_t pid = HANDLE_EINTR(waitpid(process_id, NULL, WNOHANG));
-    if (pid == process_id)
-      return true;
-    if (pid == -1) {
-      if (errno == ECHILD) {
-        // The wait may fail with ECHILD if another process also waited for
-        // the same pid, causing the process state to get cleaned up.
+  if (!kill_gracefully) {
+    kill(process_id, SIGKILL);
+    base::TimeTicks deadline =
+        base::TimeTicks::Now() + base::TimeDelta::FromSeconds(30);
+    while (base::TimeTicks::Now() < deadline) {
+      pid_t pid = HANDLE_EINTR(waitpid(process_id, NULL, WNOHANG));
+      if (pid == process_id)
         return true;
+      if (pid == -1) {
+        if (errno == ECHILD) {
+          // The wait may fail with ECHILD if another process also waited for
+          // the same pid, causing the process state to get cleaned up.
+          return true;
+        }
+        LOG(WARNING) << "Error waiting for process " << process_id;
       }
-      LOG(WARNING) << "Error waiting for process " << process_id;
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+    return false;
   }
-  return false;
 #endif
 
-#if defined(OS_WIN)
   if (!base::KillProcess(process_id, 0, true)) {
     int exit_code;
     return base::GetTerminationStatus(process_id, &exit_code) !=
         base::TERMINATION_STATUS_STILL_RUNNING;
   }
   return true;
-#endif
 }
 
 }  // namespace
@@ -168,7 +168,12 @@ bool ChromeDesktopImpl::IsMobileEmulationEnabled() const {
 }
 
 Status ChromeDesktopImpl::QuitImpl() {
-  if (!KillProcess(process_.Handle()))
+  // If the Chrome session uses a custom user data directory, try sending a
+  // SIGTERM signal before SIGKILL, so that Chrome has a chance to write
+  // everything back out to the user data directory and exit cleanly.If
+  // we're using a temporary user data directory, we're going to delete
+  // the temporary directory anyway, so just send SIGKILL immediately.
+  if (!KillProcess(process_.Handle(), !user_data_dir_.IsValid()))
     return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);
 }
