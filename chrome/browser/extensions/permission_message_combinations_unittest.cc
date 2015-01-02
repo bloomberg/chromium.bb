@@ -1022,7 +1022,7 @@ TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
       "  },"
       "  'permissions': ["
       "    { 'usbDevices': ["
-      "      { 'vendorId': 6353, 'productId': 20194 },"
+      "      { 'vendorId': 6353, 'productId': 8192 },"
       "    ] }"
       "  ]"
       "}");
@@ -1040,7 +1040,7 @@ TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
       "  'permissions': ["
       "    { 'usbDevices': ["
       "      { 'vendorId': 4179, 'productId': 529 },"
-      "      { 'vendorId': 6353, 'productId': 20194 },"
+      "      { 'vendorId': 6353, 'productId': 8192 },"
       "    ] }"
       "  ]"
       "}");
