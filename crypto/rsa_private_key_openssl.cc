@@ -91,7 +91,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
   result->key_ = EVP_PKCS82PKEY(p8inf.get());
-  if (!result->key_)
+  if (!result->key_ || EVP_PKEY_id(result->key_) != EVP_PKEY_RSA)
     return NULL;
 
   return result.release();
