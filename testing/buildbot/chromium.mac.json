@@ -13,8 +13,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
-      "app_shell_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -138,8 +136,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
-      "app_shell_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -263,8 +259,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
-      "app_shell_unittests",
       {
         "test": "base_unittests",
         "swarming": {
@@ -388,8 +382,6 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "app_shell_browsertests",
-      "app_shell_unittests",
       {
         "test": "base_unittests",
         "swarming": {
