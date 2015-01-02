@@ -143,9 +143,6 @@ def main(argv):
             for url in all_reports[r]]):
       # Include mac suppressions if the report is only present on Mac
       cur_supp += supp['mac_suppressions']
-    elif all([re.search("Windows%20", url) for url in all_reports[r]]):
-      # Include win32 suppressions if the report is only present on Windows
-      cur_supp += supp['win_suppressions']
     elif all([re.search("Linux%20", url) for url in all_reports[r]]):
       cur_supp += supp['linux_suppressions']
     if all(["DrMemory" in url for url in all_reports[r]]):
