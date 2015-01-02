@@ -1219,6 +1219,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     // If we have an authentication response, we are exposed to weird things
     // hapenning if the user cancels the authentication before we receive
     // the new response.
+    net_log_.AddEvent(NetLog::TYPE_HTTP_CACHE_RE_SEND_PARTIAL_REQUEST);
     UpdateTransactionPattern(PATTERN_NOT_COVERED);
     response_ = HttpResponseInfo();
     ResetNetworkTransaction();
@@ -2211,6 +2212,7 @@ void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
 
   bool range_found = false;
   bool external_validation_error = false;
+  bool special_headers = false;
 
   if (request_->extra_headers.HasHeader(HttpRequestHeaders::kRange))
     range_found = true;
@@ -2218,6 +2220,7 @@ void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
   for (size_t i = 0; i < arraysize(kSpecialHeaders); ++i) {
     if (HeaderMatches(request_->extra_headers, kSpecialHeaders[i].search)) {
       effective_load_flags_ |= kSpecialHeaders[i].load_flag;
+      special_headers = true;
       break;
     }
   }
@@ -2236,6 +2239,15 @@ void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
       external_validation_.values[i] = validation_value;
       external_validation_.initialized = true;
     }
+  }
+
+  if (range_found || special_headers || external_validation_.initialized) {
+    // Log the headers before request_ is modified.
+    std::string empty;
+    net_log_.AddEvent(
+        NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS,
+        base::Bind(&HttpRequestHeaders::NetLogCallback,
+                   base::Unretained(&request_->extra_headers), &empty));
   }
 
   // We don't support ranges and validation headers.
@@ -3009,6 +3021,7 @@ int HttpCache::Transaction::DoPartialCacheReadCompleted(int result) {
 int HttpCache::Transaction::DoRestartPartialRequest() {
   // The stored data cannot be used. Get rid of it and restart this request.
   // We need to also reset the |truncated_| flag as a new entry is created.
+  net_log_.AddEvent(NetLog::TYPE_HTTP_CACHE_RESTART_PARTIAL_REQUEST);
   DoomPartialEntry(!range_requested_);
   mode_ = WRITE;
   truncated_ = false;

@@ -185,6 +185,12 @@ void RunTransactionTest(net::HttpCache* cache,
   RunTransactionTestAndGetTiming(cache, trans_info, net::BoundNetLog(), NULL);
 }
 
+void RunTransactionTestWithLog(net::HttpCache* cache,
+                               const MockTransaction& trans_info,
+                               const net::BoundNetLog& log) {
+  RunTransactionTestAndGetTiming(cache, trans_info, log, NULL);
+}
+
 void RunTransactionTestWithResponseInfo(net::HttpCache* cache,
                                         const MockTransaction& trans_info,
                                         net::HttpResponseInfo* response) {
@@ -532,6 +538,17 @@ void FilterLogEntries(net::CapturingNetLog::CapturedEntryList* entries) {
   entries->erase(std::remove_if(entries->begin(), entries->end(),
                                 &ShouldIgnoreLogEntry),
                  entries->end());
+}
+
+bool LogContainsEventType(const net::CapturingBoundNetLog& log,
+                          net::NetLog::EventType expected) {
+  net::CapturingNetLog::CapturedEntryList entries;
+  log.GetEntries(&entries);
+  for (size_t i = 0; i < entries.size(); i++) {
+    if (entries[i].type == expected)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -3627,6 +3644,52 @@ TEST(HttpCache, RangeGET_SkipsCache2) {
   EXPECT_EQ(0, cache.disk_cache()->create_count());
 }
 
+TEST(HttpCache, SimpleGET_DoesntLogHeaders) {
+  MockHttpCache cache;
+
+  net::CapturingBoundNetLog log;
+  RunTransactionTestWithLog(cache.http_cache(), kSimpleGET_Transaction,
+                            log.bound());
+
+  EXPECT_FALSE(LogContainsEventType(
+      log, net::NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+}
+
+TEST(HttpCache, RangeGET_LogsHeaders) {
+  MockHttpCache cache;
+
+  net::CapturingBoundNetLog log;
+  RunTransactionTestWithLog(cache.http_cache(), kRangeGET_Transaction,
+                            log.bound());
+
+  EXPECT_TRUE(LogContainsEventType(
+      log, net::NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+}
+
+TEST(HttpCache, ExternalValidation_LogsHeaders) {
+  MockHttpCache cache;
+
+  net::CapturingBoundNetLog log;
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.request_headers = "If-None-Match: foo\r\n" EXTRA_HEADER;
+  RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
+
+  EXPECT_TRUE(LogContainsEventType(
+      log, net::NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+}
+
+TEST(HttpCache, SpecialHeaders_LogsHeaders) {
+  MockHttpCache cache;
+
+  net::CapturingBoundNetLog log;
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.request_headers = "cache-control: no-cache\r\n" EXTRA_HEADER;
+  RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
+
+  EXPECT_TRUE(LogContainsEventType(
+      log, net::NetLog::TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS));
+}
+
 // Tests that receiving 206 for a regular request is handled correctly.
 TEST(HttpCache, GET_Crazy206) {
   MockHttpCache cache;
@@ -3727,6 +3790,27 @@ TEST(HttpCache, RangeGET_NoValidation) {
   EXPECT_EQ(2, cache.disk_cache()->create_count());
 
   RemoveMockTransaction(&transaction);
+}
+
+// Tests that restarting a partial request when the cached data cannot be
+// revalidated logs an event.
+TEST(HttpCache, RangeGET_NoValidation_LogsRestart) {
+  MockHttpCache cache;
+
+  // Write to the cache (40-49).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.response_headers =
+      "Content-Length: 10\n"
+      "ETag: w/\"foo\"\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Now verify that the cached data is not used.
+  net::CapturingBoundNetLog log;
+  RunTransactionTestWithLog(cache.http_cache(), kRangeGET_TransactionOK,
+                            log.bound());
+
+  EXPECT_TRUE(LogContainsEventType(
+      log, net::NetLog::TYPE_HTTP_CACHE_RESTART_PARTIAL_REQUEST));
 }
 
 // Tests that we cache partial responses that lack content-length.
@@ -4954,11 +5038,10 @@ TEST(HttpCache, RangeHEAD) {
 TEST(HttpCache, RangeGET_FastFlakyServer) {
   MockHttpCache cache;
 
-  MockTransaction transaction(kRangeGET_TransactionOK);
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = "Range: bytes = 40-\r\n" EXTRA_HEADER;
   transaction.test_mode = TEST_MODE_SYNC_NET_START;
   transaction.load_flags |= net::LOAD_VALIDATE_CACHE;
-  AddMockTransaction(&transaction);
 
   // Write to the cache.
   RunTransactionTest(cache.http_cache(), kRangeGET_TransactionOK);
@@ -4967,13 +5050,14 @@ TEST(HttpCache, RangeGET_FastFlakyServer) {
   RangeTransactionServer handler;
   handler.set_bad_200(true);
   transaction.data = "Not a range";
-  RunTransactionTest(cache.http_cache(), transaction);
+  net::CapturingBoundNetLog log;
+  RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
-
-  RemoveMockTransaction(&transaction);
+  EXPECT_TRUE(LogContainsEventType(
+      log, net::NetLog::TYPE_HTTP_CACHE_RE_SEND_PARTIAL_REQUEST));
 }
 
 // Tests that when the server gives us less data than expected, we don't keep

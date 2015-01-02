@@ -273,6 +273,7 @@ function getParamaterWriterForEventType(eventType) {
   switch (eventType) {
     case EventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case EventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
+    case EventType.TYPE_HTTP_CACHE_CALLER_REQUEST_HEADERS:
       return writeParamsForRequestHeaders;
 
     case EventType.PROXY_CONFIG_CHANGED:

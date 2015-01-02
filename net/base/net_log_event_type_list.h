@@ -847,6 +847,20 @@ EVENT_TYPE(HTTP_CACHE_WRITE_INFO)
 EVENT_TYPE(HTTP_CACHE_READ_DATA)
 EVENT_TYPE(HTTP_CACHE_WRITE_DATA)
 
+// The request headers received by the HTTP cache.
+// The following parameters are attached:
+//   {
+//     "line": <empty>,
+//     "headers": <The list of header:value pairs>,
+//   }
+EVENT_TYPE(HTTP_CACHE_CALLER_REQUEST_HEADERS)
+
+// Signal a significant change on the flow of the satate machine: start again
+// from scratch or create a new network request for byte-range operations.
+// There are no parameters.
+EVENT_TYPE(HTTP_CACHE_RESTART_PARTIAL_REQUEST)
+EVENT_TYPE(HTTP_CACHE_RE_SEND_PARTIAL_REQUEST)
+
 // Identifies the NetLog::Source() for the asynchronous HttpCache::Transaction
 // that will revalidate this entry.
 // The event parameters are:
