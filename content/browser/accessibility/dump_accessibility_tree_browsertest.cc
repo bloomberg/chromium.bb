@@ -560,8 +560,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDt) {
   RunHtmlTest(FILE_PATH_LITERAL("dt.html"));
 }
 
+#if defined(OS_ANDROID)
+// Flaky on Nexus 7 bot, http://crbug.com/445929.
+#define MAYBE_AccessibilityContenteditableDescendants \
+    DISABLED_AccessibilityContenteditableDescendants
+#else
+#define MAYBE_AccessibilityContenteditableDescendants \
+    AccessibilityContenteditableDescendants
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableDescendants) {
+                       MAYBE_AccessibilityContenteditableDescendants) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
 }
 
