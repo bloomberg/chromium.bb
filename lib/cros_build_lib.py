@@ -396,7 +396,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                chroot_args=None, debug_level=logging.INFO,
                error_code_ok=False, int_timeout=1, kill_timeout=1,
                log_output=False, stdout_to_pipe=False, capture_output=False,
-               quiet=False):
+               quiet=False, mute_output=None):
   """Runs a command.
 
   Args:
@@ -430,12 +430,10 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       If |combine_stdout_stderr| is set to True, then stderr will also be logged
       to the specified file.
     chroot_args: An array of arguments for the chroot environment wrapper.
-    debug_level: The debug level of RunCommand's output - applies to output
-                 coming from subprocess as well.
+    debug_level: The debug level of RunCommand's output.
     error_code_ok: Does not raise an exception when command returns a non-zero
-                   exit code.  Instead, returns the CommandResult object
-                   containing the exit code. Note: will still raise an
-                   exception if the cmd file does not exist.
+      exit code. Instead, returns the CommandResult object containing the exit
+      code. Note: will still raise an exception if the cmd file does not exist.
     int_timeout: If we're interrupted, how long (in seconds) should we give the
       invoked process to clean up before we send a SIGTERM.
     kill_timeout: If we're interrupted, how long (in seconds) should we give the
@@ -444,7 +442,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     stdout_to_pipe: Redirect stdout to pipe.
     capture_output: Set |redirect_stdout| and |redirect_stderr| to True.
     quiet: Set |print_cmd| to False, |stdout_to_pipe| and
-           |combine_stdout_stderr| to True.
+      |combine_stdout_stderr| to True.
+    mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
+      None, which bases muting on |debug_level|.
 
   Returns:
     A CommandResult object.
@@ -465,7 +465,8 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   stdin = None
   cmd_result = CommandResult()
 
-  mute_output = logger.getEffectiveLevel() > debug_level
+  if mute_output is None:
+    mute_output = logger.getEffectiveLevel() > debug_level
 
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.

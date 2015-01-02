@@ -567,8 +567,9 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                   rc_kv=dict(user='MMMMMonster', shell=True))
 
 
-class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
-  """Tests of RunCommand logging."""
+class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
+                           cros_test_lib.OutputTestCase):
+  """Tests of RunCommand output options."""
 
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
@@ -594,6 +595,36 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
+
+  def _CaptureRunCommand(self, command, mute_output):
+    """Capture a RunCommand() output with the specified |mute_output|.
+
+    Args:
+      command: command to send to RunCommand().
+      mute_output: RunCommand() |mute_output| parameter.
+
+    Returns:
+      A (stdout, stderr) pair of captured output.
+    """
+    with self.OutputCapturer() as output:
+      cros_build_lib.RunCommand(command,
+                                debug_level=logging.DEBUG,
+                                mute_output=mute_output)
+    return (output.GetStdout(), output.GetStderr())
+
+  @_ForceLoggingLevel
+  def testSubprocessMuteOutput(self):
+    """Test RunCommand |mute_output| parameter."""
+    command = ['sh', '-c', 'echo foo; echo bar >&2']
+    # Always mute: we shouldn't get any output.
+    self.assertEqual(self._CaptureRunCommand(command, mute_output=True),
+                     ('', ''))
+    # Mute based on |debug_level|: we should't get any output.
+    self.assertEqual(self._CaptureRunCommand(command, mute_output=None),
+                     ('', ''))
+    # Never mute: we should get 'foo\n' and 'bar\n'.
+    self.assertEqual(self._CaptureRunCommand(command, mute_output=False),
+                     ('foo\n', 'bar\n'))
 
 
 class TestRetries(cros_test_lib.MockTempDirTestCase):
