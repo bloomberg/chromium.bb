@@ -9,11 +9,13 @@ function FileIOTestPlayer(video, testConfig) {
 }
 
 FileIOTestPlayer.prototype.init = function() {
-  PlayerUtils.initPrefixedEMEPlayer(this);
+  // Returns a promise.
+  return PlayerUtils.initEMEPlayer(this);
 };
 
 FileIOTestPlayer.prototype.registerEventListeners = function() {
-  PlayerUtils.registerPrefixedEMEEventListeners(this);
+  // Returns a promise.
+  return PlayerUtils.registerPrefixedEMEEventListeners(this);
 };
 
 FileIOTestPlayer.prototype.onWebkitKeyMessage = function(message) {

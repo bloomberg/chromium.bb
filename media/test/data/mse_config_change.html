@@ -121,13 +121,20 @@
         testConfig.mediaType = mediaType;
         video.addEventListener('timeupdate', onTimeUpdate);
         video.addEventListener('ended', Utils.failTest);
-        if (runEncrypted) {
-          var emePlayer = PlayerUtils.createPlayer(video, testConfig);
-          emePlayer.registerEventListeners();
-        }
         var mediaSource = MediaSourceUtils.loadMediaSource(
             MEDIA_1, mediaType, appendNextSource);
-        video.src = window.URL.createObjectURL(mediaSource);
+        if (runEncrypted) {
+          var emePlayer = PlayerUtils.createPlayer(video, testConfig);
+          emePlayer.registerEventListeners()
+              .then(function(player) {
+                video.src = window.URL.createObjectURL(mediaSource);
+              })
+              .catch(function(error) {
+                Utils.failTest('Unable to register event listeners.');
+              });
+        } else {
+          video.src = window.URL.createObjectURL(mediaSource);
+        }
       }
       </script>
   </body>

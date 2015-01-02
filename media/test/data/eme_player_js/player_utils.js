@@ -36,6 +36,8 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
   }
 };
 
+// Register the necessary event handlers needed when playing encrypted content
+// using the unprefixed API. Returns a promise that resolves to the player.
 PlayerUtils.registerEMEEventListeners = function(player) {
   player.video.addEventListener('encrypted', function(message) {
 
@@ -67,9 +69,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         var session = message.target.mediaKeys.createSession();
         addMediaKeySessionListeners(session);
         session.generateRequest(message.initDataType, message.initData)
-          .catch(function(error) {
-            Utils.failTest(error, KEY_ERROR);
-          });
+            .catch(function(error) { Utils.failTest(error, KEY_ERROR); });
       }
     } catch (e) {
       Utils.failTest(e);
@@ -77,25 +77,19 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   });
 
   this.registerDefaultEventListeners(player);
-  try {
-    Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
-    if (typeof navigator.requestMediaKeySystemAccess == 'function') {
-      navigator.requestMediaKeySystemAccess(player.testConfig.keySystem)
-          .then(function(access) { return access.createMediaKeys(); })
-          .then(function(mediaKeys) { player.video.setMediaKeys(mediaKeys); })
-          .catch(function(error) { Utils.failTest(error, NOTSUPPORTEDERROR); });
-    } else {
-      // TODO(jrummell): Remove this once the blink change for
-      // requestMediaKeySystemAccess lands.
-      MediaKeys.create(player.testConfig.keySystem)
-          .then(function(mediaKeys) { player.video.setMediaKeys(mediaKeys); })
-          .catch(function(error) { Utils.failTest(error, NOTSUPPORTEDERROR); });
-    }
-  } catch (e) {
-    Utils.failTest(e);
-  }
+  Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
+  return navigator.requestMediaKeySystemAccess(player.testConfig.keySystem)
+      .then(function(access) { return access.createMediaKeys(); })
+      .then(function(mediaKeys) {
+        return player.video.setMediaKeys(mediaKeys);
+      })
+      .then(function(result) { return player; })
+      .catch(function(error) { Utils.failTest(error, NOTSUPPORTEDERROR); });
 };
 
+// Register the necessary event handlers needed when playing encrypted content
+// using the prefixed API. Even though the prefixed API is all synchronous,
+// returns a promise that resolves to the player.
 PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
  player.video.addEventListener('webkitneedkey', function(message) {
     var initData = message.initData;
@@ -133,7 +127,12 @@ PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
       message.target.receivedHeartbeat = true;
     }
   });
-  this.registerDefaultEventListeners(player);
+
+  // The prefixed API is all synchronous, so wrap the calls in a promise.
+  return new Promise(function(resolve, reject) {
+    PlayerUtils.registerDefaultEventListeners(player);
+    resolve(player);
+  });
 };
 
 PlayerUtils.setVideoSource = function(player) {
@@ -148,14 +147,13 @@ PlayerUtils.setVideoSource = function(player) {
   }
 };
 
+// Initialize the player to play encrypted content. Returns a promise that
+// resolves to the player.
 PlayerUtils.initEMEPlayer = function(player) {
-  this.registerEMEEventListeners(player);
-  this.setVideoSource(player);
-};
-
-PlayerUtils.initPrefixedEMEPlayer = function(player) {
-  this.registerPrefixedEMEEventListeners(player);
-  this.setVideoSource(player);
+  return player.registerEventListeners().then(function(result) {
+    PlayerUtils.setVideoSource(player);
+    return player;
+  });
 };
 
 // Return the appropriate player based on test configuration.

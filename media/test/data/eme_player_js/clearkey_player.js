@@ -10,11 +10,13 @@ function ClearKeyPlayer(video, testConfig) {
 }
 
 ClearKeyPlayer.prototype.init = function() {
-  PlayerUtils.initEMEPlayer(this);
+  // Returns a promise.
+  return PlayerUtils.initEMEPlayer(this);
 };
 
 ClearKeyPlayer.prototype.registerEventListeners = function() {
-  PlayerUtils.registerEMEEventListeners(this);
+  // Returns a promise.
+  return PlayerUtils.registerEMEEventListeners(this);
 };
 
 ClearKeyPlayer.prototype.onMessage = function(message) {

@@ -10,11 +10,13 @@ function PrefixedClearKeyPlayer(video, testConfig) {
 }
 
 PrefixedClearKeyPlayer.prototype.init = function() {
-  PlayerUtils.initPrefixedEMEPlayer(this);
+  // Returns a promise.
+  return PlayerUtils.initEMEPlayer(this);
 };
 
 PrefixedClearKeyPlayer.prototype.registerEventListeners = function() {
-  PlayerUtils.registerPrefixedEMEEventListeners(this);
+  // Returns a promise.
+  return PlayerUtils.registerPrefixedEMEEventListeners(this);
 };
 
 PrefixedClearKeyPlayer.prototype.onWebkitKeyMessage = function(message) {

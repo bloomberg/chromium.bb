@@ -40,8 +40,7 @@ EMEApp.prototype.createPlayer = function() {
   if (this.testConfig_.runFPS)
     FPSObserver.observe(this.video_);
 
-  videoPlayer.init();
-  return videoPlayer;
+  return videoPlayer.init().then(function(result) { return videoPlayer; });
 };
 
 EMEApp.prototype.updateDocument = function(testConfig) {

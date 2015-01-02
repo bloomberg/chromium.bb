@@ -10,11 +10,13 @@ function WidevinePlayer(video, testConfig) {
 }
 
 WidevinePlayer.prototype.init = function() {
-  PlayerUtils.initEMEPlayer(this);
+  // Returns a promise.
+  return PlayerUtils.initEMEPlayer(this);
 };
 
 WidevinePlayer.prototype.registerEventListeners = function() {
-  PlayerUtils.registerEMEEventListeners(this);
+  // Returns a promise.
+  return PlayerUtils.registerEMEEventListeners(this);
 };
 
 WidevinePlayer.prototype.onMessage = function(message) {

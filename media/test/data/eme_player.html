@@ -84,9 +84,7 @@
       video.removeEventListener('timeupdate', onTimeUpdate);
     }
 
-    function Play() {
-      // Update test configuration with UI elements values.
-      var video = emeApp.createPlayer().video;
+    function Play(video) {
       Utils.resetTitleChange();
       // Ended should not fire before onTimeUpdate.
       video.addEventListener('ended', Utils.failTest);
@@ -103,6 +101,9 @@
       else
         element.style['display'] = '';
     }
-    Play();
+
+    emeApp.createPlayer()
+        .then(function(player) { Play(player.video); })
+        .catch(function(error) { Utils.failTest('Unable to play video.'); });
   </script>
 </html>

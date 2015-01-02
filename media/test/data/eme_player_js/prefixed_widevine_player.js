@@ -10,11 +10,13 @@ function PrefixedWidevinePlayer(video, testConfig) {
 }
 
 PrefixedWidevinePlayer.prototype.init = function() {
-  PlayerUtils.initPrefixedEMEPlayer(this);
+  // Returns a promise.
+  return PlayerUtils.initEMEPlayer(this);
 };
 
 PrefixedWidevinePlayer.prototype.registerEventListeners = function() {
-  PlayerUtils.registerPrefixedEMEEventListeners(this);
+  // Returns a promise.
+  return PlayerUtils.registerPrefixedEMEEventListeners(this);
 };
 
 PrefixedWidevinePlayer.prototype.onWebkitKeyMessage = function(message) {
