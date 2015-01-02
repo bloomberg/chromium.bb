@@ -46,11 +46,31 @@ public:
     virtual void layout() override;
 
     // Scrollbar parts needs to be rendered at device pixel boundaries.
-    virtual LayoutBoxExtent marginBox() const override { ASSERT(isIntegerValue(m_marginBox.top())); return m_marginBox; }
-    virtual LayoutUnit marginTop() const override { ASSERT(isIntegerValue(m_marginBox.top())); return m_marginBox.top(); }
-    virtual LayoutUnit marginBottom() const override { ASSERT(isIntegerValue(m_marginBox.bottom())); return m_marginBox.bottom(); }
-    virtual LayoutUnit marginLeft() const override { ASSERT(isIntegerValue(m_marginBox.left())); return m_marginBox.left(); }
-    virtual LayoutUnit marginRight() const override { ASSERT(isIntegerValue(m_marginBox.right())); return m_marginBox.right(); }
+    virtual LayoutRectOutsets marginBoxOutsets() const override
+    {
+        ASSERT(isIntegerValue(RenderBlock::marginBoxOutsets().top()));
+        return RenderBlock::marginBoxOutsets();
+    }
+    virtual LayoutUnit marginTop() const override
+    {
+        ASSERT(isIntegerValue(RenderBlock::marginTop()));
+        return RenderBlock::marginTop();
+    }
+    virtual LayoutUnit marginBottom() const override
+    {
+        ASSERT(isIntegerValue(RenderBlock::marginBottom()));
+        return RenderBlock::marginBottom();
+    }
+    virtual LayoutUnit marginLeft() const override
+    {
+        ASSERT(isIntegerValue(RenderBlock::marginLeft()));
+        return RenderBlock::marginLeft();
+    }
+    virtual LayoutUnit marginRight() const override
+    {
+        ASSERT(isIntegerValue(RenderBlock::marginRight()));
+        return RenderBlock::marginRight();
+    }
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderScrollbarPart || RenderBlock::isOfType(type); }
     RenderObject* rendererOwningScrollbar() const;

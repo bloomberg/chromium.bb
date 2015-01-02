@@ -29,33 +29,33 @@
  */
 
 #include "config.h"
-#include "platform/geometry/LayoutBoxExtent.h"
+#include "platform/geometry/LayoutRectOutsets.h"
 
 #include "wtf/Assertions.h"
 
 namespace blink {
 
-LayoutUnit LayoutBoxExtent::logicalTop(WritingMode writingMode) const
+LayoutUnit LayoutRectOutsets::logicalTop(WritingMode writingMode) const
 {
     return isHorizontalWritingMode(writingMode) ? m_top : m_left;
 }
 
-LayoutUnit LayoutBoxExtent::logicalBottom(WritingMode writingMode) const
+LayoutUnit LayoutRectOutsets::logicalBottom(WritingMode writingMode) const
 {
     return isHorizontalWritingMode(writingMode) ? m_bottom : m_right;
 }
 
-LayoutUnit LayoutBoxExtent::logicalLeft(WritingMode writingMode) const
+LayoutUnit LayoutRectOutsets::logicalLeft(WritingMode writingMode) const
 {
     return isHorizontalWritingMode(writingMode) ? m_left : m_top;
 }
 
-LayoutUnit LayoutBoxExtent::logicalRight(WritingMode writingMode) const
+LayoutUnit LayoutRectOutsets::logicalRight(WritingMode writingMode) const
 {
     return isHorizontalWritingMode(writingMode) ? m_right : m_bottom;
 }
 
-LayoutUnit LayoutBoxExtent::before(WritingMode writingMode) const
+LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const
 {
     switch (writingMode) {
     case TopToBottomWritingMode:
@@ -71,7 +71,7 @@ LayoutUnit LayoutBoxExtent::before(WritingMode writingMode) const
     return m_top;
 }
 
-LayoutUnit LayoutBoxExtent::after(WritingMode writingMode) const
+LayoutUnit LayoutRectOutsets::after(WritingMode writingMode) const
 {
     switch (writingMode) {
     case TopToBottomWritingMode:
@@ -87,21 +87,21 @@ LayoutUnit LayoutBoxExtent::after(WritingMode writingMode) const
     return m_bottom;
 }
 
-LayoutUnit LayoutBoxExtent::start(WritingMode writingMode, TextDirection direction) const
+LayoutUnit LayoutRectOutsets::start(WritingMode writingMode, TextDirection direction) const
 {
     if (isHorizontalWritingMode(writingMode))
         return isLeftToRightDirection(direction) ? m_left : m_right;
     return isLeftToRightDirection(direction) ? m_top : m_bottom;
 }
 
-LayoutUnit LayoutBoxExtent::end(WritingMode writingMode, TextDirection direction) const
+LayoutUnit LayoutRectOutsets::end(WritingMode writingMode, TextDirection direction) const
 {
     if (isHorizontalWritingMode(writingMode))
         return isLeftToRightDirection(direction) ? m_right : m_left;
     return isLeftToRightDirection(direction) ? m_bottom : m_top;
 }
 
-void LayoutBoxExtent::setBefore(WritingMode writingMode, LayoutUnit value)
+void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value)
 {
     switch (writingMode) {
     case TopToBottomWritingMode:
@@ -122,7 +122,7 @@ void LayoutBoxExtent::setBefore(WritingMode writingMode, LayoutUnit value)
     }
 }
 
-void LayoutBoxExtent::setAfter(WritingMode writingMode, LayoutUnit value)
+void LayoutRectOutsets::setAfter(WritingMode writingMode, LayoutUnit value)
 {
     switch (writingMode) {
     case TopToBottomWritingMode:
@@ -143,7 +143,7 @@ void LayoutBoxExtent::setAfter(WritingMode writingMode, LayoutUnit value)
     }
 }
 
-void LayoutBoxExtent::setStart(WritingMode writingMode, TextDirection direction, LayoutUnit value)
+void LayoutRectOutsets::setStart(WritingMode writingMode, TextDirection direction, LayoutUnit value)
 {
     if (isHorizontalWritingMode(writingMode)) {
         if (isLeftToRightDirection(direction))
@@ -158,7 +158,7 @@ void LayoutBoxExtent::setStart(WritingMode writingMode, TextDirection direction,
     }
 }
 
-void LayoutBoxExtent::setEnd(WritingMode writingMode, TextDirection direction, LayoutUnit value)
+void LayoutRectOutsets::setEnd(WritingMode writingMode, TextDirection direction, LayoutUnit value)
 {
     if (isHorizontalWritingMode(writingMode)) {
         if (isLeftToRightDirection(direction))

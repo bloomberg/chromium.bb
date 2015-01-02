@@ -133,7 +133,7 @@ static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NineP
 {
     LayoutRect clipRect(paintRect);
     RenderStyle* style = box->renderer().style();
-    LayoutBoxExtent outsets = style->imageOutsets(image);
+    LayoutRectOutsets outsets = style->imageOutsets(image);
     if (box->isHorizontal()) {
         clipRect.setY(paintRect.y() - outsets.top());
         clipRect.setHeight(paintRect.height() + outsets.top() + outsets.bottom());

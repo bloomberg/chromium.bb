@@ -88,7 +88,7 @@ LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) co
 {
     // Clip to the padding box to at least give content the extra padding space.
     LayoutRect rect(additionalOffset, size());
-    rect.contract(borderBoxExtent());
+    rect.expand(borderInsets());
     return rect;
 }
 

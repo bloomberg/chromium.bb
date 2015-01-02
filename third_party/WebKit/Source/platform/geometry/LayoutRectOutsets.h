@@ -28,31 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutBoxExtent_h
-#define LayoutBoxExtent_h
+#ifndef LayoutRectOutsets_h
+#define LayoutRectOutsets_h
 
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
+#include "platform/geometry/IntRectOutsets.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT LayoutBoxExtent {
+// Specifies LayoutUnit lengths to be used to expand a rectangle.
+// For example, |top()| returns the distance the top edge should be moved
+// upward.
+//
+// Negative lengths can be used to express insets.
+class PLATFORM_EXPORT LayoutRectOutsets {
 public:
-    LayoutBoxExtent() : m_top(0), m_right(0), m_bottom(0), m_left(0) { }
-    LayoutBoxExtent(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
+    LayoutRectOutsets() : m_top(0), m_right(0), m_bottom(0), m_left(0) { }
+    LayoutRectOutsets(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
         : m_top(top), m_right(right), m_bottom(bottom), m_left(left) { }
 
-    inline LayoutUnit top() const { return m_top; }
-    inline LayoutUnit right() const { return m_right; }
-    inline LayoutUnit bottom() const { return m_bottom; }
-    inline LayoutUnit left() const { return m_left; }
+    LayoutRectOutsets(const IntRectOutsets& outsets)
+        : m_top(outsets.top())
+        , m_right(outsets.right())
+        , m_bottom(outsets.bottom())
+        , m_left(outsets.left())
+    {
+    }
 
-    inline void setTop(LayoutUnit value) { m_top = value; }
-    inline void setRight(LayoutUnit value) { m_right = value; }
-    inline void setBottom(LayoutUnit value) { m_bottom = value; }
-    inline void setLeft(LayoutUnit value) { m_left = value; }
+    LayoutUnit top() const { return m_top; }
+    LayoutUnit right() const { return m_right; }
+    LayoutUnit bottom() const { return m_bottom; }
+    LayoutUnit left() const { return m_left; }
+
+    void setTop(LayoutUnit value) { m_top = value; }
+    void setRight(LayoutUnit value) { m_right = value; }
+    void setBottom(LayoutUnit value) { m_bottom = value; }
+    void setLeft(LayoutUnit value) { m_left = value; }
 
     LayoutUnit logicalTop(WritingMode) const;
     LayoutUnit logicalBottom(WritingMode) const;
@@ -78,4 +92,4 @@ private:
 
 } // namespace blink
 
-#endif // LayoutBoxExtent_h
+#endif // LayoutRectOutsets_h

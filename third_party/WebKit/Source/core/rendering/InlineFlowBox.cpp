@@ -819,7 +819,7 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
     if (!style->hasBorderImageOutsets())
         return;
 
-    LayoutBoxExtent borderOutsets = style->borderImageOutsets();
+    LayoutRectOutsets borderOutsets = style->borderImageOutsets();
 
     LayoutUnit borderOutsetLogicalTop = borderOutsets.logicalTop(style->writingMode());
     LayoutUnit borderOutsetLogicalBottom = borderOutsets.logicalBottom(style->writingMode());

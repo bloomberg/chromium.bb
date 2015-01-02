@@ -66,7 +66,7 @@
 #include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/FloatRoundedRect.h"
-#include "platform/geometry/LayoutBoxExtent.h"
+#include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -398,12 +398,12 @@ public:
         return hasBackgroundImage();
     }
 
-    LayoutBoxExtent imageOutsets(const NinePieceImage&) const;
+    LayoutRectOutsets imageOutsets(const NinePieceImage&) const;
     bool hasBorderImageOutsets() const
     {
         return borderImage().hasImage() && borderImage().outset().nonZero();
     }
-    LayoutBoxExtent borderImageOutsets() const
+    LayoutRectOutsets borderImageOutsets() const
     {
         return imageOutsets(borderImage());
     }

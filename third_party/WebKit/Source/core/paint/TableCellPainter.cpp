@@ -208,7 +208,7 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
         GraphicsContextStateSaver stateSaver(*paintInfo.context, shouldClip);
         if (shouldClip) {
             LayoutRect clipRect(paintRect.location(), m_renderTableCell.size());
-            clipRect.contract(m_renderTableCell.borderBoxExtent());
+            clipRect.expand(m_renderTableCell.borderInsets());
             paintInfo.context->clip(clipRect);
         }
         BoxPainter(m_renderTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, CompositeSourceOver, backgroundObject);

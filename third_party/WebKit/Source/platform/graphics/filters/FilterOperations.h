@@ -27,14 +27,14 @@
 #define FilterOperations_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/IntRectExtent.h"
+#include "platform/geometry/IntRectOutsets.h"
 #include "platform/graphics/filters/FilterOperation.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-typedef IntRectExtent FilterOutsets;
+typedef IntRectOutsets FilterOutsets;
 
 class PLATFORM_EXPORT FilterOperations {
 #if ENABLE(OILPAN)

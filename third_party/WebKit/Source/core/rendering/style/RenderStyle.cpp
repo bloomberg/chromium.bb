@@ -1589,12 +1589,13 @@ const FilterOperations& RenderStyle::initialFilter()
 }
 #endif
 
-LayoutBoxExtent RenderStyle::imageOutsets(const NinePieceImage& image) const
+LayoutRectOutsets RenderStyle::imageOutsets(const NinePieceImage& image) const
 {
-    return LayoutBoxExtent(NinePieceImage::computeOutset(image.outset().top(), borderTopWidth()),
-                           NinePieceImage::computeOutset(image.outset().right(), borderRightWidth()),
-                           NinePieceImage::computeOutset(image.outset().bottom(), borderBottomWidth()),
-                           NinePieceImage::computeOutset(image.outset().left(), borderLeftWidth()));
+    return LayoutRectOutsets(
+        NinePieceImage::computeOutset(image.outset().top(), borderTopWidth()),
+        NinePieceImage::computeOutset(image.outset().right(), borderRightWidth()),
+        NinePieceImage::computeOutset(image.outset().bottom(), borderBottomWidth()),
+        NinePieceImage::computeOutset(image.outset().left(), borderLeftWidth()));
 }
 
 void RenderStyle::setBorderImageSource(PassRefPtr<StyleImage> image)

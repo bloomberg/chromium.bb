@@ -27,16 +27,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef IntRectExtent_h
-#define IntRectExtent_h
+#ifndef IntRectOutsets_h
+#define IntRectOutsets_h
 
-#include "platform/geometry/LayoutRect.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 
-class IntRectExtent {
+// Specifies integral lengths to be used to expand a rectangle.
+// For example, |top()| returns the distance the top edge should be moved
+// upward.
+//
+// Negative lengths can be used to express insets.
+class PLATFORM_EXPORT IntRectOutsets {
 public:
-    IntRectExtent()
+    IntRectOutsets()
         : m_top(0)
         , m_right(0)
         , m_bottom(0)
@@ -44,7 +49,7 @@ public:
     {
     }
 
-    IntRectExtent(int top, int right, int bottom, int left)
+    IntRectOutsets(int top, int right, int bottom, int left)
         : m_top(top)
         , m_right(right)
         , m_bottom(bottom)
@@ -53,27 +58,16 @@ public:
     }
 
     int top() const { return m_top; }
-    void setTop(int top) { m_top = top; }
-
     int right() const { return m_right; }
-    void setRight(int right) { m_right = right; }
-
     int bottom() const { return m_bottom; }
-    void setBottom(int bottom) { m_bottom = bottom; }
-
     int left() const { return m_left; }
+
+    void setTop(int top) { m_top = top; }
+    void setRight(int right) { m_right = right; }
+    void setBottom(int bottom) { m_bottom = bottom; }
     void setLeft(int left) { m_left = left; }
 
     bool isZero() const { return !left() && !right() && !top() && !bottom(); }
-
-    void expandRect(LayoutRect& rect) const
-    {
-        if (isZero())
-            return;
-
-        rect.move(-left(), -top());
-        rect.expand(left() + right(), top() + bottom());
-    }
 
 private:
     int m_top;
@@ -82,20 +76,7 @@ private:
     int m_left;
 };
 
-inline bool operator==(const IntRectExtent& a, const IntRectExtent& b)
-{
-    return a.top() == b.top()
-        && a.right() == b.right()
-        && a.bottom() == b.bottom()
-        && a.left() == b.left();
-}
-
-inline bool operator!=(const IntRectExtent& a, const IntRectExtent& b)
-{
-    return !(a == b);
-}
-
-inline void operator+=(IntRectExtent& a, const IntRectExtent& b)
+inline void operator+=(IntRectOutsets& a, const IntRectOutsets& b)
 {
     a.setTop(a.top() + b.top());
     a.setRight(a.right() + b.right());
@@ -105,5 +86,4 @@ inline void operator+=(IntRectExtent& a, const IntRectExtent& b)
 
 } // namespace blink
 
-
-#endif // IntRectExtent_h
+#endif // IntRectOutsets_h

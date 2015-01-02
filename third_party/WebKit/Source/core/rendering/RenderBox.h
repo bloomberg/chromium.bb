@@ -226,7 +226,7 @@ public:
     void addContentsVisualOverflow(const LayoutRect&);
 
     void addVisualEffectOverflow();
-    LayoutBoxExtent computeVisualEffectOverflowExtent() const;
+    LayoutRectOutsets computeVisualEffectOverflowOutsets() const;
     void addOverflowFromChild(RenderBox* child) { addOverflowFromChild(child, child->locationOffset()); }
     void addOverflowFromChild(RenderBox* child, const LayoutSize& delta);
     void clearLayoutOverflow();
@@ -280,42 +280,42 @@ public:
     void scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
     void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
-    virtual LayoutBoxExtent marginBox() const override { return m_marginBox; }
-    virtual LayoutUnit marginTop() const override { return m_marginBox.top(); }
-    virtual LayoutUnit marginBottom() const override { return m_marginBox.bottom(); }
-    virtual LayoutUnit marginLeft() const override { return m_marginBox.left(); }
-    virtual LayoutUnit marginRight() const override { return m_marginBox.right(); }
-    void setMarginTop(LayoutUnit margin) { m_marginBox.setTop(margin); }
-    void setMarginBottom(LayoutUnit margin) { m_marginBox.setBottom(margin); }
-    void setMarginLeft(LayoutUnit margin) { m_marginBox.setLeft(margin); }
-    void setMarginRight(LayoutUnit margin) { m_marginBox.setRight(margin); }
+    virtual LayoutRectOutsets marginBoxOutsets() const override { return m_marginBoxOutsets; }
+    virtual LayoutUnit marginTop() const override { return m_marginBoxOutsets.top(); }
+    virtual LayoutUnit marginBottom() const override { return m_marginBoxOutsets.bottom(); }
+    virtual LayoutUnit marginLeft() const override { return m_marginBoxOutsets.left(); }
+    virtual LayoutUnit marginRight() const override { return m_marginBoxOutsets.right(); }
+    void setMarginTop(LayoutUnit margin) { m_marginBoxOutsets.setTop(margin); }
+    void setMarginBottom(LayoutUnit margin) { m_marginBoxOutsets.setBottom(margin); }
+    void setMarginLeft(LayoutUnit margin) { m_marginBoxOutsets.setLeft(margin); }
+    void setMarginRight(LayoutUnit margin) { m_marginBoxOutsets.setRight(margin); }
 
-    LayoutUnit marginLogicalLeft() const { return m_marginBox.logicalLeft(style()->writingMode()); }
-    LayoutUnit marginLogicalRight() const { return m_marginBox.logicalRight(style()->writingMode()); }
+    LayoutUnit marginLogicalLeft() const { return m_marginBoxOutsets.logicalLeft(style()->writingMode()); }
+    LayoutUnit marginLogicalRight() const { return m_marginBoxOutsets.logicalRight(style()->writingMode()); }
 
-    virtual LayoutUnit marginBefore(const RenderStyle* overrideStyle = 0) const override final { return m_marginBox.before((overrideStyle ? overrideStyle : style())->writingMode()); }
-    virtual LayoutUnit marginAfter(const RenderStyle* overrideStyle = 0) const override final { return m_marginBox.after((overrideStyle ? overrideStyle : style())->writingMode()); }
+    virtual LayoutUnit marginBefore(const RenderStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->writingMode()); }
+    virtual LayoutUnit marginAfter(const RenderStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->writingMode()); }
     virtual LayoutUnit marginStart(const RenderStyle* overrideStyle = 0) const override final
     {
         const RenderStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        return m_marginBox.start(styleToUse->writingMode(), styleToUse->direction());
+        return m_marginBoxOutsets.start(styleToUse->writingMode(), styleToUse->direction());
     }
     virtual LayoutUnit marginEnd(const RenderStyle* overrideStyle = 0) const override final
     {
         const RenderStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        return m_marginBox.end(styleToUse->writingMode(), styleToUse->direction());
+        return m_marginBoxOutsets.end(styleToUse->writingMode(), styleToUse->direction());
     }
-    void setMarginBefore(LayoutUnit value, const RenderStyle* overrideStyle = 0) { m_marginBox.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
-    void setMarginAfter(LayoutUnit value, const RenderStyle* overrideStyle = 0) { m_marginBox.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    void setMarginBefore(LayoutUnit value, const RenderStyle* overrideStyle = 0) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    void setMarginAfter(LayoutUnit value, const RenderStyle* overrideStyle = 0) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
     void setMarginStart(LayoutUnit value, const RenderStyle* overrideStyle = 0)
     {
         const RenderStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        m_marginBox.setStart(styleToUse->writingMode(), styleToUse->direction(), value);
+        m_marginBoxOutsets.setStart(styleToUse->writingMode(), styleToUse->direction(), value);
     }
     void setMarginEnd(LayoutUnit value, const RenderStyle* overrideStyle = 0)
     {
         const RenderStyle* styleToUse = overrideStyle ? overrideStyle : style();
-        m_marginBox.setEnd(styleToUse->writingMode(), styleToUse->direction(), value);
+        m_marginBoxOutsets.setEnd(styleToUse->writingMode(), styleToUse->direction(), value);
     }
 
     // The following functions are used to implement collapsing margins.
@@ -327,7 +327,7 @@ public:
     virtual bool isSelfCollapsingBlock() const { return false; }
     virtual LayoutUnit collapsedMarginBefore() const { return marginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const { return marginAfter(); }
-    LayoutBoxExtent collapsedMarginBox() const { return LayoutBoxExtent(collapsedMarginBefore(), 0, collapsedMarginAfter(), 0); }
+    LayoutRectOutsets collapsedMarginBoxLogicalOutsets() const { return LayoutRectOutsets(collapsedMarginBefore(), 0, collapsedMarginAfter(), 0); }
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
@@ -784,9 +784,9 @@ private:
 
     bool hasNonCompositedScrollbars() const;
 
-protected:
-    LayoutBoxExtent m_marginBox;
+    LayoutRectOutsets m_marginBoxOutsets;
 
+protected:
     // The preferred logical width of the element if it were to break its lines at every possible opportunity.
     LayoutUnit m_minPreferredLogicalWidth;
 

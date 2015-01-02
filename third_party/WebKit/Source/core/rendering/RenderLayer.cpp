@@ -1161,7 +1161,7 @@ LayoutRect RenderLayer::transparencyClipBox(const RenderLayer* layer, const Rend
         // paints unfragmented.
         LayoutRect clipRect = layer->physicalBoundingBox(layer);
         expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, subPixelAccumulation, paintBehavior);
-        layer->renderer()->style()->filterOutsets().expandRect(clipRect);
+        clipRect.expand(layer->renderer()->style()->filterOutsets());
         LayoutRect result = transform.mapRect(clipRect);
         if (!paginationLayer)
             return result;
@@ -1180,7 +1180,7 @@ LayoutRect RenderLayer::transparencyClipBox(const RenderLayer* layer, const Rend
 
     LayoutRect clipRect = layer->fragmentsBoundingBox(rootLayer);
     expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, paintBehavior);
-    layer->renderer()->style()->filterOutsets().expandRect(clipRect);
+    clipRect.expand(layer->renderer()->style()->filterOutsets());
     clipRect.move(subPixelAccumulation);
     return clipRect;
 }
@@ -2413,7 +2413,7 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
         // FIXME: We can optimize the size of the composited layers, by not enlarging
         // filtered areas with the outsets if we know that the filter is going to render in hardware.
         // https://bugs.webkit.org/show_bug.cgi?id=81239
-        m_renderer->style()->filterOutsets().expandRect(result);
+        result.expand(m_renderer->style()->filterOutsets());
     }
 
     if (paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform()))

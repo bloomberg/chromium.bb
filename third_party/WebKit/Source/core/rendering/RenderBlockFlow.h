@@ -346,7 +346,7 @@ public:
             , rect(f->frameRect())
             , everHadLayout(f->everHadLayout())
         {
-            rect.expand(f->marginBox());
+            rect.expand(f->marginBoxOutsets());
         }
 
         RenderBox* object;

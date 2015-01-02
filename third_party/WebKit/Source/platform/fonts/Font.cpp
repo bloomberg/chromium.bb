@@ -201,7 +201,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     drawEmphasisMarks(context, runInfo, glyphBuffer, mark, point);
 }
 
-static inline void updateGlyphOverflowFromBounds(const IntRectExtent& glyphBounds,
+static inline void updateGlyphOverflowFromBounds(const IntRectOutsets& glyphBounds,
     const FontMetrics& fontMetrics, GlyphOverflow* glyphOverflow)
 {
     glyphOverflow->top = std::max<int>(glyphOverflow->top,
@@ -238,7 +238,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     }
 
     float result;
-    IntRectExtent glyphBounds;
+    IntRectOutsets glyphBounds;
     if (codePathToUse == ComplexPath) {
         result = floatWidthForComplexText(run, fallbackFonts, &glyphBounds);
     } else {
@@ -774,7 +774,7 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
     }
 }
 
-float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
+float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
     HarfBuzzShaper shaper(this, run, HarfBuzzShaper::NotForTextEmphasis, fallbackFonts);
     if (!shaper.shape())
@@ -880,7 +880,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     drawGlyphBuffer(context, runInfo, markBuffer, point);
 }
 
-float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
+float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
     SimpleShaper::GlyphBounds bounds;
     SimpleShaper shaper(this, run, fallbackFonts, glyphBounds ? &bounds : 0);

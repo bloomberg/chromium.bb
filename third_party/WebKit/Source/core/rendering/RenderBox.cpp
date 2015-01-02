@@ -1847,7 +1847,7 @@ void RenderBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& p
         paintInvalidationRect.unite(reflectedRect(paintInvalidationRect));
 
     if (style()->hasFilter())
-        style()->filterOutsets().expandRect(paintInvalidationRect);
+        paintInvalidationRect.expand(style()->filterOutsets());
 }
 
 void RenderBox::invalidatePaintForOverhangingFloats(bool)
@@ -3988,11 +3988,11 @@ void RenderBox::addVisualEffectOverflow()
 
     // Add in the final overflow with shadows, outsets and outline combined.
     LayoutRect visualEffectOverflow = borderBoxRect();
-    visualEffectOverflow.expand(computeVisualEffectOverflowExtent());
+    visualEffectOverflow.expand(computeVisualEffectOverflowOutsets());
     addVisualOverflow(visualEffectOverflow);
 }
 
-LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
+LayoutRectOutsets RenderBox::computeVisualEffectOverflowOutsets() const
 {
     ASSERT(style()->hasVisualOverflowingEffect());
 
@@ -4011,7 +4011,7 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
     }
 
     if (style()->hasBorderImageOutsets()) {
-        LayoutBoxExtent borderOutsets = style()->borderImageOutsets();
+        LayoutRectOutsets borderOutsets = style()->borderImageOutsets();
         top = std::max(top, borderOutsets.top());
         right = std::max(right, borderOutsets.right());
         bottom = std::max(bottom, borderOutsets.bottom());
@@ -4039,7 +4039,7 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
         }
     }
 
-    return LayoutBoxExtent(top, right, bottom, left);
+    return LayoutRectOutsets(top, right, bottom, left);
 }
 
 void RenderBox::addOverflowFromChild(RenderBox* child, const LayoutSize& delta)
@@ -4219,7 +4219,7 @@ bool RenderBox::isUnsplittableForPagination() const
 LayoutUnit RenderBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction, LinePositionMode /*linePositionMode*/) const
 {
     if (isReplaced())
-        return direction == HorizontalLine ? m_marginBox.top() + size().height() + m_marginBox.bottom() : m_marginBox.right() + size().width() + m_marginBox.left();
+        return direction == HorizontalLine ? marginHeight() + size().height() : marginWidth() + size().width();
     return LayoutUnit();
 }
 
@@ -4227,7 +4227,7 @@ int RenderBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, L
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     if (isReplaced()) {
-        int result = direction == HorizontalLine ? m_marginBox.top() + size().height() + m_marginBox.bottom() : m_marginBox.right() + size().width() + m_marginBox.left();
+        int result = direction == HorizontalLine ? marginHeight() + size().height() : marginWidth() + size().width();
         if (baselineType == AlphabeticBaseline)
             return result;
         return result - result / 2;

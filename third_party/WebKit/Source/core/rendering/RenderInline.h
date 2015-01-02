@@ -48,7 +48,7 @@ public:
 
     Element* node() const { return toElement(RenderBoxModelObject::node()); }
 
-    virtual LayoutBoxExtent marginBox() const override final;
+    virtual LayoutRectOutsets marginBoxOutsets() const override final;
     virtual LayoutUnit marginLeft() const override final;
     virtual LayoutUnit marginRight() const override final;
     virtual LayoutUnit marginTop() const override final;

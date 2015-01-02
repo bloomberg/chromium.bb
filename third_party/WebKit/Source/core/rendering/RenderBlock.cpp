@@ -3251,7 +3251,7 @@ int RenderBlock::inlineBlockBaseline(LineDirectionMode direction) const
 {
     if (!style()->isOverflowVisible()) {
         // We are not calling RenderBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
-        return direction == HorizontalLine ? size().height() + m_marginBox.bottom() : size().width() + m_marginBox.left();
+        return direction == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
     }
 
     return lastLineBoxBaseline(direction);
@@ -3448,7 +3448,7 @@ void RenderBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accum
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
         LayoutRect rect(accumulatedOffset, size());
-        rect.expand(collapsedMarginBox());
+        rect.expand(collapsedMarginBoxLogicalOutsets());
         rects.append(pixelSnappedIntRect(rect));
         continuation()->absoluteRects(rects, accumulatedOffset - toLayoutSize(location() +
                 inlineElementContinuation()->containingBlock()->location()));
@@ -3465,7 +3465,7 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
         LayoutRect localRect(LayoutPoint(), size());
-        localRect.expand(collapsedMarginBox());
+        localRect.expand(collapsedMarginBoxLogicalOutsets());
         quads.append(localToAbsoluteQuad(FloatRect(localRect), 0 /* mode */, wasFixed));
         continuation()->absoluteQuads(quads, wasFixed);
     } else {
