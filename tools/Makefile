@@ -65,7 +65,7 @@ HOST_TOOLCHAIN_BITS = 32
 # If CANNED_REVISION is "no" then it's "from git build": Makefile uses file
 # named "REVISIONS" to pull infomation from git and builds that.
 # If CANNED_REVISION is set to some revision then Makefile will try to download
-# sources from commondatastorage.googleapis.com and use them.
+# sources from storage.googleapis.com and use them.
 # You can also set CANNED_REVISION to "yes" if you want to just build sources
 # already unpacked and ready to be built from SRC subdirectory.
 CANNED_REVISION = no
@@ -116,14 +116,14 @@ ifeq ($(PLATFORM), win)
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS ?= scons.bat
   SVN ?= svn.bat
-  SVNVERSION ?= svnversion.bat | tr -d $$"\r"
+  SVNVERSION ?= ./get_revision.sh | tr -d $$"\r"
   PREFIX_NATIVE = $(shell cygpath -m $(PREFIX))
   CREATE_REDIRECTORS = ./create_redirectors_cygwin.sh
 else
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:$(PATH)
   SCONS ?= scons
   SVN ?= svn
-  SVNVERSION ?= svnversion
+  SVNVERSION ?= ./get_revision.sh
   PREFIX_NATIVE = $(DESTDIR)$(PREFIX)
   CREATE_REDIRECTORS = ./create_redirectors.sh
 endif
