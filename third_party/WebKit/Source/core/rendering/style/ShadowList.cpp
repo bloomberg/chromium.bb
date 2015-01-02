@@ -36,40 +36,25 @@
 
 namespace blink {
 
-static inline void calculateShadowExtent(const ShadowList* shadowList, float& shadowLeft, float& shadowRight, float& shadowTop, float& shadowBottom)
+FloatRectOutsets ShadowList::rectOutsetsIncludingOriginal() const
 {
-    ASSERT(shadowList);
-    size_t shadowCount = shadowList->shadows().size();
-    for (size_t i = 0; i < shadowCount; ++i) {
-        const ShadowData& shadow = shadowList->shadows()[i];
+    FloatRectOutsets outsets;
+    for (const ShadowData& shadow : shadows()) {
         if (shadow.style() == Inset)
             continue;
-        float blurAndSpread = shadow.blur() + shadow.spread();
-        shadowLeft = std::min(shadow.x() - blurAndSpread, shadowLeft);
-        shadowRight = std::max(shadow.x() + blurAndSpread, shadowRight);
-        shadowTop = std::min(shadow.y() - blurAndSpread, shadowTop);
-        shadowBottom = std::max(shadow.y() + blurAndSpread, shadowBottom);
+        outsets.unite(shadow.rectOutsets());
     }
+    return outsets;
 }
 
 void ShadowList::adjustRectForShadow(LayoutRect& rect) const
 {
-    FloatRect floatRect(rect);
-    adjustRectForShadow(floatRect);
-    rect = LayoutRect(floatRect);
+    rect.expand(rectOutsetsIncludingOriginal());
 }
 
 void ShadowList::adjustRectForShadow(FloatRect& rect) const
 {
-    float shadowLeft = 0;
-    float shadowRight = 0;
-    float shadowTop = 0;
-    float shadowBottom = 0;
-    calculateShadowExtent(this, shadowLeft, shadowRight, shadowTop, shadowBottom);
-
-    rect.move(shadowLeft, shadowTop);
-    rect.setWidth(rect.width() - shadowLeft + shadowRight);
-    rect.setHeight(rect.height() - shadowTop + shadowBottom);
+    rect.expand(rectOutsetsIncludingOriginal());
 }
 
 PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowList* to, double progress)

@@ -33,6 +33,7 @@
 
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatRectOutsets.h"
 #include "platform/geometry/IntRectOutsets.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
@@ -58,6 +59,14 @@ public:
     {
     }
 
+    LayoutRectOutsets(const FloatRectOutsets& outsets)
+        : m_top(outsets.top())
+        , m_right(outsets.right())
+        , m_bottom(outsets.bottom())
+        , m_left(outsets.left())
+    {
+    }
+
     LayoutUnit top() const { return m_top; }
     LayoutUnit right() const { return m_right; }
     LayoutUnit bottom() const { return m_bottom; }
@@ -73,6 +82,10 @@ public:
     LayoutUnit logicalLeft(WritingMode) const;
     LayoutUnit logicalRight(WritingMode) const;
 
+    // Produces a new LayoutRectOutsets whose |top| is the |logicalTop| of this
+    // one, and so on.
+    LayoutRectOutsets logicalOutsets(WritingMode) const;
+
     LayoutUnit before(WritingMode) const;
     LayoutUnit after(WritingMode) const;
     LayoutUnit start(WritingMode, TextDirection) const;
@@ -82,6 +95,14 @@ public:
     void setAfter(WritingMode, LayoutUnit);
     void setStart(WritingMode, TextDirection, LayoutUnit);
     void setEnd(WritingMode, TextDirection, LayoutUnit);
+
+    bool operator==(const LayoutRectOutsets other) const
+    {
+        return top() == other.top()
+            && right() == other.right()
+            && bottom() == other.bottom()
+            && left() == other.left();
+    }
 
 private:
     LayoutUnit m_top;

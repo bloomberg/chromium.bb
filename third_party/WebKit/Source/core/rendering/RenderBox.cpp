@@ -56,6 +56,7 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "core/rendering/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
@@ -4001,13 +4002,13 @@ LayoutRectOutsets RenderBox::computeVisualEffectOverflowOutsets() const
     LayoutUnit bottom;
     LayoutUnit left;
 
-    if (style()->boxShadow()) {
-        style()->getBoxShadowExtent(top, right, bottom, left);
-
-        // Box shadow extent's top and left are negative when extend to left and top direction, respectively.
-        // Negate to make them positive.
-        top = -top;
-        left = -left;
+    if (const ShadowList* boxShadow = style()->boxShadow()) {
+        // FIXME: Use LayoutUnit edge outsets, and then simplify this.
+        FloatRectOutsets outsets = boxShadow->rectOutsetsIncludingOriginal();
+        top = outsets.top();
+        right = outsets.right();
+        bottom = outsets.bottom();
+        left = outsets.left();
     }
 
     if (style()->hasBorderImageOutsets()) {

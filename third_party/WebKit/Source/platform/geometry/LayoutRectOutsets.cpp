@@ -55,6 +55,13 @@ LayoutUnit LayoutRectOutsets::logicalRight(WritingMode writingMode) const
     return isHorizontalWritingMode(writingMode) ? m_right : m_bottom;
 }
 
+LayoutRectOutsets LayoutRectOutsets::logicalOutsets(WritingMode writingMode) const
+{
+    if (!isHorizontalWritingMode(writingMode))
+        return LayoutRectOutsets(m_left, m_bottom, m_right, m_top);
+    return *this;
+}
+
 LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const
 {
     switch (writingMode) {

@@ -36,6 +36,7 @@
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RootInlineBox.h"
+#include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -783,30 +784,25 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
         return;
 
     RenderStyle* style = renderer().style(isFirstLineStyle());
-    if (!style->boxShadow())
+    WritingMode writingMode = style->writingMode();
+    ShadowList* boxShadow = style->boxShadow();
+    if (!boxShadow)
         return;
 
-    LayoutUnit boxShadowLogicalTop;
-    LayoutUnit boxShadowLogicalBottom;
-    style->getBoxShadowBlockDirectionExtent(boxShadowLogicalTop, boxShadowLogicalBottom);
+    LayoutRectOutsets outsets(boxShadow->rectOutsetsIncludingOriginal());
+    LayoutRectOutsets logicalOutsets(outsets.logicalOutsets(writingMode));
+    if (isFlippedLinesWritingMode(writingMode)) {
+        // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite shadow that applies, since
+        // the line is "upside down" in terms of block coordinates.
+        // FIXME: This bears a little more explanation.
+        LayoutUnit oldLogicalTop = logicalOutsets.top();
+        logicalOutsets.setTop(-logicalOutsets.bottom());
+        logicalOutsets.setBottom(-oldLogicalTop);
+    }
 
-    // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite shadow that applies, since
-    // the line is "upside down" in terms of block coordinates.
-    LayoutUnit shadowLogicalTop = style->isFlippedLinesWritingMode() ? -boxShadowLogicalBottom : boxShadowLogicalTop;
-    LayoutUnit shadowLogicalBottom = style->isFlippedLinesWritingMode() ? -boxShadowLogicalTop : boxShadowLogicalBottom;
-
-    LayoutUnit logicalTopVisualOverflow = std::min(pixelSnappedLogicalTop() + shadowLogicalTop, logicalVisualOverflow.y());
-    LayoutUnit logicalBottomVisualOverflow = std::max(pixelSnappedLogicalBottom() + shadowLogicalBottom, logicalVisualOverflow.maxY());
-
-    LayoutUnit boxShadowLogicalLeft;
-    LayoutUnit boxShadowLogicalRight;
-    style->getBoxShadowInlineDirectionExtent(boxShadowLogicalLeft, boxShadowLogicalRight);
-
-    LayoutUnit logicalLeftVisualOverflow = std::min(pixelSnappedLogicalLeft() + boxShadowLogicalLeft, logicalVisualOverflow.x());
-    LayoutUnit logicalRightVisualOverflow = std::max(pixelSnappedLogicalRight() + boxShadowLogicalRight, logicalVisualOverflow.maxX());
-
-    logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow,
-                                       logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
+    LayoutRect shadowBounds(logicalFrameRect());
+    shadowBounds.expand(logicalOutsets);
+    logicalVisualOverflow.unite(shadowBounds);
 }
 
 inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisualOverflow)
@@ -892,17 +888,19 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     // applied to the right, so this is not an issue with left overflow.
     rightGlyphOverflow -= std::min(0, (int)style->font().fontDescription().letterSpacing());
 
-    LayoutUnit textShadowLogicalTop;
-    LayoutUnit textShadowLogicalBottom;
-    style->getTextShadowBlockDirectionExtent(textShadowLogicalTop, textShadowLogicalBottom);
+    LayoutRectOutsets textShadowLogicalOutsets;
+    if (ShadowList* textShadow = style->textShadow())
+        textShadowLogicalOutsets = LayoutRectOutsets(textShadow->rectOutsetsIncludingOriginal()).logicalOutsets(style->writingMode());
+
+    // FIXME: This code currently uses negative values for expansion of the top
+    // and left edges. This should be cleaned up.
+    LayoutUnit textShadowLogicalTop = -textShadowLogicalOutsets.top();
+    LayoutUnit textShadowLogicalBottom = textShadowLogicalOutsets.bottom();
+    LayoutUnit textShadowLogicalLeft = -textShadowLogicalOutsets.left();
+    LayoutUnit textShadowLogicalRight = textShadowLogicalOutsets.right();
 
     LayoutUnit childOverflowLogicalTop = std::min<LayoutUnit>(textShadowLogicalTop + topGlyphOverflow, topGlyphOverflow);
     LayoutUnit childOverflowLogicalBottom = std::max<LayoutUnit>(textShadowLogicalBottom + bottomGlyphOverflow, bottomGlyphOverflow);
-
-    LayoutUnit textShadowLogicalLeft;
-    LayoutUnit textShadowLogicalRight;
-    style->getTextShadowInlineDirectionExtent(textShadowLogicalLeft, textShadowLogicalRight);
-
     LayoutUnit childOverflowLogicalLeft = std::min<LayoutUnit>(textShadowLogicalLeft + leftGlyphOverflow, leftGlyphOverflow);
     LayoutUnit childOverflowLogicalRight = std::max<LayoutUnit>(textShadowLogicalRight + rightGlyphOverflow, rightGlyphOverflow);
 

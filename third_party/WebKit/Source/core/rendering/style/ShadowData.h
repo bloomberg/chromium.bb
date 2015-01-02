@@ -26,6 +26,7 @@
 #define ShadowData_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRectOutsets.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
@@ -57,6 +58,18 @@ public:
     float spread() const { return m_spread; }
     ShadowStyle style() const { return m_style; }
     const Color& color() const { return m_color; }
+
+    // Outsets needed to adjust a source rectangle to the one cast by this
+    // shadow.
+    FloatRectOutsets rectOutsets() const
+    {
+        float blurAndSpread = blur() + spread();
+        return FloatRectOutsets(
+            blurAndSpread - y() /* top */,
+            blurAndSpread + x() /* right */,
+            blurAndSpread + y() /* bottom */,
+            blurAndSpread - x() /* left */);
+    }
 
 private:
     FloatPoint m_location;

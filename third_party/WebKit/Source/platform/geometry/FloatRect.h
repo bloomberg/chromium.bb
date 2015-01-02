@@ -28,6 +28,7 @@
 #define FloatRect_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRectOutsets.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "wtf/Vector.h"
 
@@ -95,6 +96,12 @@ public:
 
     void expand(const FloatSize& size) { m_size += size; }
     void expand(float dw, float dh) { m_size.expand(dw, dh); }
+    void expand(const FloatRectOutsets& outsets)
+    {
+        m_location.move(-outsets.left(), -outsets.top());
+        m_size.expand(outsets.left() + outsets.right(), outsets.top() + outsets.bottom());
+    }
+
     void contract(const FloatSize& size) { m_size -= size; }
     void contract(float dw, float dh) { m_size.expand(-dw, -dh); }
 

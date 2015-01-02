@@ -1267,61 +1267,6 @@ void RenderStyle::clearMultiCol()
     rareNonInheritedData.access()->m_multiCol.init();
 }
 
-void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top, LayoutUnit &right, LayoutUnit &bottom, LayoutUnit &left) const
-{
-    top = 0;
-    right = 0;
-    bottom = 0;
-    left = 0;
-
-    size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
-    for (size_t i = 0; i < shadowCount; ++i) {
-        const ShadowData& shadow = shadowList->shadows()[i];
-        if (shadow.style() == Inset)
-            continue;
-        float blurAndSpread = shadow.blur() + shadow.spread();
-
-        top = std::min<LayoutUnit>(top, shadow.y() - blurAndSpread);
-        right = std::max<LayoutUnit>(right, shadow.x() + blurAndSpread);
-        bottom = std::max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);
-        left = std::min<LayoutUnit>(left, shadow.x() - blurAndSpread);
-    }
-}
-
-void RenderStyle::getShadowHorizontalExtent(const ShadowList* shadowList, LayoutUnit &left, LayoutUnit &right) const
-{
-    left = 0;
-    right = 0;
-
-    size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
-    for (size_t i = 0; i < shadowCount; ++i) {
-        const ShadowData& shadow = shadowList->shadows()[i];
-        if (shadow.style() == Inset)
-            continue;
-        float blurAndSpread = shadow.blur() + shadow.spread();
-
-        left = std::min<LayoutUnit>(left, shadow.x() - blurAndSpread);
-        right = std::max<LayoutUnit>(right, shadow.x() + blurAndSpread);
-    }
-}
-
-void RenderStyle::getShadowVerticalExtent(const ShadowList* shadowList, LayoutUnit &top, LayoutUnit &bottom) const
-{
-    top = 0;
-    bottom = 0;
-
-    size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
-    for (size_t i = 0; i < shadowCount; ++i) {
-        const ShadowData& shadow = shadowList->shadows()[i];
-        if (shadow.style() == Inset)
-            continue;
-        float blurAndSpread = shadow.blur() + shadow.spread();
-
-        top = std::min<LayoutUnit>(top, shadow.y() - blurAndSpread);
-        bottom = std::max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);
-    }
-}
-
 StyleColor RenderStyle::decorationColorIncludingFallback(bool visitedLink) const
 {
     StyleColor styleColor = visitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
