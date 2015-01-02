@@ -1542,3 +1542,7 @@ crbug.com/442340 virtual/stable/webexposed/global-interface-listing-shared-worke
 crbug.com/390488 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/445097 inspector-protocol/timeline/timeline-dispatchEvent.html [ Pass Failure ]
+
+crbug.com/428980 [ SnowLeopard ] compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsRebaseline ]
+crbug.com/428980 [ SnowLeopard ] compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsRebaseline ]
+crbug.com/428980 [ SnowLeopard ] compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsRebaseline ]
