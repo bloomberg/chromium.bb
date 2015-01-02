@@ -1546,3 +1546,6 @@ crbug.com/445097 inspector-protocol/timeline/timeline-dispatchEvent.html [ Pass 
 crbug.com/428980 [ SnowLeopard ] compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsRebaseline ]
 crbug.com/428980 [ SnowLeopard ] compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsRebaseline ]
 crbug.com/428980 [ SnowLeopard ] compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsRebaseline ]
+
+crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
+crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
