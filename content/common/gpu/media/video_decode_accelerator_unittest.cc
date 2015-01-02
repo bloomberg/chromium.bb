@@ -887,11 +887,13 @@ void VideoDecodeAcceleratorTest::SetUp() {
   // Initialize the rendering thread.
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_OZONE)
   // For windows the decoding thread initializes the media foundation decoder
   // which uses COM. We need the thread to be a UI thread.
+  // On Ozone, the backend initializes the event system using a UI
+  // thread.
   options.message_loop_type = base::MessageLoop::TYPE_UI;
-#endif  // OS_WIN
+#endif  // OS_WIN || USE_OZONE
 
   rendering_thread_.StartWithOptions(options);
   rendering_loop_proxy_ = rendering_thread_.message_loop_proxy();
@@ -1466,6 +1468,8 @@ int main(int argc, char **argv) {
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
+      continue;
+    if (it->first == "ozone-platform" || it->first == "ozone-use-surfaceless")
       continue;
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }

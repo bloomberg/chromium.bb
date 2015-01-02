@@ -1550,7 +1550,7 @@
         },
       ],
     }],
-    ['(chromeos==1 or OS=="win" or OS=="android") and use_ozone==0', {
+    ['chromeos==1 or OS=="win" or OS=="android"', {
       'targets': [
           {
             'target_name': 'video_decode_accelerator_unittest',
@@ -1618,13 +1618,19 @@
                   '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
                 ],
               }],
+              ['use_ozone==1 and chromeos==1', {
+                'dependencies': [
+                  '../ui/display/display.gyp:display', # Used by rendering_helper.cc
+                  '../ui/ozone/ozone.gyp:ozone',       # Used by rendering_helper.cc
+                ],
+              }],
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
             'msvs_disabled_warnings': [ 4267, ],
           },
         ]
     }],
-    ['chromeos==1 and use_x11 == 1 and target_arch != "arm"', {
+    ['chromeos==1 and target_arch != "arm"', {
       'targets': [
           {
             'target_name': 'vaapi_h264_decoder_unittest',
@@ -1632,7 +1638,6 @@
             'dependencies': [
               'content.gyp:content_common',
               '../base/base.gyp:base',
-              '../build/linux/system.gyp:x11',
               '../media/media.gyp:media',
               '../testing/gtest.gyp:gtest',
               '../third_party/libyuv/libyuv.gyp:libyuv',
@@ -1644,10 +1649,21 @@
             'include_dirs': [
               '<(DEPTH)/third_party/libva',
             ],
+            'conditions': [
+              ['use_x11==1', {
+                'dependencies': [
+                  '../build/linux/system.gyp:x11',
+                ]
+              }, {
+                'dependencies': [
+                  '../build/linux/system.gyp:libdrm',
+                ]
+              }],
+            ],
           },
         ]
     }],
-    ['chromeos==1 and (target_arch == "arm" or use_x11 == 1)', {
+    ['chromeos==1', {
       'targets': [
         {
           'target_name': 'video_encode_accelerator_unittest',
@@ -1676,6 +1692,11 @@
             ['use_x11==1', {
               'dependencies': [
                 '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+              ],
+            }],
+            ['use_ozone==1', {
+              'dependencies': [
+                '../ui/ozone/ozone.gyp:ozone',
               ],
             }],
           ],

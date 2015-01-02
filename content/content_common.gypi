@@ -817,8 +817,13 @@
           'variables': {
             'sig_files': [
               'common/gpu/media/va.sigs',
+              'common/gpu/media/va_drm.sigs',
             ],
           },
+          'sources': [
+            'common/gpu/media/vaapi_drm_picture.cc',
+            'common/gpu/media/vaapi_drm_picture.h',
+          ],
         }],
       ],
       'variables': {

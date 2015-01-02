@@ -3,6 +3,7 @@
 
 extern "C" {
 
+#include "third_party/libva/va/drm/va_drm.h"
 #include "third_party/libva/va/va.h"
 #include "third_party/libva/va/va_x11.h"
 

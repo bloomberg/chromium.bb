@@ -21,6 +21,9 @@ if (is_chromeos && cpu_arch != "arm") {
     if (use_x11) {
       sources += [ "gpu/media/va_x11.sigs" ]
     }
+    if (use_ozone) {
+      sources += [ "gpu/media/va_drm.sigs" ]
+    }
     stubs_filename_root = "va_stubs"
 
     outputs = [
@@ -327,6 +330,12 @@ source_set("common") {
         sources += [
           "gpu/media/vaapi_tfp_picture.cc",
           "gpu/media/vaapi_tfp_picture.h",
+        ]
+      }
+      if (use_ozone) {
+        sources += [
+          "gpu/media/vaapi_drm_picture.cc",
+          "gpu/media/vaapi_drm_picture.h",
         ]
       }
     }

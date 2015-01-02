@@ -273,7 +273,11 @@ bool GpuProcessPolicy::PreSandboxHook() {
 
       dlopen(I965DrvVideoPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
       dlopen("libva.so.1", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+#if defined(USE_OZONE)
+      dlopen("libva-drm.so.1", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+#elif defined(USE_X11)
       dlopen("libva-x11.so.1", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+#endif
     }
   }
 

@@ -128,7 +128,8 @@ class OzonePlatformGbm : public OzonePlatform {
     display_manager_.reset(new DisplayManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
-    surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
+    if (!surface_factory_ozone_)
+      surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new DriGpuPlatformSupportHost());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);

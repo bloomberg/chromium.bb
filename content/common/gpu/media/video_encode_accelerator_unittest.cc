@@ -23,6 +23,10 @@
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
@@ -1287,6 +1291,11 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
   base::CommandLine::Init(argc, argv);
 
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitializeForGPU();
+#endif
+
   base::ShadowingAtExitManager at_exit_manager;
   scoped_ptr<base::FilePath::StringType> test_stream_data(
       new base::FilePath::StringType(
@@ -1320,6 +1329,8 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
+      continue;
+    if (it->first == "ozone-platform" || it->first == "ozone-use-surfaceless")
       continue;
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }

@@ -2,4 +2,6 @@ include_rules = [
   "+media",
   "+third_party/libva",
   "+third_party/libyuv",
+  "+ui/display/chromeos",
+  "+ui/platform_window",
 ]

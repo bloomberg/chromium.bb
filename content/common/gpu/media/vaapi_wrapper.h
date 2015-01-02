@@ -20,6 +20,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "third_party/libva/va/va.h"
+#include "third_party/libva/va/va_vpp.h"
 #include "ui/gfx/size.h"
 #if defined(USE_X11)
 #include "third_party/libva/va/va_x11.h"
@@ -70,6 +71,15 @@ class CONTENT_EXPORT VaapiWrapper {
 
   // Free all memory allocated in CreateSurfaces.
   void DestroySurfaces();
+
+  // Create a VASurface of |va_format|, |size| and using |va_attribs|
+  // attributes. The ownership of the surface is transferred to the
+  // caller. It differs from surfaces created using CreateSurfaces(),
+  // where VaapiWrapper is the owner of the surfaces.
+  scoped_refptr<VASurface> CreateUnownedSurface(
+      unsigned int va_format,
+      const gfx::Size& size,
+      const std::vector<VASurfaceAttrib>& va_attribs);
 
   // Submit parameters or slice data of |va_buffer_type|, copying them from
   // |buffer| of size |size|, into HW codec. The data in |buffer| is no
@@ -141,6 +151,14 @@ class CONTENT_EXPORT VaapiWrapper {
   // Destroy all previously-allocated (and not yet destroyed) coded buffers.
   void DestroyCodedBuffers();
 
+  // Blits a VASurface |va_surface_id_src| into another VASurface
+  // |va_surface_id_dest| applying pixel format conversion and scaling
+  // if needed.
+  bool BlitSurface(VASurfaceID va_surface_id_src,
+                   const gfx::Size& src_size,
+                   VASurfaceID va_surface_id_dest,
+                   const gfx::Size& dest_size);
+
  private:
   VaapiWrapper();
 
@@ -154,6 +172,16 @@ class CONTENT_EXPORT VaapiWrapper {
   bool AreAttribsSupported(VAProfile va_profile,
                            VAEntrypoint entrypoint,
                            const std::vector<VAConfigAttrib>& required_attribs);
+
+  // Destroys a |va_surface| created using CreateUnownedSurface.
+  void DestroyUnownedSurface(VASurfaceID va_surface_id);
+
+  // Initialize the video post processing context with the |size| of
+  // the input pictures to be processed.
+  bool InitializeVpp_Locked();
+
+  // Deinitialize the video post processing context.
+  void DeinitializeVpp();
 
   // Execute pending job in hardware and destroy pending buffers. Return false
   // if vaapi driver refuses to accept parameter or slice buffers submitted
@@ -198,6 +226,13 @@ class CONTENT_EXPORT VaapiWrapper {
   // Called to report codec errors to UMA. Errors to clients are reported via
   // return values from public methods.
   base::Closure report_error_to_uma_cb_;
+
+  // VPP (Video Post Processing) context, this is used to convert
+  // pictures used by the decoder to RGBA pictures usable by GL or the
+  // display hardware.
+  VAConfigID va_vpp_config_id_;
+  VAContextID va_vpp_context_id_;
+  VABufferID va_vpp_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiWrapper);
 };

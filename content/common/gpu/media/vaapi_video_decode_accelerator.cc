@@ -111,6 +111,12 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
                 "DesktopGL (GLX).";
     return false;
   }
+#elif defined(USE_OZONE)
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    DVLOG(1) << "HW video decode acceleration not available without "
+             << "EGLGLES2.";
+    return false;
+  }
 #endif  // USE_X11
 
   vaapi_wrapper_ = VaapiWrapper::Create(

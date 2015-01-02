@@ -36,6 +36,16 @@
 #define GL_VARIANT_EGL 1
 #endif
 
+#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
+#include "ui/display/chromeos/display_configurator.h"
+#endif  // defined(OS_CHROMEOS)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ui_thread_gpu.h"
+#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
+#endif  // defined(USE_OZONE)
+
 // Helper for Shader creation.
 static void CreateShader(GLuint program,
                          GLenum type,
@@ -57,6 +67,54 @@ static void CreateShader(GLuint program,
 }
 
 namespace content {
+
+#if defined(USE_OZONE)
+
+class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
+ public:
+  StubOzoneDelegate() : accelerated_widget_(gfx::kNullAcceleratedWidget) {
+    ui_thread_gpu_.Initialize();
+    platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+        this, gfx::Rect());
+  }
+  virtual ~StubOzoneDelegate() {}
+
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+
+  void OnDamageRect(const gfx::Rect& damaged_region) override {}
+
+  void DispatchEvent(ui::Event* event) override {}
+
+  void OnCloseRequest() override {}
+  void OnClosed() override {}
+
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
+
+  void OnLostCapture() override {};
+
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
+    accelerated_widget_ = widget;
+  };
+
+  void OnActivationChanged(bool active) override {};
+
+  gfx::AcceleratedWidget accelerated_widget() const {
+    return accelerated_widget_;
+  }
+
+  gfx::Size GetSize() { return platform_window_->GetBounds().size(); }
+
+  ui::PlatformWindow* platform_window() const { return platform_window_.get(); }
+
+ private:
+  ui::UiThreadGpu ui_thread_gpu_;
+  scoped_ptr<ui::PlatformWindow> platform_window_;
+  gfx::AcceleratedWidget accelerated_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(StubOzoneDelegate);
+};
+
+#endif  // defined(USE_OZONE)
 
 RenderingHelperParams::RenderingHelperParams()
     : rendering_fps(0), warm_up_iterations(0), render_as_thumbnails(false) {
@@ -92,6 +150,9 @@ bool RenderingHelper::InitializeOneOff() {
                               gfx::kGLImplementationDesktopName);
 #else
   cmd_line->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
+#endif
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForUI();
 #endif
   return gfx::GLSurface::InitializeOneOff();
 }
@@ -167,6 +228,18 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   XStoreName(display, window_, "VideoDecodeAcceleratorTest");
   XSelectInput(display, window_, ExposureMask);
   XMapWindow(display, window_);
+#elif defined(USE_OZONE)
+  platform_window_delegate_.reset(new RenderingHelper::StubOzoneDelegate());
+  window_ = platform_window_delegate_->accelerated_widget();
+#if defined(OS_CHROMEOS)
+  display_configurator_.reset(new ui::DisplayConfigurator());
+  display_configurator_->Init(true);
+  display_configurator_->ForceInitialConfigure(0);
+  platform_window_delegate_->platform_window()->SetBounds(
+      gfx::Rect(display_configurator_->framebuffer_size()));
+#else
+  platform_window_delegate_->platform_window()->SetBounds(gfx::Rect(800, 600));
+#endif
 #else
 #error unknown platform
 #endif
@@ -305,6 +378,16 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
   if (frame_duration_ != base::TimeDelta()) {
     int warm_up_iterations = params.warm_up_iterations;
+#if defined(USE_OZONE)
+    // On Ozone the VSyncProvider can't provide a vsync interval until
+    // we render at least a frame, so we warm up with at least one
+    // frame.
+    // On top of this, we want to make sure all the buffers backing
+    // the GL surface are cleared, otherwise we can see the previous
+    // test's last frames, so we set warm up iterations to 2, to clear
+    // the front and back buffers.
+    warm_up_iterations = std::max(2, warm_up_iterations);
+#endif
     WarmUpRendering(warm_up_iterations);
   }
 
@@ -345,6 +428,10 @@ void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
+
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+  display_configurator_->PrepareForExit();
+#endif
 
   render_task_.Cancel();
 
@@ -500,6 +587,8 @@ void RenderingHelper::Clear() {
     CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
     CHECK(XDestroyWindow(gfx::GetXDisplay(), window_));
   }
+#elif defined(USE_OZONE)
+  platform_window_delegate_.reset();
 #endif
   window_ = gfx::kNullAcceleratedWidget;
 }

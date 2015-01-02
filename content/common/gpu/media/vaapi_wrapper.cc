@@ -18,11 +18,17 @@
 #include "ui/gl/gl_bindings.h"
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"
+#elif defined(USE_OZONE)
+#include "third_party/libva/va/drm/va_drm.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // USE_X11
 
 using content_common_gpu_media::kModuleVa;
 #if defined(USE_X11)
 using content_common_gpu_media::kModuleVa_x11;
+#elif defined(USE_OZONE)
+using content_common_gpu_media::kModuleVa_drm;
 #endif  // USE_X11
 using content_common_gpu_media::InitializeStubs;
 using content_common_gpu_media::StubPathMap;
@@ -142,13 +148,17 @@ VaapiWrapper::VaapiWrapper()
     : va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
       va_context_id_(VA_INVALID_ID),
-      va_initialized_(false) {
+      va_initialized_(false),
+      va_vpp_config_id_(VA_INVALID_ID),
+      va_vpp_context_id_(VA_INVALID_ID),
+      va_vpp_buffer_id_(VA_INVALID_ID) {
 }
 
 VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
   DestroyCodedBuffers();
   DestroySurfaces();
+  DeinitializeVpp();
   Deinitialize();
 }
 
@@ -227,6 +237,11 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
 
 #if defined(USE_X11)
   va_display_ = vaGetDisplay(gfx::GetXDisplay());
+#elif defined(USE_OZONE)
+  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+
+  va_display_ = vaGetDisplayDRM(factory->GetDrmFd());
 #endif  // USE_X11
 
   if (!vaDisplayIsValid(va_display_)) {
@@ -443,6 +458,39 @@ void VaapiWrapper::DestroySurfaces() {
 
   va_surface_ids_.clear();
   va_context_id_ = VA_INVALID_ID;
+}
+
+scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
+    unsigned int va_format,
+    const gfx::Size& size,
+    const std::vector<VASurfaceAttrib>& va_attribs) {
+  base::AutoLock auto_lock(va_lock_);
+
+  std::vector<VASurfaceAttrib> attribs(va_attribs);
+  VASurfaceID va_surface_id;
+  VAStatus va_res =
+      vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
+                       &va_surface_id, 1, &attribs[0], attribs.size());
+
+  scoped_refptr<VASurface> va_surface;
+  VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface",
+                       va_surface);
+
+  // This is safe to use Unretained() here, because the VDA takes care
+  // of the destruction order. All the surfaces will be destroyed
+  // before VaapiWrapper.
+  va_surface = new VASurface(
+      va_surface_id, size,
+      base::Bind(&VaapiWrapper::DestroyUnownedSurface, base::Unretained(this)));
+
+  return va_surface;
+}
+
+void VaapiWrapper::DestroyUnownedSurface(VASurfaceID va_surface_id) {
+  base::AutoLock auto_lock(va_lock_);
+
+  VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
+  VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces on surface failed");
 }
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
@@ -757,6 +805,98 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
   return buffer_segment == NULL;
 }
 
+bool VaapiWrapper::BlitSurface(VASurfaceID va_surface_id_src,
+                               const gfx::Size& src_size,
+                               VASurfaceID va_surface_id_dest,
+                               const gfx::Size& dest_size) {
+  base::AutoLock auto_lock(va_lock_);
+
+  // Initialize the post processing engine if not already done.
+  if (va_vpp_buffer_id_ == VA_INVALID_ID) {
+    if (!InitializeVpp_Locked())
+      return false;
+  }
+
+  VAProcPipelineParameterBuffer* pipeline_param;
+  VA_SUCCESS_OR_RETURN(vaMapBuffer(va_display_, va_vpp_buffer_id_,
+                                   reinterpret_cast<void**>(&pipeline_param)),
+                       "Couldn't map vpp buffer", false);
+
+  memset(pipeline_param, 0, sizeof *pipeline_param);
+
+  VARectangle input_region;
+  input_region.x = input_region.y = 0;
+  input_region.width = src_size.width();
+  input_region.height = src_size.height();
+  pipeline_param->surface_region = &input_region;
+  pipeline_param->surface = va_surface_id_src;
+  pipeline_param->surface_color_standard = VAProcColorStandardNone;
+
+  VARectangle output_region;
+  output_region.x = output_region.y = 0;
+  output_region.width = dest_size.width();
+  output_region.height = dest_size.height();
+  pipeline_param->output_region = &output_region;
+  pipeline_param->output_background_color = 0xff000000;
+  pipeline_param->output_color_standard = VAProcColorStandardNone;
+
+  VA_SUCCESS_OR_RETURN(vaUnmapBuffer(va_display_, va_vpp_buffer_id_),
+                       "Couldn't unmap vpp buffer", false);
+
+  VA_SUCCESS_OR_RETURN(
+      vaBeginPicture(va_display_, va_vpp_context_id_, va_surface_id_dest),
+      "Couldn't begin picture", false);
+
+  VA_SUCCESS_OR_RETURN(
+      vaRenderPicture(va_display_, va_vpp_context_id_, &va_vpp_buffer_id_, 1),
+      "Couldn't render picture", false);
+
+  VA_SUCCESS_OR_RETURN(vaEndPicture(va_display_, va_vpp_context_id_),
+                       "Couldn't end picture", false);
+
+  return true;
+}
+
+bool VaapiWrapper::InitializeVpp_Locked() {
+  va_lock_.AssertAcquired();
+
+  VA_SUCCESS_OR_RETURN(
+      vaCreateConfig(va_display_, VAProfileNone, VAEntrypointVideoProc, NULL, 0,
+                     &va_vpp_config_id_),
+      "Couldn't create config", false);
+
+  // The size of the picture for the context is irrelevant in the case
+  // of the VPP, just passing 1x1.
+  VA_SUCCESS_OR_RETURN(vaCreateContext(va_display_, va_vpp_config_id_, 1, 1, 0,
+                                       NULL, 0, &va_vpp_context_id_),
+                       "Couldn't create context", false);
+
+  VA_SUCCESS_OR_RETURN(vaCreateBuffer(va_display_, va_vpp_context_id_,
+                                      VAProcPipelineParameterBufferType,
+                                      sizeof(VAProcPipelineParameterBuffer), 1,
+                                      NULL, &va_vpp_buffer_id_),
+                       "Couldn't create buffer", false);
+
+  return true;
+}
+
+void VaapiWrapper::DeinitializeVpp() {
+  base::AutoLock auto_lock(va_lock_);
+
+  if (va_vpp_buffer_id_ != VA_INVALID_ID) {
+    vaDestroyBuffer(va_display_, va_vpp_buffer_id_);
+    va_vpp_buffer_id_ = VA_INVALID_ID;
+  }
+  if (va_vpp_context_id_ != VA_INVALID_ID) {
+    vaDestroyContext(va_display_, va_vpp_context_id_);
+    va_vpp_context_id_ = VA_INVALID_ID;
+  }
+  if (va_vpp_config_id_ != VA_INVALID_ID) {
+    vaDestroyConfig(va_display_, va_vpp_config_id_);
+    va_vpp_config_id_ = VA_INVALID_ID;
+  }
+}
+
 // static
 bool VaapiWrapper::PostSandboxInitialization() {
   StubPathMap paths;
@@ -765,6 +905,8 @@ bool VaapiWrapper::PostSandboxInitialization() {
 
 #if defined(USE_X11)
   paths[kModuleVa_x11].push_back("libva-x11.so.1");
+#elif defined(USE_OZONE)
+  paths[kModuleVa_drm].push_back("libva-drm.so.1");
 #endif
 
   return InitializeStubs(paths);
