@@ -248,6 +248,7 @@ crbug.com/377944 svg/animations/smil-leak-dynamically-added-element-instances.sv
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
 
 crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass ImageOnlyFailure ]
+crbug.com/377960 virtual/slimmingpaint/fast/css/font-load-while-styleresolver-missing.html [ Pass ImageOnlyFailure ]
 
 crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ Failure Pass ]
 
