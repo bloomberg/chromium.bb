@@ -576,8 +576,12 @@ bool ZygoteMain(const MainFunctionParams& params,
   fds_to_close_post_fork.push_back(sancov_socket_fds[1]);
 #endif
 
-  // This will pre-initialize the various sandboxes that need it.
-  linux_sandbox->PreinitializeSandbox();
+  // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoSandbox)) {
+    // This will pre-initialize the various sandboxes that need it.
+    linux_sandbox->PreinitializeSandbox();
+  }
 
   const bool must_enable_setuid_sandbox =
       linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();

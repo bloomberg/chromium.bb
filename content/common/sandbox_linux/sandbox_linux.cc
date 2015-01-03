@@ -197,7 +197,9 @@ void LinuxSandbox::StopThread(base::Thread* thread) {
 }
 
 int LinuxSandbox::GetStatus() {
-  CHECK(pre_initialized_);
+  if (!pre_initialized_) {
+    return 0;
+  }
   if (kSandboxLinuxInvalid == sandbox_status_flags_) {
     // Initialize sandbox_status_flags_.
     sandbox_status_flags_ = 0;
