@@ -111,6 +111,41 @@
   </varlistentry>
 </xsl:template>
 
+<!-- id arguments -->
+<xsl:template match="arg[@type='object' and @interface]">
+  <varlistentry>
+    <term><xsl:value-of select="@name"/></term>
+    <listitem>
+        <simpara>
+          <link linkend="protocol-spec-{@interface}">
+            <xsl:value-of select="@interface"/>
+          </link>
+          <xsl:if test="@summary" >
+            <xsl:text> </xsl:text><xsl:value-of select="@summary"/>
+          </xsl:if>
+        </simpara>
+    </listitem>
+  </varlistentry>
+</xsl:template>
+
+<!-- new_id arguments -->
+<xsl:template match="arg[@type='new_id' and @interface]">
+  <varlistentry>
+    <term><xsl:value-of select="@name"/></term>
+    <listitem>
+        <simpara>
+          id for the new
+          <link linkend="protocol-spec-{@interface}">
+            <xsl:value-of select="@interface"/>
+          </link>
+          <xsl:if test="@summary" >
+            <xsl:text> </xsl:text><xsl:value-of select="@summary"/>
+          </xsl:if>
+        </simpara>
+    </listitem>
+  </varlistentry>
+</xsl:template>
+
 <!-- Request/event list -->
 <xsl:template match="request|event|enum">
   <section id="protocol-spec-{../@name}-{name()}-{@name}">
