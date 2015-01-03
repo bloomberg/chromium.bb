@@ -58,7 +58,7 @@ class PersistentNode;
 class Visitor;
 class SafePointBarrier;
 class SafePointAwareMutexLocker;
-template<typename Header> class ThreadHeap;
+class ThreadHeap;
 class CallbackStack;
 class PageMemoryRegion;
 
@@ -189,8 +189,6 @@ enum TypedHeaps {
 // Base implementation for HeapIndexTrait found below.
 template<int heapIndex>
 struct HeapIndexTraitBase {
-    using HeaderType = HeapObjectHeader;
-    using HeapType = ThreadHeap<HeaderType>;
     static int index(size_t)
     {
         return heapIndex;
@@ -206,8 +204,6 @@ class ThreadState;
 // Objects whose size is more than 15 words go to the fourth general type heap.
 template<int heapIndex>
 struct GeneralHeapIndexTraitBase {
-    using HeaderType = HeapObjectHeader;
-    using HeapType = ThreadHeap<HeaderType>;
     static int index(size_t size)
     {
         static const int wordSize = sizeof(void*);
@@ -250,8 +246,6 @@ struct HeapIndexTrait<HashTableBackingHeap> : public HeapIndexTraitBase<HashTabl
 #define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
     template<>                                                                  \
     struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
-        using HeaderType = HeapObjectHeader;                                    \
-        using HeapType = ThreadHeap<HeaderType>;                                \
     };
 FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_INDEX_TRAIT)
 #undef DEFINE_TYPED_HEAP_INDEX_TRAIT

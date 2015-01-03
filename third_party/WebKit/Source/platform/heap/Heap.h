@@ -95,50 +95,6 @@ template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTr
 class TracedValue;
 #endif
 
-// Blink heap pages are set up with a guard page before and after the payload.
-inline size_t blinkPagePayloadSize()
-{
-    return blinkPageSize - 2 * WTF::kSystemPageSize;
-}
-
-// Blink heap pages are aligned to the Blink heap page size.
-// Therefore, the start of a Blink page can be obtained by
-// rounding down to the Blink page size.
-inline Address roundToBlinkPageStart(Address address)
-{
-    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
-}
-
-inline Address roundToBlinkPageEnd(Address address)
-{
-    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address - 1) & blinkPageBaseMask) + blinkPageSize;
-}
-
-// Compute the amount of padding we have to add to a header to make
-// the size of the header plus the padding a multiple of 8 bytes.
-template<typename Header>
-inline size_t headerPadding()
-{
-    return (allocationGranularity - (sizeof(Header) % allocationGranularity)) % allocationGranularity;
-}
-
-// Masks an address down to the enclosing blink page base address.
-inline Address blinkPageAddress(Address address)
-{
-    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
-}
-
-#if ENABLE(ASSERT)
-
-// Sanity check for a page header address: the address of the page
-// header should be OS page size away from being Blink page size
-// aligned.
-inline bool isPageHeaderAddress(Address address)
-{
-    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - WTF::kSystemPageSize);
-}
-#endif
-
 // HeapObjectHeader is 4 byte (32 bit) that has the following layout:
 //
 // | gcInfoIndex (15 bit) | size (14 bit) | dead bit (1 bit) | freed bit (1 bit) | mark bit (1 bit) |
@@ -355,6 +311,49 @@ private:
 #endif
 };
 
+// Blink heap pages are set up with a guard page before and after the payload.
+inline size_t blinkPagePayloadSize()
+{
+    return blinkPageSize - 2 * WTF::kSystemPageSize;
+}
+
+// Blink heap pages are aligned to the Blink heap page size.
+// Therefore, the start of a Blink page can be obtained by
+// rounding down to the Blink page size.
+inline Address roundToBlinkPageStart(Address address)
+{
+    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
+}
+
+inline Address roundToBlinkPageEnd(Address address)
+{
+    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address - 1) & blinkPageBaseMask) + blinkPageSize;
+}
+
+// Compute the amount of padding we have to add to a header to make
+// the size of the header plus the padding a multiple of 8 bytes.
+inline size_t headerPadding()
+{
+    return (allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
+}
+
+// Masks an address down to the enclosing blink page base address.
+inline Address blinkPageAddress(Address address)
+{
+    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
+}
+
+#if ENABLE(ASSERT)
+
+// Sanity check for a page header address: the address of the page
+// header should be OS page size away from being Blink page size
+// aligned.
+inline bool isPageHeaderAddress(Address address)
+{
+    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - WTF::kSystemPageSize);
+}
+#endif
+
 // FIXME: Add a good comment about the heap layout once heap relayout work
 // is done.
 class BaseHeapPage {
@@ -398,10 +397,9 @@ private:
     bool m_terminating;
 };
 
-template<typename Header>
 class HeapPage final : public BaseHeapPage {
 public:
-    HeapPage(PageMemory*, ThreadHeap<Header>*);
+    HeapPage(PageMemory*, ThreadHeap*);
 
     void link(HeapPage** previousNext)
     {
@@ -431,19 +429,19 @@ public:
 
     Address payload()
     {
-        return address() + sizeof(*this) + headerPadding<Header>();
+        return address() + sizeof(HeapPage) + headerPadding();
     }
 
     static size_t payloadSize()
     {
-        return (blinkPagePayloadSize() - sizeof(HeapPage) - headerPadding<Header>()) & ~allocationMask;
+        return (blinkPagePayloadSize() - sizeof(HeapPage) - headerPadding()) & ~allocationMask;
     }
 
     Address end() { return payload() + payloadSize(); }
 
     size_t objectPayloadSizeForTesting();
     void markUnmarkedObjectsDead();
-    void sweep(ThreadHeap<Header>*);
+    void sweep(ThreadHeap*);
     void clearObjectStartBitMap();
     virtual void checkAndMarkPointer(Visitor*, Address) override;
 #if ENABLE(GC_PROFILE_MARKING)
@@ -474,16 +472,16 @@ public:
     uint64_t unusedMethod() const { return m_padding; }
 
 private:
-    Header* findHeaderFromAddress(Address);
+    HeapObjectHeader* findHeaderFromAddress(Address);
     void populateObjectStartBitMap();
     bool isObjectStartBitMapComputed() { return m_objectStartBitMapComputed; }
 
-    HeapPage<Header>* m_next;
+    HeapPage* m_next;
     bool m_objectStartBitMapComputed;
     uint8_t m_objectStartBitMap[reservedForObjectBitMap];
     uint64_t m_padding; // Preserve 8-byte alignment on 32-bit systems.
 
-    friend class ThreadHeap<Header>;
+    friend class ThreadHeap;
 };
 
 // Large allocations are allocated as separate objects and linked in a list.
@@ -491,7 +489,6 @@ private:
 // In order to use the same memory allocation routines for everything allocated
 // in the heap, large objects are considered heap pages containing only one
 // object.
-template<typename Header>
 class LargeObject final : public BaseHeapPage {
 public:
     LargeObject(PageMemory* storage, ThreadState* state, size_t payloadSize)
@@ -516,13 +513,13 @@ public:
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
 
-    void link(LargeObject<Header>** previousNext)
+    void link(LargeObject** previousNext)
     {
         m_next = *previousNext;
         *previousNext = this;
     }
 
-    void unlink(LargeObject<Header>** previousNext)
+    void unlink(LargeObject** previousNext)
     {
         *previousNext = m_next;
         m_next = nullptr;
@@ -543,23 +540,23 @@ public:
         return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
     }
 
-    LargeObject<Header>* next()
+    LargeObject* next()
     {
         return m_next;
     }
 
     size_t size()
     {
-        return sizeof(LargeObject<Header>) + headerPadding<Header>() +  sizeof(HeapObjectHeader) + m_payloadSize;
+        return sizeof(LargeObject) + headerPadding() +  sizeof(HeapObjectHeader) + m_payloadSize;
     }
 
     Address payload() { return heapObjectHeader()->payload(); }
     size_t payloadSize() { return m_payloadSize; }
 
-    Header* heapObjectHeader()
+    HeapObjectHeader* heapObjectHeader()
     {
-        Address headerAddress = address() + sizeof(LargeObject<Header>) + headerPadding<Header>();
-        return reinterpret_cast<Header*>(headerAddress);
+        Address headerAddress = address() + sizeof(LargeObject) + headerPadding();
+        return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 
     size_t objectPayloadSizeForTesting();
@@ -579,8 +576,8 @@ public:
     uint64_t unusedMethod() const { return m_padding; }
 
 private:
-    friend class ThreadHeap<Header>;
-    LargeObject<Header>* m_next;
+    friend class ThreadHeap;
+    LargeObject* m_next;
     size_t m_payloadSize;
     uint64_t m_padding; // Preserve 8-byte alignment on 32-bit systems.
 };
@@ -719,7 +716,6 @@ public:
     virtual void prepareHeapForTermination() = 0;
 };
 
-template<typename Header>
 class FreeList {
 public:
     FreeList();
@@ -737,7 +733,7 @@ private:
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
-    friend class ThreadHeap<Header>;
+    friend class ThreadHeap;
 };
 
 // Thread heaps represent a part of the per-thread Blink heap.
@@ -750,7 +746,6 @@ private:
 // (potentially adding new pages to the heap), to find and mark
 // objects during conservative stack scanning and to sweep the set of
 // pages after a GC.
-template<typename Header>
 class ThreadHeap : public BaseHeap {
 public:
     ThreadHeap(ThreadState*, int);
@@ -791,17 +786,17 @@ public:
     inline Address allocate(size_t payloadSize, size_t gcInfoIndex);
     inline static size_t roundedAllocationSize(size_t size)
     {
-        return allocationSizeFromSize(size) - sizeof(Header);
+        return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
     }
-    static size_t allocationSizeFromSize(size_t);
+    inline static size_t allocationSizeFromSize(size_t);
 
     virtual void prepareHeapForTermination() override;
 
-    void freePage(HeapPage<Header>*);
+    void freePage(HeapPage*);
 
-    PLATFORM_EXPORT void promptlyFreeObject(Header*);
-    PLATFORM_EXPORT bool expandObject(Header*, size_t);
-    void shrinkObject(Header*, size_t);
+    PLATFORM_EXPORT void promptlyFreeObject(HeapObjectHeader*);
+    PLATFORM_EXPORT bool expandObject(HeapObjectHeader*, size_t);
+    void shrinkObject(HeapObjectHeader*, size_t);
 
 private:
     PLATFORM_EXPORT Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
@@ -812,7 +807,7 @@ private:
     void setAllocationPoint(Address point, size_t size)
     {
         ASSERT(!point || findPageFromAddress(point));
-        ASSERT(size <= HeapPage<Header>::payloadSize());
+        ASSERT(size <= HeapPage::payloadSize());
         if (hasCurrentAllocationArea())
             addToFreeList(currentAllocationPoint(), remainingAllocationSize());
         updateRemainingAllocationSize();
@@ -822,7 +817,7 @@ private:
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, size_t gcInfoIndex);
 
-    void freeLargeObject(LargeObject<Header>*);
+    void freeLargeObject(LargeObject*);
     void allocatePage();
 
     inline Address allocateSize(size_t allocationSize, size_t gcInfoIndex);
@@ -841,18 +836,18 @@ private:
     size_t m_remainingAllocationSize;
     size_t m_lastRemainingAllocationSize;
 
-    HeapPage<Header>* m_firstPage;
-    LargeObject<Header>* m_firstLargeObject;
+    HeapPage* m_firstPage;
+    LargeObject* m_firstLargeObject;
 
-    HeapPage<Header>* m_firstPageAllocatedDuringSweeping;
-    HeapPage<Header>* m_lastPageAllocatedDuringSweeping;
+    HeapPage* m_firstPageAllocatedDuringSweeping;
+    HeapPage* m_lastPageAllocatedDuringSweeping;
 
-    LargeObject<Header>* m_firstLargeObjectAllocatedDuringSweeping;
-    LargeObject<Header>* m_lastLargeObjectAllocatedDuringSweeping;
+    LargeObject* m_firstLargeObjectAllocatedDuringSweeping;
+    LargeObject* m_lastLargeObjectAllocatedDuringSweeping;
 
     ThreadState* m_threadState;
 
-    FreeList<Header> m_freeList;
+    FreeList m_freeList;
 
     // Index into the page pools.  This is used to ensure that the pages of the
     // same type go into the correct page pool and thus avoid type confusion.
@@ -1293,7 +1288,7 @@ size_t HeapObjectHeader::payloadSize()
     size_t size = m_encoded & headerSizeMask;
     if (UNLIKELY(size == largeObjectSizeInHeader)) {
         ASSERT(pageFromObject(this)->isLargeObject());
-        return static_cast<LargeObject<HeapObjectHeader>*>(pageFromObject(this))->payloadSize();
+        return static_cast<LargeObject*>(pageFromObject(this))->payloadSize();
     }
     ASSERT(!pageFromObject(this)->isLargeObject());
     return size - sizeof(HeapObjectHeader);
@@ -1337,8 +1332,7 @@ void HeapObjectHeader::markDead()
     m_encoded |= headerDeadBitMask;
 }
 
-template<typename Header>
-size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
+size_t ThreadHeap::allocationSizeFromSize(size_t size)
 {
     // Check the size before computing the actual allocation size.  The
     // allocation size calculation can overflow for large sizes and the check
@@ -1346,29 +1340,27 @@ size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
     RELEASE_ASSERT(size < maxHeapObjectSize);
 
     // Add space for header.
-    size_t allocationSize = size + sizeof(Header);
+    size_t allocationSize = size + sizeof(HeapObjectHeader);
     // Align size with allocation granularity.
     allocationSize = (allocationSize + allocationMask) & ~allocationMask;
     return allocationSize;
 }
 
-template<typename Header>
-inline Address ThreadHeap<Header>::allocateAtAddress(Address headerAddress, size_t allocationSize, size_t gcInfoIndex)
+inline Address ThreadHeap::allocateAtAddress(Address headerAddress, size_t allocationSize, size_t gcInfoIndex)
 {
     ASSERT(gcInfoIndex > 0);
-    new (NotNull, headerAddress) Header(allocationSize, gcInfoIndex);
-    Address result = headerAddress + sizeof(Header);
+    new (NotNull, headerAddress) HeapObjectHeader(allocationSize, gcInfoIndex);
+    Address result = headerAddress + sizeof(HeapObjectHeader);
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
 
     // Unpoison the memory used for the object (payload).
-    ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(Header));
-    FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(Header));
+    ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(HeapObjectHeader));
+    FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(HeapObjectHeader));
     ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
     return result;
 }
 
-template<typename Header>
-Address ThreadHeap<Header>::allocateSize(size_t allocationSize, size_t gcInfoIndex)
+Address ThreadHeap::allocateSize(size_t allocationSize, size_t gcInfoIndex)
 {
     if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
         Address headerAddress = m_currentAllocationPoint;
@@ -1379,8 +1371,7 @@ Address ThreadHeap<Header>::allocateSize(size_t allocationSize, size_t gcInfoInd
     return outOfLineAllocate(allocationSize, gcInfoIndex);
 }
 
-template<typename Header>
-Address ThreadHeap<Header>::allocate(size_t size, size_t gcInfoIndex)
+Address ThreadHeap::allocate(size_t size, size_t gcInfoIndex)
 {
     return allocateSize(allocationSizeFromSize(size), gcInfoIndex);
 }
@@ -1392,7 +1383,7 @@ Address Heap::allocate(size_t size)
     ASSERT(state->isAllocationAllowed());
     int heapIndex = HeapTraits::index(size);
     BaseHeap* heap = state->heap(heapIndex);
-    return static_cast<typename HeapTraits::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::index());
+    return static_cast<ThreadHeap*>(heap)->allocate(size, GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1414,7 +1405,7 @@ Address Heap::reallocate(void* previous, size_t size)
     int heapIndex = HeapTypeTrait<T>::index(size);
     ASSERT(General1Heap <= heapIndex && heapIndex <= General4Heap);
     BaseHeap* heap = state->heap(heapIndex);
-    Address address = static_cast<typename HeapTypeTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::index());
+    Address address = static_cast<ThreadHeap*>(heap)->allocate(size, GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
@@ -1435,7 +1426,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return HeapIndexTrait<VectorBackingHeap>::HeapType::roundedAllocationSize(count * sizeof(T));
+        return ThreadHeap::roundedAllocationSize(count * sizeof(T));
     }
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
@@ -1570,11 +1561,11 @@ public:
     }
 
 private:
-    template<typename HeapTraits, typename HeapType, typename HeaderType>
+    template<typename HeapTrait>
     static void backingFree(void*);
-    template<typename HeapTraits, typename HeapType, typename HeaderType>
+    template<typename HeapTrait>
     static bool backingExpand(void*, size_t);
-    template<typename HeapTraits>
+    template<typename HeapTrait>
     static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     PLATFORM_EXPORT static void shrinkVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     PLATFORM_EXPORT static void shrinkInlineVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);

@@ -309,7 +309,7 @@ template<int num> struct InitializeHeaps {
     static void init(BaseHeap** heaps, ThreadState* state)
     {
         InitializeHeaps<index>::init(heaps, state);
-        heaps[index] = new typename HeapIndexTrait<index>::HeapType(state, index);
+        heaps[index] = new ThreadHeap(state, index);
     }
 };
 template<> struct InitializeHeaps<0> {

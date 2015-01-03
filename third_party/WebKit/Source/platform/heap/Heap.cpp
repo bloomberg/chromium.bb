@@ -486,21 +486,18 @@ void HeapObjectHeader::finalize(Address object, size_t objectSize)
     // thread commences execution.
 }
 
-template<typename Header>
-void LargeObject<Header>::sweep()
+void LargeObject::sweep()
 {
     Heap::increaseMarkedObjectSize(size());
     heapObjectHeader()->unmark();
 }
 
-template<typename Header>
-bool LargeObject<Header>::isEmpty()
+bool LargeObject::isEmpty()
 {
     return !heapObjectHeader()->isMarked();
 }
 
-template<typename Header>
-void LargeObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
+void LargeObject::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
     if (!objectContains(address) || heapObjectHeader()->isDead())
@@ -511,10 +508,9 @@ void LargeObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
     mark(visitor);
 }
 
-template<typename Header>
-void LargeObject<Header>::markUnmarkedObjectsDead()
+void LargeObject::markUnmarkedObjectsDead()
 {
-    Header* header = heapObjectHeader();
+    HeapObjectHeader* header = heapObjectHeader();
     if (header->isMarked())
         header->unmark();
     else
@@ -534,8 +530,7 @@ static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
 }
 #endif
 
-template<typename Header>
-void LargeObject<Header>::mark(Visitor* visitor)
+void LargeObject::mark(Visitor* visitor)
 {
     HeapObjectHeader* header = heapObjectHeader();
     const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
@@ -547,8 +542,7 @@ void LargeObject<Header>::mark(Visitor* visitor)
     }
 }
 
-template<typename Header>
-ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
+ThreadHeap::ThreadHeap(ThreadState* state, int index)
     : m_currentAllocationPoint(nullptr)
     , m_remainingAllocationSize(0)
     , m_lastRemainingAllocationSize(0)
@@ -565,40 +559,36 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     clearFreeLists();
 }
 
-template<typename Header>
-FreeList<Header>::FreeList()
+FreeList::FreeList()
     : m_biggestFreeListIndex(0)
 {
 }
 
-template<typename Header>
-ThreadHeap<Header>::~ThreadHeap()
+ThreadHeap::~ThreadHeap()
 {
     ASSERT(!m_firstPage);
     ASSERT(!m_firstLargeObject);
 }
 
-template<typename Header>
-void ThreadHeap<Header>::cleanupPages()
+void ThreadHeap::cleanupPages()
 {
     clearFreeLists();
 
     // Add the ThreadHeap's pages to the orphanedPagePool.
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->m_next) {
+    for (HeapPage* page = m_firstPage; page; page = page->m_next) {
         Heap::decreaseAllocatedSpace(blinkPageSize);
         Heap::orphanedPagePool()->addOrphanedPage(m_index, page);
     }
     m_firstPage = nullptr;
 
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->m_next) {
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->m_next) {
         Heap::decreaseAllocatedSpace(largeObject->size());
         Heap::orphanedPagePool()->addOrphanedPage(m_index, largeObject);
     }
     m_firstLargeObject = nullptr;
 }
 
-template<typename Header>
-void ThreadHeap<Header>::updateRemainingAllocationSize()
+void ThreadHeap::updateRemainingAllocationSize()
 {
     if (m_lastRemainingAllocationSize > remainingAllocationSize()) {
         Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - remainingAllocationSize());
@@ -607,8 +597,7 @@ void ThreadHeap<Header>::updateRemainingAllocationSize()
     ASSERT(m_lastRemainingAllocationSize == remainingAllocationSize());
 }
 
-template<typename Header>
-Address ThreadHeap<Header>::outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex)
+Address ThreadHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex)
 {
     ASSERT(allocationSize > remainingAllocationSize());
     if (allocationSize > blinkPageSize / 2)
@@ -665,8 +654,7 @@ static bool shouldUseFirstFitForHeap(int heapIndex)
     }
 }
 
-template<typename Header>
-Address ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize, size_t gcInfoIndex)
+Address ThreadHeap::allocateFromFreeList(size_t allocationSize, size_t gcInfoIndex)
 {
     // The freelist allocation scheme is currently as follows:
     //
@@ -685,7 +673,7 @@ Address ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize, size_t g
     //   The allocator will handle that failure by requesting more
     //   heap pages from the OS and re-initiate the allocation request.
     //
-    int index = FreeList<Header>::bucketIndexForSize(allocationSize) + 1;
+    int index = FreeList::bucketIndexForSize(allocationSize) + 1;
     if (index <= m_freeList.m_biggestFreeListIndex && shouldUseFirstFitForHeap(m_index)) {
         if (FreeListEntry* entry = m_freeList.m_freeLists[index]) {
             entry->unlink(&m_freeList.m_freeLists[index]);
@@ -730,31 +718,29 @@ Address ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize, size_t g
 }
 
 #if ENABLE(ASSERT)
-template<typename Header>
-static bool isLargeObjectAligned(LargeObject<Header>* largeObject, Address address)
+static bool isLargeObjectAligned(LargeObject* largeObject, Address address)
 {
     // Check that a large object is blinkPageSize aligned (modulo the osPageSize
     // for the guard page).
     return reinterpret_cast<Address>(largeObject) - WTF::kSystemPageSize == roundToBlinkPageStart(reinterpret_cast<Address>(largeObject));
 }
 
-template<typename Header>
-BaseHeapPage* ThreadHeap<Header>::findPageFromAddress(Address address)
+BaseHeapPage* ThreadHeap::findPageFromAddress(Address address)
 {
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+    for (HeapPage* page = m_firstPage; page; page = page->next()) {
         if (page->contains(address))
             return page;
     }
-    for (HeapPage<Header>* page = m_firstPageAllocatedDuringSweeping; page; page = page->next()) {
+    for (HeapPage* page = m_firstPageAllocatedDuringSweeping; page; page = page->next()) {
         if (page->contains(address))
             return page;
     }
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
         ASSERT(isLargeObjectAligned(largeObject, address));
         if (largeObject->contains(address))
             return largeObject;
     }
-    for (LargeObject<Header>* largeObject = m_firstLargeObjectAllocatedDuringSweeping; largeObject; largeObject = largeObject->next()) {
+    for (LargeObject* largeObject = m_firstLargeObjectAllocatedDuringSweeping; largeObject; largeObject = largeObject->next()) {
         ASSERT(isLargeObjectAligned(largeObject, address));
         if (largeObject->contains(address))
             return largeObject;
@@ -764,10 +750,9 @@ BaseHeapPage* ThreadHeap<Header>::findPageFromAddress(Address address)
 #endif
 
 #if ENABLE(GC_PROFILE_MARKING)
-template<typename Header>
-const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeObject(Address address)
+const GCInfo* ThreadHeap::findGCInfoOfLargeObject(Address address)
 {
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
         if (largeObject->contains(address))
             return largeObject->heapObjectHeader()->gcInfo();
     }
@@ -777,14 +762,13 @@ const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeObject(Address address)
 
 #if ENABLE(GC_PROFILE_HEAP)
 #define GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD 0
-template<typename Header>
-void ThreadHeap<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
+void ThreadHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
     ASSERT(isConsistentForSweeping());
     size_t previousPageCount = info->pageCount;
 
     json->beginArray("pages");
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next(), ++info->pageCount) {
+    for (HeapPage* page = m_firstPage; page; page = page->next(), ++info->pageCount) {
         // FIXME: To limit the size of the snapshot we only output "threshold" many page snapshots.
         if (info->pageCount < GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD) {
             json->beginArray();
@@ -798,7 +782,7 @@ void ThreadHeap<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* 
     json->endArray();
 
     json->beginArray("largeObjects");
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
         json->beginDictionary();
         largeObject->snapshot(json, info);
         json->endDictionary();
@@ -809,13 +793,12 @@ void ThreadHeap<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* 
 }
 #endif
 
-template<typename Header>
-void FreeList<Header>::addToFreeList(Address address, size_t size)
+void FreeList::addToFreeList(Address address, size_t size)
 {
     ASSERT(size < blinkPagePayloadSize());
     // The free list entries are only pointer aligned (but when we allocate
     // from them we are 8 byte aligned due to the header size).
-    ASSERT(!((reinterpret_cast<uintptr_t>(address) + sizeof(Header)) & allocationMask));
+    ASSERT(!((reinterpret_cast<uintptr_t>(address) + sizeof(HeapObjectHeader)) & allocationMask));
     ASSERT(!(size & allocationMask));
     ASAN_POISON_MEMORY_REGION(address, size);
     FreeListEntry* entry;
@@ -833,7 +816,7 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
     // asanDeferMemoryReuseCount reaches zero.  However we always add entire
     // pages to ensure that adding a new page will increase the allocation
     // space.
-    if (HeapPage<Header>::payloadSize() != size && !entry->shouldAddToFreeList())
+    if (HeapPage::payloadSize() != size && !entry->shouldAddToFreeList())
         return;
 #endif
     int index = bucketIndexForSize(size);
@@ -842,8 +825,7 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
         m_biggestFreeListIndex = index;
 }
 
-template<typename Header>
-bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
+bool ThreadHeap::expandObject(HeapObjectHeader* header, size_t newSize)
 {
     // It's possible that Vector requests a smaller expanded size because
     // Vector::shrinkCapacity can set a capacity smaller than the actual payload
@@ -867,8 +849,7 @@ bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
     return false;
 }
 
-template<typename Header>
-void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
+void ThreadHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
 {
     ASSERT(header->payloadSize() > newSize);
     size_t allocationSize = allocationSizeFromSize(newSize);
@@ -891,8 +872,7 @@ void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
     }
 }
 
-template<typename Header>
-void ThreadHeap<Header>::promptlyFreeObject(Header* header)
+void ThreadHeap::promptlyFreeObject(HeapObjectHeader* header)
 {
     ASSERT(!m_threadState->sweepForbidden());
     header->checkHeader();
@@ -924,8 +904,7 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
     m_promptlyFreedSize += size;
 }
 
-template<typename Header>
-bool ThreadHeap<Header>::coalesce()
+bool ThreadHeap::coalesce()
 {
     // Don't coalesce heaps if there are not enough promptly freed entries
     // to be coalesced.
@@ -945,23 +924,23 @@ bool ThreadHeap<Header>::coalesce()
     // Rebuild free lists.
     m_freeList.clear();
     size_t freedSize = 0;
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+    for (HeapPage* page = m_firstPage; page; page = page->next()) {
         page->clearObjectStartBitMap();
         Address startOfGap = page->payload();
         for (Address headerAddress = startOfGap; headerAddress < page->end(); ) {
-            HeapObjectHeader* basicHeader = reinterpret_cast<HeapObjectHeader*>(headerAddress);
-            size_t size = basicHeader->size();
+            HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
+            size_t size = header->size();
             ASSERT(size > 0);
             ASSERT(size < blinkPagePayloadSize());
 
-            if (basicHeader->isPromptlyFreed()) {
-                ASSERT(size >= sizeof(Header));
-                FILL_ZERO_IF_PRODUCTION(headerAddress, sizeof(Header));
+            if (header->isPromptlyFreed()) {
+                ASSERT(size >= sizeof(HeapObjectHeader));
+                FILL_ZERO_IF_PRODUCTION(headerAddress, sizeof(HeapObjectHeader));
                 freedSize += size;
                 headerAddress += size;
                 continue;
             }
-            if (basicHeader->isFree()) {
+            if (header->isFree()) {
                 // Zero the memory in the free list header to maintain the
                 // invariant that memory on the free list is zero filled.
                 // The rest of the memory is already on the free list and is
@@ -986,19 +965,18 @@ bool ThreadHeap<Header>::coalesce()
     return true;
 }
 
-template<typename Header>
-Address ThreadHeap<Header>::allocateLargeObject(size_t size, size_t gcInfoIndex)
+Address ThreadHeap::allocateLargeObject(size_t size, size_t gcInfoIndex)
 {
     // Caller already added space for object header and rounded up to allocation
     // alignment
     ASSERT(!(size & allocationMask));
 
-    size_t allocationSize = sizeof(LargeObject<Header>) + size;
+    size_t allocationSize = sizeof(LargeObject) + size;
 
     // Ensure that there is enough space for alignment.  If the header
     // is not a multiple of 8 bytes we will allocate an extra
-    // headerPadding<Header> bytes to ensure it 8 byte aligned.
-    allocationSize += headerPadding<Header>();
+    // headerPadding bytes to ensure it 8 byte aligned.
+    allocationSize += headerPadding();
 
     // If ASan is supported we add allocationGranularity bytes to the allocated
     // space and poison that to detect overflows
@@ -1013,17 +991,17 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, size_t gcInfoIndex)
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
     m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());
     Address largeObjectAddress = pageMemory->writableStart();
-    Address headerAddress = largeObjectAddress + sizeof(LargeObject<Header>) + headerPadding<Header>();
+    Address headerAddress = largeObjectAddress + sizeof(LargeObject) + headerPadding();
 #if ENABLE(ASSERT)
     // Verify that the allocated PageMemory is expectedly zeroed.
     for (size_t i = 0; i < size; ++i)
         ASSERT(!headerAddress[i]);
 #endif
     ASSERT(gcInfoIndex > 0);
-    Header* header = new (NotNull, headerAddress) Header(largeObjectSizeInHeader, gcInfoIndex);
+    HeapObjectHeader* header = new (NotNull, headerAddress) HeapObjectHeader(largeObjectSizeInHeader, gcInfoIndex);
     Address result = headerAddress + sizeof(*header);
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
-    LargeObject<Header>* largeObject = new (largeObjectAddress) LargeObject<Header>(pageMemory, threadState(), size);
+    LargeObject* largeObject = new (largeObjectAddress) LargeObject(pageMemory, threadState(), size);
     header->checkHeader();
 
     // Poison the object header and allocationGranularity bytes after the object
@@ -1046,15 +1024,14 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, size_t gcInfoIndex)
     return result;
 }
 
-template<typename Header>
-void ThreadHeap<Header>::freeLargeObject(LargeObject<Header>* object)
+void ThreadHeap::freeLargeObject(LargeObject* object)
 {
     object->heapObjectHeader()->finalize(object->payload(), object->payloadSize());
     Heap::decreaseAllocatedSpace(object->size());
 
     // Unpoison the object header and allocationGranularity bytes after the
     // object before freeing.
-    ASAN_UNPOISON_MEMORY_REGION(object->heapObjectHeader(), sizeof(Header));
+    ASAN_UNPOISON_MEMORY_REGION(object->heapObjectHeader(), sizeof(HeapObjectHeader));
     ASAN_UNPOISON_MEMORY_REGION(object->address() + object->size(), allocationGranularity);
 
     if (object->terminating()) {
@@ -1071,7 +1048,7 @@ void ThreadHeap<Header>::freeLargeObject(LargeObject<Header>* object)
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
         PageMemory* memory = object->storage();
-        object->~LargeObject<Header>();
+        object->~LargeObject();
         delete memory;
     }
 }
@@ -1232,8 +1209,7 @@ bool OrphanedPagePool::contains(void* object)
 }
 #endif
 
-template <typename Header>
-void ThreadHeap<Header>::freePage(HeapPage<Header>* page)
+void ThreadHeap::freePage(HeapPage* page)
 {
     Heap::decreaseAllocatedSpace(blinkPageSize);
 
@@ -1249,13 +1225,12 @@ void ThreadHeap<Header>::freePage(HeapPage<Header>* page)
         Heap::orphanedPagePool()->addOrphanedPage(m_index, page);
     } else {
         PageMemory* memory = page->storage();
-        page->~HeapPage<Header>();
+        page->~HeapPage();
         Heap::freePagePool()->addFreePage(m_index, memory);
     }
 }
 
-template<typename Header>
-void ThreadHeap<Header>::allocatePage()
+void ThreadHeap::allocatePage()
 {
     m_threadState->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = Heap::freePagePool()->takeFreePage(m_index);
@@ -1286,7 +1261,7 @@ void ThreadHeap<Header>::allocatePage()
             offset += blinkPageSize;
         }
     }
-    HeapPage<Header>* page = new (pageMemory->writableStart()) HeapPage<Header>(pageMemory, this);
+    HeapPage* page = new (pageMemory->writableStart()) HeapPage(pageMemory, this);
 
     // Use a separate list for pages allocated during sweeping to make
     // sure that we do not accidentally sweep objects that have been
@@ -1300,24 +1275,22 @@ void ThreadHeap<Header>::allocatePage()
     }
 
     Heap::increaseAllocatedSpace(blinkPageSize);
-    addToFreeList(page->payload(), HeapPage<Header>::payloadSize());
+    addToFreeList(page->payload(), HeapPage::payloadSize());
 }
 
 #if ENABLE(ASSERT)
-template<typename Header>
-bool ThreadHeap<Header>::pagesToBeSweptContains(Address address)
+bool ThreadHeap::pagesToBeSweptContains(Address address)
 {
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+    for (HeapPage* page = m_firstPage; page; page = page->next()) {
         if (page->contains(address))
             return true;
     }
     return false;
 }
 
-template<typename Header>
-bool ThreadHeap<Header>::pagesAllocatedDuringSweepingContains(Address address)
+bool ThreadHeap::pagesAllocatedDuringSweepingContains(Address address)
 {
-    for (HeapPage<Header>* page = m_firstPageAllocatedDuringSweeping; page; page = page->next()) {
+    for (HeapPage* page = m_firstPageAllocatedDuringSweeping; page; page = page->next()) {
         if (page->contains(address))
             return true;
     }
@@ -1325,29 +1298,27 @@ bool ThreadHeap<Header>::pagesAllocatedDuringSweepingContains(Address address)
 }
 #endif
 
-template<typename Header>
-size_t ThreadHeap<Header>::objectPayloadSizeForTesting()
+size_t ThreadHeap::objectPayloadSizeForTesting()
 {
     ASSERT(isConsistentForSweeping());
     ASSERT(!m_firstPageAllocatedDuringSweeping);
     ASSERT(!m_firstLargeObjectAllocatedDuringSweeping);
     size_t objectPayloadSize = 0;
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
+    for (HeapPage* page = m_firstPage; page; page = page->next())
         objectPayloadSize += page->objectPayloadSizeForTesting();
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next())
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next())
         objectPayloadSize += largeObject->objectPayloadSizeForTesting();
     return objectPayloadSize;
 }
 
-template<typename Header>
-void ThreadHeap<Header>::sweepNormalPages()
+void ThreadHeap::sweepNormalPages()
 {
     TRACE_EVENT0("blink_gc", "ThreadHeap::sweepNormalPages");
-    HeapPage<Header>* page = m_firstPage;
-    HeapPage<Header>** previousNext = &m_firstPage;
+    HeapPage* page = m_firstPage;
+    HeapPage** previousNext = &m_firstPage;
     while (page) {
         if (page->isEmpty()) {
-            HeapPage<Header>* next = page->next();
+            HeapPage* next = page->next();
             page->unlink(previousNext);
             freePage(page);
             page = next;
@@ -1359,15 +1330,14 @@ void ThreadHeap<Header>::sweepNormalPages()
     }
 }
 
-template<typename Header>
-void ThreadHeap<Header>::sweepLargePages()
+void ThreadHeap::sweepLargePages()
 {
     TRACE_EVENT0("blink_gc", "ThreadHeap::sweepLargePages");
-    LargeObject<Header>* largeObject = m_firstLargeObject;
-    LargeObject<Header>** previousNext = &m_firstLargeObject;
+    LargeObject* largeObject = m_firstLargeObject;
+    LargeObject** previousNext = &m_firstLargeObject;
     while (largeObject) {
         if (largeObject->isEmpty()) {
-            LargeObject<Header>* next = largeObject->next();
+            LargeObject* next = largeObject->next();
             largeObject->unlink(previousNext);
             freeLargeObject(largeObject);
             largeObject = next;
@@ -1386,8 +1356,7 @@ void ThreadHeap<Header>::sweepLargePages()
 // embedded in garbage collected objects.
 #define STRICT_ASAN_FINALIZATION_CHECKING 0
 
-template<typename Header>
-void ThreadHeap<Header>::sweep()
+void ThreadHeap::sweep()
 {
     ASSERT(isConsistentForSweeping());
 #if defined(ADDRESS_SANITIZER) && STRICT_ASAN_FINALIZATION_CHECKING
@@ -1395,15 +1364,14 @@ void ThreadHeap<Header>::sweep()
     // poisoned before calling their finalizer methods.  This can catch
     // the case where the finalizer of an object tries to modify
     // another object as part of finalization.
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
+    for (HeapPage* page = m_firstPage; page; page = page->next())
         page->poisonUnmarkedObjects();
 #endif
     sweepNormalPages();
     sweepLargePages();
 }
 
-template<typename Header>
-void ThreadHeap<Header>::postSweepProcessing()
+void ThreadHeap::postSweepProcessing()
 {
     // If pages have been allocated during sweeping, link them into
     // the list of pages.
@@ -1422,8 +1390,7 @@ void ThreadHeap<Header>::postSweepProcessing()
 }
 
 #if ENABLE(ASSERT)
-template<typename Header>
-bool ThreadHeap<Header>::isConsistentForSweeping()
+bool ThreadHeap::isConsistentForSweeping()
 {
     // A thread heap is consistent for sweeping if none of the pages to be swept
     // contain a freelist block or the current allocation point.
@@ -1443,42 +1410,37 @@ bool ThreadHeap<Header>::isConsistentForSweeping()
 }
 #endif
 
-template<typename Header>
-void ThreadHeap<Header>::makeConsistentForSweeping()
+void ThreadHeap::makeConsistentForSweeping()
 {
     setAllocationPoint(nullptr, 0);
     clearFreeLists();
 }
 
-template<typename Header>
-void ThreadHeap<Header>::markUnmarkedObjectsDead()
+void ThreadHeap::markUnmarkedObjectsDead()
 {
     ASSERT(isConsistentForSweeping());
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+    for (HeapPage* page = m_firstPage; page; page = page->next()) {
         page->markUnmarkedObjectsDead();
     }
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
         largeObject->markUnmarkedObjectsDead();
     }
 }
 
-template<typename Header>
-void ThreadHeap<Header>::clearFreeLists()
+void ThreadHeap::clearFreeLists()
 {
     m_promptlyFreedSize = 0;
     m_freeList.clear();
 }
 
-template<typename Header>
-void FreeList<Header>::clear()
+void FreeList::clear()
 {
     m_biggestFreeListIndex = 0;
     for (size_t i = 0; i < blinkPageSizeLog2; ++i)
         m_freeLists[i] = nullptr;
 }
 
-template<typename Header>
-int FreeList<Header>::bucketIndexForSize(size_t size)
+int FreeList::bucketIndexForSize(size_t size)
 {
     ASSERT(size > 0);
     int index = -1;
@@ -1489,8 +1451,7 @@ int FreeList<Header>::bucketIndexForSize(size_t size)
     return index;
 }
 
-template<typename Header>
-HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap)
+HeapPage::HeapPage(PageMemory* storage, ThreadHeap* heap)
     : BaseHeapPage(storage, heap->threadState())
     , m_next(nullptr)
 {
@@ -1498,14 +1459,13 @@ HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap)
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }
 
-template<typename Header>
-size_t HeapPage<Header>::objectPayloadSizeForTesting()
+size_t HeapPage::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
     Address headerAddress = payload();
     ASSERT(headerAddress != end());
     do {
-        Header* header = reinterpret_cast<Header*>(headerAddress);
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         if (!header->isFree()) {
             header->checkHeader();
             objectPayloadSize += header->payloadSize();
@@ -1517,26 +1477,24 @@ size_t HeapPage<Header>::objectPayloadSizeForTesting()
     return objectPayloadSize;
 }
 
-template<typename Header>
-bool HeapPage<Header>::isEmpty()
+bool HeapPage::isEmpty()
 {
     HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(payload());
     return header->isFree() && header->size() == payloadSize();
 }
 
-template<typename Header>
-void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
+void HeapPage::sweep(ThreadHeap* heap)
 {
     clearObjectStartBitMap();
 
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < end(); ) {
-        HeapObjectHeader* basicHeader = reinterpret_cast<HeapObjectHeader*>(headerAddress);
-        ASSERT(basicHeader->size() > 0);
-        ASSERT(basicHeader->size() < blinkPagePayloadSize());
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
+        ASSERT(header->size() > 0);
+        ASSERT(header->size() < blinkPagePayloadSize());
 
-        if (basicHeader->isFree()) {
-            size_t size = basicHeader->size();
+        if (header->isFree()) {
+            size_t size = header->size();
             // Zero the memory in the free list header to maintain the
             // invariant that memory on the free list is zero filled.
             // The rest of the memory is already on the free list and is
@@ -1545,14 +1503,12 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
             headerAddress += size;
             continue;
         }
-        // At this point we know this is a valid object of type Header
-        Header* header = static_cast<Header*>(basicHeader);
         header->checkHeader();
 
         if (!header->isMarked()) {
             size_t size = header->size();
             // This is a fast version of header->payloadSize().
-            size_t payloadSize = size - sizeof(Header);
+            size_t payloadSize = size - sizeof(HeapObjectHeader);
             // For ASan we unpoison the specific object when calling the
             // finalizer and poison it again when done to allow the object's own
             // finalizer to operate on the object, but not have other finalizers
@@ -1578,11 +1534,10 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
         heap->addToFreeList(startOfGap, end() - startOfGap);
 }
 
-template<typename Header>
-void HeapPage<Header>::markUnmarkedObjectsDead()
+void HeapPage::markUnmarkedObjectsDead()
 {
     for (Address headerAddress = payload(); headerAddress < end();) {
-        Header* header = reinterpret_cast<Header*>(headerAddress);
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
         // Check if a free list entry first since we cannot call
         // isMarked on a free list entry.
@@ -1598,13 +1553,12 @@ void HeapPage<Header>::markUnmarkedObjectsDead()
     }
 }
 
-template<typename Header>
-void HeapPage<Header>::populateObjectStartBitMap()
+void HeapPage::populateObjectStartBitMap()
 {
     memset(&m_objectStartBitMap, 0, objectStartBitMapSize);
     Address start = payload();
     for (Address headerAddress = start; headerAddress < end();) {
-        Header* header = reinterpret_cast<Header*>(headerAddress);
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         size_t objectOffset = headerAddress - start;
         ASSERT(!(objectOffset & allocationMask));
         size_t objectStartNumber = objectOffset / allocationGranularity;
@@ -1617,8 +1571,7 @@ void HeapPage<Header>::populateObjectStartBitMap()
     m_objectStartBitMapComputed = true;
 }
 
-template<typename Header>
-void HeapPage<Header>::clearObjectStartBitMap()
+void HeapPage::clearObjectStartBitMap()
 {
     m_objectStartBitMapComputed = false;
 }
@@ -1641,8 +1594,7 @@ static int numberOfLeadingZeroes(uint8_t byte)
     return result;
 }
 
-template<typename Header>
-Header* HeapPage<Header>::findHeaderFromAddress(Address address)
+HeapObjectHeader* HeapPage::findHeaderFromAddress(Address address)
 {
     if (address < payload())
         return nullptr;
@@ -1662,18 +1614,17 @@ Header* HeapPage<Header>::findHeaderFromAddress(Address address)
     objectStartNumber = (mapIndex * 8) + 7 - leadingZeroes;
     objectOffset = objectStartNumber * allocationGranularity;
     Address objectAddress = objectOffset + payload();
-    Header* header = reinterpret_cast<Header*>(objectAddress);
+    HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(objectAddress);
     if (header->isFree())
         return nullptr;
     header->checkHeader();
     return header;
 }
 
-template<typename Header>
-void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
+void HeapPage::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
-    Header* header = findHeaderFromAddress(address);
+    HeapObjectHeader* header = findHeaderFromAddress(address);
     if (!header || header->isDead())
         return;
 
@@ -1690,13 +1641,12 @@ void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
-template<typename Header>
-const GCInfo* HeapPage<Header>::findGCInfo(Address address)
+const GCInfo* HeapPage::findGCInfo(Address address)
 {
     if (address < payload())
         return nullptr;
 
-    Header* header = findHeaderFromAddress(address);
+    HeapObjectHeader* header = findHeaderFromAddress(address);
     if (!header)
         return nullptr;
 
@@ -1705,12 +1655,11 @@ const GCInfo* HeapPage<Header>::findGCInfo(Address address)
 #endif
 
 #if ENABLE(GC_PROFILE_HEAP)
-template<typename Header>
-void HeapPage<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
+void HeapPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
-    Header* header = nullptr;
+    HeapObjectHeader* header = nullptr;
     for (Address addr = payload(); addr < end(); addr += header->size()) {
-        header = reinterpret_cast<Header*>(addr);
+        header = reinterpret_cast<HeapObjectHeader*>(addr);
         if (json)
             json->pushInteger(header->encodedSize());
         if (header->isFree()) {
@@ -1741,11 +1690,10 @@ void HeapPage<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* in
 #endif
 
 #if defined(ADDRESS_SANITIZER)
-template<typename Header>
-void HeapPage<Header>::poisonUnmarkedObjects()
+void HeapPage::poisonUnmarkedObjects()
 {
     for (Address headerAddress = payload(); headerAddress < end(); ) {
-        Header* header = reinterpret_cast<Header*>(headerAddress);
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
 
         if (!header->isFree() && !header->isMarked())
@@ -1755,17 +1703,15 @@ void HeapPage<Header>::poisonUnmarkedObjects()
 }
 #endif
 
-template<typename Header>
-size_t LargeObject<Header>::objectPayloadSizeForTesting()
+size_t LargeObject::objectPayloadSizeForTesting()
 {
     return payloadSize();
 }
 
 #if ENABLE(GC_PROFILE_HEAP)
-template<typename Header>
-void LargeObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
+void LargeObject::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
-    Header* header = heapObjectHeader();
+    HeapObjectHeader* header = heapObjectHeader();
     size_t tag = info->getClassTag(Heap::gcInfo(header->gcInfoIndex()));
     size_t age = header->age();
     if (header->isMarked()) {
@@ -2456,13 +2402,12 @@ void Heap::collectAllGarbage()
         collectGarbage(ThreadState::NoHeapPointersOnStack);
 }
 
-template<typename Header>
-void ThreadHeap<Header>::prepareHeapForTermination()
+void ThreadHeap::prepareHeapForTermination()
 {
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+    for (HeapPage* page = m_firstPage; page; page = page->next()) {
         page->setTerminating();
     }
-    for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
+    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
         largeObject->setTerminating();
     }
 }
@@ -2481,7 +2426,7 @@ size_t Heap::objectPayloadSizeForTesting()
     return objectPayloadSize;
 }
 
-template<typename HeapTraits, typename HeapType, typename HeaderType>
+template<typename HeapTrait>
 void HeapAllocator::backingFree(void* address)
 {
     ThreadState* state = ThreadState::current();
@@ -2497,33 +2442,30 @@ void HeapAllocator::backingFree(void* address)
     if (page->isLargeObject() || page->threadState() != state)
         return;
 
-    HeaderType* header = HeaderType::fromPayload(address);
+    HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
 
-    int heapIndex = HeapTraits::index(header->payloadSize());
-    HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
+    int heapIndex = HeapTrait::index(header->payloadSize());
+    ThreadHeap* heap = static_cast<ThreadHeap*>(state->heap(heapIndex));
     heap->promptlyFreeObject(header);
 }
 
 void HeapAllocator::freeVectorBacking(void* address)
 {
-    using HeapTraits = HeapIndexTrait<VectorBackingHeap>;
-    backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
+    backingFree<HeapIndexTrait<VectorBackingHeap>>(address);
 }
 
 void HeapAllocator::freeInlineVectorBacking(void* address)
 {
-    using HeapTraits = HeapIndexTrait<InlineVectorBackingHeap>;
-    backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
+    backingFree<HeapIndexTrait<InlineVectorBackingHeap>>(address);
 }
 
 void HeapAllocator::freeHashTableBacking(void* address)
 {
-    using HeapTraits = HeapIndexTrait<HashTableBackingHeap>;
-    backingFree<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address);
+    backingFree<HeapIndexTrait<HashTableBackingHeap>>(address);
 }
 
-template<typename HeapTraits, typename HeapType, typename HeaderType>
+template<typename HeapTrait>
 bool HeapAllocator::backingExpand(void* address, size_t newSize)
 {
     ThreadState* state = ThreadState::current();
@@ -2538,24 +2480,22 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     if (page->isLargeObject() || page->threadState() != state)
         return false;
 
-    HeaderType* header = HeaderType::fromPayload(address);
+    HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
 
-    int heapIndex = HeapTraits::index(header->payloadSize());
-    HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
+    int heapIndex = HeapTrait::index(header->payloadSize());
+    ThreadHeap* heap = static_cast<ThreadHeap*>(state->heap(heapIndex));
     return heap->expandObject(header, newSize);
 }
 
 bool HeapAllocator::expandVectorBacking(void* address, size_t newSize)
 {
-    using HeapTraits = HeapIndexTrait<VectorBackingHeap>;
-    return backingExpand<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address, newSize);
+    return backingExpand<HeapIndexTrait<VectorBackingHeap>>(address, newSize);
 }
 
 bool HeapAllocator::expandInlineVectorBacking(void* address, size_t newSize)
 {
-    using HeapTraits = HeapIndexTrait<InlineVectorBackingHeap>;
-    return backingExpand<HeapTraits, HeapTraits::HeapType, HeapTraits::HeaderType>(address, newSize);
+    return backingExpand<HeapIndexTrait<InlineVectorBackingHeap>>(address, newSize);
 }
 
 template<typename HeapTraits>
@@ -2585,11 +2525,11 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     if (page->threadState() != state)
         return;
 
-    typename HeapTraits::HeaderType* header = HeapTraits::HeaderType::fromPayload(address);
+    HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
 
     int heapIndex = HeapTraits::index(header->payloadSize());
-    static_cast<typename HeapTraits::HeapType*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
+    static_cast<ThreadHeap*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
 }
 
 void HeapAllocator::shrinkVectorBackingInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
@@ -2692,10 +2632,6 @@ void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
     }
     delete current;
 }
-
-// Force template instantiations for the types that we need.
-template class HeapPage<HeapObjectHeader>;
-template class ThreadHeap<HeapObjectHeader>;
 
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
