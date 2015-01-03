@@ -1330,7 +1330,7 @@ wl_log_set_handler_server(wl_log_func_t handler)
 	wl_log_handler = handler;
 }
 
-/* Deprecated functions below. */
+/** \cond */ /* Deprecated functions below. */
 
 uint32_t
 wl_client_add_resource(struct wl_client *client,
@@ -1426,6 +1426,8 @@ wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 {
 	wl_global_destroy(global);
 }
+
+/** \endcond */
 
 /** Add support for a wl_shm pixel format
  *
