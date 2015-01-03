@@ -51,7 +51,6 @@ namespace blink {
 
 class BaseHeap;
 class BaseHeapPage;
-class GeneralHeapObjectHeader;
 struct GCInfo;
 class HeapObjectHeader;
 class PageMemory;
@@ -190,7 +189,7 @@ enum TypedHeaps {
 // Base implementation for HeapIndexTrait found below.
 template<int heapIndex>
 struct HeapIndexTraitBase {
-    using HeaderType = GeneralHeapObjectHeader;
+    using HeaderType = HeapObjectHeader;
     using HeapType = ThreadHeap<HeaderType>;
     static int index(size_t)
     {
@@ -207,7 +206,7 @@ class ThreadState;
 // Objects whose size is more than 15 words go to the fourth general type heap.
 template<int heapIndex>
 struct GeneralHeapIndexTraitBase {
-    using HeaderType = GeneralHeapObjectHeader;
+    using HeaderType = HeapObjectHeader;
     using HeapType = ThreadHeap<HeaderType>;
     static int index(size_t size)
     {

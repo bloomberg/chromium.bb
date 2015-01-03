@@ -252,12 +252,6 @@ public:
         m_count++;
     }
 
-    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
-    {
-        ASSERT(header->payload());
-        m_count++;
-    }
-
     virtual void registerDelayedMarkNoTracing(const void*) override { }
     virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) override { }
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) override { }
@@ -273,8 +267,6 @@ public:
         markNoTracing(objectPointer);
         return true;
     }
-
-    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 
     size_t count() { return m_count; }
     void reset() { m_count = 0; }
@@ -1015,15 +1007,8 @@ public:
         mark(header->payload());
     }
 
-    virtual void markHeader(GeneralHeapObjectHeader* header, TraceCallback callback) override
-    {
-        mark(header->payload());
-    }
-
     bool validate() { return m_count >= m_expectedCount; }
     void reset() { m_count = 0; }
-
-    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 
 private:
     bool expectedObject(const void* ptr)
@@ -2056,14 +2041,15 @@ TEST(HeapTest, LargeHeapObjects)
             EXPECT_EQ('a', object->get(0));
             object->set(object->length() - 1, 'b');
             EXPECT_EQ('b', object->get(object->length() - 1));
-            size_t expectedObjectPayloadSize = sizeof(LargeHeapObject) + sizeof(IntWrapper);
+            size_t expectedLargeHeapObjectPayloadSize = ThreadHeap<HeapObjectHeader>::allocationSizeFromSize(sizeof(LargeHeapObject));
+            size_t expectedObjectPayloadSize = expectedLargeHeapObjectPayloadSize + sizeof(IntWrapper);
             size_t actualObjectPayloadSize = Heap::objectPayloadSizeForTesting() - initialObjectPayloadSize;
             CheckWithSlack(expectedObjectPayloadSize, actualObjectPayloadSize, slack);
             // There is probably space for the IntWrapper in a heap page without
             // allocating extra pages. However, the IntWrapper allocation might cause
             // the addition of a heap page.
             size_t largeObjectAllocationSize =
-                sizeof(LargeHeapObject) + sizeof(LargeObject<GeneralHeapObjectHeader>) + sizeof(GeneralHeapObjectHeader);
+                sizeof(LargeObject<HeapObjectHeader>) + expectedLargeHeapObjectPayloadSize;
             size_t allocatedSpaceLowerBound = initialAllocatedSpace + largeObjectAllocationSize;
             size_t allocatedSpaceUpperBound = allocatedSpaceLowerBound + slack + blinkPageSize;
             EXPECT_LE(allocatedSpaceLowerBound, afterAllocation);

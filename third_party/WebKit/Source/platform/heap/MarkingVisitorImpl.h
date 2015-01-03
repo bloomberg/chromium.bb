@@ -58,7 +58,7 @@ protected:
     {
         if (!objectPointer)
             return;
-        GeneralHeapObjectHeader* header = GeneralHeapObjectHeader::fromPayload(objectPointer);
+        HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);
         visitHeader(header, header->payload(), callback);
     }
 
@@ -86,7 +86,7 @@ protected:
 
     inline bool isMarked(const void* objectPointer)
     {
-        return GeneralHeapObjectHeader::fromPayload(objectPointer)->isMarked();
+        return HeapObjectHeader::fromPayload(objectPointer)->isMarked();
     }
 
     inline bool ensureMarked(const void* objectPointer)
@@ -103,61 +103,13 @@ protected:
 #else
         // Inline what the above markNoTracing() call expands to,
         // so as to make sure that we do get all the benefits.
-        GeneralHeapObjectHeader* header = GeneralHeapObjectHeader::fromPayload(objectPointer);
+        HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);
         if (header->isMarked())
             return false;
         header->mark();
 #endif
         return true;
     }
-
-#if ENABLE(ASSERT)
-#define DEFINE_ENSURE_MARKED_METHOD(Type)                                          \
-    inline bool ensureMarked(const Type* objectPointer)                            \
-    {                                                                              \
-        if (!objectPointer)                                                        \
-            return false;                                                          \
-        if (!toDerived()->shouldMarkObject(objectPointer))                         \
-            return false;                                                          \
-        if (isMarked(objectPointer))                                               \
-            return false;                                                          \
-        toDerived()->markNoTracing(objectPointer);                                 \
-        return true;                                                               \
-    }
-#else
-#define DEFINE_ENSURE_MARKED_METHOD(Type)                                          \
-    inline bool ensureMarked(const Type* objectPointer)                            \
-    {                                                                              \
-        if (!objectPointer)                                                        \
-            return false;                                                          \
-        if (!toDerived()->shouldMarkObject(objectPointer))                         \
-            return false;                                                          \
-        HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);   \
-        if (header->isMarked())                                                    \
-            return false;                                                          \
-        header->mark();                                                            \
-        return true;                                                               \
-    }
-#endif
-
-// This macro defines the necessary visitor methods for typed heaps
-#define DEFINE_VISITOR_METHODS(Type)                                             \
-    inline void mark(const Type* objectPointer, TraceCallback callback)          \
-    {                                                                            \
-        if (!objectPointer)                                                      \
-            return;                                                              \
-        HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer); \
-        visitHeader(header, header->payload(), callback);                        \
-    }                                                                            \
-    inline bool isMarked(const Type* objectPointer)                              \
-    {                                                                            \
-        return HeapObjectHeader::fromPayload(objectPointer)->isMarked();         \
-    }                                                                            \
-    DEFINE_ENSURE_MARKED_METHOD(Type)
-
-    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
-#undef DEFINE_VISITOR_METHODS
-#undef DEFINE_ENSURE_MARKED_METHOD
 
     Derived* toDerived()
     {

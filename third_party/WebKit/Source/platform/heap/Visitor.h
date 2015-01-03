@@ -58,7 +58,6 @@ namespace blink {
 template<typename T> class GarbageCollected;
 template<typename T> class GarbageCollectedFinalized;
 class GarbageCollectedMixin;
-class GeneralHeapObjectHeader;
 class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
 template<typename T> class Member;
@@ -105,12 +104,8 @@ struct GCInfo {
 };
 
 #if ENABLE(ASSERT)
-PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, const GCInfo*);
+PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, size_t gcInfoIndex);
 
-#define DECLARE_CHECK_GC_INFO(Type)                     \
-    PLATFORM_EXPORT void assertObjectHasGCInfo(const Type*, const GCInfo*);
-FOR_EACH_TYPED_HEAP(DECLARE_CHECK_GC_INFO)
-#undef DECLARE_CHECK_GC_INFO
 #endif
 
 
@@ -481,7 +476,6 @@ public:
 
     void markNoTracing(const void* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
     void markHeaderNoTracing(HeapObjectHeader* header) { toDerived()->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
-    void markHeaderNoTracing(GeneralHeapObjectHeader* header) { toDerived()->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
     template<typename T> void markNoTracing(const T* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
 
     template<typename T, void (T::*method)(Visitor*)>
@@ -572,7 +566,6 @@ public:
 
     // Used to mark objects during conservative scanning.
     virtual void markHeader(HeapObjectHeader*, TraceCallback) = 0;
-    virtual void markHeader(GeneralHeapObjectHeader*, TraceCallback) = 0;
 
     // Used to delay the marking of objects until the usual marking
     // including emphemeron iteration is done. This is used to delay
@@ -611,15 +604,6 @@ public:
 
     virtual bool isMarked(const void*) = 0;
     virtual bool ensureMarked(const void*) = 0;
-
-    // Macro to declare methods needed for each typed heap.
-#define DECLARE_VISITOR_METHODS(Type)                            \
-    virtual void mark(const Type*, TraceCallback) = 0;           \
-    virtual bool isMarked(const Type*) = 0;                      \
-    virtual bool ensureMarked(const Type*) = 0;
-
-    FOR_EACH_TYPED_HEAP(DECLARE_VISITOR_METHODS)
-#undef DECLARE_VISITOR_METHODS
 
 #if ENABLE(GC_PROFILE_MARKING)
     void setHostInfo(void* object, const String& name)
@@ -735,7 +719,7 @@ public:
 #if ENABLE(ASSERT)
     static void checkGCInfo(const T* t)
     {
-        assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::get());
+        assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::index());
     }
 #endif
 };
@@ -853,9 +837,23 @@ struct TypenameStringTrait {
 };
 #endif
 
+// s_gcInfoMap is a map used to encode a GCInfo* into a 15 bit integer.
+const size_t gcInfoIndexMax = 1 << 15;
+extern PLATFORM_EXPORT int s_gcInfoIndex;
+extern PLATFORM_EXPORT const GCInfo* s_gcInfoMap[gcInfoIndexMax];
+
+// This macro should be used when returning a unique 15 bit integer
+// for a given gcInfo.
+#define RETURN_GCINFO_INDEX() \
+    static const size_t gcInfoIndex = atomicIncrement(&s_gcInfoIndex); \
+    ASSERT(gcInfoIndex >= 1); \
+    ASSERT(gcInfoIndex < gcInfoIndexMax); \
+    s_gcInfoMap[gcInfoIndex] = &gcInfo; \
+    return gcInfoIndex;
+
 template<typename T>
 struct GCInfoAtBase {
-    static const GCInfo* get()
+    static size_t index()
     {
         static const GCInfo gcInfo = {
             TraceTrait<T>::trace,
@@ -866,7 +864,7 @@ struct GCInfoAtBase {
             TypenameStringTrait<T>::get()
 #endif
         };
-        return &gcInfo;
+        RETURN_GCINFO_INDEX();
     }
 };
 
@@ -884,9 +882,9 @@ struct GetGarbageCollectedBase<T, false> {
 
 template<typename T>
 struct GCInfoTrait {
-    static const GCInfo* get()
+    static size_t index()
     {
-        return GCInfoAtBase<typename GetGarbageCollectedBase<T>::type>::get();
+        return GCInfoAtBase<typename GetGarbageCollectedBase<T>::type>::index();
     }
 };
 

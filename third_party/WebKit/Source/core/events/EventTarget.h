@@ -276,37 +276,6 @@ inline bool EventTarget::hasCapturingEventListeners(const AtomicString& eventTyp
     return d->eventListenerMap.containsCapturing(eventType);
 }
 
-#if ENABLE(OILPAN)
-// TraceTrait specialization for EventTarget.
-//
-// Node instances are allocated to a dedicated typed heap, while non-Node objects will go to a general heap. These two
-// heaps have different memory layout, and Oilpan needs to know which heap the object belongs to so it can mark the
-// object.
-//
-// FIXME: This hack and toNode() virtual calls will be unnecessary when the object header format is consolidated.
-
-template <>
-class TraceTrait<EventTarget> {
-public:
-    static void trace(Visitor* visitor, void* self) { static_cast<EventTarget*>(self)->trace(visitor); }
-
-    // |mark| and |checkGCInfo| need out-of-line implementation due to the dependency to Node.
-    static void mark(Visitor* visitor, const EventTarget* eventTarget)
-    {
-        if (eventTarget)
-            eventTarget->mark(visitor);
-    }
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const EventTarget* eventTarget)
-    {
-        if (eventTarget)
-            eventTarget->checkGCInfo();
-    }
-#endif
-};
-
-#endif
-
 } // namespace blink
 
 #if ENABLE(OILPAN)

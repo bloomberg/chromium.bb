@@ -36,29 +36,24 @@
 
 namespace blink {
 
+// gcInfoIndex should start from 1.
+// Since atomicIncrement(&s_gcInfoIndex) (which is defined in
+// RETURN_GCINFO_INDEX) returns an incremented value of s_gcInfoIndex,
+// the initial value of s_gcInfoIndex should be set to 0.
+int s_gcInfoIndex = 0;
+const GCInfo* s_gcInfoMap[gcInfoIndexMax] = { 0 };
+
 #if ENABLE(ASSERT)
-void assertObjectHasGCInfo(const void* payload, const GCInfo* gcInfo)
+void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex)
 {
-    GeneralHeapObjectHeader::fromPayload(payload)->checkHeader();
+    HeapObjectHeader::fromPayload(payload)->checkHeader();
 #if !defined(COMPONENT_BUILD)
     // On component builds we cannot compare the gcInfos as they are statically
     // defined in each of the components and hence will not match.
     BaseHeapPage* page = pageFromObject(payload);
-    ASSERT(page->orphaned() || GeneralHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
+    ASSERT(page->orphaned() || HeapObjectHeader::fromPayload(payload)->gcInfoIndex() == gcInfoIndex);
 #endif
 }
-
-#define DEFINE_VISITOR_CHECK_MARKER(Type)                                \
-    void assertObjectHasGCInfo(const Type* payload, const GCInfo* gcInfo) \
-    {                                                                    \
-        HeapObjectHeader::fromPayload(payload)->checkHeader();           \
-        Type* object = const_cast<Type*>(payload);                       \
-        BaseHeapPage* page = pageFromObject(object);                     \
-        ASSERT(page->orphaned() || page->gcInfo() == gcInfo);            \
-    }
-
-FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_CHECK_MARKER)
-#undef DEFINE_VISITOR_CHECK_MARKER
 #endif
 
 }
