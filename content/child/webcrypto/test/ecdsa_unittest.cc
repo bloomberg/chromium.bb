@@ -224,6 +224,64 @@ TEST(WebCryptoEcdsaTest, VerifyKnownAnswer) {
   }
 }
 
+// The test file may include either public or private keys. In order to import
+// them successfully, the correct usages need to be specified. This function
+// determines what usages to use for the key.
+blink::WebCryptoKeyUsageMask GetExpectedUsagesForKeyImport(
+    blink::WebCryptoKeyFormat key_format,
+    const base::DictionaryValue* test) {
+  blink::WebCryptoKeyUsageMask kPublicUsages = blink::WebCryptoKeyUsageVerify;
+  blink::WebCryptoKeyUsageMask kPrivateUsages = blink::WebCryptoKeyUsageSign;
+
+  switch (key_format) {
+    case blink::WebCryptoKeyFormatRaw:
+    case blink::WebCryptoKeyFormatSpki:
+      return kPublicUsages;
+    case blink::WebCryptoKeyFormatPkcs8:
+      return kPrivateUsages;
+      break;
+    case blink::WebCryptoKeyFormatJwk: {
+      const base::DictionaryValue* key = NULL;
+      if (!test->GetDictionary("key", &key))
+        ADD_FAILURE() << "Missing key property";
+      return key->HasKey("d") ? kPrivateUsages : kPublicUsages;
+    }
+  }
+
+  // Appease compiler.
+  return kPrivateUsages;
+}
+
+// Tests importing bad public/private keys in a variety of formats.
+TEST(WebCryptoEcdsaTest, ImportBadKeys) {
+  if (!SupportsEcdsa())
+    return;
+
+  scoped_ptr<base::ListValue> tests;
+  ASSERT_TRUE(ReadJsonTestFileToList("bad_ec_keys.json", &tests));
+
+  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+    SCOPED_TRACE(test_index);
+
+    const base::DictionaryValue* test;
+    ASSERT_TRUE(tests->GetDictionary(test_index, &test));
+
+    blink::WebCryptoNamedCurve curve =
+        GetCurveNameFromDictionary(test, "curve");
+    blink::WebCryptoKeyFormat key_format = GetKeyFormatFromJsonTestCase(test);
+    std::vector<uint8_t> key_data =
+        GetKeyDataFromJsonTestCase(test, key_format);
+    std::string expected_error;
+    ASSERT_TRUE(test->GetString("error", &expected_error));
+
+    blink::WebCryptoKey key;
+    Status status = ImportKey(
+        key_format, CryptoData(key_data), CreateEcdsaImportAlgorithm(curve),
+        true, GetExpectedUsagesForKeyImport(key_format, test), &key);
+    ASSERT_EQ(expected_error, StatusToString(status));
+  }
+}
+
 // Tests importing and exporting of EC private keys, using both JWK and PKCS8
 // formats.
 //
