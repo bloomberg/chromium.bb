@@ -19,7 +19,6 @@ var SB_DISPLAY_CHECK_BOX = 'displaycheckbox';
 // This sets up the Extended Safe Browsing Reporting opt-in.
 function setupCheckbox() {
   if (loadTimeData.getString('type') != 'SAFEBROWSING' ||
-      loadTimeData.getBoolean('phishing') ||
       !loadTimeData.getBoolean(SB_DISPLAY_CHECK_BOX)) {
     return;
   }

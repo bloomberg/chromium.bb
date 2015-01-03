@@ -398,7 +398,7 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
       web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, profile, web_contents());
- }
+}
 
 void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
   Profile* profile = Profile::FromBrowserContext(
@@ -582,6 +582,7 @@ void SafeBrowsingBlockingPage::RecordUserInteraction(Interaction interaction) {
 void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_.get() == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
+  DCHECK(interstitial_type_ == TYPE_MALWARE);
 
   const bool enabled =
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
@@ -712,6 +713,27 @@ void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
   }
 }
 
+void SafeBrowsingBlockingPage::PopulateExtendedReportingOption(
+    base::DictionaryValue* load_time_data) {
+  // Only show checkbox if !(HTTPS || incognito-mode).
+  const bool show = CanShowMalwareDetailsOption();
+  load_time_data->SetBoolean(kDisplayCheckBox, show);
+  if (!show)
+    return;
+
+  const std::string privacy_link = base::StringPrintf(
+      kPrivacyLinkHtml,
+      l10n_util::GetStringUTF8(
+          IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
+  load_time_data->SetString(
+      "optInLink",
+      l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
+                                 base::UTF8ToUTF16(privacy_link)));
+  load_time_data->SetBoolean(
+      kBoxChecked,
+      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
+}
+
 void SafeBrowsingBlockingPage::PopulateMalwareLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
@@ -736,20 +758,7 @@ void SafeBrowsingBlockingPage::PopulateMalwareLoadTimeData(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
 
-  load_time_data->SetBoolean(kDisplayCheckBox, CanShowMalwareDetailsOption());
-  if (CanShowMalwareDetailsOption()) {
-    std::string privacy_link = base::StringPrintf(
-        kPrivacyLinkHtml,
-        l10n_util::GetStringUTF8(
-            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
-    load_time_data->SetString(
-        "optInLink",
-        l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
-                                   base::UTF8ToUTF16(privacy_link)));
-    load_time_data->SetBoolean(
-        kBoxChecked,
-        IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
-  }
+  PopulateExtendedReportingOption(load_time_data);
 }
 
 void SafeBrowsingBlockingPage::PopulateHarmfulLoadTimeData(
@@ -771,20 +780,7 @@ void SafeBrowsingBlockingPage::PopulateHarmfulLoadTimeData(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_HARMFUL_V3_PROCEED_PARAGRAPH));
 
-  load_time_data->SetBoolean(kDisplayCheckBox, CanShowMalwareDetailsOption());
-  if (CanShowMalwareDetailsOption()) {
-    std::string privacy_link = base::StringPrintf(
-        kPrivacyLinkHtml,
-        l10n_util::GetStringUTF8(
-            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
-    load_time_data->SetString(
-        "optInLink",
-        l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
-                                   base::UTF8ToUTF16(privacy_link)));
-    load_time_data->SetBoolean(
-        kBoxChecked,
-        IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
-  }
+  PopulateExtendedReportingOption(load_time_data);
 }
 
 void SafeBrowsingBlockingPage::PopulatePhishingLoadTimeData(
@@ -805,4 +801,6 @@ void SafeBrowsingBlockingPage::PopulatePhishingLoadTimeData(
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_PHISHING_V3_PROCEED_PARAGRAPH));
+
+  PopulateExtendedReportingOption(load_time_data);
 }

@@ -222,6 +222,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
  private:
   // Fills the passed dictionary with the values to be passed to the template
   // when creating the HTML.
+  void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);
   void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);

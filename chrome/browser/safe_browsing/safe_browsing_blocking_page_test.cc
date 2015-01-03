@@ -677,12 +677,9 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeProceed) {
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        IframeOptInAndReportMalwareDetails) {
-  // The extended reporting opt-in is presented in the interstitial for both
-  // malware and UwS threats. It however only results in uploading further
+  // The extended reporting opt-in is presented in the interstitial for malware,
+  // phishing, and UwS threats. It however only results in uploading further
   // details about the immediate threat when facing malware threats.
-  const bool expect_extended_optin_option =
-      GetParam() == SB_THREAT_TYPE_URL_MALWARE ||
-      GetParam() == SB_THREAT_TYPE_URL_UNWANTED;
   const bool expect_malware_details = GetParam() == SB_THREAT_TYPE_URL_MALWARE;
 
   scoped_refptr<content::MessageLoopRunner> malware_report_sent_runner(
@@ -700,16 +697,13 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   if (expect_malware_details)
     fake_malware_details->WaitForDOM();
 
-  EXPECT_EQ(expect_extended_optin_option ? VISIBLE : HIDDEN,
-            GetVisibility("malware-opt-in"));
-  if (expect_extended_optin_option)
-    EXPECT_TRUE(Click("opt-in-checkbox"));
+  EXPECT_EQ(VISIBLE, GetVisibility("malware-opt-in"));
+  EXPECT_TRUE(Click("opt-in-checkbox"));
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
   AssertNoInterstitial(true);  // Assert the interstitial is gone
 
-  EXPECT_EQ(expect_extended_optin_option,
-            browser()->profile()->GetPrefs()->GetBoolean(
-                prefs::kSafeBrowsingExtendedReportingEnabled));
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+              prefs::kSafeBrowsingExtendedReportingEnabled));
   EXPECT_EQ(url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
