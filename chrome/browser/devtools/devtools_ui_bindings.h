@@ -21,7 +21,7 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 class InfoBarService;
 class Profile;

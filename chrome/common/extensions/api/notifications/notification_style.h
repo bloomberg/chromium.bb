@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_NOTIFICATIONS_NOTIFICATION_STYLE_H_
 #define CHROME_COMMON_EXTENSIONS_API_NOTIFICATIONS_NOTIFICATION_STYLE_H_
 
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 // This structure describes the size in DIPs of each type of image rendered
 // by the notification center within a notification.

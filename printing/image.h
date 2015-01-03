@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "printing/printing_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class FilePath;

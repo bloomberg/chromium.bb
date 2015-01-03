@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gpu {
 namespace gles2 {

@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace metrics {
 

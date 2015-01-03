@@ -5,7 +5,7 @@
 #include "content/renderer/disambiguation_popup_helper.h"
 
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 using blink::WebRect;
 using blink::WebVector;

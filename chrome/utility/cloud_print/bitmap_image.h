@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cloud_print {
 

@@ -9,7 +9,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 FaviconDownloader::FaviconDownloader(
   content::WebContents* web_contents,

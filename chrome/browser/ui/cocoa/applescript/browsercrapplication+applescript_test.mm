@@ -15,7 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 typedef InProcessBrowserTest BrowserCrApplicationAppleScriptTest;
 

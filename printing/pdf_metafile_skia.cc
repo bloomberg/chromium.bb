@@ -20,7 +20,7 @@
 #include "third_party/skia/include/pdf/SkPDFDocument.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_MACOSX)
 #include "printing/pdf_metafile_cg_mac.h"

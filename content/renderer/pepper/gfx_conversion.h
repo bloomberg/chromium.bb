@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 // Conversions for graphics types between our gfx library and PPAPI.
 // The style of naming is to match the PP_Bool conversions.

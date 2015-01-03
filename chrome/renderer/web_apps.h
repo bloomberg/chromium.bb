@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 class WebFrame;

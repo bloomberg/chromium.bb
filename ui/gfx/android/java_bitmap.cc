@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/BitmapHelper_jni.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

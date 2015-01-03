@@ -9,9 +9,9 @@
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/switches.h"
 
 // Duplicated from base/threading/non_thread_safe.h so that we can be

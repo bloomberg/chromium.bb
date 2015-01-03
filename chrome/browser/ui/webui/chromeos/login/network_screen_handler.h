@@ -15,7 +15,6 @@
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/point.h"
 
 namespace chromeos {
 

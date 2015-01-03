@@ -10,7 +10,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
-#include "ui/gfx/size_f.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace content {
 

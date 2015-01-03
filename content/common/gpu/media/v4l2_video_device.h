@@ -11,7 +11,7 @@
 
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {

@@ -7,8 +7,8 @@
 
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/size.h"
 
 namespace gfx {
 

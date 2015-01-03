@@ -5,8 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
 
-#include <list>
 #include <linux/videodev2.h>
+#include <list>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
@@ -16,7 +16,7 @@
 #include "content/common/gpu/media/v4l2_image_processor.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
 #include "media/video/video_encode_accelerator.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 

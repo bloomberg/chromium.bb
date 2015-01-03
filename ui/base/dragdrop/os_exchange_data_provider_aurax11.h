@@ -19,8 +19,8 @@
 #include "ui/base/x/selection_requestor.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/vector2d.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "url/gurl.h"
 

@@ -26,9 +26,9 @@
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;

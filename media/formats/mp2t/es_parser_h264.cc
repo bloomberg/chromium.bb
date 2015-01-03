@@ -15,7 +15,7 @@
 #include "media/formats/mp2t/es_adapter_video.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace mp2t {

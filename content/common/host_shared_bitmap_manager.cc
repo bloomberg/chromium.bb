@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/view_messages.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 

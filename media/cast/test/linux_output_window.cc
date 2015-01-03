@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace cast {

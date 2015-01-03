@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_DICTIONARY_HELPER_H_
 
 #include "base/basictypes.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace content {
 

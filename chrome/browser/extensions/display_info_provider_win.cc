@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "extensions/common/api/system_display.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace extensions {

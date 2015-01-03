@@ -14,7 +14,7 @@
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 

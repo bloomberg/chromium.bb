@@ -12,7 +12,7 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/compositor/reflector.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base { class MessageLoopProxy; }
 

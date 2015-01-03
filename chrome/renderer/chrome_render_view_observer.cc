@@ -49,8 +49,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/size_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 

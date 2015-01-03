@@ -20,7 +20,7 @@
 #include "media/base/serial_runner.h"
 #include "media/base/text_track.h"
 #include "media/base/video_rotation.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SingleThreadTaskRunner;

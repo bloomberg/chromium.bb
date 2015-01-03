@@ -40,7 +40,7 @@
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
 
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 

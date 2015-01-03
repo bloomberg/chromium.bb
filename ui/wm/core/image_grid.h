@@ -11,8 +11,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/size.h"
 #include "ui/wm/wm_export.h"
 
 namespace gfx {

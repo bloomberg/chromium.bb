@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 using blink::WebDragData;
 using blink::WebString;

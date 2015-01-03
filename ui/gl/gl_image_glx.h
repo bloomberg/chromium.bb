@@ -5,7 +5,7 @@
 #ifndef UI_GL_GL_IMAGE_GLX_H_
 #define UI_GL_GL_IMAGE_GLX_H_
 
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"

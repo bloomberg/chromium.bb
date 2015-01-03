@@ -21,7 +21,7 @@
 #include "media/base/video_frame.h"
 #include "third_party/libva/va/va.h"
 #include "third_party/libva/va/va_vpp.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #if defined(USE_X11)
 #include "third_party/libva/va/va_x11.h"
 #endif  // USE_X11

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_POSITIONER_H_
 
 #include "ui/gfx/display.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Point;

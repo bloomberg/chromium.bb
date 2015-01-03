@@ -40,9 +40,9 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/vector2d.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(const char*)
 DECLARE_WINDOW_PROPERTY_TYPE(int)

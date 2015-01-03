@@ -13,9 +13,9 @@
 #include "jni/LayerTitleCache_jni.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/point_f.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome {
 namespace android {

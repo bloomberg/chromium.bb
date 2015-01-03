@@ -47,8 +47,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_POSIX)

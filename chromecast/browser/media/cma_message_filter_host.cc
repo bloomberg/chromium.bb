@@ -20,7 +20,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/quad_f.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
 namespace media {

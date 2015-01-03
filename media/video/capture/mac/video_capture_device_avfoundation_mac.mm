@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 @implementation VideoCaptureDeviceAVFoundation
 

@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/gfx/size.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_implementation.h"
 

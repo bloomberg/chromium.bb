@@ -9,7 +9,7 @@
 
 #include "base/rand_util.h"
 #include "third_party/libyuv/include/libyuv/compare.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace cast {

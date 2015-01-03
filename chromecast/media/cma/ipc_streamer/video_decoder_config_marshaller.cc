@@ -9,7 +9,7 @@
 #include "chromecast/media/cma/ipc/media_message.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
 namespace media {

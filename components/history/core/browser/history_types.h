@@ -21,7 +21,7 @@
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 class PageUsageData;

@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/gpu/media/vaapi_picture.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gfx {

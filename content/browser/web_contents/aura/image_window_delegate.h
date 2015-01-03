@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/size.h"
 
 namespace content {
 

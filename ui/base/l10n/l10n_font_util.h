@@ -6,7 +6,7 @@
 #define UI_BASE_L10N_FONT_UTIL_H_
 
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Font;

@@ -18,7 +18,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 using base::ResetAndReturn;
 

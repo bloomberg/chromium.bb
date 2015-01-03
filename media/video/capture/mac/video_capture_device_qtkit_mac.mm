@@ -12,7 +12,7 @@
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 @implementation VideoCaptureDeviceQTKit
 

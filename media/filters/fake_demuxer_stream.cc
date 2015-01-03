@@ -14,7 +14,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 

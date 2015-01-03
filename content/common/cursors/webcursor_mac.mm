@@ -16,8 +16,8 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/size_conversions.h"
 
 using blink::WebCursorInfo;
 using blink::WebSize;

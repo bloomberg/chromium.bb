@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 class SharedBitmap;

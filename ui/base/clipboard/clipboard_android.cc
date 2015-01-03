@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "jni/Clipboard_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 // TODO:(andrewhayden) Support additional formats in Android: Bitmap, URI, HTML,
 // HTML+text now that Android's clipboard system supports them, then nuke the

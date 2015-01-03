@@ -11,8 +11,8 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/size.h"
 
 namespace content {
 class RenderViewHost;

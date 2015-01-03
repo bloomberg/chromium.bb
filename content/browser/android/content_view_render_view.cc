@@ -18,7 +18,7 @@
 #include "content/public/browser/android/layer_tree_build_helper.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>

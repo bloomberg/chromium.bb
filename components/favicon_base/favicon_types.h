@@ -6,8 +6,8 @@
 #define COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_
 
 #include "base/memory/ref_counted_memory.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 namespace favicon_base {

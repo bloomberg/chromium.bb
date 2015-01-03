@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebPrerender.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace prerender {
 

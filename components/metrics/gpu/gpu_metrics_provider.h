@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "components/metrics/metrics_provider.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace metrics {
 

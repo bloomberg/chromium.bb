@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/vector2d.h"
 #include "ui/snapshot/snapshot.h"
 
 // The delegate class to receive the notification from NSViewAnimation.

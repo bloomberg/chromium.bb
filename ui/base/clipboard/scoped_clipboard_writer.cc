@@ -11,7 +11,7 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 

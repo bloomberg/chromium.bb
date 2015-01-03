@@ -6,7 +6,7 @@
 #define UI_GL_GL_SURFACE_OSMESA_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
 
 namespace gfx {

@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_MACOSX)
 #include <CoreVideo/CVPixelBuffer.h>

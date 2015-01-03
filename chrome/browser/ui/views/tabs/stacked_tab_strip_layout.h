@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/view_model.h"
 
 class Tab;

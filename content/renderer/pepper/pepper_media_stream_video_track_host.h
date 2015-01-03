@@ -14,7 +14,7 @@
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/shared_impl/media_stream_video_track_shared.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 

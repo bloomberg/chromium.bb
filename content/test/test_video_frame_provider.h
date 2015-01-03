@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "content/renderer/media/video_frame_provider.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class MessageLoopProxy;

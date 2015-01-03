@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "third_party/WebKit/public/web/WebView.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 
 WebViewColorOverlay::WebViewColorOverlay(content::RenderView* render_view,

@@ -23,7 +23,7 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 class AudioDecoderConfig;

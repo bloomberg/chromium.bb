@@ -13,7 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SharedMemory;

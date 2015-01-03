@@ -7,7 +7,7 @@
 
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace gfx {

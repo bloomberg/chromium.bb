@@ -9,7 +9,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 #if defined(USE_CAIRO)
 #if defined(OS_OPENBSD)

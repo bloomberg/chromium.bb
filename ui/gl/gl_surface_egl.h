@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"

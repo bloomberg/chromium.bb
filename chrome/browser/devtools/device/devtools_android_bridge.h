@@ -18,7 +18,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 template<typename T> struct DefaultSingletonTraits;
 

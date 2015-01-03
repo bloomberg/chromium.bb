@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace gfx {
 

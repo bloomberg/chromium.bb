@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "media/base/media_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 

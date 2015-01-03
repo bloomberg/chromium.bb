@@ -25,7 +25,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 #if !defined(ENABLE_EXTENSIONS)

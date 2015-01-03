@@ -10,7 +10,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace thumbnails {
 

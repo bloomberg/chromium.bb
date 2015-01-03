@@ -6,8 +6,8 @@
 #define UI_GFX_IMAGE_IMAGE_SKIA_REP_H_
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/size.h"
 
 namespace gfx {
 

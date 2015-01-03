@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/size.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 

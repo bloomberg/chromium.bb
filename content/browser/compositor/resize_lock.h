@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 

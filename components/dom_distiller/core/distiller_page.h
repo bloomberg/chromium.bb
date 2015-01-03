@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {

@@ -12,7 +12,7 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/video_frame_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class MessageLoopProxy;

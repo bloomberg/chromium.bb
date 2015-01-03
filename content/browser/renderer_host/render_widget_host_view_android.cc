@@ -78,8 +78,8 @@
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/size_conversions.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
 namespace content {

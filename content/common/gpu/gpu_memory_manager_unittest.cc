@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "content/common/gpu/gpu_memory_manager.h"
+
 #include "content/common/gpu/gpu_memory_manager_client.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
-#include "ui/gfx/size_conversions.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 using gpu::MemoryAllocation;
 

@@ -11,7 +11,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 typedef unsigned int GLenum;
 

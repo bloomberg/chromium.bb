@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/gfx/canvas_paint_mac.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 

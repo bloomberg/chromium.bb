@@ -33,7 +33,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 using base::ASCIIToUTF16;
 

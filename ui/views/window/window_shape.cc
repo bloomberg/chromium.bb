@@ -4,8 +4,8 @@
 
 #include "ui/views/window/window_shape.h"
 
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/size.h"
 
 namespace views {
 

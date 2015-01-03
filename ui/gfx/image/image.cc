@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/gfx/size.h"
 
 #if !defined(OS_IOS)
 #include "ui/gfx/codec/png_codec.h"

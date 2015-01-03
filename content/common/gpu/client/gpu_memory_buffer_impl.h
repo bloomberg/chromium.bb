@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/size.h"
 
 namespace content {
 

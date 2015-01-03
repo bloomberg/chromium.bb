@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/media_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 class VideoFrame;

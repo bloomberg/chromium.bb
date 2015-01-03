@@ -16,8 +16,8 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
-#include "ui/gfx/size_conversions.h"
 
 using content::WebContents;
 

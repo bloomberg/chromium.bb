@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
 

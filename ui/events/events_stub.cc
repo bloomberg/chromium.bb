@@ -8,7 +8,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace ui {
 
