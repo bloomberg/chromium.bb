@@ -1689,8 +1689,7 @@ wl_display_get_error(struct wl_display *display)
 	return ret;
 }
 
-/**
- * Retrieves the information about a protocol error:
+/** Retrieves the information about a protocol error:
  *
  * \param display    The Wayland display
  * \param interface  if not NULL, stores the interface where the error occurred
@@ -1708,8 +1707,8 @@ wl_display_get_error(struct wl_display *display)
  * }
  *
  * ...
- *
- *  \endcode
+ * \endcode
+ * \memberof wl_display
  */
 WL_EXPORT uint32_t
 wl_display_get_protocol_error(struct wl_display *display,
