@@ -1,7 +1,7 @@
 // This file contains valid EC private keys in both JWK format, and PKCS8 format.
 [
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "jwk": {
       "kty": "EC",
       "crv": "P-256",
@@ -13,7 +13,7 @@
   },
 
   {
-    "curve": "P-384",
+    "crv": "P-384",
     "jwk": {
       "kty": "EC",
       "crv": "P-384",
@@ -25,7 +25,7 @@
   },
 
   {
-    "curve": "P-521",
+    "crv": "P-521",
     "jwk": {
       "kty": "EC",
       "crv": "P-521",
@@ -38,7 +38,7 @@
 
   // "x" contains a leading zero for this key (relevant for JWK serialization).
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "jwk": {
       "kty": "EC",
       "crv": "P-256",
@@ -51,7 +51,7 @@
 
   // "y" contains a leading zero for this key (relevant for JWK serialization).
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "jwk": {
       "kty": "EC",
       "crv": "P-256",
@@ -64,7 +64,7 @@
 
   // "d" contains a leading zero for this key (relevant for JWK serialization).
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "jwk": {
       "kty":"EC",
       "crv": "P-256",

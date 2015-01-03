@@ -16,7 +16,7 @@
 
   // From http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-3ecdsatestvectors.zip (SigVer.rsp)
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "hash": "sha-512",
     "key_format": "jwk",
     "key": {
@@ -32,7 +32,7 @@
 
   // Same test as above, except the key format is SPKI.
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "hash": "sha-512",
     "key_format": "spki",
     "key": "3059301306072A8648CE3D020106082A8648CE3D030107034200049CB0CF69303DAFC761D4E4687B4ECF039E6D34AB964AF80810D8D558A4A8D6F72D51233A1788920A86EE08A1962C79EFA317FB7879E297DAD2146DB995FA1C78",
@@ -43,7 +43,7 @@
 
   // From http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-3ecdsatestvectors.zip (SigVer.rsp)
   {
-    "curve": "P-384",
+    "crv": "P-384",
     "hash": "sha-1",
     "key_format": "jwk",
     "key": {
@@ -59,7 +59,7 @@
 
   // From http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-3ecdsatestvectors.zip (SigVer.rsp)
   {
-    "curve": "P-384",
+    "crv": "P-384",
     "hash": "sha-256",
     "key_format": "jwk",
     "key": {
@@ -75,7 +75,7 @@
 
   // From http://csrc.nist.gov/groups/STM/cavp/documents/dss/186-3ecdsatestvectors.zip (SigVer.rsp)
   {
-    "curve": "P-521",
+    "crv": "P-521",
     "hash": "sha-1",
     "key_format": "jwk",
     "key": {
@@ -95,7 +95,7 @@
 
   // The signature was truncated by 1 byte. Verification should fail (with false, not an operation error).
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "hash": "sha-512",
     "key_format": "jwk",
     "key": {
@@ -112,7 +112,7 @@
   // The signature was made using SHA-512, however verification is being done
   // using SHA-1. Verification using SHA-1 should therefore fail.
   {
-    "curve": "P-256",
+    "crv": "P-256",
     "hash": "sha-1",
     "key_format": "jwk",
     "key": {
@@ -131,7 +131,7 @@
   // "r" and "s" are zero-padded by 1. It would be possible to support such a
   // signature, however the expectation is that it fails.
   {
-    "curve": "P-384",
+    "crv": "P-384",
     "hash": "sha-1",
     "key_format": "jwk",
     "key": {
@@ -147,7 +147,7 @@
 
   // Empty signature.
   {
-    "curve": "P-384",
+    "crv": "P-384",
     "hash": "sha-1",
     "key_format": "jwk",
     "key": {

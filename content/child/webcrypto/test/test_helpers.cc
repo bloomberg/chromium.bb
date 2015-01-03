@@ -666,11 +666,10 @@ std::vector<uint8_t> GetKeyDataFromJsonTestCase(
 }
 
 blink::WebCryptoNamedCurve GetCurveNameFromDictionary(
-    const base::DictionaryValue* dict,
-    const char* property_name) {
+    const base::DictionaryValue* dict) {
   std::string curve_str;
-  if (!dict->GetString(property_name, &curve_str)) {
-    ADD_FAILURE() << "Missing " << property_name << " parameter";
+  if (!dict->GetString("crv", &curve_str)) {
+    ADD_FAILURE() << "Missing crv parameter";
     return blink::WebCryptoNamedCurveP384;
   }
 

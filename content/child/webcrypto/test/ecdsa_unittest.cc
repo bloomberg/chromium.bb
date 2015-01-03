@@ -116,8 +116,7 @@ TEST(WebCryptoEcdsaTest, SignatureIsRandom) {
   ASSERT_TRUE(ReadJsonTestFileToList("ec_private_keys.json", &private_keys));
   const base::DictionaryValue* key_dict;
   ASSERT_TRUE(private_keys->GetDictionary(0, &key_dict));
-  blink::WebCryptoNamedCurve curve =
-      GetCurveNameFromDictionary(key_dict, "curve");
+  blink::WebCryptoNamedCurve curve = GetCurveNameFromDictionary(key_dict);
   const base::DictionaryValue* key_jwk;
   ASSERT_TRUE(key_dict->GetDictionary("jwk", &key_jwk));
 
@@ -180,8 +179,7 @@ TEST(WebCryptoEcdsaTest, VerifyKnownAnswer) {
     const base::DictionaryValue* test;
     ASSERT_TRUE(tests->GetDictionary(test_index, &test));
 
-    blink::WebCryptoNamedCurve curve =
-        GetCurveNameFromDictionary(test, "curve");
+    blink::WebCryptoNamedCurve curve = GetCurveNameFromDictionary(test);
     blink::WebCryptoKeyFormat key_format = GetKeyFormatFromJsonTestCase(test);
     std::vector<uint8_t> key_data =
         GetKeyDataFromJsonTestCase(test, key_format);
@@ -266,8 +264,7 @@ TEST(WebCryptoEcdsaTest, ImportBadKeys) {
     const base::DictionaryValue* test;
     ASSERT_TRUE(tests->GetDictionary(test_index, &test));
 
-    blink::WebCryptoNamedCurve curve =
-        GetCurveNameFromDictionary(test, "curve");
+    blink::WebCryptoNamedCurve curve = GetCurveNameFromDictionary(test);
     blink::WebCryptoKeyFormat key_format = GetKeyFormatFromJsonTestCase(test);
     std::vector<uint8_t> key_data =
         GetKeyDataFromJsonTestCase(test, key_format);
@@ -300,8 +297,7 @@ TEST(WebCryptoEcdsaTest, ImportExportPrivateKey) {
     const base::DictionaryValue* test;
     ASSERT_TRUE(tests->GetDictionary(test_index, &test));
 
-    blink::WebCryptoNamedCurve curve =
-        GetCurveNameFromDictionary(test, "curve");
+    blink::WebCryptoNamedCurve curve = GetCurveNameFromDictionary(test);
     const base::DictionaryValue* jwk_dict;
     EXPECT_TRUE(test->GetDictionary("jwk", &jwk_dict));
     std::vector<uint8_t> jwk_bytes = MakeJsonVector(*jwk_dict);

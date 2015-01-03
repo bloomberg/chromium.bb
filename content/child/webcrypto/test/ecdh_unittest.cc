@@ -57,7 +57,7 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
   const base::DictionaryValue* public_key_json = NULL;
   EXPECT_TRUE(test->GetDictionary("public_key", &public_key_json));
   blink::WebCryptoNamedCurve curve =
-      GetCurveNameFromDictionary(public_key_json, "crv");
+      GetCurveNameFromDictionary(public_key_json);
   EXPECT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatJwk,
                       CryptoData(MakeJsonVector(*public_key_json)),
@@ -71,7 +71,7 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
   // Import the private key.
   const base::DictionaryValue* private_key_json = NULL;
   EXPECT_TRUE(test->GetDictionary("private_key", &private_key_json));
-  curve = GetCurveNameFromDictionary(private_key_json, "crv");
+  curve = GetCurveNameFromDictionary(private_key_json);
   Status status = ImportKey(
       blink::WebCryptoKeyFormatJwk,
       CryptoData(MakeJsonVector(*private_key_json)),
@@ -332,7 +332,7 @@ TEST(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   const base::DictionaryValue* public_key_json = NULL;
   EXPECT_TRUE(test->GetDictionary("public_key", &public_key_json));
   blink::WebCryptoNamedCurve curve =
-      GetCurveNameFromDictionary(public_key_json, "crv");
+      GetCurveNameFromDictionary(public_key_json);
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatJwk,
                       CryptoData(MakeJsonVector(*public_key_json)),
@@ -342,7 +342,7 @@ TEST(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   // Import the private key.
   const base::DictionaryValue* private_key_json = NULL;
   EXPECT_TRUE(test->GetDictionary("private_key", &private_key_json));
-  curve = GetCurveNameFromDictionary(private_key_json, "crv");
+  curve = GetCurveNameFromDictionary(private_key_json);
   ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
             ImportKey(blink::WebCryptoKeyFormatJwk,
                       CryptoData(MakeJsonVector(*private_key_json)),
