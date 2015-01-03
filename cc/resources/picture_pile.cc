@@ -157,7 +157,8 @@ void ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 
 namespace cc {
 
-PicturePile::PicturePile()
+PicturePile::PicturePile(float min_contents_scale,
+                         const gfx::Size& tile_grid_size)
     : min_contents_scale_(0),
       slow_down_raster_scale_factor_for_debug_(0),
       can_use_lcd_text_(true),
@@ -167,9 +168,9 @@ PicturePile::PicturePile()
       pixel_record_distance_(kPixelDistanceToRecord),
       is_suitable_for_gpu_rasterization_(true) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
-  tile_grid_info_.fTileInterval.setEmpty();
-  tile_grid_info_.fMargin.setEmpty();
-  tile_grid_info_.fOffset.setZero();
+
+  SetMinContentsScale(min_contents_scale);
+  SetTileGridSize(tile_grid_size);
 }
 
 PicturePile::~PicturePile() {

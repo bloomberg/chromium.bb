@@ -16,10 +16,11 @@
 
 namespace cc {
 class PicturePileImpl;
+class LayerTreeSettings;
 
 class CC_EXPORT PicturePile : public RecordingSource {
  public:
-  PicturePile();
+  PicturePile(float min_contents_scale, const gfx::Size& tile_grid_size);
   ~PicturePile() override;
 
   // RecordingSource overrides.
@@ -34,10 +35,8 @@ class CC_EXPORT PicturePile : public RecordingSource {
   scoped_refptr<RasterSource> CreateRasterSource() const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
-  void SetMinContentsScale(float min_contents_scale) override;
   void SetSlowdownRasterScaleFactor(int factor) override;
   bool IsSuitableForGpuRasterization() const override;
-  void SetTileGridSize(const gfx::Size& tile_grid_size) override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
   SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const override;
 
@@ -78,6 +77,9 @@ class CC_EXPORT PicturePile : public RecordingSource {
   bool CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const;
 
   void Clear();
+
+  void SetMinContentsScale(float min_contents_scale);
+  void SetTileGridSize(const gfx::Size& tile_grid_size);
 
   gfx::Rect PaddedRect(const PictureMapKey& key) const;
   gfx::Rect PadRect(const gfx::Rect& rect) const;

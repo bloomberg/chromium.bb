@@ -5573,7 +5573,8 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     pinch->SetIsContainerForFixedPositionLayers(true);
     root->AddChild(pinch);
 
-    scoped_ptr<FakePicturePile> pile(new FakePicturePile);
+    scoped_ptr<FakePicturePile> pile(
+        new FakePicturePile(0.0625f, gfx::Size(100, 100)));
     pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
@@ -5827,7 +5828,8 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     pinch->SetIsContainerForFixedPositionLayers(true);
     root->AddChild(pinch);
 
-    scoped_ptr<FakePicturePile> pile(new FakePicturePile);
+    scoped_ptr<FakePicturePile> pile(
+        new FakePicturePile(0.0625f, gfx::Size(100, 100)));
     pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
