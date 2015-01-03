@@ -81,20 +81,32 @@
   </section>
 </xsl:template>
 
-<!-- table contents for request/event arguments or enum values -->
-<xsl:template match="arg|entry">
+<!-- table contents for enum values -->
+<xsl:template match="entry">
   <varlistentry>
     <term><xsl:value-of select="@name"/></term>
     <listitem>
-        <xsl:if test="name() = 'arg'" >
-          <para>Type: <xsl:value-of select="@type"/></para>
-        </xsl:if>
-        <xsl:if test="name() = 'entry'" >
-          <para>Value: <xsl:value-of select="@value"/></para>
-        </xsl:if>
+      <simpara>
+        (<xsl:value-of select="@value"/>)
         <xsl:if test="@summary" >
-          <para><xsl:value-of select="@summary"/></para>
+          <xsl:value-of select="@summary"/>
         </xsl:if>
+      </simpara>
+    </listitem>
+  </varlistentry>
+</xsl:template>
+
+<!-- table contents for request/event arguments -->
+<xsl:template match="arg">
+  <varlistentry>
+    <term><xsl:value-of select="@name"/></term>
+    <listitem>
+        <simpara>
+          <xsl:value-of select="@type"/>
+          <xsl:if test="@summary" >
+            <xsl:text> </xsl:text><xsl:value-of select="@summary"/>
+          </xsl:if>
+        </simpara>
     </listitem>
   </varlistentry>
 </xsl:template>
