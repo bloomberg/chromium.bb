@@ -46,6 +46,7 @@
 #include "core/html/RadioNodeList.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
@@ -871,6 +872,8 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         RenderObject* p = o;
         if (RenderObject* oFirstChild = o->slowFirstChild()) {
             o = oFirstChild;
+        } else if (o->isRenderInline() && toRenderInline(o)->continuation()) {
+            o = toRenderInline(o)->continuation();
         } else if (o->nextSibling()) {
             o = o->nextSibling();
         } else {
@@ -931,6 +934,8 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
     while (o) {
         if (RenderObject* oLastChild = o->slowLastChild()) {
             o = oLastChild;
+        } else if (o->isRenderInline() && toRenderInline(o)->continuation()) {
+            o = toRenderInline(o)->continuation();
         } else if (o->previousSibling()) {
             o = o->previousSibling();
         } else {
