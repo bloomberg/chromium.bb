@@ -149,6 +149,8 @@ wl_array_copy(struct wl_array *array, struct wl_array *source)
 	return 0;
 }
 
+/** \cond */
+
 union map_entry {
 	uintptr_t next;
 	void *data;
@@ -360,6 +362,8 @@ wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
 	for_each_helper(&map->client_entries, func, data);
 	for_each_helper(&map->server_entries, func, data);
 }
+
+/** \endcond */
 
 static void
 wl_log_stderr_handler(const char *fmt, va_list arg)
