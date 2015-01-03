@@ -147,7 +147,27 @@
 </xsl:template>
 
 <!-- Request/event list -->
-<xsl:template match="request|event|enum">
+<xsl:template match="request|event">
+  <section id="protocol-spec-{../@name}-{name()}-{@name}">
+    <title>
+      <xsl:value-of select="../@name"/>::<xsl:value-of select="@name" />
+      <xsl:if test="description/@summary">
+        - <xsl:value-of select="description/@summary" />
+      </xsl:if>
+    </title>
+    <para>
+      <variablelist>
+        <xsl:apply-templates select="arg"/>
+      </variablelist>
+    </para>
+    <xsl:call-template name="break">
+      <xsl:with-param name="text" select="description" />
+    </xsl:call-template>
+  </section>
+</xsl:template>
+
+<!-- Enumeration -->
+<xsl:template match="enum">
   <section id="protocol-spec-{../@name}-{name()}-{@name}">
     <title>
       <xsl:value-of select="../@name"/>::<xsl:value-of select="@name" />
@@ -158,20 +178,12 @@
     <xsl:call-template name="break">
       <xsl:with-param name="text" select="description" />
     </xsl:call-template>
-    <xsl:if test="arg">
-      <variablelist>
-        <title><xsl:value-of select="../@name"/>::<xsl:value-of select="@name" /> arguments</title>
-        <xsl:apply-templates select="arg"/>
-      </variablelist>
-    </xsl:if>
-    <xsl:if test="entry">
-      <variablelist>
-        <title><xsl:value-of select="../@name"/>::<xsl:value-of select="@name" /> values</title>
-          <xsl:apply-templates select="entry"/>
-      </variablelist>
-    </xsl:if>
+    <variablelist>
+      <xsl:apply-templates select="entry"/>
+    </variablelist>
   </section>
 </xsl:template>
+
 </xsl:stylesheet>
 
 <!-- vim: set expandtab shiftwidth=2: -->
