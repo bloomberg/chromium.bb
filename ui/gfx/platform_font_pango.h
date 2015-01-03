@@ -75,18 +75,6 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   // Initializes this object as a copy of another PlatformFontPango.
   void InitFromPlatformFont(const PlatformFontPango* other);
 
-  // Potentially slow call to get pango metrics (average width).
-  void InitPangoMetrics();
-
-  // Setup a Skia context to use the current typeface.
-  void PaintSetup(SkPaint* paint) const;
-
-  // Make |this| a copy of |other|.
-  void CopyFont(const Font& other);
-
-  // The average width of a character, initialized and cached if needed.
-  double GetAverageWidth() const;
-
   skia::RefPtr<SkTypeface> typeface_;
 
   // Additional information about the face.
@@ -105,10 +93,6 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   int ascent_pixels_;
   int height_pixels_;
   int cap_height_pixels_;
-
-  // The pango metrics are much more expensive so we wait until we need them
-  // to compute them.
-  bool pango_metrics_inited_;
   double average_width_pixels_;
 
   // The default font, used for the default constructor.

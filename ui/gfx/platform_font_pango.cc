@@ -179,8 +179,7 @@ int PlatformFontPango::GetCapHeight() const {
 }
 
 int PlatformFontPango::GetExpectedTextWidth(int length) const {
-  double char_width = const_cast<PlatformFontPango*>(this)->GetAverageWidth();
-  return round(static_cast<float>(length) * char_width);
+  return round(static_cast<float>(length) * average_width_pixels_);
 }
 
 int PlatformFontPango::GetStyle() const {
@@ -278,15 +277,19 @@ void PlatformFontPango::InitFromDetails(
   font_render_params_ = render_params;
 
   SkPaint paint;
+  paint.setAntiAlias(false);
+  paint.setSubpixelText(false);
+  paint.setTextSize(font_size_pixels_);
+  paint.setTypeface(typeface_.get());
+  paint.setFakeBoldText((gfx::Font::BOLD & style_) && !typeface_->isBold());
+  paint.setTextSkewX((gfx::Font::ITALIC & style_) && !typeface_->isItalic() ?
+                     -SK_Scalar1/4 : 0);
   SkPaint::FontMetrics metrics;
-  PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
   ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
   height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
   cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
-
-  pango_metrics_inited_ = false;
-  average_width_pixels_ = 0.0f;
+  average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
 }
 
 void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
@@ -294,52 +297,14 @@ void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
   font_family_ = other->font_family_;
   font_size_pixels_ = other->font_size_pixels_;
   style_ = other->style_;
+#if defined(OS_CHROMEOS)
+  device_scale_factor_ = other->device_scale_factor_;
+#endif
   font_render_params_ = other->font_render_params_;
   ascent_pixels_ = other->ascent_pixels_;
   height_pixels_ = other->height_pixels_;
   cap_height_pixels_ = other->cap_height_pixels_;
-  pango_metrics_inited_ = other->pango_metrics_inited_;
   average_width_pixels_ = other->average_width_pixels_;
-#if defined(OS_CHROMEOS)
-  device_scale_factor_ = other->device_scale_factor_;
-#endif
-}
-
-void PlatformFontPango::PaintSetup(SkPaint* paint) const {
-  paint->setAntiAlias(false);
-  paint->setSubpixelText(false);
-  paint->setTextSize(font_size_pixels_);
-  paint->setTypeface(typeface_.get());
-  paint->setFakeBoldText((gfx::Font::BOLD & style_) && !typeface_->isBold());
-  paint->setTextSkewX((gfx::Font::ITALIC & style_) && !typeface_->isItalic() ?
-                      -SK_Scalar1/4 : 0);
-}
-
-void PlatformFontPango::InitPangoMetrics() {
-  if (!pango_metrics_inited_) {
-    pango_metrics_inited_ = true;
-    ScopedPangoFontDescription pango_desc(GetNativeFont());
-    PangoFontMetrics* pango_metrics = GetPangoFontMetrics(pango_desc.get());
-
-    // First get the Pango-based width (converting from Pango units to pixels).
-    const double pango_width_pixels =
-        pango_font_metrics_get_approximate_char_width(pango_metrics) /
-        PANGO_SCALE;
-
-    // Yes, this is how Microsoft recommends calculating the dialog unit
-    // conversions.
-    const int text_width_pixels = GetStringWidth(
-        base::ASCIIToUTF16(
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
-        FontList(Font(this)));
-    const double dialog_units_pixels = (text_width_pixels / 26 + 1) / 2;
-    average_width_pixels_ = std::min(pango_width_pixels, dialog_units_pixels);
-  }
-}
-
-double PlatformFontPango::GetAverageWidth() const {
-  const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
-  return average_width_pixels_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
