@@ -266,8 +266,7 @@ class TileTaskWorkerPoolPerfTest
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
-            task_runner_.get(), context_provider_.get(),
-            resource_provider_.get(), false);
+            task_runner_.get(), task_graph_runner_.get());
         break;
       case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();

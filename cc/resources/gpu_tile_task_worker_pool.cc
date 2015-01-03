@@ -7,11 +7,9 @@
 #include <algorithm>
 
 #include "base/debug/trace_event.h"
-#include "cc/output/context_provider.h"
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/resource.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_gpu_raster.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
@@ -24,81 +22,38 @@ namespace {
 
 class RasterBufferImpl : public RasterBuffer {
  public:
-  RasterBufferImpl(ResourceProvider* resource_provider,
-                   const Resource* resource,
-                   SkMultiPictureDraw* multi_picture_draw,
-                   bool use_distance_field_text)
-      : lock_(resource_provider, resource->id()),
-        resource_(resource),
-        multi_picture_draw_(multi_picture_draw),
-        use_distance_field_text_(use_distance_field_text) {}
+  RasterBufferImpl() {}
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
                 float scale) override {
-    // Turn on distance fields for layers that have ever animated.
-    bool use_distance_field_text =
-        use_distance_field_text_ ||
-        raster_source->ShouldAttemptToUseDistanceFieldText();
-    SkSurface* sk_surface = lock_.GetSkSurface(use_distance_field_text,
-                                               raster_source->CanUseLCDText());
-
-    if (!sk_surface)
-      return;
-
-    SkPictureRecorder recorder;
-    gfx::Size size = resource_->size();
-    const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
-        recorder.beginRecording(size.width(), size.height(), NULL, flags));
-
-    canvas->save();
-    raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
-    canvas->restore();
-
-    // Add the canvas and recorded picture to |multi_picture_draw_|.
-    skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
-    multi_picture_draw_->add(sk_surface->getCanvas(), picture.get());
+    // Don't do anything.
   }
 
  private:
-  ResourceProvider::ScopedWriteLockGr lock_;
-  const Resource* resource_;
-  SkMultiPictureDraw* multi_picture_draw_;
-  bool use_distance_field_text_;
-
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
 
 }  // namespace
-
 // static
 scoped_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
-    ContextProvider* context_provider,
-    ResourceProvider* resource_provider,
-    bool use_distance_field_text) {
+    TaskGraphRunner* task_graph_runner) {
   return make_scoped_ptr<TileTaskWorkerPool>(
-      new GpuTileTaskWorkerPool(task_runner, context_provider,
-                                resource_provider, use_distance_field_text));
+      new GpuTileTaskWorkerPool(task_runner, task_graph_runner));
 }
 
+// TODO(hendrikw): This class should be removed.  See crbug.com/444938.
 GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
     base::SequencedTaskRunner* task_runner,
-    ContextProvider* context_provider,
-    ResourceProvider* resource_provider,
-    bool use_distance_field_text)
+    TaskGraphRunner* task_graph_runner)
     : task_runner_(task_runner),
-      task_graph_runner_(new TaskGraphRunner),
+      task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
-      context_provider_(context_provider),
-      resource_provider_(resource_provider),
       run_tasks_on_origin_thread_pending_(false),
-      use_distance_field_text_(use_distance_field_text),
       task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  DCHECK(context_provider_);
 }
 
 GpuTileTaskWorkerPool::~GpuTileTaskWorkerPool() {
@@ -172,8 +127,6 @@ void GpuTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
   ScheduleTasksOnOriginThread(this, &graph_);
   task_graph_runner_->ScheduleTasks(namespace_token_, &graph_);
 
-  ScheduleRunTasksOnOriginThread();
-
   std::copy(new_task_set_finished_tasks,
             new_task_set_finished_tasks + kNumberOfTaskSets,
             task_set_finished_tasks_);
@@ -184,24 +137,26 @@ void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
 
   task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                             &completed_tasks_);
-  for (Task::Vector::const_iterator it = completed_tasks_.begin();
-       it != completed_tasks_.end(); ++it) {
-    TileTask* task = static_cast<TileTask*>(it->get());
+  CompleteTasks(completed_tasks_);
+  completed_tasks_.clear();
+}
 
-    task->WillComplete();
-    task->CompleteOnOriginThread(this);
-    task->DidComplete();
+void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
+  for (auto& task : tasks) {
+    RasterTask* raster_task = static_cast<RasterTask*>(task.get());
 
-    task->RunReplyOnOriginThread();
+    raster_task->WillComplete();
+    raster_task->CompleteOnOriginThread(this);
+    raster_task->DidComplete();
+
+    raster_task->RunReplyOnOriginThread();
   }
   completed_tasks_.clear();
 }
 
 scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
-  return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(resource_provider_, resource, &multi_picture_draw_,
-                           use_distance_field_text_));
+  return make_scoped_ptr<RasterBuffer>(new RasterBufferImpl());
 }
 
 void GpuTileTaskWorkerPool::ReleaseBufferForRaster(
@@ -216,30 +171,6 @@ void GpuTileTaskWorkerPool::OnTaskSetFinished(TaskSet task_set) {
   DCHECK(tasks_pending_[task_set]);
   tasks_pending_[task_set] = false;
   client_->DidFinishRunningTileTasks(task_set);
-}
-
-void GpuTileTaskWorkerPool::ScheduleRunTasksOnOriginThread() {
-  if (run_tasks_on_origin_thread_pending_)
-    return;
-
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuTileTaskWorkerPool::RunTasksOnOriginThread,
-                            weak_ptr_factory_.GetWeakPtr()));
-  run_tasks_on_origin_thread_pending_ = true;
-}
-
-void GpuTileTaskWorkerPool::RunTasksOnOriginThread() {
-  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::RunTasksOnOriginThread");
-
-  DCHECK(run_tasks_on_origin_thread_pending_);
-  run_tasks_on_origin_thread_pending_ = false;
-
-  ScopedGpuRaster gpu_raster(context_provider_);
-  task_graph_runner_->RunUntilIdle();
-
-  // Draw each all of the pictures that were collected.  This will also clear
-  // the pictures and canvases added to |multi_picture_draw_|
-  multi_picture_draw_.draw();
 }
 
 }  // namespace cc

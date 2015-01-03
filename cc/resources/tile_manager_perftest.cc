@@ -388,7 +388,7 @@ class TileManagerPerfTest : public testing::Test {
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->PrepareTiles(global_state);
-      tile_manager()->UpdateVisibleTiles();
+      tile_manager()->UpdateVisibleTiles(global_state);
       timer_.NextLap();
       host_impl_.ResetCurrentBeginFrameArgsForNextFrame();
     } while (!timer_.HasTimeLimitExpired());

@@ -35,6 +35,8 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
   LayerTreeHostPixelResourceTest();
 
+  scoped_ptr<Rasterizer> CreateRasterizer(
+      LayerTreeHostImpl* host_impl) override;
   void CreateResourceAndTileTaskWorkerPool(
       LayerTreeHostImpl* host_impl,
       scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,

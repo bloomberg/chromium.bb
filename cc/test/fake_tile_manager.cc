@@ -65,8 +65,9 @@ base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   base::MessageLoopProxy::current(),
-                  NULL,
+                  nullptr,
                   g_fake_tile_task_runner.Pointer(),
+                  nullptr,
                   std::numeric_limits<size_t>::max()) {
 }
 
@@ -76,18 +77,11 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   base::MessageLoopProxy::current(),
                   resource_pool,
                   g_fake_tile_task_runner.Pointer(),
+                  nullptr,
                   std::numeric_limits<size_t>::max()) {
 }
 
 FakeTileManager::~FakeTileManager() {}
-
-void FakeTileManager::AssignMemoryToTiles(
-    const GlobalStateThatImpactsTilePriority& state) {
-  tiles_for_raster.clear();
-
-  SetGlobalStateForTesting(state);
-  AssignGpuMemoryToTiles(&tiles_for_raster);
-}
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
   return std::find(tiles_for_raster.begin(),

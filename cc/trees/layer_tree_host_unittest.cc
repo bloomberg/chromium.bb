@@ -5761,6 +5761,48 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
 
 MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy);
 
+class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
+ protected:
+  RasterizeWithGpuRasterizationCreatesResources() {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->impl_side_painting = true;
+    settings->gpu_rasterization_forced = true;
+  }
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(500, 500));
+
+    scoped_ptr<FakePicturePile> pile(new FakePicturePile);
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    layer->SetBounds(gfx::Size(500, 500));
+    layer->SetContentsOpaque(true);
+    root->AddChild(layer);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_NE(0u, host_impl->resource_provider()->num_resources());
+    EndTest();
+    return draw_result;
+  }
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+MULTI_THREAD_IMPL_TEST_F(RasterizeWithGpuRasterizationCreatesResources);
+
 class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     : public LayerTreeHostTest {
  protected:

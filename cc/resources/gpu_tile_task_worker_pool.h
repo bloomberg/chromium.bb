@@ -8,11 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/tile_task_runner.h"
 #include "cc/resources/tile_task_worker_pool.h"
-#include "third_party/skia/include/core/SkMultiPictureDraw.h"
 
 namespace cc {
-class ContextProvider;
-class ResourceProvider;
 
 class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
                                         public TileTaskRunner,
@@ -22,9 +19,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
 
   static scoped_ptr<TileTaskWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
-      ContextProvider* context_provider,
-      ResourceProvider* resource_provider,
-      bool use_distance_field_text);
+      TaskGraphRunner* task_graph_runner);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -42,25 +37,17 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
 
  private:
   GpuTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
-                        ContextProvider* context_provider,
-                        ResourceProvider* resource_provider,
-                        bool use_distance_field_text);
+                        TaskGraphRunner* task_graph_runner);
 
   void OnTaskSetFinished(TaskSet task_set);
-  void ScheduleRunTasksOnOriginThread();
-  void RunTasksOnOriginThread();
-  void RunTaskOnOriginThread(TileTask* task);
+  void CompleteTasks(const Task::Vector& tasks);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<TaskGraphRunner> task_graph_runner_;
+  TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
   TileTaskRunnerClient* client_;
-  ContextProvider* context_provider_;
-  ResourceProvider* resource_provider_;
-  SkMultiPictureDraw multi_picture_draw_;
 
   bool run_tasks_on_origin_thread_pending_;
-  bool use_distance_field_text_;
 
   TaskSetCollection tasks_pending_;
 

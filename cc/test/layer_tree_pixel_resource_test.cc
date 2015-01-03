@@ -6,10 +6,12 @@
 
 #include "cc/layers/layer.h"
 #include "cc/resources/bitmap_tile_task_worker_pool.h"
+#include "cc/resources/gpu_rasterizer.h"
 #include "cc/resources/gpu_tile_task_worker_pool.h"
 #include "cc/resources/one_copy_tile_task_worker_pool.h"
 #include "cc/resources/pixel_buffer_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
+#include "cc/resources/software_rasterizer.h"
 #include "cc/resources/tile_task_worker_pool.h"
 #include "cc/resources/zero_copy_tile_task_worker_pool.h"
 #include "cc/test/fake_output_surface.h"
@@ -123,6 +125,27 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
   NOTREACHED();
 }
 
+scoped_ptr<Rasterizer> LayerTreeHostPixelResourceTest::CreateRasterizer(
+    LayerTreeHostImpl* host_impl) {
+  bool use_distance_field_text = false;
+  ContextProvider* context_provider =
+      host_impl->output_surface()->context_provider();
+  ResourceProvider* resource_provider = host_impl->resource_provider();
+  switch (resource_pool_option_) {
+    case BITMAP_TILE_TASK_WORKER_POOL:
+    case ZERO_COPY_TILE_TASK_WORKER_POOL:
+    case ONE_COPY_TILE_TASK_WORKER_POOL:
+    case PIXEL_BUFFER_TILE_TASK_WORKER_POOL:
+      return SoftwareRasterizer::Create();
+    case GPU_TILE_TASK_WORKER_POOL:
+      EXPECT_TRUE(context_provider);
+      return GpuRasterizer::Create(context_provider, resource_provider,
+                                   use_distance_field_text, false);
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
     LayerTreeHostImpl* host_impl,
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
@@ -137,7 +160,6 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
   ContextProvider* context_provider =
       host_impl->output_surface()->context_provider();
   ResourceProvider* resource_provider = host_impl->resource_provider();
-  bool use_distance_field_text = false;
   size_t max_transfer_buffer_usage_bytes = 1024u * 1024u * 60u;
 
   switch (resource_pool_option_) {
@@ -162,8 +184,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
                                resource_provider->best_texture_format());
 
       *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-          task_runner, context_provider, resource_provider,
-          use_distance_field_text);
+          task_runner, TileTaskWorkerPool::GetTaskGraphRunner());
       break;
     case ZERO_COPY_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);
