@@ -43,6 +43,16 @@ double WebScrollOffsetAnimationCurveImpl::duration() const {
   return curve_->Duration().InSecondsF();
 }
 
+WebFloatPoint WebScrollOffsetAnimationCurveImpl::targetValue() const {
+  gfx::ScrollOffset target = curve_->target_value();
+  return WebFloatPoint(target.x(), target.y());
+}
+
+void WebScrollOffsetAnimationCurveImpl::updateTarget(double time,
+                                                     WebFloatPoint new_target) {
+  curve_->UpdateTarget(time, gfx::ScrollOffset(new_target.x, new_target.y));
+}
+
 scoped_ptr<cc::AnimationCurve>
 WebScrollOffsetAnimationCurveImpl::CloneToAnimationCurve() const {
   return curve_->Clone();
