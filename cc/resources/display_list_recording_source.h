@@ -29,8 +29,10 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   scoped_refptr<RasterSource> CreateRasterSource() const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
+  void SetMinContentsScale(float min_contents_scale) override;
   void SetSlowdownRasterScaleFactor(int factor) override;
   bool IsSuitableForGpuRasterization() const override;
+  void SetTileGridSize(const gfx::Size& tile_grid_size) override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
   SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const override;
 

@@ -38,8 +38,12 @@ class CC_EXPORT RecordingSource {
 
   virtual gfx::Size GetSize() const = 0;
   virtual void SetEmptyBounds() = 0;
+  virtual void SetMinContentsScale(float min_contents_scale) = 0;
   virtual void SetSlowdownRasterScaleFactor(int factor) = 0;
   virtual bool IsSuitableForGpuRasterization() const = 0;
+
+  // TODO(hendrikw): This is an implementation detail, remove it when possible.
+  virtual void SetTileGridSize(const gfx::Size& tile_grid_size) = 0;
 
   // TODO(hendrikw): Figure out how to remove this.
   virtual void SetUnsuitableForGpuRasterizationForTesting() = 0;

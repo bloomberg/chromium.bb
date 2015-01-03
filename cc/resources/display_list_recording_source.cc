@@ -104,6 +104,13 @@ void DisplayListRecordingSource::SetEmptyBounds() {
   Clear();
 }
 
+void DisplayListRecordingSource::SetMinContentsScale(float min_contents_scale) {
+}
+
+void DisplayListRecordingSource::SetTileGridSize(
+    const gfx::Size& tile_grid_size) {
+}
+
 void DisplayListRecordingSource::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
 }

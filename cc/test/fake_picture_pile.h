@@ -19,9 +19,7 @@ class FakePicturePile : public PicturePile {
   using PictureMapKey = PicturePile::PictureMapKey;
   using PictureMap = PicturePile::PictureMap;
 
-  FakePicturePile(float min_contents_scale, const gfx::Size& tile_grid_size)
-      : PicturePile(min_contents_scale, tile_grid_size),
-        playback_allowed_event_(nullptr) {}
+  FakePicturePile() : playback_allowed_event_(nullptr) {}
   ~FakePicturePile() override {}
 
   // PicturePile overrides.

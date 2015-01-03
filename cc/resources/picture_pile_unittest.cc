@@ -17,10 +17,7 @@ namespace {
 
 class PicturePileTestBase {
  public:
-  PicturePileTestBase()
-      : min_scale_(0.125),
-        pile_(min_scale_, gfx::Size(1000, 1000)),
-        frame_number_(0) {}
+  PicturePileTestBase() : min_scale_(0.125), frame_number_(0) {}
 
   void InitializeData() {
     pile_.SetTileGridSize(gfx::Size(1000, 1000));
@@ -55,9 +52,9 @@ class PicturePileTestBase {
     return result;
   }
 
-  float min_scale_;
   FakeContentLayerClient client_;
   FakePicturePile pile_;
+  float min_scale_;
   int frame_number_;
 };
 
