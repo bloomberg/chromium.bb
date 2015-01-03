@@ -306,14 +306,14 @@ private:
 // knows the heap index when using HeapIndexTrait.
 template<int num> struct InitializeHeaps {
     static const int index = num - 1;
-    static void init(BaseHeap** heaps, ThreadState* state)
+    static void init(ThreadHeap** heaps, ThreadState* state)
     {
         InitializeHeaps<index>::init(heaps, state);
         heaps[index] = new ThreadHeap(state, index);
     }
 };
 template<> struct InitializeHeaps<0> {
-    static void init(BaseHeap** heaps, ThreadState* state) { }
+    static void init(ThreadHeap** heaps, ThreadState* state) { }
 };
 
 ThreadState::ThreadState()
@@ -843,7 +843,7 @@ void ThreadState::preGC()
 {
     ASSERT(!isInGC());
     for (int i = 0; i < NumberOfHeaps; ++i) {
-        BaseHeap* heap = m_heaps[i];
+        ThreadHeap* heap = m_heaps[i];
         heap->makeConsistentForSweeping();
         // If a new GC is requested before this thread got around to sweep, ie. due to the
         // thread doing a long running operation, we clear the mark bits and mark any of

@@ -2446,8 +2446,7 @@ void HeapAllocator::backingFree(void* address)
     header->checkHeader();
 
     int heapIndex = HeapTrait::index(header->payloadSize());
-    ThreadHeap* heap = static_cast<ThreadHeap*>(state->heap(heapIndex));
-    heap->promptlyFreeObject(header);
+    state->heap(heapIndex)->promptlyFreeObject(header);
 }
 
 void HeapAllocator::freeVectorBacking(void* address)
@@ -2484,8 +2483,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     header->checkHeader();
 
     int heapIndex = HeapTrait::index(header->payloadSize());
-    ThreadHeap* heap = static_cast<ThreadHeap*>(state->heap(heapIndex));
-    return heap->expandObject(header, newSize);
+    return state->heap(heapIndex)->expandObject(header, newSize);
 }
 
 bool HeapAllocator::expandVectorBacking(void* address, size_t newSize)
@@ -2529,7 +2527,7 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     header->checkHeader();
 
     int heapIndex = HeapTraits::index(header->payloadSize());
-    static_cast<ThreadHeap*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
+    state->heap(heapIndex)->shrinkObject(header, quantizedShrunkSize);
 }
 
 void HeapAllocator::shrinkVectorBackingInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)

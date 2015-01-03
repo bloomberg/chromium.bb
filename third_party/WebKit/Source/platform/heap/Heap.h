@@ -680,42 +680,6 @@ private:
     void clearMemory(PageMemory*);
 };
 
-// Non-template super class used to pass a heap around to other classes.
-class BaseHeap {
-public:
-    virtual ~BaseHeap() { }
-    virtual void cleanupPages() = 0;
-
-#if ENABLE(ASSERT)
-    // Find the page in this thread heap containing the given
-    // address.  Returns 0 if the address is not contained in any
-    // page in this thread heap.
-    virtual BaseHeapPage* findPageFromAddress(Address) = 0;
-#endif
-#if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfoOfLargeObject(Address) = 0;
-#endif
-#if ENABLE(GC_PROFILE_HEAP)
-    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
-#endif
-
-    // Sweep this part of the Blink heap.  This finalizes dead objects
-    // and builds freelists for all the unused memory.
-    virtual void sweep() = 0;
-    virtual void postSweepProcessing() = 0;
-
-    virtual void clearFreeLists() = 0;
-    virtual void markUnmarkedObjectsDead() = 0;
-
-    virtual void makeConsistentForSweeping() = 0;
-#if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() = 0;
-#endif
-    virtual size_t objectPayloadSizeForTesting() = 0;
-
-    virtual void prepareHeapForTermination() = 0;
-};
-
 class FreeList {
 public:
     FreeList();
@@ -746,33 +710,33 @@ private:
 // (potentially adding new pages to the heap), to find and mark
 // objects during conservative stack scanning and to sweep the set of
 // pages after a GC.
-class ThreadHeap : public BaseHeap {
+class PLATFORM_EXPORT ThreadHeap final {
 public:
     ThreadHeap(ThreadState*, int);
-    virtual ~ThreadHeap();
-    virtual void cleanupPages() override;
+    ~ThreadHeap();
+    void cleanupPages();
 
 #if ENABLE(ASSERT)
-    virtual BaseHeapPage* findPageFromAddress(Address) override;
+    BaseHeapPage* findPageFromAddress(Address);
 #endif
 #if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfoOfLargeObject(Address) override;
+    const GCInfo* findGCInfoOfLargeObject(Address);
 #endif
 #if ENABLE(GC_PROFILE_HEAP)
-    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
+    void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
 
-    virtual void sweep() override;
-    virtual void postSweepProcessing() override;
+    void sweep();
+    void postSweepProcessing();
 
-    virtual void clearFreeLists() override;
-    virtual void markUnmarkedObjectsDead() override;
+    void clearFreeLists();
+    void markUnmarkedObjectsDead();
 
-    virtual void makeConsistentForSweeping() override;
+    void makeConsistentForSweeping();
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() override;
+    bool isConsistentForSweeping();
 #endif
-    virtual size_t objectPayloadSizeForTesting() override;
+    size_t objectPayloadSizeForTesting();
 
     ThreadState* threadState() { return m_threadState; }
 
@@ -790,17 +754,17 @@ public:
     }
     inline static size_t allocationSizeFromSize(size_t);
 
-    virtual void prepareHeapForTermination() override;
+    void prepareHeapForTermination();
 
     void freePage(HeapPage*);
 
-    PLATFORM_EXPORT void promptlyFreeObject(HeapObjectHeader*);
-    PLATFORM_EXPORT bool expandObject(HeapObjectHeader*, size_t);
+    void promptlyFreeObject(HeapObjectHeader*);
+    bool expandObject(HeapObjectHeader*, size_t);
     void shrinkObject(HeapObjectHeader*, size_t);
 
 private:
-    PLATFORM_EXPORT Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
-    PLATFORM_EXPORT Address allocateLargeObject(size_t, size_t gcInfoIndex);
+    Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
+    Address allocateLargeObject(size_t, size_t gcInfoIndex);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
@@ -1382,8 +1346,7 @@ Address Heap::allocate(size_t size)
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     int heapIndex = HeapTraits::index(size);
-    BaseHeap* heap = state->heap(heapIndex);
-    return static_cast<ThreadHeap*>(heap)->allocate(size, GCInfoTrait<T>::index());
+    return state->heap(heapIndex)->allocate(size, GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1404,8 +1367,7 @@ Address Heap::reallocate(void* previous, size_t size)
     ASSERT(state->isAllocationAllowed());
     int heapIndex = HeapTypeTrait<T>::index(size);
     ASSERT(General1Heap <= heapIndex && heapIndex <= General4Heap);
-    BaseHeap* heap = state->heap(heapIndex);
-    Address address = static_cast<ThreadHeap*>(heap)->allocate(size, GCInfoTrait<T>::index());
+    Address address = state->heap(heapIndex)->allocate(size, GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;

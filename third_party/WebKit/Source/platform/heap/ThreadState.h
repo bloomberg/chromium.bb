@@ -560,7 +560,7 @@ public:
     // The heap is split into multiple heap parts based on object
     // types. To get the index for a given type, use
     // HeapTypeTrait<Type>::index.
-    BaseHeap* heap(int index) const { return m_heaps[index]; }
+    ThreadHeap* heap(int index) const { return m_heaps[index]; }
 
 #if ENABLE(ASSERT)
     // Infrastructure to determine if an address is within one of the
@@ -720,7 +720,7 @@ private:
     bool m_didV8GCAfterLastGC;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
-    BaseHeap* m_heaps[NumberOfHeaps];
+    ThreadHeap* m_heaps[NumberOfHeaps];
 
     Vector<OwnPtr<CleanupTask>> m_cleanupTasks;
     bool m_isTerminating;
