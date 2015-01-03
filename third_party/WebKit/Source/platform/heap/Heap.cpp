@@ -1494,7 +1494,6 @@ HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap)
     : BaseHeapPage(storage, heap->threadState())
     , m_next(nullptr)
 {
-    static_assert(!(sizeof(HeapPage<Header>) & allocationMask), "page header incorrectly aligned");
     m_objectStartBitMapComputed = false;
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }

@@ -498,7 +498,6 @@ public:
         : BaseHeapPage(storage, state)
         , m_payloadSize(payloadSize)
     {
-        static_assert(!(sizeof(LargeObject<Header>) & allocationMask), "LargeObject<Header> misaligned");
     }
 
     virtual void checkAndMarkPointer(Visitor*, Address) override;
