@@ -23,6 +23,7 @@ from pylib import constants
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_errors
+from pylib.device import intent
 from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
 from pylib.utils import device_temp_file
@@ -599,7 +600,10 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    self.old_interface.GoHome()
+    self.StartActivity(
+        intent.Intent(action='android.intent.action.MAIN',
+                      category='android.intent.category.HOME'),
+        blocking=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def ForceStop(self, package, timeout=None, retries=None):

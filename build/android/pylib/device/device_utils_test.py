@@ -908,14 +908,12 @@ class DeviceUtilsBroadcastIntentTest(DeviceUtilsNewImplTest):
       self.device.BroadcastIntent(test_intent)
 
 
-class DeviceUtilsGoHomeTest(DeviceUtilsOldImplTest):
+class DeviceUtilsGoHomeTest(DeviceUtilsNewImplTest):
 
   def testGoHome(self):
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'am start "
-            "-W "
-            "-a android.intent.action.MAIN "
-            "-c android.intent.category.HOME'",
+    with self.assertCall(
+        self.call.adb.Shell('am start -W -a android.intent.action.MAIN '
+                            '-c android.intent.category.HOME'),
         'Starting: Intent { act=android.intent.action.MAIN }\r\n'):
       self.device.GoHome()
 
