@@ -73,4 +73,18 @@ TEST(CompressionUtilsTest, LargeInput) {
   EXPECT_EQ(data, uncompressed_data);
 }
 
+TEST(CompressionUtilsTest, InPlace) {
+  const std::string original_data(reinterpret_cast<const char*>(kData),
+                                  arraysize(kData));
+  const std::string golden_compressed_data(
+      reinterpret_cast<const char*>(kCompressedData),
+      arraysize(kCompressedData));
+
+  std::string data(original_data);
+  EXPECT_TRUE(GzipCompress(data, &data));
+  EXPECT_EQ(golden_compressed_data, data);
+  EXPECT_TRUE(GzipUncompress(data, &data));
+  EXPECT_EQ(original_data, data);
+}
+
 }  // namespace metrics

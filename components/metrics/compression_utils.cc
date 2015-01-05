@@ -140,17 +140,22 @@ bool GzipCompress(const std::string& input, std::string* output) {
 
   compressed_data.resize(compressed_size);
   output->assign(compressed_data.begin(), compressed_data.end());
-  DCHECK_EQ(input.size(), GetUncompressedSize(*output));
+  DCHECK_EQ(input_size, GetUncompressedSize(*output));
   return true;
 }
 
 bool GzipUncompress(const std::string& input, std::string* output) {
-  output->resize(GetUncompressedSize(input));
-  uLongf uncompressed_size = static_cast<uLongf>(output->length());
-  return GzipUncompressHelper(bit_cast<Bytef*>(output->data()),
-                              &uncompressed_size,
-                              bit_cast<const Bytef*>(input.data()),
-                              static_cast<uLongf>(input.length())) == Z_OK;
+  std::string uncompressed_output;
+  uLongf uncompressed_size = static_cast<uLongf>(GetUncompressedSize(input));
+  uncompressed_output.resize(uncompressed_size);
+  if (GzipUncompressHelper(bit_cast<Bytef*>(uncompressed_output.data()),
+                           &uncompressed_size,
+                           bit_cast<const Bytef*>(input.data()),
+                           static_cast<uLongf>(input.length())) == Z_OK) {
+    output->swap(uncompressed_output);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace metrics
