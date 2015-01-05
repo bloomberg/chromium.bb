@@ -236,6 +236,7 @@
     name,
     live_relevant,
     live_status,
+    placeholder,
     role,
     shortcut,
     text_input_type,

@@ -111,6 +111,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { @"AXInvalid", @"invalid" },
     { @"AXLoaded", @"loaded" },
     { @"AXLoadingProgress", @"loadingProgress" },
+    { @"AXPlaceholder", @"placeholder" },
     { @"AXRequired", @"required" },
     { @"AXVisited", @"visited" },
   };
@@ -399,6 +400,11 @@ NSDictionary* attributeToMethodNameMap = nil;
     return @"false";
   }
   return invalid;
+}
+
+- (NSString*)placeholder {
+  return NSStringForStringAttribute(
+      browserAccessibility_, ui::AX_ATTR_PLACEHOLDER);
 }
 
 - (void)addLinkedUIElementsFromAttribute:(ui::AXIntListAttribute)attribute
@@ -1356,6 +1362,11 @@ NSDictionary* attributeToMethodNameMap = nil;
       || GetState(browserAccessibility_, ui::AX_STATE_HORIZONTAL)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityOrientationAttribute, nil]];
+  }
+
+  if (browserAccessibility_->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXPlaceholder", nil]];
   }
 
   if (GetState(browserAccessibility_, ui::AX_STATE_REQUIRED)) {

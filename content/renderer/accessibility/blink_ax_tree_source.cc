@@ -288,6 +288,10 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   }
   if (src.helpText().length())
     dst->AddStringAttribute(ui::AX_ATTR_HELP, UTF16ToUTF8(src.helpText()));
+  if (src.placeholder().length()) {
+    dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER,
+                            UTF16ToUTF8(src.placeholder()));
+  }
   if (src.keyboardShortcut().length()) {
     dst->AddStringAttribute(ui::AX_ATTR_SHORTCUT,
                             UTF16ToUTF8(src.keyboardShortcut()));
