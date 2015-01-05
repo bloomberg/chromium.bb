@@ -69,7 +69,19 @@ def RestartServer():
   Raises:
     CommandFailedError if we fail to kill or restart the server.
   """
-  pylib.android_commands.AndroidCommands().RestartAdbServer()
+  def adb_killed():
+    return not adb_wrapper.AdbWrapper.IsServerOnline()
+
+  def adb_started():
+    return adb_wrapper.AdbWrapper.IsServerOnline()
+
+  adb_wrapper.AdbWrapper.KillServer()
+  if not timeout_retry.WaitFor(adb_killed, wait_period=1, max_tries=5):
+    # TODO(perezju): raise an exception after fixng http://crbug.com/442319
+    logging.warning('Failed to kill adb server')
+  adb_wrapper.AdbWrapper.StartServer()
+  if not timeout_retry.WaitFor(adb_started, wait_period=1, max_tries=5):
+    raise device_errors.CommandFailedError('Failed to start adb server')
 
 
 def _GetTimeStamp():

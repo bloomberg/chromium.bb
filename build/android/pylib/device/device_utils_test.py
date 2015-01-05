@@ -84,6 +84,22 @@ class DeviceUtilsGetAVDsTest(mock_calls.TestCase):
                         device_utils.GetAVDs())
 
 
+class DeviceUtilsRestartServerTest(mock_calls.TestCase):
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testRestartServer_succeeds(self):
+    with self.assertCalls(
+        mock.call.pylib.device.adb_wrapper.AdbWrapper.KillServer(),
+        (mock.call.pylib.cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb']),
+         (1, '')),
+        mock.call.pylib.device.adb_wrapper.AdbWrapper.StartServer(),
+        (mock.call.pylib.cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb']),
+         (1, '')),
+        (mock.call.pylib.cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb']),
+         (0, '123\n'))):
+      device_utils.RestartServer()
+
+
 class MockTempFile(object):
 
   def __init__(self, name='/tmp/some/file'):
