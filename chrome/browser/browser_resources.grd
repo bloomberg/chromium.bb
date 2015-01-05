@@ -228,7 +228,9 @@
       <include name="IDR_COMPONENTS_HTML" file="resources\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" />
       <if expr="enable_plugins">
-        <include name="IDR_PDF_MANIFEST" file="resources\pdf\manifest.json" type="BINDATA" />
+        <include name="IDR_PDF_MANIFEST_COMMON" file="resources\pdf\manifest-common.json.unflattened" type="BINDATA" />
+        <include name="IDR_PDF_MANIFEST" file="resources\pdf\manifest.json.unflattened" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_PDF_MANIFEST_MATERIAL" file="resources\pdf\manifest-material.json.unflattened" type="BINDATA" flattenhtml="true" />
       </if>
       <if expr="is_win">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_win.json" type="BINDATA" />

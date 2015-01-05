@@ -304,6 +304,9 @@ const char kDisableOutOfProcessPdf[]        = "disable-out-of-process-pdf";
 const char kDisablePasswordManagerReauthentication[] =
     "disable-password-manager-reauthentication";
 
+// Disable the new material UI - requires out of process PDF plugin.
+const char kDisablePdfMaterialUI[]          = "disable-pdf-material-ui";
+
 // Enables searching for people from the apps list search box.
 const char kDisablePeopleSearch[]           = "disable-people-search";
 
@@ -515,6 +518,9 @@ const char kEnableOutOfProcessPdf[]         = "enable-out-of-process-pdf";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
+
+// Enable the new material UI - requires out of process PDF plugin.
+const char kEnablePdfMaterialUI[]           = "enable-pdf-material-ui";
 
 // Enables presenting plugin placeholder content as shadow DOM.
 const char kEnablePluginPlaceholderShadowDom[] =
@@ -1384,6 +1390,17 @@ bool OutOfProcessPdfEnabled() {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDisableOutOfProcessPdf))
+    return false;
+
+  // Default.
+  return false;
+}
+
+bool PdfMaterialUIEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnablePdfMaterialUI))
+    return true;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDisablePdfMaterialUI))
     return false;
 
   // Default.

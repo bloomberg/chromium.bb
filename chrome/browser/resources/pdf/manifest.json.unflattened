@@ -1,0 +1,7 @@
+{
+  <include src="manifest-common.json.unflattened">,
+  "mime_types_handler": "index.html",
+  "web_accessible_resources": [
+    "index.html"
+  ]
+}

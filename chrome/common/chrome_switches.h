@@ -90,6 +90,7 @@ extern const char kDisableOfflineAutoReloadVisibleOnly[];
 extern const char kDisableOriginChip[];
 extern const char kDisableOutOfProcessPdf[];
 extern const char kDisablePasswordManagerReauthentication[];
+extern const char kDisablePdfMaterialUI[];
 extern const char kDisablePeopleSearch[];
 extern const char kDisablePermissionsBubbles[];
 extern const char kDisablePopupBlocking[];
@@ -148,6 +149,7 @@ extern const char kEnableOriginChipAlways[];
 extern const char kEnableOriginChipOnSrp[];
 extern const char kEnableOutOfProcessPdf[];
 extern const char kEnablePanels[];
+extern const char kEnablePdfMaterialUI[];
 extern const char kEnablePermissionsBubbles[];
 extern const char kEnablePluginPlaceholderShadowDom[];
 extern const char kEnablePowerOverlay[];
@@ -403,6 +405,7 @@ extern const char kFileManagerExtensionPath[];
 
 bool AboutInSettingsEnabled();
 bool OutOfProcessPdfEnabled();
+bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();
 
 #if defined(OS_CHROMEOS)

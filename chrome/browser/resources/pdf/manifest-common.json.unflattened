@@ -1,4 +1,3 @@
-{
   // chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai
   "manifest_version": 2,
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDN6hM0rsDYGbzQPQfOygqlRtQgKUXMfnSjhIBL7LnReAVBEd7ZmKtyN2qmSasMl4HZpMhVe2rPWVVwBDl6iyNE/Kok6E6v6V3vCLGsOpQAuuNVye/3QxzIldzG/jQAdWZiyXReRVapOhZtLjGfywCvlWq7Sl/e3sbc0vWybSDI2QIDAQAB",
@@ -20,12 +19,7 @@
     "transient": true,
     "persistent": false
   },
-  "mime_types_handler": "index.html",
   "mime_types": [
     "application/pdf"
   ],
-  "web_accessible_resources": [
-    "index.html"
-  ],
   "content_security_policy": "script-src 'self' chrome://resources; object-src *; plugin-types application/x-google-chrome-pdf"
-}
