@@ -53,6 +53,12 @@ PrefService::PrefService(
       read_error_callback_(read_error_callback) {
   pref_notifier_->SetPrefService(this);
 
+  // TODO(battre): This is a check for crbug.com/435208 to make sure that
+  // access violations are caused by a use-after-free bug and not by an
+  // initialization bug.
+  CHECK(pref_registry_);
+  CHECK(pref_value_store_);
+
   InitFromStorage(async);
 }
 
@@ -562,6 +568,14 @@ bool PrefService::Preference::IsExtensionModifiable() const {
 const base::Value* PrefService::GetPreferenceValue(
     const std::string& path) const {
   DCHECK(CalledOnValidThread());
+
+  // TODO(battre): This is a check for crbug.com/435208. After analyzing some
+  // crash dumps it looks like the PrefService is accessed even though it has
+  // been cleared already.
+  CHECK(pref_registry_);
+  CHECK(pref_registry_->defaults());
+  CHECK(pref_value_store_);
+
   const base::Value* default_value = NULL;
   if (pref_registry_->defaults()->GetValue(path, &default_value)) {
     const base::Value* found_value = NULL;
