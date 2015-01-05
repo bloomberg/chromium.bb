@@ -35,13 +35,12 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // we ever have to share state between some native drawing UI and Skia, like
   // the Windows and Mac versions of this class do.
   explicit BitmapPlatformDevice(const SkBitmap& other);
-  virtual ~BitmapPlatformDevice();
+  ~BitmapPlatformDevice() override;
 
-  virtual PlatformSurface BeginPlatformPaint() override;
+  PlatformSurface BeginPlatformPaint() override;
 
  protected:
-  virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info)
-    override;
+  SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
