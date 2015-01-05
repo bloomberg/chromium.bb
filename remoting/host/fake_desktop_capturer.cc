@@ -21,10 +21,10 @@ static const int kBoxWidth = 140;
 static const int kBoxHeight = 140;
 static const int kSpeed = 20;
 
-COMPILE_ASSERT(kBoxWidth < kWidth && kBoxHeight < kHeight, bad_box_size);
-COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
-               (kBoxHeight % kSpeed == 0) && (kHeight % kSpeed == 0),
-               sizes_must_be_multiple_of_kSpeed);
+static_assert(kBoxWidth < kWidth && kBoxHeight < kHeight, "bad box size");
+static_assert((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
+              (kBoxHeight % kSpeed == 0) && (kHeight % kSpeed == 0),
+              "sizes must be multiple of kSpeed");
 
 namespace {
 

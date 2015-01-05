@@ -100,8 +100,8 @@ class ScopedVariantArg : public VARIANTARG {
 };
 
 // Make sure the layouts of |VARIANTARG| and |ScopedVariantArg| are identical.
-COMPILE_ASSERT(sizeof(ScopedVariantArg) == sizeof(VARIANTARG),
-               scoped_variant_arg_should_not_add_data_members);
+static_assert(sizeof(ScopedVariantArg) == sizeof(VARIANTARG),
+              "scoped variant arg should not add data members");
 
 }  // namespace internal
 

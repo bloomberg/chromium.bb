@@ -76,7 +76,7 @@ void XServerClipboard::Init(Display* display,
     targets_atom_ = atoms[3];
     timestamp_atom_ = atoms[4];
     utf8_string_atom_ = atoms[5];
-    COMPILE_ASSERT(kNumAtomNames >= 6, kAtomNames_too_small);
+    static_assert(kNumAtomNames >= 6, "kAtomNames is too small");
   } else {
     LOG(ERROR) << "XInternAtoms failed";
   }
