@@ -2121,9 +2121,9 @@ void Heap::pushTraceCallback(void* object, TraceCallback callback)
     *slot = CallbackStack::Item(object, callback);
 }
 
-bool Heap::popAndInvokeTraceCallback(CallbackStack* stack, Visitor* visitor)
+bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
 {
-    CallbackStack::Item* item = stack->pop();
+    CallbackStack::Item* item = s_markingStack->pop();
     if (!item)
         return false;
 
@@ -2337,7 +2337,7 @@ void Heap::processMarkingStack(Visitor* markingVisitor)
             // Iteratively mark all objects that are reachable from the objects
             // currently pushed onto the marking stack.
             TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-            while (popAndInvokeTraceCallback(s_markingStack, markingVisitor)) { }
+            while (popAndInvokeTraceCallback(markingVisitor)) { }
         }
 
         {

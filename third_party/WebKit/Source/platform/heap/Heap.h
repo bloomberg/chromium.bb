@@ -853,7 +853,7 @@ public:
 
     // Pop the top of a marking stack and call the callback with the visitor
     // and the object.  Returns false when there is nothing more to do.
-    static bool popAndInvokeTraceCallback(CallbackStack*, Visitor*);
+    static bool popAndInvokeTraceCallback(Visitor*);
 
     // Remove an item from the post-marking callback stack and call
     // the callback with the visitor and the object pointer.  Returns
