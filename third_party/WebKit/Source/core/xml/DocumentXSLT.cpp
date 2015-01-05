@@ -36,13 +36,13 @@ public:
         return true;
     }
 
-    virtual void handleEvent(ExecutionContext* context, Event* event)
+    virtual void handleEvent(ScriptState* scriptState, Event* event)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         ASSERT(event->type() == "DOMContentLoaded");
-        ScriptState::Scope scope(scriptState());
+        ScriptState::Scope scope(scriptState);
 
-        Document& document = *toDocument(context);
+        Document& document = *toDocument(scriptState->executionContext());
         ASSERT(!document.parsing());
 
         // Processing instruction (XML documents only).
@@ -70,7 +70,7 @@ public:
 
 private:
     DOMContentLoadedListener(ScriptState* scriptState, ProcessingInstruction* pi)
-        : V8AbstractEventListener(false, scriptState)
+        : V8AbstractEventListener(false, scriptState->world(), scriptState->isolate())
         , m_processingInstruction(pi)
     {
     }
@@ -78,7 +78,7 @@ private:
     virtual void refDetachableEventListener() override { ref(); }
     virtual void derefDetachableEventListener() override { deref(); }
 
-    virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsevent, Event*)
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Handle<v8::Value>, Event*)
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Value>();

@@ -23,6 +23,7 @@ function test(frame) {
 var testMessage;
 window.onerror = function(msg) {
     testMessage = msg;
+    // FIXME: This test fails. See crbug.com/446147.
     testPassed("Exception was thrown");
     shouldBeEqualToString("testMessage", "Uncaught Exception in toString()");
     return true;

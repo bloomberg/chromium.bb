@@ -39,14 +39,14 @@
 namespace blink {
 
 V8EventListener::V8EventListener(v8::Local<v8::Object> listener, bool isAttribute, ScriptState* scriptState)
-    : V8AbstractEventListener(isAttribute, scriptState)
+    : V8AbstractEventListener(isAttribute, scriptState->world(), scriptState->isolate())
 {
     setListenerObject(listener);
 }
 
-v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext*)
+v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* scriptState)
 {
-    v8::Local<v8::Object> listener = getListenerObject(scriptState()->executionContext());
+    v8::Local<v8::Object> listener = getListenerObject(scriptState->executionContext());
 
     // Has the listener been disposed?
     if (listener.IsEmpty())
@@ -67,17 +67,17 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext*)
     return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::callListenerFunction(v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptState, v8::Handle<v8::Value> jsEvent, Event* event)
 {
-    v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState()->executionContext());
-    v8::Local<v8::Object> receiver = getReceiverObject(event);
+    v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
+    v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    if (!scriptState()->executionContext()->isDocument())
+    if (!scriptState->executionContext()->isDocument())
         return v8::Local<v8::Value>();
 
-    LocalFrame* frame = toDocument(scriptState()->executionContext())->frame();
+    LocalFrame* frame = toDocument(scriptState->executionContext())->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 

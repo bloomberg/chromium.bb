@@ -32,7 +32,7 @@ public:
             : m_handleScope(scriptState->isolate())
             , m_context(scriptState->context())
         {
-            ASSERT(!m_context.IsEmpty());
+            ASSERT(scriptState->contextIsValid());
             m_context->Enter();
         }
 

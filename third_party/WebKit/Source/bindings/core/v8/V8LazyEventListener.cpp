@@ -53,7 +53,7 @@
 namespace blink {
 
 V8LazyEventListener::V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
-    : V8AbstractEventListener(true, isolate)
+    : V8AbstractEventListener(true, DOMWrapperWorld::mainWorld(), isolate)
     , m_functionName(functionName)
     , m_eventParameterName(eventParameterName)
     , m_code(code)
@@ -74,21 +74,21 @@ v8::Handle<v8::Object> toObjectWrapper(T* domObject, ScriptState* scriptState)
     return v8::Local<v8::Object>::New(scriptState->isolate(), value.As<v8::Object>());
 }
 
-v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptState* scriptState, v8::Handle<v8::Value> jsEvent, Event* event)
 {
-    v8::Local<v8::Object> listenerObject = getListenerObject(scriptState()->executionContext());
+    v8::Local<v8::Object> listenerObject = getListenerObject(scriptState->executionContext());
     if (listenerObject.IsEmpty())
         return v8::Local<v8::Value>();
 
     v8::Local<v8::Function> handlerFunction = listenerObject.As<v8::Function>();
-    v8::Local<v8::Object> receiver = getReceiverObject(event);
+    v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    if (!scriptState()->executionContext()->isDocument())
+    if (!scriptState->executionContext()->isDocument())
         return v8::Local<v8::Value>();
 
-    LocalFrame* frame = toDocument(scriptState()->executionContext())->frame();
+    LocalFrame* frame = toDocument(scriptState->executionContext())->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 
@@ -104,33 +104,23 @@ static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValue(info, V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::toStringString(info.GetIsolate())));
 }
 
-void V8LazyEventListener::handleEvent(ExecutionContext* context, Event* event)
+void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionContext)
 {
-    v8::HandleScope handleScope(toIsolate(context));
-    // V8LazyEventListener doesn't know the associated context when created.
-    // Thus we lazily get the associated context and set a ScriptState on V8AbstractEventListener.
-    v8::Local<v8::Context> v8Context = toV8Context(context, world());
+    if (!executionContext)
+        return;
+
+    // A ScriptState used by the event listener needs to be calculated based on
+    // the ExecutionContext that fired the the event listener and the world
+    // that installed the event listener.
+    v8::HandleScope handleScope(toIsolate(executionContext));
+    v8::Local<v8::Context> v8Context = toV8Context(executionContext, world());
     if (v8Context.IsEmpty())
         return;
-    setScriptState(ScriptState::from(v8Context));
-
-    V8AbstractEventListener::handleEvent(context, event);
-}
-
-void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
-{
-    if (!context)
+    ScriptState* scriptState = ScriptState::from(v8Context);
+    if (!scriptState->contextIsValid())
         return;
 
-    v8::HandleScope handleScope(toIsolate(context));
-    // V8LazyEventListener doesn't know the associated context when created.
-    // Thus we lazily get the associated context and set a ScriptState on V8AbstractEventListener.
-    v8::Local<v8::Context> v8Context = toV8Context(context, world());
-    if (v8Context.IsEmpty())
-        return;
-    setScriptState(ScriptState::from(v8Context));
-
-    if (context->isDocument() && !toDocument(context)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
+    if (executionContext->isDocument() && !toDocument(executionContext)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
         clearListenerObject();
         return;
     }
@@ -138,10 +128,10 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     if (hasExistingListenerObject())
         return;
 
-    ASSERT(context->isDocument());
+    ASSERT(executionContext->isDocument());
 
-    ScriptState::Scope scope(scriptState());
-    String listenerSource =  InspectorInstrumentation::preprocessEventListener(toDocument(context)->frame(), m_code, m_sourceURL, m_functionName);
+    ScriptState::Scope scope(scriptState);
+    String listenerSource =  InspectorInstrumentation::preprocessEventListener(toDocument(executionContext)->frame(), m_code, m_sourceURL, m_functionName);
 
     // FIXME: Remove the following 'with' hack.
     //
@@ -183,9 +173,9 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     if (m_node && m_node->isHTMLElement())
         formElement = toHTMLElement(m_node)->formOwner();
 
-    v8::Handle<v8::Object> nodeWrapper = toObjectWrapper<Node>(m_node, scriptState());
-    v8::Handle<v8::Object> formWrapper = toObjectWrapper<HTMLFormElement>(formElement, scriptState());
-    v8::Handle<v8::Object> documentWrapper = toObjectWrapper<Document>(m_node ? m_node->ownerDocument() : 0, scriptState());
+    v8::Handle<v8::Object> nodeWrapper = toObjectWrapper<Node>(m_node, scriptState);
+    v8::Handle<v8::Object> formWrapper = toObjectWrapper<HTMLFormElement>(formElement, scriptState);
+    v8::Handle<v8::Object> documentWrapper = toObjectWrapper<Document>(m_node ? m_node->ownerDocument() : 0, scriptState);
 
     v8::Local<v8::Object> thisObject = v8::Object::New(isolate());
     if (thisObject.IsEmpty())

@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSRuleList.h"
@@ -1570,8 +1571,9 @@ DOMWindowCSS* LocalDOMWindow::css() const
     return m_css.get();
 }
 
-bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> prpListener, bool useCapture)
 {
+    RefPtr<EventListener> listener = prpListener;
     if (!EventTarget::addEventListener(eventType, listener, useCapture))
         return false;
 

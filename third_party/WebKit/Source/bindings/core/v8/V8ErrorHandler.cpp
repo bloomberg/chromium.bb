@@ -47,21 +47,20 @@ V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, Sc
 {
 }
 
-v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptState, v8::Handle<v8::Value> jsEvent, Event* event)
 {
     if (!event->hasInterface(EventNames::ErrorEvent))
-        return V8EventListener::callListenerFunction(jsEvent, event);
+        return V8EventListener::callListenerFunction(scriptState, jsEvent, event);
 
     ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);
-
     if (errorEvent->world() && errorEvent->world() != &world())
         return v8::Null(isolate());
 
-    v8::Local<v8::Object> listener = getListenerObject(scriptState()->executionContext());
+    v8::Local<v8::Object> listener = getListenerObject(scriptState->executionContext());
     v8::Local<v8::Value> returnValue;
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
-        v8::Local<v8::Object> thisValue = scriptState()->context()->Global();
+        v8::Local<v8::Object> thisValue = scriptState->context()->Global();
 
         v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate(), jsEvent->ToObject(isolate()), V8HiddenValue::error(isolate()));
         if (error.IsEmpty())
@@ -70,10 +69,10 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(v8::Handle<v8::Value> 
         v8::Handle<v8::Value> parameters[5] = { v8String(isolate(), errorEvent->message()), v8String(isolate(), errorEvent->filename()), v8::Integer::New(isolate(), errorEvent->lineno()), v8::Integer::New(isolate(), errorEvent->colno()), error };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
-        if (scriptState()->executionContext()->isWorkerGlobalScope())
-            returnValue = V8ScriptRunner::callFunction(callFunction, scriptState()->executionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+        if (scriptState->executionContext()->isWorkerGlobalScope())
+            returnValue = V8ScriptRunner::callFunction(callFunction, scriptState->executionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
         else
-            returnValue = ScriptController::callFunction(scriptState()->executionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+            returnValue = ScriptController::callFunction(scriptState->executionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     }
     return returnValue;
 }
