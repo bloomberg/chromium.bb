@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -39,7 +40,6 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   ChromeStarter(base::TimeDelta timeout, const base::FilePath& user_data_dir)
       : ready_event_(false /* manual */, false /* signaled */),
         done_event_(false /* manual */, false /* signaled */),
-        process_handle_(base::kNullProcessHandle),
         process_terminated_(false),
         timeout_(timeout),
         user_data_dir_(user_data_dir) {
@@ -50,9 +50,8 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   void Reset() {
     ready_event_.Reset();
     done_event_.Reset();
-    if (process_handle_ != base::kNullProcessHandle)
-      base::CloseProcessHandle(process_handle_);
-    process_handle_ = base::kNullProcessHandle;
+    if (process_.IsValid())
+      process_.Close();
     process_terminated_ = false;
   }
 
@@ -96,13 +95,13 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // Here we don't wait for the app to be terminated because one of the
     // process will stay alive while the others will be restarted. If we would
     // wait here, we would never get a handle to the main process...
-    base::LaunchProcess(command_line, base::LaunchOptions(), &process_handle_);
-    ASSERT_NE(base::kNullProcessHandle, process_handle_);
+    process_ = base::LaunchProcess(command_line, base::LaunchOptions());
+    ASSERT_TRUE(process_.IsValid());
 
     // We can wait on the handle here, we should get stuck on one and only
     // one process. The test below will take care of killing that process
     // to unstuck us once it confirms there is only one.
-    process_terminated_ = base::WaitForSingleProcess(process_handle_,
+    process_terminated_ = base::WaitForSingleProcess(process_.Handle(),
                                                      timeout_);
     // Let the test know we are done.
     done_event_.Signal();
@@ -111,16 +110,13 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   // Public access to simplify the test code using them.
   base::WaitableEvent ready_event_;
   base::WaitableEvent done_event_;
-  base::ProcessHandle process_handle_;
+  base::Process process_;
   bool process_terminated_;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeStarter>;
 
-  ~ChromeStarter() {
-    if (process_handle_ != base::kNullProcessHandle)
-      base::CloseProcessHandle(process_handle_);
-  }
+  ~ChromeStarter() {}
 
   base::TimeDelta timeout_;
   base::FilePath user_data_dir_;
@@ -306,9 +302,8 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
         failed = true;
         // But we let the last loop turn finish so that we can properly
         // kill all remaining processes. Starting with this one...
-        if (chrome_starters_[starter_index]->process_handle_ !=
-            base::kNullProcessHandle) {
-          KillProcessTree(chrome_starters_[starter_index]->process_handle_);
+        if (chrome_starters_[starter_index]->process_.IsValid()) {
+          KillProcessTree(chrome_starters_[starter_index]->process_.Handle());
         }
       }
       pending_starters.erase(pending_starters.begin() + done_index);
@@ -318,9 +313,8 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
     ASSERT_EQ(static_cast<size_t>(1), pending_starters.size());
     size_t last_index = pending_starters.front();
     pending_starters.clear();
-    if (chrome_starters_[last_index]->process_handle_ !=
-        base::kNullProcessHandle) {
-      KillProcessTree(chrome_starters_[last_index]->process_handle_);
+    if (chrome_starters_[last_index]->process_.IsValid()) {
+      KillProcessTree(chrome_starters_[last_index]->process_.Handle());
       chrome_starters_[last_index]->done_event_.Wait();
     }
   }

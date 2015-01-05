@@ -29,7 +29,7 @@ class ChromeMainTest : public InProcessBrowserTest {
   ChromeMainTest() {}
 
   void Relaunch(const base::CommandLine& new_command_line) {
-    base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(), NULL);
+    base::LaunchProcess(new_command_line, base::LaunchOptionsForTest());
   }
 };
 
