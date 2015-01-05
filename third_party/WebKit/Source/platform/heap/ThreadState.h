@@ -469,7 +469,6 @@ public:
     void safePoint(StackState);
 
     // Mark current thread as running inside safepoint.
-    void enterSafePointWithoutPointers() { enterSafePoint(NoHeapPointersOnStack, nullptr); }
     void enterSafePointWithPointers(void* scopeMarker) { enterSafePoint(HeapPointersOnStack, scopeMarker); }
     void leaveSafePoint(SafePointAwareMutexLocker* = nullptr);
     bool isAtSafePoint() const { return m_atSafePoint; }
