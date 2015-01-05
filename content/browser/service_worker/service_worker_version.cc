@@ -627,6 +627,18 @@ void ServiceWorkerVersion::RemoveControllee(
     ScheduleStopWorker();
 }
 
+void ServiceWorkerVersion::AddStreamingURLRequestJob(
+    const ServiceWorkerURLRequestJob* request_job) {
+  DCHECK(streaming_url_request_jobs_.find(request_job) ==
+         streaming_url_request_jobs_.end());
+  streaming_url_request_jobs_.insert(request_job);
+}
+
+void ServiceWorkerVersion::RemoveStreamingURLRequestJob(
+    const ServiceWorkerURLRequestJob* request_job) {
+  streaming_url_request_jobs_.erase(request_job);
+}
+
 void ServiceWorkerVersion::AddListener(Listener* listener) {
   listeners_.AddObserver(listener);
 }
@@ -705,6 +717,8 @@ void ServiceWorkerVersion::OnStopped(
   RunIDMapCallbacks(&cross_origin_connect_callbacks_,
                     SERVICE_WORKER_ERROR_FAILED,
                     false);
+
+  streaming_url_request_jobs_.clear();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
 
@@ -1131,7 +1145,8 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
     !push_callbacks_.IsEmpty() ||
     !geofencing_callbacks_.IsEmpty() ||
     !get_client_info_callbacks_.IsEmpty() ||
-    !cross_origin_connect_callbacks_.IsEmpty();
+    !cross_origin_connect_callbacks_.IsEmpty() ||
+    !streaming_url_request_jobs_.empty();
 }
 
 void ServiceWorkerVersion::DoomInternal() {

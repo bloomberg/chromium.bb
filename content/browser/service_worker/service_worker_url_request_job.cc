@@ -83,6 +83,10 @@ void ServiceWorkerURLRequestJob::Start() {
 
 void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
+  if (stream_ || !waiting_stream_url_.is_empty()) {
+    if (ServiceWorkerVersion* active_version = provider_host_->active_version())
+      active_version->RemoveStreamingURLRequestJob(this);
+  }
   if (stream_) {
     stream_->RemoveReadObserver(this);
     stream_->Abort();
@@ -534,6 +538,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // Set up a request for reading the stream.
   if (response.stream_url.is_valid()) {
     DCHECK(response.blob_uuid.empty());
+    DCHECK(provider_host_->active_version());
+    provider_host_->active_version()->AddStreamingURLRequestJob(this);
     response_url_ = response.url;
     service_worker_response_type_ = response.response_type;
     CreateResponseHeader(

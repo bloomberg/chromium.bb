@@ -182,6 +182,10 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     EXPECT_EQ(expected_response, url_request_delegate_.response_data());
   }
 
+  bool HasInflightRequests() {
+    return version_->HasInflightRequests();
+  }
+
   TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<TestBrowserContext> browser_context_;
@@ -306,7 +310,6 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   scoped_refptr<Stream> stream =
       new Stream(stream_context->registry(), nullptr, stream_url);
   SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
-
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("http://example.com/foo.html"),
@@ -324,13 +327,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   }
   stream->Finalize();
 
+  EXPECT_FALSE(HasInflightRequests());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HasInflightRequests());
   EXPECT_TRUE(request_->status().is_success());
   EXPECT_EQ(200,
             request_->response_headers()->response_code());
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  request_.reset();
+  EXPECT_FALSE(HasInflightRequests());
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
@@ -359,13 +366,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
   }
   stream->Finalize();
 
+  EXPECT_FALSE(HasInflightRequests());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HasInflightRequests());
   EXPECT_TRUE(request_->status().is_success());
   EXPECT_EQ(200,
             request_->response_headers()->response_code());
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  request_.reset();
+  EXPECT_FALSE(HasInflightRequests());
 }
 
 
@@ -393,13 +404,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
       nullptr);
   request_->set_method("GET");
   request_->Start();
+  EXPECT_FALSE(HasInflightRequests());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HasInflightRequests());
   EXPECT_TRUE(request_->status().is_success());
   EXPECT_EQ(200,
             request_->response_headers()->response_code());
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  request_.reset();
+  EXPECT_FALSE(HasInflightRequests());
 }
 
 
@@ -458,7 +473,9 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
       nullptr);
   request_->set_method("GET");
   request_->Start();
+  EXPECT_FALSE(HasInflightRequests());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HasInflightRequests());
 
   std::string expected_response;
   expected_response.reserve((sizeof(kTestData) - 1) * 1024);
@@ -468,6 +485,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
   }
   ASSERT_TRUE(stream_context->registry()->GetStream(stream_url).get());
   request_->Cancel();
+  EXPECT_FALSE(HasInflightRequests());
   ASSERT_FALSE(stream_context->registry()->GetStream(stream_url).get());
   for (int i = 0; i < 512; ++i) {
     expected_response += kTestData;
@@ -495,8 +513,11 @@ TEST_F(ServiceWorkerURLRequestJobTest,
       nullptr);
   request_->set_method("GET");
   request_->Start();
+  EXPECT_FALSE(HasInflightRequests());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HasInflightRequests());
   request_->Cancel();
+  EXPECT_FALSE(HasInflightRequests());
 
   scoped_refptr<Stream> stream =
       new Stream(stream_context->registry(), nullptr, stream_url);

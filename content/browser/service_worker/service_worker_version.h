@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -40,6 +41,7 @@ struct PlatformNotificationData;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
+class ServiceWorkerURLRequestJob;
 class ServiceWorkerVersionInfo;
 
 // This class corresponds to a specific version of a ServiceWorker
@@ -266,6 +268,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Returns if it has controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }
 
+  // Adds and removes |request_job| as a dependent job not to stop the
+  // ServiceWorker while |request_job| is reading the stream of the fetch event
+  // response from the ServiceWorker.
+  void AddStreamingURLRequestJob(const ServiceWorkerURLRequestJob* request_job);
+  void RemoveStreamingURLRequestJob(
+      const ServiceWorkerURLRequestJob* request_job);
+
   // Adds and removes Listeners.
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
@@ -287,6 +296,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   class GetClientDocumentsCallback;
 
   friend class base::RefCounted<ServiceWorkerVersion>;
+  friend class ServiceWorkerURLRequestJobTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
@@ -383,6 +393,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<GetClientInfoCallback, IDMapOwnPointer> get_client_info_callbacks_;
   IDMap<CrossOriginConnectCallback, IDMapOwnPointer>
       cross_origin_connect_callbacks_;
+
+  std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 
   ControlleeMap controllee_map_;
   ControlleeByIDMap controllee_by_id_;
