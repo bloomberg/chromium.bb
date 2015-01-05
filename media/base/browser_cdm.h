@@ -32,7 +32,7 @@ class MEDIA_EXPORT BrowserCdm : public PlayerTracker {
                               media::MediaKeys::KeyError error_code,
                               uint32 system_code)> SessionErrorCB;
 
-  virtual ~BrowserCdm();
+  ~BrowserCdm() override;
 
   // MediaKeys-like implementation.
   virtual bool CreateSession(uint32 session_id,
@@ -47,9 +47,9 @@ class MEDIA_EXPORT BrowserCdm : public PlayerTracker {
   virtual void ReleaseSession(uint32 session_id) = 0;
 
   // PlayerTracker implementation.
-  virtual int RegisterPlayer(const base::Closure& new_key_cb,
-                             const base::Closure& cdm_unset_cb) = 0;
-  virtual void UnregisterPlayer(int registration_id) = 0;
+  int RegisterPlayer(const base::Closure& new_key_cb,
+                     const base::Closure& cdm_unset_cb) override = 0;
+  void UnregisterPlayer(int registration_id) override = 0;
 
  protected:
    BrowserCdm();

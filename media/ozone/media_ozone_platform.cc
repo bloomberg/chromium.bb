@@ -17,7 +17,7 @@ class MediaOzonePlatformStub : public MediaOzonePlatform {
  public:
   MediaOzonePlatformStub() {}
 
-  virtual ~MediaOzonePlatformStub() {}
+  ~MediaOzonePlatformStub() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaOzonePlatformStub);

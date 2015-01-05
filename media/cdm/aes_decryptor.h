@@ -59,7 +59,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
   // CdmContext implementation.
   Decryptor* GetDecryptor() override;
 #if defined(ENABLE_BROWSER_CDMS)
-  virtual int GetCdmId() const override;
+  int GetCdmId() const override;
 #endif  // defined(ENABLE_BROWSER_CDMS)
 
   // Decryptor implementation.
