@@ -81,7 +81,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::borderIma
 
 static inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toPrimitiveValue(PassRefPtrWillBeRawPtr<CSSValue> value)
 {
-    return adoptRef(toCSSPrimitiveValue(value.leakRef()));
+    return adoptRefWillBeNoop(toCSSPrimitiveValue(value.leakRef()));
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueToBorderImageSlice(InterpolableValue* value, bool fill)
