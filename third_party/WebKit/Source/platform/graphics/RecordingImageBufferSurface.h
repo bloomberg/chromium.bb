@@ -37,6 +37,7 @@ public:
     virtual PassRefPtr<SkPicture> getPicture() override;
     virtual void willDrawVideo() override;
     virtual bool isValid() const override { return true; }
+    virtual bool isRecording() const override { return !m_fallbackSurface; }
     virtual void willAccessPixels() override;
     virtual void finalizeFrame(const FloatRect&) override;
     virtual void didClearCanvas() override;

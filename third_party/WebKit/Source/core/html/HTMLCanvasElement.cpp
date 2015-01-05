@@ -359,7 +359,7 @@ void HTMLCanvasElement::reset()
 
     // If the size of an existing buffer matches, we can just clear it instead of reallocating.
     // This optimization is only done for 2D canvases for now.
-    if (hadImageBuffer && oldSize == newSize && m_context && m_context->is2d()) {
+    if (hadImageBuffer && oldSize == newSize && m_context && m_context->is2d() && !buffer()->isRecording()) {
         if (!m_imageBufferIsClear) {
             m_imageBufferIsClear = true;
             toCanvasRenderingContext2D(m_context.get())->clearRect(0, 0, width(), height());

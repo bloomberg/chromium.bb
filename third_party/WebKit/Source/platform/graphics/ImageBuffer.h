@@ -88,6 +88,7 @@ public:
 
     const IntSize& size() const { return m_surface->size(); }
     bool isAccelerated() const { return m_surface->isAccelerated(); }
+    bool isRecording() const { return m_surface->isRecording(); }
     bool isSurfaceValid() const;
     bool restoreSurface() const;
     bool needsClipTracking() const { return m_surface->needsClipTracking(); }
