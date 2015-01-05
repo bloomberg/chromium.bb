@@ -52,8 +52,6 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #endif
@@ -181,12 +179,8 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       profile_(profile),
       active_(false),
       delegate_(NULL),
-#if defined(ENABLE_EXTENSIONS)
-      extension_registry_observer_(this),
-#endif
       waiting_for_sync_initialization_(false),
       is_profile_active_(false),
-      elevated_for_testing_(false),
       did_init_(false),
       did_shutdown_(false),
       weak_ptr_factory_(this) {
@@ -420,23 +414,6 @@ bool SupervisedUserService::UserMayModifySettings(
   return ExtensionManagementPolicyImpl(extension, error);
 }
 
-void SupervisedUserService::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
-  if (!extensions::SupervisedUserInfo::GetContentPackSiteList(extension)
-           .empty()) {
-    UpdateSiteLists();
-  }
-}
-void SupervisedUserService::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
-  if (!extensions::SupervisedUserInfo::GetContentPackSiteList(extension)
-           .empty()) {
-    UpdateSiteLists();
-  }
-}
 #endif  // defined(ENABLE_EXTENSIONS)
 
 syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
@@ -535,36 +512,9 @@ bool SupervisedUserService::ExtensionManagementPolicyImpl(
   if (!ProfileIsSupervised() || (extension && extension->is_theme()))
     return true;
 
-  if (elevated_for_testing_)
-    return true;
-
   if (error)
     *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
   return false;
-}
-
-ScopedVector<SupervisedUserSiteList>
-SupervisedUserService::GetActiveSiteLists() {
-  ScopedVector<SupervisedUserSiteList> site_lists;
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  // Can be NULL in unit tests.
-  if (!extension_service)
-    return site_lists.Pass();
-
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       extensions::ExtensionRegistry::Get(profile_)->enabled_extensions()) {
-    if (!extension_service->IsExtensionEnabled(extension->id()))
-      continue;
-
-    extensions::ExtensionResource site_list =
-        extensions::SupervisedUserInfo::GetContentPackSiteList(extension.get());
-    if (!site_list.empty()) {
-      site_lists.push_back(new SupervisedUserSiteList(site_list.GetFilePath()));
-    }
-  }
-
-  return site_lists.Pass();
 }
 
 void SupervisedUserService::SetExtensionsActive() {
@@ -573,17 +523,11 @@ void SupervisedUserService::SetExtensionsActive() {
   extensions::ManagementPolicy* management_policy =
       extension_system->management_policy();
 
-  if (active_) {
-    if (management_policy)
+  if (management_policy) {
+    if (active_)
       management_policy->RegisterProvider(this);
-
-    extension_registry_observer_.Add(
-        extensions::ExtensionRegistry::Get(profile_));
-  } else {
-    if (management_policy)
+    else
       management_policy->UnregisterProvider(this);
-
-    extension_registry_observer_.RemoveAll();
   }
 }
 #endif  // defined(ENABLE_EXTENSIONS)
@@ -648,10 +592,9 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
 
-void SupervisedUserService::UpdateSiteLists() {
-#if defined(ENABLE_EXTENSIONS)
-  url_filter_context_.LoadWhitelists(GetActiveSiteLists());
-#endif
+void SupervisedUserService::OnSiteListsChanged(
+    ScopedVector<SupervisedUserSiteList> site_lists) {
+  url_filter_context_.LoadWhitelists(site_lists.Pass());
 }
 
 void SupervisedUserService::OnSiteListUpdated() {
@@ -746,6 +689,9 @@ void SupervisedUserService::Init() {
       profile_->GetPrefs(),
       component_updater::SupervisedUserWhitelistInstaller::Create(
           component_updater)));
+  whitelist_service_->AddSiteListsChangedCallback(
+      base::Bind(&SupervisedUserService::OnSiteListsChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   SetActive(ProfileIsSupervised());
 }
@@ -843,7 +789,6 @@ void SupervisedUserService::SetActive(bool active) {
 
     // Initialize the filter.
     OnDefaultFilteringBehaviorChanged();
-    UpdateSiteLists();
     whitelist_service_->Init();
     UpdateManualHosts();
     UpdateManualURLs();

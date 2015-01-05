@@ -18,6 +18,7 @@
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -287,15 +288,15 @@ class SupervisedUserServiceExtensionTestBase
         CreateDefaultInitParams();
     params.profile_is_supervised = is_supervised_;
     InitializeExtensionService(params);
-    SupervisedUserServiceFactory::GetForProfile(profile_.get())->Init();
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile_.get());
+    service->Init();
+    service->GetWhitelistService()->AddSiteListsChangedCallback(
+        base::Bind(&SupervisedUserServiceExtensionTestBase::OnSiteListsChanged,
+                   base::Unretained(this)));
   }
 
  protected:
-  ScopedVector<SupervisedUserSiteList> GetActiveSiteLists(
-      SupervisedUserService* supervised_user_service) {
-    return supervised_user_service->GetActiveSiteLists();
-  }
-
   scoped_refptr<extensions::Extension> MakeThemeExtension() {
     scoped_ptr<base::DictionaryValue> source(new base::DictionaryValue());
     source->SetString(extensions::manifest_keys::kName, "Theme");
@@ -321,8 +322,13 @@ class SupervisedUserServiceExtensionTestBase
     return extension;
   }
 
+  void OnSiteListsChanged(ScopedVector<SupervisedUserSiteList> site_lists) {
+    site_lists_ = site_lists.Pass();
+  }
+
   bool is_supervised_;
   extensions::ScopedCurrentChannel channel_;
+  ScopedVector<SupervisedUserSiteList> site_lists_;
 };
 
 class SupervisedUserServiceExtensionTestUnsupervised
@@ -411,9 +417,9 @@ TEST_F(SupervisedUserServiceExtensionTest, NoContentPacks) {
       supervised_user_service->GetURLFilterForUIThread();
 
   GURL url("http://youtube.com");
-  ScopedVector<SupervisedUserSiteList> site_lists =
-      GetActiveSiteLists(supervised_user_service);
-  ASSERT_EQ(0u, site_lists.size());
+  // ASSERT_EQ instead of ASSERT_TRUE(site_lists_.empty()) so that the error
+  // message contains the size in case of failure.
+  ASSERT_EQ(0u, site_lists_.size());
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(url));
 }
@@ -443,33 +449,19 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));
 
-  supervised_user_service->set_elevated_for_testing(true);
-
-  // Load a content pack.
-  scoped_refptr<extensions::UnpackedInstaller> installer(
-      extensions::UnpackedInstaller::Create(service_));
-  installer->set_prompt_for_plugins(false);
+  // Load a whitelist.
   base::FilePath test_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  base::FilePath extension_path =
-      test_data_dir.AppendASCII("extensions/supervised_user/content_pack");
-  content::WindowedNotificationObserver extension_load_observer(
-      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-      content::Source<Profile>(profile_.get()));
-  installer->Load(extension_path);
-  extension_load_observer.Wait();
+  SupervisedUserWhitelistService* whitelist_service =
+      supervised_user_service->GetWhitelistService();
+  base::FilePath whitelist_path =
+      test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
+  whitelist_service->LoadWhitelistForTesting("aaaa", whitelist_path);
   observer.Wait();
-  content::Details<extensions::Extension> details =
-      extension_load_observer.details();
-  scoped_refptr<extensions::Extension> extension =
-      make_scoped_refptr(details.ptr());
-  ASSERT_TRUE(extension.get());
 
-  ScopedVector<SupervisedUserSiteList> site_lists =
-      GetActiveSiteLists(supervised_user_service);
-  ASSERT_EQ(1u, site_lists.size());
+  ASSERT_EQ(1u, site_lists_.size());
   std::vector<SupervisedUserSiteList::Site> sites;
-  site_lists[0]->GetSites(&sites);
+  site_lists_[0]->GetSites(&sites);
   ASSERT_EQ(3u, sites.size());
   EXPECT_EQ(base::ASCIIToUTF16("YouTube"), sites[0].name);
   EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"), sites[1].name);
@@ -480,18 +472,16 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
-  // Load a second content pack.
-  installer = extensions::UnpackedInstaller::Create(service_);
-  extension_path =
-      test_data_dir.AppendASCII("extensions/supervised_user/content_pack_2");
-  installer->Load(extension_path);
+  // Load a second whitelist.
+  whitelist_path =
+      test_data_dir.AppendASCII("whitelists/content_pack_2/site_list.json");
+  whitelist_service->LoadWhitelistForTesting("bbbb", whitelist_path);
   observer.Wait();
 
-  site_lists = GetActiveSiteLists(supervised_user_service);
-  ASSERT_EQ(2u, site_lists.size());
+  ASSERT_EQ(2u, site_lists_.size());
   sites.clear();
-  site_lists[0]->GetSites(&sites);
-  site_lists[1]->GetSites(&sites);
+  site_lists_[0]->GetSites(&sites);
+  site_lists_[1]->GetSites(&sites);
   ASSERT_EQ(4u, sites.size());
   // The site lists might be returned in any order, so we put them into a set.
   std::set<std::string> site_names;
@@ -507,15 +497,13 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
-  // Disable the first content pack.
-  service_->DisableExtension(extension->id(),
-                             extensions::Extension::DISABLE_USER_ACTION);
+  // Unload the first whitelist.
+  whitelist_service->UnloadWhitelist("aaaa");
   observer.Wait();
 
-  site_lists = GetActiveSiteLists(supervised_user_service);
-  ASSERT_EQ(1u, site_lists.size());
+  ASSERT_EQ(1u, site_lists_.size());
   sites.clear();
-  site_lists[0]->GetSites(&sites);
+  site_lists_[0]->GetSites(&sites);
   ASSERT_EQ(1u, sites.size());
   EXPECT_EQ(base::ASCIIToUTF16("Moose"), sites[0].name);
 

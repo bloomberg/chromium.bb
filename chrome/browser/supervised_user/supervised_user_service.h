@@ -25,7 +25,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
 #endif
 
@@ -67,7 +66,6 @@ class PrefRegistrySyncable;
 class SupervisedUserService : public KeyedService,
 #if defined(ENABLE_EXTENSIONS)
                               public extensions::ManagementPolicy::Provider,
-                              public extensions::ExtensionRegistryObserver,
 #endif
                               public SyncTypePreferenceProvider,
                               public ProfileSyncServiceObserver,
@@ -167,10 +165,6 @@ class SupervisedUserService : public KeyedService,
       const std::string& supervised_user_id,
       const AuthErrorCallback& callback);
 
-  void set_elevated_for_testing(bool skip) {
-    elevated_for_testing_ = skip;
-  }
-
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
   void DidBlockNavigation(content::WebContents* web_contents);
 
@@ -187,14 +181,6 @@ class SupervisedUserService : public KeyedService,
                    base::string16* error) const override;
   bool UserMayModifySettings(const extensions::Extension* extension,
                              base::string16* error) const override;
-
-  // extensions::ExtensionRegistryObserver implementation.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
 #endif
 
   // SyncTypePreferenceProvider implementation:
@@ -286,10 +272,6 @@ class SupervisedUserService : public KeyedService,
   bool ExtensionManagementPolicyImpl(const extensions::Extension* extension,
                                      base::string16* error) const;
 
-  // Returns a list of all installed and enabled site lists in the current
-  // supervised profile.
-  ScopedVector<SupervisedUserSiteList> GetActiveSiteLists();
-
   // Extensions helper to SetActive().
   void SetExtensionsActive();
 #endif
@@ -309,7 +291,7 @@ class SupervisedUserService : public KeyedService,
 
   void OnDefaultFilteringBehaviorChanged();
 
-  void UpdateSiteLists();
+  void OnSiteListsChanged(ScopedVector<SupervisedUserSiteList> site_lists);
 
   // Asynchronously downloads a static blacklist file from |url|, stores it at
   // |path|, loads it, and applies it to the URL filters. If |url| is not valid
@@ -355,12 +337,6 @@ class SupervisedUserService : public KeyedService,
 
   Delegate* delegate_;
 
-#if defined(ENABLE_EXTENSIONS)
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
-#endif
-
   PrefChangeRegistrar pref_change_registrar_;
 
   // True iff we're waiting for the Sync service to be initialized.
@@ -368,9 +344,6 @@ class SupervisedUserService : public KeyedService,
   bool is_profile_active_;
 
   std::vector<NavigationBlockedCallback> navigation_blocked_callbacks_;
-
-  // Sets a profile in elevated state for testing if set to true.
-  bool elevated_for_testing_;
 
   // True only when |Init()| method has been called.
   bool did_init_;
