@@ -16,10 +16,13 @@ namespace {
 // Find the next best mode after |display_mode|. If none can be found return
 // nullptr.
 const DisplayMode* FindNextMode(const DisplaySnapshot& display_state,
-                                const DisplayMode& display_mode) {
+                                const DisplayMode* display_mode) {
+  if (!display_mode)
+    return nullptr;
+
   int best_mode_pixels = 0;
   const DisplayMode* best_mode = nullptr;
-  int current_mode_pixels = display_mode.size().GetArea();
+  int current_mode_pixels = display_mode->size().GetArea();
   for (const DisplayMode* mode : display_state.modes()) {
     int pixel_count = mode->size().GetArea();
     if (pixel_count < current_mode_pixels && pixel_count > best_mode_pixels) {
@@ -90,7 +93,7 @@ void ConfigureDisplaysTask::OnConfigured(size_t index, bool success) {
           << " origin=" << request->origin.ToString()
           << " mode=" << (request->mode ? request->mode->ToString() : "null");
   if (!success) {
-    request->mode = FindNextMode(*request->display, *request->mode);
+    request->mode = FindNextMode(*request->display, request->mode);
     if (request->mode) {
       pending_request_indexes_.push(index);
       if (task_status_ == SUCCESS)

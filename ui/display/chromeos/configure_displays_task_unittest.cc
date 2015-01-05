@@ -114,6 +114,25 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplay) {
       log_.GetActionsAndClear());
 }
 
+TEST_F(ConfigureDisplaysTaskTest, DisableDisplayFails) {
+  ConfigureDisplaysTask::ResponseCallback callback = base::Bind(
+      &ConfigureDisplaysTaskTest::ConfigureCallback, base::Unretained(this));
+
+  delegate_.set_max_configurable_pixels(1);
+
+  std::vector<DisplayConfigureRequest> requests(
+      1, DisplayConfigureRequest(&displays_[0], nullptr, gfx::Point()));
+  ConfigureDisplaysTask task(&delegate_, requests, callback);
+  task.Run();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(ConfigureDisplaysTask::ERROR, status_);
+  EXPECT_EQ(JoinActions(
+                GetCrtcAction(displays_[0], nullptr, gfx::Point()).c_str(),
+                NULL),
+            log_.GetActionsAndClear());
+}
+
 TEST_F(ConfigureDisplaysTaskTest, ConfigureWithOneDisplayFails) {
   ConfigureDisplaysTask::ResponseCallback callback = base::Bind(
       &ConfigureDisplaysTaskTest::ConfigureCallback, base::Unretained(this));
