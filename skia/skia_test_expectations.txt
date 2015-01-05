@@ -48,4 +48,18 @@
 #
 # START OVERRIDES HERE
 
+# rebaseline needed after https://skia.googlesource.com/skia.git/+/b280646beba5d2d247994f2241b8d0c69a1e031d
+crbug.com/111470 svg/W3C-SVG-1.1/filters-color-01-b.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/W3C-SVG-1.1/filters-gauss-01-b.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/W3C-SVG-1.1/pservers-grad-13-b.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/batik/text/textAnchor.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/carto.net/selectionlist.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/carto.net/window.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/filters/filterRes.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/filters/subRegion-one-effect.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/filters/subRegion-two-effects.svg [ NeedsManualRebaseline ]
+crbug.com/111470 svg/zoom/page/zoom-svg-through-object-with-absolute-size-2.xhtml [ NeedsManualRebaseline ]
+crbug.com/111470 svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ NeedsManualRebaseline ]
+crbug.com/111470 svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml [ NeedsManualRebaseline ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
