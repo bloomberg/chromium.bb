@@ -9,6 +9,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,6 +20,7 @@ namespace net {
 
 namespace {
 
+using base::StringPrintf;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
@@ -547,6 +549,69 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_EQ(0U, settings_map2_ret.size());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+}
+
+// crbug.com/444956: Add 200 alternate_protocol servers followed by
+// supports_quic and verify we have read supports_quic from prefs.
+TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
+  ExpectCacheUpdate();
+
+  base::DictionaryValue* servers_dict = new base::DictionaryValue;
+
+  for (int i = 0; i < 200; ++i) {
+    // Set up alternate_protocol for www.google.com:i.
+    base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
+    alternate_protocol->SetInteger("port", i);
+    alternate_protocol->SetString("protocol_str", "npn-spdy/3");
+    base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
+    server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
+                                              alternate_protocol);
+    servers_dict->SetWithoutPathExpansion(StringPrintf("www.google.com:%d", i),
+                                          server_pref_dict);
+  }
+
+  // Set the preference for mail.google.com server.
+  base::DictionaryValue* server_pref_dict1 = new base::DictionaryValue;
+  // Set up SupportsQuic for mail.google.com:80
+  base::DictionaryValue* supports_quic = new base::DictionaryValue;
+  supports_quic->SetBoolean("used_quic", true);
+  supports_quic->SetString("address", "bar");
+  server_pref_dict1->SetWithoutPathExpansion("supports_quic", supports_quic);
+
+  // Set the server preference for mail.google.com:80.
+  servers_dict->SetWithoutPathExpansion("mail.google.com:80",
+                                        server_pref_dict1);
+
+  base::DictionaryValue* http_server_properties_dict =
+      new base::DictionaryValue;
+  HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
+  http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
+
+  // Set up the pref.
+  pref_service_.SetManagedPref(kTestHttpServerProperties,
+                               http_server_properties_dict);
+
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  // Verify AlternateProtocol.
+  for (int i = 0; i < 200; ++i) {
+    std::string server = StringPrintf("www.google.com:%d", i);
+    ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
+        net::HostPortPair::FromString(server)));
+    net::AlternateProtocolInfo port_alternate_protocol =
+        http_server_props_manager_->GetAlternateProtocol(
+            net::HostPortPair::FromString(server));
+    EXPECT_EQ(i, port_alternate_protocol.port);
+    EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
+  }
+
+  // Verify SupportsQuic.
+  net::SupportsQuic supports_quic1 =
+      http_server_props_manager_->GetSupportsQuic(
+          net::HostPortPair::FromString("mail.google.com:80"));
+  EXPECT_TRUE(supports_quic1.used_quic);
+  EXPECT_EQ("bar", supports_quic1.address);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {

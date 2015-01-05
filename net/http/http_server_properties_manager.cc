@@ -343,7 +343,6 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   scoped_ptr<net::SupportsQuicMap> supports_quic_map(
       new net::SupportsQuicMap());
 
-  int count = 0;
   for (base::DictionaryValue::Iterator it(*servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get server's host/pair.
@@ -403,14 +402,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
     DCHECK(alternate_protocol_map->Peek(server) ==
            alternate_protocol_map->end());
     const base::DictionaryValue* port_alternate_protocol_dict = NULL;
-    if (!server_pref_dict->GetDictionaryWithoutPathExpansion(
+    if (server_pref_dict->GetDictionaryWithoutPathExpansion(
             "alternate_protocol", &port_alternate_protocol_dict)) {
-      continue;
-    }
-
-    if (count >= kMaxAlternateProtocolHostsToPersist)
-      continue;
-    do {
       int port = 0;
       if (!port_alternate_protocol_dict->GetIntegerWithoutPathExpansion(
               "port", &port) ||
@@ -446,17 +439,13 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       net::AlternateProtocolInfo port_alternate_protocol(
           static_cast<uint16>(port), protocol, probability);
       alternate_protocol_map->Put(server, port_alternate_protocol);
-      ++count;
-    } while (false);
+    }
 
     // Get SupportsQuic.
     DCHECK(supports_quic_map->find(server) == supports_quic_map->end());
     const base::DictionaryValue* supports_quic_dict = NULL;
-    if (!server_pref_dict->GetDictionaryWithoutPathExpansion(
+    if (server_pref_dict->GetDictionaryWithoutPathExpansion(
             "supports_quic", &supports_quic_dict)) {
-      continue;
-    }
-    do {
       bool used_quic = 0;
       if (!supports_quic_dict->GetBooleanWithoutPathExpansion(
               "used_quic", &used_quic)) {
@@ -473,7 +462,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       }
       net::SupportsQuic supports_quic(used_quic, address);
       supports_quic_map->insert(std::make_pair(server, supports_quic));
-    } while (false);
+    }
   }
 
   network_task_runner_->PostTask(
