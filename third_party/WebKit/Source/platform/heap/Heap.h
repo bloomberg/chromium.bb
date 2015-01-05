@@ -379,7 +379,6 @@ public:
     Address address() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
     ThreadState* threadState() const { return m_threadState; }
-    const GCInfo* gcInfo() { return m_gcInfo; }
     virtual bool isLargeObject() { return false; }
     virtual void markOrphaned();
     bool orphaned() { return !m_threadState; }
@@ -388,7 +387,6 @@ public:
 
 private:
     PageMemory* m_storage;
-    const GCInfo* m_gcInfo;
     ThreadState* m_threadState;
     // Pointer sized integer to ensure proper alignment of the
     // HeapPage header. We use some of the bits to determine
