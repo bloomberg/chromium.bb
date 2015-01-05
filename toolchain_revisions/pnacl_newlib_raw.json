@@ -69,11 +69,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "cdfaca88581fb539c0bab9c2fa02f7e87ca81aa5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/driver_x86_64_linux_ded134baf48037fc8607a2cfefbe146064527dab.log",
+          "hash": "22fbc5061ffcd59870a68c413a6538c92afb9c6b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/driver_x86_64_linux_0a2f432c8d66e817e73dd4b43fe9e5550182af21.log",
           "name": "driver_x86_64_linux.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/driver_x86_64_linux_ded134baf48037fc8607a2cfefbe146064527dab.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/driver_x86_64_linux_0a2f432c8d66e817e73dd4b43fe9e5550182af21.tgz"
         },
         {
           "extract_dir": "",
@@ -317,11 +317,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "af70577e43ae30a062527cd9dcf3143dfffb0853",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/metadata_a59a575f4dbc95baf38a8a8f4aa934505b27629d.log",
+          "hash": "3ebe16f47aaa75da80f90160a2595fae60100b5b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/metadata_3928b1aaeb54bc0a47393ca0f1220b5608eaf250.log",
           "name": "metadata.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/metadata_a59a575f4dbc95baf38a8a8f4aa934505b27629d.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/metadata_3928b1aaeb54bc0a47393ca0f1220b5608eaf250.tgz"
         },
         {
           "extract_dir": "",
@@ -458,11 +458,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "2cc6814f3becfd146e7f80136b1ef7dbf27449c3",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/driver_x86_64_apple_darwin_ded134baf48037fc8607a2cfefbe146064527dab.log",
+          "hash": "860ebc56827083687d56edf65f7a45f91349afb8",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/driver_x86_64_apple_darwin_0a2f432c8d66e817e73dd4b43fe9e5550182af21.log",
           "name": "driver_x86_64_apple_darwin.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/driver_x86_64_apple_darwin_ded134baf48037fc8607a2cfefbe146064527dab.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/driver_x86_64_apple_darwin_0a2f432c8d66e817e73dd4b43fe9e5550182af21.tgz"
         },
         {
           "extract_dir": "",
@@ -706,11 +706,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "af70577e43ae30a062527cd9dcf3143dfffb0853",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/metadata_a59a575f4dbc95baf38a8a8f4aa934505b27629d.log",
+          "hash": "3ebe16f47aaa75da80f90160a2595fae60100b5b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/metadata_3928b1aaeb54bc0a47393ca0f1220b5608eaf250.log",
           "name": "metadata.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/metadata_a59a575f4dbc95baf38a8a8f4aa934505b27629d.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/metadata_3928b1aaeb54bc0a47393ca0f1220b5608eaf250.tgz"
         },
         {
           "extract_dir": "",
@@ -847,11 +847,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "d04af50a5504780bc1b8291b571f1538c9d19320",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/driver_i686_w64_mingw32_92b9a4ccf5516223b02e6b0def6f046d4082094c.log",
+          "hash": "3e4f4a8494882472e28add41afcc312ea705e36b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/driver_i686_w64_mingw32_6bc736bad0affd14cebe12404b2441dd08ab4db6.log",
           "name": "driver_i686_w64_mingw32.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/driver_i686_w64_mingw32_92b9a4ccf5516223b02e6b0def6f046d4082094c.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/driver_i686_w64_mingw32_6bc736bad0affd14cebe12404b2441dd08ab4db6.tgz"
         },
         {
           "extract_dir": "",
@@ -1087,11 +1087,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "af70577e43ae30a062527cd9dcf3143dfffb0853",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/metadata_a59a575f4dbc95baf38a8a8f4aa934505b27629d.log",
+          "hash": "3ebe16f47aaa75da80f90160a2595fae60100b5b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/metadata_3928b1aaeb54bc0a47393ca0f1220b5608eaf250.log",
           "name": "metadata.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/metadata_a59a575f4dbc95baf38a8a8f4aa934505b27629d.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/metadata_3928b1aaeb54bc0a47393ca0f1220b5608eaf250.tgz"
         },
         {
           "extract_dir": "",
@@ -1153,6 +1153,6 @@
       "version": 1
     }
   },
-  "revision": 14234,
-  "revision_hash": "f61bbffdbf1a8c257e586e835994eb56242fdb12"
+  "revision": 14243,
+  "revision_hash": "eeab5f8fa48efbb605dcdf751782fa2c466b8e43"
 }
