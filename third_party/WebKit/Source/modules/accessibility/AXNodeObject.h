@@ -105,6 +105,7 @@ protected:
     virtual bool isLink() const override final;
     virtual bool isMenu() const override final;
     virtual bool isMenuButton() const override final;
+    virtual bool isMeter() const override final;
     virtual bool isMultiSelectable() const override;
     bool isNativeImage() const;
     virtual bool isNativeTextControl() const override final;

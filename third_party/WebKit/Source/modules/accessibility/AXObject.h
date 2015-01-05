@@ -356,6 +356,7 @@ public:
     virtual bool isMenuListOption() const { return false; }
     virtual bool isMenuListPopup() const { return false; }
     bool isMenuRelated() const;
+    virtual bool isMeter() const { return false; }
     virtual bool isMockObject() const { return false; }
     virtual bool isNativeSpinButton() const { return false; }
     virtual bool isNativeTextControl() const { return false; } // input or textarea

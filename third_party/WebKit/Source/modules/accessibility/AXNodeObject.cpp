@@ -39,6 +39,7 @@
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLMeterElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -596,6 +597,11 @@ bool AXNodeObject::isMenuButton() const
     return roleValue() == MenuButtonRole;
 }
 
+bool AXNodeObject::isMeter() const
+{
+    return roleValue() == MeterRole;
+}
+
 bool AXNodeObject::isMultiSelectable() const
 {
     const AtomicString& ariaMultiSelectable = getAttribute(aria_multiselectableAttr);
@@ -1110,6 +1116,9 @@ float AXNodeObject::valueForRange() const
             return input.valueAsNumber();
     }
 
+    if (isHTMLMeterElement(node()))
+        return toHTMLMeterElement(*node()).value();
+
     return 0.0;
 }
 
@@ -1124,6 +1133,9 @@ float AXNodeObject::maxValueForRange() const
             return input.maximum();
     }
 
+    if (isHTMLMeterElement(node()))
+        return toHTMLMeterElement(*node()).max();
+
     return 0.0;
 }
 
@@ -1137,6 +1149,9 @@ float AXNodeObject::minValueForRange() const
         if (input.type() == InputTypeNames::range)
             return input.minimum();
     }
+
+    if (isHTMLMeterElement(node()))
+        return toHTMLMeterElement(*node()).min();
 
     return 0.0;
 }
