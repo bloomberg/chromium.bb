@@ -5274,6 +5274,11 @@
                 'VCLinkerTool': {
                   # Set /LTCG for the official builds.
                   'LinkTimeCodeGeneration': '1',
+                  'AdditionalOptions': [
+                    # Set the number of LTCG code-gen threads to eight.
+                    # The default is four. This gives a 5-10% link speedup.
+                    '/cgthreads:8',
+                  ],
                 },
               },
               'target_conditions': [
