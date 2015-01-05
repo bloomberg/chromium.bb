@@ -105,6 +105,7 @@ class MockPatch(mock.MagicMock):
       'currentPatchSet': current_patch_set,
   }
   remote = 'cros'
+  mock_diff_status = {}
 
   def __init__(self, *args, **kwargs):
     super(MockPatch, self).__init__(*args, **kwargs)
@@ -140,6 +141,9 @@ class MockPatch(mock.MagicMock):
   def IsBeingMerged(self):
     """Return whether this patch is merged or in the middle of being merged."""
     return self.status in ('SUBMITTED', 'MERGED')
+
+  def GetDiffStatus(self, _):
+    return self.mock_diff_status
 
 class BaseCQTestCase(generic_stages_unittest.StageTest):
   """Helper class for testing the CommitQueueSync stage"""

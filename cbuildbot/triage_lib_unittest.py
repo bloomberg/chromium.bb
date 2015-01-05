@@ -18,6 +18,7 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import triage_lib
+from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
@@ -350,6 +351,43 @@ class IgnoredStagesTest(patch_unittest.MockPatchBase):
       osutils.WriteFile(path, '[GENERAL]\nignored-stages: bar baz\n')
       ignored = self.GetOption(path)
       self.assertEqual('bar baz', ignored)
+
+
+class ConfigFileTest(cros_test_lib.MockTestCase):
+  """Tests for functions that read config information for a patch."""
+  # pylint: disable-msg=protected-access
+
+  def _GetPatch(self, affected_files):
+    return sync_stages_unittest.MockPatch(
+        mock_diff_status={path: 'M' for path in affected_files})
+
+  def testAffectedSubdir(self):
+    p = self._GetPatch(['a', 'b', 'c'])
+    self.assertEqual(triage_lib._GetCommonAffectedSubdir(p, '/a/b'),
+                     '/a/b')
+
+    p = self._GetPatch(['a/a', 'a/b', 'a/c'])
+    self.assertEqual(triage_lib._GetCommonAffectedSubdir(p, '/a/b'),
+                     '/a/b/a')
+
+    p = self._GetPatch(['a/a', 'a/b', 'a/c'])
+    self.assertEqual(triage_lib._GetCommonAffectedSubdir(p, '/a/b'),
+                     '/a/b/a')
+
+  def testGetConfigFile(self):
+    p = self._GetPatch(['a/a', 'a/b', 'a/c'])
+    self.PatchObject(os.path, 'isfile', return_value=True)
+    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b'),
+                     '/a/b/a/COMMIT-QUEUE.ini')
+    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b/'),
+                     '/a/b/a/COMMIT-QUEUE.ini')
+
+
+    self.PatchObject(os.path, 'isfile', return_value=False)
+    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b'),
+                     '/a/b/COMMIT-QUEUE.ini')
+    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b/'),
+                     '/a/b/COMMIT-QUEUE.ini')
 
 
 if __name__ == '__main__':

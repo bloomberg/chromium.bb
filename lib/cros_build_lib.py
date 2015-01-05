@@ -1582,6 +1582,19 @@ def UserDateTimeFormat(timeval=None):
                       time.strftime('%Z', time.localtime(timeval)))
 
 
+def GetCommonPathPrefix(paths):
+  """Get the longest common directory of |paths|.
+
+  Args:
+    paths: A list of absolute directory or file paths.
+
+  Returns:
+    Absolute path to the longest directory common to |paths|, with no
+    trailing '/'.
+  """
+  return os.path.dirname(os.path.commonprefix(paths))
+
+
 def ParseUserDateTimeFormat(time_string):
   """Parse a time string into a floating point time value.
 

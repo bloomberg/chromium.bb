@@ -889,6 +889,19 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
     self.assertNotEqual(contents, '')
     self.assertEqual(contents[-1], '\n')
 
+  def testGetCommonPathPrefix(self):
+    """Test helper function correctness."""
+    self.assertEqual('/a', cros_build_lib.GetCommonPathPrefix(['/a/b']))
+    self.assertEqual('/a', cros_build_lib.GetCommonPathPrefix(['/a/']))
+    self.assertEqual('/', cros_build_lib.GetCommonPathPrefix(['/a']))
+    self.assertEqual(
+        '/a', cros_build_lib.GetCommonPathPrefix(['/a/b', '/a/c']))
+    self.assertEqual(
+        '/a/b', cros_build_lib.GetCommonPathPrefix(['/a/b/c', '/a/b/d']))
+    self.assertEqual('/', cros_build_lib.GetCommonPathPrefix(['/a/b', '/c/d']))
+    self.assertEqual(
+        '/', cros_build_lib.GetCommonPathPrefix(['/a/b', '/aa/b']))
+
 
 class TestInput(cros_test_lib.MockOutputTestCase):
   """Tests of input gathering functionality."""

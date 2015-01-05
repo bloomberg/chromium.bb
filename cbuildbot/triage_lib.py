@@ -42,6 +42,36 @@ def GetRelevantOverlaysForConfig(config, build_root):
   return relevant_overlays
 
 
+def _GetAffectedImmediateSubdirs(change, git_repo):
+  """Gets the set of immediate subdirs affected by |change|.
+
+  Args:
+    change: GitRepoPatch to examine.
+    git_repo: Path to checkout of git repository.
+
+  Returns:
+    A set of absolute paths to modified subdirectories of |git_repo|.
+  """
+  return set([os.path.join(git_repo, path.split(os.path.sep)[0])
+              for path in change.GetDiffStatus(git_repo)])
+
+
+def _GetCommonAffectedSubdir(change, git_repo):
+  """Gets the longest common path of changes in |change|.
+
+  Args:
+    change: GitRepoPatch to examine.
+    git_repo: Path to checkout of git repository.
+
+  Returns:
+    An absolute path in |git_repo|.
+
+  """
+  affected_paths = [os.path.join(git_repo, path)
+                    for path in change.GetDiffStatus(git_repo)]
+  return cros_build_lib.GetCommonPathPrefix(affected_paths)
+
+
 def GetAffectedOverlays(change, manifest, all_overlays):
   """Get the set of overlays affected by a given change.
 
@@ -65,8 +95,7 @@ def GetAffectedOverlays(change, manifest, all_overlays):
 
     # Get the set of immediate subdirs affected by the change.
     # Example: src/overlays/overlay-x86-zgb
-    subdirs = set([os.path.join(git_repo, path.split(os.path.sep)[0])
-                   for path in change.GetDiffStatus(git_repo)])
+    subdirs = _GetAffectedImmediateSubdirs(change, git_repo)
 
     # If all of the subdirs are overlays, return them.
     if subdirs.issubset(all_overlays):
@@ -130,12 +159,41 @@ def _GetOptionFromConfigFile(config_path, section, option):
     return parser.get(section, option)
 
 
+def _GetConfigFileForChange(change, checkout_path):
+  """Gets the path of the config file for |change|.
+
+  This function takes into account the files that are modified by |change| to
+  determine the commit queue config file within |checkout_path| that should be
+  used for this change. The config file used is the one in the common ancestor
+  directory to all changed files, or the nearest parent directory. See
+  http://chromium.org/chromium-os/build/bypassing-tests-on-a-per-project-basis
+
+  Args:
+    change: Change to examine, as a GitRepoPatch object.
+    checkout_path: Full absolute path to a checkout of the repository that
+                   |change| applies to.
+
+  Returns:
+    Path to the config file to be read for |change|. The returned path will
+    be within |checkout_path|. If no config files in common subdirectories
+    were found, a config file path in the root of the checkout will be
+    returned, in which case the file is not guaranteed to exist.
+  """
+  current_dir = _GetCommonAffectedSubdir(change, checkout_path)
+  while True:
+    config_file = os.path.join(current_dir, constants.CQ_CONFIG_FILENAME)
+    if os.path.isfile(config_file) or checkout_path.startswith(current_dir):
+      return config_file
+    assert current_dir not in ('/', '')
+    current_dir = os.path.dirname(current_dir)
+
+
 def GetOptionForChange(build_root, change, section, option):
   """Get |option| from |section| in the config file for |change|.
 
   Args:
     build_root: The root of the checkout.
-    change: Change to examine, as a PatchQuery object.
+    change: Change to examine, as a GitRepoPatch object.
     section: Section header name.
     option: Option name.
 
@@ -146,7 +204,7 @@ def GetOptionForChange(build_root, change, section, option):
   checkout = change.GetCheckout(manifest)
   if checkout:
     dirname = checkout.GetPath(absolute=True)
-    config_path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
+    config_path = _GetConfigFileForChange(change, dirname)
     return _GetOptionFromConfigFile(config_path, section, option)
 
 

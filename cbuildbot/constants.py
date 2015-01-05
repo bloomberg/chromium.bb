@@ -33,6 +33,7 @@ PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 SDK_TOOLCHAINS_OUTPUT = 'tmp/toolchain-pkgs'
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
+CQ_CONFIG_FILENAME = 'COMMIT-QUEUE.ini'
 
 HOME_DIRECTORY = os.path.expanduser('~')
 
