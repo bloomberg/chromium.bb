@@ -44,6 +44,10 @@ class ContentPasswordManagerDriverFactory
   ContentPasswordManagerDriver* GetDriverForFrame(
       content::RenderFrameHost* render_frame_host);
 
+  void TestingSetDriverForFrame(
+      content::RenderFrameHost* render_frame_host,
+      scoped_ptr<ContentPasswordManagerDriver> driver);
+
   // content::WebContentsObserver:
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;

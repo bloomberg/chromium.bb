@@ -391,11 +391,8 @@ void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PasswordManager::DidNavigateMainFrame(bool is_in_page) {
-  // Clear data after main frame navigation if the navigation was to a
-  // different page.
-  if (!is_in_page)
-    pending_login_managers_.clear();
+void PasswordManager::DidNavigateMainFrame() {
+  pending_login_managers_.clear();
 }
 
 void PasswordManager::OnPasswordFormSubmitted(

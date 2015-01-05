@@ -112,4 +112,12 @@ void ContentPasswordManagerDriverFactory::CreateDriverForFrame(
       render_frame_host, password_client_, autofill_client_);
 }
 
+void ContentPasswordManagerDriverFactory::TestingSetDriverForFrame(
+    content::RenderFrameHost* render_frame_host,
+    scoped_ptr<ContentPasswordManagerDriver> driver) {
+  if (frame_driver_map_[render_frame_host])
+    delete frame_driver_map_[render_frame_host];
+  frame_driver_map_[render_frame_host] = driver.release();
+}
+
 }  // namespace password_manager

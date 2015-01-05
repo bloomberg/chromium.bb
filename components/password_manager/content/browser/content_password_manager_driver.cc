@@ -153,9 +153,11 @@ void ContentPasswordManagerDriver::OnPasswordFormSubmitted(
 void ContentPasswordManagerDriver::DidNavigateFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  GetPasswordAutofillManager()->Reset();
-  if (!render_frame_host_->GetParent())
-    GetPasswordManager()->DidNavigateMainFrame(details.is_in_page);
+  // Clear page specific data after main frame navigation.
+  if (!render_frame_host_->GetParent() && !details.is_in_page) {
+    GetPasswordManager()->DidNavigateMainFrame();
+    GetPasswordAutofillManager()->DidNavigateMainFrame();
+  }
 }
 
 void ContentPasswordManagerDriver::OnInPageNavigation(

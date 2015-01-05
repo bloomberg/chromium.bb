@@ -137,7 +137,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
   EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
       invalid_fill_data_id, test_username_));
 
-  password_autofill_manager_->Reset();
+  password_autofill_manager_->DidNavigateMainFrame();
   EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
       fill_data_id(), test_username_));
 }
@@ -161,7 +161,7 @@ TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
   EXPECT_FALSE(password_autofill_manager_->PreviewSuggestionForTest(
       invalid_fill_data_id, test_username_));
 
-  password_autofill_manager_->Reset();
+  password_autofill_manager_->DidNavigateMainFrame();
   EXPECT_FALSE(password_autofill_manager_->PreviewSuggestionForTest(
       fill_data_id(), test_username_));
 }

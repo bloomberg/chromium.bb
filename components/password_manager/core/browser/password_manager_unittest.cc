@@ -432,9 +432,6 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateInPage) {
   manager()->OnPasswordFormsRendered(&driver_, observed,
                                      true);  // The initial layout.
 
-  // Simulate navigating in the page.
-  manager()->DidNavigateMainFrame(true);
-
   // Simulate submitting the password.
   OnPasswordFormSubmitted(form);
 
@@ -479,7 +476,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   // Now navigate to a second page.
-  manager()->DidNavigateMainFrame(false);
+  manager()->DidNavigateMainFrame();
 
   // This page contains a form with the same markup, but on a different
   // URL.

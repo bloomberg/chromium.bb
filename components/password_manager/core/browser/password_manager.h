@@ -85,8 +85,9 @@ class PasswordManager : public LoginModel {
   // of 2 (see SavePassword).
   void ProvisionallySavePassword(const autofill::PasswordForm& form);
 
-  // Should be called when the user navigates the main frame.
-  void DidNavigateMainFrame(bool is_in_page);
+  // Should be called when the user navigates the main frame. Not called for
+  // in-page navigation.
+  void DidNavigateMainFrame();
 
   // Handles password forms being parsed.
   void OnPasswordFormsParsed(password_manager::PasswordManagerDriver* driver,

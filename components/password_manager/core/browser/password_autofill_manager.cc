@@ -173,7 +173,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
                                       weak_ptr_factory_.GetWeakPtr());
 }
 
-void PasswordAutofillManager::Reset() {
+void PasswordAutofillManager::DidNavigateMainFrame() {
   login_to_password_info_.clear();
 }
 

@@ -29,9 +29,12 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/navigation_controller.h"
@@ -217,6 +220,30 @@ class BubbleObserver : public PromptObserver {
   ManagePasswordsUIController* const ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
+};
+
+class ObservingAutofillClient : public autofill::TestAutofillClient {
+ public:
+  ObservingAutofillClient()
+      : message_loop_runner_(new content::MessageLoopRunner){}
+  virtual ~ObservingAutofillClient() {}
+
+  void Wait() {
+    message_loop_runner_->Run();
+  }
+
+  void ShowAutofillPopup(
+      const gfx::RectF& element_bounds,
+      base::i18n::TextDirection text_direction,
+      const std::vector<autofill::Suggestion>& suggestions,
+      base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
+    message_loop_runner_->Quit();
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
 
 GURL GetFileURL(const char* filename) {
@@ -1392,4 +1419,65 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForPushState) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       InFrameNavigationDoesNotClearPopupState) {
+  // Mock out the AutofillClient so we know how long to wait. Unfortunately
+  // there isn't otherwise a good even to wait on to verify that the popup
+  // would have been shown.
+  password_manager::ContentPasswordManagerDriverFactory* driver_factory =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          WebContents());
+  ObservingAutofillClient observing_autofill_client;
+  driver_factory->TestingSetDriverForFrame(
+      RenderViewHost()->GetMainFrame(),
+      make_scoped_ptr(new password_manager::ContentPasswordManagerDriver(
+          RenderViewHost()->GetMainFrame(),
+          ChromePasswordManagerClient::FromWebContents(WebContents()),
+          &observing_autofill_client)));
+
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver form_submit_observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random123';"
+      "document.getElementById('input_submit_button').click();";
+
+  // Save credentials for the site.
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
+  form_submit_observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Accept();
+
+  NavigateToFile("/password/password_form.html");
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var usernameRect = document.getElementById('username_field')"
+      ".getBoundingClientRect();"));
+
+  // Trigger in page navigation.
+  std::string in_page_navigate = "location.hash = '#blah';";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), in_page_navigate));
+
+  // Click on the username field to display the popup.
+  int top;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(),
+      "window.domAutomationController.send(usernameRect.top);",
+      &top));
+  int left;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(),
+      "window.domAutomationController.send(usernameRect.left);",
+      &left));
+
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(left + 1,
+                                                                     top + 1));
+  // Make sure the popup would be shown.
+  observing_autofill_client.Wait();
 }

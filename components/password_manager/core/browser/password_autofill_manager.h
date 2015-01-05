@@ -54,8 +54,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                                  int options,
                                  const gfx::RectF& bounds);
 
-  // Invoked to clear any page specific cached values.
-  void Reset();
+  // Called when main frame navigates. Not called for in-page navigations.
+  void DidNavigateMainFrame();
 
   // A public version of FillSuggestion(), only for use in tests.
   bool FillSuggestionForTest(int key, const base::string16& username);
