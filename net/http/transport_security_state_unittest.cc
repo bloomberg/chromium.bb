@@ -476,9 +476,6 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("www.sandbox.mydigipass.com"));
   EXPECT_FALSE(StaticShouldRedirect("foo.www.sandbox.mydigipass.com"));
 
-  EXPECT_TRUE(StaticShouldRedirect("crypto.cat"));
-  EXPECT_FALSE(StaticShouldRedirect("foo.crypto.cat"));
-
   EXPECT_TRUE(StaticShouldRedirect("bigshinylock.minazo.net"));
   EXPECT_TRUE(StaticShouldRedirect("foo.bigshinylock.minazo.net"));
 
