@@ -270,6 +270,7 @@
 
     // Other Google-related domains that must use an acceptable certificate
     // iff using SSL.
+    { "name": "blogger.com", "include_subdomains": true, "pins": "google" },
     { "name": "google-analytics.com", "include_subdomains": true, "pins": "google" },
     { "name": "googlegroups.com", "include_subdomains": true, "pins": "google" },
     { "name": "ytimg.com", "include_subdomains": true, "pins": "google" },
@@ -1937,6 +1938,7 @@
     "YOUTUBE_NOCOOKIE_COM",
     "2MDN_NET",
     "FACEBOOK_COM",
-    "SPIDEROAK_COM"
+    "SPIDEROAK_COM",
+    "BLOGGER_COM"
   ]
 }
