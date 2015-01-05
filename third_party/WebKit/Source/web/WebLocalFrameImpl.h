@@ -54,6 +54,7 @@ class TextFinder;
 class WebAutofillClient;
 class WebDataSourceImpl;
 class WebFrameClient;
+class WebFrameWidgetImpl;
 class WebPerformance;
 class WebPlugin;
 class WebPluginContainerImpl;
@@ -316,6 +317,9 @@ public:
     // Returns a hit-tested VisiblePosition for the given point
     VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
+    void setFrameWidget(WebFrameWidgetImpl*);
+    WebFrameWidgetImpl* frameWidget() const;
+
 #if ENABLE(OILPAN)
     void trace(Visitor*);
 #endif
@@ -338,6 +342,9 @@ private:
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtrWillBeMember<LocalFrame> m_frame;
+
+    // This is set if the frame is the root of a local frame tree, and requires a widget for rendering.
+    WebFrameWidgetImpl* m_frameWidget;
 
     WebFrameClient* m_client;
     WebAutofillClient* m_autofillClient;

@@ -152,6 +152,8 @@
       'WebFormControlElement.cpp',
       'WebFormElement.cpp',
       'WebFrame.cpp',
+      'WebFrameWidgetImpl.cpp',
+      'WebFrameWidgetImpl.h',
       'WebGeolocationController.cpp',
       'WebGeolocationError.cpp',
       'WebGeolocationPermissionRequest.cpp',

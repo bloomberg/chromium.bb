@@ -1557,6 +1557,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebFrameClient* client)
 
 WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     : m_frameLoaderClientImpl(this)
+    , m_frameWidget(0)
     , m_client(client)
     , m_autofillClient(0)
     , m_permissionClient(0)
@@ -2004,6 +2005,16 @@ void WebLocalFrameImpl::invalidateAll() const
     FrameView* view = frame()->view();
     view->invalidateRect(view->frameRect());
     invalidateScrollbar();
+}
+
+void WebLocalFrameImpl::setFrameWidget(WebFrameWidgetImpl* frameWidget)
+{
+    m_frameWidget = frameWidget;
+}
+
+WebFrameWidgetImpl* WebLocalFrameImpl::frameWidget() const
+{
+    return m_frameWidget;
 }
 
 } // namespace blink

@@ -285,6 +285,8 @@ public:
 
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
+    WebColor backgroundColorOverride() const { return m_backgroundColorOverride; }
+
     PageOverlayList* pageOverlays() const { return m_pageOverlays.get(); }
 
     void setOverlayLayer(GraphicsLayer*);
