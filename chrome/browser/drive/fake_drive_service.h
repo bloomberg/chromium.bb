@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
 
 #include "base/files/file_path.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 
 namespace base {
@@ -363,6 +364,9 @@ class FakeDriveService : public DriveServiceInterface {
   GURL GetNewUploadSessionUrl();
 
   void NotifyObservers();
+
+  // The class is expected to run on UI thread.
+  base::ThreadChecker thread_checker_;
 
   typedef std::map<std::string, EntryInfo*> EntryInfoMap;
   EntryInfoMap entries_;

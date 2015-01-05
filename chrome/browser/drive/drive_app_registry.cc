@@ -12,11 +12,8 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/drive/drive_app_registry_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/google_api_keys.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -88,7 +85,7 @@ void DriveAppRegistry::GetAppsForFile(
     const base::FilePath::StringType& file_extension,
     const std::string& mime_type,
     std::vector<DriveAppInfo>* apps) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   std::vector<std::string> matched_apps;
   if (!file_extension.empty()) {
@@ -113,7 +110,7 @@ void DriveAppRegistry::GetAppsForFile(
 }
 
 void DriveAppRegistry::GetAppList(std::vector<DriveAppInfo>* apps) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   apps->clear();
   for (std::map<std::string, DriveAppInfo>::const_iterator
@@ -123,7 +120,7 @@ void DriveAppRegistry::GetAppList(std::vector<DriveAppInfo>* apps) const {
 }
 
 void DriveAppRegistry::Update() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (is_updating_)  // There is already an update in progress.
     return;
@@ -137,7 +134,7 @@ void DriveAppRegistry::Update() {
 void DriveAppRegistry::UpdateAfterGetAppList(
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::AppList> app_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK(is_updating_);
   is_updating_ = false;

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "url/gurl.h"
 
@@ -113,6 +114,9 @@ class DriveAppRegistry {
   void OnAppUninstalled(const std::string& app_id,
                         const UninstallCallback& callback,
                         google_apis::GDataErrorCode error);
+
+  // The class is expected to run on UI thread.
+  base::ThreadChecker thread_checker_;
 
   // Map of application id to each app's info.
   std::map<std::string, DriveAppInfo> all_apps_;

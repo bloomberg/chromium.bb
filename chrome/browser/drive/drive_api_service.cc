@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/drive/drive_api_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_requests.h"
@@ -21,7 +20,6 @@
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using content::BrowserThread;
 using google_apis::AboutResourceCallback;
 using google_apis::AppList;
 using google_apis::AppListCallback;
@@ -125,7 +123,6 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
                           const AuthorizeAppCallback& callback,
                           GDataErrorCode error,
                           scoped_ptr<FileResource> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (!value) {
@@ -149,8 +146,6 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
 void ExtractShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
                            google_apis::GDataErrorCode error,
                            scoped_ptr<google_apis::ResourceEntry> entry) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
   const google_apis::Link* share_link =
       entry ? entry->GetLinkByType(google_apis::Link::LINK_SHARE) : NULL;
   callback.Run(error, share_link ? share_link->href() : GURL());
@@ -183,17 +178,16 @@ DriveAPIService::DriveAPIService(
       url_generator_(base_url, base_download_url),
       wapi_url_generator_(wapi_base_url),
       custom_user_agent_(custom_user_agent) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DriveAPIService::~DriveAPIService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (sender_.get())
     sender_->auth_service()->RemoveObserver(this);
 }
 
 void DriveAPIService::Initialize(const std::string& account_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
@@ -225,7 +219,7 @@ void DriveAPIService::RemoveObserver(DriveServiceObserver* observer) {
 }
 
 bool DriveAPIService::CanSendRequest() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   return HasRefreshToken();
 }
@@ -236,7 +230,7 @@ std::string DriveAPIService::GetRootResourceId() const {
 
 CancelCallback DriveAPIService::GetAllFileList(
     const FileListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesListRequest* request = new FilesListRequest(
@@ -250,7 +244,7 @@ CancelCallback DriveAPIService::GetAllFileList(
 CancelCallback DriveAPIService::GetFileListInDirectory(
     const std::string& directory_resource_id,
     const FileListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
@@ -274,7 +268,7 @@ CancelCallback DriveAPIService::GetFileListInDirectory(
 CancelCallback DriveAPIService::Search(
     const std::string& search_query,
     const FileListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
@@ -290,7 +284,7 @@ CancelCallback DriveAPIService::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
     const FileListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!title.empty());
   DCHECK(!callback.is_null());
 
@@ -315,7 +309,7 @@ CancelCallback DriveAPIService::SearchByTitle(
 CancelCallback DriveAPIService::GetChangeList(
     int64 start_changestamp,
     const ChangeListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   ChangesListRequest* request = new ChangesListRequest(
@@ -329,7 +323,7 @@ CancelCallback DriveAPIService::GetChangeList(
 CancelCallback DriveAPIService::GetRemainingChangeList(
     const GURL& next_link,
     const ChangeListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
@@ -343,7 +337,7 @@ CancelCallback DriveAPIService::GetRemainingChangeList(
 CancelCallback DriveAPIService::GetRemainingFileList(
     const GURL& next_link,
     const FileListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
@@ -357,7 +351,7 @@ CancelCallback DriveAPIService::GetRemainingFileList(
 CancelCallback DriveAPIService::GetFileResource(
     const std::string& resource_id,
     const FileResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesGetRequest* request = new FilesGetRequest(
@@ -371,7 +365,7 @@ CancelCallback DriveAPIService::GetShareUrl(
     const std::string& resource_id,
     const GURL& embed_origin,
     const GetShareUrlCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // Unfortunately "share url" is not yet supported on Drive API v2.
@@ -389,7 +383,7 @@ CancelCallback DriveAPIService::GetShareUrl(
 
 CancelCallback DriveAPIService::GetAboutResource(
     const AboutResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   AboutGetRequest* request =
@@ -399,7 +393,7 @@ CancelCallback DriveAPIService::GetAboutResource(
 }
 
 CancelCallback DriveAPIService::GetAppList(const AppListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
@@ -414,7 +408,7 @@ CancelCallback DriveAPIService::DownloadFile(
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!download_action_callback.is_null());
   // get_content_callback may be null.
 
@@ -432,7 +426,7 @@ CancelCallback DriveAPIService::DeleteResource(
     const std::string& resource_id,
     const std::string& etag,
     const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesDeleteRequest* request = new FilesDeleteRequest(
@@ -445,7 +439,7 @@ CancelCallback DriveAPIService::DeleteResource(
 CancelCallback DriveAPIService::TrashResource(
     const std::string& resource_id,
     const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesTrashRequest* request = new FilesTrashRequest(
@@ -461,7 +455,7 @@ CancelCallback DriveAPIService::AddNewDirectory(
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
     const FileResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesInsertRequest* request = new FilesInsertRequest(
@@ -481,7 +475,7 @@ CancelCallback DriveAPIService::CopyResource(
     const std::string& new_title,
     const base::Time& last_modified,
     const FileResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesCopyRequest* request = new FilesCopyRequest(
@@ -501,7 +495,7 @@ CancelCallback DriveAPIService::UpdateResource(
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
     const FileResourceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FilesPatchRequest* request = new FilesPatchRequest(
@@ -529,7 +523,7 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   ChildrenInsertRequest* request =
@@ -543,7 +537,7 @@ CancelCallback DriveAPIService::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   ChildrenDeleteRequest* request =
@@ -560,7 +554,7 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
     const std::string& title,
     const UploadNewFileOptions& options,
     const InitiateUploadCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   InitiateUploadNewFileRequest* request =
@@ -582,7 +576,7 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
     const std::string& resource_id,
     const UploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   InitiateUploadExistingFileRequest* request =
@@ -609,7 +603,7 @@ CancelCallback DriveAPIService::ResumeUpload(
     const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
     const ProgressCallback& progress_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
@@ -629,7 +623,7 @@ CancelCallback DriveAPIService::GetUploadStatus(
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(new GetUploadStatusRequest(
@@ -648,7 +642,7 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
     const UploadNewFileOptions& options,
     const FileResourceCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   NOTIMPLEMENTED();
@@ -663,7 +657,7 @@ CancelCallback DriveAPIService::MultipartUploadExistingFile(
     const UploadExistingFileOptions& options,
     const FileResourceCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   NOTIMPLEMENTED();
@@ -674,7 +668,7 @@ CancelCallback DriveAPIService::AuthorizeApp(
     const std::string& resource_id,
     const std::string& app_id,
     const AuthorizeAppCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   // Files.Authorize is only available for whitelisted clients like official
@@ -704,7 +698,7 @@ CancelCallback DriveAPIService::AuthorizeApp(
 CancelCallback DriveAPIService::UninstallApp(
     const std::string& app_id,
     const google_apis::EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   google_apis::drive::AppsDeleteRequest* request =
@@ -719,7 +713,7 @@ google_apis::CancelCallback DriveAPIService::AddPermission(
     const std::string& email,
     google_apis::drive::PermissionRole role,
     const google_apis::EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   google_apis::drive::PermissionsInsertRequest* request =
@@ -734,12 +728,12 @@ google_apis::CancelCallback DriveAPIService::AddPermission(
 }
 
 bool DriveAPIService::HasAccessToken() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   return sender_->auth_service()->HasAccessToken();
 }
 
 void DriveAPIService::RequestAccessToken(const AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   const std::string access_token = sender_->auth_service()->access_token();
@@ -753,22 +747,22 @@ void DriveAPIService::RequestAccessToken(const AuthStatusCallback& callback) {
 }
 
 bool DriveAPIService::HasRefreshToken() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   return sender_->auth_service()->HasRefreshToken();
 }
 
 void DriveAPIService::ClearAccessToken() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   sender_->auth_service()->ClearAccessToken();
 }
 
 void DriveAPIService::ClearRefreshToken() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   sender_->auth_service()->ClearRefreshToken();
 }
 
 void DriveAPIService::OnOAuth2RefreshTokenChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (CanSendRequest()) {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnReadyToSendRequests());

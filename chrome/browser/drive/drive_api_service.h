@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/auth_service_interface.h"
 #include "google_apis/drive/auth_service_observer.h"
@@ -203,6 +204,9 @@ class DriveAPIService : public DriveServiceInterface,
  private:
   // AuthServiceObserver override.
   void OnOAuth2RefreshTokenChanged() override;
+
+  // The class is expected to run on UI thread.
+  base::ThreadChecker thread_checker_;
 
   OAuth2TokenService* oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

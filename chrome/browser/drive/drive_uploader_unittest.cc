@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/drive/dummy_drive_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -307,7 +306,7 @@ class DriveUploaderTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
 };
 

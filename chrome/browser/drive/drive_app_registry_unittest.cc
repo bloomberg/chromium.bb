@@ -6,11 +6,11 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_app_registry_observer.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -63,7 +63,7 @@ class DriveAppRegistryTest : public testing::Test {
     return found;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveAppRegistry> apps_registry_;
 };
