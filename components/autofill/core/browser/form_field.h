@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/field_types.h"
 
@@ -92,7 +93,7 @@ class FormField {
 
   // Function pointer type for the parsing function that should be passed to the
   // ParseFormFieldsPass() helper function.
-  typedef FormField* ParseFunction(AutofillScanner* scanner);
+  typedef scoped_ptr<FormField> ParseFunction(AutofillScanner* scanner);
 
   // Matches |pattern| to the contents of the field at the head of the
   // |scanner|.

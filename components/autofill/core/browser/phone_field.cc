@@ -12,16 +12,15 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 namespace {
 
 // This string includes all area code separators, including NoText.
 base::string16 GetAreaRegex() {
-  base::string16 area_code = base::UTF8ToUTF16(autofill::kAreaCodeRe);
+  base::string16 area_code = base::UTF8ToUTF16(kAreaCodeRe);
   area_code.append(base::ASCIIToUTF16("|"));  // Regexp separator.
-  area_code.append(base::UTF8ToUTF16(autofill::kAreaCodeNotextRe));
+  area_code.append(base::UTF8ToUTF16(kAreaCodeNotextRe));
   return area_code;
 }
 
@@ -118,7 +117,7 @@ const PhoneField::Parser PhoneField::kPhoneFieldGrammars[] = {
 };
 
 // static
-FormField* PhoneField::Parse(AutofillScanner* scanner) {
+scoped_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -182,18 +181,18 @@ FormField* PhoneField::Parse(AutofillScanner* scanner) {
 
   // Look for a third text box.
   if (!phone_field->parsed_phone_fields_[FIELD_SUFFIX]) {
-    if (!ParseField(scanner, base::UTF8ToUTF16(autofill::kPhoneSuffixRe),
+    if (!ParseField(scanner, base::UTF8ToUTF16(kPhoneSuffixRe),
                     &phone_field->parsed_phone_fields_[FIELD_SUFFIX])) {
-      ParseField(scanner, base::UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe),
+      ParseField(scanner, base::UTF8ToUTF16(kPhoneSuffixSeparatorRe),
                  &phone_field->parsed_phone_fields_[FIELD_SUFFIX]);
     }
   }
 
   // Now look for an extension.
-  ParseField(scanner, base::UTF8ToUTF16(autofill::kPhoneExtensionRe),
+  ParseField(scanner, base::UTF8ToUTF16(kPhoneExtensionRe),
              &phone_field->parsed_phone_fields_[FIELD_EXTENSION]);
 
-  return phone_field.release();
+  return phone_field.Pass();
 }
 
 bool PhoneField::ClassifyField(ServerFieldTypeMap* map) const {
@@ -249,23 +248,23 @@ PhoneField::PhoneField() {
 base::string16 PhoneField::GetRegExp(RegexType regex_id) {
   switch (regex_id) {
     case REGEX_COUNTRY:
-      return base::UTF8ToUTF16(autofill::kCountryCodeRe);
+      return base::UTF8ToUTF16(kCountryCodeRe);
     case REGEX_AREA:
       return GetAreaRegex();
     case REGEX_AREA_NOTEXT:
-      return base::UTF8ToUTF16(autofill::kAreaCodeNotextRe);
+      return base::UTF8ToUTF16(kAreaCodeNotextRe);
     case REGEX_PHONE:
-      return base::UTF8ToUTF16(autofill::kPhoneRe);
+      return base::UTF8ToUTF16(kPhoneRe);
     case REGEX_PREFIX_SEPARATOR:
-      return base::UTF8ToUTF16(autofill::kPhonePrefixSeparatorRe);
+      return base::UTF8ToUTF16(kPhonePrefixSeparatorRe);
     case REGEX_PREFIX:
-      return base::UTF8ToUTF16(autofill::kPhonePrefixRe);
+      return base::UTF8ToUTF16(kPhonePrefixRe);
     case REGEX_SUFFIX_SEPARATOR:
-      return base::UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe);
+      return base::UTF8ToUTF16(kPhoneSuffixSeparatorRe);
     case REGEX_SUFFIX:
-      return base::UTF8ToUTF16(autofill::kPhoneSuffixRe);
+      return base::UTF8ToUTF16(kPhoneSuffixRe);
     case REGEX_EXTENSION:
-      return base::UTF8ToUTF16(autofill::kPhoneExtensionRe);
+      return base::UTF8ToUTF16(kPhoneExtensionRe);
     default:
       NOTREACHED();
       break;

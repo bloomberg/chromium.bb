@@ -26,8 +26,9 @@ class AddressFieldTest : public testing::Test {
   ServerFieldTypeMap field_type_map_;
 
   // Downcast for tests.
-  static AddressField* Parse(AutofillScanner* scanner) {
-    return static_cast<AddressField*>(AddressField::Parse(scanner));
+  static scoped_ptr<AddressField> Parse(AutofillScanner* scanner) {
+    scoped_ptr<FormField> field = AddressField::Parse(scanner);
+    return make_scoped_ptr(static_cast<AddressField*>(field.release()));
   }
 
  private:
@@ -36,15 +37,15 @@ class AddressFieldTest : public testing::Test {
 
 TEST_F(AddressFieldTest, Empty) {
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_EQ(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_EQ(nullptr, field_.get());
 }
 
 TEST_F(AddressFieldTest, NonParse) {
   list_.push_back(new AutofillField);
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_EQ(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_EQ(nullptr, field_.get());
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddress) {
@@ -56,8 +57,8 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
@@ -77,8 +78,8 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("addr1")) !=
               field_type_map_.end());
@@ -105,8 +106,8 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
@@ -128,8 +129,8 @@ TEST_F(AddressFieldTest, ParseStreetAddressFromTextArea) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr")) != field_type_map_.end());
@@ -145,8 +146,8 @@ TEST_F(AddressFieldTest, ParseCity) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("city1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("city1")) != field_type_map_.end());
@@ -162,8 +163,8 @@ TEST_F(AddressFieldTest, ParseState) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("state1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state1")) != field_type_map_.end());
@@ -179,8 +180,8 @@ TEST_F(AddressFieldTest, ParseZip) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("zip1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("zip1")) != field_type_map_.end());
@@ -200,8 +201,8 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("zip")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state")) != field_type_map_.end());
@@ -220,8 +221,8 @@ TEST_F(AddressFieldTest, ParseCountry) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("country1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
@@ -237,8 +238,8 @@ TEST_F(AddressFieldTest, ParseCompany) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("company1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());

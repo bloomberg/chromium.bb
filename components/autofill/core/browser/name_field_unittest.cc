@@ -25,8 +25,9 @@ class NameFieldTest : public testing::Test {
   ServerFieldTypeMap field_type_map_;
 
   // Downcast for tests.
-  static NameField* Parse(AutofillScanner* scanner) {
-    return static_cast<NameField*>(NameField::Parse(scanner));
+  static scoped_ptr<NameField> Parse(AutofillScanner* scanner) {
+    scoped_ptr<FormField> field = NameField::Parse(scanner);
+    return make_scoped_ptr(static_cast<NameField*>(field.release()));
   }
 
  private:
@@ -50,8 +51,8 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -81,8 +82,8 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -108,8 +109,8 @@ TEST_F(NameFieldTest, FirstLast) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -132,8 +133,8 @@ TEST_F(NameFieldTest, FirstLast2) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -160,8 +161,8 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -187,8 +188,8 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -215,8 +216,8 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -246,8 +247,8 @@ TEST_F(NameFieldTest, MiddleInitial) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
@@ -273,8 +274,8 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_EQ(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_EQ(nullptr, field_.get());
 }
 
 // This case is from the dell.com checkout page.  The middle initial "mi" string
@@ -296,8 +297,8 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());

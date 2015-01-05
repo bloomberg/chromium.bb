@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
@@ -23,7 +22,7 @@ namespace autofill {
 static const size_t kMaxValidCardNumberSize = 19;
 
 // static
-FormField* CreditCardField::Parse(AutofillScanner* scanner) {
+scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -35,7 +34,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   // bottom of the loop.
   for (int fields = 0; !scanner->IsEnd(); ++fields) {
     // Ignore gift card fields.
-    if (ParseField(scanner, base::UTF8ToUTF16(autofill::kGiftCardRe), NULL))
+    if (ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), NULL))
       break;
 
     // Sometimes the cardholder field is just labeled "name". Unfortunately this
@@ -48,9 +47,9 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       base::string16 name_pattern;
       if (fields == 0 || credit_card_field->expiration_month_) {
         // at beginning or end
-        name_pattern = base::UTF8ToUTF16(autofill::kNameOnCardRe);
+        name_pattern = base::UTF8ToUTF16(kNameOnCardRe);
       } else {
-        name_pattern = base::UTF8ToUTF16(autofill::kNameOnCardContextualRe);
+        name_pattern = base::UTF8ToUTF16(kNameOnCardContextualRe);
       }
 
       if (ParseField(scanner, name_pattern, &credit_card_field->cardholder_))
@@ -60,7 +59,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // Check for a credit card type (Visa, MasterCard, etc.) field.
     if (!credit_card_field->type_ &&
         ParseFieldSpecifics(scanner,
-                            base::UTF8ToUTF16(autofill::kCardTypeRe),
+                            base::UTF8ToUTF16(kCardTypeRe),
                             MATCH_DEFAULT | MATCH_SELECT,
                             &credit_card_field->type_)) {
       continue;
@@ -74,7 +73,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // Note: Some sites use type="tel" for numerical inputs.
     if (!credit_card_field->verification_ &&
         ParseFieldSpecifics(scanner,
-                            base::UTF8ToUTF16(autofill::kCardCvcRe),
+                            base::UTF8ToUTF16(kCardCvcRe),
                             MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_PASSWORD,
                             &credit_card_field->verification_)) {
       continue;
@@ -82,7 +81,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
 
     AutofillField* current_number_field;
     if (ParseFieldSpecifics(scanner,
-                            base::UTF8ToUTF16(autofill::kCardNumberRe),
+                            base::UTF8ToUTF16(kCardNumberRe),
                             MATCH_DEFAULT | MATCH_TELEPHONE,
                             &current_number_field)) {
       // Avoid autofilling any credit card number field having very low or high
@@ -121,11 +120,11 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       // First try to parse split month/year expiration fields.
       scanner->SaveCursor();
       if (ParseFieldSpecifics(scanner,
-                              base::UTF8ToUTF16(autofill::kExpirationMonthRe),
+                              base::UTF8ToUTF16(kExpirationMonthRe),
                               MATCH_DEFAULT | MATCH_SELECT,
                               &credit_card_field->expiration_month_) &&
           ParseFieldSpecifics(scanner,
-                              base::UTF8ToUTF16(autofill::kExpirationYearRe),
+                              base::UTF8ToUTF16(kExpirationYearRe),
                               MATCH_DEFAULT | MATCH_SELECT,
                               &credit_card_field->expiration_year_)) {
         continue;
@@ -137,7 +136,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       scanner->Rewind();
       if (ParseFieldSpecifics(
               scanner,
-              base::UTF8ToUTF16(autofill::kExpirationDate2DigitYearRe),
+              base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
               MATCH_LABEL | MATCH_VALUE | MATCH_TEXT | MATCH_SELECT,
               &credit_card_field->expiration_date_)) {
         credit_card_field->exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
@@ -147,7 +146,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
 
       if (ParseFieldSpecifics(
               scanner,
-              base::UTF8ToUTF16(autofill::kExpirationDateRe),
+              base::UTF8ToUTF16(kExpirationDateRe),
               MATCH_LABEL | MATCH_VALUE | MATCH_TEXT | MATCH_SELECT,
               &credit_card_field->expiration_date_)) {
         credit_card_field->expiration_month_ = nullptr;
@@ -168,7 +167,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // We also ignore any other fields within a credit card block that
     // start with "card", under the assumption that they are related to
     // the credit card section being processed but are uninteresting to us.
-    if (ParseField(scanner, base::UTF8ToUTF16(autofill::kCardIgnoredRe), NULL))
+    if (ParseField(scanner, base::UTF8ToUTF16(kCardIgnoredRe), NULL))
       continue;
 
     break;
@@ -178,7 +177,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   // For that case, allow only just the cardholder name field.  The remaining
   // CC fields will be picked up in a following CreditCardField.
   if (credit_card_field->cardholder_)
-    return credit_card_field.release();
+    return credit_card_field.Pass();
 
   // On some pages, the user selects a card type using radio buttons
   // (e.g. test page Apple Store Billing.html).  We can't handle that yet,
@@ -192,7 +191,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       (credit_card_field->expiration_date_ ||
        (credit_card_field->expiration_month_ &&
         credit_card_field->expiration_year_))) {
-    return credit_card_field.release();
+    return credit_card_field.Pass();
   }
 
   scanner->RewindTo(saved_cursor);

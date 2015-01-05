@@ -15,13 +15,12 @@
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using base::UTF8ToUTF16;
 
 namespace autofill {
 
-FormField* AddressField::Parse(AutofillScanner* scanner) {
+scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -29,8 +28,8 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
   const AutofillField* const initial_field = scanner->Cursor();
   size_t saved_cursor = scanner->SaveCursor();
 
-  base::string16 attention_ignored = UTF8ToUTF16(autofill::kAttentionIgnoredRe);
-  base::string16 region_ignored = UTF8ToUTF16(autofill::kRegionIgnoredRe);
+  base::string16 attention_ignored = UTF8ToUTF16(kAttentionIgnoredRe);
+  base::string16 region_ignored = UTF8ToUTF16(kRegionIgnoredRe);
 
   // Allow address fields to appear in any order.
   size_t begin_trailing_non_labeled_fields = 0;
@@ -88,7 +87,7 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
 
-    return address_field.release();
+    return address_field.Pass();
   }
 
   scanner->RewindTo(saved_cursor);
@@ -131,7 +130,7 @@ bool AddressField::ParseCompany(AutofillScanner* scanner) {
   if (company_ && !company_->IsEmpty())
     return false;
 
-  return ParseField(scanner, UTF8ToUTF16(autofill::kCompanyRe), &company_);
+  return ParseField(scanner, UTF8ToUTF16(kCompanyRe), &company_);
 }
 
 bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
@@ -147,11 +146,11 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
     return false;
 
   // Ignore "Address Lookup" field. http://crbug.com/427622
-  if (ParseField(scanner, base::UTF8ToUTF16(autofill::kAddressLookupRe), NULL))
+  if (ParseField(scanner, base::UTF8ToUTF16(kAddressLookupRe), NULL))
     return false;
 
-  base::string16 pattern = UTF8ToUTF16(autofill::kAddressLine1Re);
-  base::string16 label_pattern = UTF8ToUTF16(autofill::kAddressLine1LabelRe);
+  base::string16 pattern = UTF8ToUTF16(kAddressLine1Re);
+  base::string16 label_pattern = UTF8ToUTF16(kAddressLine1LabelRe);
   if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT, &address1_) &&
       !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                            &address1_) &&
@@ -168,8 +167,8 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
   // This code may not pick up pages that have an address field consisting of a
   // sequence of unlabeled address fields. If we need to add this, see
   // discussion on https://codereview.chromium.org/741493003/
-  pattern = UTF8ToUTF16(autofill::kAddressLine2Re);
-  label_pattern = UTF8ToUTF16(autofill::kAddressLine2LabelRe);
+  pattern = UTF8ToUTF16(kAddressLine2Re);
+  label_pattern = UTF8ToUTF16(kAddressLine2LabelRe);
   if (!ParseField(scanner, pattern, &address2_) &&
       !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                            &address2_))
@@ -177,7 +176,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
 
   // Optionally parse address line 3. This uses the same label regexp as
   // address 2 above.
-  pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
+  pattern = UTF8ToUTF16(kAddressLinesExtraRe);
   if (!ParseField(scanner, pattern, &address3_) &&
       !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
                            &address3_))
@@ -188,7 +187,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
   //
   // Since these are rare, don't bother considering unlabeled lines as extra
   // address lines.
-  pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
+  pattern = UTF8ToUTF16(kAddressLinesExtraRe);
   while (ParseField(scanner, pattern, NULL)) {
     // Consumed a surplus line, try for another.
   }
@@ -202,7 +201,7 @@ bool AddressField::ParseCountry(AutofillScanner* scanner) {
     return false;
 
   return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(autofill::kCountryRe),
+                             UTF8ToUTF16(kCountryRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &country_);
 }
@@ -216,7 +215,7 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner) {
   // Some sites use type="tel" for zip fields (to get a numerical input).
   // http://crbug.com/426958
   if (!ParseFieldSpecifics(scanner,
-                           UTF8ToUTF16(autofill::kZipCodeRe),
+                           UTF8ToUTF16(kZipCodeRe),
                            MATCH_DEFAULT | MATCH_TELEPHONE,
                            &zip_)) {
     return false;
@@ -225,7 +224,7 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner) {
   // Look for a zip+4, whose field name will also often contain
   // the substring "zip".
   ParseFieldSpecifics(scanner,
-                      UTF8ToUTF16(autofill::kZip4Re),
+                      UTF8ToUTF16(kZip4Re),
                       MATCH_DEFAULT | MATCH_TELEPHONE,
                       &zip4_);
   return true;
@@ -239,7 +238,7 @@ bool AddressField::ParseCity(AutofillScanner* scanner) {
 
   // Select fields are allowed here.  This occurs on top-100 site rediff.com.
   return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(autofill::kCityRe),
+                             UTF8ToUTF16(kCityRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &city_);
 }
@@ -249,7 +248,7 @@ bool AddressField::ParseState(AutofillScanner* scanner) {
     return false;
 
   return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(autofill::kStateRe),
+                             UTF8ToUTF16(kStateRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &state_);
 }

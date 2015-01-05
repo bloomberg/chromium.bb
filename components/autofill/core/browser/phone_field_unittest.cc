@@ -25,8 +25,9 @@ class PhoneFieldTest : public testing::Test {
   ServerFieldTypeMap field_type_map_;
 
   // Downcast for tests.
-  static PhoneField* Parse(AutofillScanner* scanner) {
-    return static_cast<PhoneField*>(PhoneField::Parse(scanner));
+  static scoped_ptr<PhoneField> Parse(AutofillScanner* scanner) {
+    scoped_ptr<FormField> field = PhoneField::Parse(scanner);
+    return make_scoped_ptr(static_cast<PhoneField*>(field.release()));
   }
 
  private:
@@ -35,15 +36,15 @@ class PhoneFieldTest : public testing::Test {
 
 TEST_F(PhoneFieldTest, Empty) {
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_EQ(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_EQ(nullptr, field_.get());
 }
 
 TEST_F(PhoneFieldTest, NonParse) {
   list_.push_back(new AutofillField);
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_EQ(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_EQ(nullptr, field_.get());
 }
 
 TEST_F(PhoneFieldTest, ParseOneLinePhone) {
@@ -55,8 +56,8 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("phone1")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("phone1")) != field_type_map_.end());
@@ -76,8 +77,8 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("phone2")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
@@ -117,8 +118,8 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("ext4")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
@@ -153,8 +154,8 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("suffix3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
@@ -187,8 +188,8 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("phone3")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("phone1")) != field_type_map_.end());
@@ -218,8 +219,8 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("phone")));
 
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country")) != field_type_map_.end());

@@ -22,7 +22,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 namespace {
@@ -158,7 +157,7 @@ void FormField::ParseFormFieldsPass(ParseFunction parse,
   AutofillScanner scanner(*fields);
   while (!scanner.IsEnd()) {
     scoped_ptr<FormField> form_field(parse(&scanner));
-    if (!form_field.get()) {
+    if (!form_field) {
       remaining_fields.push_back(scanner.Cursor());
       scanner.Advance();
       continue;
