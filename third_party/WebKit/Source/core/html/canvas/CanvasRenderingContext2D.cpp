@@ -250,15 +250,14 @@ void CanvasRenderingContext2D::restoreCanvasMatrixClipStack()
     if (!c)
         return;
     WillBeHeapVector<OwnPtrWillBeMember<State>>::iterator currState;
-    WillBeHeapVector<OwnPtrWillBeMember<State>>::iterator lastState = m_stateStack.end() - 1;
     for (currState = m_stateStack.begin(); currState < m_stateStack.end(); currState++) {
+        // We are only restoring state stored in the SkCanvas, and not
+        // state stored in the graphics context, so we call save() only on the canvas.
+        // The initial save accounts for the save installed by HTMLCanvasElement::m_contextStateSaver
+        c->canvas()->save();
         c->setMatrix(SkMatrix::I());
         currState->get()->m_clipList.playback(c);
         c->setCTM(currState->get()->m_transform);
-        // We are only restoring state stored in the SkCanvas, and not
-        // state stored in the graphics context, so we call save() only on the canvas.
-        if (currState < lastState)
-            c->canvas()->save();
     }
 }
 
