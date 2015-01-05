@@ -4,8 +4,17 @@
 
 static_library("android") {
   sources = [
+    "android_cache_database.cc",
+    "android_cache_database.h",
     "android_history_types.cc",
     "android_history_types.h",
+    "android_time.h",
+    "android_urls_database.cc",
+    "android_urls_database.h",
+    "favicon_sql_handler.cc",
+    "favicon_sql_handler.h",
+    "sql_handler.cc",
+    "sql_handler.h",
   ]
 
   deps = [

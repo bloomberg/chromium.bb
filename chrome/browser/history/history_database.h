@@ -18,8 +18,8 @@
 #include "sql/meta_table.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/history/android/android_cache_database.h"
-#include "chrome/browser/history/android/android_urls_database.h"
+#include "components/history/core/android/android_cache_database.h"
+#include "components/history/core/android/android_urls_database.h"
 #endif
 
 namespace base {

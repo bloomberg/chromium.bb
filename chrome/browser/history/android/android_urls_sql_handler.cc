@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/android_urls_sql_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/android/android_urls_database.h"
+#include "components/history/core/android/android_urls_database.h"
 
 namespace history {
 

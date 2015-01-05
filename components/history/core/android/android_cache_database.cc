@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/android/android_cache_database.h"
+#include "components/history/core/android/android_cache_database.h"
 
 #include "base/files/file_util.h"
-#include "chrome/browser/history/android/android_time.h"
+#include "components/history/core/android/android_time.h"
 #include "sql/statement.h"
 
 using base::Time;

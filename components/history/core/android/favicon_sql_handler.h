@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_ANDROID_FAVICON_SQL_HANDLER_H_
-#define CHROME_BROWSER_HISTORY_ANDROID_FAVICON_SQL_HANDLER_H_
+#ifndef COMPONENTS_HISTORY_CORE_ANDROID_FAVICON_SQL_HANDLER_H_
+#define COMPONENTS_HISTORY_CORE_ANDROID_FAVICON_SQL_HANDLER_H_
 
-#include "chrome/browser/history/android/sql_handler.h"
+#include "components/history/core/android/sql_handler.h"
 
 namespace history {
 
@@ -35,4 +35,4 @@ class FaviconSQLHandler : public SQLHandler {
 
 }  // namespace history.
 
-#endif  // CHROME_BROWSER_HISTORY_ANDROID_FAVICON_SQL_HANDLER_H_
+#endif  // COMPONENTS_HISTORY_CORE_ANDROID_FAVICON_SQL_HANDLER_H_

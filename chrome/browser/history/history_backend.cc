@@ -2636,7 +2636,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {
 
 #if defined(OS_ANDROID)
   // TODO (michaelbai): Add the unit test once AndroidProviderBackend is
-  // avaliable in HistoryBackend.
+  // available in HistoryBackend.
   db_->ClearAndroidURLRows();
 #endif
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_URLS_SQL_HANDLER_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_URLS_SQL_HANDLER_H_
 
-#include "chrome/browser/history/android/sql_handler.h"
+#include "components/history/core/android/sql_handler.h"
 
 namespace history {
 

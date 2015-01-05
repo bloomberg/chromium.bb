@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_URLS_DATABASE_H_
-#define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_URLS_DATABASE_H_
+#ifndef COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_URLS_DATABASE_H_
+#define COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_URLS_DATABASE_H_
 
 #include "components/history/core/android/android_history_types.h"
 
@@ -70,4 +70,4 @@ class AndroidURLsDatabase {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_ANDROID_ANDROID_URLS_DATABASE_H_
+#endif  // COMPONENTS_HISTORY_CORE_ANDROID_ANDROID_URLS_DATABASE_H_

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/history/core/android/android_cache_database.h"
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/android/android_cache_database.h"
-#include "chrome/browser/history/android/android_time.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/android/android_time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

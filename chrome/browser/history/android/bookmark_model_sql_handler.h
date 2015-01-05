@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_BOOKMARK_MODEL_SQL_HANDLER_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_BOOKMARK_MODEL_SQL_HANDLER_H_
 
-#include "chrome/browser/history/android/sql_handler.h"
+#include "components/history/core/android/sql_handler.h"
 
 class BookmarkModel;
 class Profile;
