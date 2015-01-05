@@ -131,7 +131,7 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
     while (current) {
         if (isList(*current)) {
             // We've found a nested, independent list: nothing to do here.
-            current = NodeRenderingTraversal::next(*current, listNode);
+            current = NodeRenderingTraversal::nextSkippingChildren(*current, listNode);
             continue;
         }
 

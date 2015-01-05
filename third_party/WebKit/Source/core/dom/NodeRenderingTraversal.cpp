@@ -196,14 +196,10 @@ static Node* pseudoAwareFirstChild(const Node& node)
     return firstChild(node);
 }
 
-Node* next(const Node& node, const Node* stayWithin)
+static Node* nextAncestorSibling(const Node& node, const Node* stayWithin)
 {
-    if (Node* child = pseudoAwareFirstChild(node))
-        return child;
-    if (node == stayWithin)
-        return 0;
-    if (Node* nextNode = pseudoAwareNextSibling(node))
-        return nextNode;
+    ASSERT(!pseudoAwareNextSibling(node));
+    ASSERT(node != stayWithin);
     for (Node* parentNode = parent(node); parentNode; parentNode = parent(*parentNode)) {
         if (parentNode == stayWithin)
             return 0;
@@ -211,6 +207,22 @@ Node* next(const Node& node, const Node* stayWithin)
             return nextNode;
     }
     return 0;
+}
+
+Node* nextSkippingChildren(const Node& node, const Node* stayWithin)
+{
+    if (node == stayWithin)
+        return 0;
+    if (Node* nextNode = pseudoAwareNextSibling(node))
+        return nextNode;
+    return nextAncestorSibling(node, stayWithin);
+}
+
+Node* next(const Node& node, const Node* stayWithin)
+{
+    if (Node* child = pseudoAwareFirstChild(node))
+        return child;
+    return nextSkippingChildren(node, stayWithin);
 }
 
 RenderObject* nextSiblingRenderer(const Node& node)
