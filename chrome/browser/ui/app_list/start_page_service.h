@@ -103,11 +103,24 @@ class StartPageService : public KeyedService,
   class AudioStatus;
 #endif
 
+  // This class observes network change events and disables/enables voice search
+  // based on network connectivity.
+  class NetworkChangeObserver;
+
   void LoadContents();
   void UnloadContents();
 
   // KeyedService overrides:
   void Shutdown() override;
+
+  // Change the known microphone availability. |available| should be true if
+  // the microphone exists and is available for use.
+  void OnMicrophoneChanged(bool available);
+  // Change the known network connectivity state. |available| should be true if
+  // at least one network is connected to.
+  void OnNetworkChanged(bool available);
+  // Enables/disables voice recognition based on network and microphone state.
+  void UpdateRecognitionState();
 
   Profile* profile_;
   scoped_ptr<content::WebContents> contents_;
@@ -126,9 +139,12 @@ class StartPageService : public KeyedService,
   scoped_ptr<SpeechRecognizer> speech_recognizer_;
   scoped_ptr<SpeechAuthHelper> speech_auth_helper_;
 
+  bool network_available_;
+  bool microphone_available_;
 #if defined(OS_CHROMEOS)
   scoped_ptr<AudioStatus> audio_status_;
 #endif
+  scoped_ptr<NetworkChangeObserver> network_change_observer_;
 
   base::WeakPtrFactory<StartPageService> weak_factory_;
 

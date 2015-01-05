@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -36,6 +37,7 @@
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/app_list/app_list_switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -134,8 +136,7 @@ class StartPageService::AudioStatus
   void CheckAndUpdate() {
     // TODO(mukai): If the system can listen, this should also restart the
     // hotword recognition.
-    start_page_service_->OnSpeechRecognitionStateChanged(
-        CanListen() ? SPEECH_RECOGNITION_READY : SPEECH_RECOGNITION_OFF);
+    start_page_service_->OnMicrophoneChanged(CanListen());
   }
 
   // chromeos::CrasAudioHandler::AudioObserver:
@@ -149,6 +150,51 @@ class StartPageService::AudioStatus
 };
 
 #endif  // OS_CHROMEOS
+
+class StartPageService::NetworkChangeObserver
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
+ public:
+  explicit NetworkChangeObserver(StartPageService* start_page_service)
+      : start_page_service_(start_page_service) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // NOTE: This is used to detect network connectivity changes. However, what
+    // we really want is internet connectivity changes because voice recognition
+    // needs to talk to a web service. However, this information isn't
+    // available, so network changes are the best we can do.
+    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+    last_type_ = net::NetworkChangeNotifier::GetConnectionType();
+    // Handle the case where we're started with no network available.
+    if (last_type_ == net::NetworkChangeNotifier::CONNECTION_NONE)
+      start_page_service_->OnNetworkChanged(false);
+  }
+
+  ~NetworkChangeObserver() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  }
+
+ private:
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override {
+    // Threading note: NetworkChangeNotifier's contract is that observers are
+    // called on the same thread that they're registered. In this case, it
+    // should always be the UI thread.
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
+      start_page_service_->OnNetworkChanged(false);
+    } else if (last_type_ == net::NetworkChangeNotifier::CONNECTION_NONE &&
+               type != net::NetworkChangeNotifier::CONNECTION_NONE) {
+      start_page_service_->OnNetworkChanged(true);
+    }
+    last_type_ = type;
+  }
+
+  StartPageService* start_page_service_;
+  net::NetworkChangeNotifier::ConnectionType last_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeObserver);
+};
 
 // static
 StartPageService* StartPageService::Get(Profile* profile) {
@@ -164,6 +210,8 @@ StartPageService::StartPageService(Profile* profile)
       speech_result_obtained_(false),
       webui_finished_loading_(false),
       speech_auth_helper_(new SpeechAuthHelper(profile, &clock_)),
+      network_available_(true),
+      microphone_available_(true),
       weak_factory_(this) {
   // If experimental hotwording is enabled, then we're always "ready".
   // Transitioning into the "hotword recognizing" state is handled by the
@@ -174,6 +222,8 @@ StartPageService::StartPageService(Profile* profile)
 
   if (app_list::switches::IsExperimentalAppListEnabled())
     LoadContents();
+
+  network_change_observer_.reset(new NetworkChangeObserver(this));
 }
 
 StartPageService::~StartPageService() {}
@@ -184,6 +234,25 @@ void StartPageService::AddObserver(StartPageObserver* observer) {
 
 void StartPageService::RemoveObserver(StartPageObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void StartPageService::OnMicrophoneChanged(bool available) {
+  microphone_available_ = available;
+  UpdateRecognitionState();
+}
+
+void StartPageService::OnNetworkChanged(bool available) {
+  network_available_ = available;
+  UpdateRecognitionState();
+}
+
+void StartPageService::UpdateRecognitionState() {
+  if (microphone_available_ && network_available_) {
+    if (state_ == SPEECH_RECOGNITION_OFF)
+      OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
+  } else {
+    OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_OFF);
+  }
 }
 
 void StartPageService::AppListShown() {
@@ -272,7 +341,8 @@ bool StartPageService::HotwordEnabled() {
 #if defined(OS_CHROMEOS)
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
     HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
-    return HotwordServiceFactory::IsServiceAvailable(profile_) &&
+    return state_ != SPEECH_RECOGNITION_OFF &&
+        HotwordServiceFactory::IsServiceAvailable(profile_) &&
         service &&
         (service->IsSometimesOnEnabled() || service->IsAlwaysOnEnabled());
   }
@@ -321,12 +391,15 @@ void StartPageService::OnSpeechRecognitionStateChanged(
   if (audio_status_ && !audio_status_->CanListen())
     new_state = SPEECH_RECOGNITION_OFF;
 #endif
+  if (!network_available_ || !microphone_available_)
+    new_state = SPEECH_RECOGNITION_OFF;
 
   if (state_ == new_state)
     return;
 
   if (HotwordService::IsExperimentalHotwordingEnabled() &&
-      new_state == SPEECH_RECOGNITION_READY &&
+      (new_state == SPEECH_RECOGNITION_READY ||
+       new_state == SPEECH_RECOGNITION_OFF) &&
       speech_recognizer_) {
     speech_recognizer_->Stop();
   }
@@ -371,6 +444,7 @@ void StartPageService::Shutdown() {
 #endif
 
   speech_auth_helper_.reset();
+  network_change_observer_.reset();
 }
 
 void StartPageService::WebUILoaded() {
