@@ -31,20 +31,21 @@
 #ifndef PNGImageEncoder_h
 #define PNGImageEncoder_h
 
-#include "platform/image-encoders/ImageEncoder.h"
 #include "wtf/Vector.h"
 
 class SkBitmap;
 
 namespace blink {
 
+struct ImageDataBuffer;
+
 // Interface for encoding PNG data. This is a wrapper around libpng.
 class PNGImageEncoder {
 public:
     static bool encode(const SkBitmap&, Vector<unsigned char>* output);
-    static bool encode(const ImageEncoder::RawImageBytes&, Vector<unsigned char>* output);
+    static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
 };
 
 } // namespace blink
 
-#endif // PNGImageEncoder_h
+#endif

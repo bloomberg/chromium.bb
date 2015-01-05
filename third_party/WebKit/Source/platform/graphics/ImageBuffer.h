@@ -43,6 +43,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/Uint8ClampedArray.h"
 
 namespace WTF {
 
@@ -159,6 +160,17 @@ private:
     ImageBufferClient* m_client;
     OwnPtr<DisplayItemList> m_displayItemList;
 };
+
+struct ImageDataBuffer {
+    ImageDataBuffer(const IntSize& size, PassRefPtr<Uint8ClampedArray> data) : m_size(size), m_data(data) { }
+    IntSize size() const { return m_size; }
+    unsigned char* data() const { return m_data->data(); }
+
+    IntSize m_size;
+    RefPtr<Uint8ClampedArray> m_data;
+};
+
+String PLATFORM_EXPORT ImageDataToDataURL(const ImageDataBuffer&, const String& mimeType, const double* quality);
 
 } // namespace blink
 

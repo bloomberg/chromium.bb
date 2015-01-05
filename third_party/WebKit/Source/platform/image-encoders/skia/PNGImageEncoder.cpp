@@ -68,7 +68,7 @@ static void preMultipliedBGRAtoRGBA(const void* pixels, int pixelCount, unsigned
     }
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bool premultiplied, Vector<unsigned char>* output)
+static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool premultiplied, Vector<unsigned char>* output)
 {
     imageSize.clampNegativeToZero();
     Vector<unsigned char> row;
@@ -97,7 +97,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
                  8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
     png_write_info(png, info);
 
-    unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
+    unsigned char* pixels = inputPixels;
     row.resize(imageSize.width() * sizeof(SkPMColor));
     const size_t pixelRowStride = imageSize.width() * 4;
     for (int y = 0; y < imageSize.height(); ++y) {
@@ -124,7 +124,7 @@ bool PNGImageEncoder::encode(const SkBitmap& bitmap, Vector<unsigned char>* outp
     return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char*>(bitmap.getPixels()), true, output);
 }
 
-bool PNGImageEncoder::encode(const ImageEncoder::RawImageBytes& imageData, Vector<unsigned char>* output)
+bool PNGImageEncoder::encode(const ImageDataBuffer& imageData, Vector<unsigned char>* output)
 {
     return encodePixels(imageData.size(), imageData.data(), false, output);
 }

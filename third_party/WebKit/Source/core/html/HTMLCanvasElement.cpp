@@ -50,11 +50,11 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/WebGLImageBufferSurface.h"
-#include "platform/image-encoders/ImageEncoder.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 #include <math.h>
@@ -467,7 +467,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     String encodingMimeType = toEncodingMimeType(mimeType);
     if (!m_context) {
         RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(m_size);
-        return ImageEncoder::toDataURL(ImageEncoder::RawImageBytes(imageData->size(), imageData->data()->data()), encodingMimeType, quality);
+        return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()->view()), encodingMimeType, quality);
     }
 
     if (m_context->is3d()) {
@@ -475,7 +475,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
         RefPtrWillBeRawPtr<ImageData> imageData =
             toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
         if (imageData)
-            return ImageEncoder::toDataURL(ImageEncoder::RawImageBytes(imageData->size(), imageData->data()->data()), encodingMimeType, quality);
+            return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()->view()), encodingMimeType, quality);
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
     }
 

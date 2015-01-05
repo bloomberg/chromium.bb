@@ -133,7 +133,7 @@ bool WEBPImageEncoder::encode(const SkBitmap& bitmap, int quality, Vector<unsign
     return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char *>(bitmap.getPixels()), true, quality, output);
 }
 
-bool WEBPImageEncoder::encode(const ImageEncoder::RawImageBytes& imageData, int quality, Vector<unsigned char>* output)
+bool WEBPImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
 {
     return encodePixels(imageData.size(), imageData.data(), false, quality, output);
 }

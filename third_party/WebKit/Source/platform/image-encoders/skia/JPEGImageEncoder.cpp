@@ -117,7 +117,7 @@ static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int qu
     }
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bool premultiplied, int quality, Vector<unsigned char>* output)
+static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool premultiplied, int quality, Vector<unsigned char>* output)
 {
     JPEGOutputBuffer destination;
     destination.output = output;
@@ -156,7 +156,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
         disableSubsamplingForHighQuality(&cinfo, quality);
         jpeg_start_compress(&cinfo, TRUE);
 
-        unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
+        unsigned char* pixels = inputPixels;
         const size_t pixelRowStride = cinfo.image_width * 4;
         while (cinfo.next_scanline < cinfo.image_height) {
             jpeg_write_scanlines(&cinfo, &pixels, 1);
@@ -182,7 +182,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
     disableSubsamplingForHighQuality(&cinfo, quality);
     jpeg_start_compress(&cinfo, TRUE);
 
-    unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
+    unsigned char* pixels = inputPixels;
     row.resize(cinfo.image_width * cinfo.input_components);
     const size_t pixelRowStride = cinfo.image_width * 4;
     while (cinfo.next_scanline < cinfo.image_height) {
@@ -207,7 +207,7 @@ bool JPEGImageEncoder::encode(const SkBitmap& bitmap, int quality, Vector<unsign
     return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char *>(bitmap.getPixels()), true, quality, output);
 }
 
-bool JPEGImageEncoder::encode(const ImageEncoder::RawImageBytes& imageData, int quality, Vector<unsigned char>* output)
+bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
 {
     return encodePixels(imageData.size(), imageData.data(), false, quality, output);
 }

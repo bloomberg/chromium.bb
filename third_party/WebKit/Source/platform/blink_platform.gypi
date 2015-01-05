@@ -679,8 +679,6 @@
       'image-decoders/png/PNGImageDecoder.h',
       'image-decoders/webp/WEBPImageDecoder.cpp',
       'image-decoders/webp/WEBPImageDecoder.h',
-      'image-encoders/ImageEncoder.cpp',
-      'image-encoders/ImageEncoder.h',
       'image-encoders/skia/JPEGImageEncoder.cpp',
       'image-encoders/skia/JPEGImageEncoder.h',
       'image-encoders/skia/PNGImageEncoder.cpp',
