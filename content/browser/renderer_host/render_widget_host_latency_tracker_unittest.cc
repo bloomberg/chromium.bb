@@ -22,8 +22,8 @@ TEST(RenderWidgetHostLatencyTrackerTest, Basic) {
   tracker.Initialize(kTestRoutingId, kTestProcessId);
 
   {
-    auto scroll =
-        SyntheticWebGestureEventBuilder::BuildScrollUpdate(5.f, -5.f, 0);
+    auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+        5.f, -5.f, 0, blink::WebGestureDeviceTouchscreen);
     ui::LatencyInfo scroll_latency;
     tracker.OnInputEvent(scroll, &scroll_latency);
     EXPECT_TRUE(

@@ -110,9 +110,10 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollBegin(
 WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollUpdate(
     float dx,
     float dy,
-    int modifiers) {
-  WebGestureEvent result = Build(WebInputEvent::GestureScrollUpdate,
-                                 blink::WebGestureDeviceTouchscreen);
+    int modifiers,
+    blink::WebGestureDevice source_device) {
+  WebGestureEvent result =
+      Build(WebInputEvent::GestureScrollUpdate, source_device);
   result.data.scrollUpdate.deltaX = dx;
   result.data.scrollUpdate.deltaY = dy;
   result.modifiers = modifiers;

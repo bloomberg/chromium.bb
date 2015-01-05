@@ -192,53 +192,51 @@ class InputRouterImplTest : public testing::Test {
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
     input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise),
-        ui::LatencyInfo()));
+        SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise)));
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type, int x, int y) {
     input_router_->SendMouseEvent(MouseEventWithLatencyInfo(
-        SyntheticWebMouseEventBuilder::Build(type, x, y, 0),
-        ui::LatencyInfo()));
+        SyntheticWebMouseEventBuilder::Build(type, x, y, 0)));
   }
 
   void SimulateWheelEventWithPhase(WebMouseWheelEvent::Phase phase) {
     input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(phase), ui::LatencyInfo()));
+        SyntheticWebMouseWheelEventBuilder::Build(phase)));
   }
 
   void SimulateGestureEvent(const WebGestureEvent& gesture) {
-    input_router_->SendGestureEvent(
-        GestureEventWithLatencyInfo(gesture, ui::LatencyInfo()));
+    input_router_->SendGestureEvent(GestureEventWithLatencyInfo(gesture));
   }
 
   void SimulateGestureEvent(WebInputEvent::Type type,
-                            WebGestureDevice sourceDevice) {
+                            WebGestureDevice source_device) {
     SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
+        SyntheticWebGestureEventBuilder::Build(type, source_device));
   }
 
-  void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
-    SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+  void SimulateGestureScrollUpdateEvent(float dX,
+                                        float dY,
+                                        int modifiers,
+                                        WebGestureDevice source_device) {
+    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+        dX, dY, modifiers, source_device));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
-                                       float anchorX,
-                                       float anchorY,
+                                       float anchor_x,
+                                       float anchor_y,
                                        int modifiers,
-                                       WebGestureDevice sourceDevice) {
+                                       WebGestureDevice source_device) {
     SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
-        scale, anchorX, anchorY, modifiers, sourceDevice));
+        scale, anchor_x, anchor_y, modifiers, source_device));
   }
 
-  void SimulateGestureFlingStartEvent(float velocityX,
-                                      float velocityY,
-                                      WebGestureDevice sourceDevice) {
-    SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::BuildFling(velocityX,
-                                                    velocityY,
-                                                    sourceDevice));
+  void SimulateGestureFlingStartEvent(float velocity_x,
+                                      float velocity_y,
+                                      WebGestureDevice source_device) {
+    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildFling(
+        velocity_x, velocity_y, source_device));
   }
 
   void SetTouchTimestamp(base::TimeDelta timestamp) {
@@ -246,8 +244,7 @@ class InputRouterImplTest : public testing::Test {
   }
 
   void SendTouchEvent() {
-    input_router_->SendTouchEvent(
-        TouchEventWithLatencyInfo(touch_event_, ui::LatencyInfo()));
+    input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
     touch_event_.ResetPoints();
   }
 
@@ -1818,6 +1815,8 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndWheel) {
 // Test proper handling of touchpad Gesture{Pinch,Scroll}Update sequences.
 TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   // The first scroll should be sent immediately.
+  SimulateGestureScrollUpdateEvent(1.5f, 0.f, 0,
+                                   blink::WebGestureDeviceTouchpad);
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        blink::WebGestureDeviceTouchpad);
   ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
@@ -1825,23 +1824,23 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
 
   // Subsequent scroll and pinch events should remain queued, coalescing as
   // more trackpad events arrive.
-  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
-                       blink::WebGestureDeviceTouchpad);
+  SimulateGesturePinchUpdateEvent(1.5f, 20, 25, 0,
+                                  blink::WebGestureDeviceTouchpad);
   ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1, client_->in_flight_event_count());
 
-  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
-                       blink::WebGestureDeviceTouchpad);
+  SimulateGestureScrollUpdateEvent(1.5f, 1.5f, 0,
+                                   blink::WebGestureDeviceTouchpad);
   ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1, client_->in_flight_event_count());
 
-  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
-                       blink::WebGestureDeviceTouchpad);
+  SimulateGesturePinchUpdateEvent(1.5f, 20, 25, 0,
+                                  blink::WebGestureDeviceTouchpad);
   ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1, client_->in_flight_event_count());
 
-  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
-                       blink::WebGestureDeviceTouchpad);
+  SimulateGestureScrollUpdateEvent(0.f, 1.5f, 0,
+                                   blink::WebGestureDeviceTouchpad);
   ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1, client_->in_flight_event_count());
 

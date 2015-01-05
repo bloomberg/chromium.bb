@@ -77,15 +77,8 @@ class GestureEventQueueTest : public testing::Test,
     queue()->set_debounce_interval_time_ms_for_testing(interval_ms);
   }
 
-  // Returns the result of |GestureEventQueue::ShouldForward()|.
-  bool SimulateGestureEvent(const WebGestureEvent& gesture) {
-    GestureEventWithLatencyInfo gesture_with_latency(gesture,
-                                                     ui::LatencyInfo());
-    if (queue()->ShouldForward(gesture_with_latency)) {
-      SendGestureEventImmediately(gesture_with_latency);
-      return true;
-    }
-    return false;
+  void SimulateGestureEvent(const WebGestureEvent& gesture) {
+    queue()->QueueEvent(GestureEventWithLatencyInfo(gesture));
   }
 
   void SimulateGestureEvent(WebInputEvent::Type type,
@@ -95,8 +88,8 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
-    SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+        dX, dY, modifiers, blink::WebGestureDeviceTouchscreen));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
@@ -670,9 +663,8 @@ TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
             GestureEventLastQueueEvent().type);
   EXPECT_EQ(1U, GestureEventQueueSize());
 
-
   SimulateGesturePinchUpdateEvent(2, 60, 60, 1);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
             GestureEventLastQueueEvent().type);
   EXPECT_EQ(2U, GestureEventQueueSize());
@@ -681,7 +673,7 @@ TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
             GestureEventLastQueueEvent().type);
-  EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
 
   SimulateGestureScrollUpdateEvent(5, 5, 1);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
@@ -689,16 +681,22 @@ TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
   // pinch following the scroll.
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
             GestureEventLastQueueEvent().type);
-  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
 
   SimulateGesturePinchUpdateEvent(4, 60, 60, 1);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
 
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(2.f, last_acked_event().data.pinchUpdate.scale);
 
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -707,7 +705,7 @@ TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
-  EXPECT_EQ(2.f * 3.f * 4.f, last_acked_event().data.pinchUpdate.scale);
+  EXPECT_EQ(3.f * 4.f, last_acked_event().data.pinchUpdate.scale);
 
   EXPECT_EQ(0U, GestureEventQueueSize());
 }

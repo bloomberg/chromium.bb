@@ -5,16 +5,54 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
 #include "base/debug/trace_event.h"
-#include "base/strings/string_number_conversions.h"
-#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
-#include "content/public/common/content_switches.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
 namespace content {
+namespace {
+
+// Whether |event_in_queue| is GesturePinchUpdate or GestureScrollUpdate and
+// has the same modifiers/source as the new scroll/pinch event. Compatible
+// scroll and pinch event pairs can be logically coalesced.
+bool IsCompatibleScrollorPinch(
+    const GestureEventWithLatencyInfo& new_event,
+    const GestureEventWithLatencyInfo& event_in_queue) {
+  DCHECK(new_event.event.type == WebInputEvent::GestureScrollUpdate ||
+         new_event.event.type == WebInputEvent::GesturePinchUpdate)
+      << "Invalid event type for pinch/scroll coalescing: "
+      << WebInputEventTraits::GetName(new_event.event.type);
+  DLOG_IF(WARNING, new_event.event.timeStampSeconds <
+                       event_in_queue.event.timeStampSeconds)
+      << "Event time not monotonic?\n";
+  return (event_in_queue.event.type == WebInputEvent::GestureScrollUpdate ||
+          event_in_queue.event.type == WebInputEvent::GesturePinchUpdate) &&
+         event_in_queue.event.modifiers == new_event.event.modifiers &&
+         event_in_queue.event.sourceDevice == new_event.event.sourceDevice;
+}
+
+// Returns the transform matrix corresponding to the gesture event.
+gfx::Transform GetTransformForEvent(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  gfx::Transform gesture_transform;
+  if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate) {
+    gesture_transform.Translate(gesture_event.event.data.scrollUpdate.deltaX,
+                                gesture_event.event.data.scrollUpdate.deltaY);
+  } else if (gesture_event.event.type == WebInputEvent::GesturePinchUpdate) {
+    float scale = gesture_event.event.data.pinchUpdate.scale;
+    gesture_transform.Translate(-gesture_event.event.x, -gesture_event.event.y);
+    gesture_transform.Scale(scale, scale);
+    gesture_transform.Translate(gesture_event.event.x, gesture_event.event.y);
+  } else {
+    NOTREACHED() << "Invalid event type for transform retrieval: "
+                 << WebInputEventTraits::GetName(gesture_event.event.type);
+  }
+  return gesture_transform;
+}
+
+}  // namespace
 
 GestureEventQueue::Config::Config() {
 }
@@ -39,6 +77,18 @@ GestureEventQueue::GestureEventQueue(
 }
 
 GestureEventQueue::~GestureEventQueue() { }
+
+void GestureEventQueue::QueueEvent(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  TRACE_EVENT0("input", "GestureEventQueue::QueueEvent");
+  if (!ShouldForwardForBounceReduction(gesture_event) ||
+      !ShouldForwardForGFCFiltering(gesture_event) ||
+      !ShouldForwardForTapSuppression(gesture_event)) {
+    return;
+  }
+
+  QueueAndForwardIfNecessary(gesture_event);
+}
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
@@ -89,16 +139,6 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
   }
 }
 
-// NOTE: The filters are applied successively. This simplifies the change.
-bool GestureEventQueue::ShouldForward(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  TRACE_EVENT0("input", "GestureEventQueue::ShouldForward");
-  return ShouldForwardForBounceReduction(gesture_event) &&
-         ShouldForwardForGFCFiltering(gesture_event) &&
-         ShouldForwardForTapSuppression(gesture_event) &&
-         ShouldForwardForCoalescing(gesture_event);
-}
-
 bool GestureEventQueue::ShouldForwardForGFCFiltering(
     const GestureEventWithLatencyInfo& gesture_event) const {
   return gesture_event.event.type != WebInputEvent::GestureFlingCancel ||
@@ -132,7 +172,7 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
   }
 }
 
-bool GestureEventQueue::ShouldForwardForCoalescing(
+void GestureEventQueue::QueueAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
   switch (gesture_event.event.type) {
     case WebInputEvent::GestureFlingCancel:
@@ -143,18 +183,20 @@ bool GestureEventQueue::ShouldForwardForCoalescing(
       break;
     case WebInputEvent::GesturePinchUpdate:
     case WebInputEvent::GestureScrollUpdate:
-      MergeOrInsertScrollAndPinchEvent(gesture_event);
-      return ShouldHandleEventNow();
+      QueueScrollOrPinchAndForwardIfNecessary(gesture_event);
+      return;
     default:
       break;
   }
+
   coalesced_gesture_events_.push_back(gesture_event);
-  return ShouldHandleEventNow();
+  if (coalesced_gesture_events_.size() == 1)
+    client_->SendGestureEventImmediately(gesture_event);
 }
 
 void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
-                                           WebInputEvent::Type type,
-                                           const ui::LatencyInfo& latency) {
+                                          WebInputEvent::Type type,
+                                          const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "GestureEventQueue::ProcessGestureAck");
 
   if (coalesced_gesture_events_.empty()) {
@@ -227,22 +269,13 @@ TouchpadTapSuppressionController*
   return &touchpad_tap_suppression_controller_;
 }
 
-bool GestureEventQueue::ExpectingGestureAck() const {
-  return !coalesced_gesture_events_.empty();
-}
-
 void GestureEventQueue::FlingHasBeenHalted() {
   fling_in_progress_ = false;
 }
 
-bool GestureEventQueue::ShouldHandleEventNow() const {
-  return coalesced_gesture_events_.size() == 1;
-}
-
 void GestureEventQueue::ForwardGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (ShouldForwardForCoalescing(gesture_event))
-    client_->SendGestureEventImmediately(gesture_event);
+  QueueAndForwardIfNecessary(gesture_event);
 }
 
 void GestureEventQueue::SendScrollEndingEventsNow() {
@@ -254,19 +287,34 @@ void GestureEventQueue::SendScrollEndingEventsNow() {
   for (GestureQueue::const_iterator it = debouncing_deferral_queue.begin();
        it != debouncing_deferral_queue.end(); it++) {
     if (ShouldForwardForGFCFiltering(*it) &&
-        ShouldForwardForTapSuppression(*it) &&
-        ShouldForwardForCoalescing(*it)) {
-      client_->SendGestureEventImmediately(*it);
+        ShouldForwardForTapSuppression(*it)) {
+      QueueAndForwardIfNecessary(*it);
     }
   }
 }
 
-void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
+void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
+  DCHECK_GE(coalesced_gesture_events_.size(), EventsInFlightCount());
   const size_t unsent_events_count =
       coalesced_gesture_events_.size() - EventsInFlightCount();
   if (!unsent_events_count) {
     coalesced_gesture_events_.push_back(gesture_event);
+    if (coalesced_gesture_events_.size() == 1) {
+      client_->SendGestureEventImmediately(gesture_event);
+    } else if (coalesced_gesture_events_.size() == 2) {
+      DCHECK(!ignore_next_ack_);
+      // If there is an in-flight scroll, the new pinch can be forwarded
+      // immediately, avoiding a potential frame delay between the two
+      // (similarly for an in-flight pinch with a new scroll).
+      const GestureEventWithLatencyInfo& first_event =
+          coalesced_gesture_events_.front();
+      if (gesture_event.event.type != first_event.event.type &&
+          IsCompatibleScrollorPinch(gesture_event, first_event)) {
+        ignore_next_ack_ = true;
+        client_->SendGestureEventImmediately(gesture_event);
+      }
+    }
     return;
   }
 
@@ -276,7 +324,7 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
     return;
   }
 
-  if (!ShouldTryMerging(gesture_event, *last_event)) {
+  if (!IsCompatibleScrollorPinch(gesture_event, *last_event)) {
     coalesced_gesture_events_.push_back(gesture_event);
     return;
   }
@@ -305,7 +353,7 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
   if (unsent_events_count > 1) {
     const GestureEventWithLatencyInfo& second_last_event =
         coalesced_gesture_events_[coalesced_gesture_events_.size() - 2];
-    if (ShouldTryMerging(gesture_event, second_last_event)) {
+    if (IsCompatibleScrollorPinch(gesture_event, second_last_event)) {
       // Keep the oldest LatencyInfo.
       DCHECK_LE(second_last_event.latency.trace_id,
                 scroll_event.latency.trace_id);
@@ -334,34 +382,6 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
   coalesced_gesture_events_.push_back(scroll_event);
   pinch_event.event.data.pinchUpdate.scale = combined_scale;
   coalesced_gesture_events_.push_back(pinch_event);
-}
-
-bool GestureEventQueue::ShouldTryMerging(
-    const GestureEventWithLatencyInfo& new_event,
-    const GestureEventWithLatencyInfo& event_in_queue) const {
-  DLOG_IF(WARNING,
-          new_event.event.timeStampSeconds <
-          event_in_queue.event.timeStampSeconds)
-          << "Event time not monotonic?\n";
-  return (event_in_queue.event.type == WebInputEvent::GestureScrollUpdate ||
-      event_in_queue.event.type == WebInputEvent::GesturePinchUpdate) &&
-      event_in_queue.event.modifiers == new_event.event.modifiers &&
-      event_in_queue.event.sourceDevice == new_event.event.sourceDevice;
-}
-
-gfx::Transform GestureEventQueue::GetTransformForEvent(
-    const GestureEventWithLatencyInfo& gesture_event) const {
-  gfx::Transform gesture_transform;
-  if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate) {
-    gesture_transform.Translate(gesture_event.event.data.scrollUpdate.deltaX,
-                                gesture_event.event.data.scrollUpdate.deltaY);
-  } else if (gesture_event.event.type == WebInputEvent::GesturePinchUpdate) {
-    float scale = gesture_event.event.data.pinchUpdate.scale;
-    gesture_transform.Translate(-gesture_event.event.x, -gesture_event.event.y);
-    gesture_transform.Scale(scale,scale);
-    gesture_transform.Translate(gesture_event.event.x, gesture_event.event.y);
-  }
-  return gesture_transform;
 }
 
 size_t GestureEventQueue::EventsInFlightCount() const {

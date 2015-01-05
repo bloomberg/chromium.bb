@@ -81,11 +81,10 @@ class CONTENT_EXPORT GestureEventQueue {
                     const Config& config);
   ~GestureEventQueue();
 
-  // Returns |true| if the caller should immediately forward the provided
-  // |GestureEventWithLatencyInfo| argument to the renderer.
-  // If this function returns false, then the event may be queued and forwared
-  // at a later point.
-  bool ShouldForward(const GestureEventWithLatencyInfo&);
+  // Adds a gesture to the queue if it passes the relevant filters. If
+  // there are no events currently queued, the event will be forwarded
+  // immediately.
+  void QueueEvent(const GestureEventWithLatencyInfo&);
 
   // Indicates that the caller has received an acknowledgement from the renderer
   // with state |ack_result| and event |type|. May send events if the queue is
@@ -102,9 +101,6 @@ class CONTENT_EXPORT GestureEventQueue {
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
 
   void ForwardGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
-
-  // Whether the queue is expecting a gesture event ack.
-  bool ExpectingGestureAck() const;
 
   bool empty() const {
     return coalesced_gesture_events_.empty() &&
@@ -132,15 +128,6 @@ class CONTENT_EXPORT GestureEventQueue {
   bool ShouldDiscardFlingCancelEvent(
       const GestureEventWithLatencyInfo& gesture_event) const;
 
-  // Returns |true| if the only event in the queue is the current event and
-  // hence that event should be handled now.
-  bool ShouldHandleEventNow() const;
-
-  // Merge or append a GestureScrollUpdate or GesturePinchUpdate into
-  // the coalescing queue.
-  void MergeOrInsertScrollAndPinchEvent(
-      const GestureEventWithLatencyInfo& gesture_event);
-
   // Sub-filter for removing bounces from in-progress scrolls.
   bool ShouldForwardForBounceReduction(
       const GestureEventWithLatencyInfo& gesture_event);
@@ -156,21 +143,13 @@ class CONTENT_EXPORT GestureEventQueue {
   // Puts the events in a queue to forward them one by one; i.e., forward them
   // whenever ACK for previous event is received. This queue also tries to
   // coalesce events as much as possible.
-  bool ShouldForwardForCoalescing(
+  void QueueAndForwardIfNecessary(
       const GestureEventWithLatencyInfo& gesture_event);
 
-  // Whether the event_in_queue is GesturePinchUpdate or
-  // GestureScrollUpdate and it has the same modifiers as the
-  // new event.
-  bool ShouldTryMerging(
-      const GestureEventWithLatencyInfo& new_event,
-      const GestureEventWithLatencyInfo& event_in_queue)const;
-
-  // Returns the transform matrix corresponding to the gesture event.
-  // Assumes the gesture event sent is either GestureScrollUpdate or
-  // GesturePinchUpdate. Returns the identity matrix otherwise.
-  gfx::Transform GetTransformForEvent(
-      const GestureEventWithLatencyInfo& gesture_event) const;
+  // Merge or append a GestureScrollUpdate or GesturePinchUpdate into
+  // the coalescing queue, forwarding immediately if appropriate.
+  void QueueScrollOrPinchAndForwardIfNecessary(
+      const GestureEventWithLatencyInfo& gesture_event);
 
   // The number of sent events for which we're awaiting an ack.  These events
   // remain at the head of the queue until ack'ed.

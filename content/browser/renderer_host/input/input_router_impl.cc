@@ -188,10 +188,7 @@ void InputRouterImpl::SendGestureEvent(
   if (gesture_event.event.sourceDevice == blink::WebGestureDeviceTouchscreen)
     touch_event_queue_.OnGestureScrollEvent(gesture_event);
 
-  if (!gesture_event_queue_.ShouldForward(gesture_event))
-    return;
-
-  SendGestureEventImmediately(gesture_event);
+  gesture_event_queue_.QueueEvent(gesture_event);
 }
 
 void InputRouterImpl::SendTouchEvent(
@@ -652,9 +649,6 @@ void InputRouterImpl::ProcessWheelAck(InputEventAckState ack_result,
 void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,
                                         InputEventAckState ack_result,
                                         const ui::LatencyInfo& latency) {
-  if (!gesture_event_queue_.ExpectingGestureAck())
-    return;
-
   // |gesture_event_queue_| will forward to OnGestureEventAck when appropriate.
   gesture_event_queue_.ProcessGestureAck(ack_result, type, latency);
 }

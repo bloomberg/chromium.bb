@@ -980,7 +980,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       WaitAFrame();
 
       blink::WebGestureEvent scroll_update =
-          SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, 5, 0);
+          SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+              dx, 5, 0, blink::WebGestureDeviceTouchscreen);
 
       GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
           scroll_update, ui::LatencyInfo());

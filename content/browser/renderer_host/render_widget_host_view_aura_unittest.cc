@@ -556,8 +556,8 @@ class RenderWidgetHostViewAuraOverscrollTest
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
-    SimulateGestureEventCore(
-        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+    SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+        dX, dY, modifiers, blink::WebGestureDeviceTouchscreen));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
