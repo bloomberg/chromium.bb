@@ -235,8 +235,7 @@ void BootTimesLoader::Stats::RecordStatsImpl(
 }
 
 BootTimesLoader::BootTimesLoader()
-    : backend_(new Backend()),
-      have_registered_(false),
+    : have_registered_(false),
       login_done_(false),
       restart_requested_(false) {
   login_time_markers_.reserve(30);

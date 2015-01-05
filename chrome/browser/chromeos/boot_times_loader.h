@@ -93,20 +93,6 @@ class BootTimesLoader : public content::NotificationObserver,
   void OnLogoutStarted(PrefService* state);
 
  private:
-  // BootTimesLoader calls into the Backend on the file thread to load
-  // the boot times.
-  class Backend : public base::RefCountedThreadSafe<Backend> {
-   public:
-    Backend() {}
-
-   private:
-    friend class base::RefCountedThreadSafe<Backend>;
-
-    ~Backend() {}
-
-    DISALLOW_COPY_AND_ASSIGN(Backend);
-  };
-
   class TimeMarker {
    public:
     TimeMarker(const std::string& name, bool send_to_uma)
@@ -171,7 +157,6 @@ class BootTimesLoader : public content::NotificationObserver,
 
   // Used to hold the stats at main().
   Stats chrome_main_stats_;
-  scoped_refptr<Backend> backend_;
 
   // Used to track notifications for login.
   content::NotificationRegistrar registrar_;
