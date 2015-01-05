@@ -130,6 +130,7 @@ public:
     void resetCSSFeatureFlags(const RuleFeatureSet&);
 
     void didRemoveShadowRoot(ShadowRoot*);
+    void shadowRootRemovedFromDocument(ShadowRoot*);
     void appendActiveAuthorStyleSheets();
 
     StyleResolver* resolver() const

@@ -176,7 +176,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
 void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 {
     if (insertionPoint->inDocument()) {
-        clearScopedStyleResolver();
+        document().styleEngine()->shadowRootRemovedFromDocument(this);
         if (m_registeredWithParentShadowRoot) {
             ShadowRoot* root = host()->containingShadowRoot();
             if (!root)
