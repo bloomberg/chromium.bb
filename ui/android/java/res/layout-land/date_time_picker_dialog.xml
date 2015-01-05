@@ -24,6 +24,7 @@
             android:layout_height="wrap_content"
             android:spinnersShown="true"
             android:calendarViewShown="false"
+            android:datePickerMode="spinner"
             android:contentDescription="@string/accessibility_datetime_picker_date"
             />
 
@@ -32,6 +33,7 @@
             android:layout_gravity="center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:timePickerMode="spinner"
             android:contentDescription="@string/accessibility_datetime_picker_time"
             />
 
