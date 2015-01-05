@@ -26,6 +26,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -231,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportNothing,
   EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, first_run::auto_import_state());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
-  EXPECT_EQ(1, tab->GetMaxPageID());
+  EXPECT_TRUE(WaitForLoadStop(tab));
 }
 
 // Test first run with some tracked preferences.
