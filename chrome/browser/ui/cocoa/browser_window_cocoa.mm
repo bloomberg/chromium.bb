@@ -254,10 +254,6 @@ gfx::NativeWindow BrowserWindowCocoa::GetNativeWindow() const {
   return window();
 }
 
-BrowserWindowTesting* BrowserWindowCocoa::GetBrowserWindowTesting() {
-  return NULL;
-}
-
 StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
   return [controller_ statusBubble];
 }

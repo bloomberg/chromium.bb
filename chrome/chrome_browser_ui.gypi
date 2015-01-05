@@ -2110,7 +2110,6 @@
       'browser/ui/views/frame/browser_window_factory.cc',
       'browser/ui/views/frame/browser_window_property_manager_win.cc',
       'browser/ui/views/frame/browser_window_property_manager_win.h',
-      'browser/ui/views/frame/browser_window_testing_views.h',
       'browser/ui/views/frame/contents_layout_manager.cc',
       'browser/ui/views/frame/contents_layout_manager.h',
       'browser/ui/views/frame/contents_web_view.cc',

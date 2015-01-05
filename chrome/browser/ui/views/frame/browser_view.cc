@@ -745,10 +745,6 @@ gfx::NativeWindow BrowserView::GetNativeWindow() const {
   return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 }
 
-BrowserWindowTesting* BrowserView::GetBrowserWindowTesting() {
-  return this;
-}
-
 StatusBubble* BrowserView::GetStatusBubble() {
   return status_bubble_.get();
 }
@@ -1480,9 +1476,6 @@ FindBar* BrowserView::CreateFindBar() {
 WebContentsModalDialogHost* BrowserView::GetWebContentsModalDialogHost() {
   return GetBrowserViewLayout()->GetWebContentsModalDialogHost();
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// BrowserView, BrowserWindowTesting implementation:
 
 BookmarkBarView* BrowserView::GetBookmarkBarView() const {
   return bookmark_bar_view_.get();

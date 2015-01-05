@@ -101,10 +101,6 @@ gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
   return NULL;
 }
 
-BrowserWindowTesting* TestBrowserWindow::GetBrowserWindowTesting() {
-  return NULL;
-}
-
 StatusBubble* TestBrowserWindow::GetStatusBubble() {
   return NULL;
 }

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/browser_window_testing_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/browser/extension_prefs.h"
@@ -191,11 +190,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
 
-  BrowserActionsContainer* container = browser()
-                                           ->window()
-                                           ->GetBrowserWindowTesting()
-                                           ->GetToolbarView()
-                                           ->browser_actions();
+  BrowserActionsContainer* container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()->browser_actions();
 
   // Currently, dragging should be enabled.
   ToolbarActionView* action_view = container->GetToolbarActionViewAt(0);

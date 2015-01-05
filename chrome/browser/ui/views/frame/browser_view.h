@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/frame/browser_window_testing_views.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
@@ -79,7 +78,6 @@ class WebView;
 //  including the TabStrip, toolbars, download shelves, the content area etc.
 //
 class BrowserView : public BrowserWindow,
-                    public BrowserWindowTesting,
                     public TabStripModelObserver,
                     public ui::AcceleratorProvider,
                     public views::WidgetDelegate,
@@ -252,7 +250,6 @@ class BrowserView : public BrowserWindow,
   bool IsAlwaysOnTop() const override;
   void SetAlwaysOnTop(bool always_on_top) override;
   gfx::NativeWindow GetNativeWindow() const override;
-  BrowserWindowTesting* GetBrowserWindowTesting() override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override;
   void BookmarkBarStateChanged(
@@ -360,11 +357,10 @@ class BrowserView : public BrowserWindow,
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
 
-  // Overridden from BrowserWindowTesting:
-  BookmarkBarView* GetBookmarkBarView() const override;
-  LocationBarView* GetLocationBarView() const override;
-  views::View* GetTabContentsContainerView() const override;
-  ToolbarView* GetToolbarView() const override;
+  BookmarkBarView* GetBookmarkBarView() const;
+  LocationBarView* GetLocationBarView() const;
+  views::View* GetTabContentsContainerView() const;
+  ToolbarView* GetToolbarView() const;
 
   // Overridden from TabStripModelObserver:
   void TabInsertedAt(content::WebContents* contents,

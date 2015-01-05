@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/frame/browser_window_testing_views.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -28,7 +28,7 @@ BrowserActionsContainer* GetContainer(Browser* browser,
                                       ToolbarActionsBarDelegate* bar_delegate) {
   if (bar_delegate)
     return static_cast<BrowserActionsContainer*>(bar_delegate);
-  return browser->window()->GetBrowserWindowTesting()->GetToolbarView()->
+  return BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->
       browser_actions();
 }
 
