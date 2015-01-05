@@ -500,7 +500,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // |write_failure_type| provides a caller-specific error code to be used on
   // failure.
   void WritePrefixSet(const base::FilePath& db_filename,
-                      const safe_browsing::PrefixSet* prefix_set,
+                      PrefixSetId prefix_set_id,
                       FailureType write_failure_type);
 
   // Loads the given full-length hashes to the given whitelist.  If the number
@@ -530,10 +530,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                       safe_browsing_util::ListType list_id,
                       const SBChunkData& chunk);
 
-  // Returns the size in bytes of the store after the update.
-  int64 UpdateHashPrefixStore(const base::FilePath& store_filename,
-                               SafeBrowsingStore* store,
-                               FailureType failure_type);
+  // Updates the |store| and stores the result on disk under |store_filename|.
+  void UpdateHashPrefixStore(const base::FilePath& store_filename,
+                             SafeBrowsingStore* store,
+                             FailureType failure_type);
 
   // Updates a PrefixStore store for URLs (|url_store|) which is backed on disk
   // by a "|db_filename| Prefix Set" file. Specific failure types are provided
@@ -560,6 +560,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // testing. This should only be used in unit tests (where multi-threading and
   // synchronization are not problematic).
   PrefixGetHashCache* GetUnsynchronizedPrefixGetHashCacheForTesting();
+
+  // Records a file size histogram for the database or PrefixSet backed by
+  // |filename|.
+  void RecordFileSizeHistogram(const base::FilePath& file_path);
 
   base::ThreadChecker thread_checker_;
 

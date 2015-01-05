@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -16,6 +17,7 @@
 #include "base/process/process_metrics.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/prefix_set.h"
@@ -36,10 +38,10 @@ using safe_browsing::PrefixSetBuilder;
 namespace {
 
 // Filename suffix for the bloom filter.
-const base::FilePath::CharType kBloomFilterFile[] =
+const base::FilePath::CharType kBloomFilterFileSuffix[] =
     FILE_PATH_LITERAL(" Filter 2");
 // Filename suffix for the prefix set.
-const base::FilePath::CharType kPrefixSetFile[] =
+const base::FilePath::CharType kPrefixSetFileSuffix[] =
     FILE_PATH_LITERAL(" Prefix Set");
 // Filename suffix for download store.
 const base::FilePath::CharType kDownloadDBFile[] =
@@ -388,13 +390,13 @@ base::FilePath SafeBrowsingDatabase::DownloadDBFilename(
 // static
 base::FilePath SafeBrowsingDatabase::BloomFilterForFilename(
     const base::FilePath& db_filename) {
-  return base::FilePath(db_filename.value() + kBloomFilterFile);
+  return base::FilePath(db_filename.value() + kBloomFilterFileSuffix);
 }
 
 // static
 base::FilePath SafeBrowsingDatabase::PrefixSetForFilename(
     const base::FilePath& db_filename) {
-  return base::FilePath(db_filename.value() + kPrefixSetFile);
+  return base::FilePath(db_filename.value() + kPrefixSetFileSuffix);
 }
 
 // static
@@ -1350,12 +1352,9 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   }
 
   if (download_store_) {
-    int64 size_bytes = UpdateHashPrefixStore(
-        DownloadDBFilename(filename_base_),
-        download_store_.get(),
-        FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH);
-    UMA_HISTOGRAM_COUNTS("SB2.DownloadDatabaseKilobytes",
-                         static_cast<int>(size_bytes / 1024));
+    UpdateHashPrefixStore(DownloadDBFilename(filename_base_),
+                          download_store_.get(),
+                          FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH);
   }
 
   UpdatePrefixSetUrlStore(BrowseDBFilename(filename_base_),
@@ -1373,12 +1372,9 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
                        SBWhitelistId::DOWNLOAD);
 
   if (extension_blacklist_store_) {
-    int64 size_bytes = UpdateHashPrefixStore(
-        ExtensionBlacklistDBFilename(filename_base_),
-        extension_blacklist_store_.get(),
-        FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH);
-    UMA_HISTOGRAM_COUNTS("SB2.ExtensionBlacklistKilobytes",
-                         static_cast<int>(size_bytes / 1024));
+    UpdateHashPrefixStore(ExtensionBlacklistDBFilename(filename_base_),
+                          extension_blacklist_store_.get(),
+                          FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH);
   }
 
   if (side_effect_free_whitelist_store_) {
@@ -1422,6 +1418,8 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
     return;
   }
 
+  RecordFileSizeHistogram(store_filename);
+
 #if defined(OS_MACOSX)
   base::mac::SetFileBackupExclusion(store_filename);
 #endif
@@ -1429,7 +1427,7 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
   LoadWhitelist(full_hashes, whitelist_id);
 }
 
-int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
+void SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
     const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     FailureType failure_type) {
@@ -1443,11 +1441,11 @@ int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
   if (!store->FinishUpdate(&builder, &add_full_hashes_result))
     RecordFailure(failure_type);
 
+  RecordFileSizeHistogram(store_filename);
+
 #if defined(OS_MACOSX)
   base::mac::SetFileBackupExclusion(store_filename);
 #endif
-
-  return GetFileSizeOrZero(store_filename);
 }
 
 void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
@@ -1511,15 +1509,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
 
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", base::TimeTicks::Now() - before);
 
-  {
-    // Persist the prefix set to disk. Do not grab the lock to avoid contention
-    // while writing to disk. This is safe as only this thread can ever modify
-    // |state_manager_|'s prefix sets anyways.
-    scoped_ptr<ReadTransaction> txn =
-        state_manager_.BeginReadTransactionNoLockOnMainThread();
-    WritePrefixSet(db_filename, txn->GetPrefixSet(prefix_set_id),
-                   write_failure_type);
-  }
+  WritePrefixSet(db_filename, prefix_set_id, write_failure_type);
 
   // Gather statistics.
   if (got_counters && metric->GetIOCounters(&io_after)) {
@@ -1537,9 +1527,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
                                           io_before.WriteOperationCount));
   }
 
-  const int64 file_size = GetFileSizeOrZero(db_filename);
-  UMA_HISTOGRAM_COUNTS("SB2.DatabaseKilobytes",
-                       static_cast<int>(file_size / 1024));
+  RecordFileSizeHistogram(db_filename);
 
 #if defined(OS_MACOSX)
   base::mac::SetFileBackupExclusion(db_filename);
@@ -1559,8 +1547,13 @@ void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
     return;
   }
 
+  const base::FilePath ip_blacklist_filename =
+      IpBlacklistDBFilename(filename_base_);
+
+  RecordFileSizeHistogram(ip_blacklist_filename);
+
 #if defined(OS_MACOSX)
-  base::mac::SetFileBackupExclusion(IpBlacklistDBFilename(filename_base_));
+  base::mac::SetFileBackupExclusion(ip_blacklist_filename);
 #endif
 
   LoadIpBlacklist(full_hashes);
@@ -1703,9 +1696,16 @@ bool SafeBrowsingDatabaseNew::Delete() {
 }
 
 void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
-                                             const PrefixSet* prefix_set,
+                                             PrefixSetId prefix_set_id,
                                              FailureType write_failure_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Do not grab the lock to avoid contention while writing to disk. This is
+  // safe as only this thread can ever modify |state_manager_|'s prefix sets
+  // anyways.
+  scoped_ptr<ReadTransaction> txn =
+      state_manager_.BeginReadTransactionNoLockOnMainThread();
+  const PrefixSet* prefix_set = txn->GetPrefixSet(prefix_set_id);
 
   if (!prefix_set)
     return;
@@ -1716,9 +1716,7 @@ void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
   const bool write_ok = prefix_set->WriteFile(prefix_set_filename);
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetWrite", base::TimeTicks::Now() - before);
 
-  const int64 file_size = GetFileSizeOrZero(prefix_set_filename);
-  UMA_HISTOGRAM_COUNTS("SB2.PrefixSetKilobytes",
-                       static_cast<int>(file_size / 1024));
+  RecordFileSizeHistogram(prefix_set_filename);
 
   if (!write_ok)
     RecordFailure(write_failure_type);
@@ -1813,4 +1811,53 @@ bool SafeBrowsingDatabaseNew::IsCsdWhitelistKillSwitchOn() {
 SafeBrowsingDatabaseNew::PrefixGetHashCache*
 SafeBrowsingDatabaseNew::GetUnsynchronizedPrefixGetHashCacheForTesting() {
   return state_manager_.BeginReadTransaction()->prefix_gethash_cache();
+}
+
+void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
+    const base::FilePath& file_path) {
+  const int64 file_size = GetFileSizeOrZero(file_path);
+  const int file_size_kilobytes = static_cast<int>(file_size / 1024);
+
+  base::FilePath::StringType filename = file_path.BaseName().value();
+
+  // Default to logging DB sizes unless |file_path| points at PrefixSet storage.
+  std::string histogram_name("SB2.DatabaseSizeKilobytes");
+  if (EndsWith(filename, kPrefixSetFileSuffix, true)) {
+    histogram_name = "SB2.PrefixSetKilobytes";
+    // Clear the PrefixSet suffix to have the histogram suffix selector below
+    // work the same for PrefixSet-based storage as it does for simple safe
+    // browsing stores.
+    // The size of the kPrefixSetFileSuffix is the size of its array minus 1 as
+    // the array includes the terminating '\0'.
+    const size_t kPrefixSetSuffixSize = arraysize(kPrefixSetFileSuffix) - 1;
+    filename.erase(filename.size() - kPrefixSetSuffixSize);
+  }
+
+  // Changes to histogram suffixes below need to be mirrored in the
+  // SafeBrowsingLists suffix enum in histograms.xml.
+  if (EndsWith(filename, kBrowseDBFile, true))
+    histogram_name.append(".Browse");
+  else if (EndsWith(filename, kDownloadDBFile, true))
+    histogram_name.append(".Download");
+  else if (EndsWith(filename, kCsdWhitelistDBFile, true))
+    histogram_name.append(".CsdWhitelist");
+  else if (EndsWith(filename, kDownloadWhitelistDBFile, true))
+    histogram_name.append(".DownloadWhitelist");
+  else if (EndsWith(filename, kExtensionBlacklistDBFile, true))
+    histogram_name.append(".ExtensionBlacklist");
+  else if (EndsWith(filename, kSideEffectFreeWhitelistDBFile, true))
+    histogram_name.append(".SideEffectFreeWhitelist");
+  else if (EndsWith(filename, kIPBlacklistDBFile, true))
+    histogram_name.append(".IPBlacklist");
+  else if (EndsWith(filename, kUnwantedSoftwareDBFile, true))
+    histogram_name.append(".UnwantedSoftware");
+  else
+    NOTREACHED();  // Add support for new lists above.
+
+  // Histogram properties as in UMA_HISTOGRAM_COUNTS macro.
+  base::HistogramBase* histogram_pointer = base::Histogram::FactoryGet(
+      histogram_name, 1, 1000000, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  histogram_pointer->Add(file_size_kilobytes);
 }
