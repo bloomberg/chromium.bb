@@ -424,7 +424,7 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
                 WasDataReductionProxyUsed(fake_request.get(), testing::_))
         .WillRepeatedly(Return(test_cases[i].was_proxy_used));
 
-    usage_stats->RecordMissingViaHeaderBytes(fake_request.get());
+    usage_stats->RecordMissingViaHeaderBytes(*fake_request);
 
     if (test_cases[i].is_4xx_sample_expected) {
       histogram_tester.ExpectUniqueSample(k4xxHistogramName,

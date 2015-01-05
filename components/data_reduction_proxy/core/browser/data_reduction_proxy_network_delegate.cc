@@ -175,6 +175,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
 void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     net::URLRequest* request,
     bool started) {
+  DCHECK(request);
   if (data_reduction_proxy_usage_stats_)
     data_reduction_proxy_usage_stats_->OnUrlRequestCompleted(request, started);
 
@@ -218,7 +219,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         data_reduction_proxy_usage_stats_ &&
         !proxy_config_getter_.is_null()) {
       data_reduction_proxy_usage_stats_->RecordBytesHistograms(
-          request,
+          *request,
           *data_reduction_proxy_enabled_,
           proxy_config_getter_.Run());
     }

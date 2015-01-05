@@ -201,7 +201,7 @@ DataReductionProxyUsageStats::GetBypassType() const {
 }
 
 void DataReductionProxyUsageStats::RecordBytesHistograms(
-    net::URLRequest* request,
+    const net::URLRequest& request,
     const BooleanPrefMember& data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
   RecordBypassedBytesHistograms(request, data_reduction_proxy_enabled,
@@ -210,14 +210,14 @@ void DataReductionProxyUsageStats::RecordBytesHistograms(
 }
 
 void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
-    net::URLRequest* request,
+    const net::URLRequest& request,
     const BooleanPrefMember& data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
-  int64 content_length = request->received_response_content_length();
+  int64 content_length = request.received_response_content_length();
 
   if (data_reduction_proxy_enabled.GetValue() &&
       !data_reduction_proxy_config.Equals(
-          request->context()->proxy_service()->config())) {
+          request.context()->proxy_service()->config())) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::MANAGED_PROXY_CONFIG,
                         content_length);
@@ -226,7 +226,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
 
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (data_reduction_proxy_params_->WasDataReductionProxyUsed(
-      request, &data_reduction_proxy_type_info)) {
+      &request, &data_reduction_proxy_type_info)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NOT_BYPASSED,
                         content_length);
@@ -234,7 +234,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     // If non-empty, |proxy_server.first| is the proxy that this request used.
     if (!data_reduction_proxy_type_info.proxy_servers.first.is_empty()) {
       DataReductionProxyTamperDetection::DetectAndReport(
-          request->response_info().headers.get(),
+          request.response_info().headers.get(),
           data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure(),
           content_length);
     }
@@ -242,7 +242,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   }
 
   if (data_reduction_proxy_enabled.GetValue() &&
-      request->url().SchemeIs(url::kHttpsScheme)) {
+      request.url().SchemeIs(url::kHttpsScheme)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::SSL,
                         content_length);
@@ -251,7 +251,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
 
   if (data_reduction_proxy_enabled.GetValue() &&
       data_reduction_proxy_params_->IsBypassedByDataReductionProxyLocalRules(
-          *request, data_reduction_proxy_config)) {
+          request, data_reduction_proxy_config)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::LOCAL_BYPASS_RULES,
                         content_length);
@@ -265,7 +265,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
       last_bypass_type_ ==  BYPASS_EVENT_TYPE_MEDIUM ||
       last_bypass_type_ ==  BYPASS_EVENT_TYPE_LONG)) {
     std::string mime_type;
-    request->GetMimeType(&mime_type);
+    request.GetMimeType(&mime_type);
     // MIME types are named by <media-type>/<subtype>. Check to see if the
     // media type is audio or video. Only record when triggered by short bypass,
     // there isn't an audio or video bucket for medium or long bypasses.
@@ -293,7 +293,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   }
 
   if (data_reduction_proxy_enabled.GetValue() &&
-      data_reduction_proxy_params_->AreDataReductionProxiesBypassed(*request,
+      data_reduction_proxy_params_->AreDataReductionProxiesBypassed(request,
                                                                     NULL)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NETWORK_ERROR,
@@ -464,26 +464,27 @@ void DataReductionProxyUsageStats::RecordBypassedBytes(
 }
 
 void DataReductionProxyUsageStats::RecordMissingViaHeaderBytes(
-    URLRequest* request) {
+    const URLRequest& request) {
   // Responses that were served from cache should have been filtered out
   // already.
-  DCHECK(!request->was_cached());
+  DCHECK(!request.was_cached());
 
-  if (!data_reduction_proxy_params_->WasDataReductionProxyUsed(request, NULL) ||
-      HasDataReductionProxyViaHeader(request->response_headers(), NULL)) {
+  if (!data_reduction_proxy_params_->WasDataReductionProxyUsed(&request,
+                                                               NULL) ||
+      HasDataReductionProxyViaHeader(request.response_headers(), NULL)) {
     // Only track requests that used the data reduction proxy and had responses
     // that were missing the data reduction proxy via header.
     return;
   }
 
-  if (request->GetResponseCode() >= net::HTTP_BAD_REQUEST &&
-      request->GetResponseCode() < net::HTTP_INTERNAL_SERVER_ERROR) {
+  if (request.GetResponseCode() >= net::HTTP_BAD_REQUEST &&
+      request.GetResponseCode() < net::HTTP_INTERNAL_SERVER_ERROR) {
     // Track 4xx responses that are missing via headers separately.
     UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.4xx",
-                         request->received_response_content_length());
+                         request.received_response_content_length());
   } else {
     UMA_HISTOGRAM_COUNTS("DataReductionProxy.MissingViaHeader.Bytes.Other",
-                         request->received_response_content_length());
+                         request.received_response_content_length());
   }
 }
 
