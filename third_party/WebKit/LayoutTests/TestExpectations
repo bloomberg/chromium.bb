@@ -1256,6 +1256,29 @@ crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
+# These tests will need to be rebaselined after overscroll is moved to the
+# compositor thread. That switch will be made in the Chromium repository.
+crbug.com/133097 [ Mac ] rubberbanding/overhang-nw.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] fast/transforms/transformed-focused-text-input.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/event-overhang-w.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-sw.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-nw.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-ne.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/momentum-reset.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-w.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-se.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/event-overhang-e.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-e.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-se.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-ne.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/event-overhang-n.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-n.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-s.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/overhang-sw.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] rubberbanding/event-overhang-s.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] compositing/fixed-body-background-positioned.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsManualRebaseline ]
+
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 crbug.com/305036 fast/multicol/span/span-as-immediate-child-generated-content.html [ Failure Pass ]
