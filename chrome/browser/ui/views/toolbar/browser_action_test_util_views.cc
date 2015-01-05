@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -110,6 +111,16 @@ bool BrowserActionTestUtil::HidePopup() {
 void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
   extensions::ExtensionToolbarModel::Get(browser_->profile())->
       SetVisibleIconCount(icons);
+}
+
+bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
+  return GetContainer(browser_, bar_delegate_)->GetToolbarActionViewAt(index)->
+      wants_to_run_for_testing();
+}
+
+bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
+  return BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
+      app_menu()->overflowed_toolbar_action_wants_to_run_for_testing();
 }
 
 // static

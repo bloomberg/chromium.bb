@@ -167,6 +167,8 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   void StopAnimating() override;
   int GetChevronWidth() const override;
   bool IsPopupRunning() const override;
+  void OnOverflowedActionWantsToRunChanged(bool overflowed_action_wants_to_run)
+      override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -230,6 +232,13 @@ int ToolbarActionsBarBridge::GetChevronWidth() const {
 
 bool ToolbarActionsBarBridge::IsPopupRunning() const {
   return [ExtensionPopupController popup] != nil;
+}
+
+void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
+    bool overflowed_action_wants_to_run) {
+  [[[BrowserWindowController browserWindowControllerForWindow:
+      [controller_ browser]->window()->GetNativeWindow()] toolbarController]
+          setOverflowedToolbarActionWantsToRun:overflowed_action_wants_to_run];
 }
 
 }  // namespace

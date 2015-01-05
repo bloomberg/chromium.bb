@@ -364,10 +364,6 @@ void ToolbarView::ShowAppMenu(bool for_drop) {
   wrench_menu_->RunMenu(app_menu_);
 }
 
-views::MenuButton* ToolbarView::app_menu() const {
-  return app_menu_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, AccessiblePaneView overrides:
 

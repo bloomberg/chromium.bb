@@ -106,7 +106,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  views::MenuButton* app_menu() const;
+  WrenchToolbarButton* app_menu() const { return app_menu_; }
   HomeButton* home_button() const { return home_; }
 
   // AccessiblePaneView:

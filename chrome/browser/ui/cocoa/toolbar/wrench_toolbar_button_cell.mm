@@ -66,7 +66,13 @@ class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
   wrenchIconPainter_->SetSeverity(severity, shouldAnimate);
 }
 
+- (void)setOverflowedToolbarActionWantsToRun:(BOOL)overflowedActionWantsToRun {
+  overflowedToolbarActionWantsToRun_ = overflowedActionWantsToRun;
+  [[self controlView] setNeedsDisplay:YES];
+}
+
 - (void)commonInit {
+  overflowedToolbarActionWantsToRun_ = NO;
   delegate_.reset(new WrenchIconPainterDelegateMac(self));
   wrenchIconPainter_.reset(new WrenchIconPainter(delegate_.get()));
 }
@@ -74,9 +80,19 @@ class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
 - (WrenchIconPainter::BezelType)currentBezelType {
   if ([self isHighlighted])
     return WrenchIconPainter::BEZEL_PRESSED;
-  if ([self isMouseInside])
+  // If an overflowed toolbar action wants to run, we give the wrench menu a
+  // "popped out" appearance - in practice, this is the same as the hovered
+  // appearance.
+  if ([self isMouseInside] || overflowedToolbarActionWantsToRun_)
     return WrenchIconPainter::BEZEL_HOVER;
   return WrenchIconPainter::BEZEL_NONE;
+}
+
+#pragma mark -
+#pragma mark Testing Methods
+
+- (BOOL)overflowedToolbarActionWantsToRun {
+  return overflowedToolbarActionWantsToRun_;
 }
 
 @end

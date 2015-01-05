@@ -8,11 +8,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
 #include "ui/views/painter.h"
 
@@ -25,6 +27,7 @@ WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
+      overflowed_toolbar_action_wants_to_run_for_testing_(false),
       weak_factory_(this) {
 }
 
@@ -35,6 +38,18 @@ void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
                                       bool animate) {
   wrench_icon_painter_->SetSeverity(severity, animate);
   SchedulePaint();
+}
+
+void WrenchToolbarButton::SetOverflowedToolbarActionWantsToRun(
+    bool wants_to_run) {
+  overflowed_toolbar_action_wants_to_run_for_testing_ = wants_to_run;
+  scoped_ptr<views::LabelButtonBorder> border = CreateDefaultBorder();
+  if (wants_to_run) {
+    // We use the same style of border as the ToolbarActionViews do to indicate
+    // an action wants to run.
+    ToolbarActionView::DecorateWantsToRunBorder(border.get());
+  }
+  SetBorder(border.Pass());
 }
 
 gfx::Size WrenchToolbarButton::GetPreferredSize() const {

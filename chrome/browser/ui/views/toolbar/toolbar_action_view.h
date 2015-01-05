@@ -70,6 +70,10 @@ class ToolbarActionView : public views::MenuButton,
                     Delegate* delegate);
   ~ToolbarActionView() override;
 
+  // Modifies the given |border| in order to display a "popped out" for when
+  // an action wants to run.
+  static void DecorateWantsToRunBorder(views::LabelButtonBorder* border);
+
   // Overridden from views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
 
@@ -106,6 +110,8 @@ class ToolbarActionView : public views::MenuButton,
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
 
+  bool wants_to_run_for_testing() const { return wants_to_run_; }
+
  private:
   // Overridden from views::View:
   void ViewHierarchyChanged(
@@ -114,6 +120,7 @@ class ToolbarActionView : public views::MenuButton,
   gfx::Size GetPreferredSize() const override;
   void PaintChildren(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
@@ -141,6 +148,13 @@ class ToolbarActionView : public views::MenuButton,
 
   // Used to make sure we only register the command once.
   bool called_register_command_;
+
+  // The cached value of whether or not the action wants to run on the current
+  // tab.
+  bool wants_to_run_;
+
+  // A special border to draw when the action wants to run.
+  scoped_ptr<views::LabelButtonBorder> wants_to_run_border_;
 
   content::NotificationRegistrar registrar_;
 

@@ -17,13 +17,16 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
 
 using views::LabelButtonBorder;
@@ -47,7 +50,8 @@ ToolbarActionView::ToolbarActionView(
       view_controller_(view_controller),
       browser_(browser),
       delegate_(delegate),
-      called_register_command_(false) {
+      called_register_command_(false),
+      wants_to_run_(false) {
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -62,11 +66,33 @@ ToolbarActionView::ToolbarActionView(
       content::Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(browser->profile())));
 
+  wants_to_run_border_ = CreateDefaultBorder();
+  DecorateWantsToRunBorder(wants_to_run_border_.get());
+
   UpdateState();
 }
 
 ToolbarActionView::~ToolbarActionView() {
   view_controller_->SetDelegate(nullptr);
+}
+
+void ToolbarActionView::DecorateWantsToRunBorder(
+    views::LabelButtonBorder* border) {
+  // Create a special border for when the action wants to run, which gives the
+  // button a "popped out" state. In practice, this is the same appearance we
+  // use for when the user hovers on the action.
+  gfx::Insets insets = border->GetInsets();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  border->SetPainter(false,
+                     views::Button::STATE_NORMAL,
+                     views::Painter::CreateImagePainter(
+                         *rb.GetImageSkiaNamed(IDR_BUTTON_HOVER), insets));
+  border->SetPainter(true,
+                     views::Button::STATE_NORMAL,
+                     views::Painter::CreateImagePainter(
+                         *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_HOVER),
+                         insets));
 }
 
 void ToolbarActionView::ViewHierarchyChanged(
@@ -96,6 +122,13 @@ void ToolbarActionView::PaintChildren(gfx::Canvas* canvas,
       canvas, GetLocalBounds(), GetCurrentWebContents());
 }
 
+void ToolbarActionView::OnPaintBorder(gfx::Canvas* canvas) {
+  if (!wants_to_run_)
+    views::MenuButton::OnPaintBorder(canvas);
+  else
+    wants_to_run_border_->Paint(*this, canvas);
+}
+
 void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
   views::MenuButton::GetAccessibleState(state);
   state->role = ui::AX_ROLE_BUTTON;
@@ -111,17 +144,16 @@ void ToolbarActionView::UpdateState() {
   if (SessionTabHelper::IdForTab(web_contents) < 0)
     return;
 
-  bool enabled = view_controller_->IsEnabled(web_contents);
-  if (!enabled)
+  if (!view_controller_->IsEnabled(web_contents))
     SetState(views::CustomButton::STATE_DISABLED);
   else if (state() == views::CustomButton::STATE_DISABLED)
     SetState(views::CustomButton::STATE_NORMAL);
 
-  gfx::ImageSkia icon(view_controller_->GetIcon(web_contents).AsImageSkia());
-  if (!icon.isNull()) {
-    if (!enabled)
-      icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
+  wants_to_run_ = view_controller_->WantsToRun(web_contents);
 
+  gfx::ImageSkia icon(view_controller_->GetIcon(web_contents).AsImageSkia());
+
+  if (!icon.isNull()) {
     ThemeService* theme =
         ThemeServiceFactory::GetForProfile(browser_->profile());
 

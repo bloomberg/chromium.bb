@@ -133,6 +133,11 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
     pop_out_actions_to_run_ = pop_out_actions_to_run;
   }
 
+  static void set_send_overflowed_action_changes_for_testing(
+      bool send_overflowed_action_changes) {
+    send_overflowed_action_changes_ = send_overflowed_action_changes;
+  }
+
   // During testing we can disable animations by setting this flag to true,
   // so that the bar resizes instantly, instead of having to poll it while it
   // animates to open/closed status.
@@ -171,6 +176,9 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // "pop out" any overflowed actions that want to run (depending on the
   // value of |pop_out_actions_to_run|.
   void ReorderActions();
+
+  // Sets |overflowed_action_wants_to_run_| to the proper value.
+  void SetOverflowedActionWantsToRun();
 
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
 
@@ -212,6 +220,14 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // action) will pop out of overflow to draw more attention.
   // See also TabOrderHelper in the .cc file.
   static bool pop_out_actions_to_run_;
+
+  // If set to false, notifications for OnOverflowedActionWantsToRunChanged()
+  // will not be sent. Used because in unit tests there is no wrench menu to
+  // alter.
+  static bool send_overflowed_action_changes_;
+
+  // True if an action in the overflow menu wants to run.
+  bool overflowed_action_wants_to_run_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBar);
 };

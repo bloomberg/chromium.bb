@@ -54,6 +54,11 @@ class ToolbarActionsBarDelegate {
 
   // Returns true if there is currently a popup running.
   virtual bool IsPopupRunning() const = 0;
+
+  // Notifies the delegate that the value of whether or not any overflowed
+  // action wants to run has changed.
+  virtual void OnOverflowedActionWantsToRunChanged(
+      bool overflowed_action_wants_to_run) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_

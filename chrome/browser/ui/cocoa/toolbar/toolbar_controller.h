@@ -128,6 +128,10 @@ class NotificationBridge;
 // Sets whether or not the current page is translated.
 - (void)setTranslateIconLit:(BOOL)on;
 
+// Sets whether or not an overflowed toolbar action wants to run.
+// Only used if the extension toolbar redesign is on.
+- (void)setOverflowedToolbarActionWantsToRun:(BOOL)overflowedActionWantsToRun;
+
 // Happens when the zoom for the active tab changes, the active tab switches, or
 // a new tab or browser window is created. |canShowBubble| indicates if it is
 // appropriate to show a zoom bubble for the change.

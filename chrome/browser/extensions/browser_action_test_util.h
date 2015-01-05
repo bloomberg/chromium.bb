@@ -76,6 +76,14 @@ class BrowserActionTestUtil {
   // Set how many icons should be visible.
   void SetIconVisibilityCount(size_t icons);
 
+  // Tests that the button at the given |index| is displaying that it wants
+  // to run.
+  bool ActionButtonWantsToRun(size_t index);
+
+  // Tests that the overflow button is displaying an overflowed action wants
+  // to run.
+  bool OverflowedActionButtonWantsToRun();
+
   // Disables animation.
   static void DisableAnimations();
 

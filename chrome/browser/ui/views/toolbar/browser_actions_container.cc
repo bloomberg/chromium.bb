@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/feature_switch.h"
@@ -183,8 +184,9 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
   // With traditional overflow, the reference is the chevron. With the
   // redesign, we use the wrench menu instead.
   return chevron_ ?
-      chevron_ :
-      BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
+      static_cast<views::MenuButton*>(chevron_) :
+      static_cast<views::MenuButton*>(BrowserView::GetBrowserViewForBrowser(
+          browser_)->toolbar()->app_menu());
 }
 
 void BrowserActionsContainer::SetPopupOwner(ToolbarActionView* popup_owner) {
@@ -325,6 +327,14 @@ int BrowserActionsContainer::GetChevronWidth() const {
 
 bool BrowserActionsContainer::IsPopupRunning() const {
   return popup_owner_ != nullptr;
+}
+
+void BrowserActionsContainer::OnOverflowedActionWantsToRunChanged(
+    bool overflowed_action_wants_to_run) {
+  DCHECK(!in_overflow_mode());
+  BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
+      app_menu()->SetOverflowedToolbarActionWantsToRun(
+          overflowed_action_wants_to_run);
 }
 
 void BrowserActionsContainer::AddObserver(

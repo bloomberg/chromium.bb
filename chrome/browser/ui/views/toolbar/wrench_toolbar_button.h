@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
 #include "ui/views/controls/button/menu_button.h"
 
+namespace views {
+class LabelButtonBorder;
+}
+
 class ToolbarView;
 
 // TODO(gbillock): Rename this? No longer a wrench.
@@ -28,6 +32,13 @@ class WrenchToolbarButton : public views::MenuButton,
 
   // WrenchIconPainter::Delegate:
   void ScheduleWrenchIconPaint() override;
+
+  // Sets |overflowed_toolbar_action_wants_to_run_| and schedules a paint.
+  void SetOverflowedToolbarActionWantsToRun(bool wants_to_run);
+
+  bool overflowed_toolbar_action_wants_to_run_for_testing() const {
+    return overflowed_toolbar_action_wants_to_run_for_testing_;
+  }
 
   // Opens the wrench menu immediately during a drag-and-drop operation.
   // Used only in testing.
@@ -56,6 +67,10 @@ class WrenchToolbarButton : public views::MenuButton,
   // Whether or not we should allow dragging extension icons onto this button
   // (in order to open the overflow in the app/wrench menu).
   bool allow_extension_dragging_;
+
+  // A flag for whether or not any overflowed toolbar actions want to run.
+  // Only needed for testing.
+  bool overflowed_toolbar_action_wants_to_run_for_testing_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<WrenchToolbarButton> weak_factory_;

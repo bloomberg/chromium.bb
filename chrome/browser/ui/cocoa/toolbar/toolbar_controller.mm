@@ -460,6 +460,12 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   locationBarView_->SetTranslateIconLit(on);
 }
 
+- (void)setOverflowedToolbarActionWantsToRun:(BOOL)overflowedActionWantsToRun {
+  WrenchToolbarButtonCell* cell =
+      base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton_ cell]);
+  [cell setOverflowedToolbarActionWantsToRun:overflowedActionWantsToRun];
+}
+
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
   locationBarView_->ZoomChangedForActiveTab(
       canShowBubble && ![wrenchMenuController_ isMenuOpen]);

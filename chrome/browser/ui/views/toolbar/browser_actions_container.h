@@ -247,6 +247,8 @@ class BrowserActionsContainer
   void StopAnimating() override;
   int GetChevronWidth() const override;
   bool IsPopupRunning() const override;
+  void OnOverflowedActionWantsToRunChanged(
+      bool overflowed_action_wants_to_run) override;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()

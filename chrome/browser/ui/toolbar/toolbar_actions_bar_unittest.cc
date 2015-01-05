@@ -201,6 +201,7 @@ void ToolbarActionsBarUnitTest::SetUp() {
   main_bar_helper_ = TestToolbarActionsBarHelper::Create(browser(), nullptr);
 
   BrowserActionTestUtil::DisableAnimations();
+  ToolbarActionsBar::set_send_overflowed_action_changes_for_testing(false);
   browser_action_test_util_.reset(
       new BrowserActionTestUtil(browser(),
                                 toolbar_actions_bar()->delegate_for_test()));

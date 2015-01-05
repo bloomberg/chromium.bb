@@ -293,6 +293,14 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   if (!webContents)
     return;
 
+  if (viewController_->WantsToRun(webContents)) {
+    [[self cell] setImageID:IDR_BROWSER_ACTION_H
+        forButtonState:image_button_cell::kDefaultState];
+  } else {
+    [[self cell] setImageID:IDR_BROWSER_ACTION
+        forButtonState:image_button_cell::kDefaultState];
+  }
+
   base::string16 tooltip = viewController_->GetTooltip(webContents);
   [self setToolTip:(tooltip.empty() ? nil : base::SysUTF16ToNSString(tooltip))];
 
@@ -391,7 +399,6 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   DCHECK(viewController_);
   content::WebContents* webContents =
       [browserActionsController_ currentWebContents];
-  bool enabled = viewController_->IsEnabled(webContents);
   const NSSize imageSize = self.image.size;
   const NSRect imageRect =
       NSMakeRect(std::floor((NSWidth(cellFrame) - imageSize.width) / 2.0),
@@ -400,7 +407,7 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   [self.image drawInRect:imageRect
                 fromRect:NSZeroRect
                operation:NSCompositeSourceOver
-                fraction:enabled ? 1.0 : 0.4
+                fraction:1.0
           respectFlipped:YES
                    hints:nil];
 

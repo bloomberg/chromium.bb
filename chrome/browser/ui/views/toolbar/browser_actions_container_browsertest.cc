@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
 
 // Test the behavior of the overflow container for Extension Actions.
 class BrowserActionsContainerOverflowTest
-    : public BrowserActionsBarBrowserTest {
+    : public BrowserActionsBarRedesignBrowserTest {
  public:
   BrowserActionsContainerOverflowTest() : main_bar_(nullptr),
                                           overflow_bar_(nullptr),
@@ -252,7 +252,6 @@ class BrowserActionsContainerOverflowTest
   extensions::ExtensionToolbarModel* model() { return model_; }
 
  private:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
@@ -270,19 +269,8 @@ class BrowserActionsContainerOverflowTest
   // The associated toolbar model.
   extensions::ExtensionToolbarModel* model_;
 
-  // Enable the feature redesign switch.
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerOverflowTest);
 };
-
-void BrowserActionsContainerOverflowTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
-  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(),
-      true));
-}
 
 void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   BrowserActionsBarBrowserTest::SetUpOnMainThread();
@@ -297,7 +285,6 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
 
 void BrowserActionsContainerOverflowTest::TearDownOnMainThread() {
   overflow_parent_.reset();
-  enable_redesign_.reset();
   BrowserActionsBarBrowserTest::TearDownOnMainThread();
 }
 

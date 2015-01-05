@@ -106,6 +106,9 @@ bool ToolbarActionsBar::disable_animations_for_testing_ = false;
 // static
 bool ToolbarActionsBar::pop_out_actions_to_run_ = false;
 
+// static
+bool ToolbarActionsBar::send_overflowed_action_changes_ = true;
+
 // A class to implement an optional tab ordering that "pops out" actions that
 // want to run on a particular page, as part of our experimentation with how to
 // best signal that actions like extension page actions want to run.
@@ -419,7 +422,8 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       platform_settings_(main_bar != nullptr),
       model_observer_(this),
       suppress_layout_(false),
-      suppress_animation_(true) {
+      suppress_animation_(true),
+      overflowed_action_wants_to_run_(false) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 
@@ -765,6 +769,8 @@ void ToolbarActionsBar::ToolbarExtensionUpdated(
           action->WantsToRun(web_contents));
     }
   }
+
+  SetOverflowedActionWantsToRun();
 }
 
 bool ToolbarActionsBar::ShowExtensionActionPopup(
@@ -780,6 +786,7 @@ bool ToolbarActionsBar::ShowExtensionActionPopup(
 
 void ToolbarActionsBar::ToolbarVisibleCountChanged() {
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
+  SetOverflowedActionWantsToRun();
 }
 
 void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
@@ -856,6 +863,28 @@ void ToolbarActionsBar::ReorderActions() {
   if (!suppress_layout_) {
     ResizeDelegate(gfx::Tween::EASE_OUT, false);
     delegate_->Redraw(true);
+  }
+
+  SetOverflowedActionWantsToRun();
+}
+
+void ToolbarActionsBar::SetOverflowedActionWantsToRun() {
+  if (in_overflow_mode())
+    return;
+  bool overflowed_action_wants_to_run = false;
+  content::WebContents* web_contents = GetCurrentWebContents();
+  for (size_t i = GetIconCount(); i < toolbar_actions_.size(); ++i) {
+    if (toolbar_actions_[i]->WantsToRun(web_contents)) {
+      overflowed_action_wants_to_run = true;
+      break;
+    }
+  }
+
+  if (overflowed_action_wants_to_run_ != overflowed_action_wants_to_run) {
+    overflowed_action_wants_to_run_ = overflowed_action_wants_to_run;
+    if (send_overflowed_action_changes_)
+      delegate_->OnOverflowedActionWantsToRunChanged(
+          overflowed_action_wants_to_run_);
   }
 }
 

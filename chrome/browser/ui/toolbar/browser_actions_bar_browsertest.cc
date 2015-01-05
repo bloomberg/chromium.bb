@@ -4,10 +4,16 @@
 
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -34,6 +40,8 @@ scoped_refptr<const extensions::Extension> CreateExtension(
 }
 
 }  // namespace
+
+// BrowserActionsBarBrowserTest:
 
 BrowserActionsBarBrowserTest::BrowserActionsBarBrowserTest() {
 }
@@ -79,6 +87,22 @@ void BrowserActionsBarBrowserTest::LoadExtensions() {
     EXPECT_EQ(static_cast<int>(i + 1),
               browser_actions_bar()->VisibleBrowserActions());
   }
+}
+
+// BrowserActionsBarRedesignBrowserTest:
+
+BrowserActionsBarRedesignBrowserTest::BrowserActionsBarRedesignBrowserTest() {
+}
+
+BrowserActionsBarRedesignBrowserTest::~BrowserActionsBarRedesignBrowserTest() {
+}
+
+void BrowserActionsBarRedesignBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
+  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::extension_action_redesign(),
+      true));
 }
 
 // Test the basic functionality.
@@ -243,4 +267,66 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+}
+
+// Test that, with the toolbar action redesign, actions that want to run have
+// the proper appearance.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       TestUiForActionsWantToRun) {
+  LoadExtensions();
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+
+  // Load an extension with a page action.
+  scoped_refptr<const extensions::Extension> page_action_extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "page action", extensions::extension_action_test_util::PAGE_ACTION);
+  extension_service()->AddExtension(page_action_extension.get());
+
+  // Verify that the extension was added at the last index.
+  EXPECT_EQ(4, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(page_action_extension->id(),
+            browser_actions_bar()->GetExtensionId(3));
+  EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(3));
+
+  // Make the extension want to run on the current page.
+  ExtensionAction* action = extensions::ExtensionActionManager::Get(profile())->
+      GetExtensionAction(*page_action_extension);
+  ASSERT_TRUE(action);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  action->SetIsVisible(tab_id, true);
+  extensions::ExtensionActionAPI* extension_action_api =
+      extensions::ExtensionActionAPI::Get(profile());
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  // Verify that the extension's button has the proper UI.
+  EXPECT_TRUE(browser_actions_bar()->ActionButtonWantsToRun(3));
+
+  // Make the extension not want to run, and check that the special UI goes
+  // away.
+  action->SetIsVisible(tab_id, false);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(3));
+
+  // Reduce the visible icon count so that the extension is hidden.
+  browser_actions_bar()->SetIconVisibilityCount(3);
+  EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
+
+  // Make the extension want to run, and verify that the overflow button (the
+  // wrench) has the correct UI. Then, make the extension not want to run and
+  // verify it goes away.
+  action->SetIsVisible(tab_id, true);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  EXPECT_TRUE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
+  action->SetIsVisible(tab_id, false);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
+
+  // Make the extension want to run again, and then move it out of the overflow
+  // menu. This should stop the wrench menu from having the special UI.
+  action->SetIsVisible(tab_id, true);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  EXPECT_TRUE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
+  browser_actions_bar()->SetIconVisibilityCount(4);
+  EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
 }

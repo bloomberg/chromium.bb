@@ -17,6 +17,11 @@ class WrenchIconPainterDelegateMac;
 // and paint severity levels.
 @interface WrenchToolbarButtonCell : ClickHoldButtonCell {
  @private
+  // True if an overflowed toolbar action wants to act, and the button should
+  // draw itself in a "popped" state. Only used with the extension toolbar
+  // redesign.
+  BOOL overflowedToolbarActionWantsToRun_;
+
   scoped_ptr<WrenchIconPainter> wrenchIconPainter_;
   scoped_ptr<WrenchIconPainterDelegateMac> delegate_;
 }
@@ -24,6 +29,12 @@ class WrenchIconPainterDelegateMac;
 - (void)setSeverity:(WrenchIconPainter::Severity)severity
       shouldAnimate:(BOOL)shouldAnimate;
 
+- (void)setOverflowedToolbarActionWantsToRun:(BOOL)overflowedActionWantsToRun;
+
+@end
+
+@interface WrenchToolbarButtonCell(TestingAPI)
+- (BOOL) overflowedToolbarActionWantsToRun;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_WRENCH_TOOLBAR_BUTTON_CELL_H_
