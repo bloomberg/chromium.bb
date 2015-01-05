@@ -66,10 +66,8 @@ ONC_EXPORT extern const char kSavedIPConfig[];
 ONC_EXPORT extern const char kStaticIPConfig[];
 ONC_EXPORT extern const char kMacAddress[];
 ONC_EXPORT extern const char kName[];
-ONC_EXPORT extern const char kNameServers[];
 ONC_EXPORT extern const char kPriority[];
 ONC_EXPORT extern const char kProxySettings[];
-ONC_EXPORT extern const char kSearchDomains[];
 ONC_EXPORT extern const char kSource[];
 ONC_EXPORT extern const char kSourceDevice[];
 ONC_EXPORT extern const char kSourceDevicePolicy[];
@@ -183,6 +181,7 @@ ONC_EXPORT extern const char kIPv4[];
 ONC_EXPORT extern const char kIPv6[];
 ONC_EXPORT extern const char kNameServers[];
 ONC_EXPORT extern const char kRoutingPrefix[];
+ONC_EXPORT extern const char kSearchDomains[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kWebProxyAutoDiscoveryUrl[];
 }  // namespace ipconfig

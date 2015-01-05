@@ -312,30 +312,6 @@
       Proxy settings for this network
     </dd>
 
-    <dt class="field">NameServers</dt>
-    <dd>
-      <span class="field_meta">
-        (optional if <span class="field">Remove</span> is
-        <span class="value">false</span>, otherwise ignored)
-        <span class="type">array of string</span>
-      </span>
-      Array of addresses to use for name servers. If not specified, DHCP values
-      will be used.
-    </dd>
-
-    <dt class="field">SearchDomains</dt>
-    <dd>
-      <span class="field_meta">
-        (optional if <span class="field">Remove</span> is
-        <span class="value">false</span>, otherwise ignored)
-        <span class="type">array of string</span>
-      </span>
-      Array of strings to append to names for resolution. Items in this array
-      should not start with a dot. Example:
-      <span class="snippet">["corp.acme.org", "acme.org"]</span>. If not
-      specified, DHCP values will be used.
-    </dd>
-
     <dt class="field">VPN</dt>
     <dd>
       <span class="field_meta">
@@ -530,12 +506,13 @@
 </section>
 
 <section>
-  <h1>IP Config</h1>
+  <h1>IPConfig</h1>
   <p>
-    Field <span class="field">IPConfigs</span> is an array
-    of <span class="type">IPConfig</span>
-    objects. Each <span class="type">IPConfig</span> object describes a
-    particular static IP configuration and contains the following fields:
+    Objects of type <span class="type">IPConfig</span> are used to report the
+    actual IP configuration of a connected network (see
+    <span class="field">IPConfigs</span>), the IP configuration received from
+    DHCP (see <span class="field">SavedIPConfig</span>) and to configure a 
+    static IP configuration (see <span class="field">StaticIPConfig</span>).
   </p>
 
   <dl class="field_list">
@@ -567,7 +544,8 @@
     <dt class="field">RoutingPrefix</dt>
     <dd>
       <span class="field_meta">
-        (required)
+        (required if <span class="field">IPAddress</span> is set. Otherwise
+        ignored.)
         <span class="type">integer</span>
       </span>
       <span class="rule">
@@ -596,9 +574,8 @@
         <span class="type">array of string</span>
       </span>
       Array of addresses to use for name servers. Address format must match that
-      specified in the <span class="field">Type</span> field. Overrides values
-      in the top level NameServers field for this configuration. If not
-      specified, top level values will be used.
+      specified in the <span class="field">Type</span> field. If not specified,
+      DHCP values will be used.
     </dd>
 
     <dt class="field">SearchDomains</dt>
@@ -609,15 +586,14 @@
       </span>
       Array of strings to append to names for resolution. Items in this array
       should not start with a dot. Example: <span class="snippet">[
-      "corp.acme.org", "acme.org" ]</span>. Overrides values in the top level
-      SearchDomains field for this configuration. If not specified, top level
-      values will be used.
+      "corp.acme.org", "acme.org" ]</span>. If not specified, DHCP values will
+      be used.
     </dd>
 
     <dt class="field">WebProxyAutoDiscoveryUrl</dt>
     <dd>
       <span class="field_meta">
-        (optional if part of <span class="field">IPConfigs</span>)
+        (optional if part of <span class="field">IPConfigs</span>, read-only)
         <span class="type">string</span>
       </span>
       The Web Proxy Auto-Discovery URL for this network as reported over DHCP.

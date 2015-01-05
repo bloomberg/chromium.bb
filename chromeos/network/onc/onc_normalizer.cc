@@ -157,11 +157,7 @@ void Normalizer::NormalizeNetworkConfiguration(base::DictionaryValue* network) {
     network->RemoveWithoutPathExpansion(::onc::network_config::kStaticIPConfig,
                                         NULL);
     network->RemoveWithoutPathExpansion(::onc::network_config::kName, NULL);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kNameServers,
-                                        NULL);
     network->RemoveWithoutPathExpansion(::onc::network_config::kProxySettings,
-                                        NULL);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kSearchDomains,
                                         NULL);
     network->RemoveWithoutPathExpansion(::onc::network_config::kType, NULL);
     // Fields dependent on kType are removed afterwards, too.

@@ -608,8 +608,10 @@ bool Validator::ValidateIPConfig(base::DictionaryValue* result) {
   }
 
   bool all_required_exist = RequireField(*result, kIPAddress) &&
-                            RequireField(*result, kRoutingPrefix) &&
                             RequireField(*result, ::onc::ipconfig::kType);
+  if (result->HasKey(kIPAddress))
+    all_required_exist &= RequireField(*result, kRoutingPrefix);
+
 
   return !error_on_missing_field_ || all_required_exist;
 }
