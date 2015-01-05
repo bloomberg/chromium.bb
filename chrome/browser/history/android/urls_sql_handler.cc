@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/urls_sql_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/history_database.h"
+#include "components/history/core/browser/url_database.h"
 
 using base::Time;
 
@@ -19,9 +19,9 @@ const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
 
 }  // namespace
 
-UrlsSQLHandler::UrlsSQLHandler(HistoryDatabase* history_db)
+UrlsSQLHandler::UrlsSQLHandler(URLDatabase* url_db)
     : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      history_db_(history_db) {
+      url_db_(url_db) {
 }
 
 UrlsSQLHandler:: ~UrlsSQLHandler() {
@@ -30,7 +30,7 @@ UrlsSQLHandler:: ~UrlsSQLHandler() {
 bool UrlsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   URLRow url_row(row->url());
 
-  URLID id = history_db_->GetRowForURL(row->url(), &url_row);
+  URLID id = url_db_->GetRowForURL(row->url(), &url_row);
   if (id) {
     LOG(ERROR) << "AndroidProviderBackend::Insert Urls; url exists.";
     return false; // We already has this row.
@@ -69,7 +69,7 @@ bool UrlsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
     url_row.set_visit_count(visit_count);
   }
 
-  URLID new_id = history_db_->AddURL(url_row);
+  URLID new_id = url_db_->AddURL(url_row);
 
   // The subsequent inserts need this information.
   row->set_url_id(new_id);
@@ -99,7 +99,7 @@ bool UrlsSQLHandler::Update(const HistoryAndBookmarkRow& row,
   for (TableIDRows::const_iterator ids = ids_set.begin();
        ids != ids_set.end(); ++ids) {
     URLRow url_row;
-    if (!history_db_->GetURLRow(ids->url_id, &url_row))
+    if (!url_db_->GetURLRow(ids->url_id, &url_row))
       return false;
 
     URLRow update_row = url_row;
@@ -136,7 +136,7 @@ bool UrlsSQLHandler::Update(const HistoryAndBookmarkRow& row,
       }
     }
 
-    if (!history_db_->UpdateURLRow(ids->url_id, update_row))
+    if (!url_db_->UpdateURLRow(ids->url_id, update_row))
       return false;
   }
   return true;
@@ -145,7 +145,7 @@ bool UrlsSQLHandler::Update(const HistoryAndBookmarkRow& row,
 bool UrlsSQLHandler::Delete(const TableIDRows& ids_set) {
   for (TableIDRows::const_iterator ids = ids_set.begin();
        ids != ids_set.end(); ++ids) {
-    if (!history_db_->DeleteURLRow(ids->url_id))
+    if (!url_db_->DeleteURLRow(ids->url_id))
       return false;
   }
   return true;

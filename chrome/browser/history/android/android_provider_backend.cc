@@ -691,7 +691,7 @@ bool AndroidProviderBackend::EnsureInitializedAndUpdated() {
 
 bool AndroidProviderBackend::Init() {
   urls_handler_.reset(new UrlsSQLHandler(history_db_));
-  visit_handler_.reset(new VisitSQLHandler(history_db_));
+  visit_handler_.reset(new VisitSQLHandler(history_db_, history_db_));
   android_urls_handler_.reset(new AndroidURLsSQLHandler(history_db_));
   if (thumbnail_db_)
     favicon_handler_.reset(new FaviconSQLHandler(thumbnail_db_));

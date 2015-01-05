@@ -9,12 +9,12 @@
 
 namespace history {
 
-class HistoryDatabase;
+class AndroidURLsDatabase;
 
 // The SQLHanlder implementation for android_urls table.
 class AndroidURLsSQLHandler : public SQLHandler {
  public:
-  explicit AndroidURLsSQLHandler(HistoryDatabase* history_db);
+  explicit AndroidURLsSQLHandler(AndroidURLsDatabase* android_urls_db);
   virtual ~AndroidURLsSQLHandler();
 
   virtual bool Update(const HistoryAndBookmarkRow& row,
@@ -25,7 +25,7 @@ class AndroidURLsSQLHandler : public SQLHandler {
   virtual bool Delete(const TableIDRows& ids_set) override;
 
  private:
-  HistoryDatabase* history_db_;
+  AndroidURLsDatabase* android_urls_db_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidURLsSQLHandler);
 };

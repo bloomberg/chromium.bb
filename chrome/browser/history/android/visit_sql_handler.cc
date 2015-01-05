@@ -5,7 +5,8 @@
 #include "chrome/browser/history/android/visit_sql_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/history_database.h"
+#include "components/history/core/browser/url_database.h"
+#include "components/history/core/browser/visit_database.h"
 
 using base::Time;
 
@@ -20,9 +21,10 @@ const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
 
 } // namespace
 
-VisitSQLHandler::VisitSQLHandler(HistoryDatabase* history_db)
+VisitSQLHandler::VisitSQLHandler(URLDatabase* url_db, VisitDatabase* visit_db)
     : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      history_db_(history_db) {
+      url_db_(url_db),
+      visit_db_(visit_db) {
 }
 
 VisitSQLHandler::~VisitSQLHandler() {
@@ -44,11 +46,11 @@ bool VisitSQLHandler::Update(const HistoryAndBookmarkRow& row,
   for (TableIDRows::const_iterator id = ids_set.begin();
        id != ids_set.end(); ++id) {
     VisitVector visits;
-    if (!history_db_->GetVisitsForURL(id->url_id, &visits))
+    if (!visit_db_->GetVisitsForURL(id->url_id, &visits))
       return false;
     int visit_count_in_table = visits.size();
     URLRow url_row;
-    if (!history_db_->GetURLRow(id->url_id, &url_row))
+    if (!url_db_->GetURLRow(id->url_id, &url_row))
       return false;
     int visit_count_needed = url_row.visit_count();
 
@@ -82,7 +84,7 @@ bool VisitSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   DCHECK(row->is_value_set_explicitly(HistoryAndBookmarkRow::URL_ID));
 
   URLRow url_row;
-  if (!history_db_->GetURLRow(row->url_id(), &url_row))
+  if (!url_db_->GetURLRow(row->url_id(), &url_row))
     return false;
 
   int visit_count = url_row.visit_count();
@@ -117,7 +119,7 @@ bool VisitSQLHandler::AddVisit(URLID url_id, const Time& visit_time) {
   // if not, a new ui::PageTransition type will need.
   VisitRow visit_row(url_id, visit_time, 0,
                      ui::PAGE_TRANSITION_AUTO_BOOKMARK, 0);
-  return history_db_->AddVisit(&visit_row, SOURCE_BROWSED);
+  return visit_db_->AddVisit(&visit_row, SOURCE_BROWSED);
 }
 
 bool VisitSQLHandler::AddVisitRows(URLID url_id,
@@ -133,11 +135,11 @@ bool VisitSQLHandler::AddVisitRows(URLID url_id,
 
 bool VisitSQLHandler::DeleteVisitsForURL(URLID url_id) {
   VisitVector visits;
-  if (!history_db_->GetVisitsForURL(url_id, &visits))
+  if (!visit_db_->GetVisitsForURL(url_id, &visits))
     return false;
 
   for (VisitVector::const_iterator v = visits.begin(); v != visits.end(); ++v) {
-    history_db_->DeleteVisit(*v);
+    visit_db_->DeleteVisit(*v);
   }
   return true;
 }

@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/android_urls_sql_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/android/android_urls_database.h"
 
 namespace history {
 
@@ -17,9 +17,10 @@ const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
 
 } // namespace
 
-AndroidURLsSQLHandler::AndroidURLsSQLHandler(HistoryDatabase* history_db)
+AndroidURLsSQLHandler::AndroidURLsSQLHandler(
+    AndroidURLsDatabase* android_urls_db)
     : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      history_db_(history_db) {
+      android_urls_db_(android_urls_db) {
 }
 
 AndroidURLsSQLHandler::~AndroidURLsSQLHandler() {
@@ -33,16 +34,16 @@ bool AndroidURLsSQLHandler::Update(const HistoryAndBookmarkRow& row,
     return false;
 
   AndroidURLRow android_url_row;
-  if (!history_db_->GetAndroidURLRow(ids_set[0].url_id, &android_url_row))
+  if (!android_urls_db_->GetAndroidURLRow(ids_set[0].url_id, &android_url_row))
     return false;
 
-  return history_db_->UpdateAndroidURLRow(android_url_row.id, row.raw_url(),
-                                          row.url_id());
+  return android_urls_db_->UpdateAndroidURLRow(android_url_row.id,
+                                               row.raw_url(), row.url_id());
 }
 
 bool AndroidURLsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
-  AndroidURLID new_id = history_db_->AddAndroidURLRow(row->raw_url(),
-                                                      row->url_id());
+  AndroidURLID new_id =
+      android_urls_db_->AddAndroidURLRow(row->raw_url(), row->url_id());
   row->set_id(new_id);
   return new_id;
 }
@@ -56,7 +57,7 @@ bool AndroidURLsSQLHandler::Delete(const TableIDRows& ids_set) {
   if (!ids.size())
     return true;
 
-  return history_db_->DeleteAndroidURLRows(ids);
+  return android_urls_db_->DeleteAndroidURLRows(ids);
 }
 
 }  // namespace history.

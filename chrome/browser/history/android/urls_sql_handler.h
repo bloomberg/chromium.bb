@@ -9,12 +9,12 @@
 
 namespace history {
 
-class HistoryDatabase;
+class URLDatabase;
 
 // This class is the SQLHandler implementation for urls table.
 class UrlsSQLHandler : public SQLHandler {
  public:
-  explicit UrlsSQLHandler(HistoryDatabase* history_db);
+  explicit UrlsSQLHandler(URLDatabase* url_db);
   virtual ~UrlsSQLHandler();
 
   // Overriden from SQLHandler.
@@ -24,7 +24,7 @@ class UrlsSQLHandler : public SQLHandler {
   virtual bool Delete(const TableIDRows& ids_set) override;
 
  private:
-  HistoryDatabase* history_db_;
+  URLDatabase* url_db_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlsSQLHandler);
 };

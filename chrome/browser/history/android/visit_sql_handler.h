@@ -13,12 +13,13 @@ class Time;
 
 namespace history {
 
-class HistoryDatabase;
+class URLDatabase;
+class VisitDatabase;
 
 // This class is the SQLHandler for visits table.
 class VisitSQLHandler : public SQLHandler {
  public:
-  explicit VisitSQLHandler(HistoryDatabase* history_db);
+  VisitSQLHandler(URLDatabase* url_db, VisitDatabase* visit_db);
   virtual ~VisitSQLHandler();
 
   // Overriden from SQLHandler.
@@ -40,7 +41,8 @@ class VisitSQLHandler : public SQLHandler {
   // Delete the visits of the given |url_id|.
   bool DeleteVisitsForURL(URLID url_id);
 
-  HistoryDatabase* history_db_;
+  URLDatabase* url_db_;
+  VisitDatabase* visit_db_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitSQLHandler);
 };
