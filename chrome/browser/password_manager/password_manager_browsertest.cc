@@ -226,7 +226,7 @@ class ObservingAutofillClient : public autofill::TestAutofillClient {
  public:
   ObservingAutofillClient()
       : message_loop_runner_(new content::MessageLoopRunner){}
-  virtual ~ObservingAutofillClient() {}
+  ~ObservingAutofillClient() override {}
 
   void Wait() {
     message_loop_runner_->Run();
