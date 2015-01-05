@@ -486,7 +486,7 @@ def calculate_histograms(directory, histograms_file, force, viewport):
                     m = re.search(match, frame)
                     if m is not None:
                         frame_time = int(m.groupdict().get('ms'))
-                        histogram = calculate_image_histogram(frame, viewport)
+                        histogram = calculate_image_histogram(frame)
                         if histogram is not None:
                             histograms.append({'time': frame_time, 'histogram': histogram})
                 if os.path.isfile(histograms_file):
@@ -502,28 +502,25 @@ def calculate_histograms(directory, histograms_file, force, viewport):
         logging.debug('Histograms file {0} already exists'.format(histograms_file))
 
 
-def calculate_image_histogram(file, viewport):
-    histogram = None
+def calculate_image_histogram(file):
     logging.debug('Calculating histogram for ' + file)
     try:
         from PIL import Image
         im = Image.open(file)
         width, height = im.size
-        if viewport is None:
-            viewport = {'x': 0, 'y': 0, 'width': width, 'height': height}
         pixels = im.load()
         histogram = {'r': [0 for i in range(256)],
                      'g': [0 for i in range(256)],
                      'b': [0 for i in range(256)]}
-        for y in range (viewport['y'], viewport['height']):
-            for x in range (viewport['x'], viewport['width']):
+        for y in range (0, height):
+            for x in range (0, width):
                 pixel = pixels[x,y]
                 # Don't include White pixels (with a tiny bit of slop for compression artifacts)
                 if pixel[0] < 250 or pixel[1] < 250 or pixel[2] < 250:
                     histogram['r'][pixel[0]] += 1
                     histogram['g'][pixel[1]] += 1
                     histogram['b'][pixel[2]] += 1
-    except:
+    except Exception as e:
         histogram = None
         logging.error('Error calculating histogram for ' + file)
     return histogram
