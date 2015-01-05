@@ -326,6 +326,7 @@
       'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
       'browser/extensions/api/experience_sampling_private/experience_sampling_private_api_unittest.cc',
       'browser/extensions/api/extension_action/extension_action_prefs_unittest.cc',
+      'browser/extensions/api/file_handlers/api_file_handler_util_unittest.cc',
       'browser/extensions/api/file_handlers/mime_util_unittest.cc',
       'browser/extensions/api/file_system/file_system_api_unittest.cc',
       'browser/extensions/api/identity/extension_token_key_unittest.cc',

@@ -40,9 +40,15 @@ bool FileHandlerCanHandleFileWithExtension(
     if (*extension == "*")
       return true;
 
-    if (path.MatchesExtension(
+    // Accept files whose extension or combined extension (e.g. ".tar.gz")
+    // match the supported extensions of file handler.
+    base::FilePath::StringType handler_extention(
         base::FilePath::kExtensionSeparator +
-        base::FilePath::FromUTF8Unsafe(*extension).value())) {
+        base::FilePath::FromUTF8Unsafe(*extension).value());
+    if (base::FilePath::CompareEqualIgnoreCase(
+            handler_extention, path.Extension()) ||
+        base::FilePath::CompareEqualIgnoreCase(
+            handler_extention, path.FinalExtension())) {
       return true;
     }
 
