@@ -41,7 +41,8 @@ class TestRunner(instr_test_runner.TestRunner):
         test_runner=None,
         test_support_apk_path=None,
         device_flags=None,
-        isolate_file_path=None)
+        isolate_file_path=None,
+        set_asserts=test_options.set_asserts)
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg)
 

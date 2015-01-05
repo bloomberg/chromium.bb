@@ -247,6 +247,10 @@ def AddJavaTestOptions(argument_group):
             'should be of the form <target>:<source>, <target> is relative to '
             'the device data directory, and <source> is relative to the '
             'chromium build directory.'))
+  argument_group.add_argument(
+      '--disable-dalvik-asserts', dest='set_asserts', action='store_false',
+      default=True, help='Removes the dalvik.vm.enableassertions property')
+
 
 
 def ProcessJavaTestOptions(args):
@@ -356,7 +360,8 @@ def ProcessInstrumentationOptions(args):
       args.test_runner,
       args.test_support_apk_path,
       args.device_flags,
-      args.isolate_file_path
+      args.isolate_file_path,
+      args.set_asserts
       )
 
 
@@ -414,7 +419,8 @@ def ProcessUIAutomatorOptions(args):
       args.screenshot_failures,
       args.uiautomator_jar,
       args.uiautomator_info_jar,
-      args.package)
+      args.package,
+      args.set_asserts)
 
 
 def AddJUnitTestOptions(parser):
