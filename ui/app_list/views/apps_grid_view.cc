@@ -83,8 +83,9 @@ const int kPageFlipZoneSize = 40;
 // Delay in milliseconds to do the page flip.
 const int kPageFlipDelayInMs = 1000;
 
-// How many pages on either side of the selected one we prerender.
-const int kPrerenderPages = 1;
+// How many pages on either side of the selected one we prerender. Currently 0
+// to test impact of prerendering on UI jank for http://crbug.com/440224. Was 1.
+const int kPrerenderPages = 0;
 
 // The drag and drop proxy should get scaled by this factor.
 const float kDragAndDropProxyScale = 1.5f;
