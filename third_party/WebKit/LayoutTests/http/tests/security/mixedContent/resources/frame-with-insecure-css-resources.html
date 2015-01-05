@@ -6,7 +6,7 @@
 <body>
 This background image should be 20px blue square.
 <script>
-document.fonts.ready().then(function() {
+document.fonts.ready.then(function() {
     if (window.opener)
         window.opener.postMessage('done', '*');
 });

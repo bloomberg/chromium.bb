@@ -28,7 +28,7 @@ shouldBeEqualToString('face3.status', 'error');
 face3.load().catch(function(v) {
     rejectionValue = v;
     shouldBeEqualToString('rejectionValue.name', 'SyntaxError');
-    document.fonts.ready().then(verify);
+    document.fonts.ready.then(verify);
 });
 
 function verify() {

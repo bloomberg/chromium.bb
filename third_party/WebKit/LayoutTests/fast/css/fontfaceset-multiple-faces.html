@@ -21,7 +21,7 @@ window.jsTestIsAsync = true;
 function runTests() {
     document.fonts.addEventListener('loading', onLoading);
     document.fonts.addEventListener('loadingdone', onLoadingDone);
-    document.fonts.ready().then(finish);
+    document.fonts.ready.then(finish);
 
     document.fonts.load('10px TestFont', 'abc');
 }

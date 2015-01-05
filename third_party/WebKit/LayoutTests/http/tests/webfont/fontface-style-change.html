@@ -17,7 +17,7 @@ if (window.testRunner)
 document.getElementById('testSpan').style.fontFamily = "TestFont";
 
 if (window.testRunner)
-    document.fonts.ready().then(function() { testRunner.notifyDone(); });
+    document.fonts.ready.then(function() { testRunner.notifyDone(); });
 
 var style = document.getElementById('target');
 style.parentNode.removeChild(style);

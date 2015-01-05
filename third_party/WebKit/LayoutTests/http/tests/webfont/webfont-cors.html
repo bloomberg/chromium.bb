@@ -19,7 +19,7 @@ This text should NOT be rendered with ahem font.
 if (window.testRunner)
     testRunner.waitUntilDone();
     
-document.fonts.ready().then(function() {
+document.fonts.ready.then(function() {
     if (window.testRunner)
         testRunner.notifyDone();
 });

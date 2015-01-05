@@ -16,7 +16,7 @@ function testStep1() {
 
     document.fonts.add(face1);
     shouldBeEqualToString('document.fonts.status', 'loading');
-    document.fonts.ready().then(testStep2);
+    document.fonts.ready.then(testStep2);
 }
 
 function testStep2() {

@@ -21,7 +21,7 @@ function runTests() {
 
 function onsuccess() {
     shouldBeTrue("document.fonts.check('10px TestFont')");
-    document.fonts.ready().then(onFontsReady);
+    document.fonts.ready.then(onFontsReady);
 }
 
 function onFontsReady() {

@@ -23,7 +23,7 @@ var entry;
         resolve();
     }, waitMillisBeforeFetching);
 })).then(function() {
-    return document.fonts.ready();
+    return document.fonts.ready;
 }).then(function() {
     setTimeout(function() {
         var name = document.location.origin + '/misc/resources/acid3/font.ttf';

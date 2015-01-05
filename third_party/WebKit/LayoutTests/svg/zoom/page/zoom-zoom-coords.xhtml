@@ -193,7 +193,7 @@ function executeTest() {
 if (window.testRunner) {
     window.jsTestIsAsync = true;
     window.postZoomCallback = executeTest;
-    document.fonts.ready().then(function() {
+    document.fonts.ready.then(function() {
       forceStyleRecalc();
       repaintTest()
     });

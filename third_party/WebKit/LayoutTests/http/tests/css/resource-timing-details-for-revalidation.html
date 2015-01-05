@@ -15,7 +15,7 @@ if (window.testRunner)
 
 var entry;
 if (location.hash == '#check') {
-    document.fonts.ready().then(function() {
+    document.fonts.ready.then(function() {
         setTimeout(function() {
             entry = performance.getEntriesByName('http://localhost:8080/css/resources/cors-ahem.php')[0];
             shouldBeTrue('entry.domainLookupStart > 0');
@@ -24,7 +24,7 @@ if (location.hash == '#check') {
         }, 10);
     });
 } else {
-    document.fonts.ready().then(function() {
+    document.fonts.ready.then(function() {
         setTimeout(function() {
             location.hash = 'check';
             location.reload();

@@ -44,7 +44,7 @@ function getDocumentFontFaces() {
     return faces;
 }
 
-document.fonts.ready().then(function() {
+document.fonts.ready.then(function() {
     faces = getDocumentFontFaces();
     shouldBe('faces.length', '6');
     shouldBeEqualToString('faces[0].status', 'unloaded');
