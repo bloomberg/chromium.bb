@@ -72,7 +72,15 @@ MetadataParser.readFileBytes = function(file, begin, end, callback, onError) {
   fileReader.readAsArrayBuffer(file.slice(begin, end));
 };
 
-/* Base class for image metadata parsers */
+/**
+ * Base class for image metadata parsers.
+ * @param {MetadataDispatcher} parent Parent object.
+ * @param {string} type Image type.
+ * @param {RegExp} urlFilter RegExp to match URLs.
+ * @constructor
+ * @struct
+ * @extends {MetadataParser}
+ */
 function ImageParser(parent, type, urlFilter) {
   MetadataParser.apply(this, arguments);
   this.mimeType = 'image/' + this.type;

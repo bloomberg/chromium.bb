@@ -2,14 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* Base class for image metadata parsers that only need to look at a short
-  fragment at the start of the file */
+/**
+ * Base class for image metadata parsers that only need to look at a short
+ * fragment at the start of the file.
+ * @param {MetadataDispatcher} parent Parent object.
+ * @param {string} type Image type.
+ * @param {RegExp} urlFilter RegExp to match URLs.
+ * @param {number} headerSize Size of header.
+ * @constructor
+ * @struct
+ * @extends {ImageParser}
+ */
 function SimpleImageParser(parent, type, urlFilter, headerSize) {
   ImageParser.call(this, parent, type, urlFilter);
   this.headerSize = headerSize;
 }
 
-SimpleImageParser.prototype = {__proto__: ImageParser.prototype};
+SimpleImageParser.prototype.__proto__ = ImageParser.prototype;
 
 /**
  * @param {File} file File to be parses.
@@ -33,7 +42,20 @@ SimpleImageParser.prototype.parse = function(
       errorCallback);
 };
 
+/**
+ * Parse header of an image. Inherited class must implement this.
+ * @param {Object} metadata Dictionary to store the parsed metadata.
+ * @param {ByteReader} byteReader Reader for header binary data.
+ */
+SimpleImageParser.prototype.parseHeader = function(metadata, byteReader) {};
 
+/**
+ * Parser for the header of png files.
+ * @param {MetadataDispatcher} parent Parent object.
+ * @extends {SimpleImageParser}
+ * @constructor
+ * @struct
+ */
 function PngParser(parent) {
   SimpleImageParser.call(this, parent, 'png', /\.png$/i, 24);
 }
@@ -41,8 +63,7 @@ function PngParser(parent) {
 PngParser.prototype = {__proto__: SimpleImageParser.prototype};
 
 /**
- * @param {Object} metadata Metadata object.
- * @param {ByteReader} br Byte reader to read from.
+ * @override
  */
 PngParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.BIG_ENDIAN);
@@ -62,7 +83,13 @@ PngParser.prototype.parseHeader = function(metadata, br) {
 
 MetadataDispatcher.registerParserClass(PngParser);
 
-
+/**
+ * Parser for the header of bmp files.
+ * @param {MetadataDispatcher} parent Parent object.
+ * @constructor
+ * @extends {SimpleImageParser}
+ * @struct
+ */
 function BmpParser(parent) {
   SimpleImageParser.call(this, parent, 'bmp', /\.bmp$/i, 28);
 }
@@ -70,8 +97,7 @@ function BmpParser(parent) {
 BmpParser.prototype = {__proto__: SimpleImageParser.prototype};
 
 /**
- * @param {Object} metadata Metadata object.
- * @param {ByteReader} br Byte reader to read from.
+ * @override
  */
 BmpParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
@@ -87,7 +113,13 @@ BmpParser.prototype.parseHeader = function(metadata, br) {
 
 MetadataDispatcher.registerParserClass(BmpParser);
 
-
+/**
+ * Parser for the header of gif files.
+ * @param {MetadataDispatcher} parent Parent object.
+ * @constructor
+ * @extends {SimpleImageParser}
+ * @struct
+ */
 function GifParser(parent) {
   SimpleImageParser.call(this, parent, 'gif', /\.Gif$/i, 10);
 }
@@ -95,8 +127,7 @@ function GifParser(parent) {
 GifParser.prototype = {__proto__: SimpleImageParser.prototype};
 
 /**
- * @param {Object} metadata Metadata object.
- * @param {ByteReader} br Byte reader to read from.
+ * @override
  */
 GifParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
@@ -111,7 +142,13 @@ GifParser.prototype.parseHeader = function(metadata, br) {
 
 MetadataDispatcher.registerParserClass(GifParser);
 
-
+/**
+ * Parser for the header of webp files.
+ * @param {MetadataDispatcher} parent Parent object.
+ * @constructor
+ * @extends {SimpleImageParser}
+ * @struct
+ */
 function WebpParser(parent) {
   SimpleImageParser.call(this, parent, 'webp', /\.webp$/i, 30);
 }
@@ -119,8 +156,7 @@ function WebpParser(parent) {
 WebpParser.prototype = {__proto__: SimpleImageParser.prototype};
 
 /**
- * @param {Object} metadata Metadata object.
- * @param {ByteReader} br Byte reader to read from.
+ * @override
  */
 WebpParser.prototype.parseHeader = function(metadata, br) {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
@@ -190,9 +226,7 @@ function IcoParser(parent) {
 IcoParser.prototype = {__proto__: SimpleImageParser.prototype};
 
 /**
- * Parse the binary data as a ico header and stores to metadata.
- * @param {Object} metadata Dictionary to store the parser metadata.
- * @param {ByteReader} byteReader Reader for header binary data.
+ * @override
  */
 IcoParser.prototype.parseHeader = function(metadata, byteReader) {
   byteReader.setByteOrder(ByteReader.LITTLE_ENDIAN);

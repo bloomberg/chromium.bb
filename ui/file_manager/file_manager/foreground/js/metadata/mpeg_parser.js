@@ -5,6 +5,8 @@
 /**
  * @param {MetadataDispatcher} parent Parent object.
  * @constructor
+ * @extends {MetadataParser}
+ * @struct
  */
 function MpegParser(parent) {
   MetadataParser.call(this, parent, 'mpeg', /\.(mp4|m4v|m4a|mpe?g4?)$/i);
@@ -140,11 +142,10 @@ MpegParser.createRootParser = function(metadata) {
 };
 
 /**
- *
  * @param {File} file File.
  * @param {Object} metadata Metadata.
  * @param {function(Object)} callback Success callback.
- * @param {function} onError Error callback.
+ * @param {function((ProgressEvent|string))} onError Error callback.
  */
 MpegParser.prototype.parse = function(file, metadata, callback, onError) {
   var rootParser = MpegParser.createRootParser(metadata);
@@ -233,9 +234,9 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
  * @param {File} file File.
  * @param {number} filePos Start position in the file.
  * @param {number} size Atom size.
- * @param {string} name Atom name.
- * @param {function} onError Error callback.
- * @param {function} onSuccess Success callback.
+ * @param {string?} name Atom name.
+ * @param {function((ProgressEvent|string))} onError Error callback.
+ * @param {function()} onSuccess Success callback.
  */
 MpegParser.prototype.requestRead = function(
     rootParser, file, filePos, size, name, onError, onSuccess) {
@@ -244,8 +245,8 @@ MpegParser.prototype.requestRead = function(
   reader.onerror = onError;
   reader.onload = function(event) {
     self.processTopLevelAtom(
-        reader.result, rootParser, file, filePos, size, name,
-        onError, onSuccess);
+        /** @type {ArrayBuffer} */ (reader.result), rootParser, file, filePos,
+        size, name, onError, onSuccess);
   };
   this.vlog('reading @' + filePos + ':' + size);
   reader.readAsArrayBuffer(file.slice(filePos, filePos + size));
@@ -257,9 +258,9 @@ MpegParser.prototype.requestRead = function(
  * @param {File} file File.
  * @param {number} filePos Start position in the file.
  * @param {number} size Atom size.
- * @param {string} name Atom name.
- * @param {function} onError Error callback.
- * @param {function} onSuccess Success callback.
+ * @param {string?} name Atom name.
+ * @param {function((ProgressEvent|string))} onError Error callback.
+ * @param {function()} onSuccess Success callback.
  */
 MpegParser.prototype.processTopLevelAtom = function(
     buf, rootParser, file, filePos, size, name, onError, onSuccess) {
