@@ -70,6 +70,10 @@
     "documentation": "devtools",
     "example": "devtools.html"
   },
+  "export": {
+    "documentation": "shared_modules",
+    "example": {}
+  },
   "externally_connectable": {
     "documentation": "manifest/externally_connectable",
     "example": {
@@ -92,6 +96,10 @@
     "documentation": "manifest/icons",
     "example": {},
     "level": "recommended"
+  },
+  "import": {
+    "documentation": "shared_modules",
+    "example": [{"id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
   },
   "incognito": {
     "documentation": "manifest/incognito",
