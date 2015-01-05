@@ -49,7 +49,8 @@ DESCRIPTIONS = {
 
 class _SpaceportMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_SpaceportMeasurement, self).__init__()
+    super(_SpaceportMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')

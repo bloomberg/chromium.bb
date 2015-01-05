@@ -68,7 +68,8 @@ def _Mean(l):
 
 class _KrakenMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_KrakenMeasurement, self).__init__()
+    super(_KrakenMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):

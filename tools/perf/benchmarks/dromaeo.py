@@ -15,7 +15,8 @@ from telemetry.value import scalar
 
 class _DromaeoMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_DromaeoMeasurement, self).__init__()
+    super(_DromaeoMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):

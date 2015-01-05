@@ -36,6 +36,10 @@ class SpeedometerMeasurement(page_test.PageTest):
     'FlightJS-TodoMVC'
   ]
 
+  def __init__(self):
+    super(SpeedometerMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
+
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     iterationCount = 10

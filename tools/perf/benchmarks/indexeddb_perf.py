@@ -37,8 +37,9 @@ _V8_COUNTER_NAMES = [
   ]
 
 class _IndexedDbMeasurement(page_test.PageTest):
-  def __init__(self, *args, **kwargs):
-    super(_IndexedDbMeasurement, self).__init__(*args, **kwargs)
+  def __init__(self):
+    super(_IndexedDbMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._memory_metric = None
     self._power_metric = None
     self._v8_object_stats_metric = None

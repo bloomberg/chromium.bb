@@ -16,7 +16,8 @@ from telemetry.value import scalar
 
 class _RobohornetProMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_RobohornetProMeasurement, self).__init__()
+    super(_RobohornetProMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):

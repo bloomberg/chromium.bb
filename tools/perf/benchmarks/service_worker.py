@@ -85,8 +85,9 @@ class _ServiceWorkerTimelineMetric(object):
 class _ServiceWorkerMeasurement(page_test.PageTest):
   """Measure Speed Index and TRACE_EVENTs"""
 
-  def __init__(self, *args, **kwargs):
-    super(_ServiceWorkerMeasurement, self).__init__(*args, **kwargs)
+  def __init__(self):
+    super(_ServiceWorkerMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._timeline_controller = timeline_controller.TimelineController()
     self._speed_index = speedindex.SpeedIndexMetric()
     self._page_open_times = collections.defaultdict(int)
@@ -137,9 +138,9 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
 class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
   """Measure JS land values and TRACE_EVENTs"""
 
-  def __init__(self, *args, **kwargs):
-    super(_ServiceWorkerMicroBenchmarkMeasurement, self).__init__(*args,
-                                                                  **kwargs)
+  def __init__(self):
+    super(_ServiceWorkerMicroBenchmarkMeasurement, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._timeline_controller = timeline_controller.TimelineController()
 
   def CustomizeBrowserOptions(self, options):
