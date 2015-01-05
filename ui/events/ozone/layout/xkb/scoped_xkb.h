@@ -19,6 +19,10 @@ struct XkbStateDeleter {
   void operator()(xkb_state* state) { xkb_state_unref(state); }
 };
 
+struct XkbKeymapDeleter {
+  void operator()(xkb_keymap* keymap) { xkb_keymap_unref(keymap); }
+};
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_LAYOUT_XKB_SCOPED_XKB_H_
