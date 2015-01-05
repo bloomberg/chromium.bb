@@ -407,8 +407,11 @@ cr.define('extensions', function() {
     if (currentlyShowingOverlay)
       currentlyShowingOverlay.classList.remove('showing');
 
-    if (node)
+    if (node) {
+      if (document.activeElement != document.body)
+        document.activeElement.blur();
       node.classList.add('showing');
+    }
 
     var pages = document.querySelectorAll('.page');
     for (var i = 0; i < pages.length; i++) {
