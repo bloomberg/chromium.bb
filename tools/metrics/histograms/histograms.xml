@@ -21403,6 +21403,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.WiFiConnectionStatusAfterWake"
+    enum="WiFiConnectionStatusAfterWake">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network usage metric that tracks the WiFi connection status after
+    waking from suspend, both when wake on WiFi is enabled and disabled.
+    Recorded 1 second after waking from suspend.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wimax.DevicePresenceStatus"
     enum="BooleanPresent">
   <owner>zqiu@chromium.org</owner>
@@ -58076,6 +58086,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Unknown"/>
   <int value="1" label="Managed"/>
   <int value="2" label="AdHoc"/>
+</enum>
+
+<enum name="WiFiConnectionStatusAfterWake" type="int">
+  <int value="0" label="Connected (Wake On WiFi enabled)"/>
+  <int value="1" label="Not connected (Wake On WiFi enabled)"/>
+  <int value="2" label="Connected (Wake On WiFi disabled)"/>
+  <int value="3" label="Not connected (Wake On WiFi disabled)"/>
 </enum>
 
 <enum name="WiFiReasonCode" type="int">
