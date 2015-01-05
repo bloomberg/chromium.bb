@@ -77,9 +77,7 @@ public:
     bool canResizeColumn(const IntPoint&) const;
 
     void notifyFrameEdgeInfoChanged();
-
-private:
-    static const int noSplit = -1;
+    HTMLFrameSetElement* frameSet() const;
 
     class GridAxis {
         WTF_MAKE_NONCOPYABLE(GridAxis);
@@ -95,6 +93,12 @@ private:
         int m_splitResizeOffset;
     };
 
+    const GridAxis& rows() { return m_rows; }
+    const GridAxis& columns() { return m_cols; }
+
+private:
+    static const int noSplit = -1;
+
     virtual RenderObjectChildList* virtualChildren() override { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
@@ -106,8 +110,6 @@ private:
     virtual void computePreferredLogicalWidths() override;
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override;
-
-    inline HTMLFrameSetElement* frameSet() const;
 
     void setIsResizing(bool);
 
@@ -121,9 +123,6 @@ private:
 
     void startResizing(GridAxis&, int position);
     void continueResizing(GridAxis&, int position);
-
-    void paintRowBorder(const PaintInfo&, const IntRect&);
-    void paintColumnBorder(const PaintInfo&, const IntRect&);
 
     RenderObjectChildList m_children;
 

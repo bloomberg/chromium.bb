@@ -30,7 +30,7 @@
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/paint/FrameSetPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFrame.h"
 #include "core/rendering/RenderView.h"
@@ -62,101 +62,14 @@ RenderFrameSet::GridAxis::GridAxis()
 {
 }
 
-inline HTMLFrameSetElement* RenderFrameSet::frameSet() const
+HTMLFrameSetElement* RenderFrameSet::frameSet() const
 {
     return toHTMLFrameSetElement(node());
 }
 
-static Color borderStartEdgeColor()
-{
-    return Color(170, 170, 170);
-}
-
-static Color borderEndEdgeColor()
-{
-    return Color::black;
-}
-
-static Color borderFillColor()
-{
-    return Color(208, 208, 208);
-}
-
-void RenderFrameSet::paintColumnBorder(const PaintInfo& paintInfo, const IntRect& borderRect)
-{
-    if (!paintInfo.rect.intersects(borderRect))
-        return;
-
-    // FIXME: We should do something clever when borders from distinct framesets meet at a join.
-
-    // Fill first.
-    GraphicsContext* context = paintInfo.context;
-    context->fillRect(borderRect, frameSet()->hasBorderColor() ? resolveColor(CSSPropertyBorderLeftColor) : borderFillColor());
-
-    // Now stroke the edges but only if we have enough room to paint both edges with a little
-    // bit of the fill color showing through.
-    if (borderRect.width() >= 3) {
-        context->fillRect(IntRect(borderRect.location(), IntSize(1, size().height())), borderStartEdgeColor());
-        context->fillRect(IntRect(IntPoint(borderRect.maxX() - 1, borderRect.y()), IntSize(1, size().height())), borderEndEdgeColor());
-    }
-}
-
-void RenderFrameSet::paintRowBorder(const PaintInfo& paintInfo, const IntRect& borderRect)
-{
-    if (!paintInfo.rect.intersects(borderRect))
-        return;
-
-    // FIXME: We should do something clever when borders from distinct framesets meet at a join.
-
-    // Fill first.
-    GraphicsContext* context = paintInfo.context;
-    context->fillRect(borderRect, frameSet()->hasBorderColor() ? resolveColor(CSSPropertyBorderLeftColor) : borderFillColor());
-
-    // Now stroke the edges but only if we have enough room to paint both edges with a little
-    // bit of the fill color showing through.
-    if (borderRect.height() >= 3) {
-        context->fillRect(IntRect(borderRect.location(), IntSize(size().width(), 1)), borderStartEdgeColor());
-        context->fillRect(IntRect(IntPoint(borderRect.x(), borderRect.maxY() - 1), IntSize(size().width(), 1)), borderEndEdgeColor());
-    }
-}
-
 void RenderFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    if (paintInfo.phase != PaintPhaseForeground)
-        return;
-
-    RenderObject* child = firstChild();
-    if (!child)
-        return;
-
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
-
-    size_t rows = m_rows.m_sizes.size();
-    size_t cols = m_cols.m_sizes.size();
-    LayoutUnit borderThickness = frameSet()->border();
-
-    LayoutUnit yPos = 0;
-    for (size_t r = 0; r < rows; r++) {
-        LayoutUnit xPos = 0;
-        for (size_t c = 0; c < cols; c++) {
-            child->paint(paintInfo, adjustedPaintOffset);
-            xPos += m_cols.m_sizes[c];
-            if (borderThickness && m_cols.m_allowBorder[c + 1]) {
-                paintColumnBorder(paintInfo, pixelSnappedIntRect(LayoutRect(adjustedPaintOffset.x() + xPos, adjustedPaintOffset.y() + yPos, borderThickness, size().height())));
-                xPos += borderThickness;
-            }
-            child = child->nextSibling();
-            if (!child)
-                return;
-        }
-        yPos += m_rows.m_sizes[r];
-        if (borderThickness && m_rows.m_allowBorder[r + 1]) {
-            paintRowBorder(paintInfo, pixelSnappedIntRect(LayoutRect(adjustedPaintOffset.x(), adjustedPaintOffset.y() + yPos, size().width(), borderThickness)));
-            yPos += borderThickness;
-        }
-    }
+    FrameSetPainter(*this).paint(paintInfo, paintOffset);
 }
 
 void RenderFrameSet::computePreferredLogicalWidths()

@@ -1489,6 +1489,8 @@
             'paint/FloatClipRecorder.h',
             'paint/FramePainter.cpp',
             'paint/FramePainter.h',
+            'paint/FrameSetPainter.cpp',
+            'paint/FrameSetPainter.h',
             'paint/GridPainter.cpp',
             'paint/GridPainter.h',
             'paint/HTMLCanvasPainter.cpp',
