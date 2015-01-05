@@ -20,6 +20,7 @@ from driver_tools import CheckTranslatorPrerequisites, GetArch, ParseArgs, \
     Run, UnrecognizedOption
 from driver_env import env
 from driver_log import Log
+import driver_tools
 import elftools
 import ldtools
 import pathtools
@@ -195,6 +196,10 @@ def main(argv):
     # This is fairly hacky.  It would be better if the linker provided
     # an option for omitting PT_INTERP (e.g. "--dynamic-linker ''").
     RemoveInterpProgramHeader(tmp_output)
+  if driver_tools.IsWindowsPython() and os.path.exists(output):
+    # On Windows (but not on Unix), the os.rename() call would fail if the
+    # output file already exists.
+    os.remove(output)
   os.rename(tmp_output, output)
   env.pop()
   # only reached in case of no errors
