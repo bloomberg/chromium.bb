@@ -50,6 +50,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -69,6 +70,10 @@ using content::NavigationController;
 using content::WebContents;
 
 namespace {
+
+const int kImageSearchThumbnailMinSize = 300 * 300;
+const int kImageSearchThumbnailMaxWidth = 600;
+const int kImageSearchThumbnailMaxHeight = 600;
 
 WebContents* CreateTargetContents(const chrome::NavigateParams& params,
                                   const GURL& url) {
@@ -727,6 +732,17 @@ void TabAndroid::UpdateTopControlsState(JNIEnv* env,
   WebContents* sender = web_contents();
   sender->Send(new ChromeViewMsg_UpdateTopControlsState(
       sender->GetRoutingID(), constraints_state, current_state, animate));
+}
+
+void TabAndroid::SearchByImageInNewTabAsync(JNIEnv* env, jobject obj) {
+  content::RenderFrameHost* render_frame_host =
+        web_contents()->GetMainFrame();
+  render_frame_host->Send(
+      new ChromeViewMsg_RequestThumbnailForContextNode(
+          render_frame_host->GetRoutingID(),
+          kImageSearchThumbnailMinSize,
+          gfx::Size(kImageSearchThumbnailMaxWidth,
+                    kImageSearchThumbnailMaxHeight)));
 }
 
 static void Init(JNIEnv* env, jobject obj) {

@@ -87,6 +87,12 @@ import org.chromium.content_public.browser.NavigationHistory;
     }
 
     @Override
+    public boolean isInitialNavigation() {
+        return mNativeNavigationControllerAndroid != 0
+                && nativeIsInitialNavigation(mNativeNavigationControllerAndroid);
+    }
+
+    @Override
     public void loadIfNecessary() {
         if (mNativeNavigationControllerAndroid != 0) {
             nativeLoadIfNecessary(mNativeNavigationControllerAndroid);
@@ -239,6 +245,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 
     private native boolean nativeCanGoBack(long nativeNavigationControllerAndroid);
     private native boolean nativeCanGoForward(long nativeNavigationControllerAndroid);
+    private native boolean nativeIsInitialNavigation(long nativeNavigationControllerAndroid);
     private native void nativeLoadIfNecessary(long nativeNavigationControllerAndroid);
     private native void nativeRequestRestoreLoad(long nativeNavigationControllerAndroid);
     private native boolean nativeCanGoToOffset(

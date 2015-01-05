@@ -51,6 +51,11 @@ public interface NavigationController {
     void goForward();
 
     /**
+     * @return Whether the tab is navigating to the URL the tab is opened with.
+     */
+    boolean isInitialNavigation();
+
+    /**
      * Loads the current navigation if there is a pending lazy load (after tab restore).
      */
     public void loadIfNecessary();

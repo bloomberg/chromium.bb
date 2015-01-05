@@ -118,6 +118,11 @@ void NavigationControllerAndroid::GoToOffset(JNIEnv* env,
   navigation_controller_->GoToOffset(offset);
 }
 
+jboolean NavigationControllerAndroid::IsInitialNavigation(JNIEnv* env,
+                                                          jobject obj) {
+  return navigation_controller_->IsInitialNavigation();
+}
+
 void NavigationControllerAndroid::LoadIfNecessary(JNIEnv* env, jobject obj) {
   navigation_controller_->LoadIfNecessary();
 }

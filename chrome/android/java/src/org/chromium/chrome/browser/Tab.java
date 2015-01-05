@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
@@ -93,7 +94,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  unless special care is taken to make sure {@link Tab#incrementIdCounterTo(int)} is called with
  *  the correct value across all affected {@link Activity}s.
  */
-public class Tab {
+public class Tab implements ViewGroup.OnHierarchyChangeListener,
+        View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
     private static final long INVALID_TIMESTAMP = -1;
 
@@ -290,6 +292,19 @@ public class Tab {
         @Override
         public String getPageUrl() {
             return getUrl();
+        }
+
+        @Override
+        public void onOpenImageUrl(String url, Referrer referrer) {
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            loadUrlParams.setTransitionType(PageTransition.AUTO_BOOKMARK);
+            loadUrlParams.setReferrer(referrer);
+            loadUrl(loadUrlParams);
+        }
+
+        @Override
+        public void onSearchByImageInNewTab() {
+            triggerSearchByImage();
         }
     }
 
@@ -1247,14 +1262,6 @@ public class Tab {
     }
 
     /**
-     * A helper method to initialize a {@link ContentViewCore} without any
-     * native WebContents pointer.
-     */
-    protected final void initContentViewCore() {
-        initContentViewCore(ContentViewUtil.createNativeWebContents(mIncognito));
-    }
-
-    /**
      * Creates and initializes the {@link ContentViewCore}.
      *
      * @param nativeWebContents The native web contents pointer.
@@ -1284,6 +1291,8 @@ public class Tab {
         destroyNativePageInternal(previousNativePage);
 
         mContentViewCore = cvc;
+        cvc.getContainerView().setOnHierarchyChangeListener(this);
+        cvc.getContainerView().setOnSystemUiVisibilityChangeListener(this);
 
         mWebContentsDelegate = createWebContentsDelegate();
         mWebContentsObserver = new TabWebContentsObserver(mContentViewCore.getWebContents());
@@ -1724,6 +1733,8 @@ public class Tab {
      *            cleaned up.
      */
     protected void destroyContentViewCoreInternal(ContentViewCore cvc) {
+        cvc.getContainerView().setOnHierarchyChangeListener(null);
+        cvc.getContainerView().setOnSystemUiVisibilityChangeListener(null);
     }
 
     /**
@@ -2158,6 +2169,37 @@ public class Tab {
                 getNativePage().getTitle());
     }
 
+    @Override
+    public void onChildViewRemoved(View parent, View child) {
+        FullscreenManager fullscreenManager = getFullscreenManager();
+        if (fullscreenManager != null) {
+            fullscreenManager.updateContentViewChildrenState();
+        }
+    }
+
+    @Override
+    public void onChildViewAdded(View parent, View child) {
+        FullscreenManager fullscreenManager = getFullscreenManager();
+        if (fullscreenManager != null) {
+            fullscreenManager.updateContentViewChildrenState();
+        }
+    }
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        FullscreenManager fullscreenManager = getFullscreenManager();
+        if (fullscreenManager != null) {
+            fullscreenManager.onContentViewSystemUiVisibilityChange(visibility);
+        }
+    }
+
+    /**
+     * Triggers native search by image method.
+     */
+    public void triggerSearchByImage() {
+        if (mNativeTabAndroid != 0) nativeSearchByImageInNewTabAsync(mNativeTabAndroid);
+    }
+
     /**
      * Ensures the counter is at least as high as the specified value.  The counter should always
      * point to an unused ID (which will be handed out next time a request comes in).  Exposed so
@@ -2191,4 +2233,5 @@ public class Tab {
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
     private native void nativeUpdateTopControlsState(
             long nativeTabAndroid, int constraints, int current, boolean animate);
+    private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
 }

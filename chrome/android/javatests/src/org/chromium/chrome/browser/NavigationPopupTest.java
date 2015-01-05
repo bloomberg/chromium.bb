@@ -56,7 +56,7 @@ public class NavigationPopupTest extends ChromeShellTestBase {
     }
 
     private static class TestNavigationController implements NavigationController {
-        private TestNavigationHistory mHistory;
+        private final TestNavigationHistory mHistory;
         private int mNavigatedIndex = INVALID_NAVIGATION_INDEX;
 
         public TestNavigationController() {
@@ -92,6 +92,11 @@ public class NavigationPopupTest extends ChromeShellTestBase {
 
         @Override
         public void goForward() {
+        }
+
+        @Override
+        public boolean isInitialNavigation() {
+            return false;
         }
 
         @Override

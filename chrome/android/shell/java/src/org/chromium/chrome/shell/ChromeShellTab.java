@@ -39,8 +39,7 @@ public class ChromeShellTab extends Tab {
     public ChromeShellTab(Context context, String url, WindowAndroid window,
             ContentViewClient contentViewClient, TabManager tabManager) {
         super(false, context, window);
-        initializeNative();
-        initContentViewCore();
+        initialize(0, null, false);
         setContentViewClient(contentViewClient);
         loadUrlWithSanitization(url);
         mTabManager = tabManager;
@@ -96,11 +95,6 @@ public class ChromeShellTab extends Tab {
     @Override
     protected ContextMenuPopulator createContextMenuPopulator() {
         return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate() {
-            @Override
-            public void onOpenImageUrl(String url, Referrer referrer) {
-                loadUrlWithSanitization(url);
-            }
-
             @Override
             public void onOpenInNewTab(String url, Referrer referrer) {
                 mTabManager.createTab(url, TabLaunchType.FROM_LINK);
