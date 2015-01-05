@@ -142,6 +142,18 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     SwapBuffers();
     return true;
   }
+  bool SwapBuffersAsync(const SwapCompletionCallback& callback) override {
+    // TODO: this should be replaced by a fence when supported by the driver.
+    glFlush();
+    return ozone_surface_->OnSwapBuffersAsync(callback);
+  }
+  bool PostSubBufferAsync(int x,
+                          int y,
+                          int width,
+                          int height,
+                          const SwapCompletionCallback& callback) override {
+    return SwapBuffersAsync(callback);
+  }
 
  private:
   virtual ~GLSurfaceOzoneSurfaceless() {

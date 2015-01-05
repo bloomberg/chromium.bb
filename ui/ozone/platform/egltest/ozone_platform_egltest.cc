@@ -209,6 +209,11 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
 
   bool OnSwapBuffers() override { return true; }
 
+  bool OnSwapBuffersAsync(const SwapCompletionCallback& callback) override {
+    callback.Run();
+    return true;
+  }
+
   bool ResizeNativeWindow(const gfx::Size& viewport_size) override {
     return true;
   }

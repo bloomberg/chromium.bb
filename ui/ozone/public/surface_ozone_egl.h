@@ -6,6 +6,7 @@
 #define UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_base_export.h"
@@ -37,6 +38,13 @@ class OZONE_BASE_EXPORT SurfaceOzoneEGL {
   // Called after we swap buffers. This is usually a no-op but can
   // be used to present the new front buffer if the platform requires this.
   virtual bool OnSwapBuffers() = 0;
+
+  typedef base::Closure SwapCompletionCallback;
+  // Called after we swap buffers. This is usually a no-op but can
+  // be used to present the new front buffer if the platform requires this.
+  // The callback should be run on the calling thread
+  // (i.e. same thread SwapBuffersAsync is called).
+  virtual bool OnSwapBuffersAsync(const SwapCompletionCallback& callback) = 0;
 
   // Returns a gfx::VsyncProvider for this surface. Note that this may be
   // called after we have entered the sandbox so if there are operations (e.g.

@@ -158,4 +158,10 @@ bool GbmSurface::OnSwapBuffers() {
   return true;
 }
 
+bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
+  bool success = OnSwapBuffers();
+  callback.Run();
+  return success;
+}
+
 }  // namespace ui

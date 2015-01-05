@@ -38,6 +38,13 @@ bool GbmSurfaceless::OnSwapBuffers() {
   return success;
 }
 
+bool GbmSurfaceless::OnSwapBuffersAsync(
+    const SwapCompletionCallback& callback) {
+  bool success = OnSwapBuffers();
+  callback.Run();
+  return success;
+}
+
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
   return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(window_delegate_));
 }
