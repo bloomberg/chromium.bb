@@ -116,7 +116,7 @@ remoting.HostList.prototype.load = function(onDone) {
     if (items[remoting.HostList.HOSTS_KEY]) {
       var cached = base.jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
       if (cached) {
-        that.hosts_ = /** @type {Array} */ cached;
+        that.hosts_ = /** @type {Array.<remoting.Host>} */ cached;
       } else {
         console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
       }
@@ -165,23 +165,15 @@ remoting.HostList.prototype.getHostIdForName = function(hostName) {
  */
 remoting.HostList.prototype.refresh = function(onDone) {
   this.loadingIndicator_.classList.add('loading');
-  /** @param {XMLHttpRequest} xhr The response from the server. */
-  var parseHostListResponse = this.parseHostListResponse_.bind(this, onDone);
   /** @type {remoting.HostList} */
   var that = this;
-  /** @param {string} token The OAuth2 token. */
-  var getHosts = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.get(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
-        parseHostListResponse, '', headers);
-  };
   /** @param {remoting.Error} error */
   var onError = function(error) {
     that.lastError_ = error;
     onDone(false);
   };
-  remoting.identity.callWithToken(getHosts, onError);
+  remoting.hostListApi.get(this.onHostListResponse_.bind(this, onDone),
+                           onError);
 };
 
 /**
@@ -190,63 +182,33 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * able to successfully parse it.
  *
  * @param {function(boolean):void} onDone The callback passed to |refresh|.
- * @param {XMLHttpRequest} xhr The XHR object for the host list request.
+ * @param {Array.<remoting.Host>} hosts The list of hosts for the user.
  * @return {void} Nothing.
  * @private
  */
-remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
+remoting.HostList.prototype.onHostListResponse_ = function(onDone, hosts) {
   this.lastError_ = '';
-  try {
-    if (xhr.status == 200) {
-      var response = /** @type {{data: {items: Array}}} */
-          (base.jsonParseSafe(xhr.responseText));
-      if (response && response.data) {
-        if (response.data.items) {
-          this.hosts_ = response.data.items;
-          /**
-           * @param {remoting.Host} a
-           * @param {remoting.Host} b
-           */
-          var cmp = function(a, b) {
-            if (a.status < b.status) {
-              return 1;
-            } else if (b.status < a.status) {
-              return -1;
-            } else if (a.hostName.toLocaleLowerCase() <
-                       b.hostName.toLocaleLowerCase()) {
-              return -1;
-            } else if (a.hostName.toLocaleLowerCase() >
-                       b.hostName.toLocaleLowerCase()) {
-              return 1;
-            }
-            return 0;
-          };
-          this.hosts_ = /** @type {Array} */ this.hosts_.sort(cmp);
-        } else {
-          this.hosts_ = [];
-        }
-      } else {
-        this.lastError_ = remoting.Error.UNEXPECTED;
-        console.error('Invalid "hosts" response from server.');
-      }
-    } else {
-      // Some other error.
-      console.error('Bad status on host list query: ', xhr);
-      if (xhr.status == 0) {
-        this.lastError_ = remoting.Error.NETWORK_FAILURE;
-      } else if (xhr.status == 401) {
-        this.lastError_ = remoting.Error.AUTHENTICATION_FAILED;
-      } else if (xhr.status == 502 || xhr.status == 503) {
-        this.lastError_ = remoting.Error.SERVICE_UNAVAILABLE;
-      } else {
-        this.lastError_ = remoting.Error.UNEXPECTED;
-      }
+  /**
+   * Sort hosts, first by ONLINE/OFFLINE status and then by host-name.
+   *
+   * @param {remoting.Host} a
+   * @param {remoting.Host} b
+   */
+  var cmp = function(a, b) {
+    if (a.status < b.status) {
+      return 1;
+    } else if (b.status < a.status) {
+      return -1;
+    } else if (a.hostName.toLocaleLowerCase() <
+               b.hostName.toLocaleLowerCase()) {
+      return -1;
+    } else if (a.hostName.toLocaleLowerCase() >
+               b.hostName.toLocaleLowerCase()) {
+      return 1;
     }
-  } catch (er) {
-    var typed_er = /** @type {Object} */ (er);
-    console.error('Error processing response: ', xhr, typed_er);
-    this.lastError_ = remoting.Error.UNEXPECTED;
-  }
+    return 0;
+  };
+  this.hosts_ = /** @type {Array.<remoting.Host>} */ hosts.sort(cmp);
   this.save_();
   this.loadingIndicator_.classList.remove('loading');
   onDone(this.lastError_ == '');
@@ -350,29 +312,11 @@ remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
   }
   this.save_();
 
-  /** @param {string?} token */
-  var renameHost = function(token) {
-    if (token) {
-      var headers = {
-        'Authorization': 'OAuth ' + token,
-        'Content-type' : 'application/json; charset=UTF-8'
-      };
-      var newHostDetails = { data: {
-        hostId: hostTableEntry.host.hostId,
-        hostName: hostTableEntry.host.hostName,
-        publicKey: hostTableEntry.host.publicKey
-      } };
-      remoting.xhr.put(
-          remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' +
-          hostTableEntry.host.hostId,
-          function(xhr) {},
-          JSON.stringify(newHostDetails),
-          headers);
-    } else {
-      console.error('Could not rename host. Authentication failure.');
-    }
-  }
-  remoting.identity.callWithToken(renameHost, remoting.showErrorMessage);
+  remoting.hostListApi.put(hostTableEntry.host.hostId,
+                           hostTableEntry.host.hostName,
+                           hostTableEntry.host.publicKey,
+                           function() {},
+                           remoting.showErrorMessage);
 };
 
 /**
@@ -381,14 +325,7 @@ remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
  * @return {void} Nothing.
  */
 remoting.HostList.unregisterHostById = function(hostId) {
-  /** @param {string} token The OAuth2 token. */
-  var deleteHost = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.remove(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-        function() {}, '', headers);
-  }
-  remoting.identity.callWithToken(deleteHost, remoting.showErrorMessage);
+  remoting.hostListApi.remove(hostId, function() {}, remoting.showErrorMessage);
 };
 
 /**

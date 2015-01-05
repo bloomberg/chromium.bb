@@ -123,7 +123,9 @@ remoting.Identity.prototype.getUserInfo = function(onOk, onError) {
   };
 
   this.callWithToken(
-      remoting.OAuth2Api.getUserInfo.bind(null, onResponse, onError), onError);
+      remoting.oauth2Api.getUserInfo.bind(
+          remoting.oauth2Api, onResponse, onError),
+      onError);
 };
 
 /**

@@ -89,6 +89,7 @@
     # Files for displaying (in the client) info about available hosts.
     'remoting_webapp_js_host_display_files': [
       'webapp/crd/js/host_list.js',
+      'webapp/crd/js/host_list_api.js',
       'webapp/crd/js/host_table_entry.js',
     ],
     # Logging and stats JavaScript files.

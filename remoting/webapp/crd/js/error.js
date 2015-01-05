@@ -33,3 +33,27 @@ remoting.Error = {
   P2P_FAILURE: /*i18n-content*/'ERROR_P2P_FAILURE',
   REGISTRATION_FAILED: /*i18n-content*/'ERROR_HOST_REGISTRATION_FAILED'
 };
+
+/**
+ * @param {number} httpError An HTTP error code.
+ * @return {remoting.Error} The remoting.Error enum corresponding to the
+ *     specified HTTP error code.
+ */
+remoting.Error.fromHttpError = function(httpError) {
+  if (httpError == 0) {
+    return remoting.Error.NETWORK_FAILURE;
+  } else if (httpError == 200) {
+    return remoting.Error.NONE;
+  } else if (httpError == 400 || httpError == 401) {
+    return remoting.Error.AUTHENTICATION_FAILED;
+  } else if (httpError >= 500 && httpError < 600) {
+    return remoting.Error.SERVICE_UNAVAILABLE;
+  } else {
+    console.warn('Unexpected HTTP error code: ' + httpError);
+    // Return AUTHENTICATION_FAILED by default, so that the user can try to
+    // recover from an unexpected failure by signing in again.
+    // TODO(jamiewalch): Return UNEXPECTED here and let calling code treat that
+    // as "sign-in required" if necessary.
+    return remoting.Error.AUTHENTICATION_FAILED;
+  }
+};
