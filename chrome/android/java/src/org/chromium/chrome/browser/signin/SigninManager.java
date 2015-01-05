@@ -7,10 +7,13 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
@@ -43,6 +46,7 @@ public class SigninManager {
 
     public static final String CONFIRM_MANAGED_SIGNIN_DIALOG_TAG =
             "confirm_managed_signin_dialog_tag";
+    private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
     private static final String TAG = "SigninManager";
 
@@ -67,7 +71,7 @@ public class SigninManager {
     private SignInFlowObserver mSignInFlowObserver;
     private boolean mPassive = false;
 
-    private ProgressDialog mSignOutProgressDialog;
+    private DialogFragment mClearDataProgressDialog;
     private Runnable mSignOutCallback;
 
     private ConfirmManagedSigninFragment mPolicyConfirmationDialog;
@@ -442,24 +446,44 @@ public class SigninManager {
 
     private void wipeProfileData(Activity activity) {
         if (activity != null) {
-            // We don't have progress update, so this takes an indeterminate amount of time.
-            boolean indeterminate = true;
-            // This dialog is not cancelable by the user.
-            boolean cancelable = false;
-            mSignOutProgressDialog = ProgressDialog.show(
-                activity,
-                activity.getString(R.string.wiping_profile_data_title),
-                activity.getString(R.string.wiping_profile_data_message),
-                indeterminate, cancelable);
+            mClearDataProgressDialog = new ClearDataProgressDialog();
+            mClearDataProgressDialog.show(activity.getFragmentManager(),
+                    CLEAR_DATA_PROGRESS_DIALOG_TAG);
         }
         // This will call back to onProfileDataWiped().
         nativeWipeProfileData(mNativeSigninManagerAndroid);
     }
 
+    // This class must be public and static. Otherwise an exception will be thrown when Android
+    // recreates the fragment (e.g. after a configuration change).
+    public static class ClearDataProgressDialog extends DialogFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            if (savedInstanceState != null) {
+                // Don't allow the dialog to be recreated by Android, since it wouldn't ever
+                // be dismissed after recreation.
+                dismiss();
+            }
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            setCancelable(false);
+            ProgressDialog dialog = new ProgressDialog(getActivity());
+            dialog.setTitle(getString(R.string.wiping_profile_data_title));
+            dialog.setMessage(getString(R.string.wiping_profile_data_message));
+            dialog.setIndeterminate(true);
+            return dialog;
+        }
+    }
+
     @CalledByNative
     private void onProfileDataWiped() {
-        if (mSignOutProgressDialog != null && mSignOutProgressDialog.isShowing())
-            mSignOutProgressDialog.dismiss();
+        if (mClearDataProgressDialog != null && mClearDataProgressDialog.isAdded()) {
+            mClearDataProgressDialog.dismissAllowingStateLoss();
+        }
+        mClearDataProgressDialog = null;
         onSignOutDone();
     }
 
