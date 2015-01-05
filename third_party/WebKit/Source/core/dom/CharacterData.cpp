@@ -51,7 +51,7 @@ void CharacterData::setData(const String& data)
 
     unsigned oldLength = length();
 
-    setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length());
+    setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(), UpdateFromNonParser);
     document().didRemoveText(this, 0, oldLength);
 }
 
@@ -65,28 +65,18 @@ String CharacterData::substringData(unsigned offset, unsigned count, ExceptionSt
     return m_data.substring(offset, count);
 }
 
-void CharacterData::parserAppendData(const String& string)
+void CharacterData::parserAppendData(const String& data)
 {
-    unsigned oldLength = m_data.length();
-    m_data = m_data + string;
+    String newStr = m_data + data;
 
-    ASSERT(!renderer() || isTextNode());
-    if (isTextNode())
-        toText(this)->updateTextRenderer(oldLength, 0);
-
-    document().incDOMTreeVersion();
-
-    if (parentNode()) {
-        ContainerNode::ChildrenChange change = {ContainerNode::TextChanged, previousSibling(), nextSibling(), ContainerNode::ChildrenChangeSourceParser};
-        parentNode()->childrenChanged(change);
-    }
+    setDataAndUpdate(newStr, m_data.length(), 0, data.length(), UpdateFromParser);
 }
 
 void CharacterData::appendData(const String& data)
 {
     String newStr = m_data + data;
 
-    setDataAndUpdate(newStr, m_data.length(), 0, data.length());
+    setDataAndUpdate(newStr, m_data.length(), 0, data.length(), UpdateFromNonParser);
 
     // FIXME: Should we call textInserted here?
 }
@@ -101,7 +91,7 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
     String newStr = m_data;
     newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, 0, data.length(), recalcStyleBehavior);
+    setDataAndUpdate(newStr, offset, 0, data.length(), UpdateFromNonParser, recalcStyleBehavior);
 
     document().didInsertText(this, offset, data.length());
 }
@@ -133,7 +123,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
     String newStr = m_data;
     newStr.remove(offset, realCount);
 
-    setDataAndUpdate(newStr, offset, realCount, 0, recalcStyleBehavior);
+    setDataAndUpdate(newStr, offset, realCount, 0, UpdateFromNonParser, recalcStyleBehavior);
 
     document().didRemoveText(this, offset, realCount);
 }
@@ -148,7 +138,7 @@ void CharacterData::replaceData(unsigned offset, unsigned count, const String& d
     newStr.remove(offset, realCount);
     newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, realCount, data.length());
+    setDataAndUpdate(newStr, offset, realCount, data.length(), UpdateFromNonParser);
 
     // update the markers for spell checking and grammar checking
     document().didRemoveText(this, offset, realCount);
@@ -170,7 +160,7 @@ void CharacterData::setNodeValue(const String& nodeValue)
     setData(nodeValue);
 }
 
-void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, RecalcStyleBehavior recalcStyleBehavior)
+void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource source, RecalcStyleBehavior recalcStyleBehavior)
 {
     String oldData = m_data;
     m_data = newData;
@@ -179,17 +169,19 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
     if (isTextNode())
         toText(this)->updateTextRenderer(offsetOfReplacedData, oldLength, recalcStyleBehavior);
 
-    if (nodeType() == PROCESSING_INSTRUCTION_NODE)
-        toProcessingInstruction(this)->didAttributeChanged();
+    if (source != UpdateFromParser) {
+        if (nodeType() == PROCESSING_INSTRUCTION_NODE)
+            toProcessingInstruction(this)->didAttributeChanged();
 
-    if (document().frame())
-        document().frame()->selection().didUpdateCharacterData(this, offsetOfReplacedData, oldLength, newLength);
+        if (document().frame())
+            document().frame()->selection().didUpdateCharacterData(this, offsetOfReplacedData, oldLength, newLength);
+    }
 
     document().incDOMTreeVersion();
-    didModifyData(oldData);
+    didModifyData(oldData, source);
 }
 
-void CharacterData::didModifyData(const String& oldData)
+void CharacterData::didModifyData(const String& oldData, UpdateSource source)
 {
     if (OwnPtrWillBeRawPtr<MutationObserverInterestGroup> mutationRecipients = MutationObserverInterestGroup::createForCharacterDataMutation(*this))
         mutationRecipients->enqueueMutationRecord(MutationRecord::createCharacterData(this, oldData));
@@ -199,7 +191,10 @@ void CharacterData::didModifyData(const String& oldData)
         parentNode()->childrenChanged(change);
     }
 
-    if (!isInShadowTree()) {
+    // Skip DOM mutation events if the modification is from parser.
+    // Note that mutation observer events will still fire.
+    // Spec: https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
+    if (source != UpdateFromParser && !isInShadowTree()) {
         if (document().hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
             dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMCharacterDataModified, true, nullptr, oldData, m_data));
         dispatchSubtreeModifiedEvent();

@@ -95,7 +95,7 @@ PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         nextText->updateTextRenderer(0, 0);
 
         document().incDOMTreeVersion();
-        didModifyData(oldTextData);
+        didModifyData(oldTextData, CharacterData::UpdateFromNonParser);
         nextText->remove(IGNORE_EXCEPTION);
     }
 
@@ -116,7 +116,7 @@ PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& ex
     RefPtrWillBeRawPtr<Text> newText = cloneWithData(oldStr.substring(offset));
     setDataWithoutUpdate(oldStr.substring(0, offset));
 
-    didModifyData(oldStr);
+    didModifyData(oldStr, CharacterData::UpdateFromNonParser);
 
     if (parentNode())
         parentNode()->insertBefore(newText.get(), nextSibling(), exceptionState);
