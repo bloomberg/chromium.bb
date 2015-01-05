@@ -724,6 +724,34 @@ void ServiceWorkerStorage::ClearUserData(
                  callback));
 }
 
+void ServiceWorkerStorage::GetUserDataForAllRegistrations(
+    const std::string& key,
+    const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
+        callback) {
+  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (IsDisabled() || !context_) {
+    RunSoon(FROM_HERE,
+            base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
+                       SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
+
+  if (key.empty()) {
+    RunSoon(FROM_HERE,
+            base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
+                       SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
+
+  database_task_manager_->GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB,
+          database_.get(), base::MessageLoopProxy::current(), key,
+          base::Bind(&ServiceWorkerStorage::DidGetUserDataForAllRegistrations,
+                     weak_factory_.GetWeakPtr(), callback)));
+}
+
 void ServiceWorkerStorage::DeleteAndStartOver(const StatusCallback& callback) {
   Disable();
 
@@ -1184,6 +1212,15 @@ void ServiceWorkerStorage::DidDeleteUserData(
   callback.Run(DatabaseStatusToStatusCode(status));
 }
 
+void ServiceWorkerStorage::DidGetUserDataForAllRegistrations(
+    const GetUserDataForAllRegistrationsCallback& callback,
+    const std::vector<std::pair<int64, std::string>>& user_data,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK)
+    ScheduleDeleteAndStartOver();
+  callback.Run(user_data, DatabaseStatusToStatusCode(status));
+}
+
 scoped_refptr<ServiceWorkerRegistration>
 ServiceWorkerStorage::GetOrCreateRegistration(
     const ServiceWorkerDatabase::RegistrationData& data,
@@ -1608,6 +1645,18 @@ void ServiceWorkerStorage::GetUserDataInDB(
       database->ReadUserData(registration_id, key, &data);
   original_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, data, status));
+}
+
+void ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB(
+    ServiceWorkerDatabase* database,
+    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+    const std::string& key,
+    const GetUserDataForAllRegistrationsInDBCallback& callback) {
+  std::vector<std::pair<int64, std::string>> user_data;
+  ServiceWorkerDatabase::Status status =
+      database->ReadUserDataForAllRegistrations(key, &user_data);
+  original_task_runner->PostTask(FROM_HERE,
+                                 base::Bind(callback, user_data, status));
 }
 
 void ServiceWorkerStorage::DeleteAllDataForOriginsFromDB(

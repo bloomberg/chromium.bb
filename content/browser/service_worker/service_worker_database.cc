@@ -51,6 +51,10 @@
 //     (ex. "REG:http://example.com\x00123456")
 //   value: <ServiceWorkerRegistrationData serialized as a string>
 //
+//   key: "REG_HAS_USER_DATA:" + <std::string 'user_data_name'> + '\x00'
+//            + <int64 'registration_id'>
+//   value: <empty>
+//
 //   key: "REG_USER_DATA:" + <int64 'registration_id'> + '\x00'
 //            + <std::string user_data_name>
 //     (ex. "REG_USER_DATA:123456\x00foo_bar")
@@ -75,6 +79,7 @@ const char kUniqueOriginKey[] = "INITDATA_UNIQUE_ORIGIN:";
 
 const char kRegKeyPrefix[] = "REG:";
 const char kRegUserDataKeyPrefix[] = "REG_USER_DATA:";
+const char kRegHasUserDataKeyPrefix[] = "REG_HAS_USER_DATA:";
 const char kResKeyPrefix[] = "RES:";
 const char kKeySeparator = '\x00';
 
@@ -134,6 +139,17 @@ std::string CreateUserDataKeyPrefix(int64 registration_id) {
 std::string CreateUserDataKey(int64 registration_id,
                               const std::string& user_data_name) {
   return CreateUserDataKeyPrefix(registration_id).append(user_data_name);
+}
+
+std::string CreateHasUserDataKeyPrefix(const std::string& user_data_name) {
+  return base::StringPrintf("%s%s%c", kRegHasUserDataKeyPrefix,
+                            user_data_name.c_str(), kKeySeparator);
+}
+
+std::string CreateHasUserDataKey(int64 registration_id,
+                                 const std::string& user_data_name) {
+  return CreateHasUserDataKeyPrefix(user_data_name)
+      .append(base::Int64ToString(registration_id));
 }
 
 void PutRegistrationDataToBatch(
@@ -724,6 +740,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
 
   leveldb::WriteBatch batch;
   batch.Put(CreateUserDataKey(registration_id, user_data_name), user_data);
+  batch.Put(CreateHasUserDataKey(registration_id, user_data_name), "");
   return WriteBatch(&batch);
 }
 
@@ -742,7 +759,61 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteUserData(
 
   leveldb::WriteBatch batch;
   batch.Delete(CreateUserDataKey(registration_id, user_data_name));
+  batch.Delete(CreateHasUserDataKey(registration_id, user_data_name));
   return WriteBatch(&batch);
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::ReadUserDataForAllRegistrations(
+    const std::string& user_data_name,
+    std::vector<std::pair<int64, std::string>>* user_data) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(user_data->empty());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
+
+  std::string key_prefix = CreateHasUserDataKeyPrefix(user_data_name);
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
+    status = LevelDBStatusToStatus(itr->status());
+    if (status != STATUS_OK) {
+      HandleReadResult(FROM_HERE, status);
+      user_data->clear();
+      return status;
+    }
+
+    std::string registration_id_string;
+    if (!RemovePrefix(itr->key().ToString(), key_prefix,
+                      &registration_id_string)) {
+      break;
+    }
+
+    int64 registration_id;
+    status = ParseId(registration_id_string, &registration_id);
+    if (status != STATUS_OK) {
+      HandleReadResult(FROM_HERE, status);
+      user_data->clear();
+      return status;
+    }
+
+    std::string value;
+    status = LevelDBStatusToStatus(
+        db_->Get(leveldb::ReadOptions(),
+                 CreateUserDataKey(registration_id, user_data_name), &value));
+    if (status != STATUS_OK) {
+      HandleReadResult(FROM_HERE, status);
+      user_data->clear();
+      return status;
+    }
+    user_data->push_back(std::make_pair(registration_id, value));
+  }
+
+  HandleReadResult(FROM_HERE, status);
+  return status;
 }
 
 ServiceWorkerDatabase::Status
@@ -1149,9 +1220,11 @@ ServiceWorkerDatabase::DeleteUserDataForRegistration(
     }
 
     const std::string key = itr->key().ToString();
-    if (!RemovePrefix(key, prefix, nullptr))
+    std::string user_data_name;
+    if (!RemovePrefix(key, prefix, &user_data_name))
       break;
     batch->Delete(key);
+    batch->Delete(CreateHasUserDataKey(registration_id, user_data_name));
   }
   return status;
 }

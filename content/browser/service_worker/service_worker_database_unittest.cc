@@ -873,6 +873,16 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
                 data2.registration_id, "key", &user_data_out));
   EXPECT_EQ("data2", user_data_out);
 
+  // Get all registrations with user data.
+  std::vector<std::pair<int64, std::string>> user_data_list;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataForAllRegistrations("key", &user_data_list));
+  EXPECT_EQ(2u, user_data_list.size());
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("data1", user_data_list[0].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[1].first);
+  EXPECT_EQ("data2", user_data_list[1].second);
+
   // Delete the data associated with the registration2. This shouldn't delete
   // the data associated with registration1.
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -884,6 +894,14 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
             database->ReadUserData(
                 data2.registration_id, "key", &user_data_out));
+
+  // And again get all registrations with user data.
+  user_data_list.clear();
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataForAllRegistrations("key", &user_data_list));
+  EXPECT_EQ(1u, user_data_list.size());
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("data1", user_data_list[0].second);
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {

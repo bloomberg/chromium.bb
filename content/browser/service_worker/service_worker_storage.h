@@ -61,6 +61,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef base::Callback<
       void(const std::string& data, ServiceWorkerStatusCode status)>
           GetUserDataCallback;
+  typedef base::Callback<void(
+      const std::vector<std::pair<int64, std::string>>& user_data,
+      ServiceWorkerStatusCode status)>
+          GetUserDataForAllRegistrationsCallback;
 
   ~ServiceWorkerStorage() override;
 
@@ -159,6 +163,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void ClearUserData(int64 registration_id,
                      const std::string& key,
                      const StatusCallback& callback);
+  // Returns all registrations that have user data with a particular key, as
+  // well as that user data.
+  void GetUserDataForAllRegistrations(
+      const std::string& key,
+      const GetUserDataForAllRegistrationsCallback& callback);
 
   // Deletes the storage and starts over.
   void DeleteAndStartOver(const StatusCallback& callback);
@@ -249,6 +258,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef base::Callback<void(
       const std::string& data,
       ServiceWorkerDatabase::Status)> GetUserDataInDBCallback;
+  typedef base::Callback<void(
+      const std::vector<std::pair<int64, std::string>>& user_data,
+      ServiceWorkerDatabase::Status)>
+      GetUserDataForAllRegistrationsInDBCallback;
   typedef base::Callback<void(const std::vector<int64>& resource_ids,
                               ServiceWorkerDatabase::Status status)>
       GetResourcesCallback;
@@ -317,6 +330,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerDatabase::Status status);
   void DidDeleteUserData(
       const StatusCallback& callback,
+      ServiceWorkerDatabase::Status status);
+  void DidGetUserDataForAllRegistrations(
+      const GetUserDataForAllRegistrationsCallback& callback,
+      const std::vector<std::pair<int64, std::string>>& user_data,
       ServiceWorkerDatabase::Status status);
   void ReturnFoundRegistration(
       const FindRegistrationCallback& callback,
@@ -395,6 +412,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
       int64 registration_id,
       const std::string& key,
       const GetUserDataInDBCallback& callback);
+  static void GetUserDataForAllRegistrationsInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      const std::string& key,
+      const GetUserDataForAllRegistrationsInDBCallback& callback);
   static void DeleteAllDataForOriginsFromDB(
       ServiceWorkerDatabase* database,
       const std::set<GURL>& origins);
