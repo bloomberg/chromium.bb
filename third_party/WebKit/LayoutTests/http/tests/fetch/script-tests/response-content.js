@@ -1,5 +1,6 @@
-importScripts('worker-testharness.js');
-importScripts('../../resources/testharness-helpers.js');
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+}
 
 promise_test(function() {
     var response = new Response('test string');
@@ -131,3 +132,5 @@ promise_test(function() {
                         'resolve to the empty string.');
         });
   }, 'Behavior of Response with no body.');
+
+done();

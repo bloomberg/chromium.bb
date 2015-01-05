@@ -1,4 +1,6 @@
-importScripts('worker-testharness.js');
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+}
 
 function size(headers) {
   var count = 0;
@@ -25,13 +27,13 @@ test(function() {
     assert_equals(response.status, 200, 'Response.status should be readonly');
     assert_equals(response.statusText, 'OK',
                   'Response.statusText should be readonly');
-  }, 'Response default value test in ServiceWorkerGlobalScope');
+  }, 'Response default value test');
 
 test(function() {
     var headers = new Headers;
     headers.set('Content-Language', 'ja');
     headers.set('Content-Type', 'text/html; charset=UTF-8');
-    headers.set('X-ServiceWorker-Test', 'response test field');
+    headers.set('X-Fetch-Test', 'response test field');
     headers.set('Set-Cookie', 'response test set-cookie');
     headers.set('Set-Cookie2', 'response test set-cookie2');
 
@@ -44,7 +46,7 @@ test(function() {
                        statusText: 'See Other',
                        headers: {'Content-Language': 'ja',
                          'Content-Type': 'text/html; charset=UTF-8',
-                         'X-ServiceWorker-Test': 'response test field',
+                         'X-Fetch-Test': 'response test field',
                          'Set-Cookie': 'response test set-cookie',
                          'Set-Cookie2': 'response test set-cookie2'}
                      }),
@@ -54,7 +56,7 @@ test(function() {
                        statusText: 'See Other',
                        headers: [['Content-Language', 'ja'],
                                  ['Content-Type', 'text/html; charset=UTF-8'],
-                                 ['X-ServiceWorker-Test',
+                                 ['X-Fetch-Test',
                                   'response test field'],
                                  ['Set-Cookie', 'response test set-cookie'],
                                  ['Set-Cookie2', 'response test set-cookie2']]
@@ -72,13 +74,13 @@ test(function() {
         assert_equals(response.headers.get('Content-Type'),
                       'text/html; charset=UTF-8',
                       'Content-Type of Response.headers should match');
-        assert_equals(response.headers.get('X-ServiceWorker-Test'),
+        assert_equals(response.headers.get('X-Fetch-Test'),
                       'response test field',
-                      'X-ServiceWorker-Test of Response.headers should match');
-        response.headers.set('X-ServiceWorker-Test2', 'response test field2');
+                      'X-Fetch-Test of Response.headers should match');
+        response.headers.set('X-Fetch-Test2', 'response test field2');
         assert_equals(size(response.headers), 4,
                       'Response.headers size should increase by 1.');
-        assert_equals(response.headers.get('X-ServiceWorker-Test2'),
+        assert_equals(response.headers.get('X-Fetch-Test2'),
                       'response test field2',
                       'Response.headers should be added');
         response.headers.set('set-cookie', 'dummy');
@@ -92,13 +94,13 @@ test(function() {
         assert_equals(size(response.headers), 4,
                       'Response.headers should not accept Set-Cookie nor ' +
                       'Set-Cookie2');
-        response.headers.delete('X-ServiceWorker-Test');
+        response.headers.delete('X-Fetch-Test');
         assert_equals(size(response.headers), 3,
                       'Response.headers size should decrease by 1.');
       });
     // Note: detailed behavioral tests for Headers are in another test,
-    // http/tests/serviceworker/headers.html.
-  }, 'Response constructor test in ServiceWorkerGlobalScope');
+    // http/tests/fetch/*/headers.html.
+  }, 'Response constructor test');
 
 test(function() {
     var response = new Response(new Blob(['dummy'], {type: 'audio/wav'}));
@@ -118,7 +120,7 @@ test(function() {
     assert_equals(response.headers.get('Content-Type'),
                   'text/html; charset=UTF-8',
                   'Content-Type of Response.headers should be overridden');
-  }, 'Response content type test in ServiceWorkerGlobalScope');
+  }, 'Response content type test');
 
 test(function() {
     [0, 1, 100, 199, 600, 700].forEach(function(status) {
@@ -159,15 +161,17 @@ test(function() {
           {name: 'TypeError'},
           function() {
             new Response(new Blob(),
-                         {headers: {'X-ServiceWorker-Test': value}});
+                         {headers: {'X-Fetch-Test': value}});
           },
           'new Response with headers with an invalid value should throw');
         assert_throws(
           {name: 'TypeError'},
           function() {
             new Response(new Blob(),
-                         {headers: [['X-ServiceWorker-Test', value]]});
+                         {headers: [['X-Fetch-Test', value]]});
           },
           'new Response with headers with an invalid value should throw');
       });
-  }, 'Response throw error test in ServiceWorkerGlobalScope');
+  }, 'Response throw error test');
+
+done();

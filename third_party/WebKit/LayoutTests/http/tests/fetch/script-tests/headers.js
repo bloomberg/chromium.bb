@@ -1,4 +1,6 @@
-importScripts('worker-testharness.js');
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+}
 
 test(function() {
     function size(headers) {
@@ -12,13 +14,13 @@ test(function() {
     var expectedMap = {
       'content-language': 'ja',
       'content-type': 'text/html; charset=UTF-8',
-      'x-serviceworker-test': 'response test field'
+      'x-fetch-test': 'response test field'
     };
 
     var headers = new Headers;
     headers.set('Content-Language', 'ja');
     headers.set('Content-Type', 'text/html; charset=UTF-8');
-    headers.set('X-ServiceWorker-Test', 'text/html; charset=UTF-8');
+    headers.set('X-Fetch-Test', 'text/html; charset=UTF-8');
 
     assert_equals(size(headers), 3, 'headers size should match');
 
@@ -51,7 +53,7 @@ test(function() {
         isNewEntry: true },
 
       // For an existing key.
-      { key: 'X-ServiceWorker-Test',
+      { key: 'X-Fetch-Test',
         value: 'response test field - updated',
         isUpdate: true },
 
@@ -96,26 +98,26 @@ test(function() {
     }
 
     // 'append()', 'getAll()'
-    var allValues = headers.getAll('X-ServiceWorker-Test');
+    var allValues = headers.getAll('X-Fetch-Test');
     assert_equals(allValues.length, 1);
     assert_equals(size(headers), 4);
-    headers.append('X-SERVICEWORKER-TEST', 'response test field - append');
+    headers.append('X-FETCH-TEST', 'response test field - append');
     assert_equals(size(headers), 5, 'headers size should increase by 1.');
-    assert_equals(headers.get('X-SERVICEWORKER-Test'),
+    assert_equals(headers.get('X-FETCH-Test'),
                   'response test field - updated',
                   'the value of the first header added should be returned.');
-    allValues = headers.getAll('X-SERVICEWorker-TEST');
+    allValues = headers.getAll('X-FETch-TEST');
     assert_equals(allValues.length, 2);
     assert_equals(allValues[0], 'response test field - updated');
     assert_equals(allValues[1], 'response test field - append');
-    headers.set('X-SERVICEWorker-Test', 'response test field - set');
+    headers.set('X-FETch-Test', 'response test field - set');
     assert_equals(size(headers), 4, 'the second header should be deleted');
-    allValues = headers.getAll('X-ServiceWorker-Test');
+    allValues = headers.getAll('X-Fetch-Test');
     assert_equals(allValues.length, 1, 'the second header should be deleted');
     assert_equals(allValues[0], 'response test field - set');
-    headers.append('X-ServiceWorker-TEST', 'response test field - append');
+    headers.append('X-Fetch-TEST', 'response test field - append');
     assert_equals(size(headers), 5, 'headers size should increase by 1.');
-    headers.delete('X-ServiceWORKER-Test');
+    headers.delete('X-FeTCH-Test');
     assert_equals(size(headers), 3, 'two headers should be deleted.');
 
     // new Headers with sequence<sequence<ByteString>>
@@ -218,4 +220,6 @@ test(function() {
                                                           ['x', 'y', 'z']]); },
                   'new Headers with a sequence with more than two strings ' +
                   'should throw');
-  }, 'Headers in ServiceWorkerGlobalScope');
+  }, 'Headers');
+
+done();

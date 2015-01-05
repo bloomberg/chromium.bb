@@ -1,39 +1,36 @@
-importScripts('worker-testharness.js');
-importScripts('test-helpers.js');
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+}
 
 async_test(function(t) {
     fetch('http://')
       .then(
         t.unreached_func('fetch of invalid URL must fail'),
         function(e) {
-          assert_equals(
-            e.message,
-            'Failed to execute \'fetch\' on \'ServiceWorkerGlobalScope\': ' +
-            'Failed to parse URL from http://');
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch invalid URL in ServiceWorkerGlobalScope');
+  }, 'Fetch invalid URL');
 
 async_test(function(t) {
-    fetch('fetch-status.php?status=200')
+    fetch('/serviceworker/resources/fetch-status.php?status=200')
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch result of 200 response in ServiceWorkerGlobalScope');
+  }, 'Fetch result of 200 response');
 
 async_test(function(t) {
-    fetch('fetch-status.php?status=404')
+    fetch('/serviceworker/resources/fetch-status.php?status=404')
       .then(function(response) {
           assert_equals(response.status, 404);
           assert_equals(response.statusText, 'Not Found');
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch result of 404 response in ServiceWorkerGlobalScope');
+  }, 'Fetch result of 404 response');
 
 function evalJsonp(text) {
   return new Promise(function(resolve) {
@@ -45,7 +42,7 @@ function evalJsonp(text) {
 
 async_test(function(t) {
     var request =
-      new Request('fetch-access-control.php',
+      new Request('/serviceworker/resources/fetch-access-control.php',
                   {
                     method: 'POST',
                     body: new Blob(['Test Blob'], {type: 'test/type'})
@@ -59,11 +56,12 @@ async_test(function(t) {
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch with Blob body test in ServiceWorkerGlobalScope');
+  }, 'Fetch with Blob body test');
 
 async_test(function(t) {
-    var request = new Request('fetch-access-control.php',
-                              {method: 'POST', body: 'Test String'});
+    var request = new Request(
+      '/serviceworker/resources/fetch-access-control.php',
+      {method: 'POST', body: 'Test String'});
     fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
@@ -73,15 +71,16 @@ async_test(function(t) {
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch with string body test in ServiceWorkerGlobalScope');
+  }, 'Fetch with string body test');
 
 async_test(function(t) {
     var text = 'Test ArrayBuffer';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
       array[i] = text.charCodeAt(i);
-    var request = new Request('fetch-access-control.php',
-                              {method: 'POST', body: array.buffer});
+    var request = new Request(
+      '/serviceworker/resources/fetch-access-control.php',
+      {method: 'POST', body: array.buffer});
     fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
@@ -91,15 +90,16 @@ async_test(function(t) {
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch with ArrayBuffer body test in ServiceWorkerGlobalScope');
+  }, 'Fetch with ArrayBuffer body test');
 
 async_test(function(t) {
     var text = 'Test ArrayBufferView';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
       array[i] = text.charCodeAt(i);
-    var request = new Request('fetch-access-control.php',
-                              {method: 'POST', body: array});
+    var request = new Request(
+      '/serviceworker/resources/fetch-access-control.php',
+      {method: 'POST', body: array});
     fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
@@ -109,7 +109,7 @@ async_test(function(t) {
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch with ArrayBufferView body test in ServiceWorkerGlobalScope');
+  }, 'Fetch with ArrayBufferView body test');
 
 async_test(function(t) {
     var formData = new FormData();
@@ -118,8 +118,9 @@ async_test(function(t) {
     formData.append('BlobKey', new Blob(['blob content']));
     formData.append('FileKey',
                     new File(['file content'], 'file.dat'));
-    var request = new Request('fetch-access-control.php',
-                              {method: 'POST', body: formData});
+    var request = new Request(
+      '/serviceworker/resources/fetch-access-control.php',
+      {method: 'POST', body: formData});
     fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
@@ -140,7 +141,7 @@ async_test(function(t) {
           t.done();
         })
       .catch(unreached_rejection(t));
-  }, 'Fetch with FormData body test in ServiceWorkerGlobalScope');
+  }, 'Fetch with FormData body test');
 
 test(function(t) {
     function runInfiniteFetchLoop() {
@@ -151,3 +152,5 @@ test(function(t) {
   },
   'Destroying the execution context while fetch is happening should not ' +
   'cause a crash.');
+
+done();

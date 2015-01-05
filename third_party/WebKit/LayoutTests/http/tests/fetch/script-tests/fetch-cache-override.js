@@ -1,11 +1,11 @@
-importScripts('worker-testharness.js');
-importScripts('../../resources/testharness-helpers.js');
-importScripts('test-helpers.js');
+if (self.importScripts) {
+  importScripts('../resources/fetch-test-helpers.js');
+}
 
 promise_test(function() {
     var lastModified = '';
     var eTag = '';
-    var url = 'other.html';
+    var url = '/serviceworker/resources/other.html';
     var expectedText = '<!DOCTYPE html>\n<title>Other</title>\n' +
       'Here\'s an other html file.\n';
     return fetch(url)
@@ -175,7 +175,7 @@ promise_test(function() {
             'When If-Range is overridden to the invalid tag, the response ' +
             'body must be correct.');
 
-          return fetch('fetch-status.php?status=304');
+          return fetch('/serviceworker/resources/fetch-status.php?status=304');
         })
       .then(function(res) {
           assert_equals(
@@ -184,3 +184,5 @@ promise_test(function() {
             'response status must be 304.');
         });
   }, '304 handling for fetch().');
+
+done();
