@@ -42,27 +42,15 @@ def Main(args):
     if use_pnacl:
       print '\n*** DOWNLOADING PNACL TOOLCHAIN ***\n'
     else:
-      args.extend(['--exclude', 'pnacl_newlib'])
+      args = ['--exclude', 'pnacl_newlib'] + args
 
   # Only download the ARM gcc toolchain if we are building for ARM
   # TODO(olonho): we need to invent more reliable way to get build
   # configuration info, to know if we're building for ARM.
   if 'target_arch=arm' not in os.environ.get('GYP_DEFINES', ''):
-      args.extend(['--exclude', 'nacl_arm_newlib'])
+      args = ['--exclude', 'nacl_arm_newlib'] + args
 
-  args.extend(['--mode', 'nacl_core_sdk'])
-  args.append('sync')
   package_version.main(args)
-
-  # Because we are no longer extracting the toolchain, it is best to delete
-  # the old extracted ones so that no stale toolchains are left behind. This
-  # also would catch any stale code that happens to work because it is using
-  # an old extracted toolchain that was left behind.
-  toolchain_dir = os.path.join(nacl_dir, 'toolchain')
-  for toolchain_item in os.listdir(toolchain_dir):
-    toolchain_path = os.path.join(toolchain_dir, toolchain_item)
-    if os.path.isdir(toolchain_path) and not toolchain_item.startswith('.'):
-      shutil.rmtree(toolchain_path)
 
   return 0
 

@@ -550,6 +550,8 @@ hooks = [
     'action': [
         'python',
         'src/build/download_nacl_toolchains.py',
+        '--mode', 'nacl_core_sdk',
+        'sync',
     ],
   },
   {
