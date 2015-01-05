@@ -17,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/shortcuts_database.h"
+#include "chrome/browser/autocomplete/shortcuts_database.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "content/public/browser/notification_observer.h"
