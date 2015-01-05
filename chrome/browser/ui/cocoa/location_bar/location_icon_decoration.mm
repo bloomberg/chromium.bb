@@ -115,7 +115,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   const NavigationController& controller = tab->GetController();
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   NavigationEntry* nav_entry = controller.GetVisibleEntry();
-  DCHECK(nav_entry);
+  if (!nav_entry)
+    return true;
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
   chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetURL(),
                               nav_entry->GetSSL());
