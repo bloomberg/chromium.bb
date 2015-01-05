@@ -58,6 +58,9 @@ public:
         return result;
     }
 
+    // The returned range doesn't include the brackets
+    CSSParserTokenRange consumeBlock();
+
     void consumeComponentValue();
     void consumeWhitespaceAndComments();
 

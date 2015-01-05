@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class StyleRule;
+class StyleRuleBase;
 class ImmutableStylePropertySet;
 class Element;
 class MutableStylePropertySet;
@@ -27,8 +29,15 @@ public:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     static bool parseDeclaration(MutableStylePropertySet*, const String&, const CSSParserContext&);
+    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&);
 
 private:
+    // These two functions update the range they're given
+    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&);
+    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&);
+
+    PassRefPtrWillBeRawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+
     // FIXME: We should use a CSSRule::Type here
     void consumeDeclarationList(CSSParserTokenRange, CSSRuleSourceData::Type);
     void consumeDeclaration(CSSParserTokenRange, CSSRuleSourceData::Type);

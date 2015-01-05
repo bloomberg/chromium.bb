@@ -26,6 +26,24 @@ CSSParserTokenRange CSSParserTokenRange::makeSubRange(const CSSParserToken* firs
     return CSSParserTokenRange(first, last);
 }
 
+CSSParserTokenRange CSSParserTokenRange::consumeBlock()
+{
+    ASSERT(peek().blockType() == CSSParserToken::BlockStart);
+    const CSSParserToken* start = &peek() + 1;
+    unsigned nestingLevel = 0;
+    do {
+        const CSSParserToken& token = consume();
+        if (token.blockType() == CSSParserToken::BlockStart)
+            nestingLevel++;
+        else if (token.blockType() == CSSParserToken::BlockEnd)
+            nestingLevel--;
+    } while (nestingLevel && m_first < m_last);
+
+    if (nestingLevel)
+        return makeSubRange(start, m_first); // Ended at EOF
+    return makeSubRange(start, m_first - 1);
+}
+
 void CSSParserTokenRange::consumeComponentValue()
 {
     // FIXME: This is going to do multiple passes over large sections of a stylesheet.

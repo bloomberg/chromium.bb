@@ -42,6 +42,8 @@ void CSSParser::parseSelector(const String& selector, CSSSelectorList& selectorL
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& rule)
 {
+    if (RuntimeEnabledFeatures::newCSSParserEnabled())
+        return CSSParserImpl::parseRule(rule, context);
     return BisonCSSParser(context).parseRule(styleSheet, rule);
 }
 

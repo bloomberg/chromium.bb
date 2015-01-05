@@ -10,6 +10,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSPropertyParser.h"
+#include "core/css/parser/CSSSelectorParser.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -86,6 +87,61 @@ bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const
         return false;
     declaration->addParsedProperties(parser.m_parsedProperties);
     return true;
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context)
+{
+    CSSParserImpl parser(context, string);
+    CSSParserTokenRange range(parser.m_tokens);
+    range.consumeWhitespaceAndComments();
+    if (range.atEnd())
+        return nullptr; // Parse error, empty rule
+    RefPtrWillBeRawPtr<StyleRuleBase> rule;
+    if (range.peek().type() == AtKeywordToken)
+        rule = parser.consumeAtRule(range);
+    else
+        rule = parser.consumeQualifiedRule(range);
+    if (!rule)
+        return nullptr; // Parse error, failed to consume rule
+    range.consumeWhitespaceAndComments();
+    if (!rule || !range.atEnd())
+        return nullptr; // Parse error, trailing garbage
+    return rule;
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserTokenRange& range)
+{
+    // FIXME: Implement at-rule parsing
+    return nullptr;
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSParserTokenRange& range)
+{
+    const CSSParserToken* preludeStart = &range.peek();
+    while (!range.atEnd() && range.peek().type() != LeftBraceToken)
+        range.consumeComponentValue();
+
+    if (range.atEnd())
+        return nullptr; // Parse error, EOF instead of qualified rule block
+
+    CSSParserTokenRange prelude = range.makeSubRange(preludeStart, &range.peek());
+    CSSParserTokenRange block = range.consumeBlock();
+    return consumeStyleRule(prelude, block);
+}
+
+PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
+{
+    CSSSelectorList selectorList;
+    CSSSelectorParser::parseSelector(prelude, m_context, selectorList);
+    if (!selectorList.isValid())
+        return nullptr; // Parse error, invalid selector list
+    consumeDeclarationList(block, CSSRuleSourceData::STYLE_RULE);
+
+    RefPtrWillBeRawPtr<StyleRule> rule = StyleRule::create();
+    rule->wrapperAdoptSelectorList(selectorList);
+    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
+    m_parsedProperties.clear();
+    return rule.release();
 }
 
 void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, CSSRuleSourceData::Type ruleType)
