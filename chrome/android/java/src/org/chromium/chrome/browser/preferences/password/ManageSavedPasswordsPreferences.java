@@ -77,6 +77,11 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
         mEmptyView.setText(R.string.saved_passwords_none_text);
         mEmptyView.setGravity(Gravity.CENTER);
         mEmptyView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         ((ViewGroup) getActivity().findViewById(android.R.id.content)).addView(mEmptyView);
     }
 

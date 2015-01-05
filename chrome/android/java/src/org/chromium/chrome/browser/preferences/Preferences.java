@@ -19,7 +19,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -206,7 +205,7 @@ public abstract class Preferences extends ActionBarActivity implements
     private void workAroundPlatformBugs() {
         // Workaround for an Android bug where the fragment's view may not be attached to the view
         // hierarchy. http://b/18525402
-        setContentView(new View(this));
+        getSupportActionBar();
 
         // Workaround for HTC One S bug which causes all the text in settings to turn white.
         // This must be called after setContentView().
