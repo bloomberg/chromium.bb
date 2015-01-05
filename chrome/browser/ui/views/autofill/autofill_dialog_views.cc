@@ -1739,13 +1739,11 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
       new views::MenuRunner(delegate_->MenuModelForSection(group->section), 0));
 
   group->container->SetActive(true);
-  views::Button::ButtonState state = group->suggested_button->state();
-  group->suggested_button->SetState(views::Button::STATE_PRESSED);
 
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   screen_bounds.Inset(source->GetInsets());
   if (menu_runner_->RunMenuAt(source->GetWidget(),
-                              NULL,
+                              group->suggested_button,
                               screen_bounds,
                               views::MENU_ANCHOR_TOPRIGHT,
                               ui::MENU_SOURCE_NONE) ==
@@ -1754,7 +1752,6 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
   }
 
   group->container->SetActive(false);
-  group->suggested_button->SetState(state);
 }
 
 gfx::Size AutofillDialogViews::CalculatePreferredSize(
@@ -2483,7 +2480,7 @@ void AutofillDialogViews::SetEditabilityForSection(DialogSection section) {
 
     TextfieldMap::iterator text_mapping = group->textfields.find(input.type);
     if (text_mapping != group->textfields.end()) {
-      ExpandingTextfield* textfield= text_mapping->second;
+      ExpandingTextfield* textfield = text_mapping->second;
       textfield->SetEditable(editable);
       continue;
     }
