@@ -91,7 +91,6 @@ void EnableDebuggingScreenHandler::DeclareLocalizedValues(
                IDS_ENABLE_DEBUGGING_SCREEN_TITLE);
   builder->Add("enableDebuggingScreenAccessibleTitle",
                IDS_ENABLE_DEBUGGING_SCREEN_TITLE);
-  builder->Add("enableDebuggingScreenIconTitle", IDS_EXCLAMATION_ICON_TITLE);
   builder->Add("enableDebuggingCancelButton", IDS_CANCEL);
   builder->Add("enableDebuggingOKButton", IDS_OK);
   builder->Add("enableDebuggingRemoveButton",
@@ -110,6 +109,8 @@ void EnableDebuggingScreenHandler::DeclareLocalizedValues(
   builder->AddF("enableDebuggingDoneMessage",
                 IDS_ENABLE_DEBUGGING_DONE_MESSAGE,
                 IDS_SHORT_PRODUCT_NAME);
+  builder->Add("enableDebuggingErrorTitle",
+                IDS_ENABLE_DEBUGGING_ERROR_TITLE);
   builder->AddF("enableDebuggingErrorMessage",
                 IDS_ENABLE_DEBUGGING_ERROR_MESSAGE,
                 IDS_SHORT_PRODUCT_NAME);

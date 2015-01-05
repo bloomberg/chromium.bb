@@ -32,10 +32,8 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
 
       var password = $('enable-debugging-password');
       var password2 = $('enable-debugging-password2');
-      $('enable-debugging-password').addEventListener(
-          'input', this.onPasswordChanged_.bind(this));
-      $('enable-debugging-password2').addEventListener(
-          'input', this.onPasswordChanged_.bind(this));
+      password.addEventListener('input', this.onPasswordChanged_.bind(this));
+      password2.addEventListener('input', this.onPasswordChanged_.bind(this));
       password.placeholder =
           loadTimeData.getString('enableDebuggingPasswordLabel');
       password2.placeholder =
@@ -162,6 +160,10 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
       this.classList.toggle('wait-view', state == this.UI_STATE.WAIT);
       this.classList.toggle('done-view', state == this.UI_STATE.DONE);
       this.classList.toggle('error-view', state == this.UI_STATE.ERROR);
+      this.defaultControl.focus();
+
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
     },
 
     updateState: function(state) {

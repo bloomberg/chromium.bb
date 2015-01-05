@@ -1,14 +1,14 @@
 <div class="step faded hidden no-logo" id="debugging" role="group" hidden
      i18n-values="aria-label:enableDebuggingScreenAccessibleTitle">
   <div class="step-contents">
-    <div id="enable-debugging-warning-msg"
-        i18n-content="enableDebuggingScreenTitle"
-        class="remove-protection-specific setup-specific
+    <div id="enable-debugging-icon"></div>
+    <div i18n-content="enableDebuggingScreenTitle"
+        class="enable-debugging-title remove-protection-specific setup-specific
                done-specific wait-specific">
     </div>
-    <img id="enable-debugging-warning-icon"
-        src="chrome://theme/IDR_RESET_WARNING"
-        i18n-values="alt:enableDebuggingScreenIconTitle"/>
+    <div i18n-content="enableDebuggingErrorTitle"
+        class="enable-debugging-title error-specific">
+    </div>
     <div id="enable-debugging-info"
         class="enable-debugging-text
                remove-protection-specific setup-specific state-specific
@@ -23,12 +23,8 @@
       </div>
       <div id="enable-debugging-passwords" class="setup-specific">
         <div class="enable-debugging-password-input">
-          <input id="enable-debugging-password"
-              class="enable-debugging-password-field" type="password"
-              size="20">
-          <input id="enable-debugging-password2"
-              class="enable-debugging-password-field" type="password"
-              size="20">
+          <input id="enable-debugging-password" type="password">
+          <input id="enable-debugging-password2" type="password">
         </div>
         <div id="enable-debugging-password-note"
             i18n-content="enableDebuggingPasswordLengthNote">
@@ -42,11 +38,9 @@
       </div>
       <a id="enable-debugging-help-link" href="#" i18n-content="learnMore"></a>
     </div>
-    <div id="revert-promise" class="wait-specific">
+    <div id="revert-promise" class="enable-debugging-text wait-specific">
       <div id="enable-debugging-wait-msg"
           i18n-content="enableDebuggingWaitMessage">
-      </div>
-      <div id="enable-debugging-spinner" class="throbber">
       </div>
     </div>
   </div>

@@ -1118,7 +1118,7 @@ Press any key to continue exploring.
     Disable calibrating the color of the display even if the display supports the feature.
   </message>
   <message name="IDS_FLAGS_USE_MEMORY_PRESSURE_NAME" desc="Name for the flag to enable memory pressure handling on ChromeOS.">
-    Enable memory pressure handling 
+    Enable memory pressure handling
   </message>
   <message name="IDS_FLAGS_USE_MEMORY_PRESSURE_DESCRIPTION" desc="Description for the flag to enable memory pressure handling on ChromeOS.">
     Enables enhanced memory pressure handling on ChromeOS.
@@ -2792,8 +2792,11 @@ Press any key to continue exploring.
   <message name="IDS_ENABLE_DEBUGGING_DONE_MESSAGE" desc="Completion message in dialog for enabling debugging features.">
     You have successfully enabled debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
   </message>
+  <message name="IDS_ENABLE_DEBUGGING_ERROR_TITLE" desc="Title message when enabling of debugging features fails.">
+    Something went wrong
+  </message>
   <message name="IDS_ENABLE_DEBUGGING_ERROR_MESSAGE" desc="Error message when enabling of debugging features fails.">
-    Something went wrong. The debugging features were not completely enabled on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
+    Debugging features were not completely enabled on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
   </message>
   <message name="IDS_ENABLE_DEBUGGING_ROOT_PASSWORD_LABEL" desc="Text for root password entry field label from enable debugging features dialog.">
    root password
