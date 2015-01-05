@@ -35886,6 +35886,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="Startup.Experimental.FirstWebContents.MainFrameLoad.ManyBuckets"
     units="milliseconds">
+  <obsolete>
+    Removed in M-41.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     An experimental metric only collected on the dev and canary channels.
@@ -35898,6 +35901,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="Startup.Experimental.FirstWebContents.MainFrameLoad.StandardBuckets"
     units="milliseconds">
+  <obsolete>
+    Moved to Startup.FirstWebContents.MainFrameLoad in M-41.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     An experimental metric only collected on the dev and canary channels.
@@ -35909,6 +35915,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="Startup.Experimental.FirstWebContents.NonEmptyPaint.ManyBuckets"
     units="milliseconds">
+  <obsolete>
+    Removed in M-41.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     An experimental metric only collected on the dev and canary channels.
@@ -35921,11 +35930,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="Startup.Experimental.FirstWebContents.NonEmptyPaint.StandardBuckets"
     units="milliseconds">
+  <obsolete>
+    Moved to Startup.FirstWebContents.NonEmptyPaint in M-41.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     An experimental metric only collected on the dev and canary channels.
     Measure the elapsed time from process launch to the first non-empty paint of
     the first web contents. Uses standard bucket ranges.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.MainFrameLoad" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Measure the elapsed time from process launch to the first main frame load of
+    the first web contents.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.NonEmptyPaint" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Measure the elapsed time from process launch to the first non-empty paint of
+    the first web contents.
   </summary>
 </histogram>
 

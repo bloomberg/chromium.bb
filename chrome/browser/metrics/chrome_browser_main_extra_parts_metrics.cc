@@ -267,11 +267,8 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
-  if (FirstWebContentsProfiler::ShouldCollectMetrics()) {
-    first_web_contents_profiler_ =
-        FirstWebContentsProfiler::CreateProfilerForFirstWebContents(this)
-            .Pass();
-  }
+  first_web_contents_profiler_ =
+      FirstWebContentsProfiler::CreateProfilerForFirstWebContents(this).Pass();
 #endif  // !defined(OS_ANDROID)
 }
 

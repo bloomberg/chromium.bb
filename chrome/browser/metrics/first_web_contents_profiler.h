@@ -32,10 +32,6 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   static scoped_ptr<FirstWebContentsProfiler> CreateProfilerForFirstWebContents(
       Delegate* delegate);
 
-  // These metrics are currently experimental, and are only collected in the
-  // dev and canary channels.
-  static bool ShouldCollectMetrics();
-
  private:
   FirstWebContentsProfiler(content::WebContents* web_contents,
                            Delegate* delegate);

@@ -12,22 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_version_info.h"
-
-namespace {
-
-const int kHistogramMinTimeMilliseconds = 200;
-const int kHistogramMaxTimeSeconds = 45;
-
-// There is a lot of noise in the dev channel. One possible cause is that the
-// bucket ranges are too wide. The bucket count is chosen such that the size of
-// the bucket is 1% of its minimum. Notice that this also means that
-// subsequent buckets will satisfy Min(bucket N + 1) / Min(bucket N) = 1.01.
-// Then we want X, such that 1.01 ^ X = 45 * 1000 / 200. Some quick math shows
-// that X = 544.
-const int kHistogramBucketCount = 544;
-
-}  // namespace
 
 scoped_ptr<FirstWebContentsProfiler>
 FirstWebContentsProfiler::CreateProfilerForFirstWebContents(
@@ -43,12 +27,6 @@ FirstWebContentsProfiler::CreateProfilerForFirstWebContents(
     }
   }
   return nullptr;
-}
-
-bool FirstWebContentsProfiler::ShouldCollectMetrics() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel == chrome::VersionInfo::CHANNEL_CANARY ||
-         channel == chrome::VersionInfo::CHANNEL_DEV;
 }
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
@@ -69,19 +47,8 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   if (!process_creation_time_.is_null()) {
     base::TimeDelta elapsed = base::Time::Now() - process_creation_time_;
 
-    // TODO(erikchen): Revisit these metrics once data has been collected to
-    // determine whether using more buckets reduces noise and provides higher
-    // quality information.
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Startup.Experimental.FirstWebContents.NonEmptyPaint."
-        "ManyBuckets",
-        elapsed,
-        base::TimeDelta::FromMilliseconds(kHistogramMinTimeMilliseconds),
-        base::TimeDelta::FromSeconds(kHistogramMaxTimeSeconds),
-        kHistogramBucketCount);
-    UMA_HISTOGRAM_LONG_TIMES_100(
-        "Startup.Experimental.FirstWebContents.NonEmptyPaint.StandardBuckets",
-        elapsed);
+    UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.NonEmptyPaint",
+                                 elapsed);
   }
 
   if (IsFinishedCollectingMetrics())
@@ -96,19 +63,8 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   if (!process_creation_time_.is_null()) {
     base::TimeDelta elapsed = base::Time::Now() - process_creation_time_;
 
-    // TODO(erikchen): Revisit these metrics once data has been collected to
-    // determine whether using more buckets reduces noise and provides higher
-    // quality information.
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Startup.Experimental.FirstWebContents.MainFrameLoad."
-        "ManyBuckets",
-        elapsed,
-        base::TimeDelta::FromMilliseconds(kHistogramMinTimeMilliseconds),
-        base::TimeDelta::FromSeconds(kHistogramMaxTimeSeconds),
-        kHistogramBucketCount);
-    UMA_HISTOGRAM_LONG_TIMES_100(
-        "Startup.Experimental.FirstWebContents.MainFrameLoad.StandardBuckets",
-        elapsed);
+    UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.MainFrameLoad",
+                                 elapsed);
   }
 
   if (IsFinishedCollectingMetrics())
