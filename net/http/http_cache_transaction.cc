@@ -1977,12 +1977,6 @@ int HttpCache::Transaction::DoCacheQueryDataComplete(int result) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 HttpCache::Transaction::DoCacheQueryDataComplete"));
 
-  if (result == ERR_NOT_IMPLEMENTED) {
-    // Restart the request overwriting the cache entry.
-    // TODO(pasko): remove this workaround as soon as the SimpleBackendImpl
-    // supports Sparse IO.
-    return DoRestartPartialRequest();
-  }
   DCHECK_EQ(OK, result);
   if (!cache_.get())
     return ERR_UNEXPECTED;
