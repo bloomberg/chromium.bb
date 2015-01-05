@@ -46,8 +46,8 @@ class GamepadDataFetcherEmpty : public GamepadDataFetcher {
  public:
   GamepadDataFetcherEmpty();
 
-  virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) override;
+  void GetGamepadData(blink::WebGamepads* pads,
+                      bool devices_changed_hint) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GamepadDataFetcherEmpty);

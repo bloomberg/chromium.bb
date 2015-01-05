@@ -44,10 +44,10 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
                     const scoped_refptr<base::TaskRunner>& task_runner);
 
   // BrowserMessageFilter implementations.
-  virtual void OnDestruct() const override;
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  void OnDestruct() const override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   media::BrowserCdm* GetCdm(int render_frame_id, int cdm_id);
 
@@ -60,7 +60,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
  protected:
   friend class base::RefCountedThreadSafe<BrowserCdmManager>;
   friend class base::DeleteHelper<BrowserCdmManager>;
-  virtual ~BrowserCdmManager();
+  ~BrowserCdmManager() override;
 
  private:
   // CDM callbacks.

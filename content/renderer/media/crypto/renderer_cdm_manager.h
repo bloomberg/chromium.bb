@@ -28,10 +28,10 @@ class RendererCdmManager : public RenderFrameObserver {
  public:
   // Constructs a RendererCdmManager object for the |render_frame|.
   explicit RendererCdmManager(RenderFrame* render_frame);
-  virtual ~RendererCdmManager();
+  ~RendererCdmManager() override;
 
   // RenderFrameObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Encrypted media related methods.
   void InitializeCdm(int cdm_id,

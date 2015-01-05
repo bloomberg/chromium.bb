@@ -53,10 +53,10 @@ class TestPlatformWindowDelegate : public ui::PlatformWindowDelegate {
 class SoftwareOutputDeviceOzoneTest : public testing::Test {
  public:
   SoftwareOutputDeviceOzoneTest();
-  virtual ~SoftwareOutputDeviceOzoneTest();
+  ~SoftwareOutputDeviceOzoneTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<content::SoftwareOutputDeviceOzone> output_device_;
@@ -106,7 +106,7 @@ void SoftwareOutputDeviceOzoneTest::TearDown() {
 class SoftwareOutputDeviceOzonePixelTest
     : public SoftwareOutputDeviceOzoneTest {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 };
 
 void SoftwareOutputDeviceOzonePixelTest::SetUp() {

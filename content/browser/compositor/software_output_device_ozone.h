@@ -23,12 +23,12 @@ class CONTENT_EXPORT SoftwareOutputDeviceOzone
     : public cc::SoftwareOutputDevice {
  public:
   explicit SoftwareOutputDeviceOzone(ui::Compositor* compositor);
-  virtual ~SoftwareOutputDeviceOzone();
+  ~SoftwareOutputDeviceOzone() override;
 
-  virtual void Resize(const gfx::Size& viewport_pixel_size,
+  void Resize(const gfx::Size& viewport_pixel_size,
                       float scale_factor) override;
-  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
+  void EndPaint(cc::SoftwareFrameData* frame_data) override;
 
  private:
   ui::Compositor* compositor_;
