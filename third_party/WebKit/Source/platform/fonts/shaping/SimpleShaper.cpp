@@ -30,6 +30,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "wtf/MathExtras.h"
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace WTF;
 using namespace Unicode;
@@ -77,7 +78,7 @@ float SimpleShaper::characterWidth(UChar32 character, const GlyphData& glyphData
     const SimpleFontData* fontData = glyphData.fontData;
     ASSERT(fontData);
 
-    if (UNLIKELY(character == '\t' && m_run.allowTabs()))
+    if (UNLIKELY(character == characterTabulation && m_run.allowTabs()))
         return m_font->tabWidth(*fontData, m_run.tabSize(), m_run.xPos() + m_runWidthSoFar);
 
     float width = fontData->widthForGlyph(glyphData.glyph);
@@ -126,7 +127,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 
         // Account for word spacing.
         // We apply additional space between "words" by adding width to the space character.
-        if (isExpansionOpportunity && (charData.character != '\t' || !m_run.allowTabs())
+        if (isExpansionOpportunity && (charData.character != characterTabulation || !m_run.allowTabs())
             && (charData.characterOffset || charData.character == noBreakSpace)
             && m_font->fontDescription().wordSpacing()) {
             width += m_font->fontDescription().wordSpacing();
