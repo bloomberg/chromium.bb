@@ -151,6 +151,8 @@ cr.define('options.autofillOptions', function() {
 
       this.addEventListener('commitedit', this.onEditCommitted_);
       this.closeButtonFocusAllowed = true;
+      this.setFocusableColumnIndex(this.input, 0);
+      this.setFocusableColumnIndex(this.closeButtonElement, 1);
     },
 
     /**
