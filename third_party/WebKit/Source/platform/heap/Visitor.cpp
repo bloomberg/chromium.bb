@@ -43,6 +43,8 @@ namespace blink {
 int s_gcInfoIndex = 0;
 const GCInfo* s_gcInfoMap[gcInfoIndexMax] = { 0 };
 
+int Visitor::m_traceDepth = 0;
+
 #if ENABLE(ASSERT)
 void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex)
 {

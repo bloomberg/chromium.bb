@@ -622,9 +622,9 @@ public:
 
 protected:
     explicit Visitor(VisitorType type)
-        : m_traceDepth(0)
-        , m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
+        : m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
     {
+        m_traceDepth = 0;
     }
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
@@ -643,7 +643,7 @@ private:
     // considered safe and allowed.
     const int kMaxEagerTraceDepth = 100;
 
-    int m_traceDepth;
+    static int m_traceDepth;
     bool m_isGlobalMarkingVisitor;
 };
 
