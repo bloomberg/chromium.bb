@@ -153,14 +153,12 @@ cr.define('options', function() {
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&
             this.currentInputIsValid) {
-          if (this.isPlaceholder &&
-              this.parentNode.shouldFocusPlaceholderOnEditCommit()) {
-            this.parentNode.needsToFocusPlaceholder_ = true;
-          }
-
+          this.parentNode.needsToFocusPlaceholder_ = this.isPlaceholder &&
+              this.parentNode.shouldFocusPlaceholderOnEditCommit();
           this.updateStaticValues_();
           cr.dispatchSimpleEvent(this, 'commitedit', true);
         } else {
+          this.parentNode.needsToFocusPlaceholder_ = false;
           this.resetEditableValues_();
           cr.dispatchSimpleEvent(this, 'canceledit', true);
         }
@@ -652,7 +650,6 @@ cr.define('options', function() {
 
       if (this.needsToFocusPlaceholder_) {
         this.focusPlaceholder();
-        this.needsToFocusPlaceholder_ = false;
       } else {
         var item = this.getInitialFocusableItem();
         if (item) {
