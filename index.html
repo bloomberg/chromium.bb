@@ -260,21 +260,6 @@ page in and out.  The content outside the <code>iframe</code> zooms, but the
 content inside the <code>iframe</code> does not zoom.</p>
 
 <h3>
-    <a name="bugfix-justifyprewrap">bugfix/justifyprewrap</a>
-    (Shezan Baig; D31916947; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84448">84448</a>)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Fjustifyprewrap">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/justifyprewrap.html">this link</a> in Chrome.  The
-second paragraph will not be justified, even though
-<code>text-align:justify</code> is specified.</p>
-<p>There is an upstream ticket for this issue, but it calls for a much more
-comprehensive fix than what was done in this branch.  In this branch, we just
-enable the existing justification logic in elements that have
-<code>whitespace:pre-wrap</code> specified, but the upstream ticket calls for
-modification to the justification logic itself to match how Microsoft Word
-software works.</p>
-
-<h3>
     <a name="bugfix-listifySpans">bugfix/listifySpans</a>
     (Shezan Baig; D37507315)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FlistifySpans">view changes</a>]</span>
@@ -387,14 +372,6 @@ the color from the document.</p>
 With this patch, the mis-spelled words will be underlined in the specified
 colors.</p>
 <p>TODO: make this a CSS property instead of a DOM attribute.</p>
-
-<h3>
-    <a name="feature-customSandboxLevels">feature/customSandboxLevels</a>
-    (Tomy Jacob)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FcustomSandboxLevels">view changes</a>]</span>
-</h3>
-<p>These are extensions to the different sandboxing levels provided by the
-Chromium sandbox library.  These levels are used by internal apps.</p>
 
 <h3>
     <a name="feature-fileEnhancements">feature/fileEnhancements</a>
@@ -606,6 +583,14 @@ text.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
+
+<h2><a name="retired-37.0.2062.124">Retired at 37.0.2062.124</a></h2>
+
+<h3><a name="bugfix-justifyprewrap">bugfix/justifyprewrap</a> (Shezan Baig; D31916947; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84448">84448</a>)</h3>
+<p>Retired because the fix for the same issue has been made upstream.</p>
+
+<h3><a name="feature-customSandboxLevels">feature/customSandboxLevels</a> (Tomy Jacob)</h3>
+<p>Retired because we will no longer be supporting this mode.</p>
 
 <h2><a name="retired-31.0.1650.63">Retired at 31.0.1650.63</a></h2>
 
