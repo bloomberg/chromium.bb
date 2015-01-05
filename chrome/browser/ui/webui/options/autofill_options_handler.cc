@@ -580,9 +580,9 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
   if (args->GetList(arg_counter++, &list_value)) {
     std::vector<base::string16> values;
     ListValueToStringVector(*list_value, &values);
-    profile.SetMultiInfo(AutofillType(autofill::NAME_FULL),
-                         values,
-                         g_browser_process->GetApplicationLocale());
+    AutofillProfile* old_profile = personal_data_->GetProfileByGUID(guid);
+    profile.CopyAndUpdateNameList(values, old_profile,
+                                  g_browser_process->GetApplicationLocale());
   }
 
   if (args->GetString(arg_counter++, &value))

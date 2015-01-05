@@ -122,6 +122,13 @@ class AutofillProfile : public AutofillDataModel {
   void OverwriteWithOrAddTo(const AutofillProfile& profile,
                             const std::string& app_locale);
 
+  // Sets |name_| to the user-input values in |names|, but uses names in |from|
+  // as a starting point. If the full names are equivalent, the parsing in
+  // |from| will take precedence. |from| can be null.
+  void CopyAndUpdateNameList(const std::vector<base::string16> names,
+                             const AutofillProfile* from,
+                             const std::string& app_locale);
+
   // Returns |true| if |type| accepts multi-values.
   static bool SupportsMultiValue(ServerFieldType type);
 

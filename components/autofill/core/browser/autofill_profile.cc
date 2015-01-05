@@ -582,6 +582,25 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
   return true;
 }
 
+void AutofillProfile::CopyAndUpdateNameList(
+    const std::vector<base::string16> names,
+    const AutofillProfile* from,
+    const std::string& locale) {
+  SetMultiInfo(AutofillType(NAME_FULL), names, locale);
+  if (!from)
+    return;
+
+  for (const auto& old_name : from->name_) {
+    for (size_t i = 0; i < name_.size(); ++i) {
+      if (old_name.GetInfo(AutofillType(NAME_FULL), locale) ==
+          name_[i].GetInfo(AutofillType(NAME_FULL), locale)) {
+        name_[i] = old_name;
+        break;
+      }
+    }
+  }
+}
+
 void AutofillProfile::OverwriteOrAppendNames(
     const std::vector<NameInfo>& names,
     const std::string& app_locale) {
