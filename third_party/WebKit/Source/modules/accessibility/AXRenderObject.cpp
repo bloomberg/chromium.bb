@@ -1147,6 +1147,9 @@ const AtomicString& AXRenderObject::liveRegionRelevant() const
 
 bool AXRenderObject::liveRegionAtomic() const
 {
+    // ARIA role status should have implicit aria-atomic value of true.
+    if (getAttribute(aria_atomicAttr).isEmpty() && roleValue() == StatusRole)
+        return true;
     return elementAttributeValue(aria_atomicAttr);
 }
 
