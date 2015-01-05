@@ -2006,7 +2006,7 @@ void InspectorDOMAgent::willModifyDOMAttr(Element*, const AtomicString& oldValue
     m_suppressAttributeModifiedEvent = (oldValue == newValue);
 }
 
-void InspectorDOMAgent::didModifyDOMAttr(Element* element, const String& name, const AtomicString& value)
+void InspectorDOMAgent::didModifyDOMAttr(Element* element, const QualifiedName& name, const AtomicString& value)
 {
     bool shouldSuppressEvent = m_suppressAttributeModifiedEvent;
     m_suppressAttributeModifiedEvent = false;
@@ -2021,10 +2021,10 @@ void InspectorDOMAgent::didModifyDOMAttr(Element* element, const String& name, c
     if (m_domListener)
         m_domListener->didModifyDOMAttr(element);
 
-    m_frontend->attributeModified(id, name, value);
+    m_frontend->attributeModified(id, name.toString(), value);
 }
 
-void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const String& name)
+void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& name)
 {
     int id = boundNodeId(element);
     // If node is not mapped yet -> ignore the event.
@@ -2034,7 +2034,7 @@ void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const String& name)
     if (m_domListener)
         m_domListener->didModifyDOMAttr(element);
 
-    m_frontend->attributeRemoved(id, name);
+    m_frontend->attributeRemoved(id, name.toString());
 }
 
 void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements)

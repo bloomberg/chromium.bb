@@ -87,10 +87,10 @@ interface InspectorInstrumentation {
     void willModifyDOMAttr([Keep] Element*, const AtomicString& oldValue, const AtomicString& newValue);
 
     [DOM, Inline=FastReturn]
-    void didModifyDOMAttr([Keep] Element*, const String& name, const AtomicString& value);
+    void didModifyDOMAttr([Keep] Element*, const QualifiedName& name, const AtomicString& value);
 
     [DOM, Inline=FastReturn]
-    void didRemoveDOMAttr([Keep] Element*, const String& name);
+    void didRemoveDOMAttr([Keep] Element*, const QualifiedName& name);
 
     [DOM, Inline=FastReturn]
     void characterDataModified([Keep] CharacterData*);
