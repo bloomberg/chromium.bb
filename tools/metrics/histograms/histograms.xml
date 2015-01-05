@@ -20986,6 +20986,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.DarkResumeUnmatchedScanResultsReceived"
+    enum="DarkResumeUnmatchedScanResultReceived">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks whether any unmatched scan results are
+    received during dark resume cycles. An unmatched scan result is a set of
+    scan results received by shill in response to a scan request that was not
+    sent directly by shill in the same dark resume cycle.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.DevicePresenceStatus" enum="BooleanPresent">
   <owner>zqiu@chromium.org</owner>
   <summary>
@@ -43688,6 +43699,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="First Run"/>
   <int value="1" label="Day Elapsed"/>
   <int value="2" label="Clock Changed"/>
+</enum>
+
+<enum name="DarkResumeUnmatchedScanResultReceived" type="int">
+  <int value="0" label="False (all scan results match)"/>
+  <int value="1" label="True (at least one unmatched scan result)"/>
 </enum>
 
 <enum name="DataChannelCounters" type="int">
