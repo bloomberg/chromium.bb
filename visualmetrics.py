@@ -35,7 +35,6 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 
 
@@ -56,15 +55,14 @@ def video_to_frames(video, directory, force, orange_file, find_viewport, full_re
             if os.path.isdir(directory):
                 directory = os.path.realpath(directory)
                 clean_directory(directory)
-                if extract_frames(video, directory, full_resolution):
+                viewport = find_video_viewport(video, directory, find_viewport)
+                if extract_frames(video, directory, full_resolution, viewport):
                     if orange_file is not None:
                         remove_orange_frames(directory, orange_file)
-                    if find_viewport:
-                        viewport = find_video_viewport(directory)
                     adjust_frame_times(directory)
                     if timeline_file is not None:
                         synchronize_to_timeline(directory, timeline_file)
-                    eliminate_duplicate_frames(directory, viewport)
+                    eliminate_duplicate_frames(directory)
                 else:
                     logging.critical("Error extracting the video frames from " + video)
             else:
@@ -76,16 +74,20 @@ def video_to_frames(video, directory, force, orange_file, find_viewport, full_re
     return viewport
 
 
-def extract_frames(video, directory, full_resolution):
+def extract_frames(video, directory, full_resolution, viewport):
     ok = False
     logging.info("Extracting frames from " + video + " to " + directory)
     decimate = get_decimate_filter()
     if filter is not None:
-        scale = ',scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)'
+        crop = ''
+        if viewport is not None:
+            crop = 'crop=w={0}:h={1}:x={2}:y={3},'.format(viewport['width'], viewport['height'],
+                                                         viewport['x'], viewport['y'])
+        scale = 'scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih),'
         if full_resolution:
             scale = ''
         command = ['ffmpeg', '-v', 'debug', '-i', video, '-vsync',  '0',
-                   '-vf', decimate + '=hi=0:lo=0:frac=0' + scale,
+                   '-vf', crop + scale + decimate + '=hi=64:lo=640:frac=0.001',
                    os.path.join(directory, 'img-%d.png')]
         logging.debug(' '.join(command))
         lines = []
@@ -118,70 +120,77 @@ def remove_orange_frames(directory, orange_file):
             break
 
 
-def find_video_viewport(directory):
+def find_video_viewport(video, directory, find_viewport):
     viewport = None
     try:
         from PIL import Image
-        frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
-        frame = frames[0]
-        im = Image.open(frame)
-        width, height = im.size
-        logging.debug('{0} is {1:d}x{2:d}'.format(frame, width, height))
-        x = int(math.floor(width / 2))
-        y = int(math.floor(height / 2))
-        pixels = im.load()
-        background = pixels[x, y]
+        frame = os.path.join(directory, 'viewport.png')
+        if os.path.isfile(frame):
+            os.remove(frame)
+        subprocess.check_output(['ffmpeg', '-i', video, '-frames:v', '1', frame])
+        if os.path.isfile(frame):
+            im = Image.open(frame)
+            width, height = im.size
+            logging.debug('{0} is {1:d}x{2:d}'.format(frame, width, height))
+            if find_viewport:
+                x = int(math.floor(width / 2))
+                y = int(math.floor(height / 2))
+                pixels = im.load()
+                background = pixels[x, y]
 
-        # Find the left edge
-        left = None
-        while left is None and x >= 0:
-            if not colors_are_similar(background, pixels[x, y]):
-                left = x + 1
+                # Find the left edge
+                left = None
+                while left is None and x >= 0:
+                    if not colors_are_similar(background, pixels[x, y]):
+                        left = x + 1
+                    else:
+                        x -= 1
+                if left is None:
+                    left = 0
+                logging.debug('Viewport left edge is {0:d}'.format(left))
+
+                # Find the right edge
+                x = int(math.floor(width / 2))
+                right = None
+                while right is None and x < width:
+                    if not colors_are_similar(background, pixels[x, y]):
+                        right = x - 1
+                    else:
+                        x += 1
+                if right is None:
+                    right = width
+                logging.debug('Viewport right edge is {0:d}'.format(right))
+
+                # Find the top edge
+                x = int(math.floor(width / 2))
+                top = None
+                while top is None and y >= 0:
+                    if not colors_are_similar(background, pixels[x, y]):
+                        top = y + 1
+                    else:
+                        y -= 1
+                if top is None:
+                    top = 0
+                logging.debug('Viewport top edge is {0:d}'.format(top))
+
+                # Find the bottom edge
+                y = int(math.floor(height / 2))
+                bottom = None
+                while bottom is None and y < height:
+                    if not colors_are_similar(background, pixels[x, y]):
+                        bottom = y - 1
+                    else:
+                        y +=1
+                if bottom is None:
+                    bottom = height
+                logging.debug('Viewport bottom edge is {0:d}'.format(bottom))
+
+                viewport = {'x': left, 'y': top, 'width': (right - left), 'height': (bottom - top)}
             else:
-                x -= 1
-        if left is None:
-            left = 0
-        logging.debug('Viewport left edge is {0:d}'.format(left))
+                viewport = {'x': 0, 'y': 0, 'width': width, 'height': height}
+            os.remove(frame)
 
-        # Find the right edge
-        x = int(math.floor(width / 2))
-        right = None
-        while right is None and x < width:
-            if not colors_are_similar(background, pixels[x, y]):
-                right = x - 1
-            else:
-                x += 1
-        if right is None:
-            right = width
-        logging.debug('Viewport right edge is {0:d}'.format(right))
-
-        # Find the top edge
-        x = int(math.floor(width / 2))
-        top = None
-        while top is None and y >= 0:
-            if not colors_are_similar(background, pixels[x, y]):
-                top = y + 1
-            else:
-                y -= 1
-        if top is None:
-            top = 0
-        logging.debug('Viewport top edge is {0:d}'.format(top))
-
-        # Find the bottom edge
-        y = int(math.floor(height / 2))
-        bottom = None
-        while bottom is None and y < height:
-            if not colors_are_similar(background, pixels[x, y]):
-                bottom = y - 1
-            else:
-                y +=1
-        if bottom is None:
-            bottom = height
-        logging.debug('Viewport bottom edge is {0:d}'.format(bottom))
-
-        viewport = {'x': left, 'y': top, 'width': (right - left), 'height': (bottom - top)}
-
-    except:
+    except Exception as e:
         viewport = None
 
     return viewport
@@ -202,27 +211,27 @@ def adjust_frame_times(directory):
             os.rename(frame, dest)
 
 
-def eliminate_duplicate_frames(directory, viewport):
+def eliminate_duplicate_frames(directory):
     try:
-        crop = '+0+55'
-        if viewport is not None:
-            # Ignore a top margin on the viewport for a progress bar and a right margin for the scroll bar
-            top_margin = 4
-            right_margin = 6
-            if viewport['height'] > 400 or viewport['width'] > 400:
-                top_margin = int(math.ceil(float(viewport['height']) * 0.02))
-                right_margin = int(math.ceil(float(viewport['width']) * 0.03))
-            top = viewport['y'] + top_margin
-            height = max(viewport['height'] - top_margin, 1)
-            left = viewport['x']
-            width = max(viewport['width'] - right_margin, 1)
-            crop = '{0:d}x{1:d}+{2:d}+{3:d}'.format(width, height, left, top)
-        logging.debug('Viewport cropping set to ' + crop)
-
         # Do a first pass looking for the first non-blank frame with an allowance
         # for up to a 2% per-pixel difference for noise in the white field.
         files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
         blank = files[0]
+
+        from PIL import Image
+        im = Image.open(blank)
+        width, height = im.size
+        top = 4
+        right_margin = 6
+        if height > 400 or width > 400:
+            top = int(math.ceil(float(height) * 0.02))
+            right_margin = int(math.ceil(float(width) * 0.03))
+        height = max(height - top, 1)
+        left = 0
+        width = max(width - right_margin, 1)
+        crop = '{0:d}x{1:d}+{2:d}+{3:d}'.format(width, height, left, top)
+        logging.debug('Viewport cropping set to ' + crop)
+
         count = len(files)
         for i in range (1, count):
             if frames_match(blank, files[i], 2, crop):
@@ -253,21 +262,6 @@ def eliminate_duplicate_frames(directory, viewport):
         for duplicate in duplicates:
             logging.debug('Removing duplicate frame {0} from the end'.format(duplicate))
             os.remove(duplicate)
-
-        # Do a third pass that eliminates frames with duplicate content.
-        # ffmpeg will remove pure duplicates but we need to do an additional pass here to process resized images
-        # which may have removed detail
-        previous_file = None
-        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
-        for file in files:
-            duplicate = False
-            if previous_file is not None:
-                duplicate = frames_match(previous_file, file, 0, crop)
-            if duplicate:
-                logging.debug('Removing duplicate frame {0}'.format(duplicate))
-                os.remove(file)
-            else:
-                previous_file = file
 
     except:
         logging.critical('Error processing frames for duplicates')
