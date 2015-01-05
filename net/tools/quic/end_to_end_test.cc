@@ -471,18 +471,17 @@ TEST_P(EndToEndTest, SeparateFinPacket) {
                       HttpConstants::POST, "/foo");
   request.set_has_complete_message(false);
 
+  // Send a request in two parts: the request and then an empty packet with FIN.
   client_->SendMessage(request);
-
-  client_->SendData(string(), true);
-
+  client_->SendData("", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
+  // Now do the same thing but with a content length.
   request.AddBody("foo", true);
-
   client_->SendMessage(request);
-  client_->SendData(string(), true);
+  client_->SendData("", true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());

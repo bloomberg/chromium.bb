@@ -383,6 +383,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionWindowChange() override;
+  void OnRttChange() override;
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of

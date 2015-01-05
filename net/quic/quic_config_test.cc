@@ -271,11 +271,11 @@ TEST_F(QuicConfigTest, InvalidFlowControlWindow) {
   // QuicConfig should not accept an invalid flow control window to send to the
   // peer: the receive window must be at least the default of 16 Kb.
   QuicConfig config;
-  const uint64 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  const uint64 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   EXPECT_DFATAL(config.SetInitialFlowControlWindowToSend(kInvalidWindow),
                 "Initial flow control receive window");
 
-  EXPECT_EQ(kDefaultFlowControlSendWindow,
+  EXPECT_EQ(kMinimumFlowControlSendWindow,
             config.GetInitialFlowControlWindowToSend());
 }
 

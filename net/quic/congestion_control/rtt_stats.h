@@ -53,6 +53,10 @@ class NET_EXPORT_PRIVATE RttStats {
 
   // Sets an initial RTT to be used for SmoothedRtt before any RTT updates.
   void set_initial_rtt_us(int64 initial_rtt_us) {
+    if (initial_rtt_us <= 0) {
+      LOG(DFATAL) << "Attempt to set initial rtt to <= 0.";
+      return;
+    }
     initial_rtt_us_ = initial_rtt_us;
   }
 

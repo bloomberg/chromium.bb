@@ -171,7 +171,8 @@ class TestSession : public QuicSession {
   }
 
   QuicConsumedData SendStreamData(QuicStreamId id) {
-    return WritevData(id, IOVector(), 0, true, MAY_FEC_PROTECT, nullptr);
+    return WritevData(id, MakeIOVector("not empty"), 0, true, MAY_FEC_PROTECT,
+                      nullptr);
   }
 
   using QuicSession::PostProcessAfterData;
@@ -636,7 +637,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
 
   // Create a stream, and send enough data to make it flow control blocked.
   TestStream* stream2 = session_.CreateOutgoingDataStream();
-  string body(kDefaultFlowControlSendWindow, '.');
+  string body(kMinimumFlowControlSendWindow, '.');
   EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
@@ -766,7 +767,7 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
     return;
   }
 
-  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialFlowControlWindow(session_.config(),
                                                       kInvalidWindow);
 
@@ -917,7 +918,7 @@ TEST_P(QuicSessionTest, InvalidStreamFlowControlWindowInHandshake) {
     return;
   }
 
-  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(session_.config(),
                                                             kInvalidWindow);
 
@@ -933,7 +934,7 @@ TEST_P(QuicSessionTest, InvalidSessionFlowControlWindowInHandshake) {
     return;
   }
 
-  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(session_.config(),
                                                              kInvalidWindow);
 
@@ -982,7 +983,7 @@ TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
 
   // Unblock the headers stream by supplying a WINDOW_UPDATE.
   QuicWindowUpdateFrame window_update_frame(headers_stream->id(),
-                                            2 * kDefaultFlowControlSendWindow);
+                                            2 * kMinimumFlowControlSendWindow);
   vector<QuicWindowUpdateFrame> frames;
   frames.push_back(window_update_frame);
   session_.OnWindowUpdateFrames(frames);

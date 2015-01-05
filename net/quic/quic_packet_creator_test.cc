@@ -849,22 +849,6 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthBandwidth) {
             creator_.next_sequence_number_length());
 }
 
-TEST_P(QuicPacketCreatorTest, CreateStreamFrameWithNotifier) {
-  // Ensure that if CreateStreamFrame does not consume any data (e.g. a FIN only
-  // frame) then any QuicAckNotifier that is passed in still gets attached to
-  // the frame.
-  scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  QuicAckNotifier notifier(delegate.get());
-  QuicFrame frame;
-  IOVector empty_iovector;
-  bool fin = true;
-  size_t consumed_bytes = creator_.CreateStreamFrameWithNotifier(
-      1u, empty_iovector, 0u, fin, &notifier, &frame);
-  EXPECT_EQ(0u, consumed_bytes);
-  EXPECT_EQ(&notifier, frame.stream_frame->notifier);
-  delete frame.stream_frame;
-}
-
 TEST_P(QuicPacketCreatorTest, SerializeFrame) {
   if (!GetParam().version_serialization) {
     creator_.StopSendingVersion();

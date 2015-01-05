@@ -109,12 +109,12 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       has_pending_handshake_(false) {
   if (connection_->version() == QUIC_VERSION_19) {
     flow_controller_.reset(new QuicFlowController(
-        connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
+        connection_.get(), 0, is_server(), kMinimumFlowControlSendWindow,
         config_.GetInitialFlowControlWindowToSend(),
         config_.GetInitialFlowControlWindowToSend()));
   } else {
     flow_controller_.reset(new QuicFlowController(
-        connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
+        connection_.get(), 0, is_server(), kMinimumFlowControlSendWindow,
         config_.GetInitialSessionFlowControlWindowToSend(),
         config_.GetInitialSessionFlowControlWindowToSend()));
   }
@@ -509,10 +509,10 @@ void QuicSession::OnConfigNegotiated() {
 }
 
 void QuicSession::OnNewStreamFlowControlWindow(QuicStreamOffset new_window) {
-  if (new_window < kDefaultFlowControlSendWindow) {
-    LOG(ERROR)
-        << "Peer sent us an invalid stream flow control send window: "
-        << new_window << ", below default: " << kDefaultFlowControlSendWindow;
+  if (new_window < kMinimumFlowControlSendWindow) {
+    LOG(ERROR) << "Peer sent us an invalid stream flow control send window: "
+               << new_window
+               << ", below default: " << kMinimumFlowControlSendWindow;
     if (connection_->connected()) {
       connection_->SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW);
     }
@@ -531,10 +531,10 @@ void QuicSession::OnNewStreamFlowControlWindow(QuicStreamOffset new_window) {
 }
 
 void QuicSession::OnNewSessionFlowControlWindow(QuicStreamOffset new_window) {
-  if (new_window < kDefaultFlowControlSendWindow) {
-    LOG(ERROR)
-        << "Peer sent us an invalid session flow control send window: "
-        << new_window << ", below default: " << kDefaultFlowControlSendWindow;
+  if (new_window < kMinimumFlowControlSendWindow) {
+    LOG(ERROR) << "Peer sent us an invalid session flow control send window: "
+               << new_window
+               << ", below default: " << kMinimumFlowControlSendWindow;
     if (connection_->connected()) {
       connection_->SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW);
     }

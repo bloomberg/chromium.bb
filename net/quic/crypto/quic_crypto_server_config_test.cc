@@ -52,27 +52,11 @@ class QuicCryptoServerConfigPeer {
   }
 
   string NewSourceAddressToken(string config_id,
-                               const IPEndPoint& ip,
-                               QuicRandom* rand,
-                               QuicWallTime now) {
-    return NewSourceAddressToken(config_id, ip, rand, now, NULL);
-  }
-
-  string NewSourceAddressToken(string config_id,
-                               const IPEndPoint& ip,
-                               QuicRandom* rand,
-                               QuicWallTime now,
-                               const SourceAddressTokens& previous_tokens) {
-    return server_config_->NewSourceAddressToken(
-        *GetConfig(config_id), previous_tokens, ip, rand, now, NULL);
-  }
-
-  string NewSourceAddressToken(string config_id,
+                               SourceAddressTokens previous_tokens,
                                const IPEndPoint& ip,
                                QuicRandom* rand,
                                QuicWallTime now,
                                CachedNetworkParameters* cached_network_params) {
-    SourceAddressTokens previous_tokens;
     return server_config_->NewSourceAddressToken(*GetConfig(config_id),
                                                  previous_tokens, ip, rand, now,
                                                  cached_network_params);
@@ -321,6 +305,55 @@ class SourceAddressTokenTest : public ::testing::Test {
         server_.AddConfig(override_config_protobuf_.get(), original_time_));
   }
 
+  string NewSourceAddressToken(string config_id, const IPEndPoint& ip) {
+    return NewSourceAddressToken(config_id, ip, NULL);
+  }
+
+  string NewSourceAddressToken(string config_id,
+                               const IPEndPoint& ip,
+                               const SourceAddressTokens& previous_tokens) {
+    return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
+                                       clock_.WallNow(), NULL);
+  }
+
+  string NewSourceAddressToken(string config_id,
+                               const IPEndPoint& ip,
+                               CachedNetworkParameters* cached_network_params) {
+    SourceAddressTokens previous_tokens;
+    return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
+                                       clock_.WallNow(), cached_network_params);
+  }
+
+  HandshakeFailureReason ValidateSourceAddressToken(string config_id,
+                                                    StringPiece srct,
+                                                    const IPEndPoint& ip) {
+    return ValidateSourceAddressToken(config_id, srct, ip, NULL);
+  }
+
+  HandshakeFailureReason ValidateSourceAddressToken(
+      string config_id,
+      StringPiece srct,
+      const IPEndPoint& ip,
+      CachedNetworkParameters* cached_network_params) {
+    return peer_.ValidateSourceAddressToken(
+        config_id, srct, ip, clock_.WallNow(), cached_network_params);
+  }
+
+  HandshakeFailureReason ValidateSourceAddressTokens(string config_id,
+                                                     StringPiece srct,
+                                                     const IPEndPoint& ip) {
+    return ValidateSourceAddressTokens(config_id, srct, ip, NULL);
+  }
+
+  HandshakeFailureReason ValidateSourceAddressTokens(
+      string config_id,
+      StringPiece srct,
+      const IPEndPoint& ip,
+      CachedNetworkParameters* cached_network_params) {
+    return peer_.ValidateSourceAddressTokens(
+        config_id, srct, ip, clock_.WallNow(), cached_network_params);
+  }
+
   const string kPrimary = "<primary>";
   const string kOverride = "Config with custom source address token key";
 
@@ -343,88 +376,74 @@ TEST_F(SourceAddressTokenTest, SourceAddressToken) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               false);
 
-  QuicWallTime now = clock_.WallNow();
-
   EXPECT_TRUE(peer_.ConfigHasDefaultSourceAddressTokenBoxer(kPrimary));
   EXPECT_FALSE(peer_.ConfigHasDefaultSourceAddressTokenBoxer(kOverride));
 
   // Primary config generates configs that validate successfully.
-  const string token4 = peer_.NewSourceAddressToken(kPrimary, ip4_, rand_, now);
-  const string token4d =
-      peer_.NewSourceAddressToken(kPrimary, ip4_dual_, rand_, now);
-  const string token6 = peer_.NewSourceAddressToken(kPrimary, ip6_, rand_, now);
-  EXPECT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressToken(kPrimary, token4, ip4_, now));
+  const string token4 = NewSourceAddressToken(kPrimary, ip4_);
+  const string token4d = NewSourceAddressToken(kPrimary, ip4_dual_);
+  const string token6 = NewSourceAddressToken(kPrimary, ip6_);
+  EXPECT_EQ(HANDSHAKE_OK, ValidateSourceAddressToken(kPrimary, token4, ip4_));
   ASSERT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressToken(kPrimary, token4, ip4_dual_, now));
+            ValidateSourceAddressToken(kPrimary, token4, ip4_dual_));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
-            peer_.ValidateSourceAddressToken(kPrimary, token4, ip6_, now));
+            ValidateSourceAddressToken(kPrimary, token4, ip6_));
+  ASSERT_EQ(HANDSHAKE_OK, ValidateSourceAddressToken(kPrimary, token4d, ip4_));
   ASSERT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressToken(kPrimary, token4d, ip4_, now));
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressToken(kPrimary, token4d,
-                                                           ip4_dual_, now));
+            ValidateSourceAddressToken(kPrimary, token4d, ip4_dual_));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
-            peer_.ValidateSourceAddressToken(kPrimary, token4d, ip6_, now));
-  ASSERT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressToken(kPrimary, token6, ip6_, now));
+            ValidateSourceAddressToken(kPrimary, token4d, ip6_));
+  ASSERT_EQ(HANDSHAKE_OK, ValidateSourceAddressToken(kPrimary, token6, ip6_));
 
   // Override config generates configs that validate successfully.
-  const string override_token4 =
-      peer_.NewSourceAddressToken(kOverride, ip4_, rand_, now);
-  const string override_token6 =
-      peer_.NewSourceAddressToken(kOverride, ip6_, rand_, now);
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressToken(
-                              kOverride, override_token4, ip4_, now));
-  ASSERT_EQ(
-      SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
-      peer_.ValidateSourceAddressToken(kOverride, override_token4, ip6_, now));
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressToken(
-                              kOverride, override_token6, ip6_, now));
+  const string override_token4 = NewSourceAddressToken(kOverride, ip4_);
+  const string override_token6 = NewSourceAddressToken(kOverride, ip6_);
+  ASSERT_EQ(HANDSHAKE_OK,
+            ValidateSourceAddressToken(kOverride, override_token4, ip4_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
+            ValidateSourceAddressToken(kOverride, override_token4, ip6_));
+  ASSERT_EQ(HANDSHAKE_OK,
+            ValidateSourceAddressToken(kOverride, override_token6, ip6_));
 
   // Tokens generated by the primary config do not validate
   // successfully against the override config, and vice versa.
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-            peer_.ValidateSourceAddressToken(kOverride, token4, ip4_, now));
+            ValidateSourceAddressToken(kOverride, token4, ip4_));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-            peer_.ValidateSourceAddressToken(kOverride, token6, ip6_, now));
-  ASSERT_EQ(
-      SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-      peer_.ValidateSourceAddressToken(kPrimary, override_token4, ip4_, now));
-  ASSERT_EQ(
-      SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-      peer_.ValidateSourceAddressToken(kPrimary, override_token6, ip6_, now));
+            ValidateSourceAddressToken(kOverride, token6, ip6_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
+            ValidateSourceAddressToken(kPrimary, override_token4, ip4_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
+            ValidateSourceAddressToken(kPrimary, override_token6, ip6_));
 }
 
 TEST_F(SourceAddressTokenTest, SourceAddressTokenExpiration) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               false);
 
-  QuicWallTime now = clock_.WallNow();
+  const string token = NewSourceAddressToken(kPrimary, ip4_);
 
-  const string token = peer_.NewSourceAddressToken(kPrimary, ip4_, rand_, now);
+  // Validation fails if the token is from the future.
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(-3600 * 2));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE,
+            ValidateSourceAddressToken(kPrimary, token, ip4_));
 
   // Validation fails after tokens expire.
-  now = original_time_.Add(QuicTime::Delta::FromSeconds(86400 * 7));
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(86400 * 7));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE,
-            peer_.ValidateSourceAddressToken(kPrimary, token, ip4_, now));
-
-  now = original_time_.Subtract(QuicTime::Delta::FromSeconds(3600 * 2));
-  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE,
-            peer_.ValidateSourceAddressToken(kPrimary, token, ip4_, now));
+            ValidateSourceAddressToken(kPrimary, token, ip4_));
 }
 
 TEST_F(SourceAddressTokenTest, SourceAddressTokenWithNetworkParams) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               false);
 
-  QuicWallTime now = clock_.WallNow();
-
   // Make sure that if the source address token contains CachedNetworkParameters
   // that this gets written to ValidateSourceAddressToken output argument.
   CachedNetworkParameters cached_network_params_input;
   cached_network_params_input.set_bandwidth_estimate_bytes_per_second(1234);
-  const string token4_with_cached_network_params = peer_.NewSourceAddressToken(
-      kPrimary, ip4_, rand_, now, &cached_network_params_input);
+  const string token4_with_cached_network_params =
+      NewSourceAddressToken(kPrimary, ip4_, &cached_network_params_input);
 
   CachedNetworkParameters cached_network_params_output;
 #if 0
@@ -433,8 +452,8 @@ TEST_F(SourceAddressTokenTest, SourceAddressTokenWithNetworkParams) {
   EXPECT_NE(cached_network_params_output.DebugString(),
             cached_network_params_input.DebugString());
 #endif
-  peer_.ValidateSourceAddressToken(kPrimary, token4_with_cached_network_params,
-                                   ip4_, now, &cached_network_params_output);
+  ValidateSourceAddressToken(kPrimary, token4_with_cached_network_params, ip4_,
+                             &cached_network_params_output);
 #if 0
   // TODO(rtenneti): For server, enable the following check after serialization
   // of optional CachedNetworkParameters is implemented.
@@ -452,53 +471,42 @@ TEST_F(SourceAddressTokenTest, DISABLED_NewSourceAddressToken) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               true);
 
-  QuicWallTime now = clock_.WallNow();
-
   // Primary config generates configs that validate successfully.
-  const string token4 = peer_.NewSourceAddressToken(kPrimary, ip4_, rand_, now);
-  const string token4d =
-      peer_.NewSourceAddressToken(kPrimary, ip4_dual_, rand_, now);
-  const string token6 = peer_.NewSourceAddressToken(kPrimary, ip6_, rand_, now);
-  EXPECT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressTokens(kPrimary, token4, ip4_, now));
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressTokens(kPrimary, token4,
-                                                            ip4_dual_, now));
-  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
-            peer_.ValidateSourceAddressTokens(kPrimary, token4, ip6_, now));
+  const string token4 = NewSourceAddressToken(kPrimary, ip4_);
+  const string token4d = NewSourceAddressToken(kPrimary, ip4_dual_);
+  const string token6 = NewSourceAddressToken(kPrimary, ip6_);
+  EXPECT_EQ(HANDSHAKE_OK, ValidateSourceAddressTokens(kPrimary, token4, ip4_));
   ASSERT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressTokens(kPrimary, token4d, ip4_, now));
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressTokens(kPrimary, token4d,
-                                                            ip4_dual_, now));
+            ValidateSourceAddressTokens(kPrimary, token4, ip4_dual_));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
-            peer_.ValidateSourceAddressTokens(kPrimary, token4d, ip6_, now));
+            ValidateSourceAddressTokens(kPrimary, token4, ip6_));
+  ASSERT_EQ(HANDSHAKE_OK, ValidateSourceAddressTokens(kPrimary, token4d, ip4_));
   ASSERT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressTokens(kPrimary, token6, ip6_, now));
+            ValidateSourceAddressTokens(kPrimary, token4d, ip4_dual_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
+            ValidateSourceAddressTokens(kPrimary, token4d, ip6_));
+  ASSERT_EQ(HANDSHAKE_OK, ValidateSourceAddressTokens(kPrimary, token6, ip6_));
 
   // Override config generates configs that validate successfully.
-  const string override_token4 =
-      peer_.NewSourceAddressToken(kOverride, ip4_, rand_, now);
-  const string override_token6 =
-      peer_.NewSourceAddressToken(kOverride, ip6_, rand_, now);
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressTokens(
-                              kOverride, override_token4, ip4_, now));
-  ASSERT_EQ(
-      SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
-      peer_.ValidateSourceAddressTokens(kOverride, override_token4, ip6_, now));
-  ASSERT_EQ(HANDSHAKE_OK, peer_.ValidateSourceAddressTokens(
-                              kOverride, override_token6, ip6_, now));
+  const string override_token4 = NewSourceAddressToken(kOverride, ip4_);
+  const string override_token6 = NewSourceAddressToken(kOverride, ip6_);
+  ASSERT_EQ(HANDSHAKE_OK,
+            ValidateSourceAddressTokens(kOverride, override_token4, ip4_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
+            ValidateSourceAddressTokens(kOverride, override_token4, ip6_));
+  ASSERT_EQ(HANDSHAKE_OK,
+            ValidateSourceAddressTokens(kOverride, override_token6, ip6_));
 
   // Tokens generated by the primary config do not validate
   // successfully against the override config, and vice versa.
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-            peer_.ValidateSourceAddressTokens(kOverride, token4, ip4_, now));
+            ValidateSourceAddressTokens(kOverride, token4, ip4_));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-            peer_.ValidateSourceAddressTokens(kOverride, token6, ip6_, now));
-  ASSERT_EQ(
-      SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-      peer_.ValidateSourceAddressTokens(kPrimary, override_token4, ip4_, now));
-  ASSERT_EQ(
-      SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
-      peer_.ValidateSourceAddressTokens(kPrimary, override_token6, ip6_, now));
+            ValidateSourceAddressTokens(kOverride, token6, ip6_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
+            ValidateSourceAddressTokens(kPrimary, override_token4, ip4_));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
+            ValidateSourceAddressTokens(kPrimary, override_token6, ip6_));
 }
 
 // TODO(rtenneti): For server, enable the following test after serialization of
@@ -507,32 +515,29 @@ TEST_F(SourceAddressTokenTest, DISABLED_NewSourceAddressTokenExpiration) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               true);
 
-  QuicWallTime now = clock_.WallNow();
+  const string token = NewSourceAddressToken(kPrimary, ip4_);
 
-  const string token = peer_.NewSourceAddressToken(kPrimary, ip4_, rand_, now);
+  // Validation fails if the token is from the future.
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(-3600 * 2));
+  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE,
+            ValidateSourceAddressTokens(kPrimary, token, ip4_));
 
   // Validation fails after tokens expire.
-  now = original_time_.Add(QuicTime::Delta::FromSeconds(86400 * 7));
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(86400 * 7));
   ASSERT_EQ(SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE,
-            peer_.ValidateSourceAddressTokens(kPrimary, token, ip4_, now));
-
-  now = original_time_.Subtract(QuicTime::Delta::FromSeconds(3600 * 2));
-  ASSERT_EQ(SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE,
-            peer_.ValidateSourceAddressTokens(kPrimary, token, ip4_, now));
+            ValidateSourceAddressTokens(kPrimary, token, ip4_));
 }
 
 TEST_F(SourceAddressTokenTest, NewSourceAddressTokenWithNetworkParams) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               true);
 
-  QuicWallTime now = clock_.WallNow();
-
   // Make sure that if the source address token contains CachedNetworkParameters
   // that this gets written to ValidateSourceAddressToken output argument.
   CachedNetworkParameters cached_network_params_input;
   cached_network_params_input.set_bandwidth_estimate_bytes_per_second(1234);
-  const string token4_with_cached_network_params = peer_.NewSourceAddressToken(
-      kPrimary, ip4_, rand_, now, &cached_network_params_input);
+  const string token4_with_cached_network_params =
+      NewSourceAddressToken(kPrimary, ip4_, &cached_network_params_input);
 
   CachedNetworkParameters cached_network_params_output;
 #if 0
@@ -541,8 +546,8 @@ TEST_F(SourceAddressTokenTest, NewSourceAddressTokenWithNetworkParams) {
   EXPECT_NE(cached_network_params_output.DebugString(),
             cached_network_params_input.DebugString());
 #endif
-  peer_.ValidateSourceAddressTokens(kPrimary, token4_with_cached_network_params,
-                                    ip4_, now, &cached_network_params_output);
+  ValidateSourceAddressTokens(kPrimary, token4_with_cached_network_params, ip4_,
+                              &cached_network_params_output);
 #if 0
   // TODO(rtenneti): For server, enable the following check after serialization
   // of optional CachedNetworkParameters is implemented.
@@ -573,12 +578,12 @@ TEST_F(SourceAddressTokenTest, DISABLED_SourceAddressTokenMultipleAddresses) {
   SourceAddressTokens previous_tokens;
   (*previous_tokens.add_tokens()) = previous_token;
   const string token4or6 =
-      peer_.NewSourceAddressToken(kPrimary, ip4_, rand_, now, previous_tokens);
+      NewSourceAddressToken(kPrimary, ip4_, previous_tokens);
 
   EXPECT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressTokens(kPrimary, token4or6, ip4_, now));
+            ValidateSourceAddressTokens(kPrimary, token4or6, ip4_));
   ASSERT_EQ(HANDSHAKE_OK,
-            peer_.ValidateSourceAddressTokens(kPrimary, token4or6, ip6_, now));
+            ValidateSourceAddressTokens(kPrimary, token4or6, ip6_));
 }
 
 TEST(QuicCryptoServerConfigTest, ValidateServerNonce) {

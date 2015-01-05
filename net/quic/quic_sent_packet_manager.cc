@@ -117,6 +117,10 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
             min(kMaxInitialRoundTripTimeUs,
                 config.GetInitialRoundTripTimeUsToSend())));
   }
+  // Initial RTT may have changed.
+  if (network_change_visitor_ != nullptr) {
+    network_change_visitor_->OnRttChange();
+  }
   // TODO(ianswett): BBR is currently a server only feature.
   if (FLAGS_quic_allow_bbr &&
       config.HasReceivedConnectionOptions() &&
@@ -775,6 +779,11 @@ bool QuicSentPacketManager::MaybeUpdateRTT(
       ack_receive_time.Subtract(transmission_info.sent_time);
   rtt_stats_.UpdateRtt(
       send_delta, ack_frame.delta_time_largest_observed, ack_receive_time);
+
+  if (network_change_visitor_ != nullptr) {
+    network_change_visitor_->OnRttChange();
+  }
+
   return true;
 }
 

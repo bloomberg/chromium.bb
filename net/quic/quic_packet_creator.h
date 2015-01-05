@@ -87,17 +87,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
                            bool fin,
                            QuicFrame* frame);
 
-  // As above, but keeps track of an QuicAckNotifier that should be called when
-  // the packet that contains this stream frame is ACKed.
-  // The |notifier| is not owned by the QuicPacketGenerator and must outlive the
-  // generated packet.
-  size_t CreateStreamFrameWithNotifier(QuicStreamId id,
-                                       const IOVector& data,
-                                       QuicStreamOffset offset,
-                                       bool fin,
-                                       QuicAckNotifier* notifier,
-                                       QuicFrame* frame);
-
   // Serializes all frames into a single packet. All frames must fit into a
   // single packet. Also, sets the entropy hash of the serialized packet to a
   // random bool and returns that value as a member of SerializedPacket.

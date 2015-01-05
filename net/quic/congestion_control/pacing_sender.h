@@ -75,7 +75,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   mutable uint32 burst_tokens_;
   // Send time of the last packet considered delayed.
   QuicTime last_delayed_packet_sent_time_;
-  QuicTime next_packet_send_time_;  // When can the next packet be sent.
+  QuicTime ideal_next_packet_send_time_;  // When can the next packet be sent.
   mutable bool was_last_send_delayed_;  // True when the last send was delayed.
 
   DISALLOW_COPY_AND_ASSIGN(PacingSender);

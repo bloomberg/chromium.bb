@@ -42,7 +42,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
       return session->config()->ReceivedInitialFlowControlWindowBytes();
     }
 
-    return kDefaultFlowControlSendWindow;
+    return kMinimumFlowControlSendWindow;
   }
 
   // Version must be >= QUIC_VERSION_21, so we check for stream specific flow
@@ -51,7 +51,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
     return session->config()->ReceivedInitialStreamFlowControlWindowBytes();
   }
 
-  return kDefaultFlowControlSendWindow;
+  return kMinimumFlowControlSendWindow;
 }
 
 }  // namespace

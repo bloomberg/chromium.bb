@@ -68,3 +68,11 @@ bool FLAGS_quic_disallow_multiple_pending_ack_frames = true;
 // If true, then the source address tokens generated for QUIC connects will
 // store multiple addresses.
 bool FLAGS_quic_use_multiple_address_in_source_tokens = false;
+
+// If true, an attempt to send an empty data string with no FIN will return
+// early, and not create a frame.
+bool FLAGS_quic_empty_data_no_fin_early_return = true;
+
+// If true, if min RTT and/or SRTT have not yet been set then initial RTT is
+// used to initialize them in a call to QuicConnection::GetStats.
+bool FLAGS_quic_use_initial_rtt_for_stats = true;

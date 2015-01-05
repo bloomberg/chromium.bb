@@ -47,6 +47,29 @@ QuicServer::QuicServer(const QuicConfig& config,
 }
 
 void QuicServer::Initialize() {
+#if MMSG_MORE
+  use_recvmmsg_ = true;
+#endif
+
+  // If an initial flow control window has not explicitly been set, then use a
+  // sensible value for a server: 1 MB for session, 64 KB for each stream.
+  const uint32 kInitialSessionFlowControlWindow = 1 * 1024 * 1024;  // 1 MB
+  const uint32 kInitialStreamFlowControlWindow = 64 * 1024;         // 64 KB
+  if (config_.GetInitialFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config_.SetInitialFlowControlWindowToSend(kInitialSessionFlowControlWindow);
+  }
+  if (config_.GetInitialStreamFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config_.SetInitialStreamFlowControlWindowToSend(
+        kInitialStreamFlowControlWindow);
+  }
+  if (config_.GetInitialSessionFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config_.SetInitialSessionFlowControlWindowToSend(
+        kInitialSessionFlowControlWindow);
+  }
+
   // Initialize the in memory cache now.
   QuicInMemoryCache::GetInstance();
 

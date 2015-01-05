@@ -560,6 +560,7 @@ class MockNetworkChangeVisitor :
   ~MockNetworkChangeVisitor() override;
 
   MOCK_METHOD0(OnCongestionWindowChange, void());
+  MOCK_METHOD0(OnRttChange, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeVisitor);

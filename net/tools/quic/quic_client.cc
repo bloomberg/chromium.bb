@@ -84,6 +84,22 @@ QuicClient::~QuicClient() {
 bool QuicClient::Initialize() {
   DCHECK(!initialized_);
 
+  // If an initial flow control window has not explicitly been set, then use the
+  // same value that Chrome uses: 10 Mb.
+  const uint32 kInitialFlowControlWindow = 10 * 1024 * 1024;  // 10 Mb
+  if (config_.GetInitialFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config_.SetInitialFlowControlWindowToSend(kInitialFlowControlWindow);
+  }
+  if (config_.GetInitialStreamFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config_.SetInitialStreamFlowControlWindowToSend(kInitialFlowControlWindow);
+  }
+  if (config_.GetInitialSessionFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config_.SetInitialSessionFlowControlWindowToSend(kInitialFlowControlWindow);
+  }
+
   epoll_server_->set_timeout_in_us(50 * 1000);
 
   if (!CreateUDPSocket()) {

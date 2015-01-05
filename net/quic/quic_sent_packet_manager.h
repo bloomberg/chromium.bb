@@ -69,7 +69,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
     // Called when congestion window may have changed.
     virtual void OnCongestionWindowChange() = 0;
-    // TODO(jri): Add OnRttStatsChange() to this class as well.
+
+    // Called when RTT may have changed, including when an RTT is read from
+    // the config.
+    virtual void OnRttChange() = 0;
   };
 
   // Struct to store the pending retransmission information.

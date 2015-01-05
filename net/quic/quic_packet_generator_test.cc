@@ -16,6 +16,7 @@
 #include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -429,6 +430,13 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_WritableAndShouldFlush) {
   CheckPacketContains(contents, packet_);
 }
 
+TEST_F(QuicPacketGeneratorTest, ConsumeData_EmptyData) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_empty_data_no_fin_early_return, true);
+  EXPECT_DFATAL(generator_.ConsumeData(kHeadersStreamId, MakeIOVector(""), 0,
+                                       false, MAY_FEC_PROTECT, nullptr),
+                "Attempt to consume empty data without FIN.");
+}
+
 TEST_F(QuicPacketGeneratorTest,
        ConsumeDataMultipleTimes_WritableAndShouldNotFlush) {
   delegate_.SetCanWriteAnything();
@@ -576,6 +584,12 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   contents.num_stream_frames = 1;
   CheckPacketContains(contents, packet_);
   CheckPacketContains(contents, packet2_);
+}
+
+TEST_F(QuicPacketGeneratorTest, FecTimeoutOnRttChange) {
+  EXPECT_EQ(QuicTime::Delta::Zero(), generator_.fec_timeout());
+  generator_.OnRttChange(QuicTime::Delta::FromMilliseconds(300));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(150), generator_.fec_timeout());
 }
 
 TEST_F(QuicPacketGeneratorTest, FecGroupSizeOnCongestionWindowChange) {

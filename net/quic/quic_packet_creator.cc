@@ -261,23 +261,6 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   return bytes_consumed;
 }
 
-size_t QuicPacketCreator::CreateStreamFrameWithNotifier(
-    QuicStreamId id,
-    const IOVector& data,
-    QuicStreamOffset offset,
-    bool fin,
-    QuicAckNotifier* notifier,
-    QuicFrame* frame) {
-  size_t bytes_consumed = CreateStreamFrame(id, data, offset, fin, frame);
-
-  // The frame keeps track of the QuicAckNotifier until it is serialized into
-  // a packet. At that point the notifier is informed of the sequence number
-  // of the packet that this frame was eventually sent in.
-  frame->stream_frame->notifier = notifier;
-
-  return bytes_consumed;
-}
-
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const QuicFrames& frames,
     QuicSequenceNumberLength original_length) {

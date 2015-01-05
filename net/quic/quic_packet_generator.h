@@ -53,6 +53,7 @@
 #ifndef NET_QUIC_QUIC_PACKET_GENERATOR_H_
 #define NET_QUIC_QUIC_PACKET_GENERATOR_H_
 
+#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_types.h"
@@ -62,8 +63,6 @@ namespace net {
 namespace test {
 class QuicPacketGeneratorPeer;
 }  // namespace test
-
-class QuicAckNotifier;
 
 class NET_EXPORT_PRIVATE QuicPacketGenerator {
  public:
@@ -102,6 +101,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Called by the connection in the event of the congestion window changing.
   void OnCongestionWindowChange(QuicPacketCount max_packets_in_flight);
 
+  // Called by the connection when the RTT may have changed.
+  void OnRttChange(QuicTime::Delta rtt);
+
   // Indicates that an ACK frame should be sent.  If |also_send_feedback| is
   // true, then it also indicates a CONGESTION_FEEDBACK frame should be sent.
   // If |also_send_stop_waiting| is true, then it also indicates that a
@@ -118,17 +120,15 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   // Given some data, may consume part or all of it and pass it to the
   // packet creator to be serialized into packets. If not in batch
-  // mode, these packets will also be sent during this call. Also
-  // attaches a QuicAckNotifier to any created stream frames, which
-  // will be called once the frame is ACKed by the peer. The
-  // QuicAckNotifier is owned by the QuicConnection. |notifier| may
-  // be nullptr.
+  // mode, these packets will also be sent during this call.
+  // |delegate| (if not nullptr) will be informed once all packets sent as a
+  // result of this call are ACKed by the peer.
   QuicConsumedData ConsumeData(QuicStreamId id,
                                const IOVector& data,
                                QuicStreamOffset offset,
                                bool fin,
                                FecProtection fec_protection,
-                               QuicAckNotifier* notifier);
+                               QuicAckNotifier::DelegateInterface* delegate);
 
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();
@@ -185,6 +185,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     debug_delegate_ = debug_delegate;
   }
 
+  QuicTime::Delta fec_timeout() { return fec_timeout_; }
+
  private:
   friend class test::QuicPacketGeneratorPeer;
 
@@ -225,6 +227,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   // True if batch mode is currently enabled.
   bool batch_mode_;
+
+  // Timeout used for FEC alarm. Can be set to zero.
+  QuicTime::Delta fec_timeout_;
 
   // True if FEC protection is on. The creator may have an open FEC group even
   // if this variable is false.

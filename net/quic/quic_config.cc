@@ -547,11 +547,11 @@ uint32 QuicConfig::GetInitialRoundTripTimeUsToSend() const {
 }
 
 void QuicConfig::SetInitialFlowControlWindowToSend(uint32 window_bytes) {
-  if (window_bytes < kDefaultFlowControlSendWindow) {
+  if (window_bytes < kMinimumFlowControlSendWindow) {
     LOG(DFATAL) << "Initial flow control receive window (" << window_bytes
                 << ") cannot be set lower than default ("
-                << kDefaultFlowControlSendWindow << ").";
-    window_bytes = kDefaultFlowControlSendWindow;
+                << kMinimumFlowControlSendWindow << ").";
+    window_bytes = kMinimumFlowControlSendWindow;
   }
   initial_flow_control_window_bytes_.SetSendValue(window_bytes);
 }
@@ -569,11 +569,11 @@ uint32 QuicConfig::ReceivedInitialFlowControlWindowBytes() const {
 }
 
 void QuicConfig::SetInitialStreamFlowControlWindowToSend(uint32 window_bytes) {
-  if (window_bytes < kDefaultFlowControlSendWindow) {
+  if (window_bytes < kMinimumFlowControlSendWindow) {
     LOG(DFATAL) << "Initial stream flow control receive window ("
                 << window_bytes << ") cannot be set lower than default ("
-                << kDefaultFlowControlSendWindow << ").";
-    window_bytes = kDefaultFlowControlSendWindow;
+                << kMinimumFlowControlSendWindow << ").";
+    window_bytes = kMinimumFlowControlSendWindow;
   }
   initial_stream_flow_control_window_bytes_.SetSendValue(window_bytes);
 }
@@ -591,11 +591,11 @@ uint32 QuicConfig::ReceivedInitialStreamFlowControlWindowBytes() const {
 }
 
 void QuicConfig::SetInitialSessionFlowControlWindowToSend(uint32 window_bytes) {
-  if (window_bytes < kDefaultFlowControlSendWindow) {
+  if (window_bytes < kMinimumFlowControlSendWindow) {
     LOG(DFATAL) << "Initial session flow control receive window ("
                 << window_bytes << ") cannot be set lower than default ("
-                << kDefaultFlowControlSendWindow << ").";
-    window_bytes = kDefaultFlowControlSendWindow;
+                << kMinimumFlowControlSendWindow << ").";
+    window_bytes = kMinimumFlowControlSendWindow;
   }
   initial_session_flow_control_window_bytes_.SetSendValue(window_bytes);
 }
@@ -656,9 +656,9 @@ void QuicConfig::SetDefaults() {
       QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs);
   max_undecryptable_packets_ = kDefaultMaxUndecryptablePackets;
 
-  SetInitialFlowControlWindowToSend(kDefaultFlowControlSendWindow);
-  SetInitialStreamFlowControlWindowToSend(kDefaultFlowControlSendWindow);
-  SetInitialSessionFlowControlWindowToSend(kDefaultFlowControlSendWindow);
+  SetInitialFlowControlWindowToSend(kMinimumFlowControlSendWindow);
+  SetInitialStreamFlowControlWindowToSend(kMinimumFlowControlSendWindow);
+  SetInitialSessionFlowControlWindowToSend(kMinimumFlowControlSendWindow);
 }
 
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
