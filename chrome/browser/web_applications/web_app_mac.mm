@@ -974,12 +974,25 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
   if (app_path.empty())
     return;
 
+  // Check if the app shim exists.
+  if (base::PathExists(app_path)) {
+    // Use selectFile to show the contents of parent directory with the app
+    // shim selected.
+    [[NSWorkspace sharedWorkspace]
+                      selectFile:base::mac::FilePathToNSString(app_path)
+        inFileViewerRootedAtPath:nil];
+    return;
+  }
+
+  // Otherwise, go up a directory.
+  app_path = app_path.DirName();
+  // Check if the Chrome apps folder exists, otherwise go up to ~/Applications.
   if (!base::PathExists(app_path))
     app_path = app_path.DirName();
-
+  // Since |app_path| is a directory, use openFile to show the contents of
+  // that directory in Finder.
   [[NSWorkspace sharedWorkspace]
-                    selectFile:base::mac::FilePathToNSString(app_path)
-      inFileViewerRootedAtPath:nil];
+      openFile:base::mac::FilePathToNSString(app_path)];
 }
 
 base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
