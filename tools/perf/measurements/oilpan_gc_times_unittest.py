@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from measurements import oilpan_gc_times
+from telemetry import decorators
 from telemetry.core import wpr_modes
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
@@ -17,6 +18,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
 
+  @decorators.Disabled
   def testForSmoothness(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForSmoothness()
@@ -26,6 +28,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     precise_mark = results.FindAllPageSpecificValuesNamed('oilpan_precise_mark')
     self.assertLess(0, len(precise_mark))
 
+  @decorators.Disabled
   def testForBlinkPerf(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForBlinkPerf()

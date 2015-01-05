@@ -22,7 +22,7 @@ class OilpanGCTimesBlinkPerfAnimation(benchmark.Benchmark):
     return blink_perf.CreatePageSetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
-@benchmark.Enabled('content-shell')
+@benchmark.Disabled
 class OilpanGCTimesBlinkPerfStress(benchmark.Benchmark):
   tag = 'blink_perf_stress'
   test = oilpan_gc_times.OilpanGCTimesForInternals
@@ -32,18 +32,19 @@ class OilpanGCTimesBlinkPerfStress(benchmark.Benchmark):
     return blink_perf.CreatePageSetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
+@benchmark.Disabled
 class OilpanGCTimesSmoothnessAnimation(benchmark.Benchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.ToughAnimationCasesPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class OilpanGCTimesKeySilkCases(benchmark.Benchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.KeySilkCasesPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class OilpanGCTimesSyncScrollKeyMobileSites(benchmark.Benchmark):
   tag = 'sync_scroll'
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
