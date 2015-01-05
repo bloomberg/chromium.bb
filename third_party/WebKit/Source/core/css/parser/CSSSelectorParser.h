@@ -25,6 +25,7 @@ private:
     // These will all consume trailing comments if successful
 
     void consumeComplexSelectorList(CSSSelectorList&);
+    void consumeCompoundSelectorList(CSSSelectorList&);
 
     PassOwnPtr<CSSParserSelector> consumeComplexSelector();
     PassOwnPtr<CSSParserSelector> consumeCompoundSelector();

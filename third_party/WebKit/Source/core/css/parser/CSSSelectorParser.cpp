@@ -50,6 +50,27 @@ void CSSSelectorParser::consumeComplexSelectorList(CSSSelectorList& output)
         output.adoptSelectorVector(selectorList);
 }
 
+void CSSSelectorParser::consumeCompoundSelectorList(CSSSelectorList& output)
+{
+    Vector<OwnPtr<CSSParserSelector> > selectorList;
+    OwnPtr<CSSParserSelector> selector = consumeCompoundSelector();
+    if (!selector)
+        return;
+    selectorList.append(selector.release());
+    while (!m_tokenRange.atEnd() && m_tokenRange.peek().type() == CommaToken) {
+        m_tokenRange.consumeIncludingWhitespaceAndComments();
+        selector = consumeCompoundSelector();
+        if (!selector)
+            return;
+        selectorList.append(selector.release());
+    }
+
+    m_tokenRange.consumeWhitespaceAndComments();
+
+    if (!m_failedParsing)
+        output.adoptSelectorVector(selectorList);
+}
+
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector()
 {
     OwnPtr<CSSParserSelector> selector = consumeCompoundSelector();
@@ -240,7 +261,62 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute()
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo()
 {
-    // FIXME: Implement pseudo-element and pseudo-class parsing
+    ASSERT(m_tokenRange.peek().type() == ColonToken);
+    m_tokenRange.consumeIncludingComments();
+
+    int colons = 1;
+    if (m_tokenRange.peek().type() == ColonToken) {
+        m_tokenRange.consumeIncludingComments();
+        colons++;
+    }
+
+    const CSSParserToken& token = m_tokenRange.consumeIncludingComments();
+    if (token.type() != IdentToken && token.type() != FunctionToken)
+        return nullptr;
+    m_tokenRange.consumeWhitespaceAndComments();
+
+    OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
+    selector->setMatch(colons == 1 ? CSSSelector::PseudoClass : CSSSelector::PseudoElement);
+    selector->setValue(AtomicString(token.value().lower()));
+
+    if (token.type() == IdentToken) {
+        if (selector->pseudoType() == CSSSelector::PseudoUnknown)
+            return nullptr;
+        return selector.release();
+    }
+
+    if ((colons == 1
+        && (equalIgnoringCase(token.value(), "host")
+            || equalIgnoringCase(token.value(), "host-context")
+            || equalIgnoringCase(token.value(), "-webkit-any")))
+        || (colons == 2 && equalIgnoringCase(token.value(), "cue"))) {
+
+        CSSSelectorList* selectorList = new CSSSelectorList();
+        consumeCompoundSelectorList(*selectorList);
+        if (!selectorList->isValid() || (!m_tokenRange.atEnd() && m_tokenRange.consumeIncludingComments().type() != RightParenthesisToken))
+            return nullptr;
+
+        selector->setSelectorList(adoptPtr(selectorList));
+        selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
+        ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
+        return selector.release();
+    }
+
+    if (colons == 1 && equalIgnoringCase(token.value(), "not")) {
+        OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector();
+        if (!innerSelector || !innerSelector->isSimple())
+            return nullptr;
+        Vector<OwnPtr<CSSParserSelector> > selectorVector;
+        selectorVector.append(innerSelector.release());
+        selector->adoptSelectorVector(selectorVector);
+        if (!m_tokenRange.atEnd() && m_tokenRange.consumeIncludingComments().type() != RightParenthesisToken)
+            return nullptr;
+        return selector.release();
+    }
+
+    // FIXME: Support :nth-*(<an+b>)
+    // FIXME: Support :lang(<ident>)
+
     return nullptr;
 }
 

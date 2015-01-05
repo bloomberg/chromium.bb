@@ -277,6 +277,11 @@ void CSSParserSelector::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& 
     m_selector->setSelectorList(adoptPtr(selectorList));
 }
 
+void CSSParserSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
+{
+    m_selector->setSelectorList(selectorList);
+}
+
 bool CSSParserSelector::isSimple() const
 {
     if (m_selector->selectorList() || m_selector->matchesPseudoElement())
