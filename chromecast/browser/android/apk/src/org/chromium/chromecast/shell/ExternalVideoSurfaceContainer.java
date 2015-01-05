@@ -129,6 +129,8 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
      */
     @CalledByNative
     protected void requestExternalVideoSurface(int playerId) {
+        assert playerId != INVALID_PLAYER_ID;
+
         if (mPlayerId == playerId) return;
 
         setActiveContainer(this);
@@ -137,6 +139,14 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
         initializeCurrentPositionOfSurfaceView();
 
         createSurfaceView();
+    }
+
+    /**
+     * Returns id of player currently using the external video surface.
+     */
+    @CalledByNative
+    protected int getCurrentPlayerId() {
+        return mPlayerId;
     }
 
     /**

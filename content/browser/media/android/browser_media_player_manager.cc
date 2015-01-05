@@ -338,6 +338,20 @@ void BrowserMediaPlayerManager::OnNotifyExternalSurface(
   }
 }
 
+void BrowserMediaPlayerManager::ReleasePlayerOfExternalVideoSurfaceIfNeeded(
+    int future_player) {
+  int current_player = ExternalVideoSurfaceContainer::kInvalidPlayerId;
+
+  if (external_video_surface_container_)
+    current_player = external_video_surface_container_->GetCurrentPlayerId();
+
+  if (current_player == ExternalVideoSurfaceContainer::kInvalidPlayerId)
+    return;
+
+  if (current_player != future_player)
+    OnMediaInterrupted(current_player);
+}
+
 void BrowserMediaPlayerManager::OnRequestExternalSurface(
     int player_id, const gfx::RectF& rect) {
   if (!external_video_surface_container_) {
@@ -348,6 +362,8 @@ void BrowserMediaPlayerManager::OnRequestExternalSurface(
   // It's safe to use base::Unretained(this), because the callbacks will not
   // be called after running ReleaseExternalVideoSurface().
   if (external_video_surface_container_) {
+    // In case we're stealing the external surface from another player.
+    ReleasePlayerOfExternalVideoSurfaceIfNeeded(player_id);
     external_video_surface_container_->RequestExternalVideoSurface(
         player_id,
         base::Bind(&BrowserMediaPlayerManager::AttachExternalVideoSurface,
@@ -361,6 +377,9 @@ void BrowserMediaPlayerManager::OnRequestExternalSurface(
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
 #if defined(VIDEO_HOLE)
+  // If this fullscreen player is started when another player
+  // uses the external surface, release that other player.
+  ReleasePlayerOfExternalVideoSurfaceIfNeeded(player_id);
   if (external_video_surface_container_)
     external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
 #endif  // defined(VIDEO_HOLE)

@@ -43,6 +43,19 @@ void ExternalVideoSurfaceContainerImpl::RequestExternalVideoSurface(
       env, jobject_.obj(), static_cast<jint>(player_id));
 }
 
+int ExternalVideoSurfaceContainerImpl::GetCurrentPlayerId() {
+  JNIEnv* env = AttachCurrentThread();
+
+  int current_player = static_cast<int>(
+      Java_ExternalVideoSurfaceContainer_getCurrentPlayerId(
+          env, jobject_.obj()));
+
+  if (current_player < 0)
+    return kInvalidPlayerId;
+  else
+    return current_player;
+}
+
 void ExternalVideoSurfaceContainerImpl::ReleaseExternalVideoSurface(
     int player_id) {
   JNIEnv* env = AttachCurrentThread();

@@ -22,6 +22,7 @@ class CONTENT_EXPORT ExternalVideoSurfaceContainer {
  public:
   typedef base::Callback<void(int, jobject)> SurfaceCreatedCB;
   typedef base::Callback<void(int)> SurfaceDestroyedCB;
+  static const int kInvalidPlayerId = -1;
 
   // Called when a media player wants to request an external video surface.
   // Whenever the surface is created and visible, |surface_created_cb| will be
@@ -32,7 +33,12 @@ class CONTENT_EXPORT ExternalVideoSurfaceContainer {
       const SurfaceCreatedCB& surface_created_cb,
       const SurfaceDestroyedCB& surface_destroyed_cb) = 0;
 
-  // Called when a media player wants to release an external video surface.
+  // Returns id of player currently using the external video surface.
+  // Returns kInvalidPlayerId if no player uses the surface.
+  virtual int GetCurrentPlayerId() = 0;
+
+  // Called when a media player wants to release a certain player's external
+  // video surface.
   virtual void ReleaseExternalVideoSurface(int player_id) = 0;
 
   // Called when the position and size of the video element which uses

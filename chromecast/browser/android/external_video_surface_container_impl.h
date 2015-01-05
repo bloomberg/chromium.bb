@@ -28,6 +28,7 @@ class ExternalVideoSurfaceContainerImpl
       int player_id,
       const SurfaceCreatedCB& surface_created_cb,
       const SurfaceDestroyedCB& surface_destroyed_cb) override;
+  virtual int GetCurrentPlayerId() override;
   virtual void ReleaseExternalVideoSurface(int player_id) override;
   virtual void OnFrameInfoUpdated() override;
   virtual void OnExternalVideoSurfacePositionChanged(

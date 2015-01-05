@@ -166,6 +166,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void ReleasePlayer(media::MediaPlayerAndroid* player);
 
 #if defined(VIDEO_HOLE)
+  void ReleasePlayerOfExternalVideoSurfaceIfNeeded(int future_player);
   void OnRequestExternalSurface(int player_id, const gfx::RectF& rect);
 #endif  // defined(VIDEO_HOLE)
 
