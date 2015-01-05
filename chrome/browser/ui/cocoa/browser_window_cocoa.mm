@@ -23,6 +23,8 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
@@ -58,6 +60,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -570,6 +573,8 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
     }
 
     // If we're not creating app shims, no need to reveal it in Finder.
+    // Otherwise reveal the app in the app launcher. If not installed,
+    // then open the chrome://apps page.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableHostedAppShimCreation)) {
       extensions::ExtensionRegistry* registry =
@@ -578,6 +583,22 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
           extension_id, extensions::ExtensionRegistry::ENABLED);
 
       web_app::RevealAppShimInFinderForApp(profile, app);
+    } else {
+      if (IsAppLauncherEnabled()) {
+        AppListService::Get(chrome::GetHostDesktopTypeForNativeWindow(
+                                browser_->window()->GetNativeWindow()))
+            ->ShowForAppInstall(profile, extension_id, false);
+      } else {
+        chrome::NavigateParams params(profile, GURL(chrome::kChromeUIAppsURL),
+                                      ui::PAGE_TRANSITION_LINK);
+        params.disposition = NEW_FOREGROUND_TAB;
+        chrome::Navigate(&params);
+
+        content::NotificationService::current()->Notify(
+            chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+            content::Source<content::WebContents>(params.target_contents),
+            content::Details<const std::string>(&extension_id));
+      }
     }
   } else {
     service->UninstallExtension(extension_id,
