@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -41,6 +42,7 @@ const char kDefaultAltFallbackOrigin[] = "http://ssl.googlezip.net:80/";
 const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
+const char kAndroidOneIdentifier[] = "sprout";
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -79,6 +81,13 @@ bool DataReductionProxyParams::
     IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() {
   return FieldTrialList::FindFullName(
       "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == kEnabled;
+}
+
+// static
+bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
+    const char* build_fingerprint) {
+  base::StringPiece fingerprint(build_fingerprint);
+  return (fingerprint.find(kAndroidOneIdentifier) != std::string::npos);
 }
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()

@@ -13,6 +13,10 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using content::BrowserThread;
 using data_reduction_proxy::DataReductionProxyParams;
 using data_reduction_proxy::DataReductionProxyUsageStats;
@@ -59,6 +63,12 @@ KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())
     flags |= DataReductionProxyParams::kHoldback;
+#if defined(OS_ANDROID)
+  if (DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
+          base::android::BuildInfo::GetInstance()->android_build_fp())) {
+    flags |= DataReductionProxyParams::kPromoAllowed;
+  }
+#endif
 
   return new DataReductionProxyChromeSettings(
       new DataReductionProxyParams(flags));

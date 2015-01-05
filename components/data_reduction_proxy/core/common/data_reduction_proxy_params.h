@@ -86,6 +86,11 @@ class DataReductionProxyParams {
   // the data reduction proxy via header is missing.
   static bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial();
 
+  // Returns true if this client is part of the field trial that should display
+  // a promotion for the data reduction proxy on Android One devices.
+  static bool IsIncludedInAndroidOnePromoFieldTrial(
+      const char* build_fingerprint);
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is

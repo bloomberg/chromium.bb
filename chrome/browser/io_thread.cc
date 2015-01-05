@@ -105,6 +105,10 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
@@ -1183,6 +1187,13 @@ void IOThread::SetupDataReductionProxy() {
       IsIncludedInHoldbackFieldTrial()) {
     flags |= data_reduction_proxy::DataReductionProxyParams::kHoldback;
   }
+#if defined(OS_ANDROID)
+  if (data_reduction_proxy::DataReductionProxyParams::
+          IsIncludedInAndroidOnePromoFieldTrial(
+              base::android::BuildInfo::GetInstance()->android_build_fp())) {
+    flags |= data_reduction_proxy::DataReductionProxyParams::kPromoAllowed;
+  }
+#endif
   globals_->data_reduction_proxy_params.reset(
       new data_reduction_proxy::DataReductionProxyParams(flags));
   globals_->data_reduction_proxy_auth_request_handler.reset(
