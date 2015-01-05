@@ -4,12 +4,6 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
 <script>
-// Temporary measure to diagnose timeouts on Win XP. Let the W3C harness
-// timeout before run-webkit-tests does, so it can report the particular
-// test that timed out.
-// FIXME: Remove after the cause of timeout is fixed.
-var properties = {timeout: 5500};
-
 function runTest(test, scope, onRegister) {
   var script = 'resources/extendable-event-waituntil.js?' + scope;
   service_worker_unregister_and_register(test, script, scope)
@@ -47,7 +41,7 @@ async_test(function(t) {
         syncWorker(t, worker, obj);
       };
     runTest(t, scope, onRegister);
-  }, 'Test install event waitUntil fulfilled', properties);
+  }, 'Test install event waitUntil fulfilled');
 
 async_test(function(t) {
     var scope = 'resources/activate-fulfilled';
@@ -68,7 +62,7 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test activate event waitUntil fulfilled', properties);
+  }, 'Test activate event waitUntil fulfilled');
 
 async_test(function(t) {
     var scope = 'resources/install-rejected';
@@ -80,7 +74,7 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test install event waitUntil rejected', properties);
+  }, 'Test install event waitUntil rejected');
 
 async_test(function(t) {
     var scope = 'resources/activate-rejected';
@@ -92,7 +86,7 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test activate event waitUntil rejected.', properties);
+  }, 'Test activate event waitUntil rejected.');
 
 async_test(function(t) {
     var scope = 'resources/activate-multiple-fulfilled';
@@ -115,7 +109,7 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test ExtendableEvent multiple waitUntil fulfilled.', properties);
+  }, 'Test ExtendableEvent multiple waitUntil fulfilled.');
 
 async_test(function(t) {
     var scope = 'resources/activate-reject-precedence';
@@ -127,5 +121,5 @@ async_test(function(t) {
           .catch(unreached_rejection(t));
       };
     runTest(t, scope, onRegister);
-  }, 'Test ExtendableEvent waitUntil reject precedence.', properties);
+  }, 'Test ExtendableEvent waitUntil reject precedence.');
 </script>

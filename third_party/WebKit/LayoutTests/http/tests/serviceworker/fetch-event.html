@@ -4,12 +4,6 @@
 <script src="resources/test-helpers.js"></script>
 <body>
 <script>
-// Temporary measure to diagnose timeouts on Win XP. Let the W3C harness
-// timeout before run-webkit-tests does, so it can report the particular
-// test that timed out.
-// FIXME: Remove after the cause of timeout is fixed.
-var properties = {timeout: 5500};
-
 var worker = 'resources/fetch-event-test-worker.js';
 
 async_test(function(t) {
@@ -36,7 +30,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker responds to fetch event with string', properties);
+  }, 'Service Worker responds to fetch event with string');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?blob';
@@ -54,7 +48,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker responds to fetch event with blob body', properties);
+  }, 'Service Worker responds to fetch event with blob body');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?referrer';
@@ -72,7 +66,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker responds to fetch event with the referrer URL', properties);
+  }, 'Service Worker responds to fetch event with the referrer URL');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?ignore';
@@ -89,7 +83,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker does not respond to fetch event', properties);
+  }, 'Service Worker does not respond to fetch event');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?null';
@@ -106,7 +100,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker responds to fetch event with null response body', properties);
+  }, 'Service Worker responds to fetch event with null response body');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?fetch';
@@ -123,7 +117,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker fetches other file in fetch event', properties);
+  }, 'Service Worker fetches other file in fetch event');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?form-post';
@@ -166,7 +160,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker responds to fetch event with POST form', properties);
+  }, 'Service Worker responds to fetch event with POST form');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?multiple-respond-with';
@@ -192,7 +186,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Multiple calls of respondWith must throw InvalidStateErrors', properties);
+  }, 'Multiple calls of respondWith must throw InvalidStateErrors');
 
 async_test(function(t) {
     var scope = 'resources/simple.html?used-check';
@@ -221,7 +215,7 @@ async_test(function(t) {
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'Service Worker event.respondWith must set the used flag', properties);
+  }, 'Service Worker event.respondWith must set the used flag');
 
 </script>
 </body>
