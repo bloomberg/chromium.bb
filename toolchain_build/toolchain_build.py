@@ -32,12 +32,12 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 # to use in place of the package name when calling GitUrl (below).
 GIT_REVISIONS = {
     'binutils': {
-        'rev': 'b08b9f0894e43f0bb966f3ad9094a4405ce6f570',
-        'upstream-branch': 'upstream/binutils-2_24-branch',
-        'upstream-name': 'binutils-2.24',
-        # This is tag binutils-2_24, but Gerrit won't let us push
+        'rev': '68b975af7ef47a9d28f21f4c93431f35777a5109',
+        'upstream-branch': 'upstream/binutils-2_25-branch',
+        'upstream-name': 'binutils-2.25',
+        # This is tag binutils-2_25, but Gerrit won't let us push
         # non-annotated tags, and the upstream tag is not annotated.
-        'upstream-base': '237df3fa4a1d939e6fd1af0c3e5029a25a137310',
+        'upstream-base': '68b975af7ef47a9d28f21f4c93431f35777a5109',
         },
     'gcc': {
         'rev': 'b23dd79950a5453d3b3b5a0030d7a1894cafcffe',
@@ -719,6 +719,26 @@ def HostTools(host, target):
   def Exe(file):
     return file + WindowsAlternate('.exe', '')
 
+  # The binutils git checkout includes all the directories in the
+  # upstream binutils-gdb.git repository, but some of these
+  # directories are not included in a binutils release tarball.  The
+  # top-level Makefile will try to build whichever of the whole set
+  # exist, but we don't want these extra directories built.  So we
+  # stub them out by creating dummy <subdir>/Makefile files; having
+  # these exist before the configure-<subdir> target in the
+  # top-level Makefile runs prevents it from doing anything.
+  binutils_dummy_dirs = ['gdb', 'libdecnumber', 'readline', 'sim']
+  def DummyDirCommands(dirs):
+    dummy_makefile = """\
+.DEFAULT:;@echo Ignoring $@
+"""
+    commands = []
+    for dir in dirs:
+      commands.append(command.Mkdir(command.path.join('%(cwd)s', dir)))
+      commands.append(command.WriteData(
+        dummy_makefile, command.path.join('%(cwd)s', dir, 'Makefile')))
+    return commands
+
   tools = {
       H('binutils_' + target): {
           'type': 'build',
@@ -730,7 +750,8 @@ def HostTools(host, target):
                   ConfigureTargetArgs(target) + [
                       '--enable-deterministic-archives',
                       '--enable-gold',
-                      ] + WindowsAlternate([], ['--enable-plugins'])),
+                      ] + WindowsAlternate([], ['--enable-plugins']))
+              ] + DummyDirCommands(binutils_dummy_dirs) + [
               command.Command(MakeCommand(host)),
               command.Command(MakeCheckCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
