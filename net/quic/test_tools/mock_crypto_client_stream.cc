@@ -34,7 +34,7 @@ void MockCryptoClientStream::OnHandshakeMessage(
   CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE);
 }
 
-bool MockCryptoClientStream::CryptoConnect() {
+void MockCryptoClientStream::CryptoConnect() {
   switch (handshake_mode_) {
     case ZERO_RTT: {
       encryption_established_ = true;
@@ -67,7 +67,6 @@ bool MockCryptoClientStream::CryptoConnect() {
       break;
     }
   }
-  return true;
 }
 
 void MockCryptoClientStream::SendOnCryptoHandshakeEvent(

@@ -146,7 +146,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns true if there are pending retransmissions.
   bool HasPendingRetransmissions() const;
 
-  // Retrieves the next pending retransmission.
+  // Retrieves the next pending retransmission.  You must ensure that
+  // there are pending retransmissions prior to calling this function.
   PendingRetransmission NextPendingRetransmission();
 
   bool HasUnackedPackets() const;

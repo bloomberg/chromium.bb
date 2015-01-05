@@ -41,7 +41,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   }
 
   void CompleteCryptoHandshake() {
-    EXPECT_TRUE(stream_->CryptoConnect());
+    stream_->CryptoConnect();
     CryptoTestUtils::HandshakeWithFakeServer(connection_, stream_.get());
   }
 
@@ -81,7 +81,7 @@ TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
-  EXPECT_TRUE(stream_->CryptoConnect());
+  stream_->CryptoConnect();
 
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
@@ -134,9 +134,8 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   connection_->AdvanceTime(
       QuicTime::Delta::FromSeconds(60 * 60 * 24 * 365 * 5));
 
-  // Check that a client hello was sent and that CryptoConnect doesn't fail
-  // with an error.
-  EXPECT_TRUE(stream_->CryptoConnect());
+  stream_->CryptoConnect();
+  // Check that a client hello was sent.
   ASSERT_EQ(1u, connection_->packets_.size());
 }
 

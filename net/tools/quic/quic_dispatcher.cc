@@ -353,6 +353,16 @@ void QuicDispatcher::OnWriteBlocked(
   write_blocked_list_.insert(make_pair(blocked_writer, true));
 }
 
+void QuicDispatcher::OnConnectionAddedToTimeWaitList(
+    QuicConnectionId connection_id) {
+  DVLOG(1) << "Connection " << connection_id << " added to time wait list.";
+}
+
+void QuicDispatcher::OnConnectionRemovedFromTimeWaitList(
+    QuicConnectionId connection_id) {
+  DVLOG(1) << "Connection " << connection_id << " removed from time wait list.";
+}
+
 QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
   return new QuicDefaultPacketWriter(fd);
 }

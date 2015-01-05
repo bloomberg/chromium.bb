@@ -89,6 +89,9 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // QuicVersion associated with it.
   QuicVersion GetQuicVersionFromConnectionId(QuicConnectionId connection_id);
 
+  // The number of connections on the time-wait list.
+  size_t num_connections() const { return connection_id_map_.size(); }
+
  protected:
   virtual QuicEncryptedPacket* BuildPublicReset(
       const QuicPublicResetPacket& packet);

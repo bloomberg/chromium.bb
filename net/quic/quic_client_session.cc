@@ -492,11 +492,7 @@ int QuicClientSession::CryptoConnect(bool require_confirmation,
   handshake_start_ = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
   DCHECK(flow_controller());
-  if (!crypto_stream_->CryptoConnect()) {
-    // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
-    // QuicErrorCode and map it to a net error code.
-    return ERR_CONNECTION_FAILED;
-  }
+  crypto_stream_->CryptoConnect();
 
   if (IsCryptoHandshakeConfirmed())
     return OK;

@@ -40,9 +40,8 @@ class QuicClientSession : public QuicClientSessionBase {
   void OnProofVerifyDetailsAvailable(
       const ProofVerifyDetails& verify_details) override;
 
-  // Performs a crypto handshake with the server. Returns true if the crypto
-  // handshake is started successfully.
-  bool CryptoConnect();
+  // Performs a crypto handshake with the server.
+  void CryptoConnect();
 
   // Returns the number of client hello messages that have been sent on the
   // crypto stream. If the handshake has completed then this is one greater

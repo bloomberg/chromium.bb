@@ -108,6 +108,15 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   // Queues the blocked writer for later resumption.
   void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) override;
 
+  // Called whenever the QuicTimeWaitListManager adds a new connection to the
+  // time-wait list.
+  void OnConnectionAddedToTimeWaitList(QuicConnectionId connection_id) override;
+
+  // Called whenever the QuicTimeWaitListManager removes an old connection from
+  // the time-wait list.
+  void OnConnectionRemovedFromTimeWaitList(
+      QuicConnectionId connection_id) override;
+
   typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
 
   // Deletes all sessions on the closed session list and clears the list.

@@ -51,7 +51,7 @@ class ToolsQuicClientSessionTest
   }
 
   void CompleteCryptoHandshake() {
-    ASSERT_TRUE(session_->CryptoConnect());
+    session_->CryptoConnect();
     CryptoTestUtils::HandshakeWithFakeServer(
         connection_, session_->GetCryptoStream());
   }

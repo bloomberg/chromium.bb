@@ -75,7 +75,7 @@ class QuicClient : public EpollCallbackInterface,
   // Start the crypto handshake.  This can be done in place of the synchronous
   // Connect(), but callers are responsible for making sure the crypto handshake
   // completes.
-  bool StartConnect();
+  void StartConnect();
 
   // Returns true if the crypto handshake has yet to establish encryption.
   // Returns false if encryption is active (even if the server hasn't confirmed

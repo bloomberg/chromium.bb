@@ -151,7 +151,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
 
   // Do a first handshake in order to prime the client config with the server's
   // information.
-  CHECK(client->CryptoConnect());
+  client->CryptoConnect();
   CHECK_EQ(1u, client_conn->packets_.size());
 
   scoped_ptr<TestSession> server_session(new TestSession(server_conn, config_));
@@ -186,7 +186,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
                                           server_session.get()));
   server_session->SetCryptoStream(server.get());
 
-  CHECK(client->CryptoConnect());
+  client->CryptoConnect();
 
   if (AsyncStrikeRegisterVerification()) {
     EXPECT_FALSE(client->handshake_confirmed());

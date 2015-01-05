@@ -34,10 +34,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // CryptoFramerVisitorInterface implementation
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
-  // Performs a crypto handshake with the server. Returns true if the crypto
-  // handshake is started successfully.
-  // TODO(agl): this should probably return void.
-  virtual bool CryptoConnect();
+  // Performs a crypto handshake with the server.
+  virtual void CryptoConnect();
 
   // num_sent_client_hellos returns the number of client hello messages that
   // have been sent. If the handshake has completed then this is one greater

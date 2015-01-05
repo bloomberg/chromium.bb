@@ -418,7 +418,9 @@ bool QuicSentPacketManager::HasPendingRetransmissions() const {
 
 QuicSentPacketManager::PendingRetransmission
     QuicSentPacketManager::NextPendingRetransmission() {
-  DCHECK(!pending_retransmissions_.empty());
+  LOG_IF(DFATAL, pending_retransmissions_.empty())
+      << "Unexpected call to PendingRetransmissions() with empty pending "
+      << "retransmission list. Corrupted memory usage imminent.";
   QuicPacketSequenceNumber sequence_number =
       pending_retransmissions_.begin()->first;
   TransmissionType transmission_type = pending_retransmissions_.begin()->second;

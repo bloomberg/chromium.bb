@@ -33,7 +33,7 @@ class ReliableQuicStream;
 
 // An interface from the session to the entity owning the session.
 // This lets the session notify its owner (the Dispatcher) when the connection
-// is closed or blocked.
+// is closed, blocked, or added/removed from the time-wait list.
 class QuicServerSessionVisitor {
  public:
   virtual ~QuicServerSessionVisitor() {}
@@ -41,6 +41,12 @@ class QuicServerSessionVisitor {
   virtual void OnConnectionClosed(QuicConnectionId connection_id,
                                   QuicErrorCode error) = 0;
   virtual void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) = 0;
+  // Called after the given connection is added to the time-wait list.
+  virtual void OnConnectionAddedToTimeWaitList(QuicConnectionId connection_id) {
+  }
+  // Called after the given connection is removed from the time-wait list.
+  virtual void OnConnectionRemovedFromTimeWaitList(
+      QuicConnectionId connection_id) {}
 };
 
 class QuicServerSession : public QuicSession {

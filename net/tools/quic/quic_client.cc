@@ -190,16 +190,14 @@ bool QuicClient::CreateUDPSocket() {
 }
 
 bool QuicClient::Connect() {
-  if (!StartConnect()) {
-    return false;
-  }
+  StartConnect();
   while (EncryptionBeingEstablished()) {
     WaitForEvents();
   }
   return session_->connection()->connected();
 }
 
-bool QuicClient::StartConnect() {
+void QuicClient::StartConnect() {
   DCHECK(initialized_);
   DCHECK(!connected());
 
@@ -224,7 +222,7 @@ bool QuicClient::StartConnect() {
     writer_.reset(writer);
   }
   session_->InitializeSession(server_id_, &crypto_config_);
-  return session_->CryptoConnect();
+  session_->CryptoConnect();
 }
 
 bool QuicClient::EncryptionBeingEstablished() {

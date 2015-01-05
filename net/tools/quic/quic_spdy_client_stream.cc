@@ -118,7 +118,6 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
   return len;
 }
 
-// Sends body data to the server and returns the number of bytes sent.
 void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
   WriteOrBufferData(data, fin, nullptr);
 }

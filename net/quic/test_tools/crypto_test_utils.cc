@@ -243,7 +243,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
                                 &crypto_config);
   client_session.SetCryptoStream(&client);
 
-  CHECK(client.CryptoConnect());
+  client.CryptoConnect();
   CHECK_EQ(1u, client_conn->packets_.size());
 
   CommunicateHandshakeMessagesAndRunCallbacks(

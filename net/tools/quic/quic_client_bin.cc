@@ -117,22 +117,12 @@ int main(int argc, char *argv[]) {
           << " with supported versions "
           << QuicVersionVectorToString(versions);
   net::EpollServer epoll_server;
-  net::QuicConfig config;
-
-  // The default flow control window of 16 Kb is too small for practical
-  // purposes. Set it to the specified value, which has a large default.
-  config.SetInitialFlowControlWindowToSend(
-      FLAGS_flow_control_window_bytes);
-  config.SetInitialStreamFlowControlWindowToSend(
-      FLAGS_flow_control_window_bytes);
-  config.SetInitialSessionFlowControlWindowToSend(
-      FLAGS_flow_control_window_bytes);
 
   net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port),
       net::QuicServerId(FLAGS_hostname, FLAGS_port, FLAGS_secure,
                         net::PRIVACY_MODE_DISABLED),
-      versions, true, config, &epoll_server);
+      versions, true, &epoll_server);
 
   client.Initialize();
 

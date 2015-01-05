@@ -122,10 +122,9 @@ void QuicCryptoClientStream::OnHandshakeMessage(
   DoHandshakeLoop(&message);
 }
 
-bool QuicCryptoClientStream::CryptoConnect() {
+void QuicCryptoClientStream::CryptoConnect() {
   next_state_ = STATE_INITIALIZE;
   DoHandshakeLoop(nullptr);
-  return true;
 }
 
 int QuicCryptoClientStream::num_sent_client_hellos() const {

@@ -56,6 +56,10 @@ bool PacingSender::OnPacketSent(
   if (has_retransmittable_data != HAS_RETRANSMITTABLE_DATA) {
     return in_flight;
   }
+  if (bytes_in_flight == 0) {
+    // Add more burst tokens anytime the connection is leaving quiescence.
+    burst_tokens_ = initial_packet_burst_;
+  }
   if (burst_tokens_ > 0) {
     --burst_tokens_;
     was_last_send_delayed_ = false;
@@ -107,12 +111,8 @@ QuicTime::Delta PacingSender::TimeUntilSend(
       HasRetransmittableData has_retransmittable_data) const {
   QuicTime::Delta time_until_send =
       sender_->TimeUntilSend(now, bytes_in_flight, has_retransmittable_data);
-  if (bytes_in_flight == 0) {
-    // Add more burst tokens anytime the connection is entering quiescence.
-    burst_tokens_ = initial_packet_burst_;
-  }
-  if (burst_tokens_ > 0) {
-    // Don't pace if we have burst tokens available.
+  if (burst_tokens_ > 0 || bytes_in_flight == 0) {
+    // Don't pace if we have burst tokens available or leaving quiescence.
     return time_until_send;
   }
 

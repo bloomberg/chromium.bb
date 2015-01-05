@@ -45,50 +45,35 @@ class PacingSenderTest : public ::testing::Test {
     EXPECT_CALL(*mock_sender_, PacingRate()).WillRepeatedly(Return(bandwidth));
   }
 
-  void CheckPacketIsSentImmediately() {
+  void CheckPacketIsSentImmediately(HasRetransmittableData retransmittable_data,
+                                    QuicByteCount bytes_in_flight) {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
     for (int i = 0; i < 2; ++i) {
-      EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                               kBytesInFlight,
-                                               HAS_RETRANSMITTABLE_DATA))
+      EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(), bytes_in_flight,
+                                               retransmittable_data))
           .WillOnce(Return(zero_time_));
       // Verify that the packet can be sent immediately.
       EXPECT_EQ(zero_time_,
-                pacing_sender_->TimeUntilSend(clock_.Now(),
-                                              kBytesInFlight,
-                                              HAS_RETRANSMITTABLE_DATA));
+                pacing_sender_->TimeUntilSend(clock_.Now(), bytes_in_flight,
+                                              retransmittable_data));
     }
 
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
-                OnPacketSent(clock_.Now(), kBytesInFlight, sequence_number_,
-                             kMaxPacketSize, HAS_RETRANSMITTABLE_DATA));
-    pacing_sender_->OnPacketSent(clock_.Now(), kBytesInFlight,
+                OnPacketSent(clock_.Now(), bytes_in_flight, sequence_number_,
+                             kMaxPacketSize, retransmittable_data));
+    pacing_sender_->OnPacketSent(clock_.Now(), bytes_in_flight,
                                  sequence_number_++, kMaxPacketSize,
-                                 HAS_RETRANSMITTABLE_DATA);
+                                 retransmittable_data);
+  }
+
+  void CheckPacketIsSentImmediately() {
+    CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, kBytesInFlight);
   }
 
   void CheckAckIsSentImmediately() {
-    // In order for the ack to be sendable, the underlying sender must
-    // permit it to be sent immediately.
-    EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             0,
-                                             NO_RETRANSMITTABLE_DATA))
-        .WillOnce(Return(zero_time_));
-    // Verify that the ACK can be sent immediately.
-    EXPECT_EQ(zero_time_,
-              pacing_sender_->TimeUntilSend(clock_.Now(),
-                                            0,
-                                            NO_RETRANSMITTABLE_DATA));
-
-    // Actually send the packet.
-    EXPECT_CALL(*mock_sender_,
-                OnPacketSent(clock_.Now(), 0, sequence_number_,
-                             kMaxPacketSize, NO_RETRANSMITTABLE_DATA));
-    pacing_sender_->OnPacketSent(clock_.Now(), 0,
-                                 sequence_number_++, kMaxPacketSize,
-                                 NO_RETRANSMITTABLE_DATA);
+    CheckPacketIsSentImmediately(NO_RETRANSMITTABLE_DATA, kBytesInFlight);
   }
 
   void CheckPacketIsDelayed(QuicTime::Delta delay) {
@@ -105,6 +90,13 @@ class PacingSenderTest : public ::testing::Test {
                     clock_.Now(), kBytesInFlight,
                     HAS_RETRANSMITTABLE_DATA).ToMicroseconds());
     }
+  }
+
+  void UpdateRtt() {
+    EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
+    SendAlgorithmInterface::CongestionVector empty_map;
+    pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map,
+                                      empty_map);
   }
 
   const QuicTime::Delta zero_time_;
@@ -147,9 +139,7 @@ TEST_F(PacingSenderTest, VariousSending) {
                         kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
   // Now update the RTT and verify that packets are actually paced.
-  EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionVector empty_map;
-  pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
+  UpdateRtt();
 
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
@@ -212,9 +202,7 @@ TEST_F(PacingSenderTest, DISABLED_CongestionAvoidanceSending) {
           kMaxPacketSize * 1.25, QuicTime::Delta::FromMilliseconds(2))));
 
   // Now update the RTT and verify that packets are actually paced.
-  EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionVector empty_map;
-  pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
+  UpdateRtt();
 
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
@@ -270,9 +258,7 @@ TEST_F(PacingSenderTest, InitialBurst) {
                          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
   // Update the RTT and verify that the first 10 packets aren't paced.
-  EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionVector empty_map;
-  pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
+  UpdateRtt();
 
   // Send 10 packets, and verify that they are not paced.
   for (int i = 0 ; i < kInitialBurstPackets; ++i) {
@@ -288,18 +274,10 @@ TEST_F(PacingSenderTest, InitialBurst) {
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   CheckPacketIsSentImmediately();
 
-  // Next time TimeUntilSend is called with no bytes in flight, the tokens
-  // should be refilled and there should be no delay.
-  EXPECT_CALL(*mock_sender_,
-              TimeUntilSend(clock_.Now(),
-                            0,
-                            HAS_RETRANSMITTABLE_DATA)).
-      WillOnce(Return(zero_time_));
-  EXPECT_EQ(zero_time_,
-            pacing_sender_->TimeUntilSend(clock_.Now(),
-                                          0,
-                                          HAS_RETRANSMITTABLE_DATA));
-  for (int i = 0 ; i < kInitialBurstPackets; ++i) {
+  // Next time TimeUntilSend is called with no bytes in flight, pacing should
+  // allow a packet to be sent, and when it's sent, the tokens are refilled.
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0);
+  for (int i = 0; i < kInitialBurstPackets - 1; ++i) {
     CheckPacketIsSentImmediately();
   }
 
@@ -332,17 +310,9 @@ TEST_F(PacingSenderTest, InitialBurstNoRttMeasurement) {
 
   // Next time TimeUntilSend is called with no bytes in flight, the tokens
   // should be refilled and there should be no delay.
-  EXPECT_CALL(*mock_sender_,
-              TimeUntilSend(clock_.Now(),
-                            0,
-                            HAS_RETRANSMITTABLE_DATA)).
-      WillOnce(Return(zero_time_));
-  EXPECT_EQ(zero_time_,
-            pacing_sender_->TimeUntilSend(clock_.Now(),
-                                          0,
-                                          HAS_RETRANSMITTABLE_DATA));
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0);
   // Send 10 packets, and verify that they are not paced.
-  for (int i = 0 ; i < kInitialBurstPackets; ++i) {
+  for (int i = 0; i < kInitialBurstPackets - 1; ++i) {
     CheckPacketIsSentImmediately();
   }
 
@@ -361,9 +331,7 @@ TEST_F(PacingSenderTest, FastSending) {
                      2 * kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
   // Update the RTT and verify that the first 10 packets aren't paced.
-  EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionVector empty_map;
-  pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
+  UpdateRtt();
 
   // Send 10 packets, and verify that they are not paced.
   for (int i = 0; i < kInitialBurstPackets; ++i) {
@@ -382,12 +350,8 @@ TEST_F(PacingSenderTest, FastSending) {
 
   // Next time TimeUntilSend is called with no bytes in flight, the tokens
   // should be refilled and there should be no delay.
-  EXPECT_CALL(*mock_sender_,
-              TimeUntilSend(clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA))
-      .WillOnce(Return(zero_time_));
-  EXPECT_EQ(zero_time_, pacing_sender_->TimeUntilSend(
-                            clock_.Now(), 0, HAS_RETRANSMITTABLE_DATA));
-  for (int i = 0; i < kInitialBurstPackets; ++i) {
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0);
+  for (int i = 0; i < kInitialBurstPackets - 1; ++i) {
     CheckPacketIsSentImmediately();
   }
 
