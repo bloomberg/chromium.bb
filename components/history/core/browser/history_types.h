@@ -44,8 +44,9 @@ typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
 
-// Identifier for a context to scope page ids. (ContextIDs are used in
-// comparisons only and are never dereferenced.)
+// Identifier for a context to scope the lifetime of navigation entry
+// references. (ContextIDs are used in comparisons only and are never
+// dereferenced.)
 // NB: The use of WebContents here is temporary; when the dependency on content
 // is broken, some other type will take its place.
 typedef content::WebContents* ContextID;
@@ -379,7 +380,7 @@ struct HistoryAddPageArgs {
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
                      ContextID context_id,
-                     int32 page_id,
+                     int nav_entry_id,
                      const GURL& referrer,
                      const history::RedirectList& redirects,
                      ui::PageTransition transition,
@@ -389,10 +390,8 @@ struct HistoryAddPageArgs {
 
   GURL url;
   base::Time time;
-
   ContextID context_id;
-  int32 page_id;
-
+  int nav_entry_id;
   GURL referrer;
   history::RedirectList redirects;
   ui::PageTransition transition;

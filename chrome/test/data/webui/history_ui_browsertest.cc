@@ -16,7 +16,7 @@
 HistoryUIBrowserTest::HistoryUIBrowserTest()
     : history_(NULL),
       baseline_time_(base::Time::Now().LocalMidnight()),
-      page_id_(0) {
+      nav_entry_id_(0) {
 }
 
 HistoryUIBrowserTest::~HistoryUIBrowserTest() {
@@ -37,7 +37,7 @@ void HistoryUIBrowserTest::AddPageToHistory(
 
   base::Time time = baseline_time_ + base::TimeDelta::FromHours(hour_offset);
   GURL gurl = GURL(url);
-  history_->AddPage(gurl, time, id_scope, page_id_++, GURL(),
+  history_->AddPage(gurl, time, id_scope, nav_entry_id_++, GURL(),
                     history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                     history::SOURCE_BROWSED, false);
   history_->SetPageTitle(gurl, base::UTF8ToUTF16(title));

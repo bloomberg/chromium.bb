@@ -15,7 +15,7 @@ namespace {
 struct VisitToTest {
   // Identifies the context.
   int context_id_int;
-  int32 page_id;
+  int nav_entry_id;
 
   // Used when adding this to the tracker
   const char* url;
@@ -36,12 +36,12 @@ void RunTest(VisitTracker* tracker, VisitToTest* test, int test_count) {
 
     // Check the referrer for this visit.
     history::VisitID ref_visit = tracker->GetLastVisit(
-        context_id, test[i].page_id, GURL(test[i].referrer));
+        context_id, test[i].nav_entry_id, GURL(test[i].referrer));
     EXPECT_EQ(test[i].referring_visit_id, ref_visit);
 
     // Now add this visit.
     tracker->AddVisit(
-        context_id, test[i].page_id, GURL(test[i].url), test[i].visit_id);
+        context_id, test[i].nav_entry_id, GURL(test[i].url), test[i].visit_id);
   }
 }
 

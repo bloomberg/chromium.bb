@@ -309,15 +309,15 @@ class HistoryBackendTest : public HistoryBackendTestBase {
   ~HistoryBackendTest() override {}
 
  protected:
-  void AddRedirectChain(const char* sequence[], int page_id) {
-    AddRedirectChainWithTransitionAndTime(sequence, page_id,
+  void AddRedirectChain(const char* sequence[], int nav_entry_id) {
+    AddRedirectChainWithTransitionAndTime(sequence, nav_entry_id,
                                           ui::PAGE_TRANSITION_LINK,
                                           Time::Now());
   }
 
   void AddRedirectChainWithTransitionAndTime(
       const char* sequence[],
-      int page_id,
+      int nav_entry_id,
       ui::PageTransition transition,
       base::Time time) {
     history::RedirectList redirects;
@@ -326,7 +326,7 @@ class HistoryBackendTest : public HistoryBackendTestBase {
 
     ContextID context_id = reinterpret_cast<ContextID>(1);
     history::HistoryAddPageArgs request(
-        redirects.back(), time, context_id, page_id, GURL(),
+        redirects.back(), time, context_id, nav_entry_id, GURL(),
         redirects, transition, history::SOURCE_BROWSED,
         true);
     backend_->AddPage(request);

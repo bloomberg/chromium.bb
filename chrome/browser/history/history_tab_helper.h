@@ -36,6 +36,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
       const GURL& virtual_url,
       base::Time timestamp,
       bool did_replace_entry,
+      int nav_entry_id,
       const content::FrameNavigateParams& params);
 
  private:

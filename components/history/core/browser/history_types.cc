@@ -240,17 +240,22 @@ TopSitesDelta::~TopSitesDelta() {}
 // HistoryAddPageArgs ---------------------------------------------------------
 
 HistoryAddPageArgs::HistoryAddPageArgs()
-    : context_id(NULL),
-      page_id(0),
-      transition(ui::PAGE_TRANSITION_LINK),
-      visit_source(SOURCE_BROWSED),
-      did_replace_entry(false) {}
+    : HistoryAddPageArgs(GURL(),
+                         base::Time(),
+                         nullptr,
+                         0,
+                         GURL(),
+                         history::RedirectList(),
+                         ui::PAGE_TRANSITION_LINK,
+                         SOURCE_BROWSED,
+                         false) {
+}
 
 HistoryAddPageArgs::HistoryAddPageArgs(
     const GURL& url,
     base::Time time,
     ContextID context_id,
-    int32 page_id,
+    int nav_entry_id,
     const GURL& referrer,
     const history::RedirectList& redirects,
     ui::PageTransition transition,
@@ -259,7 +264,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(
       : url(url),
         time(time),
         context_id(context_id),
-        page_id(page_id),
+        nav_entry_id(nav_entry_id),
         referrer(referrer),
         redirects(redirects),
         transition(transition),

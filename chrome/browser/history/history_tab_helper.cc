@@ -56,9 +56,10 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
     base::Time timestamp,
     bool did_replace_entry,
+    int nav_entry_id,
     const content::FrameNavigateParams& params) {
   history::HistoryAddPageArgs add_page_args(
-      params.url, timestamp, web_contents(), params.page_id,
+      params.url, timestamp, web_contents(), nav_entry_id,
       params.referrer.url, params.redirects, params.transition,
       history::SOURCE_BROWSED, did_replace_entry);
   if (ui::PageTransitionIsMainFrame(params.transition) &&
@@ -96,10 +97,12 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   // URLs, we use a data: URL as the real value.  We actually want to save the
   // about: URL to the history db and keep the data: URL hidden. This is what
   // the WebContents' URL getter does.
+  NavigationEntry* last_committed =
+      web_contents()->GetController().GetLastCommittedEntry();
   const history::HistoryAddPageArgs& add_page_args =
       CreateHistoryAddPageArgs(
           web_contents()->GetURL(), details.entry->GetTimestamp(),
-          details.did_replace_entry, params);
+          details.did_replace_entry, last_committed->GetUniqueID(), params);
 
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
@@ -155,7 +158,7 @@ void HistoryTabHelper::WebContentsDestroyed() {
   if (hs) {
     NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
     if (entry) {
-      hs->UpdateWithPageEndTime(tab, entry->GetPageID(), tab->GetURL(),
+      hs->UpdateWithPageEndTime(tab, entry->GetUniqueID(), tab->GetURL(),
                                 base::Time::Now());
     }
     hs->ClearCachedDataForContextID(tab);

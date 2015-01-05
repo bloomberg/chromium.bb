@@ -163,8 +163,9 @@ class HistoryService : public content::NotificationObserver,
   // them.
   //
   // The context/page ids can be NULL if there is no meaningful tracking
-  // information that can be performed on the given URL. The 'page_id' should
-  // be the ID of the current session history entry in the given process.
+  // information that can be performed on the given URL. The 'nav_entry_id'
+  // should be the unique ID of the current navigation entry in the given
+  // process.
   //
   // 'redirects' is an array of redirect URLs leading to this page, with the
   // page itself as the last item (so when there is no redirect, it will have
@@ -179,7 +180,7 @@ class HistoryService : public content::NotificationObserver,
   void AddPage(const GURL& url,
                base::Time time,
                history::ContextID context_id,
-               int32 page_id,
+               int nav_entry_id,
                const GURL& referrer,
                const history::RedirectList& redirects,
                ui::PageTransition transition,
@@ -204,10 +205,10 @@ class HistoryService : public content::NotificationObserver,
   void SetPageTitle(const GURL& url, const base::string16& title);
 
   // Updates the history database with a page's ending time stamp information.
-  // The page can be identified by the combination of the context id, the page
-  // id and the url.
+  // The page can be identified by the combination of the context id, the
+  // navigation entry id and the url.
   void UpdateWithPageEndTime(history::ContextID context_id,
-                             int32 page_id,
+                             int nav_entry_id,
                              const GURL& url,
                              base::Time end_ts);
 

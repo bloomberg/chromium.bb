@@ -162,7 +162,7 @@ void AddToHistory(HistoryService* service,
   service->AddPage(url,
                    timestamp,
                    NULL, // scope
-                   1234, // page_id
+                   1234, // nav_entry_id
                    GURL(),  // referrer
                    history::RedirectList(),
                    transition,

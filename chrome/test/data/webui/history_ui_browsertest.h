@@ -38,7 +38,7 @@ class HistoryUIBrowserTest : public WebUIBrowserTest {
   base::Time baseline_time_;
 
   // Counter used to generate a unique ID for each page added to the history.
-  int32 page_id_;
+  int nav_entry_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryUIBrowserTest);
 };

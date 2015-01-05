@@ -380,11 +380,11 @@ SegmentID HistoryBackend::UpdateSegments(
 }
 
 void HistoryBackend::UpdateWithPageEndTime(ContextID context_id,
-                                           int32 page_id,
+                                           int nav_entry_id,
                                            const GURL& url,
                                            Time end_ts) {
   // Will be filled with the URL ID and the visit ID of the last addition.
-  VisitID visit_id = tracker_.GetLastVisit(context_id, page_id, url);
+  VisitID visit_id = tracker_.GetLastVisit(context_id, nav_entry_id, url);
   UpdateVisitDuration(visit_id, end_ts);
 }
 
@@ -408,7 +408,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
   // Will be filled with the URL ID and the visit ID of the last addition.
   std::pair<URLID, VisitID> last_ids(0, tracker_.GetLastVisit(
-      request.context_id, request.page_id, request.referrer));
+      request.context_id, request.nav_entry_id, request.referrer));
 
   VisitID from_visit_id = last_ids.second;
 
@@ -571,7 +571,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   if (stripped_transition != ui::PAGE_TRANSITION_AUTO_SUBFRAME &&
       stripped_transition != ui::PAGE_TRANSITION_MANUAL_SUBFRAME &&
       !is_keyword_generated) {
-    tracker_.AddVisit(request.context_id, request.page_id, request.url,
+    tracker_.AddVisit(request.context_id, request.nav_entry_id, request.url,
                       last_ids.second);
   }
 

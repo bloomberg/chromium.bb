@@ -72,7 +72,7 @@ bool NthResultIs(const QueryResults& results,
 
 class HistoryQueryTest : public testing::Test {
  public:
-  HistoryQueryTest() : page_id_(0) {
+  HistoryQueryTest() : nav_entry_id_(0) {
   }
 
   // Acts like a synchronous call to history's QueryHistory.
@@ -145,14 +145,14 @@ class HistoryQueryTest : public testing::Test {
   scoped_ptr<HistoryService> history_;
 
   // Counter used to generate a unique ID for each page added to the history.
-  int32 page_id_;
+  int nav_entry_id_;
 
   void AddEntryToHistory(const TestEntry& entry) {
     // We need the ID scope and page ID so that the visit tracker can find it.
     ContextID context_id = reinterpret_cast<ContextID>(1);
     GURL url(entry.url);
 
-    history_->AddPage(url, entry.time, context_id, page_id_++, GURL(),
+    history_->AddPage(url, entry.time, context_id, nav_entry_id_++, GURL(),
                       history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                       history::SOURCE_BROWSED, false);
     history_->SetPageTitle(url, base::UTF8ToUTF16(entry.title));

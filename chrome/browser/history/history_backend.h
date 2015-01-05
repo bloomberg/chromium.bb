@@ -193,7 +193,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   virtual void SetPageTitle(const GURL& url, const base::string16& title);
   void AddPageNoVisitForBookmark(const GURL& url, const base::string16& title);
   void UpdateWithPageEndTime(ContextID context_id,
-                             int32 page_id,
+                             int nav_entry_id,
                              const GURL& url,
                              base::Time end_ts);
 
