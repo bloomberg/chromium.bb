@@ -79,6 +79,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   void ReleaseCapture();
   bool HasCapture();
 
+  // See views::Widget.
+  void SetNativeWindowProperty(const char* key, void* value);
+  void* GetNativeWindowProperty(const char* key) const;
+
   // Called internally by the NSWindowDelegate when the window is closing.
   void OnWindowWillClose();
 
@@ -170,6 +174,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // Overridden from CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override;
   void OnMouseCaptureLost() override;
+
+  // Returns a properties dictionary associated with the NSWindow.
+  // Creates and attaches a new instance if not found.
+  NSMutableDictionary* GetWindowProperties() const;
 
   // Overridden from FocusChangeListener:
   void OnWillChangeFocus(View* focused_before,

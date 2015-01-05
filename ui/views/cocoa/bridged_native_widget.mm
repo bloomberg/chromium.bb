@@ -4,6 +4,8 @@
 
 #import "ui/views/cocoa/bridged_native_widget.h"
 
+#import <objc/runtime.h>
+
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -26,6 +28,8 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
+
+int kWindowPropertiesKey;
 
 float GetDeviceScaleFactorFromView(NSView* view) {
   gfx::Display display =
@@ -206,6 +210,22 @@ void BridgedNativeWidget::ReleaseCapture() {
 
 bool BridgedNativeWidget::HasCapture() {
   return mouse_capture_ && mouse_capture_->IsActive();
+}
+
+void BridgedNativeWidget::SetNativeWindowProperty(const char* name,
+                                                  void* value) {
+  NSString* key = [NSString stringWithUTF8String:name];
+  if (value) {
+    [GetWindowProperties() setObject:[NSValue valueWithPointer:value]
+                              forKey:key];
+  } else {
+    [GetWindowProperties() removeObjectForKey:key];
+  }
+}
+
+void* BridgedNativeWidget::GetNativeWindowProperty(const char* name) const {
+  NSString* key = [NSString stringWithUTF8String:name];
+  return [[GetWindowProperties() objectForKey:key] pointerValue];
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {
@@ -607,6 +627,17 @@ void BridgedNativeWidget::UpdateLayerProperties() {
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   compositor_->SetScaleAndSize(scale_factor,
                                ConvertSizeToPixel(scale_factor, size_in_dip));
+}
+
+NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {
+  NSMutableDictionary* properties = objc_getAssociatedObject(
+      window_, &kWindowPropertiesKey);
+  if (!properties) {
+    properties = [NSMutableDictionary dictionary];
+    objc_setAssociatedObject(window_, &kWindowPropertiesKey,
+                             properties, OBJC_ASSOCIATION_RETAIN);
+  }
+  return properties;
 }
 
 }  // namespace views

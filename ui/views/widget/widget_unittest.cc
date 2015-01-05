@@ -235,6 +235,22 @@ TEST_F(WidgetTest, WidgetInitParams) {
   EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init1.opacity);
 }
 
+TEST_F(WidgetTest, NativeWindowProperty) {
+  const char* key = "foo";
+  int value = 3;
+
+  Widget* widget = CreateTopLevelPlatformWidget();
+  EXPECT_EQ(nullptr, widget->GetNativeWindowProperty(key));
+
+  widget->SetNativeWindowProperty(key, &value);
+  EXPECT_EQ(&value, widget->GetNativeWindowProperty(key));
+
+  widget->SetNativeWindowProperty(key, nullptr);
+  EXPECT_EQ(nullptr, widget->GetNativeWindowProperty(key));
+
+  widget->CloseNow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget::GetTopLevelWidget tests.
 
