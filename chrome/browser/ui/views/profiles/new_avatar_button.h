@@ -32,10 +32,7 @@ class NewAvatarButton : public views::LabelButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
 
  private:
-  friend class NewAvatarMenuButtonTest;
-  friend class ProfileChooserViewBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(NewAvatarMenuButtonTest, SignOut);
-  FRIEND_TEST_ALL_PREFIXES(ProfileChooserViewBrowserTest, ViewProfileUMA);
+  friend class ProfileChooserViewExtensionsTest;
 
   // ProfileInfoCacheObserver:
   void OnProfileAdded(const base::FilePath& profile_path) override;

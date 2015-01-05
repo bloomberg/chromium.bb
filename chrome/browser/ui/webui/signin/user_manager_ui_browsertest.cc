@@ -90,3 +90,6 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
   GURL current_URL = about_chrome_contents->GetVisibleURL();
   EXPECT_EQ(GURL(chrome::kChromeUIUberURL), current_URL);
 }
+
+// TODO(mlerman): Test that unlocking a locked profile causes the extensions
+// service to become unblocked.

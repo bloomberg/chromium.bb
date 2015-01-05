@@ -64,16 +64,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
   static bool IsShowing();
   static void Hide();
 
-  // We normally close the bubble any time it becomes inactive but this can lead
-  // to flaky tests where unexpected UI events are triggering this behavior.
-  // Tests should call this with "false" for more consistent operation.
-  static void clear_close_on_deactivate_for_testing() {
-    close_on_deactivate_for_testing_ = false;
-  }
-
  private:
-  friend class NewAvatarMenuButtonTest;
-  FRIEND_TEST_ALL_PREFIXES(NewAvatarMenuButtonTest, SignOut);
+  friend class ProfileChooserViewExtensionsTest;
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;
@@ -117,6 +109,10 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   static ProfileChooserView* profile_bubble_;
+
+  // We normally close the bubble any time it becomes inactive but this can lead
+  // to flaky tests where unexpected UI events are triggering this behavior.
+  // Tests set this to "false" for more consistent operation.
   static bool close_on_deactivate_for_testing_;
 
   void ResetView();
