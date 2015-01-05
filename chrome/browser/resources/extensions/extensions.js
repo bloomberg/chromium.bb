@@ -55,7 +55,7 @@ cr.define('extensions', function() {
     },
     /** @override */
     doDragLeave: function() {
-      ExtensionSettings.showOverlay(null);
+      this.hideDropTargetOverlay_();
       chrome.send('stopDrag');
     },
     /** @override */
@@ -64,7 +64,7 @@ cr.define('extensions', function() {
     },
     /** @override */
     doDrop: function(e) {
-      ExtensionSettings.showOverlay(null);
+      this.hideDropTargetOverlay_();
       if (e.dataTransfer.files.length != 1)
         return;
 
@@ -89,6 +89,16 @@ cr.define('extensions', function() {
         e.preventDefault();
         chrome.send(toSend);
       }
+    },
+
+    /**
+     * Hide the current overlay if it is the drop target overlay.
+     * @private
+     */
+    hideDropTargetOverlay_: function() {
+      var currentOverlay = ExtensionSettings.getCurrentOverlay();
+      if (currentOverlay && currentOverlay.id === 'drop-target-overlay')
+        ExtensionSettings.showOverlay(null);
     }
   };
 
