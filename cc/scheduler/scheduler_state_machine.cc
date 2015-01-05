@@ -696,6 +696,11 @@ bool SchedulerStateMachine::BeginFrameNeededForChildren() const {
 }
 
 bool SchedulerStateMachine::BeginFrameNeeded() const {
+  // We can't handle BeginFrames when output surface isn't initialized.
+  // TODO(brianderson): Support output surface creation inside a BeginFrame.
+  if (!HasInitializedOutputSurface())
+    return false;
+
   if (SupportsProactiveBeginFrame()) {
     return (BeginFrameNeededToAnimateOrDraw() ||
             BeginFrameNeededForChildren() ||
@@ -710,6 +715,29 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
   // Synchronous compositor doesn't have a browser.
   DCHECK(!children_need_begin_frames_);
   return BeginFrameNeededToAnimateOrDraw();
+}
+
+bool SchedulerStateMachine::ShouldSetNeedsBeginFrames(
+    bool frame_source_needs_begin_frames) const {
+  bool needs_begin_frame = BeginFrameNeeded();
+
+  // Never call SetNeedsBeginFrames if the frame source has the right value.
+  if (needs_begin_frame == frame_source_needs_begin_frames)
+    return false;
+
+  // Always request the BeginFrame immediately if it's needed.
+  if (needs_begin_frame)
+    return true;
+
+  // Stop requesting BeginFrames after a deadline.
+  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
+    return true;
+
+  // Stop requesting BeginFrames immediately when output surface is lost.
+  if (!HasInitializedOutputSurface())
+    return true;
+
+  return false;
 }
 
 bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
@@ -744,11 +772,6 @@ void SchedulerStateMachine::SetChildrenNeedBeginFrames(
 // These are the cases where we definitely (or almost definitely) have a
 // new frame to animate and/or draw and can draw.
 bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
-  // The output surface is the provider of BeginImplFrames, so we are not going
-  // to get them even if we ask for them.
-  if (!HasInitializedOutputSurface())
-    return false;
-
   // The forced draw respects our normal draw scheduling, so we need to
   // request a BeginImplFrame for it.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
@@ -762,11 +785,6 @@ bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
 // Proactively requesting the BeginImplFrame helps hide the round trip latency
 // of the SetNeedsBeginFrame request that has to go to the Browser.
 bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
-  // The output surface is the provider of BeginImplFrames,
-  // so we are not going to get them even if we ask for them.
-  if (!HasInitializedOutputSurface())
-    return false;
-
   // Do not be proactive when invisible.
   if (!visible_)
     return false;

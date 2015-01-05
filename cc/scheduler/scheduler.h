@@ -223,7 +223,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   void RescheduleBeginImplFrameDeadlineIfNeeded();
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
-  void SetupPollingMechanisms(bool needs_begin_frame);
+  void SetupPollingMechanisms();
   void DrawAndSwapIfPossible();
   void ProcessScheduledActions();
   bool CanCommitAndActivateBeforeDeadline() const;

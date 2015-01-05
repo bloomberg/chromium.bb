@@ -275,8 +275,6 @@ void Scheduler::DidLoseOutputSurface() {
   begin_retro_frame_args_.clear();
   begin_retro_frame_task_.Cancel();
   state_machine_.DidLoseOutputSurface();
-  if (frame_source_->NeedsBeginFrames())
-    frame_source_->SetNeedsBeginFrames(false);
   ProcessScheduledActions();
 }
 
@@ -313,41 +311,29 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   if (!task_runner_.get())
     return;
 
-  bool needs_begin_frame = state_machine_.BeginFrameNeeded();
-
-  bool at_end_of_deadline =
-      (state_machine_.begin_impl_frame_state() ==
-       SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE);
-
-  bool should_call_set_needs_begin_frame =
-      // Always request the BeginFrame immediately if it wasn't needed before.
-      (needs_begin_frame && !frame_source_->NeedsBeginFrames()) ||
-      // Only stop requesting BeginFrames after a deadline.
-      (!needs_begin_frame && frame_source_->NeedsBeginFrames() &&
-       at_end_of_deadline);
-
-  if (should_call_set_needs_begin_frame) {
-    frame_source_->SetNeedsBeginFrames(needs_begin_frame);
+  if (state_machine_.ShouldSetNeedsBeginFrames(
+          frame_source_->NeedsBeginFrames())) {
+    frame_source_->SetNeedsBeginFrames(state_machine_.BeginFrameNeeded());
   }
 
-  if (at_end_of_deadline) {
+  if (state_machine_.begin_impl_frame_state() ==
+      SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE) {
     frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
   }
 
   PostBeginRetroFrameIfNeeded();
-  SetupPollingMechanisms(needs_begin_frame);
+  SetupPollingMechanisms();
 }
 
 // We may need to poll when we can't rely on BeginFrame to advance certain
 // state or to avoid deadlock.
-void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
+void Scheduler::SetupPollingMechanisms() {
   bool needs_advance_commit_state_timer = false;
   // Setup PollForAnticipatedDrawTriggers if we need to monitor state but
   // aren't expecting any more BeginFrames. This should only be needed by
   // the synchronous compositor when BeginFrameNeeded is false.
   if (state_machine_.ShouldPollForAnticipatedDrawTriggers()) {
     DCHECK(!state_machine_.SupportsProactiveBeginFrame());
-    DCHECK(!needs_begin_frame);
     if (poll_for_draw_triggers_task_.IsCancelled()) {
       poll_for_draw_triggers_task_.Reset(poll_for_draw_triggers_closure_);
       base::TimeDelta delay = begin_impl_frame_args_.IsValid()

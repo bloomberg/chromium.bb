@@ -1827,8 +1827,8 @@ void DidLoseOutputSurfaceAfterReadyToCommit(bool impl_side_painting) {
   scheduler->DidLoseOutputSurface();
   if (impl_side_painting) {
     // Sync tree should be forced to activate.
-    EXPECT_ACTION("SetNeedsBeginFrames(false)", client, 0, 2);
-    EXPECT_ACTION("ScheduledActionActivateSyncTree", client, 1, 2);
+    EXPECT_ACTION("ScheduledActionActivateSyncTree", client, 0, 2);
+    EXPECT_ACTION("SetNeedsBeginFrames(false)", client, 1, 2);
   } else {
     EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(false)", client);
   }
@@ -1919,8 +1919,8 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
   client.Reset();
   EXPECT_FALSE(scheduler->IsBeginRetroFrameArgsEmpty());
   scheduler->DidLoseOutputSurface();
-  EXPECT_ACTION("SetNeedsBeginFrames(false)", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client, 0, 2);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client, 1, 2);
   EXPECT_TRUE(scheduler->IsBeginRetroFrameArgsEmpty());
 
   // Posted BeginRetroFrame is aborted.
