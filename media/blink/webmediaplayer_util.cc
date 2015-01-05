@@ -14,14 +14,14 @@ namespace media {
 
 // Compile asserts shared by all platforms.
 
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT( \
+#define STATIC_ASSERT_MATCHING_ENUM(name) \
+  static_assert( \
   static_cast<int>(blink::WebMediaPlayerClient::MediaKeyErrorCode ## name) == \
   static_cast<int>(MediaKeys::k ## name ## Error), \
-  mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(Unknown);
-COMPILE_ASSERT_MATCHING_ENUM(Client);
-#undef COMPILE_ASSERT_MATCHING_ENUM
+  "mismatching enum values: " #name)
+STATIC_ASSERT_MATCHING_ENUM(Unknown);
+STATIC_ASSERT_MATCHING_ENUM(Client);
+#undef STATIC_ASSERT_MATCHING_ENUM
 
 base::TimeDelta ConvertSecondsToTimestamp(double seconds) {
   double microseconds = seconds * base::Time::kMicrosecondsPerSecond;

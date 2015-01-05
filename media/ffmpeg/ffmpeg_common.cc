@@ -18,8 +18,8 @@ namespace media {
 // Why FF_INPUT_BUFFER_PADDING_SIZE? FFmpeg assumes all input buffers are
 // padded. Check here to ensure FFmpeg only receives data padded to its
 // specifications.
-COMPILE_ASSERT(DecoderBuffer::kPaddingSize >= FF_INPUT_BUFFER_PADDING_SIZE,
-               decoder_buffer_padding_size_does_not_fit_ffmpeg_requirement);
+static_assert(DecoderBuffer::kPaddingSize >= FF_INPUT_BUFFER_PADDING_SIZE,
+              "DecoderBuffer padding size does not fit ffmpeg requirement");
 
 // Alignment requirement by FFmpeg for input and output buffers. This need to
 // be updated to match FFmpeg when it changes.
@@ -30,22 +30,22 @@ static const int kFFmpegBufferAddressAlignment = 32;
 #endif
 
 // Check here to ensure FFmpeg only receives data aligned to its specifications.
-COMPILE_ASSERT(
+static_assert(
     DecoderBuffer::kAlignmentSize >= kFFmpegBufferAddressAlignment &&
     DecoderBuffer::kAlignmentSize % kFFmpegBufferAddressAlignment == 0,
-    decoder_buffer_alignment_size_does_not_fit_ffmpeg_requirement);
+    "DecoderBuffer alignment size does not fit ffmpeg requirement");
 
 // Allows faster SIMD YUV convert. Also, FFmpeg overreads/-writes occasionally.
 // See video_get_buffer() in libavcodec/utils.c.
 static const int kFFmpegOutputBufferPaddingSize = 16;
 
-COMPILE_ASSERT(VideoFrame::kFrameSizePadding >= kFFmpegOutputBufferPaddingSize,
-               video_frame_padding_size_does_not_fit_ffmpeg_requirement);
+static_assert(VideoFrame::kFrameSizePadding >= kFFmpegOutputBufferPaddingSize,
+              "VideoFrame padding size does not fit ffmpeg requirement");
 
-COMPILE_ASSERT(
+static_assert(
     VideoFrame::kFrameAddressAlignment >= kFFmpegBufferAddressAlignment &&
     VideoFrame::kFrameAddressAlignment % kFFmpegBufferAddressAlignment == 0,
-    video_frame_address_alignment_does_not_fit_ffmpeg_requirement);
+    "VideoFrame frame address alignment does not fit ffmpeg requirement");
 
 static const AVRational kMicrosBase = { 1, base::Time::kMicrosecondsPerSecond };
 

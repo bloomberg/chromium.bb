@@ -3151,9 +3151,10 @@ TEST_F(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
     true, true, true, true, false,
   };
 
-  COMPILE_ASSERT(arraysize(kBuffer) == arraysize(kExpectedReturnValues),
-      test_arrays_out_of_sync);
-  COMPILE_ASSERT(arraysize(kBuffer) == sizeof(kBuffer), not_one_byte_per_index);
+  static_assert(arraysize(kBuffer) == arraysize(kExpectedReturnValues),
+      "test arrays out of sync");
+  static_assert(arraysize(kBuffer) == sizeof(kBuffer),
+      "there should be one byte per index");
 
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 

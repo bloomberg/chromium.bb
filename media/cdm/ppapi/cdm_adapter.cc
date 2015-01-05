@@ -1245,9 +1245,9 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)
     return NULL;
 
-  COMPILE_ASSERT(
+  static_assert(
       cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_6::kVersion,
-      update_code_below);
+      "update the code below");
 
   // Ensure IsSupportedCdmHostVersion matches implementation of this function.
   // Always update this DCHECK when updating this function.

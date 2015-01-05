@@ -94,8 +94,8 @@ class MEDIA_EXPORT H264BitstreamBuffer {
     kGrowBytes = 4096,
   };
 
-  COMPILE_ASSERT(kGrowBytes >= kRegByteSize,
-                 kGrowBytes_must_be_larger_than_kRegByteSize);
+  static_assert(kGrowBytes >= kRegByteSize,
+                "kGrowBytes must be larger than kRegByteSize");
 
   // Unused bits left in reg_.
   size_t bits_left_in_reg_;

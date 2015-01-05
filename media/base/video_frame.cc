@@ -592,7 +592,7 @@ static void ReleaseData(uint8* data) {
 void VideoFrame::AllocateYUV() {
   DCHECK(format_ == YV12 || format_ == YV16 || format_ == YV12A ||
          format_ == I420 || format_ == YV12J || format_ == YV24);
-  COMPILE_ASSERT(0 == kYPlane, y_plane_data_must_be_index_0);
+  static_assert(0 == kYPlane, "y plane data must be index 0");
 
   size_t data_size = 0;
   size_t offset[kMaxPlanes];

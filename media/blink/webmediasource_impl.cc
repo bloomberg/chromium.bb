@@ -15,14 +15,14 @@ using ::blink::WebMediaSource;
 
 namespace media {
 
-#define COMPILE_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \
-  COMPILE_ASSERT(static_cast<int>(WebMediaSource::webkit_name) == \
-                 static_cast<int>(ChunkDemuxer::chromium_name),  \
-                 mismatching_status_enums)
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusOk, kOk);
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusNotSupported, kNotSupported);
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
-#undef COMPILE_ASSERT_MATCHING_STATUS_ENUM
+#define STATIC_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \
+  static_assert(static_cast<int>(WebMediaSource::webkit_name) == \
+                static_cast<int>(ChunkDemuxer::chromium_name),  \
+                "mismatching status enum values: " #webkit_name)
+STATIC_ASSERT_MATCHING_STATUS_ENUM(AddStatusOk, kOk);
+STATIC_ASSERT_MATCHING_STATUS_ENUM(AddStatusNotSupported, kNotSupported);
+STATIC_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
+#undef STATIC_ASSERT_MATCHING_STATUS_ENUM
 
 WebMediaSourceImpl::WebMediaSourceImpl(
     ChunkDemuxer* demuxer, LogCB log_cb)

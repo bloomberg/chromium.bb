@@ -68,9 +68,9 @@ static const int kMaxCapacityInSeconds = 3;
 // maintain this number of frames.
 static const int kStartingBufferSizeInFrames = 16 * 512;
 
-COMPILE_ASSERT(kStartingBufferSizeInFrames <
-               (kMaxCapacityInSeconds * limits::kMinSampleRate),
-               max_capacity_smaller_than_starting_buffer_size);
+static_assert(kStartingBufferSizeInFrames <
+              (kMaxCapacityInSeconds * limits::kMinSampleRate),
+              "max capacity smaller than starting buffer size");
 
 AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),

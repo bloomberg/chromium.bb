@@ -42,8 +42,8 @@ template<class Format, class Fixed, Format Bias>
 static void FromInterleavedInternal(const void* src, int start_frame,
                                     int frames, AudioBus* dest,
                                     float min, float max) {
-  COMPILE_ASSERT((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
-                 sizeof(Fixed) > sizeof(Format), invalid_deinterleave_types);
+  static_assert((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
+                sizeof(Fixed) > sizeof(Format), "invalid deinterleave types");
   const Format* source = static_cast<const Format*>(src);
   const int channels = dest->channels();
   for (int ch = 0; ch < channels; ++ch) {
@@ -62,8 +62,8 @@ static void FromInterleavedInternal(const void* src, int start_frame,
 template<class Format, class Fixed, Format Bias>
 static void ToInterleavedInternal(const AudioBus* source, int start_frame,
                                   int frames, void* dst, Fixed min, Fixed max) {
-  COMPILE_ASSERT((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
-                 sizeof(Fixed) > sizeof(Format), invalid_interleave_types);
+  static_assert((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
+                sizeof(Fixed) > sizeof(Format), "invalid interleave types");
   Format* dest = static_cast<Format*>(dst);
   const int channels = source->channels();
   for (int ch = 0; ch < channels; ++ch) {

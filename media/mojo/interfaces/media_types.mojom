@@ -7,14 +7,14 @@ module mojo;
 import "mojo/services/geometry/public/interfaces/geometry.mojom";
 
 // See media/base/buffering_state.h for descriptions.
-// Kept in sync with media::BufferingState via COMPILE_ASSERTs.
+// Kept in sync with media::BufferingState via static_asserts.
 enum BufferingState {
   HAVE_NOTHING,
   HAVE_ENOUGH,
 };
 
 // See media/base/audio_decoder_config.h for descriptions.
-// Kept in sync with media::AudioCodec via COMPILE_ASSERTs.
+// Kept in sync with media::AudioCodec via static_asserts.
 enum AudioCodec {
   UNKNOWN = 0,
   AAC = 1,
@@ -35,7 +35,7 @@ enum AudioCodec {
 };
 
 // See media/base/channel_layout.h for descriptions.
-// Kept in sync with media::ChannelLayout via COMPILE_ASSERTs.
+// Kept in sync with media::ChannelLayout via static_asserts.
 // TODO(tim): The bindings generators will always prepend the enum name, should
 // mojom therefore allow enum values starting with numbers?
 enum ChannelLayout {
@@ -75,7 +75,7 @@ enum ChannelLayout {
 };
 
 // See media/base/sample_format.h for descriptions.
-// Kept in sync with media::SampleFormat via COMPILE_ASSERTs.
+// Kept in sync with media::SampleFormat via static_asserts.
 enum SampleFormat {
   UNKNOWN = 0,
   U8,
@@ -88,7 +88,7 @@ enum SampleFormat {
 };
 
 // See media/base/video_frame.h for descriptions.
-// Kept in sync with media::VideoFrame::Format via COMPILE_ASSERTs.
+// Kept in sync with media::VideoFrame::Format via static_asserts.
 enum VideoFormat {
   UNKNOWN = 0,
   YV12,
@@ -104,7 +104,7 @@ enum VideoFormat {
 };
 
 // See media/base/video_decoder_config.h for descriptions.
-// Kept in sync with media::VideoCodec via COMPILE_ASSERTs.
+// Kept in sync with media::VideoCodec via static_asserts.
 enum VideoCodec {
   UNKNOWN = 0,
   H264,
@@ -118,7 +118,7 @@ enum VideoCodec {
 };
 
 // See media/base/video_decoder_config.h for descriptions.
-// Kept in sync with media::VideoCodecProfile via COMPILE_ASSERTs.
+// Kept in sync with media::VideoCodecProfile via static_asserts.
 enum VideoCodecProfile {
   VIDEO_CODEC_PROFILE_UNKNOWN = -1,
   VIDEO_CODEC_PROFILE_MIN = VIDEO_CODEC_PROFILE_UNKNOWN,

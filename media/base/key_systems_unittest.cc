@@ -61,8 +61,8 @@ enum TestCodec {
   TEST_CODEC_FOO_ALL = TEST_CODEC_FOO_AUDIO_ALL | TEST_CODEC_FOO_VIDEO_ALL
 };
 
-COMPILE_ASSERT((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
-               test_codec_masks_should_only_use_invalid_codec_masks);
+static_assert((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
+              "test codec masks should only use invalid codec masks");
 
 // Adds test container and codec masks.
 // This function must be called after SetMediaClient() if a MediaClient will be

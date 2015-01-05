@@ -31,14 +31,14 @@ enum {
   kTestVideoFrameDefaultDurationInMs = 17
 };
 
-COMPILE_ASSERT(
+static_assert(
     static_cast<int>(kTestAudioFrameDefaultDurationInMs) !=
         static_cast<int>(WebMClusterParser::kDefaultAudioBufferDurationInMs),
-    test_default_is_same_as_estimation_fallback_audio_duration);
-COMPILE_ASSERT(
+    "test default is the same as estimation fallback audio duration");
+static_assert(
     static_cast<int>(kTestVideoFrameDefaultDurationInMs) !=
         static_cast<int>(WebMClusterParser::kDefaultVideoBufferDurationInMs),
-    test_default_is_same_as_estimation_fallback_video_duration);
+    "test default is the same as estimation fallback video duration");
 
 struct BlockInfo {
   int track_num;

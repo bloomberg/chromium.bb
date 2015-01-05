@@ -15,7 +15,7 @@ namespace media {
 
 // Do not change this format.  AddInput() and GetValue() only work with float.
 static const SampleFormat kSampleFormat = kSampleFormatF32;
-COMPILE_ASSERT(kSampleFormat == kSampleFormatF32, invalid_splice_format);
+static_assert(kSampleFormat == kSampleFormatF32, "invalid splice format");
 
 static const int kChannels = 1;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;

@@ -16,9 +16,10 @@ namespace media {
 const int kNumBuffersInOneConfig = 9;
 const int kNumBuffersToReadFirst = 5;
 const int kNumConfigs = 3;
-COMPILE_ASSERT(kNumBuffersToReadFirst < kNumBuffersInOneConfig,
-               do_not_read_too_many_buffers);
-COMPILE_ASSERT(kNumConfigs > 0, need_multiple_configs_to_trigger_config_change);
+static_assert(kNumBuffersToReadFirst < kNumBuffersInOneConfig,
+              "do not read too many buffers");
+static_assert(kNumConfigs > 0,
+              "need multiple configs to trigger config change");
 
 class FakeDemuxerStreamTest : public testing::Test {
  public:

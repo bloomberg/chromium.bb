@@ -60,9 +60,9 @@ AudioInputDevice::AudioInputDevice(
 
   // The correctness of the code depends on the relative values assigned in the
   // State enum.
-  COMPILE_ASSERT(IPC_CLOSED < IDLE, invalid_enum_value_assignment_0);
-  COMPILE_ASSERT(IDLE < CREATING_STREAM, invalid_enum_value_assignment_1);
-  COMPILE_ASSERT(CREATING_STREAM < RECORDING, invalid_enum_value_assignment_2);
+  static_assert(IPC_CLOSED < IDLE, "invalid enum value assignment 0");
+  static_assert(IDLE < CREATING_STREAM, "invalid enum value assignment 1");
+  static_assert(CREATING_STREAM < RECORDING, "invalid enum value assignment 2");
 }
 
 void AudioInputDevice::Initialize(const AudioParameters& params,

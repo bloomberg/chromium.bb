@@ -104,14 +104,14 @@ namespace media {
 
 class BufferedDataSourceHostImpl;
 
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::CORSMode ## name) == \
-                 static_cast<int>(BufferedResourceLoader::k ## name), \
-                 mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(Unspecified);
-COMPILE_ASSERT_MATCHING_ENUM(Anonymous);
-COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
-#undef COMPILE_ASSERT_MATCHING_ENUM
+#define STATIC_ASSERT_MATCHING_ENUM(name) \
+  static_assert(static_cast<int>(WebMediaPlayer::CORSMode ## name) == \
+                static_cast<int>(BufferedResourceLoader::k ## name), \
+                "mismatching enum values: " #name)
+STATIC_ASSERT_MATCHING_ENUM(Unspecified);
+STATIC_ASSERT_MATCHING_ENUM(Anonymous);
+STATIC_ASSERT_MATCHING_ENUM(UseCredentials);
+#undef STATIC_ASSERT_MATCHING_ENUM
 
 #define BIND_TO_RENDER_LOOP(function) \
   (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
@@ -391,14 +391,14 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   pipeline_.SetVolume(volume);
 }
 
-#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
-    COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::webkit_name) == \
-                   static_cast<int>(BufferedDataSource::chromium_name), \
-                   mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(PreloadNone, NONE);
-COMPILE_ASSERT_MATCHING_ENUM(PreloadMetaData, METADATA);
-COMPILE_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
-#undef COMPILE_ASSERT_MATCHING_ENUM
+#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
+    static_assert(static_cast<int>(WebMediaPlayer::webkit_name) == \
+                  static_cast<int>(BufferedDataSource::chromium_name), \
+                  "mismatching enum values: " #webkit_name)
+STATIC_ASSERT_MATCHING_ENUM(PreloadNone, NONE);
+STATIC_ASSERT_MATCHING_ENUM(PreloadMetaData, METADATA);
+STATIC_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
+#undef STATIC_ASSERT_MATCHING_ENUM
 
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __FUNCTION__ << "(" << preload << ")";

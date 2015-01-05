@@ -117,8 +117,8 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     CRAS_CH_SL,
     CRAS_CH_SR
   };
-  COMPILE_ASSERT(arraysize(kChannelMap) == CHANNELS_MAX + 1,
-                 channel_map_size_do_not_match);
+  static_assert(arraysize(kChannelMap) == CHANNELS_MAX + 1,
+                "kChannelMap array size should match");
 
   // If already playing, stop before re-starting.
   if (started_)

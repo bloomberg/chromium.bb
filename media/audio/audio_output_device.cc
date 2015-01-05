@@ -50,10 +50,10 @@ AudioOutputDevice::AudioOutputDevice(
 
   // The correctness of the code depends on the relative values assigned in the
   // State enum.
-  COMPILE_ASSERT(IPC_CLOSED < IDLE, invalid_enum_value_assignment_0);
-  COMPILE_ASSERT(IDLE < CREATING_STREAM, invalid_enum_value_assignment_1);
-  COMPILE_ASSERT(CREATING_STREAM < PAUSED, invalid_enum_value_assignment_2);
-  COMPILE_ASSERT(PAUSED < PLAYING, invalid_enum_value_assignment_3);
+  static_assert(IPC_CLOSED < IDLE, "invalid enum value assignment 0");
+  static_assert(IDLE < CREATING_STREAM, "invalid enum value assignment 1");
+  static_assert(CREATING_STREAM < PAUSED, "invalid enum value assignment 2");
+  static_assert(PAUSED < PLAYING, "invalid enum value assignment 3");
 }
 
 void AudioOutputDevice::InitializeWithSessionId(const AudioParameters& params,

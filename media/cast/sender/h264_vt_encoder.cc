@@ -47,9 +47,9 @@ template <typename NalSizeType>
 void CopyNalsToAnnexB(char* avcc_buffer,
                       const size_t avcc_size,
                       std::string* annexb_buffer) {
-  COMPILE_ASSERT(sizeof(NalSizeType) == 1 || sizeof(NalSizeType) == 2 ||
-                     sizeof(NalSizeType) == 4,
-                 "NAL size type has unsupported size");
+  static_assert(sizeof(NalSizeType) == 1 || sizeof(NalSizeType) == 2 ||
+                    sizeof(NalSizeType) == 4,
+                "NAL size type has unsupported size");
   static const char startcode_3[3] = {0, 0, 1};
   DCHECK(avcc_buffer);
   DCHECK(annexb_buffer);

@@ -242,9 +242,9 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
-  COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                     cdm::ContentDecryptionModule_6::kVersion,
-                 update_code_below);
+  static_assert(cdm::ContentDecryptionModule::kVersion ==
+                    cdm::ContentDecryptionModule_6::kVersion,
+                "update the code below");
 
   // Ensure IsSupportedCdmInterfaceVersion() matches this implementation.
   // Always update this DCHECK when updating this function.
@@ -272,9 +272,9 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 // stub implementations for new or modified methods that the older CDM interface
 // does not have.
 // Also update supported_cdm_versions.h.
-COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                   cdm::ContentDecryptionModule_6::kVersion,
-               ensure_cdm_wrapper_templates_have_old_version_support);
+static_assert(cdm::ContentDecryptionModule::kVersion ==
+                  cdm::ContentDecryptionModule_6::kVersion,
+              "ensure cdm wrapper templates have old version support");
 
 }  // namespace media
 
