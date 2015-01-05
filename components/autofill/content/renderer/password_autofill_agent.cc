@@ -322,6 +322,28 @@ bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
   return false;
 }
 
+// Returns true if there exists a credential suggestion whose username field is
+// an exact match to the current username (not just a prefix).
+bool HasExactMatchSuggestion(const PasswordFormFillData& fill_data,
+                             const base::string16& current_username) {
+  if (fill_data.username_field.value == current_username)
+    return true;
+
+  for (const auto& usernames : fill_data.other_possible_usernames) {
+    for (const auto& username_string : usernames.second) {
+      if (username_string == current_username)
+        return true;
+    }
+  }
+
+  for (const auto& login : fill_data.additional_logins) {
+    if (login.first == current_username)
+      return true;
+  }
+
+  return false;
+}
+
 // This function attempts to fill |username_element| and |password_element|
 // with values from |fill_data|. The |password_element| will only have the
 // |suggestedValue| set, and will be registered for copying that to the real
@@ -469,7 +491,8 @@ bool FillFormOnPasswordReceived(
 
     if (form_has_fillable_username) {
       username_element.setAutofilled(true);
-    } else {
+    } else if (username_element.isNull() ||
+               HasExactMatchSuggestion(fill_data, username_element.value())) {
       password_element.setAutofilled(true);
     }
     return false;
