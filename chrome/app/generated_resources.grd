@@ -6775,6 +6775,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable the zoomed bubble that appears on touchscreens when accidentally touching more than one link at a time.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_NAME" desc="Title for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
+        Enable WiFi credential sync.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_DESCRIPTION" desc="Decription for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
+        Enables synchronizing WiFi network settings across devices. When enabled, the WiFi credential datatype is registered with Chrome Sync, and WiFi credentials are synchronized subject to user preferences. (See also, chrome://settings/syncSetup.)
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

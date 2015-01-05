@@ -2096,6 +2096,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kFillOnAccountSelectChoices)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-wifi-credential-sync",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_NAME,
+    IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableWifiCredentialSync)
+  },
+#endif
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
