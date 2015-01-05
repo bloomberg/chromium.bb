@@ -719,9 +719,6 @@ public:
 #if ENABLE(ASSERT)
     BaseHeapPage* findPageFromAddress(Address);
 #endif
-#if ENABLE(GC_PROFILE_MARKING)
-    const GCInfo* findGCInfoOfLargeObject(Address);
-#endif
 #if ENABLE(GC_PROFILE_HEAP)
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif

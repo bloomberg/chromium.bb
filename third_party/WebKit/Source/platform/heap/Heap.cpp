@@ -749,17 +749,6 @@ BaseHeapPage* ThreadHeap::findPageFromAddress(Address address)
 }
 #endif
 
-#if ENABLE(GC_PROFILE_MARKING)
-const GCInfo* ThreadHeap::findGCInfoOfLargeObject(Address address)
-{
-    for (LargeObject* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
-        if (largeObject->contains(address))
-            return largeObject->heapObjectHeader()->gcInfo();
-    }
-    return nullptr;
-}
-#endif
-
 #if ENABLE(GC_PROFILE_HEAP)
 #define GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD 0
 void ThreadHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
