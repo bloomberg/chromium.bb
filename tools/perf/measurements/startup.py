@@ -15,7 +15,7 @@ class Startup(page_test.PageTest):
   repeat the page set to ensure it's cached.
   """
 
-  def __init__(self, cold=False, action_name_to_run='RunPageInteractions'):
+  def __init__(self, cold=False, action_name_to_run=''):
     super(Startup, self).__init__(needs_browser_restart_after_each_page=True,
                                   action_name_to_run=action_name_to_run)
     self._cold = cold
