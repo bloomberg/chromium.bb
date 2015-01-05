@@ -13,8 +13,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/common/test_util.h"
 
+namespace api_test_utils = extensions::api_test_utils;
 namespace keys = extensions::tabs_constants;
 namespace utils = extension_function_test_utils;
 
@@ -47,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
 
   // The id should always match the last focused window and does not depend
   // on what was passed to RunFunctionAndReturnSingleResult.
-  EXPECT_EQ(focused_window_id, utils::GetInteger(result.get(), "id"));
+  EXPECT_EQ(focused_window_id, api_test_utils::GetInteger(result.get(), "id"));
   base::ListValue* tabs = NULL;
   EXPECT_FALSE(result.get()->GetList(keys::kTabsKey, &tabs));
 
@@ -60,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
 
   // The id should always match the last focused window and does not depend
   // on what was passed to RunFunctionAndReturnSingleResult.
-  EXPECT_EQ(focused_window_id, utils::GetInteger(result.get(), "id"));
+  EXPECT_EQ(focused_window_id, api_test_utils::GetInteger(result.get(), "id"));
   // "populate" was enabled so tabs should be populated.
   EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
 }
@@ -102,8 +104,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
     base::DictionaryValue* result_tab = NULL;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_EQ(focused_window_id, utils::GetInteger(result_tab,
-                                                   keys::kWindowIdKey));
+    EXPECT_EQ(focused_window_id,
+              api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
   }
 
   // Get tabs NOT in the 'last focused' window called from the focused browser.
@@ -119,8 +121,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
     base::DictionaryValue* result_tab = NULL;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_NE(focused_window_id, utils::GetInteger(result_tab,
-                                                   keys::kWindowIdKey));
+    EXPECT_NE(focused_window_id,
+              api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
   }
 }
 

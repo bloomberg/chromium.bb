@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
@@ -415,11 +416,8 @@ class ExtensionMessageBubbleTest : public testing::Test {
       const std::string& data,
       const std::string& id) {
     scoped_ptr<base::DictionaryValue> parsed_manifest(
-        extension_function_test_utils::ParseDictionary(data));
-    return extension_function_test_utils::CreateExtension(
-        location,
-        parsed_manifest.get(),
-        id);
+        api_test_utils::ParseDictionary(data));
+    return api_test_utils::CreateExtension(location, parsed_manifest.get(), id);
   }
 
   ExtensionService* service_;

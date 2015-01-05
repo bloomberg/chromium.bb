@@ -58,24 +58,6 @@ base::ListValue* ParseList(const std::string& data) {
   return list;
 }
 
-base::DictionaryValue* ParseDictionary(
-    const std::string& data) {
-  return extensions::api_test_utils::ParseDictionary(data);
-}
-
-bool GetBoolean(const base::DictionaryValue* val, const std::string& key) {
-  return extensions::api_test_utils::GetBoolean(val, key);
-}
-
-int GetInteger(const base::DictionaryValue* val, const std::string& key) {
-  return extensions::api_test_utils::GetInteger(val, key);
-}
-
-std::string GetString(const base::DictionaryValue* val,
-                      const std::string& key) {
-  return extensions::api_test_utils::GetString(val, key);
-}
-
 base::DictionaryValue* ToDictionary(base::Value* val) {
   EXPECT_TRUE(val);
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, val->GetType());
@@ -91,23 +73,10 @@ base::ListValue* ToList(base::Value* val) {
 scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
     Manifest::Location location) {
   scoped_ptr<base::DictionaryValue> test_extension_value(
-      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
+      extensions::api_test_utils::ParseDictionary(
+          "{\"name\": \"Test\", \"version\": \"1.0\"}"));
   return extensions::api_test_utils::CreateExtension(
       location, test_extension_value.get(), std::string());
-}
-
-scoped_refptr<Extension> CreateExtension(
-    base::DictionaryValue* test_extension_value) {
-  return extensions::api_test_utils::CreateExtension(
-      Manifest::INTERNAL, test_extension_value, std::string());
-}
-
-scoped_refptr<Extension> CreateExtension(
-    Manifest::Location location,
-    base::DictionaryValue* test_extension_value,
-    const std::string& id_input) {
-  return extensions::api_test_utils::CreateExtension(
-      location, test_extension_value, id_input);
 }
 
 bool HasPrivacySensitiveFields(base::DictionaryValue* val) {

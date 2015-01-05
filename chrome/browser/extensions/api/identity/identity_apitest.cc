@@ -41,6 +41,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/test_util.h"
@@ -618,10 +619,10 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
  private:
   scoped_refptr<Extension> CreateExtensionWithEmailPermission() {
     scoped_ptr<base::DictionaryValue> test_extension_value(
-        utils::ParseDictionary(
+        api_test_utils::ParseDictionary(
             "{\"name\": \"Test\", \"version\": \"1.0\", "
             "\"permissions\": [\"identity.email\"]}"));
-    return utils::CreateExtension(test_extension_value.get());
+    return api_test_utils::CreateExtension(test_extension_value.get());
   }
 };
 

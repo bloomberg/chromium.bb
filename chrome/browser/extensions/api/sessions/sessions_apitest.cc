@@ -22,6 +22,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
+#include "extensions/browser/api_test_utils.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -179,10 +180,10 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
 
 void ExtensionSessionsTest::CreateTestExtension() {
   scoped_ptr<base::DictionaryValue> test_extension_value(
-      utils::ParseDictionary(
-      "{\"name\": \"Test\", \"version\": \"1.0\", "
-      "\"permissions\": [\"sessions\", \"tabs\"]}"));
-  extension_ = utils::CreateExtension(test_extension_value.get());
+      api_test_utils::ParseDictionary(
+          "{\"name\": \"Test\", \"version\": \"1.0\", "
+          "\"permissions\": [\"sessions\", \"tabs\"]}"));
+  extension_ = api_test_utils::CreateExtension(test_extension_value.get());
 }
 
 void ExtensionSessionsTest::CreateSessionModels() {
@@ -235,8 +236,8 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
   const base::ListValue* sessions = NULL;
   for (size_t i = 0; i < devices.GetSize(); ++i) {
     EXPECT_TRUE(devices.GetDictionary(i, &device));
-    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
-    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "deviceName"));
+    EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "info"));
+    EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "deviceName"));
     EXPECT_TRUE(device->GetList("sessions", &sessions));
     EXPECT_EQ(num_sessions, sessions->GetSize());
     // Because this test is hurried, really there are only ever 0 or 1
@@ -255,22 +256,23 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
       const base::DictionaryValue* tab = NULL;
       EXPECT_TRUE(tabs->GetDictionary(j, &tab));
       EXPECT_FALSE(tab->HasKey("id"));  // sessions API does not give tab IDs
-      EXPECT_EQ(static_cast<int>(j), utils::GetInteger(tab, "index"));
-      EXPECT_EQ(0, utils::GetInteger(tab, "windowId"));
+      EXPECT_EQ(static_cast<int>(j), api_test_utils::GetInteger(tab, "index"));
+      EXPECT_EQ(0, api_test_utils::GetInteger(tab, "windowId"));
       // Test setup code always sets tab 0 to selected (which means active in
       // extension terminology).
-      EXPECT_EQ(j == 0, utils::GetBoolean(tab, "active"));
+      EXPECT_EQ(j == 0, api_test_utils::GetBoolean(tab, "active"));
       // While selected/highlighted are different to active, and should always
       // be false.
-      EXPECT_FALSE(utils::GetBoolean(tab, "selected"));
-      EXPECT_FALSE(utils::GetBoolean(tab, "highlighted"));
-      EXPECT_FALSE(utils::GetBoolean(tab, "incognito"));
-      EXPECT_TRUE(utils::GetBoolean(tab, "pinned"));
-      EXPECT_EQ("http://foo/1", utils::GetString(tab, "url"));
-      EXPECT_EQ("MyTitle", utils::GetString(tab, "title"));
-      EXPECT_EQ("http://foo/favicon.ico", utils::GetString(tab, "favIconUrl"));
+      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "selected"));
+      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "highlighted"));
+      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "incognito"));
+      EXPECT_TRUE(api_test_utils::GetBoolean(tab, "pinned"));
+      EXPECT_EQ("http://foo/1", api_test_utils::GetString(tab, "url"));
+      EXPECT_EQ("MyTitle", api_test_utils::GetString(tab, "title"));
+      EXPECT_EQ("http://foo/favicon.ico",
+                api_test_utils::GetString(tab, "favIconUrl"));
       EXPECT_EQ(base::StringPrintf("%s.%d", kSessionTags[i], kTabIDs[j]),
-                utils::GetString(tab, "sessionId"));
+                api_test_utils::GetString(tab, "sessionId"));
     }
   }
   return testing::AssertionSuccess();
@@ -336,13 +338,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest,
   EXPECT_TRUE(restored_window_session->GetDictionary("window",
                                                      &restored_window));
   base::DictionaryValue* window = NULL;
-  int restored_id = utils::GetInteger(restored_window, "id");
+  int restored_id = api_test_utils::GetInteger(restored_window, "id");
   for (size_t i = 0; i < windows->GetSize(); ++i) {
     EXPECT_TRUE(windows->GetDictionary(i, &window));
-    if (utils::GetInteger(window, "id") == restored_id)
+    if (api_test_utils::GetInteger(window, "id") == restored_id)
       break;
   }
-  EXPECT_EQ(restored_id, utils::GetInteger(window, "id"));
+  EXPECT_EQ(restored_id, api_test_utils::GetInteger(window, "id"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreForeignSessionInvalidId) {

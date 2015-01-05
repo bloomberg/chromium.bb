@@ -33,14 +33,6 @@ namespace extension_function_test_utils {
 // or not the specified type.
 base::Value* ParseJSON(const std::string& data);
 base::ListValue* ParseList(const std::string& data);
-base::DictionaryValue* ParseDictionary(const std::string& data);
-
-// Get |key| from |val| as the specified type. If |key| does not exist, or is
-// not of the specified type, adds a failure to the current test and returns
-// false, 0, empty string, etc.
-bool GetBoolean(const base::DictionaryValue* val, const std::string& key);
-int GetInteger(const base::DictionaryValue* val, const std::string& key);
-std::string GetString(const base::DictionaryValue* val, const std::string& key);
 
 // If |val| is a dictionary, return it as one, otherwise NULL.
 base::DictionaryValue* ToDictionary(base::Value* val);
@@ -52,16 +44,6 @@ base::ListValue* ToList(base::Value* val);
 // to an ExtensionFunction before running.
 scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
     extensions::Manifest::Location location);
-
-scoped_refptr<extensions::Extension> CreateExtension(
-    extensions::Manifest::Location location,
-    base::DictionaryValue* test_extension_value,
-    const std::string& id_input);
-
-// Creates an extension instance with a specified extension value that can be
-// attached to an ExtensionFunction before running.
-scoped_refptr<extensions::Extension> CreateExtension(
-    base::DictionaryValue* test_extension_value);
 
 // Returns true if |val| contains privacy information, e.g. url,
 // title, and faviconUrl.
