@@ -27,12 +27,12 @@ using blink::WebTextCheckingResult;
 using blink::WebTextDecorationType;
 using blink::WebVector;
 
-COMPILE_ASSERT(int(blink::WebTextDecorationTypeSpelling) ==
-               int(SpellCheckResult::SPELLING), mismatching_enums);
-COMPILE_ASSERT(int(blink::WebTextDecorationTypeGrammar) ==
-               int(SpellCheckResult::GRAMMAR), mismatching_enums);
-COMPILE_ASSERT(int(blink::WebTextDecorationTypeInvisibleSpellcheck) ==
-               int(SpellCheckResult::INVISIBLE), mismatching_enums);
+static_assert(int(blink::WebTextDecorationTypeSpelling) ==
+              int(SpellCheckResult::SPELLING), "mismatching enums");
+static_assert(int(blink::WebTextDecorationTypeGrammar) ==
+              int(SpellCheckResult::GRAMMAR), "mismatching enums");
+static_assert(int(blink::WebTextDecorationTypeInvisibleSpellcheck) ==
+              int(SpellCheckResult::INVISIBLE), "mismatching enums");
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,

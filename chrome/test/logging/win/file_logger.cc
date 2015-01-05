@@ -53,9 +53,9 @@ const struct {
   { &base::debug::kChromeTraceProviderName, 255, 0 }
 };
 
-COMPILE_ASSERT((1 << arraysize(kProviders)) - 1 ==
-                   FileLogger::kAllEventProviders,
-               size_of_kProviders_is_inconsistent_with_kAllEventProviders);
+static_assert((1 << arraysize(kProviders)) - 1 ==
+                  FileLogger::kAllEventProviders,
+              "size of kProviders is inconsistent with kAllEventProviders");
 
 }  // namespace
 

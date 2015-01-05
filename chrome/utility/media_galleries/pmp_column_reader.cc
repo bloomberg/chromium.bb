@@ -15,7 +15,7 @@ namespace picasa {
 
 namespace {
 
-COMPILE_ASSERT(sizeof(double) == 8, double_must_be_8_bytes_long);
+static_assert(sizeof(double) == 8, "double must be 8 bytes long");
 const int64 kPmpMaxFilesize = 50*1024*1024;  // Arbitrary maximum of 50 MB.
 
 }  // namespace

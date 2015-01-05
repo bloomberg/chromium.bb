@@ -89,8 +89,8 @@ TEST(JtlParser, CompactingMultipleLines) {
   const char kSourceCode[] = "a\nbb\n \nccc  \n\n  d( \n e \n )";
   const char kCompactedSourceCode[] = "abbcccd(e)";
   const size_t kLineNumbers[] = {0u, 1u, 1u, 3u, 3u, 3u, 5u, 5u, 6u, 7u};
-  COMPILE_ASSERT(arraysize(kCompactedSourceCode) == arraysize(kLineNumbers) + 1,
-                 mismatched_test_data);
+  static_assert(arraysize(kCompactedSourceCode) == arraysize(kLineNumbers) + 1,
+                "mismatched test data");
 
   scoped_ptr<JtlParser> parser(CreateParserFromVerboseText(kSourceCode));
   EXPECT_EQ(kCompactedSourceCode, parser->compacted_source());
@@ -108,8 +108,8 @@ TEST(JtlParser, CompactingMultipleLinesWithComments) {
       " cd //";
   const char kCompactedSourceCode[] = "a//bcd";
   const size_t kLineNumbers[] = {0u, 0u, 0u, 0u, 3u, 3u};
-  COMPILE_ASSERT(arraysize(kCompactedSourceCode) == arraysize(kLineNumbers) + 1,
-                 mismatched_test_data);
+  static_assert(arraysize(kCompactedSourceCode) == arraysize(kLineNumbers) + 1,
+                "mismatched test data");
 
   scoped_ptr<JtlParser> parser(CreateParserFromVerboseText(kSourceCode));
   EXPECT_EQ(kCompactedSourceCode, parser->compacted_source());

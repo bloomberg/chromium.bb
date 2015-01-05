@@ -25,8 +25,10 @@ namespace {
   // 24 is the observed limits for OSX system checker.
   const size_t kMaxSuggestLen = 24;
 
-  COMPILE_ASSERT(kMaxCheckedLen <= size_t(MAXWORDLEN), MaxCheckedLen_too_long);
-  COMPILE_ASSERT(kMaxSuggestLen <= kMaxCheckedLen, MaxSuggestLen_too_long);
+  static_assert(kMaxCheckedLen <= size_t(MAXWORDLEN),
+                "MaxCheckedLen too long");
+  static_assert(kMaxSuggestLen <= kMaxCheckedLen,
+                "MaxSuggestLen too long");
 }  // namespace
 
 #if !defined(OS_MACOSX)
