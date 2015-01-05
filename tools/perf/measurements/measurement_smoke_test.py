@@ -25,9 +25,9 @@ _ACTION_NAMES_WHITE_LIST = (
 
 def _GetAllPossiblePageTestInstances():
   page_test_instances = []
-  benchmarks_dir = os.path.dirname(__file__)
-  top_level_dir = os.path.dirname(benchmarks_dir)
-  measurements_dir = os.path.join(top_level_dir, 'measurements')
+  measurements_dir = os.path.dirname(__file__)
+  top_level_dir = os.path.dirname(measurements_dir)
+  benchmarks_dir = os.path.join(top_level_dir, 'benchmarks')
 
   # Get all page test instances from measurement classes that are directly
   # constructable
@@ -44,9 +44,16 @@ def _GetAllPossiblePageTestInstances():
   # Note: since this depends on the command line options, there is no guaranteed
   # that this will generate all possible page test instances but it's worth
   # enough for smoke test purpose.
-  options = options_for_unittests.GetCopy()
+
   for benchmark_class in all_benchmarks_classes:
+    options = options_for_unittests.GetCopy()
+    parser = options.CreateParser()
+    benchmark_class.AddCommandLineArgs(parser)
+    benchmark_module.AddCommandLineArgs(parser)
+    benchmark_class.SetArgumentDefaults(parser)
+    options.MergeDefaultValues(parser.get_default_values())
     page_test_instances.append(benchmark_class().CreatePageTest(options))
+
   return page_test_instances
 
 
@@ -58,7 +65,7 @@ class MeasurementSmokeTest(unittest.TestCase):
       if test.action_name_to_run not in _ACTION_NAMES_WHITE_LIST:
         invalid_tests.append(test)
         logging.error('Page test %s has invalid action_name_to_run: %s' %
-                     (test.__class__.__name__, test.action_name_to_run))
+                     (test.__class__.__name__, repr(test.action_name_to_run)))
     self.assertFalse(
       invalid_tests,
       'New page tests with invalid action_name_to_run found. Please only use '
