@@ -126,19 +126,32 @@ TEST(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
 // Loads up a test ECDH public and private key for P-521. The keys
 // come from different key pairs, and can be used for key derivation of up to
 // 528 bits.
-void LoadTestKeys(blink::WebCryptoKey* public_key,
-                  blink::WebCryptoKey* private_key) {
-  // Assume that the 7th key in the test data is for P-521.
+::testing::AssertionResult LoadTestKeys(blink::WebCryptoKey* public_key,
+                                        blink::WebCryptoKey* private_key) {
   scoped_ptr<base::ListValue> tests;
-  ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
+  if (!ReadJsonTestFileToList("ecdh.json", &tests))
+    return ::testing::AssertionFailure() << "Failed loading ecdh.json";
 
-  const base::DictionaryValue* test;
-  ASSERT_TRUE(tests->GetDictionary(6, &test));
+  const base::DictionaryValue* test = NULL;
+  bool valid_p521_keys = false;
+  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+    SCOPED_TRACE(test_index);
+    EXPECT_TRUE(tests->GetDictionary(test_index, &test));
+    test->GetBoolean("valid_p521_keys", &valid_p521_keys);
+    if (valid_p521_keys)
+      break;
+  }
+  if (!valid_p521_keys) {
+    return ::testing::AssertionFailure()
+           << "The P-521 test are missing in ecdh.json";
+  }
 
   ImportKeysFromTest(test, public_key, private_key);
 
-  ASSERT_EQ(blink::WebCryptoNamedCurveP521,
+  EXPECT_EQ(blink::WebCryptoNamedCurveP521,
             public_key->algorithm().ecParams()->namedCurve());
+
+  return ::testing::AssertionSuccess();
 }
 
 // Try deriving an AES key of length 129 bits.
@@ -148,7 +161,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyBadAesLength) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
@@ -166,7 +179,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyUnsupportedAesLength) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
@@ -184,7 +197,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyZeroLengthHmac) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
@@ -204,7 +217,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
@@ -237,7 +250,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyHmacSha256NoLength) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
@@ -276,7 +289,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyHmacSha512NoLength) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
@@ -296,7 +309,7 @@ TEST(WebCryptoEcdhTest, DeriveKeyAes128) {
 
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
-  LoadTestKeys(&public_key, &base_key);
+  ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
 
   blink::WebCryptoKey derived_key;
 
