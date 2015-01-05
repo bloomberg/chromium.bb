@@ -184,10 +184,6 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
-  BooleanPrefMember* printing_enabled() const {
-    return &printing_enabled_;
-  }
-
   BooleanPrefMember* sync_disabled() const {
     return &sync_disabled_;
   }
@@ -620,7 +616,6 @@ class ProfileIOData {
   mutable BooleanPrefMember force_google_safesearch_;
   mutable BooleanPrefMember force_youtube_safety_mode_;
   mutable BooleanPrefMember safe_browsing_enabled_;
-  mutable BooleanPrefMember printing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;
   mutable IntegerPrefMember network_prediction_options_;
