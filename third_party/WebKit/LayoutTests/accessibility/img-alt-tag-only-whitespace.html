@@ -22,8 +22,8 @@
 
         document.getElementById("images").focus();
         var imagesGroup = accessibilityController.focusedElement;
-        shouldBe("imagesGroup.childrenCount", "1");
-        console.log("Image description: " + imagesGroup.childAtIndex(0).description);
+        shouldBe("imagesGroup.childrenCount", "4");
+        console.log("Image description: " + imagesGroup.childAtIndex(2).description);
     }
 
 </script>

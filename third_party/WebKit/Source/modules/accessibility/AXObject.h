@@ -167,6 +167,7 @@ enum AccessibilityRole {
     TreeRole,
     UserInterfaceTooltipRole,
     WebAreaRole,
+    LineBreakRole,
     WindowRole,
     NumRoles
 };

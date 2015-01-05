@@ -185,6 +185,7 @@ enum WebAXRole {
     WebAXRoleTree,
     WebAXRoleUserInterfaceTooltip,
     WebAXRoleWebArea,
+    WebAXRoleLineBreak,
     WebAXRoleWindow,
 };
 
