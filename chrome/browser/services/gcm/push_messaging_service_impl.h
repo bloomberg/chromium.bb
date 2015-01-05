@@ -68,12 +68,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       const content::PushMessagingService::UnregisterCallback&) override;
-  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
-  // https://crbug.com/389194
-  blink::WebPushPermissionStatus GetPermissionStatus(
-      const GURL& requesting_origin,
-      int renderer_id,
-      int render_frame_id) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;

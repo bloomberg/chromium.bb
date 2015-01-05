@@ -57,14 +57,6 @@ void LayoutTestPushMessagingService::RegisterFromWorker(
 blink::WebPushPermissionStatus
 LayoutTestPushMessagingService::GetPermissionStatus(
     const GURL& requesting_origin,
-    int renderer_id,
-    int render_frame_id) {
-  return GetPermissionStatus(requesting_origin, requesting_origin);
-}
-
-blink::WebPushPermissionStatus
-LayoutTestPushMessagingService::GetPermissionStatus(
-    const GURL& requesting_origin,
     const GURL& embedding_origin) {
   const auto& it = permission_map_.find(requesting_origin);
   if (it == permission_map_.end())
