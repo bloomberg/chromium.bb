@@ -302,20 +302,6 @@ private:
     ThreadCondition m_resume;
 };
 
-// Statically unfold the heap initialization loop so the compiler statically
-// knows the heap index when using HeapIndexTrait.
-template<int num> struct InitializeHeaps {
-    static const int index = num - 1;
-    static void init(ThreadHeap** heaps, ThreadState* state)
-    {
-        InitializeHeaps<index>::init(heaps, state);
-        heaps[index] = new ThreadHeap(state, index);
-    }
-};
-template<> struct InitializeHeaps<0> {
-    static void init(ThreadHeap** heaps, ThreadState* state) { }
-};
-
 ThreadState::ThreadState()
     : m_thread(currentThread())
     , m_persistents(adoptPtr(new PersistentAnchor()))
@@ -345,7 +331,8 @@ ThreadState::ThreadState()
         s_mainThreadUnderestimatedStackSize = getUnderestimatedStackSize() - sizeof(void*);
     }
 
-    InitializeHeaps<NumberOfHeaps>::init(m_heaps, this);
+    for (int heapIndex = 0; heapIndex < NumberOfHeaps; heapIndex++)
+        m_heaps[heapIndex] = new ThreadHeap(this, heapIndex);
 
     m_weakCallbackStack = new CallbackStack();
 }

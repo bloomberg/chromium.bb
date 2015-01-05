@@ -51,16 +51,17 @@ namespace blink {
 
 class BaseHeap;
 class BaseHeapPage;
+class CallbackStack;
 struct GCInfo;
 class HeapObjectHeader;
+class PageMemoryRegion;
 class PageMemory;
 class PersistentNode;
-class Visitor;
 class SafePointBarrier;
 class SafePointAwareMutexLocker;
 class ThreadHeap;
-class CallbackStack;
-class PageMemoryRegion;
+class ThreadState;
+class Visitor;
 
 using Address = uint8_t*;
 
@@ -165,11 +166,10 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 //
 // To create a new typed heap add a H(<ClassName>) to the
 // FOR_EACH_TYPED_HEAP macro below.
-#define FOR_EACH_TYPED_HEAP(H)  \
-    H(Node) \
-    H(RenderObject) \
+#define FOR_EACH_TYPED_HEAP(H)              \
+    H(Node)                                 \
+    H(RenderObject)                         \
     H(CSSValue)
-
 
 #define TypedHeapEnumName(Type) Type##Heap,
 
@@ -185,87 +185,6 @@ enum TypedHeaps {
     // Values used for iteration of heap segments.
     NumberOfHeaps,
 };
-
-// Base implementation for HeapIndexTrait found below.
-template<int heapIndex>
-struct HeapIndexTraitBase {
-    static int index(size_t)
-    {
-        return heapIndex;
-    }
-};
-
-class ThreadState;
-
-// We use four heaps for general type objects depending on their object sizes.
-// Objects whose size is 1 - 3 words go to the first general type heap.
-// Objects whose size is 4 - 7 words go to the second general type heap.
-// Objects whose size is 8 - 15 words go to the third general type heap.
-// Objects whose size is more than 15 words go to the fourth general type heap.
-template<int heapIndex>
-struct GeneralHeapIndexTraitBase {
-    static int index(size_t size)
-    {
-        static const int wordSize = sizeof(void*);
-        int generalHeapOffset = 0;
-        if (size < 8 * wordSize) {
-            if (size < 4 * wordSize)
-                generalHeapOffset = 0;
-            else
-                generalHeapOffset = 1;
-        } else {
-            if (size < 16 * wordSize)
-                generalHeapOffset = 2;
-            else
-                generalHeapOffset = 3;
-        }
-        return heapIndex + generalHeapOffset;
-    }
-};
-
-// HeapIndexTrait defines properties for each heap in the TypesHeaps enum.
-template<int index>
-struct HeapIndexTrait;
-
-template<>
-struct HeapIndexTrait<General1Heap> : public GeneralHeapIndexTraitBase<General1Heap> { };
-template<>
-struct HeapIndexTrait<General2Heap> : public GeneralHeapIndexTraitBase<General2Heap> { };
-template<>
-struct HeapIndexTrait<General3Heap> : public GeneralHeapIndexTraitBase<General3Heap> { };
-template<>
-struct HeapIndexTrait<General4Heap> : public GeneralHeapIndexTraitBase<General4Heap> { };
-
-template<>
-struct HeapIndexTrait<VectorBackingHeap> : public HeapIndexTraitBase<VectorBackingHeap> { };
-template<>
-struct HeapIndexTrait<InlineVectorBackingHeap> : public HeapIndexTraitBase<InlineVectorBackingHeap> { };
-template<>
-struct HeapIndexTrait<HashTableBackingHeap> : public HeapIndexTraitBase<HashTableBackingHeap> { };
-
-#define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
-    template<>                                                                  \
-    struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
-    };
-FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_INDEX_TRAIT)
-#undef DEFINE_TYPED_HEAP_INDEX_TRAIT
-
-// HeapTypeTrait defines which heap to use for particular types.
-// By default objects are allocated in one of the general heaps
-// depending on object size.
-template<typename T>
-struct HeapTypeTrait : public HeapIndexTrait<General1Heap> { };
-
-// We don't have any type-based mappings to the VectorBackingHeap
-// and HashTableBackingHeap.
-
-// Each typed-heap maps the respective type to its heap.
-#define DEFINE_TYPED_HEAP_TRAIT(Type)                                   \
-    class Type;                                                         \
-    template<>                                                          \
-    struct HeapTypeTrait<class Type> : public HeapIndexTrait<Type##Heap> { };
-FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
-#undef DEFINE_TYPED_HEAP_TRAIT
 
 class PLATFORM_EXPORT ThreadState {
     WTF_MAKE_NONCOPYABLE(ThreadState);

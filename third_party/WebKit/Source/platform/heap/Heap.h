@@ -871,10 +871,8 @@ public:
     static bool weakTableRegistered(const void*);
 #endif
 
-    template<typename T, typename HeapTraits> static Address allocate(size_t);
-    // FIXME: remove this once c++11 is allowed everywhere:
+    template<typename T> static Address allocateOnHeapIndex(size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocate(size_t);
-
     template<typename T> static Address reallocate(void* previous, size_t);
 
     static void collectGarbage(ThreadState::StackState, ThreadState::GCType = ThreadState::ForcedGC);
@@ -1335,19 +1333,49 @@ Address ThreadHeap::allocate(size_t size, size_t gcInfoIndex)
     return allocateSize(allocationSizeFromSize(size), gcInfoIndex);
 }
 
-template<typename T, typename HeapTraits>
-Address Heap::allocate(size_t size)
+// We use four heaps for general type objects depending on their object sizes.
+// Objects whose size is 1 - 3 words go to the first general type heap.
+// Objects whose size is 4 - 7 words go to the second general type heap.
+// Objects whose size is 8 - 15 words go to the third general type heap.
+// Objects whose size is more than 15 words go to the fourth general type heap.
+template<typename T>
+struct HeapIndexTrait {
+    static int index(size_t size)
+    {
+        static const int wordSize = sizeof(void*);
+        if (size < 8 * wordSize) {
+            if (size < 4 * wordSize)
+                return General1Heap;
+            return General2Heap;
+        }
+        if (size < 16 * wordSize)
+            return General3Heap;
+        return General4Heap;
+    };
+};
+
+// FIXME: The forward declaration is layering violation.
+#define DEFINE_TYPED_HEAP_TRAIT(Type)                \
+    class Type;                                      \
+    template<>                                       \
+    struct HeapIndexTrait<class Type> {              \
+    static int index(size_t) { return Type##Heap; }; \
+    };
+FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
+#undef DEFINE_TYPED_HEAP_TRAIT
+
+template<typename T>
+Address Heap::allocateOnHeapIndex(size_t size, int heapIndex, size_t gcInfoIndex)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
-    int heapIndex = HeapTraits::index(size);
-    return state->heap(heapIndex)->allocate(size, GCInfoTrait<T>::index());
+    return state->heap(heapIndex)->allocate(size, gcInfoIndex);
 }
 
 template<typename T>
 Address Heap::allocate(size_t size)
 {
-    return allocate<T, HeapTypeTrait<T>>(size);
+    return allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1358,16 +1386,13 @@ Address Heap::reallocate(void* previous, size_t size)
         // malloc(0).  In both cases we do nothing and return nullptr.
         return nullptr;
     }
-    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    ASSERT(state->isAllocationAllowed());
-    int heapIndex = HeapTypeTrait<T>::index(size);
-    ASSERT(General1Heap <= heapIndex && heapIndex <= General4Heap);
-    Address address = state->heap(heapIndex)->allocate(size, GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
     }
     HeapObjectHeader* previousHeader = HeapObjectHeader::fromPayload(previous);
+    // FIXME: We don't support reallocate() for finalizable objects.
     ASSERT(!Heap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
     ASSERT(previousHeader->gcInfoIndex() == GCInfoTrait<T>::index());
     size_t copySize = previousHeader->payloadSize();
@@ -1399,7 +1424,8 @@ public:
     template <typename T>
     static T* allocateVectorBacking(size_t size)
     {
-        return reinterpret_cast<T*>(Heap::allocate<HeapVectorBacking<T, VectorTraits<T>>, HeapIndexTrait<VectorBackingHeap>>(size));
+        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, VectorBackingHeap, gcInfoIndex));
     }
     PLATFORM_EXPORT static void freeVectorBacking(void* address);
     PLATFORM_EXPORT static bool expandVectorBacking(void*, size_t);
@@ -1411,7 +1437,8 @@ public:
     template <typename T>
     static T* allocateInlineVectorBacking(size_t size)
     {
-        return reinterpret_cast<T*>(Heap::allocate<HeapVectorBacking<T, VectorTraits<T>>, HeapIndexTrait<InlineVectorBackingHeap>>(size));
+        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, InlineVectorBackingHeap, gcInfoIndex));
     }
     PLATFORM_EXPORT static void freeInlineVectorBacking(void* address);
     PLATFORM_EXPORT static bool expandInlineVectorBacking(void*, size_t);
@@ -1425,7 +1452,8 @@ public:
     template <typename T, typename HashTable>
     static T* allocateHashTableBacking(size_t size)
     {
-        return reinterpret_cast<T*>(Heap::allocate<HeapHashTableBacking<HashTable>, HeapIndexTrait<HashTableBackingHeap>>(size));
+        size_t gcInfoIndex = GCInfoTrait<HeapHashTableBacking<HashTable>>::index();
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex<T>(size, HashTableBackingHeap, gcInfoIndex));
     }
     template <typename T, typename HashTable>
     static T* allocateZeroedHashTableBacking(size_t size)
@@ -1522,12 +1550,9 @@ public:
     }
 
 private:
-    template<typename HeapTrait>
-    static void backingFree(void*);
-    template<typename HeapTrait>
-    static bool backingExpand(void*, size_t);
-    template<typename HeapTrait>
-    static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
+    static void backingFree(void*, int heapIndex);
+    static bool backingExpand(void*, size_t, int heapIndex);
+    static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize, int heapIndex);
     PLATFORM_EXPORT static void shrinkVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     PLATFORM_EXPORT static void shrinkInlineVectorBackingInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 

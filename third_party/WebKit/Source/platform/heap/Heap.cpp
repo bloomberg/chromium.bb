@@ -2415,8 +2415,7 @@ size_t Heap::objectPayloadSizeForTesting()
     return objectPayloadSize;
 }
 
-template<typename HeapTrait>
-void HeapAllocator::backingFree(void* address)
+void HeapAllocator::backingFree(void* address, int heapIndex)
 {
     ThreadState* state = ThreadState::current();
     if (!address || state->isInGC())
@@ -2433,28 +2432,25 @@ void HeapAllocator::backingFree(void* address)
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
-
-    int heapIndex = HeapTrait::index(header->payloadSize());
     state->heap(heapIndex)->promptlyFreeObject(header);
 }
 
 void HeapAllocator::freeVectorBacking(void* address)
 {
-    backingFree<HeapIndexTrait<VectorBackingHeap>>(address);
+    backingFree(address, VectorBackingHeap);
 }
 
 void HeapAllocator::freeInlineVectorBacking(void* address)
 {
-    backingFree<HeapIndexTrait<InlineVectorBackingHeap>>(address);
+    backingFree(address, InlineVectorBackingHeap);
 }
 
 void HeapAllocator::freeHashTableBacking(void* address)
 {
-    backingFree<HeapIndexTrait<HashTableBackingHeap>>(address);
+    backingFree(address, HashTableBackingHeap);
 }
 
-template<typename HeapTrait>
-bool HeapAllocator::backingExpand(void* address, size_t newSize)
+bool HeapAllocator::backingExpand(void* address, size_t newSize, int heapIndex)
 {
     ThreadState* state = ThreadState::current();
     if (!address || state->isInGC())
@@ -2470,23 +2466,20 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
-
-    int heapIndex = HeapTrait::index(header->payloadSize());
     return state->heap(heapIndex)->expandObject(header, newSize);
 }
 
 bool HeapAllocator::expandVectorBacking(void* address, size_t newSize)
 {
-    return backingExpand<HeapIndexTrait<VectorBackingHeap>>(address, newSize);
+    return backingExpand(address, newSize, VectorBackingHeap);
 }
 
 bool HeapAllocator::expandInlineVectorBacking(void* address, size_t newSize)
 {
-    return backingExpand<HeapIndexTrait<InlineVectorBackingHeap>>(address, newSize);
+    return backingExpand(address, newSize, InlineVectorBackingHeap);
 }
 
-template<typename HeapTraits>
-void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize, int heapIndex)
 {
     // We shrink the object only if the shrinking will make a non-small
     // prompt-free block.
@@ -2514,19 +2507,17 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
-
-    int heapIndex = HeapTraits::index(header->payloadSize());
     state->heap(heapIndex)->shrinkObject(header, quantizedShrunkSize);
 }
 
 void HeapAllocator::shrinkVectorBackingInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
-    backingShrink<HeapIndexTrait<VectorBackingHeap>>(address, quantizedCurrentSize, quantizedShrunkSize);
+    backingShrink(address, quantizedCurrentSize, quantizedShrunkSize, VectorBackingHeap);
 }
 
 void HeapAllocator::shrinkInlineVectorBackingInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
-    backingShrink<HeapIndexTrait<InlineVectorBackingHeap>>(address, quantizedCurrentSize, quantizedShrunkSize);
+    backingShrink(address, quantizedCurrentSize, quantizedShrunkSize, InlineVectorBackingHeap);
 }
 
 BaseHeapPage* Heap::lookup(Address address)
