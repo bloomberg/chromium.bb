@@ -146,6 +146,7 @@ crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/clip.html [ ImageOnlyFa
 crbug.com/412088 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ ImageOnlyFailure ]
 crbug.com/412088 virtual/slimmingpaint/svg/text/foreignObject-text-clipping-bug.xml [ ImageOnlyFailure ]
 crbug.com/412088 virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
+crbug.com/412088 [ XP ] virtual/slimmingpaint/svg/text/text-align-05-b.svg [ ImageOnlyFailure ]
 crbug.com/412088 virtual/slimmingpaint/svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
@@ -1565,3 +1566,7 @@ crbug.com/445097 inspector-protocol/timeline/timeline-dispatchEvent.html [ Pass 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445955 [ Mac ] web-animations-api/player-cancel-finishes.html [ Pass Failure ]
+
+crbug.com/446261 [ XP ] svg/as-background-image/background-image-preserveaspectRatio-support.html [ NeedsRebaseline ]
+crbug.com/446261 [ XP ] svg/as-background-image/svg-as-background-5.html [ NeedsRebaseline ]
+crbug.com/446261 [ XP ] svg/as-image/img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
