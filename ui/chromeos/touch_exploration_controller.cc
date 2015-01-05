@@ -150,9 +150,10 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   // NULL.
   if (gesture_provider_.get()) {
     ui::TouchEvent mutable_touch_event = touch_event;
-    gesture_provider_->OnTouchEvent(&mutable_touch_event);
-    gesture_provider_->OnSyncTouchEventAck(
-        mutable_touch_event.unique_event_id(), false);
+    if (gesture_provider_->OnTouchEvent(&mutable_touch_event)) {
+      gesture_provider_->OnSyncTouchEventAck(
+          mutable_touch_event.unique_event_id(), false);
+    }
     ProcessGestureEvents();
   }
 

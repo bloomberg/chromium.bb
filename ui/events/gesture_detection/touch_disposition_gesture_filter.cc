@@ -186,14 +186,8 @@ void TouchDispositionGestureFilter::OnTouchEventAckForQueueFront(
 void TouchDispositionGestureFilter::OnTouchEventAckForQueueBack(
     bool event_consumed) {
   // Make sure there is an event to ack.
-  // TODO(tdresser): these should be CHECKs, but currently touch
-  // exploration causes them to fire. See crbug.com/442773 for
-  // details.
-  DCHECK(!IsEmpty());
-  DCHECK(!Tail().empty());
-
-  if (IsEmpty() || Tail().empty())
-    return;
+  CHECK(!IsEmpty());
+  CHECK(!Tail().empty());
 
   Tail().back().Ack(event_consumed);
 
