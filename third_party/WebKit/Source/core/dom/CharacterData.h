@@ -77,7 +77,6 @@ private:
     virtual void setNodeValue(const String&) override final;
     virtual bool isCharacterDataNode() const override final { return true; }
     virtual int maxCharacterOffset() const override final;
-    virtual bool offsetInCharacters() const override final;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource = UpdateFromNonParser, RecalcStyleBehavior = DoNotRecalcStyle);
 
     bool isContainerNode() const = delete; // This will catch anyone doing an unnecessary check.

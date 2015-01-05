@@ -1420,7 +1420,7 @@ void Node::setTextContent(const String& text)
 
 bool Node::offsetInCharacters() const
 {
-    return false;
+    return isCharacterDataNode();
 }
 
 unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesTreatment treatment) const
