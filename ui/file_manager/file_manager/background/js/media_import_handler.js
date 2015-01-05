@@ -31,10 +31,14 @@ importer.ImportRunner.prototype.importFromScanResult;
  * @struct
  *
  * @param {!FileOperationManager} fileOperationManager
+ * @param {!importer.HistoryLoader} historyLoader
  */
-importer.MediaImportHandler = function(fileOperationManager) {
+importer.MediaImportHandler = function(fileOperationManager, historyLoader) {
   /** @private {!FileOperationManager} */
   this.fileOperationManager_ = fileOperationManager;
+
+  /** @private {!importer.HistoryLoader} */
+  this.historyLoader_ = historyLoader;
 
   /** @private {!importer.TaskQueue} */
   this.queue_ = new importer.TaskQueue();
@@ -58,6 +62,7 @@ importer.MediaImportHandler.prototype.importFromScanResult =
   var task = new importer.MediaImportHandler.ImportTask(
       this.generateTaskId_(),
       this.fileOperationManager_,
+      this.historyLoader_,
       scanResult,
       destination);
 
@@ -90,12 +95,18 @@ importer.MediaImportHandler.prototype.generateTaskId_ = function() {
  *
  * @param {string} taskId
  * @param {!FileOperationManager} fileOperationManager
+ * @param {!importer.HistoryLoader} historyLoader
  * @param {!importer.ScanResult} scanResult
  * @param {!importer.MediaImportHandler.DestinationFactory} destination A
  *     function that returns the directory into which media will be imported.
  */
-importer.MediaImportHandler.ImportTask =
-    function(taskId, fileOperationManager, scanResult, destination) {
+importer.MediaImportHandler.ImportTask = function(
+    taskId,
+    fileOperationManager,
+    historyLoader,
+    scanResult,
+    destination) {
+
   importer.TaskQueue.BaseTask.call(this, taskId);
   /** @private {string} */
   this.taskId_ = taskId;
@@ -108,6 +119,9 @@ importer.MediaImportHandler.ImportTask =
 
   /** @private {!FileOperationManager} */
   this.fileOperationManager_ = fileOperationManager;
+
+  /** @private {!importer.HistoryLoader} */
+  this.historyLoader_ = historyLoader;
 
   /** @private {DirectoryEntry} */
   this.destination_ = null;
@@ -160,7 +174,10 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
       entry.name,  // TODO(kenobi): account for duplicate filename
       this.onEntryChanged_.bind(this),
       this.onProgress_.bind(this),
-      completionCallback,
+      function() {
+        completionCallback();
+        this.markAsCopied_(entry);
+      }.bind(this),
       this.onError_.bind(this));
 };
 
@@ -182,6 +199,16 @@ importer.MediaImportHandler.ImportTask.prototype.onEntryChanged_ =
 importer.MediaImportHandler.ImportTask.prototype.onProgress_ =
     function(entry, processedBytes) {
   this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+};
+
+/** @param {!FileEntry} entry */
+importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
+    function(entry) {
+  this.historyLoader_.getHistory().then(
+      /** @param {!importer.ImportHistory} history */
+      function(history) {
+        history.markImported(entry, importer.Destination.GOOGLE_DRIVE);
+      });
 };
 
 /** @private */

@@ -93,7 +93,8 @@ function FileBrowserBackground() {
    */
   this.mediaImportHandler =
       new importer.MediaImportHandler(
-          this.fileOperationManager);
+          this.fileOperationManager,
+          this.historyLoader);
 
   /**
    * Promise of string data.

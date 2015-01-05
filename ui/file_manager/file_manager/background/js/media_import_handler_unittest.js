@@ -11,11 +11,26 @@ var mediaScanner;
 /** @type {!importer.MediaImportHandler} */
 var mediaImporter;
 
+/** @type {!importer.TestImportHistory} */
+var importHistory;
+
 /** @type {!VolumeInfo} */
 var drive;
 
+/** @type {!MockFileSystem} */
+var fileSystem;
+
 /**
- * @type {!Array<!Object>}
+ * @typedef {{
+ *   source: source,
+ *   destination: parent,
+ *   newName: newName
+ * }}
+ */
+var CopyCapture;
+
+/**
+ * @type {!Array<!CopyCapture>}
  */
 var importedMedia = [];
 
@@ -51,31 +66,25 @@ function setUp() {
 
   MockVolumeManager.installMockSingleton(volumeManager);
 
+  importHistory = new importer.TestImportHistory();
   mediaScanner = new TestMediaScanner();
   mediaImporter = new importer.MediaImportHandler(
-      fileOperationManager);
+      fileOperationManager,
+      importHistory);
 }
 
 function testImportMedia(callback) {
-  // Set up a filesystem with some files.
-  var fileSystem = new MockFileSystem('fake-media-volume');
-  var filenames = [
+  var media = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
     '/DCIM/photos0/IMG00002.jpg',
     '/DCIM/photos0/IMG00003.jpg',
     '/DCIM/photos1/IMG00001.jpg',
     '/DCIM/photos1/IMG00002.jpg',
     '/DCIM/photos1/IMG00003.jpg'
-  ];
-  fileSystem.populate(filenames);
-  // Set up a fake destination for the import.
+  ]);
+
   var destinationFileSystem = new MockFileSystem('fake-destination');
   var destination = function() { return destinationFileSystem.root; };
-
-  // Set up some fake media scan results.
-  var media = filenames.map(function(filename) {
-    return fileSystem.entries[filename];
-  });
 
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(scanResult, destination);
@@ -100,11 +109,11 @@ function testImportMedia(callback) {
 
   reportPromise(
       whenImportDone.then(
-        /** @param {!Array<!FileEntry>} importedMedia */
+        /** @param {!Array<!CopyCapture>} importedMedia */
         function(importedMedia) {
           assertEquals(media.length, importedMedia.length);
           importedMedia.forEach(
-            /** @param {!FileEntry} imported */
+            /** @param {!CopyCapture} imported */
             function(imported) {
               // Verify the copied file is one of the expected files.
               assertTrue(media.indexOf(imported.source) >= 0);
@@ -115,4 +124,65 @@ function testImportMedia(callback) {
       callback);
 
   scanResult.finalize();
+}
+
+function testUpdatesHistoryAfterImport(callback) {
+  var entries = setupFileSystem([
+    '/DCIM/photos0/IMG00001.jpg',
+    '/DCIM/photos1/IMG00003.jpg'
+  ]);
+
+  var destinationFileSystem = new MockFileSystem('fake-destination');
+  var destination = function() { return destinationFileSystem.root; };
+
+  var scanResult = new TestScanResult(entries);
+  var importTask = mediaImporter.importFromScanResult(scanResult, destination);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.SUCCESS:
+                  resolve(importedMedia);
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
+
+  reportPromise(
+      whenImportDone.then(
+        /** @param {!Array<!CopyCapture>} importedMedia */
+        function(importedMedia) {
+          importedMedia.forEach(
+              /** @param {!CopyCapture} */
+              function(capture) {
+                importHistory.assertImported(
+                    capture.source, importer.Destination.GOOGLE_DRIVE);
+              });
+        }),
+      callback);
+
+  scanResult.finalize();
+}
+
+/**
+ * @param {!Array.<string>} fileNames
+ * @return {!Array.<!Entry>}
+ */
+function setupFileSystem(fileNames) {
+  // Set up a filesystem with some files.
+  fileSystem = new MockFileSystem('fake-media-volume');
+  fileSystem.populate(fileNames);
+
+  return fileNames.map(
+      function(filename) {
+        return fileSystem.entries[filename];
+      });
 }

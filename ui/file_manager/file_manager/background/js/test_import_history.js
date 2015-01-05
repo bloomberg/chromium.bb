@@ -15,10 +15,7 @@ var importer = importer || {};
  * @implements {importer.ImportHistory}
  */
 importer.TestImportHistory = function() {
-  /**
-   * List of paths that should be considered imported.
-   * @type {!Array.<string>}
-   */
+  /** @type {!Object.<string, Array.<string>>} */
   this.importedPaths = {};
 };
 
@@ -28,13 +25,33 @@ importer.TestImportHistory.prototype.getHistory =
   return Promise.resolve(this);
 };
 
+/**
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ */
+importer.TestImportHistory.prototype.assertImported =
+    function(entry, destination) {
+  assertTrue(this.wasImported_(entry, destination));
+};
+
+/**
+ * Fully synchronous version of wasImported.
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ * @return {boolean}
+ */
+importer.TestImportHistory.prototype.wasImported_ =
+    function(entry, destination) {
+  var path = entry.fullPath;
+  return path in this.importedPaths &&
+      this.importedPaths[path].indexOf(destination) > -1;
+};
+
 /** @override */
 importer.TestImportHistory.prototype.wasImported =
     function(entry, destination) {
   var path = entry.fullPath;
-  return Promise.resolve(
-      path in this.importedPaths &&
-      this.importedPaths[path].indexOf(destination) > -1);
+  return Promise.resolve(this.wasImported_(entry, destination));
 };
 
 /** @override */
