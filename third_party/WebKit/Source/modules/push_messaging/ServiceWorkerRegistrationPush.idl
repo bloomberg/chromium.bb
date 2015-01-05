@@ -7,6 +7,5 @@
 [
     RuntimeEnabled=PushMessaging,
 ] partial interface ServiceWorkerRegistration {
-    // FIXME: this may be renamed depending on the result of https://github.com/w3c/push-api/issues/47
     readonly attribute PushManager pushManager;
 };
