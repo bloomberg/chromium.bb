@@ -10,6 +10,7 @@
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthPoint3DStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
@@ -137,7 +138,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             return VisibilityStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
         }
         break;
-
     case CSSPropertyFill:
     case CSSPropertyStroke:
     case CSSPropertyBackgroundColor:
@@ -179,7 +179,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         // FIXME: Handle 2D origins.
         useDefaultStyleInterpolation = false;
         break;
-
+    case CSSPropertyWebkitMaskBoxImageSlice:
+        if (LengthBoxStyleInterpolation::matchingFill(*toCSSValue, *fromCSSValue) && LengthBoxStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
+            return LengthBoxStyleInterpolation::createFromBorderImageSlice(*fromCSSValue, *toCSSValue, property);
+        break;
     default:
         useDefaultStyleInterpolation = false;
         break;

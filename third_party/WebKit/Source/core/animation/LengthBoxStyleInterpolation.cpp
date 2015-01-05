@@ -45,12 +45,56 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueT
 
 void LengthBoxStyleInterpolation::apply(StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_id, state, interpolableValueToLengthBox(m_cachedValue.get()).get());
+    if (m_id == CSSPropertyWebkitMaskBoxImageSlice)
+        StyleBuilder::applyProperty(m_id, state, interpolableValueToBorderImageSlice(m_cachedValue.get(), m_fill).get());
+    else
+        StyleBuilder::applyProperty(m_id, state, interpolableValueToLengthBox(m_cachedValue.get()).get());
 }
 
 void LengthBoxStyleInterpolation::trace(Visitor* visitor)
 {
     StyleInterpolation::trace(visitor);
+}
+
+bool LengthBoxStyleInterpolation::matchingFill(CSSValue& start, CSSValue& end)
+{
+    return toCSSBorderImageSliceValue(start).m_fill == toCSSBorderImageSliceValue(end).m_fill;
+}
+
+bool LengthBoxStyleInterpolation::canCreateFromBorderImageSlice(CSSValue& value)
+{
+    return value.isBorderImageSliceValue() && toCSSBorderImageSliceValue(value).slices();
+}
+
+PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::borderImageSlicetoInterpolableValue(CSSValue& value)
+{
+    const int numberOfSides = 4;
+    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(numberOfSides);
+    Quad* quad = toCSSBorderImageSliceValue(value).slices();
+    CSSPrimitiveValue* side[numberOfSides] = { quad->left(), quad->right(), quad->top(), quad->bottom() };
+
+    for (size_t i = 0; i < numberOfSides; i++) {
+        result->set(i, LengthStyleInterpolation::lengthToInterpolableValue(*side[i]));
+    }
+    return result.release();
+}
+
+static inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> toPrimitiveValue(PassRefPtrWillBeRawPtr<CSSValue> value)
+{
+    return adoptRef(toCSSPrimitiveValue(value.leakRef()));
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueToBorderImageSlice(InterpolableValue* value, bool fill)
+{
+    InterpolableList* lengthBox = toInterpolableList(value);
+    RefPtrWillBeRawPtr<Quad> quad = Quad::create();
+
+    quad->setLeft(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(0), ValueRangeNonNegative)));
+    quad->setRight(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(1), ValueRangeNonNegative)));
+    quad->setTop(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(2), ValueRangeNonNegative)));
+    quad->setBottom(toPrimitiveValue(LengthStyleInterpolation::interpolableValueToLength(lengthBox->get(3), ValueRangeNonNegative)));
+
+    return CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad.release()), fill);
 }
 
 }

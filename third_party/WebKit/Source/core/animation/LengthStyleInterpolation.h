@@ -36,6 +36,7 @@ private:
     ValueRange m_range;
 
     friend class AnimationLengthStyleInterpolationTest;
+    friend class LengthBoxAndBoolStyleInterpolation;
     friend class LengthBoxStyleInterpolation;
     friend class LengthPairStyleInterpolation;
     friend class LengthPoint3DStyleInterpolation;
