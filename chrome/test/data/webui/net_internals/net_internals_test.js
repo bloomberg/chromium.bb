@@ -299,7 +299,6 @@ var NetInternalsTest = (function() {
       modules: ModulesView.TAB_ID,
       tests: TestView.TAB_ID,
       hsts: HSTSView.TAB_ID,
-      logs: LogsView.TAB_ID,
       prerender: PrerenderView.TAB_ID,
       bandwidth: BandwidthView.TAB_ID,
       chromeos: CrosView.TAB_ID,

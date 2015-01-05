@@ -45,7 +45,6 @@
 <include src="sockets_view.js">
 <include src="spdy_view.js">
 <include src="modules_view.js">
-<include src="logs_view.js">
 <include src="prerender_view.js">
 <include src="chromeos_view.js">
 <include src="bandwidth_view.js">

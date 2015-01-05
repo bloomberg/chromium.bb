@@ -200,12 +200,10 @@ var MainView = (function() {
       addTab(TestView);
       addTab(CrosLogVisualizerView);
       addTab(HSTSView);
-      addTab(LogsView);
       addTab(BandwidthView);
       addTab(PrerenderView);
       addTab(CrosView);
 
-      this.tabSwitcher_.showMenuItem(LogsView.TAB_ID, cr.isChromeOS);
       this.tabSwitcher_.showMenuItem(CrosView.TAB_ID, cr.isChromeOS);
       this.tabSwitcher_.showMenuItem(CrosLogVisualizerView.TAB_ID,
                                      cr.isChromeOS);
