@@ -17,7 +17,7 @@ function readStream(stream, values) {
     values.push(stream.read());
   }
   if (stream.state === 'waiting') {
-    return stream.wait().then(function() {
+    return stream.ready.then(function() {
         readStream(stream, values);
       });
   }
@@ -29,7 +29,7 @@ promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(resp) {
           response = resp;
-          return response.body.wait();
+          return response.body.ready;
         })
       .then(function() {
           if (response.body.state !== 'readable') {

@@ -46,7 +46,7 @@ public:
     String stateString() const;
 
     virtual ScriptValue read(ScriptState*, ExceptionState&) = 0;
-    ScriptPromise wait(ScriptState*);
+    ScriptPromise ready(ScriptState*);
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise closed(ScriptState*);
 
@@ -81,7 +81,7 @@ private:
     bool m_isPulling;
     State m_state;
 
-    Member<WaitPromise> m_wait;
+    Member<WaitPromise> m_ready;
     Member<ClosedPromise> m_closed;
     RefPtrWillBeMember<DOMException> m_exception;
 };

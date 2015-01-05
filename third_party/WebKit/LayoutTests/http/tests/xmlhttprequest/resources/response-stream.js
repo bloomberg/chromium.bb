@@ -27,7 +27,7 @@ test.step(function() {
                 resolve(chunks);
                 return;
             }
-            stream.wait().then(function() {
+            stream.ready.then(function() {
                 rec(resolve, reject);
             }).catch(reject);
         }

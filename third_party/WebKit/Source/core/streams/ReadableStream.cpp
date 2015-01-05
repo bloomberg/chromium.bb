@@ -42,7 +42,7 @@ ReadableStream::ReadableStream(ExecutionContext* executionContext, UnderlyingSou
     , m_isDraining(false)
     , m_isPulling(false)
     , m_state(Waiting)
-    , m_wait(new WaitPromise(executionContext, this, WaitPromise::Ready))
+    , m_ready(new WaitPromise(executionContext, this, WaitPromise::Ready))
     , m_closed(new ClosedPromise(executionContext, this, ClosedPromise::Closed))
 {
     suspendIfNeeded();
@@ -91,12 +91,12 @@ bool ReadableStream::enqueuePostAction()
     if (m_state == Waiting) {
         // ReadableStream::hasPendingActivity return value gets false when
         // |m_state| is changed to Closed or Errored from Waiting or Readable.
-        // On the other hand, the wrappers should be kept alive when |m_wait|
+        // On the other hand, the wrappers should be kept alive when |m_ready|
         // and |m_close| resolution and rejection are called. Hence we call
         // ScriptPromiseProperty::resolve and ScriptPromiseProperty::reject
         // *before* changing state, no matter if the state change actually
         // changes hasPendingActivity return value.
-        m_wait->resolve(ToV8UndefinedGenerator());
+        m_ready->resolve(ToV8UndefinedGenerator());
         m_state = Readable;
     }
 
@@ -106,7 +106,7 @@ bool ReadableStream::enqueuePostAction()
 void ReadableStream::close()
 {
     if (m_state == Waiting) {
-        m_wait->resolve(ToV8UndefinedGenerator());
+        m_ready->resolve(ToV8UndefinedGenerator());
         m_closed->resolve(ToV8UndefinedGenerator());
         m_state = Closed;
     } else if (m_state == Readable) {
@@ -138,16 +138,16 @@ void ReadableStream::readPostAction()
             m_closed->resolve(ToV8UndefinedGenerator());
             m_state = Closed;
         } else {
-            m_wait->reset();
+            m_ready->reset();
             m_state = Waiting;
         }
     }
     callPullIfNeeded();
 }
 
-ScriptPromise ReadableStream::wait(ScriptState* scriptState)
+ScriptPromise ReadableStream::ready(ScriptState* scriptState)
 {
-    return m_wait->promise(scriptState->world());
+    return m_ready->promise(scriptState->world());
 }
 
 ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reason)
@@ -159,7 +159,7 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
 
     ASSERT(m_state == Readable || m_state == Waiting);
     if (m_state == Waiting)
-        m_wait->resolve(ToV8UndefinedGenerator());
+        m_ready->resolve(ToV8UndefinedGenerator());
     clearQueue();
     m_closed->resolve(ToV8UndefinedGenerator());
     m_state = Closed;
@@ -176,15 +176,15 @@ void ReadableStream::error(PassRefPtrWillBeRawPtr<DOMException> exception)
     switch (m_state) {
     case Waiting:
         m_exception = exception;
-        m_wait->reject(m_exception);
+        m_ready->reject(m_exception);
         m_closed->reject(m_exception);
         m_state = Errored;
         break;
     case Readable:
         clearQueue();
         m_exception = exception;
-        m_wait->reset();
-        m_wait->reject(m_exception);
+        m_ready->reset();
+        m_ready->reject(m_exception);
         m_closed->reject(m_exception);
         m_state = Errored;
         break;
@@ -220,7 +220,7 @@ bool ReadableStream::hasPendingActivity() const
 void ReadableStream::trace(Visitor* visitor)
 {
     visitor->trace(m_source);
-    visitor->trace(m_wait);
+    visitor->trace(m_ready);
     visitor->trace(m_closed);
     visitor->trace(m_exception);
 }

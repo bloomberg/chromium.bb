@@ -59,7 +59,7 @@ testInLoadingState.step(function()
 var testInDoneState = async_test('Test aborting XMLHttpRequest with responseType set to "stream" in DONE state.');
 
 function readUntilDone(stream) {
-    return stream.wait().then(function() {
+    return stream.ready.then(function() {
         while (stream.state == 'readable') {
             stream.read();
         }

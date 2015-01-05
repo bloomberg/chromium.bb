@@ -16,7 +16,7 @@ enum ReadableStreamState {
     ActiveDOMObject,
 ] interface ReadableStream {
     [CallWith=ScriptState, RaisesException] any read();
-    [CallWith=ScriptState] Promise wait();
+    [CallWith=ScriptState] readonly attribute Promise ready;
     [ImplementedAs=stateString] readonly attribute ReadableStreamState state;
 
     [CallWith=ScriptState] Promise cancel(any reason);
