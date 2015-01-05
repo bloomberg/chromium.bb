@@ -66,6 +66,12 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
   DemuxerStreamProvider* demuxer_stream_provider_;
   mojo::MediaRendererPtr remote_media_renderer_;
 
+  // Store a handle to the mojo message pipe. This object
+  // temporary and is used as a springboard so that the
+  // |remote_media_renderer_| can be constructed on the
+  // correct thread.
+  mojo::ScopedMessagePipeHandle remote_media_renderer_pipe_;
+
   // Callbacks passed to Initialize() that we forward messages from
   // |remote_media_renderer_| through.
   base::Closure init_cb_;
