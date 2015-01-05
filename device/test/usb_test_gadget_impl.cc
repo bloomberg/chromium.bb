@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -47,6 +46,15 @@ static const int kDisconnectRetries = 100;  // 5 seconds
 static const int kRetryPeriod = 50;  // 0.05 seconds
 static const int kReconnectRetries = 100;  // 5 seconds
 static const int kUpdateRetries = 100;  // 5 seconds
+
+// Wait for the given time delta while still running the main loop. This is
+// necessary so that device add/remove events are processed by the UsbService.
+void SleepWithRunLoop(base::TimeDelta delta) {
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                                run_loop.QuitClosure(), delta);
+  run_loop.Run();
+}
 
 struct UsbTestGadgetConfiguration {
   UsbTestGadget::Type type;
@@ -136,7 +144,7 @@ scoped_ptr<UsbTestGadget> UsbTestGadget::Claim() {
       LOG(ERROR) << "Failed to find an unclaimed device.";
       return scoped_ptr<UsbTestGadget>();
     }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(kRetryPeriod));
+    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
   }
   VLOG(1) << "It took " << (kClaimRetries - retries)
           << " retries to find an unclaimed device.";
@@ -309,7 +317,7 @@ bool UsbTestGadgetImpl::Update() {
       LOG(ERROR) << "Device not responding with new version.";
       return false;
     }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(kRetryPeriod));
+    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
   }
   VLOG(1) << "It took " << (kUpdateRetries - retries)
           << " retries to see the new version.";
@@ -322,7 +330,7 @@ bool UsbTestGadgetImpl::Update() {
       LOG(ERROR) << "Failed to find updated device.";
       return false;
     }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(kRetryPeriod));
+    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
   }
   VLOG(1) << "It took " << (kReconnectRetries - retries)
           << " retries to find the updated device.";
@@ -458,7 +466,7 @@ bool UsbTestGadgetImpl::SetType(Type type) {
       LOG(ERROR) << "Failed to find updated device.";
       return false;
     }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(kRetryPeriod));
+    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
   }
   VLOG(1) << "It took " << (kReconnectRetries - retries)
           << " retries to find the updated device.";
@@ -486,7 +494,7 @@ bool UsbTestGadgetImpl::Disconnect() {
       LOG(ERROR) << "Device did not disconnect.";
       return false;
     }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(kRetryPeriod));
+    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
   }
   VLOG(1) << "It took " << (kDisconnectRetries - retries)
           << " retries for the device to disconnect.";
@@ -512,7 +520,7 @@ bool UsbTestGadgetImpl::Reconnect() {
       LOG(ERROR) << "Device did not reconnect.";
       return false;
     }
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(kRetryPeriod));
+    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
   }
   VLOG(1) << "It took " << (kDisconnectRetries - retries)
           << " retries for the device to reconnect.";
