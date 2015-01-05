@@ -95,6 +95,7 @@ NexeLoadManager::NexeLoadManager(
       exit_status_(-1),
       nexe_size_(0),
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
+      nonsfi_(false),
       crash_info_shmem_handle_(base::SharedMemory::NULLHandle()),
       weak_factory_(this) {
   set_exit_status(-1);

@@ -92,8 +92,8 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
 
   // File tokens are ignored here, but needed when the message is processed
   // inside NaClIPCAdapter.
-  uint64_t file_token_lo;
-  uint64_t file_token_hi;
+  uint64_t file_token_lo = 0;
+  uint64_t file_token_hi = 0;
   if (!filter_->Send(new PpapiHostMsg_OpenResource(
           std::string(kFilePrefix) + file,
           &ipc_fd,
@@ -104,16 +104,11 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
     return false;
   }
 
-#if defined(OS_NACL_SFI)
   // File tokens are used internally by NaClIPCAdapter and should have
   // been cleared from the message when it is received here.
-  // Note that, on Non-SFI NaCl, the IPC channel is directly connected to the
-  // renderer process, so NaClIPCAdapter does not work. It means,
-  // file_token_{lo,hi} fields may be properly filled, although it is just
-  // ignored here.
+  // These tokens should never be set for Non-SFI mode.
   CHECK(file_token_lo == 0);
   CHECK(file_token_hi == 0);
-#endif
 
   // Copy the file if we received a valid file descriptor. Otherwise, if we got
   // a reply, the file doesn't exist, so provide an fd of -1.
