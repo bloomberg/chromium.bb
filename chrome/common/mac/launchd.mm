@@ -56,18 +56,18 @@ NSURL* GetPlistURL(Launchd::Domain domain,
 
 }  // namespace
 
-COMPILE_ASSERT(static_cast<int>(Launchd::User) ==
-               static_cast<int>(NSUserDomainMask),
-               NSUserDomainMask_value_changed);
-COMPILE_ASSERT(static_cast<int>(Launchd::Local) ==
-               static_cast<int>(NSLocalDomainMask),
-               NSLocalDomainMask_value_changed);
-COMPILE_ASSERT(static_cast<int>(Launchd::Network) ==
-               static_cast<int>(NSNetworkDomainMask),
-               NSNetworkDomainMask_value_changed);
-COMPILE_ASSERT(static_cast<int>(Launchd::System) ==
-               static_cast<int>(NSSystemDomainMask),
-               NSSystemDomainMask_value_changed);
+static_assert(static_cast<int>(Launchd::User) ==
+              static_cast<int>(NSUserDomainMask),
+              "NSUserDomainMask value changed");
+static_assert(static_cast<int>(Launchd::Local) ==
+              static_cast<int>(NSLocalDomainMask),
+              "NSLocalDomainMask value changed");
+static_assert(static_cast<int>(Launchd::Network) ==
+              static_cast<int>(NSNetworkDomainMask),
+              "NSNetworkDomainMask value changed");
+static_assert(static_cast<int>(Launchd::System) ==
+              static_cast<int>(NSSystemDomainMask),
+              "NSSystemDomainMask value changed");
 
 Launchd* Launchd::g_instance_ = NULL;
 

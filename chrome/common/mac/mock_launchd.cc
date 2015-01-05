@@ -129,7 +129,8 @@ CFDictionaryRef MockLaunchd::CopyExports() {
       kCFAllocatorDefault, pipe_name_.c_str(), kCFStringEncodingUTF8));
   const void *keys[] = { env_var };
   const void *values[] = { socket_path };
-  COMPILE_ASSERT(arraysize(keys) == arraysize(values), array_sizes_must_match);
+  static_assert(arraysize(keys) == arraysize(values),
+                "keys must have the same number of elements as values");
   return CFDictionaryCreate(kCFAllocatorDefault,
                             keys,
                             values,
@@ -155,7 +156,8 @@ CFDictionaryRef MockLaunchd::CopyJobDictionary(CFStringRef label) {
   base::ScopedCFTypeRef<CFNumberRef> pid(
       CFNumberCreate(NULL, kCFNumberIntType, &process_id));
   const void *values[] = { path, pid };
-  COMPILE_ASSERT(arraysize(keys) == arraysize(values), array_sizes_must_match);
+  static_assert(arraysize(keys) == arraysize(values),
+                "keys must have the same number of elements as values");
   return CFDictionaryCreate(kCFAllocatorDefault,
                             keys,
                             values,
@@ -177,8 +179,8 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
   if (!create_socket_) {
     const void *keys[] = { program, program_args };
     const void *values[] = { path, args };
-    COMPILE_ASSERT(arraysize(keys) == arraysize(values),
-                   array_sizes_must_match);
+    static_assert(arraysize(keys) == arraysize(values),
+                  "keys must have the same number of elements as values");
     return CFDictionaryCreate(kCFAllocatorDefault,
                               keys,
                               values,
@@ -230,8 +232,9 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
   CFStringRef socket_dict_key = CFSTR("ServiceProcessSocket");
   const void *socket_keys[] = { socket_dict_key };
   const void *socket_values[] = { sockets };
-  COMPILE_ASSERT(arraysize(socket_keys) == arraysize(socket_values),
-                 socket_array_sizes_must_match);
+  static_assert(arraysize(socket_keys) == arraysize(socket_values),
+                "socket_keys must have the same number of elements "
+                "as socket_values");
   base::ScopedCFTypeRef<CFDictionaryRef> socket_dict(
       CFDictionaryCreate(kCFAllocatorDefault,
                          socket_keys,
@@ -241,7 +244,8 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
                          &kCFTypeDictionaryValueCallBacks));
   const void *keys[] = { program, program_args, socket_key };
   const void *values[] = { path, args, socket_dict };
-  COMPILE_ASSERT(arraysize(keys) == arraysize(values), array_sizes_must_match);
+  static_assert(arraysize(keys) == arraysize(values),
+                "keys must have the same number of elements as values");
   return CFDictionaryCreate(kCFAllocatorDefault,
                             keys,
                             values,

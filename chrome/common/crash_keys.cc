@@ -48,11 +48,11 @@ static const size_t kSingleChunkLength = 63;
 #endif
 
 // Guarantees for crash key sizes.
-COMPILE_ASSERT(kSmallSize <= kSingleChunkLength,
-               crash_key_chunk_size_too_small);
+static_assert(kSmallSize <= kSingleChunkLength,
+              "crash key chunk size too small");
 #if defined(OS_MACOSX)
-COMPILE_ASSERT(kMediumSize <= kSingleChunkLength,
-               mac_has_medium_size_crash_key_chunks);
+static_assert(kMediumSize <= kSingleChunkLength,
+              "mac has medium size crash key chunks");
 #endif
 
 const char kClientId[] = "guid";

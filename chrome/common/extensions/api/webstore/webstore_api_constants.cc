@@ -35,9 +35,9 @@ const char* const kInstallResultCodes[] = {
   "launchInProgress",
 };
 
-COMPILE_ASSERT(arraysize(kInstallResultCodes) ==
-                   webstore_install::RESULT_LAST + 1,
-               must_keep_webstore_install_result_and_api_constants_in_sync);
+static_assert(arraysize(kInstallResultCodes) ==
+                  webstore_install::RESULT_LAST + 1,
+              "kInstallResultCodes should equal RESULT_LAST + 1");
 
 // The "downloading" stage begins when the installer starts downloading modules
 // for the extension.
