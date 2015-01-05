@@ -157,8 +157,9 @@ copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
 }
 
 gcm::GCMDriver* CopresenceService::GetGCMDriver() {
-  return gcm::GCMProfileServiceFactory::GetForProfile(browser_context_)
-      ->driver();
+  gcm::GCMProfileService* gcm_service =
+      gcm::GCMProfileServiceFactory::GetForProfile(browser_context_);
+  return gcm_service ? gcm_service->driver() : nullptr;
 }
 
 template <>
