@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1037,11 +1038,11 @@ void CreateAppShortcutInfoLoaded(
 
   NSButton* continue_button = [alert
       addButtonWithTitle:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_COMMIT)];
-  [continue_button setKeyEquivalent:@""];
+  [continue_button setKeyEquivalent:kKeyEquivalentReturn];
 
   NSButton* cancel_button =
       [alert addButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
-  [cancel_button setKeyEquivalent:@"\r"];
+  [cancel_button setKeyEquivalent:kKeyEquivalentEscape];
 
   [alert setMessageText:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_LABEL)];
   [alert setAlertStyle:NSInformationalAlertStyle];
