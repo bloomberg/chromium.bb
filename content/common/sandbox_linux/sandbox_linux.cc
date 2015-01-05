@@ -183,7 +183,11 @@ void LinuxSandbox::PreinitializeSandbox() {
 }
 
 std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
-  return std::vector<int>{proc_fd_};
+  std::vector<int> fds;
+  if (proc_fd_ >= 0) {
+    fds.push_back(proc_fd_);
+  }
+  return fds;
 }
 
 bool LinuxSandbox::InitializeSandbox() {
