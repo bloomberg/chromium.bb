@@ -773,8 +773,7 @@
     { "name": "www.aclu.org", "mode": "force-https" },
     { "name": "prodpad.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "mailbox.org", "include_subdomains": true, "mode": "force-https" },
-    { "name": "roddis.net", "mode": "force-https" },
-    { "name": "www.roddis.net", "mode": "force-https" },
+    { "name": "roddis.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "fiken.no", "include_subdomains": true, "mode": "force-https" },
     { "name": "fairbill.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "nexth.net", "include_subdomains": true, "mode": "force-https" },
@@ -1228,7 +1227,6 @@
     { "name": "standardssuck.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "testsuite.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "thecustomizewindows.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "uzstyle.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "weggeweest.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "whatwg.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "when-release.ru", "include_subdomains": true, "mode": "force-https" },
@@ -1675,7 +1673,8 @@
     { "name": "todesschaf.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "twisto.cz", "include_subdomains": true, "mode": "force-https" },
     { "name": "webassadors.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "wundi.net", "include_subdomains": true, "mode": "force-https" }
+    { "name": "wundi.net", "include_subdomains": true, "mode": "force-https" },
+    { "name": "cs50.harvard.edu", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
