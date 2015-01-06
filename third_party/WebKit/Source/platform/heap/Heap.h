@@ -363,6 +363,9 @@ public:
     BaseHeapPage(PageMemory*, ThreadState*);
     virtual ~BaseHeapPage() { }
 
+    // virtual methods are slow. So performance-sensitive methods
+    // should be defined as non-virtual methods on HeapPage and LargeObject.
+    // The following methods are not performance-sensitive.
     virtual size_t objectPayloadSizeForTesting() = 0;
     virtual bool isEmpty() = 0;
     virtual void removeFromHeap(ThreadHeap*) = 0;
@@ -387,11 +390,12 @@ public:
 #if ENABLE(ASSERT)
     virtual bool contains(Address) = 0;
 #endif
+    virtual size_t size() = 0;
+    virtual bool isLargeObject() { return false; }
 
     Address address() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
     ThreadState* threadState() const { return m_threadState; }
-    virtual bool isLargeObject() { return false; }
     bool orphaned() { return !m_threadState; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
@@ -399,10 +403,7 @@ public:
 private:
     PageMemory* m_storage;
     ThreadState* m_threadState;
-    // Pointer sized integer to ensure proper alignment of the
-    // HeapPage header. We use some of the bits to determine
-    // whether the page is part of a terminting thread or
-    // if the page is traced after being terminated (orphaned).
+    // Whether the page is part of a terminating thread or not.
     bool m_terminating;
 };
 
@@ -468,6 +469,7 @@ public:
         return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
     }
 #endif
+    virtual size_t size() override { return blinkPageSize; }
 
     HeapPage* next() { return m_next; }
 
@@ -544,7 +546,10 @@ public:
         return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
     }
 #endif
-
+    virtual size_t size()
+    {
+        return sizeof(LargeObject) + headerPadding() +  sizeof(HeapObjectHeader) + m_payloadSize;
+    }
     virtual bool isLargeObject() override { return true; }
 
     void link(LargeObject** previousNext)
@@ -562,11 +567,6 @@ public:
     LargeObject* next()
     {
         return m_next;
-    }
-
-    size_t size()
-    {
-        return sizeof(LargeObject) + headerPadding() +  sizeof(HeapObjectHeader) + m_payloadSize;
     }
 
     HeapObjectHeader* heapObjectHeader()
