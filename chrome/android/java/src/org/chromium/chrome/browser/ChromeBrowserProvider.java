@@ -330,7 +330,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
-        if (!canHandleContentProviderApiCall()) return null;
+        if (!canHandleContentProviderApiCall() || !hasReadAccess()) return null;
 
         // Check for invalid id values if provided.
         long bookmarkId = getContentUriId(uri);
@@ -387,7 +387,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        if (!canHandleContentProviderApiCall()) return null;
+        if (!canHandleContentProviderApiCall() || !hasWriteAccess()) return null;
 
         int match = mUriMatcher.match(uri);
         Uri res = null;
@@ -420,7 +420,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        if (!canHandleContentProviderApiCall()) return 0;
+        if (!canHandleContentProviderApiCall() || !hasWriteAccess()) return 0;
 
         // Check for invalid id values if provided.
         long bookmarkId = getContentUriId(uri);
@@ -469,7 +469,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        if (!canHandleContentProviderApiCall()) return 0;
+        if (!canHandleContentProviderApiCall() || !hasWriteAccess()) return 0;
 
         // Check for invalid id values if provided.
         long bookmarkId = getContentUriId(uri);
@@ -744,6 +744,24 @@ public class ChromeBrowserProvider extends ContentProvider {
 
         if (isInUiThread()) return false;
         if (!ensureNativeChromeLoaded()) return false;
+        return true;
+    }
+
+    /**
+     * Read access restrictions may be set by the manifest or subclasses, but none are set
+     * by default.
+     * @return Whether the caller has read access to history and bookmarks information.
+     */
+    protected boolean hasReadAccess() {
+        return true;
+    }
+
+    /**
+     * Write access restrictions may be set by the manifest or subclasses, but none are set
+     * by default.
+     * @return Whether the caller has write access to history and bookmarks information.
+     */
+    protected boolean hasWriteAccess() {
         return true;
     }
 
