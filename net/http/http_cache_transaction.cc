@@ -2718,9 +2718,13 @@ bool HttpCache::Transaction::ValidatePartialResponse() {
       return true;
   } else {
     // We asked for "If-Range: " so a 206 means just another range.
-    if (partial_response && partial_->ResponseHeadersOK(headers)) {
-      handling_206_ = true;
-      return true;
+    if (partial_response) {
+      if (partial_->ResponseHeadersOK(headers)) {
+        handling_206_ = true;
+        return true;
+      } else {
+        failure = true;
+      }
     }
 
     if (!reading_ && !is_sparse_ && !partial_response) {
@@ -2747,17 +2751,24 @@ bool HttpCache::Transaction::ValidatePartialResponse() {
   if (failure) {
     // We cannot truncate this entry, it has to be deleted.
     UpdateTransactionPattern(PATTERN_NOT_COVERED);
+    bool is_sparse = is_sparse_;
     DoomPartialEntry(false);
     mode_ = NONE;
-    if (!reading_ && !partial_->IsLastRange()) {
-      // We'll attempt to issue another network request, this time without us
-      // messing up the headers.
-      partial_->RestoreHeaders(&custom_request_->extra_headers);
-      partial_.reset();
-      truncated_ = false;
-      return false;
+    if (is_sparse || truncated_) {
+      // There was something cached to start with, either sparsed data (206), or
+      // a truncated 200, which means that we probably modified the request,
+      // adding a byte range or modifying the range requested by the caller.
+      if (!reading_ && !partial_->IsLastRange()) {
+        // We have not returned anything to the caller yet so it should be safe
+        // to issue another network request, this time without us messing up the
+        // headers.
+        partial_->RestoreHeaders(&custom_request_->extra_headers);
+        partial_.reset();
+        truncated_ = false;
+        return false;
+      }
+      LOG(WARNING) << "Failed to revalidate partial entry";
     }
-    LOG(WARNING) << "Failed to revalidate partial entry";
     partial_.reset();
     return true;
   }

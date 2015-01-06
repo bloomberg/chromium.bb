@@ -123,6 +123,7 @@ class PartialData {
   void GetAvailableRangeCompleted(int result, int64 start);
 
   int64 current_range_start_;
+  int64 current_range_end_;
   int64 cached_start_;
   int64 resource_size_;
   int cached_min_len_;

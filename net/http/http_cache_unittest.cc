@@ -293,6 +293,10 @@ class RangeTransactionServer {
   // Returns 200 instead of 206 (a malformed response overall).
   void set_bad_200(bool value) { bad_200_ = value; }
 
+  // Other than regular range related behavior (and the flags mentioned above),
+  // the server reacts to requests headers like so:
+  //   X-Require-Mock-Auth -> return 401.
+  //   X-Return-Default-Range -> assume 40-49 was requested.
   static void RangeHandler(const net::HttpRequestInfo* request,
                            std::string* response_status,
                            std::string* response_headers,
@@ -362,6 +366,12 @@ void RangeTransactionServer::RangeHandler(const net::HttpRequestInfo* request,
 
   // We can handle this range request.
   net::HttpByteRange byte_range = ranges[0];
+
+  if (request->extra_headers.HasHeader("X-Return-Default-Range")) {
+    byte_range.set_first_byte_position(40);
+    byte_range.set_last_byte_position(49);
+  }
+
   if (byte_range.first_byte_position() > 79) {
     response_status->assign("HTTP/1.1 416 Requested Range Not Satisfiable");
     response_data->clear();
@@ -425,6 +435,10 @@ const MockTransaction kRangeGET_TransactionOK = {
   0,
   net::OK
 };
+
+const char kFullRangeData[] =
+    "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 "
+    "rg: 40-49 rg: 50-59 rg: 60-69 rg: 70-79 ";
 
 // Verifies the response headers (|response|) match a partial content
 // response for the range starting at |start| and ending at |end|.
@@ -4111,6 +4125,251 @@ TEST(HttpCache, RangeGET_ModifiedResult) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
+// Tests that when a server returns 206 with a sub-range of the requested range,
+// and there is nothing stored in the cache, the returned response is passed to
+// the caller as is. In this context, a subrange means a response that starts
+// with the same byte that was requested, but that is not the whole range that
+// was requested.
+TEST(HttpCache, RangeGET_206ReturnsSubrangeRange_NoCachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Request a large range (40-59). The server sends 40-49.
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 40-59\r\n" EXTRA_HEADER;
+  transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Length: 10\n"
+      "Content-Range: bytes 40-49/80\n";
+  transaction.handler = nullptr;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests that when a server returns 206 with a sub-range of the requested range,
+// and there was an entry stored in the cache, the cache gets out of the way.
+TEST(HttpCache, RangeGET_206ReturnsSubrangeRange_CachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Write to the cache (70-79).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 70-79\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 70-79 ";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+  Verify206Response(headers, 70, 79);
+
+  // Request a large range (40-79). The cache will ask the server for 40-59.
+  // The server returns 40-49. The cache should consider the server confused and
+  // abort caching, restarting the request without caching.
+  transaction.request_headers = "Range: bytes = 40-79\r\n" EXTRA_HEADER;
+  transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Length: 10\n"
+      "Content-Range: bytes 40-49/80\n";
+  transaction.handler = nullptr;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  // Two new network requests were issued, one from the cache and another after
+  // deleting the entry.
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The entry was deleted.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(4, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that when a server returns 206 with a sub-range of the requested range,
+// and there was an entry stored in the cache, the cache gets out of the way,
+// when the caller is not using ranges.
+TEST(HttpCache, GET_206ReturnsSubrangeRange_CachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Write to the cache (70-79).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 70-79\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 70-79 ";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+  Verify206Response(headers, 70, 79);
+
+  // Don't ask for a range. The cache will ask the server for 0-69.
+  // The server returns 40-49. The cache should consider the server confused and
+  // abort caching, restarting the request.
+  // The second network request should not be a byte range request so the server
+  // should return 200 + "Not a range"
+  transaction.request_headers = "X-Return-Default-Range:\r\n" EXTRA_HEADER;
+  transaction.data = "Not a range";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  EXPECT_EQ(0U, headers.find("HTTP/1.1 200 OK\n"));
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The entry was deleted.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(4, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that when a server returns 206 with a random range and there is
+// nothing stored in the cache, the returned response is passed to the caller
+// as is. In this context, a WrongRange means that the returned range may or may
+// not have any relationship with the requested range (may or may not be
+// contained). The important part is that the first byte doesn't match the first
+// requested byte.
+TEST(HttpCache, RangeGET_206ReturnsWrongRange_NoCachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Request a large range (30-59). The server sends (40-49).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 30-59\r\n" EXTRA_HEADER;
+  transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Length: 10\n"
+      "Content-Range: bytes 40-49/80\n";
+  transaction.handler = nullptr;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The entry was deleted.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that when a server returns 206 with a random range and there is
+// an entry stored in the cache, the cache gets out of the way.
+TEST(HttpCache, RangeGET_206ReturnsWrongRange_CachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Write to the cache (70-79).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 70-79\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 70-79 ";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+  Verify206Response(headers, 70, 79);
+
+  // Request a large range (30-79). The cache will ask the server for 30-69.
+  // The server returns 40-49. The cache should consider the server confused and
+  // abort caching, returning the weird range to the caller.
+  transaction.request_headers = "Range: bytes = 30-79\r\n" EXTRA_HEADER;
+  transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "ETag: \"foo\"\n"
+      "Accept-Ranges: bytes\n"
+      "Content-Length: 10\n"
+      "Content-Range: bytes 40-49/80\n";
+  transaction.handler = nullptr;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The entry was deleted.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(4, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that when a caller asks for a range beyond EOF, with an empty cache,
+// the response matches the one provided by the server.
+TEST(HttpCache, RangeGET_206ReturnsSmallerFile_NoCachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Request a large range (70-99). The server sends 70-79.
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 70-99\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 70-79 ";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 70, 79);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  RunTransactionTest(cache.http_cache(), kRangeGET_TransactionOK);
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+}
+
+// Tests that when a caller asks for a range beyond EOF, with a cached entry,
+// the cache automatically fixes the request.
+TEST(HttpCache, RangeGET_206ReturnsSmallerFile_CachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Write to the cache (40-49).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  // Request a large range (70-99). The server sends 70-79.
+  transaction.request_headers = "Range: bytes = 70-99\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 70-79 ";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 70, 79);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The entry was not deleted (the range was automatically fixed).
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests that when a caller asks for a not-satisfiable range, the server's
+// response is forwarded to the caller.
+TEST(HttpCache, RangeGET_416_NoCachedContent) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Request a range beyond EOF (80-99).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 80-99\r\n" EXTRA_HEADER;
+  transaction.data = "";
+  transaction.status = "HTTP/1.1 416 Requested Range Not Satisfiable";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  EXPECT_EQ(0U, headers.find(transaction.status));
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The entry was deleted.
+  RunTransactionTest(cache.http_cache(), kRangeGET_TransactionOK);
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
 // Tests that we cache 301s for range requests.
 TEST(HttpCache, RangeGET_301) {
   MockHttpCache cache;
@@ -4119,7 +4378,6 @@ TEST(HttpCache, RangeGET_301) {
   transaction.response_headers = "Location: http://www.bar.com/\n";
   transaction.data = "";
   transaction.handler = NULL;
-  AddMockTransaction(&transaction);
 
   // Write to the cache.
   RunTransactionTest(cache.http_cache(), transaction);
@@ -4132,8 +4390,6 @@ TEST(HttpCache, RangeGET_301) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
-
-  RemoveMockTransaction(&transaction);
 }
 
 // Tests that we can cache range requests when the start or end is unknown.
@@ -4260,8 +4516,7 @@ TEST(HttpCache, GET_Previous206) {
   // Write and read from the cache (0-79), when not asked for a range.
   MockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = EXTRA_HEADER;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
       &load_timing_info);
@@ -4311,8 +4566,7 @@ TEST(HttpCache, GET_Previous206_NotModified) {
   // Read from the cache (0-9), write and read from cache (10 - 79).
   transaction.load_flags |= net::LOAD_VALIDATE_CACHE;
   transaction.request_headers = "Foo: bar\r\n" EXTRA_HEADER;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
       &load_timing_info);
@@ -4512,8 +4766,7 @@ TEST(HttpCache, RangeGET_Previous200) {
   // Store the whole thing with status 200.
   MockTransaction transaction(kTypicalGET_Transaction);
   transaction.url = kRangeGET_TransactionOK.url;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   AddMockTransaction(&transaction);
   RunTransactionTest(cache.http_cache(), transaction);
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
@@ -4846,7 +5099,7 @@ TEST(HttpCache, RangeGET_InvalidResponse2) {
 }
 
 // Tests that if a server tells us conflicting information about a resource we
-// ignore the response.
+// drop the entry.
 TEST(HttpCache, RangeGET_InvalidResponse3) {
   MockHttpCache cache;
   std::string headers;
@@ -4878,17 +5131,10 @@ TEST(HttpCache, RangeGET_InvalidResponse3) {
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  // Verify that we cached the first response but not the second one.
-  disk_cache::Entry* en;
-  ASSERT_TRUE(cache.OpenBackendEntry(kRangeGET_TransactionOK.url, &en));
-
-  int64 cached_start = 0;
-  net::TestCompletionCallback cb;
-  int rv = en->GetAvailableRange(40, 20, &cached_start, cb.callback());
-  EXPECT_EQ(10, cb.GetResult(rv));
-  EXPECT_EQ(50, cached_start);
-  en->Close();
-
+  // Verify that the entry is gone.
+  RunTransactionTest(cache.http_cache(), kRangeGET_TransactionOK);
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
@@ -5346,8 +5592,7 @@ TEST(HttpCache, GET_IncompleteResource) {
   std::string headers;
   MockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = EXTRA_HEADER;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
 
   // We update the headers with the ones received while revalidating.
@@ -5395,8 +5640,7 @@ TEST(HttpCache, GET_IncompleteResource_NoStore) {
   std::string response_headers(transaction.response_headers);
   response_headers += ("Cache-Control: no-store\n");
   transaction.response_headers = response_headers.c_str();
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   AddMockTransaction(&transaction);
 
   std::string headers;
@@ -5441,8 +5685,7 @@ TEST(HttpCache, GET_IncompleteResource_Cancel) {
   std::string response_headers(transaction.response_headers);
   response_headers += ("Cache-Control: no-store\n");
   transaction.response_headers = response_headers.c_str();
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   AddMockTransaction(&transaction);
 
   MockHttpRequest request(transaction);
@@ -5536,8 +5779,7 @@ TEST(HttpCache, GET_IncompleteResource3) {
   std::string headers;
   MockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = EXTRA_HEADER;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
 
   scoped_ptr<Context> c(new Context);
   int rv = cache.CreateTransaction(&c->trans);
@@ -5571,8 +5813,7 @@ TEST(HttpCache, GET_IncompleteResourceWithAuth) {
   MockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = "X-Require-Mock-Auth: dummy\r\n"
                                 EXTRA_HEADER;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
   RangeTransactionServer handler;
 
   scoped_ptr<Context> c(new Context);
@@ -6662,8 +6903,7 @@ TEST(HttpCache, SetPriorityNewTransaction) {
   std::string headers;
   MockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = EXTRA_HEADER;
-  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
-                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  transaction.data = kFullRangeData;
 
   scoped_ptr<net::HttpTransaction> trans;
   ASSERT_EQ(net::OK,
