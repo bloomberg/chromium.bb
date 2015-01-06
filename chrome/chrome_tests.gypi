@@ -312,6 +312,7 @@
       'browser/extensions/api/module/module_apitest.cc',
       'browser/extensions/api/music_manager_private/music_manager_private_browsertest.cc',
       'browser/extensions/api/notification_provider/notification_provider_apitest.cc',
+      'browser/extensions/api/notifications/notifications_apitest.cc',
       'browser/extensions/api/omnibox/omnibox_api_browsertest.cc',
       'browser/extensions/api/page_capture/page_capture_apitest.cc',
       'browser/extensions/api/permissions/permissions_apitest.cc',
@@ -480,6 +481,8 @@
       'browser/net/proxy_browsertest.cc',
       'browser/net/sdch_browsertest.cc',
       'browser/net/websocket_browsertest.cc',
+      'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
+      'browser/notifications/message_center_notifications_browsertest.cc',
       'browser/password_manager/password_manager_browsertest.cc',
       'browser/policy/cloud/cloud_policy_browsertest.cc',
       'browser/policy/cloud/cloud_policy_manager_browsertest.cc',
@@ -874,6 +877,8 @@
       'browser/ui/omnibox/omnibox_view_browsertest.cc',
       'browser/ui/panels/base_panel_browser_test.cc',
       'browser/ui/panels/base_panel_browser_test.h',
+      'browser/ui/panels/detached_panel_browsertest.cc',
+      'browser/ui/panels/docked_panel_browsertest.cc',
       'browser/ui/panels/test_panel_active_state_observer.cc',
       'browser/ui/panels/test_panel_active_state_observer.h',
       'browser/ui/panels/test_panel_mouse_watcher.cc',
@@ -973,7 +978,7 @@
       'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
     ],
     'chrome_interactive_ui_test_notifications_sources': [
-      'browser/extensions/api/notifications/notifications_apitest.cc',
+      'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
       'browser/notifications/message_center_notifications_browsertest.cc',
     ],
     'chrome_interactive_ui_test_chromeos_sources': [
@@ -1451,28 +1456,24 @@
         }],
         ['OS=="linux" and chromeos==0', {
           'sources!': [
-            # TODO(port): This times out. Attempts have been made to fix the
-            # individual failures, but each time I disable a test from these
-            # suites, it seems like one or another starts timing out too.
-
-            # Note: list duplicated in GN build.
-            'browser/ui/views/keyboard_access_browsertest.cc',
+            # TODO(port): Everything here times out. Attempts have been made to
+            # fix the individual failures, but each time I disable a test from
+            # these suites, it seems like one or another starts timing out too.
+            'browser/ui/views/keyboard_access_browsertest.cc',  # Views except Mac views.
           ],
         }, {  # Everything but desktop Linux.
           'sources': [ '<@(chrome_interactive_ui_test_non_desktop_linux_sources)' ],
         }],
         ['use_ash==1', {
           'sources': [ '<@(chrome_interactive_ui_test_ash_sources)' ],
-          'dependencies': [
-            '../ash/ash.gyp:ash_test_support',
-          ],
+        }],
+        ['OS != "mac"', {
+          'sources': [ '<@(chrome_interactive_ui_test_non_mac_sources)' ],
         }],
         ['OS=="mac"', {
           'sources!': [
             # TODO(tapted): Enable toolkit-views tests on Mac when their
             # respective implementations are ported.
-
-            # Note: Sources list duplicated in GN build.
             'browser/ui/views/keyboard_access_browsertest.cc',
             'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
@@ -1483,41 +1484,32 @@
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }, {  # Non-Mac.
-          'sources': [ '<@(chrome_interactive_ui_test_non_mac_sources)' ],
-        }],
+        }],  # OS=="mac"
         ['notifications == 1', {
           # Common notifications tests.
           'sources': [
-            '<@(chrome_interactive_ui_test_notifications_sources)',
+            'browser/extensions/notifications_apitest.cc',
           ],
           'conditions': [
-            ['chromeos == 1', {
-              'sources': [
-                'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
-              ],
-            }, {
+            ['chromeos == 0', {
               # Non-ChromeOS notifications tests (ChromeOS does not use
               # cross-platform panels).
               'sources': [
-                # Note: List duplicated in GN build.
                 'browser/notifications/notification_browsertest.cc',
                 'browser/notifications/platform_notification_service_browsertest.cc',
               ],
             }],
-            ['OS=="android"', {
-              'sources!': [
-                # Note: List duplicated in GN build.
-
-                # Android does not use the message center-based Notification system.
-                'browser/notifications/message_center_notifications_browsertest.cc',
-
-                # TODO(peter): Enable the Notification browser tests.
-                'browser/notifications/notification_browsertest.cc',
-                'browser/notifications/platform_notification_service_browsertest.cc',
-              ]
-            }],
           ],
+        }],
+        ['OS=="android"', {
+          'sources!': [
+            # Android does not use the message center-based Notification system.
+            'browser/notifications/message_center_notifications_browsertest.cc',
+
+            # TODO(peter): Enable the Notification browser tests.
+            'browser/notifications/notification_browsertest.cc',
+            'browser/notifications/platform_notification_service_browsertest.cc',
+          ]
         }],
         ['toolkit_views==1', {
           'sources': [ '<@(chrome_interactive_ui_test_views_sources)' ],
@@ -1525,6 +1517,11 @@
             '../ui/views/controls/webview/webview_tests.gyp:webview_test_support',
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
+          ],
+        }],
+        ['use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:ash_test_support',
           ],
         }],
         ['use_aura==0 or chromeos==1', {
@@ -1550,7 +1547,6 @@
             '<@(chrome_interactive_ui_test_chromeos_sources)',
           ],
           'sources!': [
-            # Note: List duplicated in GN build.
             '../ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc',
             '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
 
@@ -1571,7 +1567,6 @@
         ['chromeos==1 and branding=="Chrome"', {
           'sources!': [
             # These tests are failing on official cros bots. crbug.com/431450.
-            # Note: list duplicated in GN build.
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
           ],
         }],
@@ -2103,6 +2098,7 @@
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
             'browser/invalidation/profile_invalidation_provider_factory_browsertest.cc',
             'browser/net/nss_context_chromeos_browsertest.cc',
+            'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/keyboard_controller_browsertest.cc',
             'browser/ui/views/select_file_dialog_extension_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
