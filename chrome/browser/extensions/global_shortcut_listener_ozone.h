@@ -15,16 +15,14 @@ namespace extensions {
 class GlobalShortcutListenerOzone : public GlobalShortcutListener {
  public:
   GlobalShortcutListenerOzone();
-  virtual ~GlobalShortcutListenerOzone();
+  ~GlobalShortcutListenerOzone() override;
 
  private:
   // GlobalShortcutListener implementation.
-  virtual void StartListening() override;
-  virtual void StopListening() override;
-  virtual bool RegisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
-  virtual void UnregisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
+  void StartListening() override;
+  void StopListening() override;
+  bool RegisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
+  void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;

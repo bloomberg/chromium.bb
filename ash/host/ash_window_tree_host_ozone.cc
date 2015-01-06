@@ -21,23 +21,23 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
                                public aura::WindowTreeHostOzone {
  public:
   explicit AshWindowTreeHostOzone(const gfx::Rect& initial_bounds);
-  virtual ~AshWindowTreeHostOzone();
+  ~AshWindowTreeHostOzone() override;
 
  private:
   // AshWindowTreeHost:
-  virtual void ToggleFullScreen() override;
-  virtual bool ConfineCursorToRootWindow() override;
-  virtual void UnConfineCursor() override;
-  virtual void SetRootWindowTransformer(
+  void ToggleFullScreen() override;
+  bool ConfineCursorToRootWindow() override;
+  void UnConfineCursor() override;
+  void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) override;
-  virtual gfx::Insets GetHostInsets() const override;
-  virtual aura::WindowTreeHost* AsWindowTreeHost() override;
-  virtual void SetRootTransform(const gfx::Transform& transform) override;
-  virtual gfx::Transform GetRootTransform() const override;
-  virtual gfx::Transform GetInverseRootTransform() const override;
-  virtual void UpdateRootWindowSize(const gfx::Size& host_size) override;
-  virtual void OnCursorVisibilityChangedNative(bool show) override;
-  virtual void DispatchEvent(ui::Event* event) override;
+  gfx::Insets GetHostInsets() const override;
+  aura::WindowTreeHost* AsWindowTreeHost() override;
+  void SetRootTransform(const gfx::Transform& transform) override;
+  gfx::Transform GetRootTransform() const override;
+  gfx::Transform GetInverseRootTransform() const override;
+  void UpdateRootWindowSize(const gfx::Size& host_size) override;
+  void OnCursorVisibilityChangedNative(bool show) override;
+  void DispatchEvent(ui::Event* event) override;
 
   // Temporarily disable the tap-to-click feature. Used on CrOS.
   void SetTapToClickPaused(bool state);

@@ -26,7 +26,7 @@ class ChromeJavaScriptAppModalDialogViews
       app_modal::JavaScriptAppModalDialog* parent)
       : app_modal::JavaScriptAppModalDialogViews(parent),
         helper_(new AppModalDialogHelper(parent->web_contents())) {}
-  virtual ~ChromeJavaScriptAppModalDialogViews() {}
+  ~ChromeJavaScriptAppModalDialogViews() override {}
 
  private:
   scoped_ptr<AppModalDialogHelper> helper_;
