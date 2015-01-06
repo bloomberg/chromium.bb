@@ -378,9 +378,10 @@ void PepperURLLoaderHost::Close() {
 }
 
 blink::WebLocalFrame* PepperURLLoaderHost::GetFrame() {
-  PepperPluginInstance* instance_object =
-      renderer_ppapi_host_->GetPluginInstance(pp_instance());
-  if (!instance_object)
+  PepperPluginInstanceImpl* instance_object =
+      static_cast<PepperPluginInstanceImpl*>(
+          renderer_ppapi_host_->GetPluginInstance(pp_instance()));
+  if (!instance_object || instance_object->is_deleted())
     return NULL;
   return instance_object->GetContainer()->element().document().frame();
 }
