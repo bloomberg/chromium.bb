@@ -9,6 +9,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
@@ -69,17 +70,19 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   MOCK_METHOD0(UpdateCacheFromPrefsOnPrefThread, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkThread, void(const base::Closure&));
-  MOCK_METHOD5(UpdateCacheFromPrefsOnNetworkThread,
+  MOCK_METHOD6(UpdateCacheFromPrefsOnNetworkThread,
                void(std::vector<std::string>* spdy_servers,
-                    net::SpdySettingsMap* spdy_settings_map,
-                    net::AlternateProtocolMap* alternate_protocol_map,
-                    net::SupportsQuicMap* supports_quic_map,
+                    SpdySettingsMap* spdy_settings_map,
+                    AlternateProtocolMap* alternate_protocol_map,
+                    SupportsQuicMap* supports_quic_map,
+                    ServerNetworkStatsMap* server_network_stats_map,
                     bool detected_corrupted_prefs));
-  MOCK_METHOD4(UpdatePrefsOnPref,
+  MOCK_METHOD5(UpdatePrefsOnPref,
                void(base::ListValue* spdy_server_list,
-                    net::SpdySettingsMap* spdy_settings_map,
-                    net::AlternateProtocolMap* alternate_protocol_map,
-                    net::SupportsQuicMap* supports_quic_map));
+                    SpdySettingsMap* spdy_settings_map,
+                    AlternateProtocolMap* alternate_protocol_map,
+                    SupportsQuicMap* supports_quic_map,
+                    ServerNetworkStatsMap* server_network_stats_map));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
@@ -147,6 +150,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // it twice. Only expect a single cache update.
 
   base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
+  HostPortPair google_server("www.google.com", 80);
+  HostPortPair mail_server("mail.google.com", 80);
 
   // Set supports_spdy for www.google.com:80.
   server_pref_dict->SetBoolean("supports_spdy", true);
@@ -163,6 +168,11 @@ TEST_F(HttpServerPropertiesManagerTest,
   supports_quic->SetBoolean("used_quic", true);
   supports_quic->SetString("address", "foo");
   server_pref_dict->SetWithoutPathExpansion("supports_quic", supports_quic);
+
+  // Set up ServerNetworkStats for www.google.com:80.
+  base::DictionaryValue* stats = new base::DictionaryValue;
+  stats->SetInteger("srtt", 10);
+  server_pref_dict->SetWithoutPathExpansion("network_stats", stats);
 
   // Set the server preference for www.google.com:80.
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
@@ -188,6 +198,10 @@ TEST_F(HttpServerPropertiesManagerTest,
   supports_quic1->SetString("address", "bar");
   server_pref_dict1->SetWithoutPathExpansion("supports_quic", supports_quic1);
 
+  // Set up ServerNetworkStats for mail.google.com:80.
+  base::DictionaryValue* stats1 = new base::DictionaryValue;
+  stats1->SetInteger("srtt", 20);
+  server_pref_dict1->SetWithoutPathExpansion("network_stats", stats1);
   // Set the server preference for mail.google.com:80.
   servers_dict->SetWithoutPathExpansion("mail.google.com:80",
                                         server_pref_dict1);
@@ -209,38 +223,39 @@ TEST_F(HttpServerPropertiesManagerTest,
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   // Verify SupportsSpdy.
-  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(
-      net::HostPortPair::FromString("www.google.com:80")));
-  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(
-      net::HostPortPair::FromString("mail.google.com:80")));
+  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(google_server));
+  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(mail_server));
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
-      net::HostPortPair::FromString("foo.google.com:1337")));
+      HostPortPair::FromString("foo.google.com:1337")));
 
   // Verify AlternateProtocol.
-  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
-      net::HostPortPair::FromString("www.google.com:80")));
-  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
-      net::HostPortPair::FromString("mail.google.com:80")));
-  net::AlternateProtocolInfo port_alternate_protocol =
-      http_server_props_manager_->GetAlternateProtocol(
-          net::HostPortPair::FromString("www.google.com:80"));
+  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(google_server));
+  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(mail_server));
+  AlternateProtocolInfo port_alternate_protocol =
+      http_server_props_manager_->GetAlternateProtocol(google_server);
   EXPECT_EQ(443, port_alternate_protocol.port);
-  EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
-  port_alternate_protocol = http_server_props_manager_->GetAlternateProtocol(
-      net::HostPortPair::FromString("mail.google.com:80"));
+  EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol.protocol);
+  port_alternate_protocol =
+      http_server_props_manager_->GetAlternateProtocol(mail_server);
   EXPECT_EQ(444, port_alternate_protocol.port);
-  EXPECT_EQ(net::NPN_SPDY_3_1, port_alternate_protocol.protocol);
+  EXPECT_EQ(NPN_SPDY_3_1, port_alternate_protocol.protocol);
 
   // Verify SupportsQuic.
-  net::SupportsQuic supports_quic2 =
-      http_server_props_manager_->GetSupportsQuic(
-          net::HostPortPair::FromString("www.google.com:80"));
+  SupportsQuic supports_quic2 =
+      http_server_props_manager_->GetSupportsQuic(google_server);
   EXPECT_TRUE(supports_quic2.used_quic);
   EXPECT_EQ("foo", supports_quic2.address);
-  supports_quic2 = http_server_props_manager_->GetSupportsQuic(
-      net::HostPortPair::FromString("mail.google.com:80"));
+  supports_quic2 = http_server_props_manager_->GetSupportsQuic(mail_server);
   EXPECT_FALSE(supports_quic2.used_quic);
   EXPECT_EQ("bar", supports_quic2.address);
+
+  // Verify ServerNetworkStats.
+  const ServerNetworkStats* stats2 =
+      http_server_props_manager_->GetServerNetworkStats(google_server);
+  EXPECT_EQ(10, stats2->srtt.ToInternalValue());
+  const ServerNetworkStats* stats3 =
+      http_server_props_manager_->GetServerNetworkStats(mail_server);
+  EXPECT_EQ(20, stats3->srtt.ToInternalValue());
 }
 
 TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
@@ -266,6 +281,11 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   supports_quic->SetString("address", "foo");
   server_pref_dict->SetWithoutPathExpansion("supports_quic", supports_quic);
 
+  // Set up ServerNetworkStats for www.google.com:65536.
+  base::DictionaryValue* stats = new base::DictionaryValue;
+  stats->SetInteger("srtt", 10);
+  server_pref_dict->SetWithoutPathExpansion("network_stats", stats);
+
   // Set the server preference for www.google.com:65536.
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
   servers_dict->SetWithoutPathExpansion("www.google.com:65536",
@@ -285,13 +305,16 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
 
   // Verify that nothing is set.
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
-      net::HostPortPair::FromString("www.google.com:65536")));
+      HostPortPair::FromString("www.google.com:65536")));
   EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
-      net::HostPortPair::FromString("www.google.com:65536")));
-  net::SupportsQuic supports_quic2 =
-      http_server_props_manager_->GetSupportsQuic(
-          net::HostPortPair::FromString("www.google.com:65536"));
+      HostPortPair::FromString("www.google.com:65536")));
+  SupportsQuic supports_quic2 = http_server_props_manager_->GetSupportsQuic(
+      HostPortPair::FromString("www.google.com:65536"));
   EXPECT_FALSE(supports_quic2.used_quic);
+  const ServerNetworkStats* stats1 =
+      http_server_props_manager_->GetServerNetworkStats(
+          HostPortPair::FromString("www.google.com:65536"));
+  EXPECT_EQ(NULL, stats1);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
@@ -329,7 +352,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
 
   // Verify AlternateProtocol is not set.
   EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
-      net::HostPortPair::FromString("www.google.com:80")));
+      HostPortPair::FromString("www.google.com:80")));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
@@ -339,7 +362,7 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
   // ScheduleUpdatePrefsOnNetworkThread.
 
   // Add mail.google.com:443 as a supporting spdy server.
-  net::HostPortPair spdy_server_mail("mail.google.com", 443);
+  HostPortPair spdy_server_mail("mail.google.com", 443);
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
 
@@ -354,9 +377,9 @@ TEST_F(HttpServerPropertiesManagerTest, SetSpdySetting) {
   ExpectPrefsUpdate();
 
   // Add SpdySetting for mail.google.com:443.
-  net::HostPortPair spdy_server_mail("mail.google.com", 443);
-  const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
-  const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;
+  HostPortPair spdy_server_mail("mail.google.com", 443);
+  const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
+  const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32 value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
@@ -364,13 +387,13 @@ TEST_F(HttpServerPropertiesManagerTest, SetSpdySetting) {
   // Run the task.
   base::RunLoop().RunUntilIdle();
 
-  const net::SettingsMap& settings_map1_ret =
+  const SettingsMap& settings_map1_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   ASSERT_EQ(1U, settings_map1_ret.size());
-  net::SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
   EXPECT_TRUE(it1_ret != settings_map1_ret.end());
-  net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
-  EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -380,9 +403,9 @@ TEST_F(HttpServerPropertiesManagerTest, ClearSpdySetting) {
   ExpectPrefsUpdateRepeatedly();
 
   // Add SpdySetting for mail.google.com:443.
-  net::HostPortPair spdy_server_mail("mail.google.com", 443);
-  const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
-  const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;
+  HostPortPair spdy_server_mail("mail.google.com", 443);
+  const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
+  const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32 value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
@@ -390,13 +413,13 @@ TEST_F(HttpServerPropertiesManagerTest, ClearSpdySetting) {
   // Run the task.
   base::RunLoop().RunUntilIdle();
 
-  const net::SettingsMap& settings_map1_ret =
+  const SettingsMap& settings_map1_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   ASSERT_EQ(1U, settings_map1_ret.size());
-  net::SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
   EXPECT_TRUE(it1_ret != settings_map1_ret.end());
-  net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
-  EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
   // Clear SpdySetting for mail.google.com:443.
@@ -407,7 +430,7 @@ TEST_F(HttpServerPropertiesManagerTest, ClearSpdySetting) {
 
   // Verify that there are no entries in the settings map for
   // mail.google.com:443.
-  const net::SettingsMap& settings_map2_ret =
+  const SettingsMap& settings_map2_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   ASSERT_EQ(0U, settings_map2_ret.size());
 
@@ -418,9 +441,9 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
   ExpectPrefsUpdateRepeatedly();
 
   // Add SpdySetting for mail.google.com:443.
-  net::HostPortPair spdy_server_mail("mail.google.com", 443);
-  const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
-  const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;
+  HostPortPair spdy_server_mail("mail.google.com", 443);
+  const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
+  const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32 value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
@@ -428,13 +451,13 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
   // Run the task.
   base::RunLoop().RunUntilIdle();
 
-  const net::SettingsMap& settings_map1_ret =
+  const SettingsMap& settings_map1_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   ASSERT_EQ(1U, settings_map1_ret.size());
-  net::SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
   EXPECT_TRUE(it1_ret != settings_map1_ret.end());
-  net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
-  EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
   // Clear All SpdySettings.
@@ -444,7 +467,7 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that there are no entries in the settings map.
-  const net::SpdySettingsMap& spdy_settings_map2_ret =
+  const SpdySettingsMap& spdy_settings_map2_ret =
       http_server_props_manager_->spdy_settings_map();
   ASSERT_EQ(0U, spdy_settings_map2_ret.size());
 
@@ -454,11 +477,11 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
 TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
   ExpectPrefsUpdate();
 
-  net::HostPortPair spdy_server_mail("mail.google.com", 80);
+  HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
-  http_server_props_manager_->SetAlternateProtocol(
-      spdy_server_mail, 443, net::NPN_SPDY_3, 1);
+  http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
+                                                   NPN_SPDY_3, 1);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
@@ -466,18 +489,18 @@ TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
 
   ASSERT_TRUE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
-  net::AlternateProtocolInfo port_alternate_protocol =
+  AlternateProtocolInfo port_alternate_protocol =
       http_server_props_manager_->GetAlternateProtocol(spdy_server_mail);
   EXPECT_EQ(443, port_alternate_protocol.port);
-  EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
+  EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol.protocol);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   ExpectPrefsUpdate();
 
-  net::HostPortPair quic_server_mail("mail.google.com", 80);
-  net::SupportsQuic supports_quic = http_server_props_manager_->GetSupportsQuic(
-      quic_server_mail);
+  HostPortPair quic_server_mail("mail.google.com", 80);
+  SupportsQuic supports_quic =
+      http_server_props_manager_->GetSupportsQuic(quic_server_mail);
   EXPECT_FALSE(supports_quic.used_quic);
   EXPECT_EQ("", supports_quic.address);
   http_server_props_manager_->SetSupportsQuic(quic_server_mail, true, "foo");
@@ -486,23 +509,46 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  net::SupportsQuic supports_quic1 =
+  SupportsQuic supports_quic1 =
       http_server_props_manager_->GetSupportsQuic(quic_server_mail);
   EXPECT_TRUE(supports_quic1.used_quic);
   EXPECT_EQ("foo", supports_quic1.address);
 }
 
+TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
+  ExpectPrefsUpdate();
+
+  HostPortPair mail_server("mail.google.com", 80);
+  const ServerNetworkStats* stats =
+      http_server_props_manager_->GetServerNetworkStats(mail_server);
+  EXPECT_EQ(NULL, stats);
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  http_server_props_manager_->SetServerNetworkStats(mail_server, stats1);
+
+  // Run the task.
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  const ServerNetworkStats* stats2 =
+      http_server_props_manager_->GetServerNetworkStats(mail_server);
+  EXPECT_EQ(10, stats2->srtt.ToInternalValue());
+}
+
 TEST_F(HttpServerPropertiesManagerTest, Clear) {
   ExpectPrefsUpdate();
 
-  net::HostPortPair spdy_server_mail("mail.google.com", 443);
+  HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
-  http_server_props_manager_->SetAlternateProtocol(
-      spdy_server_mail, 443, net::NPN_SPDY_3, 1);
+  http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
+                                                   NPN_SPDY_3, 1);
   http_server_props_manager_->SetSupportsQuic(spdy_server_mail, true, "foo");
+  ServerNetworkStats stats;
+  stats.srtt = base::TimeDelta::FromMicroseconds(10);
+  http_server_props_manager_->SetServerNetworkStats(spdy_server_mail, stats);
 
-  const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
-  const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;
+  const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
+  const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32 value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
@@ -513,19 +559,22 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
   EXPECT_TRUE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
-  net::SupportsQuic supports_quic = http_server_props_manager_->GetSupportsQuic(
-      spdy_server_mail);
+  SupportsQuic supports_quic =
+      http_server_props_manager_->GetSupportsQuic(spdy_server_mail);
   EXPECT_TRUE(supports_quic.used_quic);
   EXPECT_EQ("foo", supports_quic.address);
+  const ServerNetworkStats* stats1 =
+      http_server_props_manager_->GetServerNetworkStats(spdy_server_mail);
+  EXPECT_EQ(10, stats1->srtt.ToInternalValue());
 
   // Check SPDY settings values.
-  const net::SettingsMap& settings_map1_ret =
+  const SettingsMap& settings_map1_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   ASSERT_EQ(1U, settings_map1_ret.size());
-  net::SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
   EXPECT_TRUE(it1_ret != settings_map1_ret.end());
-  net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
-  EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -539,12 +588,15 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
   EXPECT_FALSE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
-  net::SupportsQuic supports_quic1 =
+  SupportsQuic supports_quic1 =
       http_server_props_manager_->GetSupportsQuic(spdy_server_mail);
   EXPECT_FALSE(supports_quic1.used_quic);
   EXPECT_EQ("", supports_quic1.address);
+  const ServerNetworkStats* stats2 =
+      http_server_props_manager_->GetServerNetworkStats(spdy_server_mail);
+  EXPECT_EQ(NULL, stats2);
 
-  const net::SettingsMap& settings_map2_ret =
+  const SettingsMap& settings_map2_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   EXPECT_EQ(0U, settings_map2_ret.size());
 

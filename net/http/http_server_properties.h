@@ -129,10 +129,18 @@ struct NET_EXPORT SupportsQuic {
   std::string address;
 };
 
+struct NET_EXPORT ServerNetworkStats {
+  ServerNetworkStats() : bandwidth_estimate(QuicBandwidth::Zero()) {}
+
+  base::TimeDelta srtt;
+  QuicBandwidth bandwidth_estimate;
+};
+
 typedef base::MRUCache<
     HostPortPair, AlternateProtocolInfo> AlternateProtocolMap;
 typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
 typedef std::map<HostPortPair, SupportsQuic> SupportsQuicMap;
+typedef base::MRUCache<HostPortPair, ServerNetworkStats> ServerNetworkStatsMap;
 
 extern const char kAlternateProtocolHeader[];
 
@@ -143,13 +151,6 @@ extern const char kAlternateProtocolHeader[];
 // * Spdy Settings (like CWND ID field)
 class NET_EXPORT HttpServerProperties {
  public:
-  struct NetworkStats {
-    NetworkStats() : bandwidth_estimate(QuicBandwidth::Zero()) {}
-
-    base::TimeDelta srtt;
-    QuicBandwidth bandwidth_estimate;
-  };
-
   HttpServerProperties() {}
   virtual ~HttpServerProperties() {}
 
@@ -237,10 +238,12 @@ class NET_EXPORT HttpServerProperties {
   virtual const SupportsQuicMap& supports_quic_map() const = 0;
 
   virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
-                                     NetworkStats stats) = 0;
+                                     ServerNetworkStats stats) = 0;
 
-  virtual const NetworkStats* GetServerNetworkStats(
-      const HostPortPair& host_port_pair) const = 0;
+  virtual const ServerNetworkStats* GetServerNetworkStats(
+      const HostPortPair& host_port_pair) = 0;
+
+  virtual const ServerNetworkStatsMap& server_network_stats_map() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpServerProperties);

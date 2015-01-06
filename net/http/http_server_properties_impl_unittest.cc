@@ -295,8 +295,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   impl_.InitializeAlternateProtocolServers(&alternate_protocol_map);
 
   // Verify test_host_port_pair3 is the MRU server.
-  const net::AlternateProtocolMap& map = impl_.alternate_protocol_map();
-  net::AlternateProtocolMap::const_iterator it = map.begin();
+  const AlternateProtocolMap& map = impl_.alternate_protocol_map();
+  AlternateProtocolMap::const_iterator it = map.begin();
   it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair3));
   EXPECT_EQ(1234, it->second.port);
@@ -317,8 +317,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfHasAlternateProtocol) {
   HostPortPair test_host_port_pair2("foo2", 80);
   impl_.SetAlternateProtocol(test_host_port_pair2, 1234, NPN_SPDY_3, 1);
 
-  const net::AlternateProtocolMap& map = impl_.alternate_protocol_map();
-  net::AlternateProtocolMap::const_iterator it = map.begin();
+  const AlternateProtocolMap& map = impl_.alternate_protocol_map();
+  AlternateProtocolMap::const_iterator it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
   EXPECT_EQ(1234, it->second.port);
   EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
@@ -337,8 +337,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
   HostPortPair test_host_port_pair2("foo2", 80);
   impl_.SetAlternateProtocol(test_host_port_pair2, 1234, NPN_SPDY_3, 1);
 
-  const net::AlternateProtocolMap& map = impl_.alternate_protocol_map();
-  net::AlternateProtocolMap::const_iterator it = map.begin();
+  const AlternateProtocolMap& map = impl_.alternate_protocol_map();
+  AlternateProtocolMap::const_iterator it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
   EXPECT_EQ(1234, it->second.port);
   EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
@@ -685,8 +685,8 @@ TEST_F(SpdySettingsServerPropertiesTest, MRUOfGetSpdySettings) {
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_docs, id2, flags2, value2));
 
   // Verify the first element is docs.google.com:443.
-  const net::SpdySettingsMap& map = impl_.spdy_settings_map();
-  net::SpdySettingsMap::const_iterator it = map.begin();
+  const SpdySettingsMap& map = impl_.spdy_settings_map();
+  SpdySettingsMap::const_iterator it = map.begin();
   EXPECT_TRUE(it->first.Equals(spdy_server_docs));
   const SettingsMap& settings_map2_ret = it->second;
   ASSERT_EQ(1U, settings_map2_ret.size());
@@ -755,6 +755,50 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_FALSE(supports_quic2.used_quic);
   EXPECT_EQ("", supports_quic2.address);
 }
+
+typedef HttpServerPropertiesImplTest ServerNetworkStatsServerPropertiesTest;
+
+TEST_F(ServerNetworkStatsServerPropertiesTest, Initialize) {
+  HostPortPair google_server("www.google.com", 443);
+
+  // Check by initializing empty ServerNetworkStats.
+  ServerNetworkStatsMap server_network_stats_map(
+      ServerNetworkStatsMap::NO_AUTO_EVICT);
+  impl_.InitializeServerNetworkStats(&server_network_stats_map);
+  const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
+  EXPECT_EQ(NULL, stats);
+
+  // Check by initializing with www.google.com:443.
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  stats1.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(100);
+  server_network_stats_map.Put(google_server, stats1);
+  impl_.InitializeServerNetworkStats(&server_network_stats_map);
+
+  const ServerNetworkStats* stats2 = impl_.GetServerNetworkStats(google_server);
+  EXPECT_EQ(10, stats2->srtt.ToInternalValue());
+  EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
+}
+
+TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
+  HostPortPair foo_server("foo", 80);
+  const ServerNetworkStats* stats = impl_.GetServerNetworkStats(foo_server);
+  EXPECT_EQ(NULL, stats);
+
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  stats1.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(100);
+  impl_.SetServerNetworkStats(foo_server, stats1);
+
+  const ServerNetworkStats* stats2 = impl_.GetServerNetworkStats(foo_server);
+  EXPECT_EQ(10, stats2->srtt.ToInternalValue());
+  EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
+
+  impl_.Clear();
+  const ServerNetworkStats* stats3 = impl_.GetServerNetworkStats(foo_server);
+  EXPECT_EQ(NULL, stats3);
+}
+
 }  // namespace
 
 }  // namespace net

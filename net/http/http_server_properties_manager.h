@@ -155,10 +155,12 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   const SupportsQuicMap& supports_quic_map() const override;
 
   void SetServerNetworkStats(const HostPortPair& host_port_pair,
-                             NetworkStats stats) override;
+                             ServerNetworkStats stats) override;
 
-  const NetworkStats* GetServerNetworkStats(
-      const HostPortPair& host_port_pair) const override;
+  const ServerNetworkStats* GetServerNetworkStats(
+      const HostPortPair& host_port_pair) override;
+
+  const ServerNetworkStatsMap& server_network_stats_map() const override;
 
  protected:
   // --------------------
@@ -186,6 +188,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       SpdySettingsMap* spdy_settings_map,
       AlternateProtocolMap* alternate_protocol_map,
       SupportsQuicMap* supports_quic_map,
+      ServerNetworkStatsMap* server_network_stats_map,
       bool detected_corrupted_prefs);
 
   // These are used to delay updating the preferences when cached data in
@@ -214,6 +217,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
                                SpdySettingsMap* spdy_settings_map,
                                AlternateProtocolMap* alternate_protocol_map,
                                SupportsQuicMap* supports_quic_map,
+                               ServerNetworkStatsMap* server_network_stats_map,
                                const base::Closure& completion);
 
  private:

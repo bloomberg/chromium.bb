@@ -1012,7 +1012,7 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
   if (http_server_properties_) {
-    const HttpServerProperties::NetworkStats* stats =
+    const ServerNetworkStats* stats =
         http_server_properties_->GetServerNetworkStats(
             server_id.host_port_pair());
     if (stats != nullptr) {
@@ -1123,7 +1123,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
 
   const QuicConnectionStats& stats = session->connection()->GetStats();
   if (session->IsCryptoHandshakeConfirmed()) {
-    HttpServerProperties::NetworkStats network_stats;
+    ServerNetworkStats network_stats;
     network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
     http_server_properties_->SetServerNetworkStats(server_id.host_port_pair(),

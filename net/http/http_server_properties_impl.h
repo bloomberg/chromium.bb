@@ -44,6 +44,9 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   void InitializeSupportsQuic(SupportsQuicMap* supports_quic_map);
 
+  void InitializeServerNetworkStats(
+      ServerNetworkStatsMap* server_network_stats_map);
+
   // Get the list of servers (host/port) that support SPDY. The max_size is the
   // number of MRU servers that support SPDY that are to be returned.
   void GetSpdyServerList(base::ListValue* spdy_server_list,
@@ -51,8 +54,7 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   // Returns flattened string representation of the |host_port_pair|. Used by
   // unittests.
-  static std::string GetFlattenedSpdyServer(
-      const net::HostPortPair& host_port_pair);
+  static std::string GetFlattenedSpdyServer(const HostPortPair& host_port_pair);
 
   // Debugging to simulate presence of an AlternateProtocol.
   // If we don't have an alternate protocol in the map for any given host/port
@@ -62,7 +64,7 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   // Returns the canonical host suffix for |server|, or std::string() if none
   // exists.
-  std::string GetCanonicalSuffix(const net::HostPortPair& server);
+  std::string GetCanonicalSuffix(const HostPortPair& server);
 
   // -----------------------------
   // HttpServerProperties methods:
@@ -142,18 +144,19 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   const SupportsQuicMap& supports_quic_map() const override;
 
-  // Methods for NetworkStats.
+  // Methods for ServerNetworkStats.
   void SetServerNetworkStats(const HostPortPair& host_port_pair,
-                             NetworkStats stats) override;
+                             ServerNetworkStats stats) override;
 
-  const NetworkStats* GetServerNetworkStats(
-      const HostPortPair& host_port_pair) const override;
+  const ServerNetworkStats* GetServerNetworkStats(
+      const HostPortPair& host_port_pair) override;
+
+  const ServerNetworkStatsMap& server_network_stats_map() const override;
 
  private:
   // |spdy_servers_map_| has flattened representation of servers (host, port)
   // that either support or not support SPDY protocol.
   typedef base::MRUCache<std::string, bool> SpdyServerHostPortMap;
-  typedef std::map<HostPortPair, NetworkStats> ServerNetworkStatsMap;
   typedef std::map<HostPortPair, HostPortPair> CanonicalHostMap;
   typedef std::vector<std::string> CanonicalSufficList;
   // List of broken host:ports and the times when they can be expired.
