@@ -183,10 +183,7 @@ struct IntegerNumberValues {
   const int16 V8 = 12345;
   const int16 V9 = 32767;
 
-  // MSVC can't parse -2147483648 so V10 is intentionally off by one.
-  // See http://msdn.microsoft.com/en-us/library/4kh09110.aspx
-  // Tests may override V10.
-  const int32 V10 = -2147483647;
+  const int32 V10 = -2147483648;
   const int32 V11 = -1;
   const int32 V12 = 0;
   const int32 V13 = 1234567890;

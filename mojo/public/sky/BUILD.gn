@@ -5,6 +5,7 @@
 action_foreach("sky") {
   script = "convert_amd_modules_to_sky.py"
   sources = [
+    "../js/bindings.js",
     "../js/buffer.js",
     "../js/codec.js",
     "../js/connection.js",

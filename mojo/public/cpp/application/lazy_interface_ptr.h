@@ -26,7 +26,7 @@ class LazyInterfacePtr : public InterfacePtr<Interface> {
   }
 
   Interface* get() const {
-    if (!InterfacePtr<Interface>::get()) {
+    if (!InterfacePtr<Interface>::get() && service_provider_) {
       mojo::ConnectToService<Interface>(
           service_provider_, const_cast<LazyInterfacePtr<Interface>*>(this));
     }

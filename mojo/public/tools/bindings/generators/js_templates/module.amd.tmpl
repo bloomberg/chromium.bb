@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 define("{{module.path}}", [
+    "mojo/public/js/bindings",
     "mojo/public/js/codec",
     "mojo/public/js/connection",
     "mojo/public/js/core",
@@ -10,7 +11,7 @@ define("{{module.path}}", [
 {%- for import in imports %}
     "{{import.module.path}}",
 {%- endfor %}
-], function(codec, connection, core, validator
+], function(bindings, codec, connection, core, validator
 {%- for import in imports -%}
     , {{import.unique_name}}
 {%- endfor -%}

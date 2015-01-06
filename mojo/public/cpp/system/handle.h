@@ -301,7 +301,7 @@ inline WaitManyResult WaitMany(const HandleVectorType& handles,
   if (signals.size() != handles.size())
     return WaitManyResult(MOJO_RESULT_INVALID_ARGUMENT);
   if (handles.size() >= kInvalidWaitManyIndexValue)
-    return WaitManyResult(MOJO_RESULT_OUT_OF_RANGE);
+    return WaitManyResult(MOJO_RESULT_RESOURCE_EXHAUSTED);
 
   if (handles.size() == 0) {
     return WaitManyResult(

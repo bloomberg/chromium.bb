@@ -568,6 +568,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("denyWebView", IDR_WEB_VIEW_DENY_JS));
   resources.push_back(
+      std::make_pair(mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS));
+  resources.push_back(
       std::make_pair(mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS));
   resources.push_back(
       std::make_pair(mojo::kCodecModuleName, IDR_MOJO_CODEC_JS));

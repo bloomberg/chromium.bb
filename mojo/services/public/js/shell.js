@@ -3,17 +3,21 @@
 // found in the LICENSE file.
 
 define("mojo/services/public/js/shell", [
+  "mojo/public/js/bindings",
   "mojo/public/js/core",
   "mojo/public/js/connection",
   "mojo/public/interfaces/application/shell.mojom",
   "mojo/public/interfaces/application/service_provider.mojom",
-  "mojo/services/public/js/service_provider"
-], function(core,
+  "mojo/services/public/js/service_provider",
+], function(bindings,
+            core,
             connection,
             shellMojom,
             serviceProviderMojom,
             serviceProvider) {
 
+  const ProxyBindings = bindings.ProxyBindings;
+  const StubBindings = bindings.StubBindings;
   const ServiceProvider = serviceProvider.ServiceProvider;
   const ServiceProviderInterface = serviceProviderMojom.ServiceProvider;
   const ShellInterface = shellMojom.Shell;
@@ -23,7 +27,8 @@ define("mojo/services/public/js/shell", [
       this.shellHandle = shellHandle;
       this.proxy = connection.bindProxyHandle(
           shellHandle, ShellInterface.client, ShellInterface);
-      this.proxy.local$ = app; // The app is the shell's client.
+
+      ProxyBindings(this.proxy).setLocalDelegate(app);
       // TODO: call this serviceProviders_
       this.applications_ = new Map();
     }
@@ -33,9 +38,9 @@ define("mojo/services/public/js/shell", [
       if (application)
         return application;
 
-      var returnValue = {};
-      this.proxy.connectToApplication(url, returnValue);
-      application = new ServiceProvider(returnValue.remote$);
+      this.proxy.connectToApplication(url, function(sp) {
+        application = new ServiceProvider(sp);
+      });
       this.applications_.set(url, application);
       return application;
     }

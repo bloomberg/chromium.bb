@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/connection", [
+  "mojo/public/js/bindings",
   "mojo/public/js/connector",
   "mojo/public/js/core",
   "mojo/public/js/router",
-], function(connector, core, router) {
+], function(bindings, connector, core, router) {
 
   var Router = router.Router;
+  var EmptyProxy = bindings.EmptyProxy;
+  var EmptyStub = bindings.EmptyStub;
+  var ProxyBindings = bindings.ProxyBindings;
+  var StubBindings = bindings.StubBindings;
   var TestConnector = connector.TestConnector;
   var TestRouter = router.TestRouter;
 
@@ -68,46 +73,25 @@ define("mojo/public/js/connection", [
 
   TestConnection.prototype = Object.create(Connection.prototype);
 
-  // Called by the generated interface Proxy constructor classes.
-  function initProxyInstance(proxy, proxyInterface, receiver) {
-    Object.defineProperty(proxy, 'local$', {
-      get: function() {
-        return proxy.connection$ &&
-          proxy.connection$.local && proxy.connection$.local.delegate$
-      },
-      set: function(value) {
-        // TODO: what if the connection hasn't been created yet?
-        if (proxy.connection$ && proxy.connection$.local) {
-          proxy.connection$.local.delegate$ = value;
-          value.remote$ = proxy;
-        }
-      }
-    });
-    // TODO(hansmuller): Temporary, for Chrome backwards compatibility.
-    if (receiver instanceof Router)
-      proxy.receiver_ = receiver;
-  }
-
-  function createEmptyProxy() {
-    var proxy = {};
-    initProxyInstance(proxy);
-    return proxy;
-  }
-
   function createOpenConnection(
-      messagePipeHandle, clientImpl, localInterface, remoteInterface) {
-    var stubClass = localInterface && localInterface.stubClass
-    var proxyClass = remoteInterface && remoteInterface.proxyClass;
-    var stub = stubClass &&
-        (clientImpl ? new stubClass(clientImpl) : new stubClass);
-    var proxy = proxyClass ? new proxyClass : createEmptyProxy();
+      messagePipeHandle, client, localInterface, remoteInterface) {
+    var stubClass = (localInterface && localInterface.stubClass) || EmptyStub;
+    var proxyClass =
+        (remoteInterface && remoteInterface.proxyClass) || EmptyProxy;
+    var proxy = new proxyClass;
+    var stub = new stubClass;
     var router = new Router(messagePipeHandle);
     var connection = new BaseConnection(stub, proxy, router);
-    proxy.connection$ = connection;
-    if (clientImpl) {
-      clientImpl.connection$ = connection;
-      clientImpl.remote$ = proxy;
-    }
+
+    ProxyBindings(proxy).connection = connection;
+    ProxyBindings(proxy).local = connection.local;
+    StubBindings(stub).connection = connection;
+    StubBindings(proxy).remote = connection.remote;
+
+    var clientImpl = client instanceof Function ? client(proxy) : client;
+    if (clientImpl)
+      StubBindings(stub).delegate = clientImpl;
+
     return connection;
   }
 
@@ -137,6 +121,5 @@ define("mojo/public/js/connection", [
   exports.TestConnection = TestConnection;
   exports.bindProxyHandle = bindProxyHandle;
   exports.bindProxyClient = bindProxyClient;
-  exports.initProxyInstance = initProxyInstance;
   return exports;
 });

@@ -3,8 +3,9 @@
 {%- endfor %}
 
   function {{interface.name}}Proxy(receiver) {
-    connection.initProxyInstance(this, {{interface.name}}, receiver);
+    bindings.ProxyBase.call(this, receiver);
   }
+  {{interface.name}}Proxy.prototype = Object.create(bindings.ProxyBase.prototype);
 
 {%- for method in interface.methods %}
   {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
@@ -46,18 +47,15 @@
 {%- endfor %}
 
   function {{interface.name}}Stub(delegate) {
-      this.delegate$ = delegate;
+    bindings.StubBase.call(this, delegate);
   }
+  {{interface.name}}Stub.prototype = Object.create(bindings.StubBase.prototype);
 
 {%- for method in interface.methods %}
-{% macro stub_method_parameters() -%}
-{%- for parameter in method.parameters -%}
-  {{parameter.name}}{% if not loop.last %}, {% endif %}
-{%- endfor %}
-{%- endmacro %}
-  {{interface.name}}Stub.prototype.{{method.name|stylize_method}} = function({{stub_method_parameters()}}) {
-    if (this.delegate$.{{method.name|stylize_method}})
-      return this.delegate$.{{method.name|stylize_method}}({{method.parameters|map('js_stub_method_parameter_value')|join(',')}});
+{%-   set js_method_name = method.name|stylize_method %}
+{%-   set delegate_expr =  "bindings.StubBindings(this).delegate" %}
+  {{interface.name}}Stub.prototype.{{js_method_name}} = function({{method.parameters|map(attribute='name')|join(', ')}}) {
+    return {{delegate_expr}} && {{delegate_expr}}.{{js_method_name}} && {{delegate_expr}}.{{js_method_name}}({{method.parameters|map('js_stub_method_parameter_value')|join(', ')}});
   }
 {%- endfor %}
 

@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 define("mojo/services/public/js/service_provider", [
+  "mojo/public/js/bindings",
   "mojo/public/interfaces/application/service_provider.mojom",
   "mojo/public/js/connection",
-], function(serviceProviderMojom, connection) {
+], function(bindings, serviceProviderMojom, connection) {
 
+  const ProxyBindings = bindings.ProxyBindings;
+  const StubBindings = bindings.StubBindings;
   const ServiceProviderInterface = serviceProviderMojom.ServiceProvider;
 
   function checkServiceProvider(sp) {
@@ -18,7 +21,8 @@ define("mojo/services/public/js/service_provider", [
     constructor(service) {
       if (!(service instanceof ServiceProviderInterface.proxyClass))
         throw new Error("service must be a ServiceProvider proxy");
-      service.local$ = this; // Implicitly sets this.remote$ to service.
+      this.proxy = service;
+      ProxyBindings(this.proxy).setLocalDelegate(this);
       this.providers_ = new Map(); // serviceName => see provideService() below
       this.pendingRequests_ = new Map(); // serviceName => serviceHandle
     }
@@ -35,8 +39,9 @@ define("mojo/services/public/js/service_provider", [
       }
       var proxy = connection.bindProxyHandle(
           serviceHandle, provider.service, provider.service.client);
-      proxy.local$ = new provider.factory(proxy);
-      provider.connections.push(proxy.connection$);
+      if (ProxyBindings(proxy).local)
+        ProxyBindings(proxy).setLocalDelegate(new provider.factory(proxy));
+      provider.connections.push(ProxyBindings(proxy).connection);
     }
 
     provideService(service, factory) {
@@ -64,12 +69,12 @@ define("mojo/services/public/js/service_provider", [
       if (!clientImpl && interfaceObject.client)
         throw new Error("Client implementation must be provided");
 
-      if (!clientImpl)
-        clientImpl = {};
+      var remoteProxy;
+      var clientFactory = function(x) {remoteProxy = x; return clientImpl;};
       var messagePipeHandle = connection.bindProxyClient(
-          clientImpl, interfaceObject.client, interfaceObject);
-      this.remote$.connectToService(interfaceObject.name, messagePipeHandle);
-      return clientImpl.remote$;
+          clientFactory, interfaceObject.client, interfaceObject);
+      this.proxy.connectToService(interfaceObject.name, messagePipeHandle);
+      return remoteProxy;
     };
 
     close() {
