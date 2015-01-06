@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkPixelSerializer.h"

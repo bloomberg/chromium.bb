@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
+class SkDrawPictureCallback;
 class SkPixelRef;
 
 namespace base {

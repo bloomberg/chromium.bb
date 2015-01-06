@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkDrawPictureCallback.h"
 
 namespace skia {
 

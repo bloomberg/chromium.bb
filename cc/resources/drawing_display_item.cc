@@ -5,6 +5,7 @@
 #include "cc/resources/drawing_display_item.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
