@@ -285,10 +285,6 @@ class Page16(KeySilkCasesPage):
         direction='left', distance=400, speed_in_pixels_per_second=5000,
         element_function='document.getElementsByClassName("message")[2]')
     interaction.End()
-    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementsByClassName("message").length < 18')
-    interaction.End()
 
   def RunPageInteractions(self, action_runner):
     self.SwipeToDismiss(action_runner)
@@ -676,7 +672,8 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddUserStory(Page16(self))
     self.AddUserStory(Page17(self))
     self.AddUserStory(Page18(self))
-    self.AddUserStory(Page19(self))
+    # Missing frames during tap interaction; crbug.com/446332
+    # self.AddUserStory(Page19(self))
     self.AddUserStory(Page20(self))
     self.AddUserStory(GwsGoogleExpansion(self))
     self.AddUserStory(GwsBoogieExpansion(self))
