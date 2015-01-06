@@ -21,7 +21,7 @@ SocketTunnelConnection::~SocketTunnelConnection() {
 void SocketTunnelConnection::Write(scoped_refptr<net::IOBufferWithSize> chunk) {
   // TODO(serya): While it is unlikely (socket normally much faster than
   // data channel) we should disconnect if too much data buffered.
-  buffer_.push_back();
+  buffer_.push_back(chunk);
   if (buffer_.size() == 1) {
     current_ = new net::DrainableIOBuffer(chunk.get(), chunk->size());
     WriteCurrent();
