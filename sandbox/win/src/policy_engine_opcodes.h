@@ -154,7 +154,7 @@ class PolicyOpcode {
   // from 0 to < kArgumentCount.
   template <typename T>
   void GetArgument(size_t index, T* argument) const {
-    COMPILE_ASSERT(sizeof(T) <= sizeof(arguments_[0]), invalid_size);
+    static_assert(sizeof(T) <= sizeof(arguments_[0]), "invalid size");
     *argument = *reinterpret_cast<const T*>(&arguments_[index].mem);
   }
 
@@ -162,7 +162,7 @@ class PolicyOpcode {
   // from 0 to < kArgumentCount.
   template <typename T>
   void SetArgument(size_t index, const T& argument) {
-    COMPILE_ASSERT(sizeof(T) <= sizeof(arguments_[0]), invalid_size);
+    static_assert(sizeof(T) <= sizeof(arguments_[0]), "invalid size");
     *reinterpret_cast<T*>(&arguments_[index].mem) = argument;
   }
 

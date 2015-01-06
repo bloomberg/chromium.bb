@@ -906,7 +906,7 @@ ResultExpr SimpleCondTestPolicy::EvaluateSyscall(int sysno) const {
         flags_argument_position = 2;
 
       // Allow opening files for reading, but don't allow writing.
-      COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_be_all_zero_bits);
+      static_assert(O_RDONLY == 0, "O_RDONLY must be all zero bits");
       const Arg<int> flags(flags_argument_position);
       return If((flags & O_ACCMODE) != 0, Error(EROFS)).Else(Allow());
     }
@@ -951,9 +951,10 @@ class EqualityStressTest {
     // We are actually constructing a graph of ArgValue objects. This
     // graph will later be used to a) compute our sandbox policy, and
     // b) drive the code that verifies the output from the BPF program.
-    COMPILE_ASSERT(
+    static_assert(
         kNumTestCases < (int)(MAX_PUBLIC_SYSCALL - MIN_SYSCALL - 10),
-        num_test_cases_must_be_significantly_smaller_than_num_system_calls);
+        "kNumTestCases must be significantly smaller than the number "
+        "of system calls");
     for (int sysno = MIN_SYSCALL, end = kNumTestCases; sysno < end; ++sysno) {
       if (IsReservedSyscall(sysno)) {
         // Skip reserved system calls. This ensures that our test frame

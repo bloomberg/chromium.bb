@@ -264,7 +264,7 @@ ResultExpr RestrictGetSetpriority(pid_t target_pid) {
 }
 
 ResultExpr RestrictClockID() {
-  COMPILE_ASSERT(4 == sizeof(clockid_t), clockid_is_not_32bit);
+  static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
   const Arg<clockid_t> clockid(0);
   return If(
 #if defined(OS_CHROMEOS)

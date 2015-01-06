@@ -287,9 +287,9 @@ class ActualCallParams : public CrossCallParams {
   DISALLOW_COPY_AND_ASSIGN(ActualCallParams);
 };
 
-COMPILE_ASSERT(sizeof(ActualCallParams<1, 1024>) == 1024, bad_size_buffer);
-COMPILE_ASSERT(sizeof(ActualCallParams<2, 1024>) == 1024, bad_size_buffer);
-COMPILE_ASSERT(sizeof(ActualCallParams<3, 1024>) == 1024, bad_size_buffer);
+static_assert(sizeof(ActualCallParams<1, 1024>) == 1024, "bad size buffer");
+static_assert(sizeof(ActualCallParams<2, 1024>) == 1024, "bad size buffer");
+static_assert(sizeof(ActualCallParams<3, 1024>) == 1024, "bad size buffer");
 
 }  // namespace sandbox
 

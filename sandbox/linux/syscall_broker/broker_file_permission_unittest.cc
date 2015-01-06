@@ -124,8 +124,8 @@ void CheckPerm(const BrokerFilePermission& perm,
 #endif
 
   const int kNumberOfBitsInOAccMode = 2;
-  COMPILE_ASSERT(O_ACCMODE == ((1 << kNumberOfBitsInOAccMode) - 1),
-                 number_of_bits);
+  static_assert(O_ACCMODE == ((1 << kNumberOfBitsInOAccMode) - 1),
+                "incorrect number of bits");
   // check every possible flag and act accordingly.
   // Skipping AccMode bits as they are present in every case.
   for (int i = kNumberOfBitsInOAccMode; i < 32; i++) {

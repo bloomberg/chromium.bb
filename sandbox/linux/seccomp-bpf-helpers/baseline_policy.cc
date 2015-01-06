@@ -187,7 +187,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     defined(__aarch64__)
   if (sysno == __NR_socketpair) {
     // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
-    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
+    static_assert(AF_UNIX == PF_UNIX,
+                  "af_unix and pf_unix should not be different");
     const Arg<int> domain(0);
     return If(domain == AF_UNIX, Allow()).Else(CrashSIGSYS());
   }

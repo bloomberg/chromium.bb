@@ -123,9 +123,10 @@ struct Wow64EntryW8 {
 
 // Make sure that relaxed patching works as expected.
 const size_t kMinServiceSize = offsetof(ServiceEntry, ret);
-COMPILE_ASSERT(sizeof(ServiceEntryW8) >= kMinServiceSize, wrong_service_len);
-COMPILE_ASSERT(sizeof(Wow64Entry) >= kMinServiceSize, wrong_service_len);
-COMPILE_ASSERT(sizeof(Wow64EntryW8) >= kMinServiceSize, wrong_service_len);
+static_assert(sizeof(ServiceEntryW8) >= kMinServiceSize,
+              "wrong service length");
+static_assert(sizeof(Wow64Entry) >= kMinServiceSize, "wrong service length");
+static_assert(sizeof(Wow64EntryW8) >= kMinServiceSize, "wrong service length");
 
 struct ServiceFullThunk {
   union {

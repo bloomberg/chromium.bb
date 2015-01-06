@@ -279,8 +279,8 @@ intptr_t Syscall::Call(int nr,
   // that this would only be an issue for IA64, which we are currently not
   // planning on supporting. And it is even possible that this would work
   // on IA64, but for lack of actual hardware, I cannot test.
-  COMPILE_ASSERT(sizeof(void*) == sizeof(intptr_t),
-                 pointer_types_and_intptr_must_be_exactly_the_same_size);
+  static_assert(sizeof(void*) == sizeof(intptr_t),
+                "pointer types and intptr_t must be exactly the same size");
 
   // TODO(nedeljko): Enable use of more than six parameters on architectures
   //                 where that makes sense.

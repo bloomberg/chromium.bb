@@ -78,7 +78,7 @@ class CopyHelper {
 
   // Returns this object's type.
   ArgType GetType() {
-    COMPILE_ASSERT(sizeof(T) == sizeof(uint32), need_specialization);
+    static_assert(sizeof(T) == sizeof(uint32), "specialization needed");
     return UINT32_TYPE;
   }
 
@@ -300,7 +300,7 @@ class CopyHelper<InOutCountedBuffer> {
   ActualParams* params = new(raw_mem) ActualParams(tag);
 
 #define XCALL_GEN_COPY_PARAM(num, params) \
-  COMPILE_ASSERT(kMaxIpcParams >= num, too_many_parameters); \
+  static_assert(kMaxIpcParams >= num, "too many parameters"); \
   CopyHelper<Par##num> ch##num(p##num); \
   if (!params->CopyParamIn(num - 1, ch##num.GetStart(), ch##num.GetSize(), \
                            ch##num.IsInOut(), ch##num.GetType())) \

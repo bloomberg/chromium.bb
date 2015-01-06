@@ -14,10 +14,11 @@ namespace {
 
 #if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
 // This is true for Mips O32 ABI.
-COMPILE_ASSERT(MIN_SYSCALL == __NR_Linux, min_syscall_should_be_4000);
+static_assert(MIN_SYSCALL == __NR_Linux, "min syscall number should be 4000");
 #else
 // This true for supported architectures (Intel and ARM EABI).
-COMPILE_ASSERT(MIN_SYSCALL == 0u, min_syscall_should_always_be_zero);
+static_assert(MIN_SYSCALL == 0u,
+              "min syscall should always be zero");
 #endif
 
 // SyscallRange represents an inclusive range of system call numbers.

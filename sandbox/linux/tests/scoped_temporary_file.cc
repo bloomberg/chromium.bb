@@ -20,8 +20,8 @@ ScopedTemporaryFile::ScopedTemporaryFile() : fd_(-1) {
 #else
   static const char file_template[] = "/tmp/ScopedTempFileXXXXXX";
 #endif  // defined(OS_ANDROID)
-  COMPILE_ASSERT(sizeof(full_file_name_) >= sizeof(file_template),
-                 full_file_name_is_large_enough);
+  static_assert(sizeof(full_file_name_) >= sizeof(file_template),
+                "full_file_name is not large enough");
   memcpy(full_file_name_, file_template, sizeof(file_template));
   fd_ = mkstemp(full_file_name_);
   CHECK_LE(0, fd_);

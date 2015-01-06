@@ -61,7 +61,7 @@ int PatchNtdll(HANDLE child, void* thunk, size_t thunk_bytes) {
 // It should be noted that we don't wait until the real work is done; this
 // program quits as soon as the 64-bit interception is performed.
 int wWinMain(HINSTANCE, HINSTANCE, wchar_t* command_line, int) {
-  COMPILE_ASSERT(sizeof(void*) > sizeof(DWORD), unsupported_32_bits);
+  static_assert(sizeof(void*) > sizeof(DWORD), "unsupported 32 bits");
   if (!command_line)
     return 1;
 

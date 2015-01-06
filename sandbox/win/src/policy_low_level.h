@@ -41,7 +41,8 @@ namespace sandbox {
 
 // TODO(cpu): Move this constant to crosscall_client.h.
 const size_t kMaxServiceCount = 32;
-COMPILE_ASSERT(IPC_LAST_TAG <= kMaxServiceCount, kMaxServiceCount_is_too_low);
+static_assert(IPC_LAST_TAG <= kMaxServiceCount,
+              "kMaxServiceCount is too low");
 
 // Defines the memory layout of the policy. This memory is filled by
 // LowLevelPolicy object.
