@@ -486,7 +486,7 @@ void HeapObjectHeader::finalize(Address object, size_t objectSize)
     // thread commences execution.
 }
 
-void LargeObject::sweep()
+void LargeObject::sweep(ThreadHeap*)
 {
     Heap::increaseMarkedObjectSize(size());
     heapObjectHeader()->unmark();
@@ -515,6 +515,11 @@ void LargeObject::markUnmarkedObjectsDead()
         header->unmark();
     else
         header->markDead();
+}
+
+void LargeObject::removeFromHeap(ThreadHeap* heap)
+{
+    heap->freeLargeObject(this);
 }
 
 #if ENABLE(ASSERT)
@@ -1309,7 +1314,7 @@ void ThreadHeap::sweepNormalPages()
         if (page->isEmpty()) {
             HeapPage* next = page->next();
             page->unlink(previousNext);
-            freePage(page);
+            page->removeFromHeap(this);
             page = next;
         } else {
             page->sweep(this);
@@ -1328,10 +1333,10 @@ void ThreadHeap::sweepLargePages()
         if (largeObject->isEmpty()) {
             LargeObject* next = largeObject->next();
             largeObject->unlink(previousNext);
-            freeLargeObject(largeObject);
+            largeObject->removeFromHeap(this);
             largeObject = next;
         } else {
-            largeObject->sweep();
+            largeObject->sweep(this);
             previousNext = &largeObject->m_next;
             largeObject = largeObject->next();
         }
@@ -1540,6 +1545,11 @@ void HeapPage::markUnmarkedObjectsDead()
             header->markDead();
         headerAddress += header->size();
     }
+}
+
+void HeapPage::removeFromHeap(ThreadHeap* heap)
+{
+    heap->freePage(this);
 }
 
 void HeapPage::populateObjectStartBitMap()

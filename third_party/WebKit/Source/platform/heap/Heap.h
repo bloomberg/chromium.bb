@@ -363,6 +363,11 @@ public:
     BaseHeapPage(PageMemory*, ThreadState*);
     virtual ~BaseHeapPage() { }
 
+    virtual size_t objectPayloadSizeForTesting() = 0;
+    virtual bool isEmpty() = 0;
+    virtual void removeFromHeap(ThreadHeap*) = 0;
+    virtual void sweep(ThreadHeap*) = 0;
+    virtual void markUnmarkedObjectsDead() = 0;
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
     // using the given Visitor. Otherwise do nothing. The pointer must
@@ -372,19 +377,21 @@ public:
     // conservatively mark all objects that could be referenced from
     // the stack.
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
-#if ENABLE(ASSERT)
-    virtual bool contains(Address) = 0;
-#endif
-
+    virtual void markOrphaned();
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfo(Address) = 0;
+#endif
+#if ENABLE(GC_PROFILE_HEAP)
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
+#endif
+#if ENABLE(ASSERT)
+    virtual bool contains(Address) = 0;
 #endif
 
     Address address() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
     ThreadState* threadState() const { return m_threadState; }
     virtual bool isLargeObject() { return false; }
-    virtual void markOrphaned();
     bool orphaned() { return !m_threadState; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
@@ -415,8 +422,30 @@ public:
         m_next = nullptr;
     }
 
-    bool isEmpty();
-
+    virtual size_t objectPayloadSizeForTesting() override;
+    virtual bool isEmpty() override;
+    virtual void removeFromHeap(ThreadHeap*) override;
+    virtual void sweep(ThreadHeap*) override;
+    virtual void markUnmarkedObjectsDead() override;
+    virtual void checkAndMarkPointer(Visitor*, Address) override;
+    virtual void markOrphaned() override
+    {
+        // Zap the payload with a recognizable value to detect any incorrect
+        // cross thread pointer usage.
+#if defined(ADDRESS_SANITIZER)
+        // This needs to zap poisoned memory as well.
+        // Force unpoison memory before memset.
+        ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
+#endif
+        memset(payload(), orphanedZapValue, payloadSize());
+        BaseHeapPage::markOrphaned();
+    }
+#if ENABLE(GC_PROFILE_MARKING)
+    const GCInfo* findGCInfo(Address) override;
+#endif
+#if ENABLE(GC_PROFILE_HEAP)
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+#endif
 #if ENABLE(ASSERT)
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
@@ -443,34 +472,11 @@ public:
 
     Address end() { return payload() + payloadSize(); }
 
-    size_t objectPayloadSizeForTesting();
-    void markUnmarkedObjectsDead();
-    void sweep(ThreadHeap*);
     void clearObjectStartBitMap();
-    virtual void checkAndMarkPointer(Visitor*, Address) override;
-#if ENABLE(GC_PROFILE_MARKING)
-    const GCInfo* findGCInfo(Address) override;
-#endif
-#if ENABLE(GC_PROFILE_HEAP)
-    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
-#endif
 
 #if defined(ADDRESS_SANITIZER)
     void poisonUnmarkedObjects();
 #endif
-
-    virtual void markOrphaned() override
-    {
-        // Zap the payload with a recognizable value to detect any incorrect
-        // cross thread pointer usage.
-#if defined(ADDRESS_SANITIZER)
-        // This needs to zap poisoned memory as well.
-        // Force unpoison memory before memset.
-        ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
-#endif
-        memset(payload(), orphanedZapValue, payloadSize());
-        BaseHeapPage::markOrphaned();
-    }
 
     // This method is needed just to avoid compilers from removing m_padding.
     uint64_t unusedMethod() const { return m_padding; }
@@ -501,21 +507,41 @@ public:
     {
     }
 
+    virtual size_t objectPayloadSizeForTesting() override;
+    virtual bool isEmpty() override;
+    virtual void removeFromHeap(ThreadHeap*) override;
+    virtual void sweep(ThreadHeap*) override;
+    virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
-    virtual bool isLargeObject() override { return true; }
-
+    virtual void markOrphaned() override
+    {
+        // Zap the payload with a recognizable value to detect any incorrect
+        // cross thread pointer usage.
+        memset(payload(), orphanedZapValue, payloadSize());
+        BaseHeapPage::markOrphaned();
+    }
 #if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfo(Address address)
+    virtual const GCInfo* findGCInfo(Address address) override
     {
         if (!objectContains(address))
             return nullptr;
         return gcInfo();
     }
 #endif
-
 #if ENABLE(GC_PROFILE_HEAP)
-    void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
 #endif
+#if ENABLE(ASSERT)
+    // Returns true for any address that is on one of the pages that this
+    // large object uses. That ensures that we can use a negative result to
+    // populate the negative page cache.
+    virtual bool contains(Address object) override
+    {
+        return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
+    }
+#endif
+
+    virtual bool isLargeObject() override { return true; }
 
     void link(LargeObject** previousNext)
     {
@@ -536,16 +562,6 @@ public:
         return (payload() <= object) && (object < address() + size());
     }
 
-#if ENABLE(ASSERT)
-    // Returns true for any address that is on one of the pages that this
-    // large object uses. That ensures that we can use a negative result to
-    // populate the negative page cache.
-    virtual bool contains(Address object) override
-    {
-        return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
-    }
-#endif
-
     LargeObject* next()
     {
         return m_next;
@@ -565,18 +581,7 @@ public:
         return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 
-    size_t objectPayloadSizeForTesting();
     void mark(Visitor*);
-    void sweep();
-    bool isEmpty();
-    void markUnmarkedObjectsDead();
-    virtual void markOrphaned() override
-    {
-        // Zap the payload with a recognizable value to detect any incorrect
-        // cross thread pointer usage.
-        memset(payload(), orphanedZapValue, payloadSize());
-        BaseHeapPage::markOrphaned();
-    }
 
     // This method is needed just to avoid compilers from removing m_padding.
     uint64_t unusedMethod() const { return m_padding; }
@@ -760,6 +765,7 @@ public:
     void prepareHeapForTermination();
 
     void freePage(HeapPage*);
+    void freeLargeObject(LargeObject*);
 
     void promptlyFreeObject(HeapObjectHeader*);
     bool expandObject(HeapObjectHeader*, size_t);
@@ -767,7 +773,6 @@ public:
 
 private:
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
-    Address allocateLargeObject(size_t, size_t gcInfoIndex);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
@@ -784,8 +789,8 @@ private:
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, size_t gcInfoIndex);
 
-    void freeLargeObject(LargeObject*);
     void allocatePage();
+    Address allocateLargeObject(size_t, size_t gcInfoIndex);
 
     inline Address allocateSize(size_t allocationSize, size_t gcInfoIndex);
     inline Address allocateAtAddress(Address, size_t allocationSize, size_t gcInfoIndex);
