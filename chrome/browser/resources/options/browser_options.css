@@ -200,11 +200,11 @@ input[type='range'] {
 }
 
 .hotword-link {
-  -webkit-padding-start: 8px;
+  -webkit-margin-start: 8px;
 }
 
 #hotword-retrain-link {
-  -webkit-padding-start: 8px;
+  -webkit-margin-start: 8px;
   text-decoration: none;
 }
 

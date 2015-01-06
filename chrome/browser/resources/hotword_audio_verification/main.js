@@ -12,7 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var flow = new Flow();
     flow.startFlow();
 
-    $('steps').addEventListener('click', function(e) {
+    var pressFunction = function(e) {
+      // Only respond to 'Enter' key presses.
+      if (e.type == 'keyup' && e.keyIdentifier != 'Enter')
+        return;
+
       var classes = e.target.classList;
       if (classes.contains('close') || classes.contains('finish-button')) {
         flow.stopTraining();
@@ -23,7 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
         flow.handleRetry();
         e.preventDefault();
       }
-    });
+    };
+
+    $('steps').addEventListener('click', pressFunction);
+    $('steps').addEventListener('keyup', pressFunction);
 
     $('audio-history-agree').addEventListener('click', function(e) {
       flow.enableAudioHistory();

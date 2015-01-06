@@ -287,6 +287,9 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
 
   localized_strings->SetString(
+      "close",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_CLOSE));
+  localized_strings->SetString(
       "cancel",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_CANCEL));
   localized_strings->SetString(

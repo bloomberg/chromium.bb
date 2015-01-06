@@ -15315,6 +15315,9 @@ Do you accept?
       </message>
 
      <!-- Hotword Audio Verification (opt-in) App strings. -->
+      <message name="IDS_HOTWORD_OPT_IN_CLOSE" desc="Label for the close button for the 'Ok Google' hotword opt-in dialog.">
+        Close
+      </message>
       <message name="IDS_HOTWORD_OPT_IN_CANCEL" desc="Text on the cancel button for the 'Ok Google' hotword opt-in dialog.">
         CANCEL
       </message>
@@ -15331,7 +15334,7 @@ Do you accept?
         To make this happen, you'll need to train your Chromebook in the following step.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_START" desc="Text on the start button for the 'Ok Google' hotword opt-in dialog.">
-        GET STARTED
+        Get Started
       </message>
       <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_TITLE" desc="Title of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
         Enable Voice &amp; Audio Activity
