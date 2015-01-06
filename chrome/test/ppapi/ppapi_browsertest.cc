@@ -218,13 +218,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
 
 TEST_PPAPI_NACL(Console)
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/318961
-#define MAYBE_Core DISABLED_Core
-#else
-#define MAYBE_Core Core
-#endif
-TEST_PPAPI_NACL(MAYBE_Core)
+TEST_PPAPI_NACL(Core)
 
 // Non-NaCl TraceEvent tests are in content/test/ppapi/ppapi_browsertest.cc.
 TEST_PPAPI_NACL(TraceEvent)
@@ -724,19 +718,10 @@ TEST_PPAPI_NACL(Memory)
       LIST_TEST(FileIO_Mmap) \
   )
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/318961
-#define MAYBE_FileIO DISABLED_FileIO
-#define MAYBE_FileIO_Private DISABLED_FileIO_Private
-#else
-#define MAYBE_FileIO FileIO
-#define MAYBE_FileIO_Private FileIO_Private
-#endif
-
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_FileIO) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, FileIO) {
   RUN_FILEIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPIPrivateTest, MAYBE_FileIO_Private) {
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateTest, FileIO_Private) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
@@ -744,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateTest, MAYBE_FileIO_Private) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_FileIO) {
   RUN_FILEIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPIPrivateTest, MAYBE_FileIO_Private) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPIPrivateTest, FileIO_Private) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
