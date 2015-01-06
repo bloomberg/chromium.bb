@@ -44,14 +44,10 @@ class ServiceWorkerProviderContext
   void OnDisassociateRegistration();
   void OnServiceWorkerStateChanged(int handle_id,
                                    blink::WebServiceWorkerState state);
-  void OnSetInstallingServiceWorker(int registration_handle_id,
-                                    const ServiceWorkerObjectInfo& info);
-  void OnSetWaitingServiceWorker(int registration_handle_id,
-                                 const ServiceWorkerObjectInfo& info);
-  void OnSetActiveServiceWorker(int registration_handle_id,
-                                const ServiceWorkerObjectInfo& info);
-  void OnSetControllerServiceWorker(int registration_handle_id,
-                                    const ServiceWorkerObjectInfo& info);
+  void OnSetInstallingServiceWorker(const ServiceWorkerObjectInfo& info);
+  void OnSetWaitingServiceWorker(const ServiceWorkerObjectInfo& info);
+  void OnSetActiveServiceWorker(const ServiceWorkerObjectInfo& info);
+  void OnSetControllerServiceWorker(const ServiceWorkerObjectInfo& info);
 
   int provider_id() const { return provider_id_; }
 
@@ -91,8 +87,6 @@ class ServiceWorkerProviderContext
  private:
   friend class base::RefCounted<ServiceWorkerProviderContext>;
   ~ServiceWorkerProviderContext();
-
-  bool IsAssociatedWithRegistration(int registration_handle_id) const;
 
   const int provider_id_;
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
