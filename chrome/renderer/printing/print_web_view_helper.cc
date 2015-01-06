@@ -533,19 +533,8 @@ float PrintWebViewHelper::RenderPageContent(blink::WebFrame* frame,
                                             double scale_factor,
                                             blink::WebCanvas* canvas) {
   SkAutoCanvasRestore auto_restore(canvas, true);
-  if (content_area != canvas_area) {
-    canvas->translate((content_area.x() - canvas_area.x()) / scale_factor,
-                      (content_area.y() - canvas_area.y()) / scale_factor);
-    SkRect clip_rect(
-        SkRect::MakeXYWH(content_area.origin().x() / scale_factor,
-                         content_area.origin().y() / scale_factor,
-                         content_area.size().width() / scale_factor,
-                         content_area.size().height() / scale_factor));
-    SkIRect clip_int_rect;
-    clip_rect.roundOut(&clip_int_rect);
-    SkRegion clip_region(clip_int_rect);
-    canvas->setClipRegion(clip_region);
-  }
+  canvas->translate((content_area.x() - canvas_area.x()) / scale_factor,
+                    (content_area.y() - canvas_area.y()) / scale_factor);
   return frame->printPage(page_number, canvas);
 }
 
