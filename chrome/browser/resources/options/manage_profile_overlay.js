@@ -438,19 +438,10 @@ cr.define('options', function() {
     updateOkButton_: function(mode) {
       var oldName = this.profileInfo_.name;
       var newName = $(mode + '-profile-name').value;
-      var nameIsDuplicate = this.existingProfileNames_[newName] != undefined;
-      if (mode == 'manage' && oldName == newName)
-        nameIsDuplicate = false;
-      if (nameIsDuplicate) {
-        var errorHtml =
-            loadTimeData.getString('manageProfilesDuplicateNameError');
-        this.showErrorBubble_(errorHtml, mode, true);
-      } else {
-        this.hideErrorBubble_(mode);
+      this.hideErrorBubble_(mode);
 
-        var nameIsValid = $(mode + '-profile-name').validity.valid;
-        $(mode + '-profile-ok').disabled = !nameIsValid;
-      }
+      var nameIsValid = $(mode + '-profile-name').validity.valid;
+      $(mode + '-profile-ok').disabled = !nameIsValid;
     },
 
     /**

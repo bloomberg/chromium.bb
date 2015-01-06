@@ -84,8 +84,6 @@ void ManageProfileHandler::GetLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "manageProfilesNameLabel", IDS_PROFILES_MANAGE_NAME_LABEL },
-    { "manageProfilesDuplicateNameError",
-        IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
     { "manageProfilesExistingSupervisedUser",
         IDS_PROFILES_CREATE_EXISTING_SUPERVISED_USER_ERROR },

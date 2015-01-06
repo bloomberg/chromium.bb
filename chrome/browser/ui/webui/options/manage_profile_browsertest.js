@@ -252,7 +252,7 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingSupervisedUser', function() {
     ManageProfileOverlay.getInstance().onNameChanged_('create');
     return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
-    assertTrue($('create-profile-ok').disabled);
+    assertFalse($('create-profile-ok').disabled);
     assertTrue($('supervised-user-import-existing') == null);
 
     // A profile which does not exist on the device, but there is a profile with

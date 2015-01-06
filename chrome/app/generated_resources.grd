@@ -13725,9 +13725,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label above the profile avatar icon chooser.">
           Choose a picture and name
         </message>
-        <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
-          Whoops, this name is already in use!
-        </message>
 
         <!-- Delete Profile Dialog -->
         <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
