@@ -331,7 +331,7 @@ def HasNoPerfResults(builder):
   return builder in [
       'mac-toolchain_arm',
       'win-pnacl-x86_32',
-      'linux-nacl-x86_32-tests-mips',
+      'linux-pnacl-x86_32-tests-mips',
   ]
 
 
