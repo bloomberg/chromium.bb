@@ -1328,7 +1328,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
             view->GetTextContentsOfInput(CREDIT_CARD_EXP_MONTH));
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, TabOpensToJustRight) {
+// Flaky on Win7 (http://crbug.com/446432)
+#if defined(OS_WIN)
+#define MAYBE_TabOpensToJustRight DISABLED_TabOpensToJustRight
+#else
+#define MAYBE_TabOpensToJustRight TabOpensToJustRight
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       MAYBE_TabOpensToJustRight) {
   ASSERT_TRUE(browser()->is_type_tabbed());
 
   // Tabs should currently be: / rAc() \.
@@ -1373,8 +1380,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, TabOpensToJustRight) {
   EXPECT_EQ(3, tab_strip->GetIndexOfWebContents(blank_tab));
 }
 
+// Flaky on Win7 (http://crbug.com/446432)
+#if defined(OS_WIN)
+#define MAYBE_SignInWebViewOpensLinksInNewTab DISABLED_SignInWebViewOpensLinksInNewTab
+#else
+#define MAYBE_SignInWebViewOpensLinksInNewTab SignInWebViewOpensLinksInNewTab
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       SignInWebViewOpensLinksInNewTab) {
+                       MAYBE_SignInWebViewOpensLinksInNewTab) {
   controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
