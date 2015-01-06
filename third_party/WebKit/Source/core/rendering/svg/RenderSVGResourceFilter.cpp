@@ -153,19 +153,23 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
         resizeMatrix.scale(1 / filterResScaleX, 1 / filterResScaleY);
         imageFilter = builder.buildTransform(resizeMatrix, imageFilter.get());
     }
-    // If the CTM contains rotation or shearing, apply the filter to
-    // the unsheared/unrotated matrix, and do the shearing/rotation
-    // as a final pass.
-    AffineTransform ctm = context->getCTM();
-    if (ctm.b() || ctm.c()) {
-        AffineTransform scaleAndTranslate;
-        scaleAndTranslate.translate(ctm.e(), ctm.f());
-        scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
-        ASSERT(scaleAndTranslate.isInvertible());
-        AffineTransform shearAndRotate = scaleAndTranslate.inverse();
-        shearAndRotate.multiply(ctm);
-        context->setCTM(scaleAndTranslate);
-        imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
+
+    // See crbug.com/382491.
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        // If the CTM contains rotation or shearing, apply the filter to
+        // the unsheared/unrotated matrix, and do the shearing/rotation
+        // as a final pass.
+        AffineTransform ctm = context->getCTM();
+        if (ctm.b() || ctm.c()) {
+            AffineTransform scaleAndTranslate;
+            scaleAndTranslate.translate(ctm.e(), ctm.f());
+            scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
+            ASSERT(scaleAndTranslate.isInvertible());
+            AffineTransform shearAndRotate = scaleAndTranslate.inverse();
+            shearAndRotate.multiply(ctm);
+            context->setCTM(scaleAndTranslate);
+            imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
+        }
     }
     context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
     context->endLayer();
