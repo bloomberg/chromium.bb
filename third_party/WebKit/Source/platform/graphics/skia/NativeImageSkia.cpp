@@ -32,6 +32,7 @@
 #include "platform/graphics/skia/NativeImageSkia.h"
 
 #include "platform/PlatformInstrumentation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/DeferredImageDecoder.h"
@@ -103,9 +104,6 @@ void NativeImageSkia::drawPattern(
         return; // nothing to draw
 
     SkMatrix totalMatrix = context->getTotalMatrix();
-    AffineTransform ctm = context->getCTM();
-    SkScalar ctmScaleX = ctm.xScale();
-    SkScalar ctmScaleY = ctm.yScale();
     totalMatrix.preScale(scale.width(), scale.height());
 
     // Figure out what size the bitmap will be in the destination. The
@@ -146,6 +144,15 @@ void NativeImageSkia::drawPattern(
     SkBitmap bitmapToPaint;
     bitmap().extractSubset(&bitmapToPaint, enclosingIntRect(normSrcRect));
     if (!repeatSpacing.isZero()) {
+        SkScalar ctmScaleX = 1.0;
+        SkScalar ctmScaleY = 1.0;
+
+        if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            AffineTransform ctm = context->getCTM();
+            ctmScaleX = ctm.xScale();
+            ctmScaleY = ctm.yScale();
+        }
+
         bitmapToPaint = createBitmapWithSpace(
             bitmapToPaint,
             repeatSpacing.width() * ctmScaleX / scale.width(),

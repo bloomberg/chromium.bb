@@ -1733,9 +1733,14 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createRasterBuffer(const IntSize& size,
     // Make the buffer larger if the context's transform is scaling it so we need a higher
     // resolution than one pixel per unit. Also set up a corresponding scale factor on the
     // graphics context.
-
-    AffineTransform transform = getCTM();
-    IntSize scaledSize(static_cast<int>(ceil(size.width() * transform.xScale())), static_cast<int>(ceil(size.height() * transform.yScale())));
+    SkScalar ctmScaleX = 1.0;
+    SkScalar ctmScaleY = 1.0;
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        AffineTransform transform = getCTM();
+        ctmScaleX = transform.xScale();
+        ctmScaleY = transform.yScale();
+    }
+    IntSize scaledSize(static_cast<int>(ceil(size.width() * ctmScaleX)), static_cast<int>(ceil(size.height() * ctmScaleY)));
 
     OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(scaledSize, opacityMode));
     if (!surface->isValid())
