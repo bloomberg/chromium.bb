@@ -78,7 +78,7 @@ def extract_frames(video, directory, full_resolution, viewport):
     ok = False
     logging.info("Extracting frames from " + video + " to " + directory)
     decimate = get_decimate_filter()
-    if filter is not None:
+    if decimate is not None:
         crop = ''
         if viewport is not None:
             crop = 'crop={0}:{1}:{2}:{3},'.format(viewport['width'], viewport['height'], viewport['x'], viewport['y'])
