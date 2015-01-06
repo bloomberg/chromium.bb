@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //ash/resources
       'target_name': 'ash_resources',
       'type': 'none',
       'variables': {
