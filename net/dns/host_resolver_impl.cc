@@ -2155,7 +2155,6 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
 
   if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED) {
     if (probe_ipv6_support_ && !use_local_ipv6_) {
-      base::TimeTicks start_time = base::TimeTicks::Now();
       // Google DNS address.
       const uint8 kIPv6Address[] =
           { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
@@ -2171,8 +2170,6 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
       if (rv6)
         net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_SUPPORTED);
 
-      UMA_HISTOGRAM_TIMES("Net.IPv6ConnectDuration",
-                          base::TimeTicks::Now() - start_time);
       if (rv6) {
         UMA_HISTOGRAM_BOOLEAN("Net.IPv6ConnectSuccessMatch",
             default_address_family_ == ADDRESS_FAMILY_UNSPECIFIED);

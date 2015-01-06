@@ -16968,6 +16968,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.IPv6ConnectDuration" units="milliseconds">
+  <obsolete>
+    Deprecated 1/2015. No longer tracked.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Duration of time spent during the UDP-connect IPv6 probe.</summary>
 </histogram>
