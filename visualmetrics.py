@@ -286,6 +286,7 @@ def get_decimate_filter():
                 decimate = m.groupdict().get('filter')
                 break
     except:
+        logging.critical('Error checking ffmpeg filters for decimate')
         decimate = None
     return decimate
 
