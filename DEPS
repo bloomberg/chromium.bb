@@ -560,9 +560,10 @@ hooks = [
     # need to manually install these packages and accept the ToS.
     'name': 'sdkextras',
     'pattern': '.',
-    # Make sure to add package to .gitignore in third_party/android_tools.
+    # When adding a new sdk extras package to download, add the package
+    # directory and zip file to .gitignore in third_party/android_tools.
     'action': ['python', 'src/build/download_sdk_extras.py',
-               'google_google_play_services_21.0.0'],
+               'google_google_play_services_21.0.0.zip'],
   },
   {
     # Downloads the Debian Wheezy sysroot to chrome/installer/linux if needed.
