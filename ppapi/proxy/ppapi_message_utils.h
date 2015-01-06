@@ -67,9 +67,9 @@ struct TupleTypeMatch5<Tuple<A, B, C, D, E>, A, B, C, D, E> {
 
 template <class MsgClass, class A>
 bool UnpackMessage(const IPC::Message& msg, A* a) {
-  COMPILE_ASSERT(
+  static_assert(
       (internal::TupleTypeMatch1<typename MsgClass::Param, A>::kValue),
-      tuple_types_dont_match);
+      "tuple types should match");
 
   PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a);
@@ -77,9 +77,9 @@ bool UnpackMessage(const IPC::Message& msg, A* a) {
 
 template <class MsgClass, class A, class B>
 bool UnpackMessage(const IPC::Message& msg, A* a, B* b) {
-  COMPILE_ASSERT(
+  static_assert(
       (internal::TupleTypeMatch2<typename MsgClass::Param, A, B>::kValue),
-      tuple_types_dont_match);
+      "tuple types should match");
 
   PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) && IPC::ReadParam(&msg, &iter, b);
@@ -87,9 +87,9 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b) {
 
 template <class MsgClass, class A, class B, class C>
 bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c) {
-  COMPILE_ASSERT(
+  static_assert(
       (internal::TupleTypeMatch3<typename MsgClass::Param, A, B, C>::kValue),
-      tuple_types_dont_match);
+      "tuple types should match");
 
   PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) &&
@@ -99,9 +99,9 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c) {
 
 template <class MsgClass, class A, class B, class C, class D>
 bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c, D* d) {
-  COMPILE_ASSERT(
+  static_assert(
       (internal::TupleTypeMatch4<typename MsgClass::Param, A, B, C, D>::kValue),
-      tuple_types_dont_match);
+      "tuple types should match");
 
   PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) &&
@@ -112,10 +112,10 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c, D* d) {
 
 template <class MsgClass, class A, class B, class C, class D, class E>
 bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c, D* d, E* e) {
-  COMPILE_ASSERT(
+  static_assert(
       (internal::TupleTypeMatch5<
            typename MsgClass::Param, A, B, C, D, E>::kValue),
-      tuple_types_dont_match);
+      "tuple types should match");
 
   PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) &&

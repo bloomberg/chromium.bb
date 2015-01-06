@@ -333,7 +333,7 @@ void InterfaceList::SetProcessGlobalPermissions(
 
 InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
   int index = static_cast<int>(id);
-  COMPILE_ASSERT(API_ID_NONE == 0, none_must_be_zero);
+  static_assert(API_ID_NONE == 0, "none must be zero");
   if (id <= 0 || id >= API_ID_COUNT)
     return NULL;
   return id_to_factory_[index];

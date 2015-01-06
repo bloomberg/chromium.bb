@@ -39,7 +39,8 @@ void TraceEventImpl::AddTraceEvent(int8_t phase,
                                    const uint64_t arg_values[],
                                    uint8_t flags) {
 
-  COMPILE_ASSERT(sizeof(unsigned long long) == sizeof(uint64_t), msg);
+  static_assert(sizeof(unsigned long long) == sizeof(uint64_t),
+                "unexpected data type sizes");
 
   base::debug::TraceLog::GetInstance()->AddTraceEvent(
       phase,

@@ -12,7 +12,7 @@ const unsigned int kPPIdTypeBits = 2;
 
 const int32 kMaxPPId = kint32max >> kPPIdTypeBits;
 
-COMPILE_ASSERT(PP_ID_TYPE_COUNT <= (1 << kPPIdTypeBits),
-               kPPIdTypeBits_is_too_small_for_all_id_types);
+static_assert(PP_ID_TYPE_COUNT <= (1 << kPPIdTypeBits),
+              "kPPIdTypeBits is too small for all id types");
 
 }  // namespace ppapi
