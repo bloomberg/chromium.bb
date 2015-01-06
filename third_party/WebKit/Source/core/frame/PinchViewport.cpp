@@ -228,8 +228,8 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 // the tree will look like this (with * denoting added layers):
 //
 // *rootTransformLayer
-//  +- *overscrollElasticityLayer
-//  |   +- *innerViewportContainerLayer (fixed pos container)
+//  +- *innerViewportContainerLayer (fixed pos container)
+//  |   +- *overscrollElasticityLayer
 //  |       +- *pageScaleLayer
 //  |           +- *innerViewportScrollLayer
 //  |               +-- overflowControlsHostLayer (root layer)
@@ -282,9 +282,9 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
             m_innerViewportContainerLayer->platformLayer());
         m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
 
-        m_rootTransformLayer->addChild(m_overscrollElasticityLayer.get());
-        m_overscrollElasticityLayer->addChild(m_innerViewportContainerLayer.get());
-        m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
+        m_rootTransformLayer->addChild(m_innerViewportContainerLayer.get());
+        m_innerViewportContainerLayer->addChild(m_overscrollElasticityLayer.get());
+        m_overscrollElasticityLayer->addChild(m_pageScaleLayer.get());
         m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
         m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
         m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());

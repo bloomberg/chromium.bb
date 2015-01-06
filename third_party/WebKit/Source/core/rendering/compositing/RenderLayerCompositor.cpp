@@ -30,6 +30,7 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -892,6 +893,14 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
     GraphicsLayer* controlsParent = m_rootTransformLayer.get() ? m_rootTransformLayer.get() : m_overflowControlsHostLayer.get();
+    // On Mac, main frame scrollbars should always be stuck to the sides of the screen (in overscroll and in pinch-zoom), so
+    // make the parent for the scrollbars be the viewport container layer.
+#if OS(MACOSX)
+    if (m_renderView.frame()->isMainFrame() && m_renderView.frame()->settings()->pinchVirtualViewportEnabled()) {
+        PinchViewport& pinchViewport = m_renderView.frameView()->page()->frameHost().pinchViewport();
+        controlsParent = pinchViewport.containerLayer();
+    }
+#endif
 
     if (requiresHorizontalScrollbarLayer()) {
         if (!m_layerForHorizontalScrollbar) {

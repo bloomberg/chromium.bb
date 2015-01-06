@@ -1565,15 +1565,23 @@ void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint
 void FrameView::setElasticOverscroll(const FloatSize& elasticOverscroll)
 {
     m_elasticOverscroll = elasticOverscroll;
-    if (m_horizontalScrollbar && m_horizontalScrollbar->elasticOverscroll() != elasticOverscroll.width()) {
-        m_horizontalScrollbar->setElasticOverscroll(elasticOverscroll.width());
-        if (!m_scrollbarsSuppressed)
-            m_horizontalScrollbar->invalidate();
+    if (m_horizontalScrollbar) {
+        float delta = elasticOverscroll.width() - m_horizontalScrollbar->elasticOverscroll();
+        if (delta != 0) {
+            m_horizontalScrollbar->setElasticOverscroll(elasticOverscroll.width());
+            scrollAnimator()->notifyContentAreaScrolled(FloatSize(delta, 0));
+            if (!m_scrollbarsSuppressed)
+                m_horizontalScrollbar->invalidate();
+        }
     }
-    if (m_verticalScrollbar && m_verticalScrollbar->elasticOverscroll() != elasticOverscroll.width()) {
-        m_verticalScrollbar->setElasticOverscroll(elasticOverscroll.width());
-        if (!m_scrollbarsSuppressed)
-            m_verticalScrollbar->invalidate();
+    if (m_verticalScrollbar) {
+        float delta = elasticOverscroll.height() - m_verticalScrollbar->elasticOverscroll();
+        if (delta != 0) {
+            m_verticalScrollbar->setElasticOverscroll(elasticOverscroll.height());
+            scrollAnimator()->notifyContentAreaScrolled(FloatSize(0, delta));
+            if (!m_scrollbarsSuppressed)
+                m_verticalScrollbar->invalidate();
+        }
     }
 }
 
