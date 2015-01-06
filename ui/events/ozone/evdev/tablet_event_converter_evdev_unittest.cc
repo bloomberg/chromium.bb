@@ -42,7 +42,7 @@ class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
                                 base::FilePath path,
                                 EventModifiersEvdev* modifiers,
                                 CursorDelegateEvdev* cursor);
-  virtual ~MockTabletEventConverterEvdev(){};
+  ~MockTabletEventConverterEvdev() override {};
 
   void ConfigureReadMock(struct input_event* queue,
                          long read_this_many,
@@ -78,7 +78,7 @@ class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
 class MockTabletCursorEvdev : public CursorDelegateEvdev {
  public:
   MockTabletCursorEvdev() { cursor_display_bounds_ = gfx::Rect(1024, 768); }
-  virtual ~MockTabletCursorEvdev() {}
+  ~MockTabletCursorEvdev() override {}
 
   // CursorDelegateEvdev:
   void MoveCursorTo(gfx::AcceleratedWidget widget,
@@ -151,7 +151,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
   TabletEventConverterEvdevTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Set up pipe to satisfy message pump (unused).
     int evdev_io[2];
     if (pipe(evdev_io))
@@ -166,7 +166,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
         cursor_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     modifiers_.reset();
     cursor_.reset();
     device_.reset();
