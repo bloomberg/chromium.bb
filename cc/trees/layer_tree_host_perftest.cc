@@ -242,13 +242,23 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageSingleThread) {
   SetTestName("long_scrollable_page");
   ReadTestFile("long_scrollable_page");
+  // TODO(vollick): Remove verify_property_trees setting after
+  // crbug.com/444219 is fixed.
+  bool old_verify_property_trees = verify_property_trees();
+  set_verify_property_trees(false);
   RunTest(false, false, false);
+  set_verify_property_trees(old_verify_property_trees);
 }
 
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageThreadedImplSide) {
   SetTestName("long_scrollable_page_threaded_impl_side");
   ReadTestFile("long_scrollable_page");
+  // TODO(vollick): Remove verify_property_trees setting after
+  // crbug.com/444219 is fixed.
+  bool old_verify_property_trees = verify_property_trees();
+  set_verify_property_trees(false);
   RunTestWithImplSidePainting();
+  set_verify_property_trees(old_verify_property_trees);
 }
 
 static void EmptyReleaseCallback(uint32 sync_point, bool lost_resource) {}
