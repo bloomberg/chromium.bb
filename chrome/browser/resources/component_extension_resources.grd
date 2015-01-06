@@ -167,6 +167,7 @@
         <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />
         <include name="IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS" file="pdf/open_pdf_params_parser.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
+        <include name="IDR_PDF_CONTENT_SCRIPT_JS" file="pdf/content_script.js" type="BINDATA" />
 
         <include name="IDR_PDF_VIEWER_BUTTON_CSS" file="pdf/html_office/elements/viewer-button/viewer-button.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_HTML" file="pdf/html_office/elements/viewer-button/viewer-button.html" type="BINDATA" />
