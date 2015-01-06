@@ -21,21 +21,21 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
     : public KeyboardLayoutEngine {
  public:
   XkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
-  virtual ~XkbKeyboardLayoutEngine();
+  ~XkbKeyboardLayoutEngine() override;
 
   // KeyboardLayoutEngine:
-  virtual bool CanSetCurrentLayout() const override;
-  virtual bool SetCurrentLayoutByName(const std::string& layout_name) override;
+  bool CanSetCurrentLayout() const override;
+  bool SetCurrentLayoutByName(const std::string& layout_name) override;
 
-  virtual bool UsesISOLevel5Shift() const override;
-  virtual bool UsesAltGr() const override;
+  bool UsesISOLevel5Shift() const override;
+  bool UsesAltGr() const override;
 
-  virtual bool Lookup(DomCode dom_code,
-                      int flags,
-                      DomKey* dom_key,
-                      base::char16* character,
-                      KeyboardCode* key_code,
-                      uint32* platform_keycode) const override;
+  bool Lookup(DomCode dom_code,
+              int flags,
+              DomKey* dom_key,
+              base::char16* character,
+              KeyboardCode* key_code,
+              uint32* platform_keycode) const override;
 
  protected:
   // Table for EventFlagsToXkbFlags().

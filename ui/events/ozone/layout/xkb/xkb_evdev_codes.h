@@ -13,8 +13,8 @@ namespace ui {
 class EVENTS_OZONE_LAYOUT_EXPORT XkbEvdevCodes : public XkbKeyCodeConverter {
  public:
   XkbEvdevCodes();
-  virtual ~XkbEvdevCodes();
-  virtual xkb_keycode_t DomCodeToXkbKeyCode(DomCode dom_code) const override;
+  ~XkbEvdevCodes() override;
+  xkb_keycode_t DomCodeToXkbKeyCode(DomCode dom_code) const override;
 };
 
 }  // namespace ui
