@@ -43,6 +43,7 @@
       '../extensions/browser/app_window/app_window_browsertest.cc',
       '../extensions/browser/guest_view/extension_options/extension_options_apitest.cc',
       '../extensions/renderer/console_apitest.cc',
+      '../extensions/renderer/guest_view/mime_handler_view/mime_handler_view_browsertest.cc',
       '../extensions/renderer/script_context_browsertest.cc',
       'app/chrome_command_ids.h',
       'app/chrome_dll.rc',

@@ -184,8 +184,11 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
     // should already know what is embedded.
     gin::StringToV8(isolate, "*")
   };
-  post_message.As<v8::Function>()->Call(
-      guest_proxy_window, arraysize(args), args);
+  guest_proxy_frame->callFunctionEvenIfScriptDisabled(
+      post_message.As<v8::Function>(),
+      guest_proxy_window,
+      arraysize(args),
+      args);
 }
 
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
@@ -228,6 +231,7 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
 
   // Parse the stream URL to ensure it's valid.
   GURL stream_url(html_string_);
+  DCHECK(!stream_url.spec().empty());
 
   DCHECK_NE(element_instance_id(), guestview::kInstanceIDNone);
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
