@@ -57,6 +57,7 @@ protected:
     virtual AccessibilityRole determineAccessibilityRole() override final;
 
 private:
+    AccessibilityRole scanToDecideHeaderRole();
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
     virtual AXObject* titleUIElement() const override final;
     virtual bool exposesTitleUIElement() const override final { return true; }
