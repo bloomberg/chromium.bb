@@ -586,7 +586,12 @@ PreviewPanel.Thumbnails.prototype.setZoomedImage_ = function(image,
                            Math.max(width, height));
   var imageWidth = ~~(width * scale);
   var imageHeight = ~~(height * scale);
-  var zoomedImage = this.element_.ownerDocument.createElement('img');
+  var zoomedBox =
+      this.element_.querySelector('.popup') ||
+      this.element_.ownerDocument.createElement('div');
+  var zoomedImage =
+      this.element_.querySelector('.popup img') ||
+      this.element_.ownerDocument.createElement('img');
 
   if (scale < 0.3) {
     // Scaling large images kills animation. Downscale it in advance.
@@ -617,7 +622,6 @@ PreviewPanel.Thumbnails.prototype.setZoomedImage_ = function(image,
   if (opt_transform)
     util.applyTransform(zoomedImage, opt_transform);
 
-  var zoomedBox = this.element_.ownerDocument.createElement('div');
   zoomedBox.className = 'popup';
   zoomedBox.style.width = boxWidth + 'px';
   zoomedBox.style.height = boxHeight + 'px';
