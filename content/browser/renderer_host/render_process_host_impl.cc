@@ -1321,7 +1321,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(ENABLE_WEBRTC)
     switches::kDisableWebRtcHWDecoding,
     switches::kDisableWebRtcHWEncoding,
-    switches::kEnableWebRtcHWVp8Encoding,
     switches::kEnableWebRtcHWH264Encoding,
     switches::kWebRtcMaxCaptureFramerate,
 #endif

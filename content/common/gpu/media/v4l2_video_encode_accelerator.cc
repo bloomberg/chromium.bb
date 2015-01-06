@@ -284,21 +284,25 @@ std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<SupportedProfile> profiles;
   SupportedProfile profile;
-
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableWebRtcHWVp8Encoding)) {
-    profile.profile = media::VP8PROFILE_ANY;
-    profile.max_resolution.SetSize(1920, 1088);
-    profile.max_framerate_numerator = 30;
-    profile.max_framerate_denominator = 1;
-    profiles.push_back(profile);
-  }
-
-  profile.profile = media::H264PROFILE_MAIN;
   profile.max_resolution.SetSize(1920, 1088);
   profile.max_framerate_numerator = 30;
   profile.max_framerate_denominator = 1;
-  profiles.push_back(profile);
+
+  v4l2_fmtdesc fmtdesc;
+  memset(&fmtdesc, 0, sizeof(fmtdesc));
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
+    switch (fmtdesc.pixelformat) {
+      case V4L2_PIX_FMT_H264:
+        profile.profile = media::H264PROFILE_MAIN;
+        profiles.push_back(profile);
+        break;
+      case V4L2_PIX_FMT_VP8:
+        profile.profile = media::VP8PROFILE_ANY;
+        profiles.push_back(profile);
+        break;
+    }
+  }
 
   return profiles;
 }

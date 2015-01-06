@@ -28,10 +28,8 @@ void VEAToWebRTCCodecs(
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (profile.profile >= media::VP8PROFILE_MIN &&
       profile.profile <= media::VP8PROFILE_MAX) {
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWVp8Encoding)) {
-      codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-          webrtc::kVideoCodecVP8, "VP8", width, height, fps));
-    }
+    codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
+        webrtc::kVideoCodecVP8, "VP8", width, height, fps));
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
     if (cmd_line->HasSwitch(switches::kEnableWebRtcHWH264Encoding)) {
