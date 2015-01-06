@@ -11,6 +11,7 @@
   ],
   'targets': [
     {
+      # GN version: //google_apis
       'target_name': 'google_apis',
       'type': 'static_library',
       'includes': [
@@ -171,6 +172,7 @@
       ],
     },
     {
+      # GN version: //google_apis:test_support
       'target_name': 'google_apis_test_support',
       'type': 'static_library',
       'dependencies': [

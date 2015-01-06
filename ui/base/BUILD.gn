@@ -325,6 +325,8 @@ component("base") {
       "ime/chromeos/extension_ime_util.h",
       "ime/chromeos/fake_ime_keyboard.cc",
       "ime/chromeos/fake_ime_keyboard.h",
+      "ime/chromeos/fake_input_method_delegate.cc",
+      "ime/chromeos/fake_input_method_delegate.h",
       "ime/chromeos/ime_bridge.cc",
       "ime/chromeos/ime_bridge.h",
       "ime/chromeos/ime_keyboard.cc",

@@ -688,5 +688,9 @@ if (!is_android) {  # TODO(GYP) enable for Android.
       ]
     }
   }
+} else {
+  #  Placeholder to allow targets to unconditionally depend on this.
+  group("osmesa") {
+  }
 }  # !is_android
 # TODO(GYP) Android osmesa_in_lib_dir target.
