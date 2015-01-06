@@ -106,7 +106,7 @@ PassOwnPtr<Vector<double> > CSSParser::parseKeyframeKeyList(const String& keyLis
     return BisonCSSParser(strictCSSParserContext()).parseKeyframeKeyList(keyList);
 }
 
-PassRefPtrWillBeRawPtr<StyleKeyframe> CSSParser::parseKeyframeRule(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& rule)
+PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParser::parseKeyframeRule(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& rule)
 {
     return BisonCSSParser(context).parseKeyframeRule(styleSheet, rule);
 }

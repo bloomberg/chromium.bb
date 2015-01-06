@@ -34,8 +34,8 @@
 namespace blink {
 
 class CSSRuleList;
-class StyleKeyframe;
 class CSSKeyframeRule;
+class StyleRuleKeyframe;
 
 class StyleRuleKeyframes final : public StyleRuleBase {
 public:
@@ -43,10 +43,10 @@ public:
 
     ~StyleRuleKeyframes();
 
-    const WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >& keyframes() const { return m_keyframes; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >& keyframes() const { return m_keyframes; }
 
-    void parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe>);
-    void wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe>);
+    void parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe>);
+    void wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe>);
     void wrapperRemoveKeyframe(unsigned);
 
     String name() const { return m_name; }
@@ -65,7 +65,7 @@ private:
     StyleRuleKeyframes();
     explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > m_keyframes;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > m_keyframes;
     AtomicString m_name;
     bool m_isPrefixed;
 };

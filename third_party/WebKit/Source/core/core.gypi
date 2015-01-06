@@ -867,6 +867,8 @@
             'css/StyleRule.h',
             'css/StyleRuleImport.cpp',
             'css/StyleRuleImport.h',
+            'css/StyleRuleKeyframe.cpp',
+            'css/StyleRuleKeyframe.h',
             'css/StyleSheet.cpp',
             'css/StyleSheet.h',
             'css/StyleSheetContents.cpp',

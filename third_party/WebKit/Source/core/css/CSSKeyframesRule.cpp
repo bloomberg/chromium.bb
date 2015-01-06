@@ -52,14 +52,14 @@ StyleRuleKeyframes::~StyleRuleKeyframes()
 {
 }
 
-void StyleRuleKeyframes::parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe> keyframe)
+void StyleRuleKeyframes::parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe)
 {
     if (!keyframe)
         return;
     m_keyframes.append(keyframe);
 }
 
-void StyleRuleKeyframes::wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleKeyframe> keyframe)
+void StyleRuleKeyframes::wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe)
 {
     m_keyframes.append(keyframe);
 }
@@ -117,7 +117,7 @@ void CSSKeyframesRule::insertRule(const String& ruleText)
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
-    RefPtrWillBeRawPtr<StyleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, styleSheet ? styleSheet->contents() : 0, ruleText);
+    RefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, styleSheet ? styleSheet->contents() : 0, ruleText);
     if (!keyframe)
         return;
 

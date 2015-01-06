@@ -27,51 +27,14 @@
 #define CSSKeyframeRule_h
 
 #include "core/css/CSSRule.h"
+#include "core/css/StyleRuleKeyframe.h"
 
 namespace blink {
 
 class CSSKeyframesRule;
-class CSSParserValueList;
 class CSSStyleDeclaration;
-class MutableStylePropertySet;
-class StylePropertySet;
-class StyleRuleCSSStyleDeclaration;
 class ExceptionState;
-
-class StyleKeyframe final : public RefCountedWillBeGarbageCollectedFinalized<StyleKeyframe> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-public:
-    static PassRefPtrWillBeRawPtr<StyleKeyframe> create()
-    {
-        return adoptRefWillBeNoop(new StyleKeyframe());
-    }
-    ~StyleKeyframe();
-
-    // Exposed to JavaScript.
-    String keyText() const;
-    bool setKeyText(const String&);
-
-    // Used by StyleResolver.
-    const Vector<double>& keys() const;
-    // Used by BisonCSSParser when constructing a new StyleKeyframe.
-    void setKeys(PassOwnPtr<Vector<double> >);
-
-    const StylePropertySet& properties() const { return *m_properties; }
-    MutableStylePropertySet& mutableProperties();
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
-
-    String cssText() const;
-
-    void trace(Visitor*);
-
-    static PassOwnPtr<Vector<double> > createKeyList(CSSParserValueList*);
-
-private:
-    StyleKeyframe();
-
-    RefPtrWillBeMember<StylePropertySet> m_properties;
-    Vector<double> m_keys;
-};
+class StyleRuleCSSStyleDeclaration;
 
 class CSSKeyframeRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
@@ -89,11 +52,11 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    CSSKeyframeRule(StyleKeyframe*, CSSKeyframesRule* parent);
+    CSSKeyframeRule(StyleRuleKeyframe*, CSSKeyframesRule* parent);
 
     virtual CSSRule::Type type() const override { return KEYFRAME_RULE; }
 
-    RefPtrWillBeMember<StyleKeyframe> m_keyframe;
+    RefPtrWillBeMember<StyleRuleKeyframe> m_keyframe;
     mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 
     friend class CSSKeyframesRule;

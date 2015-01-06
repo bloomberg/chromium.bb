@@ -92,12 +92,12 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
     if (!keyframesRule)
         return;
 
-    const WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe>>& styleKeyframes = keyframesRule->keyframes();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>& styleKeyframes = keyframesRule->keyframes();
 
     // Construct and populate the style for each keyframe
     PropertySet specifiedPropertiesForUseCounter;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
-        const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
+        const StyleRuleKeyframe* styleKeyframe = styleKeyframes[i].get();
         RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
         RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();

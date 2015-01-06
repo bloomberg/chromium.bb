@@ -55,10 +55,9 @@ class MediaQueryExp;
 class MediaQuerySet;
 class MutableStylePropertySet;
 class StyleColor;
-class StyleKeyframe;
 class StyleRuleBase;
+class StyleRuleKeyframe;
 class StyleRuleKeyframes;
-class StyleKeyframe;
 class StyleSheetContents;
 
 // FIXME: This class is shared with BisonCSSTokenizer so should we rename it to CSSSourceLocation?
@@ -80,7 +79,7 @@ public:
 
     void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), CSSParserObserver* = 0, bool = false);
     PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
-    PassRefPtrWillBeRawPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
+    PassRefPtrWillBeRawPtr<StyleRuleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
@@ -111,8 +110,8 @@ public:
 
     MediaQuerySet* createMediaQuerySet();
     StyleRuleBase* createImportRule(const CSSParserString&, MediaQuerySet*);
-    StyleKeyframe* createKeyframe(CSSParserValueList*);
-    StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > >, bool isPrefixed);
+    StyleRuleKeyframe* createKeyframe(CSSParserValueList*);
+    StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > >, bool isPrefixed);
 
     typedef WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > RuleList;
     StyleRuleBase* createMediaRule(MediaQuerySet*, RuleList*);
@@ -143,8 +142,8 @@ public:
     MediaQuery* createFloatingNotAllQuery();
     PassOwnPtrWillBeRawPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* createFloatingKeyframeVector();
-    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >*);
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* createFloatingKeyframeVector();
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >*);
 
     void addNamespace(const AtomicString& prefix, const AtomicString& uri);
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
@@ -170,7 +169,7 @@ public:
     CSSPropertyID m_id;
     RawPtrWillBeMember<StyleSheetContents> m_styleSheet;
     RefPtrWillBeMember<StyleRuleBase> m_rule;
-    RefPtrWillBeMember<StyleKeyframe> m_keyframe;
+    RefPtrWillBeMember<StyleRuleKeyframe> m_keyframe;
     OwnPtr<CSSParserValueList> m_valueList;
     bool m_supportsCondition;
 
@@ -276,7 +275,7 @@ private:
     CSSParserLocation m_locationLabel;
 
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_parsedRules;
-    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > m_parsedKeyframes;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > m_parsedKeyframes;
     WillBeHeapVector<RefPtrWillBeMember<MediaQuerySet> > m_parsedMediaQuerySets;
     WillBeHeapVector<OwnPtrWillBeMember<RuleList> > m_parsedRuleLists;
     Vector<CSSParserSelector*> m_floatingSelectors;
@@ -290,7 +289,7 @@ private:
     OwnPtrWillBeMember<MediaQueryExp> m_floatingMediaQueryExp;
     OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > m_floatingMediaQueryExpList;
 
-    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > m_floatingKeyframeVector;
+    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > m_floatingKeyframeVector;
 
     Vector<OwnPtr<CSSParserSelector> > m_reusableSelectorVector;
 

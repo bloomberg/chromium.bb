@@ -109,7 +109,7 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
     return playerObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleKeyframe(StyleKeyframe* keyframe)
+static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleRuleKeyframe(StyleRuleKeyframe* keyframe)
 {
     RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), keyframe->mutableProperties().ensureCSSStyleDeclaration(), 0);
     RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
@@ -134,9 +134,9 @@ static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKey
 static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRuleKeyframes(const StyleRuleKeyframes* keyframesRule)
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
-    const WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
     for (const auto& styleKeyframe : styleKeyframes)
-        keyframes->addItem(buildObjectForStyleKeyframe(styleKeyframe.get()));
+        keyframes->addItem(buildObjectForStyleRuleKeyframe(styleKeyframe.get()));
 
     RefPtr<TypeBuilder::Animation::KeyframesRule> keyframesObject = TypeBuilder::Animation::KeyframesRule::create()
         .setKeyframes(keyframes);

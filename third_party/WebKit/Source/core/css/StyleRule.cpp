@@ -33,6 +33,7 @@
 #include "core/css/CSSViewportRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
+#include "core/css/StyleRuleKeyframe.h"
 
 namespace blink {
 
@@ -76,6 +77,9 @@ void StyleRuleBase::trace(Visitor* visitor)
     case Keyframes:
         toStyleRuleKeyframes(this)->traceAfterDispatch(visitor);
         return;
+    case Keyframe:
+        toStyleRuleKeyframe(this)->traceAfterDispatch(visitor);
+        return;
     case Viewport:
         toStyleRuleViewport(this)->traceAfterDispatch(visitor);
         return;
@@ -84,7 +88,6 @@ void StyleRuleBase::trace(Visitor* visitor)
         return;
     case Unknown:
     case Charset:
-    case Keyframe:
         ASSERT_NOT_REACHED();
         return;
     }
@@ -115,6 +118,9 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
     case Keyframes:
         toStyleRuleKeyframes(this)->~StyleRuleKeyframes();
         return;
+    case Keyframe:
+        toStyleRuleKeyframe(this)->~StyleRuleKeyframe();
+        return;
     case Viewport:
         toStyleRuleViewport(this)->~StyleRuleViewport();
         return;
@@ -123,7 +129,6 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
         return;
     case Unknown:
     case Charset:
-    case Keyframe:
         ASSERT_NOT_REACHED();
         return;
     }
@@ -154,6 +159,9 @@ void StyleRuleBase::destroy()
     case Keyframes:
         delete toStyleRuleKeyframes(this);
         return;
+    case Keyframe:
+        delete toStyleRuleKeyframe(this);
+        return;
     case Viewport:
         delete toStyleRuleViewport(this);
         return;
@@ -162,7 +170,6 @@ void StyleRuleBase::destroy()
         return;
     case Unknown:
     case Charset:
-    case Keyframe:
         ASSERT_NOT_REACHED();
         return;
     }

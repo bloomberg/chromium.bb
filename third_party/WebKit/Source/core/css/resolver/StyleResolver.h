@@ -54,10 +54,10 @@ class Interpolation;
 class MediaQueryEvaluator;
 class RuleData;
 class ScopedStyleResolver;
-class StyleKeyframe;
 class StylePropertySet;
 class StyleResolverStats;
 class StyleRule;
+class StyleRuleKeyframe;
 class StyleRulePage;
 class ViewportStyleResolver;
 
@@ -105,7 +105,7 @@ public:
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
 
-    PassRefPtr<RenderStyle> styleForKeyframe(Element&, const RenderStyle&, RenderStyle* parentStyle, const StyleKeyframe*, const AtomicString& animationName);
+    PassRefPtr<RenderStyle> styleForKeyframe(Element&, const RenderStyle&, RenderStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, CSSPropertyID, CSSValue&);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(StyleResolverState&, CSSPropertyID, CSSValue&);
 

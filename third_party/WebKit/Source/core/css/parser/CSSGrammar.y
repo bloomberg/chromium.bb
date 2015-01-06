@@ -79,7 +79,7 @@ using namespace HTMLNames;
     // lists in BisonCSSParser.h.
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >* ruleList;
     WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* mediaQueryExpList;
-    WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* keyframeRuleList;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* keyframeRuleList;
     CSSParserSelector* selector;
     Vector<OwnPtr<CSSParserSelector> >* selectorList;
     CSSSelector::MarginBoxType marginBox;
@@ -91,7 +91,7 @@ using namespace HTMLNames;
     MediaQueryExp* mediaQueryExp;
     CSSParserValue value;
     CSSParserValueList* valueList;
-    StyleKeyframe* keyframe;
+    StyleRuleKeyframe* keyframe;
     float val;
     CSSPropertyID id;
     CSSParserLocation location;

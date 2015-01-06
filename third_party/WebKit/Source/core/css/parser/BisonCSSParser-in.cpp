@@ -174,7 +174,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> BisonCSSParser::parseRule(StyleSheetConten
     return m_rule.release();
 }
 
-PassRefPtrWillBeRawPtr<StyleKeyframe> BisonCSSParser::parseKeyframeRule(StyleSheetContents* sheet, const String& string)
+PassRefPtrWillBeRawPtr<StyleRuleKeyframe> BisonCSSParser::parseKeyframeRule(StyleSheetContents* sheet, const String& string)
 {
     setStyleSheet(sheet);
     setupParser("@-internal-keyframe-rule ", string, "");
@@ -186,7 +186,7 @@ PassOwnPtr<Vector<double> > BisonCSSParser::parseKeyframeKeyList(const String& s
 {
     setupParser("@-internal-keyframe-key-list ", string, "");
     cssyyparse(this);
-    return StyleKeyframe::createKeyList(m_valueList.get());
+    return StyleRuleKeyframe::createKeyList(m_valueList.get());
 }
 
 bool BisonCSSParser::parseSupportsCondition(const String& string)
@@ -588,13 +588,13 @@ PassOwnPtrWillBeRawPtr<MediaQuery> BisonCSSParser::sinkFloatingMediaQuery(MediaQ
     return m_floatingMediaQuery.release();
 }
 
-WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* BisonCSSParser::createFloatingKeyframeVector()
+WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* BisonCSSParser::createFloatingKeyframeVector()
 {
-    m_floatingKeyframeVector = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >());
+    m_floatingKeyframeVector = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >());
     return m_floatingKeyframeVector.get();
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > BisonCSSParser::sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> >* keyframeVector)
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > BisonCSSParser::sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* keyframeVector)
 {
     ASSERT_UNUSED(keyframeVector, m_floatingKeyframeVector == keyframeVector);
     return m_floatingKeyframeVector.release();
@@ -783,9 +783,9 @@ void BisonCSSParser::logError(const String& message, const CSSParserLocation& lo
     console.addMessage(ConsoleMessage::create(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1));
 }
 
-StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > popKeyframes, bool isPrefixed)
+StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > popKeyframes, bool isPrefixed)
 {
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > keyframes = popKeyframes;
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > keyframes = popKeyframes;
     m_allowImportRules = m_allowNamespaceDeclarations = false;
     RefPtrWillBeRawPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
     for (size_t i = 0; i < keyframes->size(); ++i)
@@ -1040,19 +1040,19 @@ void BisonCSSParser::endDeclarationsForMarginBox()
     m_numParsedPropertiesBeforeMarginBox = INVALID_NUM_PARSED_PROPERTIES;
 }
 
-StyleKeyframe* BisonCSSParser::createKeyframe(CSSParserValueList* keys)
+StyleRuleKeyframe* BisonCSSParser::createKeyframe(CSSParserValueList* keys)
 {
-    OwnPtr<Vector<double> > keyVector = StyleKeyframe::createKeyList(keys);
+    OwnPtr<Vector<double> > keyVector = StyleRuleKeyframe::createKeyList(keys);
     if (keyVector->isEmpty())
         return 0;
 
-    RefPtrWillBeRawPtr<StyleKeyframe> keyframe = StyleKeyframe::create();
+    RefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe = StyleRuleKeyframe::create();
     keyframe->setKeys(keyVector.release());
     keyframe->setProperties(createStylePropertySet());
 
     clearProperties();
 
-    StyleKeyframe* keyframePtr = keyframe.get();
+    StyleRuleKeyframe* keyframePtr = keyframe.get();
     m_parsedKeyframes.append(keyframe.release());
     return keyframePtr;
 }

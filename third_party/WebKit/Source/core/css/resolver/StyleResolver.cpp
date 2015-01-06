@@ -668,7 +668,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const RenderStyle& elementStyle, RenderStyle* parentStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const RenderStyle& elementStyle, RenderStyle* parentStyle, const StyleRuleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
