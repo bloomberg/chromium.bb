@@ -351,18 +351,19 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   windowOrigin.y -= NSHeight(frame) - offsets.height;
   frame.origin = windowOrigin;
 
-  // Is the window still animating in? If so, then cancel that and create a new
-  // animation setting the opacity and new frame value. Otherwise the current
-  // animation will continue after this frame is set, reverting the frame to
-  // what it was when the animation started.
+  // Is the window still animating in or out? If so, then cancel that and create
+  // a new animation setting the opacity and new frame value. Otherwise the
+  // current animation will continue after this frame is set, reverting the
+  // frame to what it was when the animation started.
   NSWindow* window = [self window];
+  CGFloat targetAlpha = [self isClosing] ? 0.0 : 1.0;
   id animator = [window animator];
   if ([window isVisible] &&
-      ([animator alphaValue] < 1.0 ||
+      ([animator alphaValue] != targetAlpha ||
        !NSEqualRects([window frame], [animator frame]))) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
-    [animator setAlphaValue:1.0];
+    [animator setAlphaValue:targetAlpha];
     [animator setFrame:frame display:YES];
     [NSAnimationContext endGrouping];
   } else {
