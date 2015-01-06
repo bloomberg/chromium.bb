@@ -54,9 +54,6 @@ public abstract class ContentSwitches {
     // Native switch - chrome_switches::kEnableInstantExtendedAPI
     public static final String ENABLE_INSTANT_EXTENDED_API = "enable-instant-extended-api";
 
-    // Native switch - content_switches::kEnableSpeechRecognition
-    public static final String ENABLE_SPEECH_RECOGNITION = "enable-speech-recognition";
-
     // Native switch - shell_switches::kDumpRenderTree
     public static final String DUMP_RENDER_TREE = "dump-render-tree";
 

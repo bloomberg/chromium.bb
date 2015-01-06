@@ -111,9 +111,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableWebRTC))
     WebRuntimeFeatures::enablePeerConnection(false);
 
-  if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
-    WebRuntimeFeatures::enableScriptedSpeech(false);
-
   if (command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     WebRuntimeFeatures::enableNotifications(true);
 
