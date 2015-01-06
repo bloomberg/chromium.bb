@@ -139,7 +139,7 @@ static base::FilePath GetOriginDir(const base::FilePath& file_system_dir,
   if (base::PathExists(file_system_dir.Append(
           SandboxPrioritizedOriginDatabase::kPrimaryOriginFile))) {
     return base::FilePath(
-        SandboxPrioritizedOriginDatabase::kPrimaryOriginFile);
+        SandboxPrioritizedOriginDatabase::kPrimaryDirectory);
   }
 
   SandboxOriginDatabase origin_db(file_system_dir, NULL);
@@ -178,7 +178,6 @@ static void DumpFileSystem(const base::FilePath& file_system_dir) {
 
 int main(int argc, char* argv[]) {
   const char* arg0 = argv[0];
-  std::string username = "Default";
   while (true) {
     if (argc < 2)
       ShowUsageAndExit(arg0);
