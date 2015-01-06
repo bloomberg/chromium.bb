@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   if (!IsHistorySwipingSupported())
     return;
 
-  QueueBeginningEvents(1, -1);
+  QueueBeginningEvents(1, 1);
   for (int i = 0; i < 150; ++i) {
     if (i % 10 == 0) {
       QueueScrollAndTouchMoved(0, -1);
