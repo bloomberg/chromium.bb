@@ -135,6 +135,15 @@ FFMPEG_TEST_CASE(Cr275590,
                  "security/275590.m4a",
                  DECODER_ERROR_NOT_SUPPORTED,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr444522, "security/444522.mp4", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr444539,
+                 "security/444539.m4a",
+                 DEMUXER_ERROR_COULD_NOT_OPEN,
+                 DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr444546,
+                 "security/444546.mp4",
+                 DEMUXER_ERROR_COULD_NOT_OPEN,
+                 DEMUXER_ERROR_COULD_NOT_OPEN);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
