@@ -15,6 +15,18 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursors_aura.h"
 
+namespace {
+
+// Creates an empty webrtc::MouseCursor. The caller is responsible for
+// destroying the returned cursor.
+webrtc::MouseCursor* CreateEmptyMouseCursor() {
+  return new webrtc::MouseCursor(
+      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(0, 0)),
+      webrtc::DesktopVector(0, 0));
+}
+
+}  // namespace
+
 namespace remoting {
 
 MouseCursorMonitorAura::MouseCursorMonitorAura()
@@ -36,6 +48,7 @@ void MouseCursorMonitorAura::Capture() {
       ash::Shell::GetPrimaryRootWindow()->GetHost()->last_cursor();
 
   if (cursor != last_cursor_) {
+    last_cursor_ = cursor;
     NotifyCursorChanged(cursor);
   }
 
@@ -53,13 +66,18 @@ void MouseCursorMonitorAura::Capture() {
 void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
   scoped_ptr<SkBitmap> cursor_bitmap(new SkBitmap());
   gfx::Point cursor_hotspot;
-  if (!ui::GetCursorBitmap(cursor, cursor_bitmap.get(), &cursor_hotspot)) {
-    LOG(ERROR) << "Failed to load bitmap for cursor type:"
-               << cursor.native_type();
+
+  if (cursor.native_type() == ui::kCursorNone) {
+    callback_->OnMouseCursor(CreateEmptyMouseCursor());
     return;
   }
 
-  last_cursor_ = cursor;
+  if (!ui::GetCursorBitmap(cursor, cursor_bitmap.get(), &cursor_hotspot)) {
+    LOG(ERROR) << "Failed to load bitmap for cursor type:"
+               << cursor.native_type();
+    callback_->OnMouseCursor(CreateEmptyMouseCursor());
+    return;
+  }
 
   // There is a bug (crbug.com/436993) in aura::GetCursorBitmap() such that it
   // it would return a scale-factor-100 bitmap with a scale-factor-200 hotspot.
