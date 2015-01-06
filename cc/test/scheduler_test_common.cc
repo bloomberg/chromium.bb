@@ -74,17 +74,7 @@ TestSchedulerFrameSourcesConstructor::~TestSchedulerFrameSourcesConstructor() {
 BeginFrameSource*
 TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
     Scheduler* scheduler) {
-  if (!scheduler->settings_.throttle_frame_production) {
-    TRACE_EVENT1(
-        "cc",
-        "TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource",
-        "source",
-        "TestBackToBackBeginFrameSource");
-    DCHECK(!scheduler->primary_frame_source_internal_);
-    scheduler->primary_frame_source_internal_ =
-        TestBackToBackBeginFrameSource::Create(now_src_, test_task_runner_);
-    return scheduler->primary_frame_source_internal_.get();
-  } else if (scheduler->settings_.use_external_begin_frame_source) {
+  if (scheduler->settings_.use_external_begin_frame_source) {
     return SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
         scheduler);
   } else {
@@ -119,6 +109,19 @@ TestSchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource(
       TestSyntheticBeginFrameSource::Create(
           now_src_, test_task_runner_, base::TimeDelta::FromSeconds(1));
   return scheduler->background_frame_source_internal_.get();
+}
+
+BeginFrameSource*
+TestSchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource(
+    Scheduler* scheduler) {
+  TRACE_EVENT1(
+      "cc",
+      "TestSchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource",
+      "source", "TestBackToBackBeginFrameSource");
+  DCHECK(!scheduler->unthrottled_frame_source_internal_);
+  scheduler->unthrottled_frame_source_internal_ =
+      TestBackToBackBeginFrameSource::Create(now_src_, test_task_runner_);
+  return scheduler->unthrottled_frame_source_internal_.get();
 }
 
 TestScheduler::TestScheduler(

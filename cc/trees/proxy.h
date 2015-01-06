@@ -67,6 +67,8 @@ class CC_EXPORT Proxy {
 
   virtual void SetVisible(bool visible) = 0;
 
+  virtual void SetThrottleFrameProduction(bool throttle) = 0;
+
   virtual const RendererCapabilities& GetRendererCapabilities() const = 0;
 
   virtual void SetNeedsAnimate() = 0;

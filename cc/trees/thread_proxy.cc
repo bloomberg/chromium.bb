@@ -188,6 +188,21 @@ void ThreadProxy::SetVisibleOnImplThread(CompletionEvent* completion,
   completion->Signal();
 }
 
+void ThreadProxy::SetThrottleFrameProduction(bool throttle) {
+  TRACE_EVENT1("cc", "ThreadProxy::SetThrottleFrameProduction", "throttle",
+               throttle);
+  Proxy::ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ThreadProxy::SetThrottleFrameProductionOnImplThread,
+                 impl_thread_weak_ptr_, throttle));
+}
+
+void ThreadProxy::SetThrottleFrameProductionOnImplThread(bool throttle) {
+  TRACE_EVENT1("cc", "ThreadProxy::SetThrottleFrameProductionOnImplThread",
+               "throttle", throttle);
+  impl().scheduler->SetThrottleFrameProduction(throttle);
+}
+
 void ThreadProxy::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "ThreadProxy::DidLoseOutputSurface");
   DCHECK(IsMainThread());

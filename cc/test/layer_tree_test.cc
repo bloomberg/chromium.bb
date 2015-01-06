@@ -580,8 +580,7 @@ void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
   scoped_ptr<FakeExternalBeginFrameSource> external_begin_frame_source;
-  if (settings_.use_external_begin_frame_source &&
-      settings_.throttle_frame_production) {
+  if (settings_.use_external_begin_frame_source) {
     external_begin_frame_source.reset(new FakeExternalBeginFrameSource(
         settings_.renderer_settings.refresh_rate));
     external_begin_frame_source_ = external_begin_frame_source.get();
@@ -762,8 +761,7 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
             output_surface->capabilities().delegated_rendering);
   output_surface_ = output_surface.get();
 
-  if (settings_.use_external_begin_frame_source &&
-      settings_.throttle_frame_production) {
+  if (settings_.use_external_begin_frame_source) {
     DCHECK(external_begin_frame_source_);
     DCHECK(external_begin_frame_source_->is_ready());
   }

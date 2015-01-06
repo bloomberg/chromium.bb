@@ -113,6 +113,14 @@ void SingleThreadProxy::SetVisible(bool visible) {
   // Changing visibility could change ShouldComposite().
 }
 
+void SingleThreadProxy::SetThrottleFrameProduction(bool throttle) {
+  TRACE_EVENT1("cc", "SingleThreadProxy::SetThrottleFrameProduction",
+               "throttle", throttle);
+  DebugScopedSetImplThread impl(this);
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->SetThrottleFrameProduction(throttle);
+}
+
 void SingleThreadProxy::RequestNewOutputSurface() {
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());

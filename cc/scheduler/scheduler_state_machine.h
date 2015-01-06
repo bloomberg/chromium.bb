@@ -161,6 +161,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
+  bool visible() const { return visible_; }
 
   // Indicates that a redraw is required, either due to the impl tree changing
   // or the screen being damaged and simply needing redisplay.

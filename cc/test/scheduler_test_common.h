@@ -143,6 +143,8 @@ class TestSchedulerFrameSourcesConstructor
   BeginFrameSource* ConstructPrimaryFrameSource(Scheduler* scheduler) override;
   BeginFrameSource* ConstructBackgroundFrameSource(
       Scheduler* scheduler) override;
+  BeginFrameSource* ConstructUnthrottledFrameSource(
+      Scheduler* scheduler) override;
 
   OrderedSimpleTaskRunner* test_task_runner_;
   TestNowSource* now_src_;
@@ -185,6 +187,7 @@ class TestScheduler : public Scheduler {
   bool CanStart() const { return state_machine_.CanStartForTesting(); }
 
   BeginFrameSource& frame_source() { return *frame_source_; }
+  bool FrameProductionThrottled() { return throttle_frame_production_; }
 
   ~TestScheduler() override;
 

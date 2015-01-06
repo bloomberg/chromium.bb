@@ -157,6 +157,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetOutputSurface(scoped_ptr<OutputSurface>) override;
   void SetLayerTreeHostClientReady() override;
   void SetVisible(bool visible) override;
+  void SetThrottleFrameProduction(bool throttle) override;
   const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
@@ -261,6 +262,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void InitializeImplOnImplThread(CompletionEvent* completion);
   void SetLayerTreeHostClientReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
+  void SetThrottleFrameProductionOnImplThread(bool throttle);
   void HasInitializedOutputSurfaceOnImplThread(
       CompletionEvent* completion,
       bool* has_initialized_output_surface);

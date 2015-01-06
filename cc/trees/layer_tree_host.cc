@@ -741,6 +741,10 @@ void LayerTreeHost::SetVisible(bool visible) {
   proxy_->SetVisible(visible);
 }
 
+void LayerTreeHost::SetThrottleFrameProduction(bool throttle) {
+  proxy_->SetThrottleFrameProduction(throttle);
+}
+
 void LayerTreeHost::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                             bool use_anchor,
                                             float scale,
