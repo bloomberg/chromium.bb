@@ -950,7 +950,7 @@ FloatRoundedRect RenderStyle::getRoundedBorderFor(const LayoutRect& borderRect, 
     FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
     if (hasBorderRadius()) {
         FloatRoundedRect::Radii radii = calcRadiiFor(surround->border, borderRect.size());
-        radii.scale(calcBorderRadiiConstraintScaleFor(borderRect, radii));
+        radii.scale(calcBorderRadiiConstraintScaleFor(roundedRect.rect(), radii));
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
     }
     return roundedRect;
