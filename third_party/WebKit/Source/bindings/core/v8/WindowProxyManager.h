@@ -18,7 +18,7 @@ class ScriptState;
 class SecurityOrigin;
 class WindowProxy;
 
-class WindowProxyManager : public NoBaseWillBeGarbageCollected<WindowProxyManager> {
+class WindowProxyManager : public NoBaseWillBeGarbageCollectedFinalized<WindowProxyManager> {
 public:
     static PassOwnPtrWillBeRawPtr<WindowProxyManager> create(Frame*);
 
