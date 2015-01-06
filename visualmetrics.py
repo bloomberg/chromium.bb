@@ -44,7 +44,6 @@ import tempfile
 
 
 def video_to_frames(video, directory, force, orange_file, find_viewport, full_resolution, timeline_file):
-    viewport = None
     first_frame = os.path.join(directory, 'ms_000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
         if os.path.isfile(video):
@@ -71,7 +70,6 @@ def video_to_frames(video, directory, force, orange_file, find_viewport, full_re
             logging.critical("Input video file " + video + " does not exist")
     else:
         logging.info("Extracted video already exists in " + directory)
-    return viewport
 
 
 def extract_frames(video, directory, full_resolution, viewport):
@@ -475,7 +473,7 @@ def get_timeline_event_navigate_time(timeline_event):
 ########################################################################################################################
 
 
-def calculate_histograms(directory, histograms_file, force, viewport):
+def calculate_histograms(directory, histograms_file, force):
     if not os.path.isfile(histograms_file) or force:
         try:
             extension = None
@@ -799,9 +797,9 @@ if '__main__' == __name__:
                     not os.path.isfile(orange_file):
                     orange_file = os.path.join(temp_dir, 'orange.png')
                     generate_orange_png(orange_file)
-                viewport = video_to_frames(options.video, directory, options.force, orange_file, options.viewport,
-                                           options.full, options.timeline)
-            calculate_histograms(directory, histogram_file, options.force, viewport)
+                video_to_frames(options.video, directory, options.force, orange_file, options.viewport, options.full,
+                                options.timeline)
+            calculate_histograms(directory, histogram_file, options.force)
             if options.dir is not None and options.quality is not None:
                 convert_to_jpeg(directory, options.quality)
             metrics = calculate_visual_metrics(histogram_file, options.start, options.end)
