@@ -88,7 +88,7 @@ def ReplaceArch(text, arch, subarch=None):
     'pnacl': 'pnacl'
   }
   VERSION_MAP = {
-    'arm': '4.8.3',
+    'arm': toolchain_build.GCC_VERSION,
     'x86': '4.4.3',
   }
   REPLACE_MAP = {

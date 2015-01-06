@@ -27,6 +27,10 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 
+# Used here and in toolchain_build_bionic.py
+GCC_VERSION = '4.9.2'
+
+
 # See command.GenerateGitPatches for the schema of entries in this dict.
 # Additionally, each may contain a 'repo' key whose value is the name
 # to use in place of the package name when calling GitUrl (below).
@@ -42,8 +46,8 @@ GIT_REVISIONS = {
     'gcc': {
         'rev': 'b23dd79950a5453d3b3b5a0030d7a1894cafcffe',
         'upstream-branch': 'upstream/gcc-4_9-branch',
-        'upstream-name': 'gcc-4.9.2',
-         # Upstream tag gcc-4_9_2-release:
+        'upstream-name': 'gcc-' + GCC_VERSION,
+         # Upstream tag gcc-<GCC_VERSION>-release:
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
     'newlib': {
