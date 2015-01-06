@@ -36,7 +36,7 @@ class ShellBrowserMainDelegate;
 class ShellDeviceClient;
 class ShellExtensionSystem;
 class ShellOAuth2TokenService;
-class ShellOmahaQueryParamsDelegate;
+class ShellUpdateQueryParamsDelegate;
 
 #if defined(OS_CHROMEOS)
 class ShellAudioController;
@@ -89,7 +89,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<ExtensionsClient> extensions_client_;
   scoped_ptr<ExtensionsBrowserClient> extensions_browser_client_;
   scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
-  scoped_ptr<ShellOmahaQueryParamsDelegate> omaha_query_params_delegate_;
+  scoped_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
   scoped_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 
   // Owned by the KeyedService system.

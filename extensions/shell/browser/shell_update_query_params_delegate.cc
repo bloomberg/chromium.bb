@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/browser/shell_omaha_query_params_delegate.h"
+#include "extensions/shell/browser/shell_update_query_params_delegate.h"
+
+#include <string>
 
 namespace extensions {
 
-ShellOmahaQueryParamsDelegate::ShellOmahaQueryParamsDelegate() {
+ShellUpdateQueryParamsDelegate::ShellUpdateQueryParamsDelegate() {
 }
 
-ShellOmahaQueryParamsDelegate::~ShellOmahaQueryParamsDelegate() {
+ShellUpdateQueryParamsDelegate::~ShellUpdateQueryParamsDelegate() {
 }
 
-std::string ShellOmahaQueryParamsDelegate::GetExtraParams() {
+std::string ShellUpdateQueryParamsDelegate::GetExtraParams() {
   // This version number is high enough to be supported by Omaha
   // (below 31 is unsupported), but it's fake enough to be obviously
   // not a Chrome release.

@@ -10,8 +10,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/omaha_client/omaha_query_params.h"
 #include "components/storage_monitor/storage_monitor.h"
+#include "components/update_client/update_query_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_http_handler.h"
@@ -32,8 +32,8 @@
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
-#include "extensions/shell/browser/shell_omaha_query_params_delegate.h"
 #include "extensions/shell/browser/shell_prefs.h"
+#include "extensions/shell/browser/shell_update_query_params_delegate.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -167,9 +167,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       browser_context_.get(), user_pref_service_.get()));
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
-  omaha_query_params_delegate_.reset(new ShellOmahaQueryParamsDelegate);
-  omaha_client::OmahaQueryParams::SetDelegate(
-      omaha_query_params_delegate_.get());
+  update_query_params_delegate_.reset(new ShellUpdateQueryParamsDelegate);
+  update_client::UpdateQueryParams::SetDelegate(
+      update_query_params_delegate_.get());
 
   // Create our custom ExtensionSystem first because other
   // KeyedServices depend on it.

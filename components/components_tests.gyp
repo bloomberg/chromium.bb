@@ -178,7 +178,6 @@
             'metrics/profiler/profiler_metrics_provider_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'network_time/network_time_tracker_unittest.cc',
-            'omaha_client/omaha_query_params_unittest.cc',
             'omnibox/answers_cache_unittest.cc',
             'omnibox/base_search_provider_unittest.cc',
             'omnibox/autocomplete_input_unittest.cc',
@@ -274,6 +273,7 @@
             'translate/ios/browser/js_translate_manager_unittest.mm',
             'translate/ios/browser/language_detection_controller_unittest.mm',
             'translate/ios/browser/translate_controller_unittest.mm',
+            'update_client/update_query_params_unittest.cc',
             'url_matcher/regex_set_matcher_unittest.cc',
             'url_matcher/string_pattern_unittest.cc',
             'url_matcher/substring_set_matcher_unittest.cc',
@@ -422,9 +422,6 @@
             # Dependencies of network_time
             'components.gyp:network_time',
 
-            # Dependencies of omaha_client
-            'components.gyp:omaha_client',
-
             # Dependencies of omnibox
             'components.gyp:omnibox',
             'components.gyp:omnibox_test_support',
@@ -484,6 +481,9 @@
 
             # Dependencies of wallpaper
             'components.gyp:wallpaper',
+
+            # Dependencies of update_client
+            'components.gyp:update_client',
 
             # Dependencies of url_fixer
             'components.gyp:url_fixer',

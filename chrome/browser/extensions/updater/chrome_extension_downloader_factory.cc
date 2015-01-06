@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
 
+#include <string>
+
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,14 +13,14 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "components/omaha_client/omaha_query_params.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/update_client/update_query_params.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "google_apis/gaia/identity_provider.h"
 
 using extensions::ExtensionDownloader;
 using extensions::ExtensionDownloaderDelegate;
-using omaha_client::OmahaQueryParams;
+using update_client::UpdateQueryParams;
 
 scoped_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForRequestContext(
@@ -33,7 +35,7 @@ ChromeExtensionDownloaderFactory::CreateForRequestContext(
     downloader->set_brand_code(brand);
 #endif  // defined(GOOGLE_CHROME_BUILD)
   downloader->set_manifest_query_params(
-      OmahaQueryParams::Get(OmahaQueryParams::CRX));
+      UpdateQueryParams::Get(UpdateQueryParams::CRX));
   downloader->set_ping_enabled_domain("google.com");
   downloader->set_enable_extra_update_metrics(
       ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());

@@ -17,7 +17,7 @@
 #endif  // OS_WIN
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
-#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"
@@ -232,11 +232,11 @@ base::Version ChromeConfigurator::GetBrowserVersion() const {
 }
 
 std::string ChromeConfigurator::GetChannel() const {
-  return ChromeOmahaQueryParamsDelegate::GetChannelString();
+  return ChromeUpdateQueryParamsDelegate::GetChannelString();
 }
 
 std::string ChromeConfigurator::GetLang() const {
-  return ChromeOmahaQueryParamsDelegate::GetLang();
+  return ChromeUpdateQueryParamsDelegate::GetLang();
 }
 
 std::string ChromeConfigurator::GetOSLongName() const {

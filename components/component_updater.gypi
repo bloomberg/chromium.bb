@@ -18,7 +18,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../url/url.gyp:url_lib',
         'crx_file',
-        'omaha_client',
+        'update_client',
       ],
       'include_dirs': [
         '..',

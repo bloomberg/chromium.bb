@@ -28,11 +28,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/nacl/common/nacl_switches.h"
-#include "components/omaha_client/omaha_query_params.h"
+#include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
-using omaha_client::OmahaQueryParams;
+using update_client::UpdateQueryParams;
 
 namespace component_updater {
 
@@ -82,7 +82,7 @@ void CheckVersionCompatiblity(const base::Version& current_version) {
 // PNaCl is packaged as a multi-CRX.  This returns the platform-specific
 // subdirectory that is part of that multi-CRX.
 base::FilePath GetPlatformDir(const base::FilePath& base_path) {
-  std::string arch = SanitizeForPath(OmahaQueryParams::GetNaclArch());
+  std::string arch = SanitizeForPath(UpdateQueryParams::GetNaclArch());
   return base_path.AppendASCII("_platform_specific").AppendASCII(arch);
 }
 
@@ -191,9 +191,9 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
     LOG(WARNING) << "'pnacl-arch' field is missing from pnacl-manifest!";
     return false;
   }
-  if (arch.compare(OmahaQueryParams::GetNaclArch()) != 0) {
+  if (arch.compare(UpdateQueryParams::GetNaclArch()) != 0) {
     LOG(WARNING) << "'pnacl-arch' field in manifest is invalid (" << arch
-                 << " vs " << OmahaQueryParams::GetNaclArch() << ")";
+                 << " vs " << UpdateQueryParams::GetNaclArch() << ")";
     return false;
   }
 

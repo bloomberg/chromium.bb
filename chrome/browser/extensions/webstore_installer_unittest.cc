@@ -6,14 +6,14 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/webstore_installer.h"
-#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "components/crx_file/id_util.h"
-#include "components/omaha_client/omaha_query_params.h"
+#include "components/update_client/update_query_params.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
-using omaha_client::OmahaQueryParams;
+using update_client::UpdateQueryParams;
 
 namespace extensions {
 
@@ -29,18 +29,18 @@ TEST(WebstoreInstallerTest, PlatformParams) {
       WebstoreInstaller::INSTALL_SOURCE_INLINE);
   std::string query = url.query();
   EXPECT_TRUE(
-      Contains(query, StringPrintf("os=%s", OmahaQueryParams::GetOS())));
+      Contains(query, StringPrintf("os=%s", UpdateQueryParams::GetOS())));
   EXPECT_TRUE(
-      Contains(query, StringPrintf("arch=%s", OmahaQueryParams::GetArch())));
+      Contains(query, StringPrintf("arch=%s", UpdateQueryParams::GetArch())));
   EXPECT_TRUE(Contains(
-      query, StringPrintf("nacl_arch=%s", OmahaQueryParams::GetNaclArch())));
+      query, StringPrintf("nacl_arch=%s", UpdateQueryParams::GetNaclArch())));
   EXPECT_TRUE(
       Contains(query,
                net::EscapeQueryParamValue(
                    StringPrintf("installsource=%s", source.c_str()), true)));
   EXPECT_TRUE(Contains(
       query,
-      StringPrintf("lang=%s", ChromeOmahaQueryParamsDelegate::GetLang())));
+      StringPrintf("lang=%s", ChromeUpdateQueryParamsDelegate::GetLang())));
 }
 
 }  // namespace extensions

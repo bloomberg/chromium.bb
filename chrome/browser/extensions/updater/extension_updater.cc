@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -22,7 +23,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/omaha_client/omaha_query_params.h"
+#include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -44,7 +45,7 @@ using base::TimeDelta;
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::ExtensionSet;
-using omaha_client::OmahaQueryParams;
+using update_client::UpdateQueryParams;
 
 typedef extensions::ExtensionDownloaderDelegate::Error Error;
 typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
@@ -127,7 +128,7 @@ void DetermineForcedUpdatesOnBlockingPool(
             std::string nacl_arch;
             if (p->GetString(extensions::manifest_keys::kNaClArch,
                              &nacl_arch) &&
-                nacl_arch == OmahaQueryParams::GetNaclArch()) {
+                nacl_arch == UpdateQueryParams::GetNaclArch()) {
               std::string subpath;
               if (p->GetString(extensions::manifest_keys::kSubPackagePath,
                                &subpath)) {
@@ -145,7 +146,7 @@ void DetermineForcedUpdatesOnBlockingPool(
 
       if (force)
         forced_updates->insert(extension->id());
-   }
+    }
   }
   BrowserThread::PostTask(
       BrowserThread::UI,

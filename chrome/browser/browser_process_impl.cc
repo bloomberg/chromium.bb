@@ -45,7 +45,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -62,6 +61,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -76,10 +76,10 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/metrics/metrics_service.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/omaha_client/omaha_query_params.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/update_client/update_query_params.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -221,8 +221,8 @@ BrowserProcessImpl::BrowserProcessImpl(
 
   message_center::MessageCenter::Initialize();
 
-  omaha_client::OmahaQueryParams::SetDelegate(
-      ChromeOmahaQueryParamsDelegate::GetInstance());
+  update_client::UpdateQueryParams::SetDelegate(
+      ChromeUpdateQueryParamsDelegate::GetInstance());
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {

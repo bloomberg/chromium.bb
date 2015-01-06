@@ -4,14 +4,16 @@
 
 #include "extensions/browser/updater/update_service.h"
 
+#include <set>
+
 #include "base/message_loop/message_loop.h"
-#include "components/omaha_client/omaha_query_params.h"
+#include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/update_service_factory.h"
 #include "extensions/common/extension_urls.h"
 
-using omaha_client::OmahaQueryParams;
+using update_client::UpdateQueryParams;
 
 namespace extensions {
 
@@ -34,7 +36,7 @@ UpdateService::UpdateService(content::BrowserContext* context)
     : browser_context_(context),
       downloader_(new ExtensionDownloader(this, context->GetRequestContext())) {
   downloader_->set_manifest_query_params(
-      OmahaQueryParams::Get(OmahaQueryParams::CRX));
+      UpdateQueryParams::Get(UpdateQueryParams::CRX));
 }
 
 UpdateService::~UpdateService() {

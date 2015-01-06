@@ -1,11 +1,11 @@
 include_rules = [
   "+chromeos",
   "+components/keyed_service",
-  "+components/omaha_client",
   "+components/pref_registry",
   "+components/sessions",
   "+components/storage_monitor",
   "+components/ui/zoom",
+  "+components/update_client",
   "+components/web_cache",
   "+components/web_modal",
   "+content/public/browser",

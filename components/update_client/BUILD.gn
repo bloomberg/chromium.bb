@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("omaha_client") {
+source_set("update_client") {
   sources = [
-    "omaha_query_params.cc",
-    "omaha_query_params.h",
-    "omaha_query_params_delegate.cc",
-    "omaha_query_params_delegate.h",
+    "update_query_params.cc",
+    "update_query_params.h",
+    "update_query_params_delegate.cc",
+    "update_query_params_delegate.h",
   ]
 
   deps = [

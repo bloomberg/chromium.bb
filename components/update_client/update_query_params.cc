@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omaha_client/omaha_query_params.h"
+#include "components/update_client/update_query_params.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
-#include "components/omaha_client/omaha_query_params_delegate.h"
+#include "components/update_client/update_query_params_delegate.h"
 
-namespace omaha_client {
+namespace update_client {
 
 namespace {
 
@@ -58,28 +58,25 @@ const char kChromeCrx[] = "chromecrx";
 const char kChromiumCrx[] = "chromiumcrx";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-OmahaQueryParamsDelegate* g_delegate = NULL;
+UpdateQueryParamsDelegate* g_delegate = NULL;
 
 }  // namespace
 
 // static
-std::string OmahaQueryParams::Get(ProdId prod) {
+std::string UpdateQueryParams::Get(ProdId prod) {
   return base::StringPrintf(
-      "os=%s&arch=%s&nacl_arch=%s&prod=%s%s",
-      kOs,
-      kArch,
-      GetNaclArch(),
+      "os=%s&arch=%s&nacl_arch=%s&prod=%s%s", kOs, kArch, GetNaclArch(),
       GetProdIdString(prod),
       g_delegate ? g_delegate->GetExtraParams().c_str() : "");
 }
 
 // static
-const char* OmahaQueryParams::GetProdIdString(OmahaQueryParams::ProdId prod) {
+const char* UpdateQueryParams::GetProdIdString(UpdateQueryParams::ProdId prod) {
   switch (prod) {
-    case OmahaQueryParams::CHROME:
+    case UpdateQueryParams::CHROME:
       return kChrome;
       break;
-    case OmahaQueryParams::CRX:
+    case UpdateQueryParams::CRX:
 #if defined(GOOGLE_CHROME_BUILD)
       return kChromeCrx;
 #else
@@ -91,17 +88,17 @@ const char* OmahaQueryParams::GetProdIdString(OmahaQueryParams::ProdId prod) {
 }
 
 // static
-const char* OmahaQueryParams::GetOS() {
+const char* UpdateQueryParams::GetOS() {
   return kOs;
 }
 
 // static
-const char* OmahaQueryParams::GetArch() {
+const char* UpdateQueryParams::GetArch() {
   return kArch;
 }
 
 // static
-const char* OmahaQueryParams::GetNaclArch() {
+const char* UpdateQueryParams::GetNaclArch() {
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)
   return "x86-64";
@@ -126,9 +123,9 @@ const char* OmahaQueryParams::GetNaclArch() {
 }
 
 // static
-void OmahaQueryParams::SetDelegate(OmahaQueryParamsDelegate* delegate) {
+void UpdateQueryParams::SetDelegate(UpdateQueryParamsDelegate* delegate) {
   DCHECK(!g_delegate || !delegate);
   g_delegate = delegate;
 }
 
-}  // namespace omaha_client
+}  // namespace update_client

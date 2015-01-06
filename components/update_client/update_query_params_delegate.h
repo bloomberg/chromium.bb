@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMAHA_CLIENT_OMAHA_QUERY_PARAMS_DELEGATE_H_
-#define COMPONENTS_OMAHA_CLIENT_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_UPDATE_QUERY_PARAMS_DELEGATE_H_
+#define COMPONENTS_UPDATE_CLIENT_UPDATE_QUERY_PARAMS_DELEGATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 
-namespace omaha_client {
+namespace update_client {
 
-// Embedders can specify an OmahaQueryParamsDelegate to provide additional
+// Embedders can specify an UpdateQueryParamsDelegate to provide additional
 // custom parameters. If not specified (Set is never called), no additional
 // parameters are added.
-class OmahaQueryParamsDelegate {
+class UpdateQueryParamsDelegate {
  public:
-  OmahaQueryParamsDelegate();
-  virtual ~OmahaQueryParamsDelegate();
+  UpdateQueryParamsDelegate();
+  virtual ~UpdateQueryParamsDelegate();
 
   // Returns additional parameters, if any. If there are any parameters, the
   // string should begin with a & character.
   virtual std::string GetExtraParams() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OmahaQueryParamsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(UpdateQueryParamsDelegate);
 };
 
-}  // namespace omaha_client
+}  // namespace update_client
 
-#endif  // COMPONENTS_OMAHA_CLIENT_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_UPDATE_QUERY_PARAMS_DELEGATE_H_

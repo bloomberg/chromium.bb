@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
@@ -17,31 +17,31 @@ const char kBeta[] = "beta";
 const char kDev[] = "dev";
 const char kCanary[] = "canary";
 
-base::LazyInstance<ChromeOmahaQueryParamsDelegate> g_delegate =
+base::LazyInstance<ChromeUpdateQueryParamsDelegate> g_delegate =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-ChromeOmahaQueryParamsDelegate::ChromeOmahaQueryParamsDelegate() {
+ChromeUpdateQueryParamsDelegate::ChromeUpdateQueryParamsDelegate() {
 }
 
-ChromeOmahaQueryParamsDelegate::~ChromeOmahaQueryParamsDelegate() {
+ChromeUpdateQueryParamsDelegate::~ChromeUpdateQueryParamsDelegate() {
 }
 
 // static
-ChromeOmahaQueryParamsDelegate* ChromeOmahaQueryParamsDelegate::GetInstance() {
+ChromeUpdateQueryParamsDelegate*
+ChromeUpdateQueryParamsDelegate::GetInstance() {
   return g_delegate.Pointer();
 }
 
-std::string ChromeOmahaQueryParamsDelegate::GetExtraParams() {
+std::string ChromeUpdateQueryParamsDelegate::GetExtraParams() {
   return base::StringPrintf("&prodchannel=%s&prodversion=%s&lang=%s",
                             GetChannelString(),
-                            chrome::VersionInfo().Version().c_str(),
-                            GetLang());
+                            chrome::VersionInfo().Version().c_str(), GetLang());
 }
 
 // static
-const char* ChromeOmahaQueryParamsDelegate::GetChannelString() {
+const char* ChromeUpdateQueryParamsDelegate::GetChannelString() {
   switch (chrome::VersionInfo::GetChannel()) {
     case chrome::VersionInfo::CHANNEL_STABLE:
       return kStable;
@@ -63,6 +63,6 @@ const char* ChromeOmahaQueryParamsDelegate::GetChannelString() {
 }
 
 // static
-const char* ChromeOmahaQueryParamsDelegate::GetLang() {
+const char* ChromeUpdateQueryParamsDelegate::GetLang() {
   return g_browser_process->GetApplicationLocale().c_str();
 }

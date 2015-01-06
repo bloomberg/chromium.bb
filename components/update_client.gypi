@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'omaha_client',
+      'target_name': 'update_client',
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -14,10 +14,10 @@
         '../base/base.gyp:base',
       ],
       'sources': [
-        'omaha_client/omaha_query_params.cc',
-        'omaha_client/omaha_query_params.h',
-        'omaha_client/omaha_query_params_delegate.cc',
-        'omaha_client/omaha_query_params_delegate.h',
+        'update_client/update_query_params.cc',
+        'update_client/update_query_params.h',
+        'update_client/update_query_params_delegate.cc',
+        'update_client/update_query_params_delegate.h',
       ],
     },
   ],
