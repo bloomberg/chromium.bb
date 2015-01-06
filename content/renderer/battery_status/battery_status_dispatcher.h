@@ -23,11 +23,10 @@ class CONTENT_EXPORT BatteryStatusDispatcher
   ~BatteryStatusDispatcher() override;
 
  private:
+  friend class BatteryStatusDispatcherTest;
+
   // BatteryStatusObserver method.
   void DidChange(device::BatteryStatusPtr battery_status) override;
-
-  void Start();
-  void Stop();
 
   device::BatteryMonitorPtr monitor_;
   blink::WebBatteryStatusListener* listener_;

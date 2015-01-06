@@ -15,8 +15,11 @@ BatteryStatusDispatcher::BatteryStatusDispatcher(
     : listener_(listener) {
   DCHECK(listener_);
 
-  RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(&monitor_);
-  monitor_.set_client(this);
+  if (ServiceRegistry* registry = RenderThread::Get()->GetServiceRegistry()) {
+    // registry can be null during testing.
+    registry->ConnectToRemoteService(&monitor_);
+    monitor_.set_client(this);
+  }
 }
 
 BatteryStatusDispatcher::~BatteryStatusDispatcher() {
