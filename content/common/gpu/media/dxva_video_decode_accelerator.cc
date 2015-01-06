@@ -504,6 +504,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       state_(kUninitialized),
       pictures_requested_(false),
       inputs_before_decode_(0),
+      sent_drain_message_(false),
       make_context_current_(make_context_current),
       codec_(media::kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
@@ -689,9 +690,6 @@ void DXVAVideoDecodeAccelerator::Flush() {
       "Unexpected decoder state: " << state, ILLEGAL_STATE,);
 
   SetState(kFlushing);
-
-  RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_DRAIN, 0),
-      "Failed to send drain message", PLATFORM_FAILURE,);
 
   pending_flush_ = true;
 
@@ -1210,6 +1208,11 @@ void DXVAVideoDecodeAccelerator::NotifyFlushDone() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   if (client_ && pending_flush_) {
     pending_flush_ = false;
+    {
+      base::AutoLock lock(decoder_lock_);
+      sent_drain_message_ = false;
+    }
+
     client_->NotifyFlushDone();
   }
 }
@@ -1286,6 +1289,30 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   if (OutputSamplesPresent())
     return;
 
+  // First drain the pending input because once the drain message is sent below,
+  // the decoder will ignore further input until it's drained.
+  if (!pending_input_buffers_.empty()) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                    base::Unretained(this)));
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                    base::Unretained(this)));
+    return;
+  }
+
+  {
+    base::AutoLock lock(decoder_lock_);
+    if (!sent_drain_message_) {
+      RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_DRAIN, 0),
+                                   "Failed to send drain message",
+                                   PLATFORM_FAILURE,);
+      sent_drain_message_ = true;
+    }
+  }
+
   // The DoDecode function sets the state to kStopped when the decoder returns
   // MF_E_TRANSFORM_NEED_MORE_INPUT.
   // The MFT decoder can buffer upto 30 frames worth of input before returning
@@ -1298,23 +1325,6 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   }
 
   SetState(kFlushing);
-
-  // TODO(ananta)
-  // Look into whether we can simplify this function by combining the while
-  // above and the code below into a single block which achieves both. The Flush
-  // transitions in the decoder are a touch intertwined with other portions of
-  // the code like AssignPictureBuffers, ReusePictureBuffers etc.
-  if (!pending_input_buffers_.empty()) {
-    decoder_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                    base::Unretained(this)));
-    decoder_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
-                    base::Unretained(this)));
-    return;
-  }
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,

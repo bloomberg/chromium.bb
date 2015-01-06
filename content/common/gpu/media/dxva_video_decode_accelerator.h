@@ -245,7 +245,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   typedef std::list<PendingSampleInfo> PendingOutputSamples;
 
-  // List of decoded output samples.
+  // List of decoded output samples. Protected by |decoder_lock_|.
   PendingOutputSamples pending_output_samples_;
 
   // This map maintains the picture buffers passed the client for decoding.
@@ -264,6 +264,11 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Counter which holds the number of input packets before a successful
   // decode.
   int inputs_before_decode_;
+
+  // Set to true when the drain message is sent to the decoder during a flush
+  // operation. Used to ensure the message is only sent once after
+  // |pending_input_buffers_| is drained. Protected by |decoder_lock_|.
+  bool sent_drain_message_;
 
   // List of input samples waiting to be processed.
   typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
@@ -286,8 +291,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   // Used to synchronize access between the decoder thread and the main thread.
-  // Currently only used to synchronize access to the pending output samples
-  // queue.
   base::Lock decoder_lock_;
 
   // WeakPtrFactory for posting tasks back to |this|.
