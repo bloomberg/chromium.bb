@@ -12562,7 +12562,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Open Tabs
         </message>
         <message name="IDS_SYNC_DATATYPE_WIFI_CREDENTIALS" desc="WiFi network names and passwords, one of the data types that we allow syncing.">
-          WiFi Credentials
+          Wi-Fi networks
         </message>
 
         <!-- Encryption tab of the configure sync dialog -->
