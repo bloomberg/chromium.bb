@@ -11547,7 +11547,7 @@ Chrome ran out of memory.
         <if expr="is_macosx">
           <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                    desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
-            Create shortcut
+            Create shortcut...
           </message>
         </if>
         <if expr="not is_macosx">
@@ -11598,7 +11598,7 @@ Chrome ran out of memory.
         <if expr="is_macosx">
           <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                    desc="Text for the context menu item that creates an app shortcut. (In title case.)">
-            Create Shortcut
+            Create Shortcut...
           </message>
         </if>
         <if expr="not is_macosx">
