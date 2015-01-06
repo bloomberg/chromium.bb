@@ -391,6 +391,14 @@ public class AdapterInputConnection extends BaseInputConnection {
             return mImeAdapter.translateAndSendNativeEvents(event, NO_ACCENT);
         }
 
+        // Some keys we just want to pass events straight through.  This allows
+        // proper "repeating key" behavior with physical keyboards.
+        int eventKeyCode = event.getKeyCode();
+        if (eventKeyCode == KeyEvent.KEYCODE_DEL || eventKeyCode == KeyEvent.KEYCODE_FORWARD_DEL) {
+            mPendingAccent = 0;
+            return mImeAdapter.translateAndSendNativeEvents(event, NO_ACCENT);
+        }
+
         int unicodeChar = event.getUnicodeChar();
 
         // If this is a key-up, and backspace/del or if the key has a character representation,
@@ -429,7 +437,6 @@ public class AdapterInputConnection extends BaseInputConnection {
                 return true;
             }
         }
-        mImeAdapter.translateAndSendNativeEvents(event, mPendingAccent);
 
         // Physical keyboards also have their events come through here though not
         // by BaseInputConnection.  In order to support "accent" key sequences
@@ -440,9 +447,11 @@ public class AdapterInputConnection extends BaseInputConnection {
         // Copy class variable to local because class version may get indirectly
         // cleared by the deleteSurroundingText() call below.
         int pendingAccent = mPendingAccent;
+        int nextAccent = mPendingAccent;
 
         if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) != 0) {
-            pendingAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
+            pendingAccent = NO_ACCENT;
+            nextAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
         } else if (pendingAccent != NO_ACCENT) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 int combined = KeyEvent.getDeadChar(pendingAccent, unicodeChar);
@@ -456,16 +465,18 @@ public class AdapterInputConnection extends BaseInputConnection {
                     // Previous accent doesn't combine with this character
                     // so assume both are completely independent.
                     pendingAccent = NO_ACCENT;
+                    nextAccent = NO_ACCENT;
                 }
             }
 
             if (event.getAction() == KeyEvent.ACTION_UP) {
                 // Forget accent after release of key being accented.
-                pendingAccent = NO_ACCENT;
+                nextAccent = NO_ACCENT;
             }
         }
 
-        mPendingAccent = pendingAccent;
+        mImeAdapter.translateAndSendNativeEvents(event, pendingAccent);
+        mPendingAccent = nextAccent;
         return true;
     }
 

@@ -630,7 +630,6 @@ public class ImeTest extends ContentShellTestBase {
 
         // O  (accented key)
         dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
-        assertUpdateStateCall(mConnection, 1000);
         assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
         dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
         assertEquals("hiô", mConnection.getTextBeforeCursor(9, 0));
