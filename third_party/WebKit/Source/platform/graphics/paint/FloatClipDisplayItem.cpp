@@ -17,8 +17,9 @@ void FloatClipDisplayItem::replay(GraphicsContext* context)
     context->clip(m_clipRect);
 }
 
-void FloatClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList*) const
+void FloatClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
+    list->appendFloatClipItem(m_clipRect);
 }
 
 void EndFloatClipDisplayItem::replay(GraphicsContext* context)
@@ -26,8 +27,9 @@ void EndFloatClipDisplayItem::replay(GraphicsContext* context)
     context->restore();
 }
 
-void EndFloatClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList*) const
+void EndFloatClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
+    list->appendEndFloatClipItem();
 }
 
 #ifndef NDEBUG

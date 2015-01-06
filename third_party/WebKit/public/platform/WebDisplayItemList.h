@@ -32,6 +32,8 @@ public:
 
     virtual void appendClipItem(const WebRect&, const WebVector<SkRRect>&) = 0;
     virtual void appendEndClipItem() = 0;
+    virtual void appendFloatClipItem(const WebFloatRect&) = 0;
+    virtual void appendEndFloatClipItem() = 0;
     virtual void appendTransformItem(const SkMatrix44&) = 0;
     virtual void appendEndTransformItem() = 0;
     virtual void appendTransparencyItem(float opacity, WebBlendMode) = 0;
