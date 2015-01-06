@@ -192,9 +192,9 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayAudioChromeOs(this));
   AddTrayItem(new TrayBrightness(this));
   AddTrayItem(new TrayCapsLock(this));
+  AddTrayItem(new TrayRotationLock(this));
   AddTrayItem(new TraySettings(this));
   AddTrayItem(new TrayUpdate(this));
-  AddTrayItem(new TrayRotationLock(this));
   AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
