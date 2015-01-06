@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
@@ -19,6 +22,13 @@ TtsMessageFilter::TtsMessageFilter(int render_process_id,
       valid_(true) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TtsController::GetInstance()->AddVoicesChangedDelegate(this);
+
+  // TODO(dmazzoni): make it so that we can listen for a BrowserContext
+  // being destroyed rather than a Profile.  http://crbug.com/444668
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::Source<Profile>(profile));
 
   // Balanced in OnChannelClosingInUIThread() to keep the ref-count be non-zero
   // until all pointers to this class are invalidated.
@@ -79,6 +89,9 @@ TtsMessageFilter::~TtsMessageFilter() {
 
 void TtsMessageFilter::OnInitializeVoiceList() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!browser_context_)
+    return;
+
   TtsController* tts_controller = TtsController::GetInstance();
   std::vector<VoiceData> voices;
   tts_controller->GetVoices(browser_context_, &voices);
@@ -98,6 +111,8 @@ void TtsMessageFilter::OnInitializeVoiceList() {
 
 void TtsMessageFilter::OnSpeak(const TtsUtteranceRequest& request) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!browser_context_)
+    return;
 
   scoped_ptr<Utterance> utterance(new Utterance(browser_context_));
   utterance->set_src_id(request.id);
@@ -192,4 +207,12 @@ void TtsMessageFilter::OnChannelClosingInUIThread() {
 void TtsMessageFilter::Cleanup() {
   TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
   TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
+}
+
+void TtsMessageFilter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  browser_context_ = nullptr;
+  notification_registrar_.RemoveAll();
 }

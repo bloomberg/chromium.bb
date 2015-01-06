@@ -10,6 +10,8 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/tts_messages.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace content {
 class BrowserContext;
@@ -17,6 +19,7 @@ class BrowserContext;
 
 class TtsMessageFilter
     : public content::BrowserMessageFilter,
+      public content::NotificationObserver,
       public UtteranceEventDelegate,
       public VoicesChangedDelegate {
  public:
@@ -59,10 +62,16 @@ class TtsMessageFilter
   // about to be deleted.
   bool Valid();
 
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   int render_process_id_;
   content::BrowserContext* browser_context_;
   mutable base::Lock mutex_;
   mutable bool valid_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsMessageFilter);
 };
