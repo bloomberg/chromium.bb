@@ -43,11 +43,13 @@ var tests = [
           assertEq(title, data.name);
           // There is no favicon in the test browser, so only 4 icons will
           // be created.
-          assertEq(4, data.icons.length);
+          assertEq(6, data.icons.length);
           assertEq(32, data.icons[0].size);
           assertEq(48, data.icons[1].size);
           assertEq(64, data.icons[2].size);
           assertEq(96, data.icons[3].size);
+          assertEq(128, data.icons[4].size);
+          assertEq(256, data.icons[5].size);
 
           chrome.management.getAll(callback(function(items) {
             assertTrue(getItemNamed(items, title) != null);
@@ -61,11 +63,13 @@ var tests = [
         url, title, null, function(data) {
           assertEq(url, data.appLaunchUrl);
           assertEq(title, data.name);
-          assertEq(4, data.icons.length);
+          assertEq(6, data.icons.length);
           assertEq(32, data.icons[0].size);
           assertEq(48, data.icons[1].size);
           assertEq(64, data.icons[2].size);
           assertEq(96, data.icons[3].size);
+          assertEq(128, data.icons[4].size);
+          assertEq(256, data.icons[5].size);
 
           chrome.management.getAll(callback(function(items) {
             assertTrue(getItemNamed(items, title) != null);

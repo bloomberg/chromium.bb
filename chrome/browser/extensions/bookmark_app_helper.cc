@@ -117,6 +117,7 @@ std::set<int> SizesToGenerate() {
   const int kIconSizesToGenerate[] = {
       extension_misc::EXTENSION_ICON_SMALL,
       extension_misc::EXTENSION_ICON_MEDIUM,
+      extension_misc::EXTENSION_ICON_LARGE,
   };
   return std::set<int>(kIconSizesToGenerate,
                        kIconSizesToGenerate + arraysize(kIconSizesToGenerate));
