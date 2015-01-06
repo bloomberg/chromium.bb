@@ -371,7 +371,7 @@ void DictionaryValue::Clear() {
   dictionary_.clear();
 }
 
-void DictionaryValue::Set(const std::string& path, Value* in_value) {
+void DictionaryValue::Set(const std::string& path, scoped_ptr<Value> in_value) {
   DCHECK(IsStringUTF8(path));
   DCHECK(in_value);
 
@@ -392,7 +392,11 @@ void DictionaryValue::Set(const std::string& path, Value* in_value) {
     current_path.erase(0, delimiter_position + 1);
   }
 
-  current_dictionary->SetWithoutPathExpansion(current_path, in_value);
+  current_dictionary->SetWithoutPathExpansion(current_path, in_value.Pass());
+}
+
+void DictionaryValue::Set(const std::string& path, Value* in_value) {
+  Set(path, make_scoped_ptr(in_value));
 }
 
 void DictionaryValue::SetBoolean(const std::string& path, bool in_value) {
@@ -418,16 +422,22 @@ void DictionaryValue::SetString(const std::string& path,
 }
 
 void DictionaryValue::SetWithoutPathExpansion(const std::string& key,
-                                              Value* in_value) {
+                                              scoped_ptr<Value> in_value) {
+  Value* bare_ptr = in_value.release();
   // If there's an existing value here, we need to delete it, because
   // we own all our children.
   std::pair<ValueMap::iterator, bool> ins_res =
-      dictionary_.insert(std::make_pair(key, in_value));
+      dictionary_.insert(std::make_pair(key, bare_ptr));
   if (!ins_res.second) {
-    DCHECK_NE(ins_res.first->second, in_value);  // This would be bogus
+    DCHECK_NE(ins_res.first->second, bare_ptr);  // This would be bogus
     delete ins_res.first->second;
-    ins_res.first->second = in_value;
+    ins_res.first->second = bare_ptr;
   }
+}
+
+void DictionaryValue::SetWithoutPathExpansion(const std::string& key,
+                                              Value* in_value) {
+  SetWithoutPathExpansion(key, make_scoped_ptr(in_value));
 }
 
 void DictionaryValue::SetBooleanWithoutPathExpansion(

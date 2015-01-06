@@ -312,6 +312,31 @@ TEST(ValuesTest, DictionaryRemoval) {
 
 TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   DictionaryValue dict;
+  dict.Set("this.is.expanded", make_scoped_ptr(Value::CreateNullValue()));
+  dict.SetWithoutPathExpansion("this.isnt.expanded",
+                               make_scoped_ptr(Value::CreateNullValue()));
+
+  EXPECT_FALSE(dict.HasKey("this.is.expanded"));
+  EXPECT_TRUE(dict.HasKey("this"));
+  Value* value1;
+  EXPECT_TRUE(dict.Get("this", &value1));
+  DictionaryValue* value2;
+  ASSERT_TRUE(dict.GetDictionaryWithoutPathExpansion("this", &value2));
+  EXPECT_EQ(value1, value2);
+  EXPECT_EQ(1U, value2->size());
+
+  EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
+  Value* value3;
+  EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
+  Value* value4;
+  ASSERT_TRUE(dict.GetWithoutPathExpansion("this.isnt.expanded", &value4));
+  EXPECT_EQ(Value::TYPE_NULL, value4->GetType());
+}
+
+// Tests the deprecated version of SetWithoutPathExpansion.
+// TODO(estade): remove.
+TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
+  DictionaryValue dict;
   dict.Set("this.is.expanded", Value::CreateNullValue());
   dict.SetWithoutPathExpansion("this.isnt.expanded", Value::CreateNullValue());
 
@@ -334,8 +359,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
 
 TEST(ValuesTest, DictionaryRemovePath) {
   DictionaryValue dict;
-  dict.Set("a.long.way.down", new FundamentalValue(1));
-  dict.Set("a.long.key.path", new FundamentalValue(true));
+  dict.SetInteger("a.long.way.down", 1);
+  dict.SetBoolean("a.long.key.path", true);
 
   scoped_ptr<Value> removed_item;
   EXPECT_TRUE(dict.RemovePath("a.long.way.down", &removed_item));
@@ -360,17 +385,17 @@ TEST(ValuesTest, DictionaryRemovePath) {
 TEST(ValuesTest, DeepCopy) {
   DictionaryValue original_dict;
   Value* original_null = Value::CreateNullValue();
-  original_dict.Set("null", original_null);
+  original_dict.Set("null", make_scoped_ptr(original_null));
   FundamentalValue* original_bool = new FundamentalValue(true);
-  original_dict.Set("bool", original_bool);
+  original_dict.Set("bool", make_scoped_ptr(original_bool));
   FundamentalValue* original_int = new FundamentalValue(42);
-  original_dict.Set("int", original_int);
+  original_dict.Set("int", make_scoped_ptr(original_int));
   FundamentalValue* original_double = new FundamentalValue(3.14);
-  original_dict.Set("double", original_double);
+  original_dict.Set("double", make_scoped_ptr(original_double));
   StringValue* original_string = new StringValue("hello");
-  original_dict.Set("string", original_string);
+  original_dict.Set("string", make_scoped_ptr(original_string));
   StringValue* original_string16 = new StringValue(ASCIIToUTF16("hello16"));
-  original_dict.Set("string16", original_string16);
+  original_dict.Set("string16", make_scoped_ptr(original_string16));
 
   scoped_ptr<char[]> original_buffer(new char[42]);
   memset(original_buffer.get(), '!', 42);
@@ -382,11 +407,11 @@ TEST(ValuesTest, DeepCopy) {
   original_list->Append(original_list_element_0);
   FundamentalValue* original_list_element_1 = new FundamentalValue(1);
   original_list->Append(original_list_element_1);
-  original_dict.Set("list", original_list);
+  original_dict.Set("list", make_scoped_ptr(original_list));
 
   DictionaryValue* original_nested_dictionary = new DictionaryValue();
-  original_nested_dictionary->Set("key", new StringValue("value"));
-  original_dict.Set("dictionary", original_nested_dictionary);
+  original_nested_dictionary->SetString("key", "value");
+  original_dict.Set("dictionary", make_scoped_ptr(original_nested_dictionary));
 
   scoped_ptr<DictionaryValue> copy_dict(original_dict.DeepCopy());
   ASSERT_TRUE(copy_dict.get());
@@ -515,7 +540,7 @@ TEST(ValuesTest, Equals) {
   dv.SetDouble("c", 2.5);
   dv.SetString("d1", "string");
   dv.SetString("d2", ASCIIToUTF16("http://google.com"));
-  dv.Set("e", Value::CreateNullValue());
+  dv.Set("e", make_scoped_ptr(Value::CreateNullValue()));
 
   scoped_ptr<DictionaryValue> copy;
   copy.reset(dv.DeepCopy());
@@ -524,7 +549,7 @@ TEST(ValuesTest, Equals) {
   ListValue* list = new ListValue;
   list->Append(Value::CreateNullValue());
   list->Append(new DictionaryValue);
-  dv.Set("f", list);
+  dv.Set("f", make_scoped_ptr(list));
 
   EXPECT_FALSE(dv.Equals(copy.get()));
   copy->Set("f", list->DeepCopy());
@@ -622,9 +647,10 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
 TEST(ValuesTest, RemoveEmptyChildren) {
   scoped_ptr<DictionaryValue> root(new DictionaryValue);
   // Remove empty lists and dictionaries.
-  root->Set("empty_dict", new DictionaryValue);
-  root->Set("empty_list", new ListValue);
-  root->SetWithoutPathExpansion("a.b.c.d.e", new DictionaryValue);
+  root->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
+  root->Set("empty_list", make_scoped_ptr(new ListValue));
+  root->SetWithoutPathExpansion("a.b.c.d.e",
+                                make_scoped_ptr(new DictionaryValue));
   root.reset(root->DeepCopyWithoutEmptyChildren());
   EXPECT_TRUE(root->empty());
 
