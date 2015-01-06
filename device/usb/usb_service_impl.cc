@@ -173,21 +173,23 @@ void UsbServiceImpl::RefreshDevices() {
   }
 
   // Find disconnected devices.
-  for (PlatformDeviceMap::iterator it = platform_devices_.begin();
-       it != platform_devices_.end();
-       ++it) {
-    if (!ContainsKey(connected_devices, it->second.get())) {
-      disconnected_devices.push_back(it->first);
-      devices_.erase(it->second->unique_id());
-      it->second->OnDisconnect();
+  for (const auto& map_entry : platform_devices_) {
+    PlatformUsbDevice platform_device = map_entry.first;
+    scoped_refptr<UsbDeviceImpl> device = map_entry.second;
+    if (!ContainsKey(connected_devices, device.get())) {
+      disconnected_devices.push_back(platform_device);
+      devices_.erase(device->unique_id());
+
+      NotifyDeviceRemoved(device);
+      device->OnDisconnect();
     }
   }
 
   // Remove disconnected devices from platform_devices_.
-  for (size_t i = 0; i < disconnected_devices.size(); ++i) {
+  for (const PlatformUsbDevice& platform_device : disconnected_devices) {
     // UsbDevice will be destroyed after this. The corresponding
     // PlatformUsbDevice will be unref'ed during this process.
-    platform_devices_.erase(disconnected_devices[i]);
+    platform_devices_.erase(platform_device);
   }
 
   libusb_free_device_list(platform_devices, true);
@@ -208,6 +210,7 @@ scoped_refptr<UsbDeviceImpl> UsbServiceImpl::AddDevice(
         descriptor.idProduct, unique_id));
     platform_devices_[platform_device] = new_device;
     devices_[unique_id] = new_device;
+    NotifyDeviceAdded(new_device);
     return new_device;
   } else {
     VLOG(1) << "Failed to get device descriptor: "
@@ -274,13 +277,21 @@ void UsbServiceImpl::OnDeviceRemoved(PlatformUsbDevice platform_device) {
     } else {
       NOTREACHED();
     }
-    device->OnDisconnect();
     platform_devices_.erase(it);
+
+    NotifyDeviceRemoved(device);
+    device->OnDisconnect();
   } else {
     NOTREACHED();
   }
 
   libusb_unref_device(platform_device);
+}
+
+void UsbService::Observer::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
+}
+
+void UsbService::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
 }
 
 // static
@@ -308,6 +319,28 @@ UsbService* UsbService::GetInstance(
 // static
 void UsbService::SetInstanceForTest(UsbService* instance) {
   g_usb_service_instance.Get().reset(instance);
+}
+
+UsbService::UsbService() {
+}
+
+UsbService::~UsbService() {
+}
+
+void UsbService::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void UsbService::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void UsbService::NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device));
+}
+
+void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
 }
 
 }  // namespace device

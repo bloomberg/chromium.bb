@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace base {
@@ -25,6 +26,12 @@ class UsbDevice;
 // competition for the same USB device.
 class UsbService : public base::NonThreadSafe {
  public:
+  class Observer {
+   public:
+    virtual void OnDeviceAdded(scoped_refptr<UsbDevice> device);
+    virtual void OnDeviceRemoved(scoped_refptr<UsbDevice> device);
+  };
+
   // Must be called on a thread with a MessageLoopForIO (for example
   // BrowserThread::FILE). The UI task runner reference is used to talk to the
   // PermissionBrokerClient on ChromeOS (UI thread). Returns NULL when
@@ -41,10 +48,20 @@ class UsbService : public base::NonThreadSafe {
   // in increasing order. Must be called on FILE thread.
   virtual void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) = 0;
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  protected:
   friend struct base::DefaultDeleter<UsbService>;
-  UsbService() {}
-  virtual ~UsbService() {}
+
+  UsbService();
+  virtual ~UsbService();
+
+  void NotifyDeviceAdded(scoped_refptr<UsbDevice> device);
+  void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
+
+  ObserverList<Observer, true> observer_list_;
+
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };
 

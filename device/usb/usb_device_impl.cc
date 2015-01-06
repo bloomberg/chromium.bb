@@ -104,17 +104,6 @@ UsbUsageType GetUsageType(const libusb_endpoint_descriptor* descriptor) {
 
 }  // namespace
 
-UsbDevice::UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
-    : vendor_id_(vendor_id), product_id_(product_id), unique_id_(unique_id) {
-}
-
-UsbDevice::~UsbDevice() {
-}
-
-void UsbDevice::NotifyDisconnect() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDisconnect(this));
-}
-
 UsbDeviceImpl::UsbDeviceImpl(
     scoped_refptr<UsbContext> context,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -184,12 +173,7 @@ UsbDeviceImpl::UsbDeviceImpl(
 }
 
 UsbDeviceImpl::~UsbDeviceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
-       ++it) {
-    (*it)->InternalClose();
-  }
-  STLClearObject(&handles_);
+  // The destructor must be safe to call from any thread.
   libusb_unref_device(platform_device_);
 }
 
@@ -377,10 +361,15 @@ bool UsbDeviceImpl::GetSerialNumber(base::string16* serial_number) {
 
 void UsbDeviceImpl::OnDisconnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Swap the list of handles into a local variable because closing all open
+  // handles may release the last reference to this object.
   HandlesVector handles;
   swap(handles, handles_);
-  for (HandlesVector::iterator it = handles.begin(); it != handles.end(); ++it)
-    (*it)->InternalClose();
+
+  for (const scoped_refptr<UsbDeviceHandleImpl>& handle : handles_) {
+    handle->InternalClose();
+  }
 }
 
 #if !defined(USE_UDEV)
