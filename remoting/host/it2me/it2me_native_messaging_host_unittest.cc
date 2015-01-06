@@ -75,6 +75,7 @@ class MockIt2MeHost : public It2MeHost {
                 const std::string& directory_bot_jid)
       : It2MeHost(context.Pass(),
                   policy_watcher.Pass(),
+                  nullptr,
                   observer,
                   xmpp_server_config,
                   directory_bot_jid) {}

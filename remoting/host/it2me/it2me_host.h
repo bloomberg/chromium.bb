@@ -10,6 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/it2me/it2me_confirmation_dialog.h"
+#include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace base {
@@ -64,6 +66,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   It2MeHost(
       scoped_ptr<ChromotingHostContext> context,
       scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
+      scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid);
@@ -105,6 +108,13 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // Returns true if the host is connected.
   bool IsConnected() const;
+
+  // Presents a confirmation dialog to the user before starting the connection
+  // process.
+  void ShowConfirmationPrompt();
+
+  // Processes the result of the confirmation dialog.
+  void OnConfirmationResult(It2MeConfirmationDialog::Result result);
 
   // Called by Connect() to check for policies and start connection process.
   void ReadPolicyAndConnect();
@@ -159,6 +169,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   int failed_login_attempts_;
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
+  scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
+  scoped_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 
   // Host the current nat traversal policy setting.
   bool nat_traversal_enabled_;

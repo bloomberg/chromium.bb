@@ -16,6 +16,7 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/host_status_logger.h"
+#include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me_desktop_environment.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
@@ -37,6 +38,7 @@ const int kMaxLoginAttempts = 5;
 It2MeHost::It2MeHost(
     scoped_ptr<ChromotingHostContext> host_context,
     scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
+    scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
@@ -48,6 +50,7 @@ It2MeHost::It2MeHost(
     state_(kDisconnected),
     failed_login_attempts_(0),
     policy_watcher_(policy_watcher.Pass()),
+    confirmation_dialog_factory_(confirmation_dialog_factory.Pass()),
     nat_traversal_enabled_(false),
     policy_received_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -73,7 +76,7 @@ void It2MeHost::Connect() {
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ReadPolicyAndConnect, this));
+      FROM_HERE, base::Bind(&It2MeHost::ShowConfirmationPrompt, this));
 }
 
 void It2MeHost::Disconnect() {
@@ -128,10 +131,47 @@ void It2MeHost::RequestNatPolicy() {
     UpdateNatPolicy(nat_traversal_enabled_);
 }
 
-void It2MeHost::ReadPolicyAndConnect() {
+void It2MeHost::ShowConfirmationPrompt() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   SetState(kStarting);
+
+  scoped_ptr<It2MeConfirmationDialog> confirmation_dialog =
+      confirmation_dialog_factory_->Create();
+
+  // TODO(dcaiafa): Remove after dialog implementations for all platforms exist.
+  if (!confirmation_dialog) {
+    ReadPolicyAndConnect();
+    return;
+  }
+
+  confirmation_dialog_proxy_.reset(
+      new It2MeConfirmationDialogProxy(host_context_->ui_task_runner(),
+                                       confirmation_dialog.Pass()));
+
+  confirmation_dialog_proxy_->Show(
+      base::Bind(&It2MeHost::OnConfirmationResult, base::Unretained(this)));
+}
+
+void It2MeHost::OnConfirmationResult(It2MeConfirmationDialog::Result result) {
+  switch (result) {
+    case It2MeConfirmationDialog::Result::OK:
+      ReadPolicyAndConnect();
+      break;
+
+    case It2MeConfirmationDialog::Result::CANCEL:
+      Disconnect();
+      break;
+
+    default:
+      NOTREACHED();
+      return;
+  }
+}
+
+void It2MeHost::ReadPolicyAndConnect() {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(kStarting, state_);
 
   // Only proceed to FinishConnect() if at least one policy update has been
   // received.
@@ -232,6 +272,8 @@ void It2MeHost::FinishConnect() {
 void It2MeHost::ShutdownOnNetworkThread() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(state_ == kDisconnecting || state_ == kDisconnected);
+
+  confirmation_dialog_proxy_.reset();
 
   if (state_ == kDisconnecting) {
     host_event_logger_.reset();
@@ -490,11 +532,14 @@ scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid) {
+  scoped_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory(
+      new It2MeConfirmationDialogFactory());
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher =
       policy_hack::PolicyWatcher::Create(policy_service_,
                                          context->network_task_runner());
-  return new It2MeHost(context.Pass(), policy_watcher.Pass(), observer,
-                       xmpp_server_config, directory_bot_jid);
+  return new It2MeHost(context.Pass(), policy_watcher.Pass(),
+                       confirmation_dialog_factory.Pass(),
+                       observer, xmpp_server_config, directory_bot_jid);
 }
 
 }  // namespace remoting

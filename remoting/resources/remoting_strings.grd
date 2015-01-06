@@ -941,6 +941,15 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Label for button to decline remote assistance.  This button appears in the Hangouts confirm dialog." name="IDS_HANGOUTS_CONFIRM_DIALOG_DECLINE" >
         Decline
       </message>
+      <message desc="Message displayed before sharing computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_MESSAGE" >
+        Would you like to share this computer for another user to see and control?
+      </message>
+      <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" >
+        Share
+      </message>
+      <message desc="Label for the button to decline sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" >
+        Cancel
+      </message>
     </messages>
   </release>
 </grit>

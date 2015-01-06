@@ -266,6 +266,11 @@
       'host/cast_video_capturer_adapter.h',
     ],
     'remoting_it2me_host_static_sources' : [
+      'host/it2me/it2me_confirmation_dialog.cc',
+      'host/it2me/it2me_confirmation_dialog.h',
+      'host/it2me/it2me_confirmation_dialog_chromeos.cc',
+      'host/it2me/it2me_confirmation_dialog_proxy.cc',
+      'host/it2me/it2me_confirmation_dialog_proxy.h',
       'host/it2me/it2me_host.cc',
       'host/it2me/it2me_host.h',
       'host/it2me/it2me_native_messaging_host.cc',

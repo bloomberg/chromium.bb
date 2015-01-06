@@ -159,6 +159,7 @@
         'host/host_mock_objects.cc',
         'host/host_status_logger_unittest.cc',
         'host/ipc_desktop_environment_unittest.cc',
+        'host/it2me/it2me_confirmation_dialog_proxy_unittest.cc',
         'host/it2me/it2me_native_messaging_host_unittest.cc',
         'host/linux/audio_pipe_reader_unittest.cc',
         'host/linux/unicode_to_keysym_unittest.cc',
