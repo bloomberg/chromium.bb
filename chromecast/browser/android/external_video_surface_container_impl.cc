@@ -43,7 +43,7 @@ void ExternalVideoSurfaceContainerImpl::RequestExternalVideoSurface(
 }
 
 int ExternalVideoSurfaceContainerImpl::GetCurrentPlayerId() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
 
   int current_player = static_cast<int>(
       Java_ExternalVideoSurfaceContainer_getCurrentPlayerId(
