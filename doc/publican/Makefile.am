@@ -96,7 +96,7 @@ $(builddir)/en-US/ProtocolSpec.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > $@
 
-$(builddir)/en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-interfaces-to-docbook.xsl
+$(builddir)/en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-interfaces-to-docbook.xsl | $(builddir)/en-US
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > $@
 
