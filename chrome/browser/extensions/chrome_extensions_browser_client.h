@@ -87,8 +87,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       ExtensionFunctionRegistry* registry) const override;
   scoped_ptr<extensions::RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
       content::BrowserContext* context) const override;
-  ComponentExtensionResourceManager* GetComponentExtensionResourceManager()
-      override;
+  const ComponentExtensionResourceManager*
+  GetComponentExtensionResourceManager() override;
   void BroadcastEventToRenderers(const std::string& event_name,
                                  scoped_ptr<base::ListValue> args) override;
   net::NetLog* GetNetLog() override;

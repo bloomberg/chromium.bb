@@ -212,8 +212,10 @@ bool ExecuteCodeFunction::RunAsync() {
   }
 
   int resource_id;
-  ComponentExtensionResourceManager* component_extension_resource_manager =
-      ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager();
+  const ComponentExtensionResourceManager*
+      component_extension_resource_manager =
+          ExtensionsBrowserClient::Get()
+              ->GetComponentExtensionResourceManager();
   if (component_extension_resource_manager &&
       component_extension_resource_manager->IsComponentExtensionResource(
           resource_.extension_root(),

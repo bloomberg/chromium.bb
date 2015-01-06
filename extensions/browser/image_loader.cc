@@ -112,9 +112,9 @@ std::vector<SkBitmap> LoadResourceBitmaps(
 
     int resource_id;
     if (extension->location() == Manifest::COMPONENT) {
-      extensions::ComponentExtensionResourceManager* manager =
-          extensions::ExtensionsBrowserClient::Get()->
-          GetComponentExtensionResourceManager();
+      const extensions::ComponentExtensionResourceManager* manager =
+          extensions::ExtensionsBrowserClient::Get()
+              ->GetComponentExtensionResourceManager();
       if (manager && manager->IsComponentExtensionResource(
               extension->path(), it->resource.relative_path(), &resource_id)) {
         LoadResourceOnUIThread(resource_id, &bitmaps[i]);

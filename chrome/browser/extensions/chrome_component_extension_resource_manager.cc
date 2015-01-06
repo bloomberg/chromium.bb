@@ -65,7 +65,7 @@ ChromeComponentExtensionResourceManager::
 bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
     const base::FilePath& extension_path,
     const base::FilePath& resource_path,
-    int* resource_id) {
+    int* resource_id) const {
   base::FilePath directory_path = extension_path;
   base::FilePath resources_dir;
   base::FilePath relative_path;

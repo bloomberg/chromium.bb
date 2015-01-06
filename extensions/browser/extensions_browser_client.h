@@ -177,7 +177,7 @@ class ExtensionsBrowserClient {
 
   // Returns the manager of resource bundles used in extensions. Returns NULL if
   // the manager doesn't exist.
-  virtual ComponentExtensionResourceManager*
+  virtual const ComponentExtensionResourceManager*
   GetComponentExtensionResourceManager() = 0;
 
   // Propagate a event to all the renderers in every browser context. The

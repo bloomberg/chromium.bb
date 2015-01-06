@@ -27,7 +27,7 @@ typedef testing::Test ChromeComponentExtensionResourceManagerTest;
 // Tests IsComponentExtensionResource function.
 TEST_F(ChromeComponentExtensionResourceManagerTest,
        IsComponentExtensionResource) {
-  ComponentExtensionResourceManager* resource_manager =
+  const ComponentExtensionResourceManager* resource_manager =
       ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager();
   ASSERT_TRUE(resource_manager);
 

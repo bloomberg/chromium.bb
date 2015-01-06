@@ -22,9 +22,9 @@ class ComponentExtensionResourceManager {
   // resources. Otherwise fills |resource_id|. This doesn't check if the
   // extension the resource is in is actually a component extension.
   virtual bool IsComponentExtensionResource(
-    const base::FilePath& extension_path,
-    const base::FilePath& resource_path,
-    int* resource_id) = 0;
+      const base::FilePath& extension_path,
+      const base::FilePath& resource_path,
+      int* resource_id) const = 0;
 };
 
 }  // namespace extensions

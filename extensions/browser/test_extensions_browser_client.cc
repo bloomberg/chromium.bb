@@ -159,7 +159,7 @@ TestExtensionsBrowserClient::CreateRuntimeAPIDelegate(
   return scoped_ptr<RuntimeAPIDelegate>(new TestRuntimeAPIDelegate());
 }
 
-ComponentExtensionResourceManager*
+const ComponentExtensionResourceManager*
 TestExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   return NULL;
 }

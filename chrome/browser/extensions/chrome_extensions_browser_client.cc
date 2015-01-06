@@ -53,6 +53,7 @@ ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
   // Only set if it hasn't already been set (e.g. by a test).
   if (GetCurrentChannel() == GetDefaultChannel())
     SetCurrentChannel(chrome::VersionInfo::GetChannel());
+  resource_manager_.reset(new ChromeComponentExtensionResourceManager());
 }
 
 ChromeExtensionsBrowserClient::~ChromeExtensionsBrowserClient() {}
@@ -251,10 +252,8 @@ ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
       new ChromeRuntimeAPIDelegate(context));
 }
 
-ComponentExtensionResourceManager*
+const ComponentExtensionResourceManager*
 ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
-  if (!resource_manager_)
-    resource_manager_.reset(new ChromeComponentExtensionResourceManager());
   return resource_manager_.get();
 }
 
