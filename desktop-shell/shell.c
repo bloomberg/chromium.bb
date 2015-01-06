@@ -4671,6 +4671,11 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 	struct weston_output *output;
 	float increment;
 
+	if (!seat->pointer) {
+		weston_log("Zoom hotkey pressed but seat '%s' contains no pointer.\n", seat->seat_name);
+		return;
+	}
+
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
 						   wl_fixed_to_double(seat->pointer->x),
