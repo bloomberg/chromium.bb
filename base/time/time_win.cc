@@ -540,14 +540,6 @@ bool TimeTicks::IsHighResClockWorking() {
   return GetHighResNowSingleton()->IsUsingHighResClock();
 }
 
-TimeTicks TimeTicks::UnprotectedNow() {
-  if (now_function == HighResNowWrapper) {
-    return Now();
-  } else {
-    return TimeTicks() + TimeDelta::FromMilliseconds(timeGetTime());
-  }
-}
-
 // TimeDelta ------------------------------------------------------------------
 
 // static

@@ -634,9 +634,6 @@ class BASE_EXPORT TimeTicks {
   // Returns true if the high resolution clock is working on this system.
   // This is only for testing.
   static bool IsHighResClockWorking();
-
-  // Returns a time value that is NOT rollover protected.
-  static TimeTicks UnprotectedNow();
 #endif
 
   // Returns true if this object has not been initialized.
