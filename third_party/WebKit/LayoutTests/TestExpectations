@@ -196,6 +196,9 @@ crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/med
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-idl.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-removetrack.html [ Skip ]
 
+crbug.com/446382 [ Win7 ] svg/W3C-SVG-1.1/animate-elem-77-t.svg [ NeedsRebaseline ]
+crbug.com/446382 [ Win7 ] svg/batik/text/textStyles.svg [ NeedsRebaseline ]
+
 crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOnlyFailure ]
 crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure ]
 crbug.com/443804 [ SnowLeopard Linux ] virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure Crash ]
