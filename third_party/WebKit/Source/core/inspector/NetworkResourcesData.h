@@ -50,9 +50,10 @@ class ResourceResponse;
 class SharedBuffer;
 class TextResourceDecoder;
 
-class XHRReplayData
+class XHRReplayData final
     : public RefCountedWillBeGarbageCollectedFinalized<XHRReplayData>
     , public ContextLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XHRReplayData);
 public:
     static PassRefPtrWillBeRawPtr<XHRReplayData> create(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
 
@@ -64,7 +65,7 @@ public:
     const HTTPHeaderMap& headers() const { return m_headers; }
     bool includeCredentials() const { return m_includeCredentials; }
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) override;
 
 private:
     XHRReplayData(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);

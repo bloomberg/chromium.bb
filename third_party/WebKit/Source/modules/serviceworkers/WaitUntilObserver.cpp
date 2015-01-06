@@ -153,4 +153,9 @@ void WaitUntilObserver::decrementPendingActivity()
     observeContext(0);
 }
 
+void WaitUntilObserver::trace(Visitor* visitor)
+{
+    ContextLifecycleObserver::trace(visitor);
+}
+
 } // namespace blink

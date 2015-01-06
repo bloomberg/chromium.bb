@@ -59,6 +59,7 @@ class MediaKeySession final
     , private WebContentDecryptionModuleSession::Client {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaKeySession>);
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
     static MediaKeySession* create(ScriptState*, MediaKeys*, const String& sessionType);
     static bool isValidSessionType(const String& sessionType);

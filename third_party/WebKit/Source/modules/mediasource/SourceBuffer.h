@@ -59,6 +59,7 @@ class SourceBuffer final
     , public FileReaderLoaderClient
     , public WebSourceBufferClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBuffer>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SourceBuffer* create(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);

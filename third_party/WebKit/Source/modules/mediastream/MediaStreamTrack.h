@@ -45,6 +45,7 @@ class MediaStreamTrack final
     , public ActiveDOMObject
     , public MediaStreamSource::Observer {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStreamTrack>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);

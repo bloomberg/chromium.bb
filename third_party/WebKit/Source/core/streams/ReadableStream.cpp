@@ -223,6 +223,7 @@ void ReadableStream::trace(Visitor* visitor)
     visitor->trace(m_ready);
     visitor->trace(m_closed);
     visitor->trace(m_exception);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

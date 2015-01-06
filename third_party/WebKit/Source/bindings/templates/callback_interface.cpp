@@ -25,6 +25,12 @@ namespace blink {
 {
 }
 
+void {{v8_class}}::trace(Visitor* visitor)
+{
+    {{cpp_class}}::trace(visitor);
+    ActiveDOMCallback::trace(visitor);
+}
+
 {% for method in methods if not method.is_custom %}
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}})
 {

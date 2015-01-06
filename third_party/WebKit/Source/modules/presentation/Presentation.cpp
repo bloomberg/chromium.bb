@@ -43,6 +43,7 @@ void Presentation::trace(Visitor* visitor)
 {
     visitor->trace(m_session);
     RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 PresentationSession* Presentation::session() const

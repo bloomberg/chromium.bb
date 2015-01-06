@@ -2209,6 +2209,7 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState, Location
 void Internals::trace(Visitor* visitor)
 {
     visitor->trace(m_runtimeFlags);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 void Internals::setValueForUser(Element* element, const String& value)

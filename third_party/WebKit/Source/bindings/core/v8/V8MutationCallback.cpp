@@ -85,4 +85,10 @@ void V8MutationCallback::setWeakCallback(const v8::WeakCallbackData<v8::Function
     data.GetParameter()->m_callback.clear();
 }
 
+void V8MutationCallback::trace(Visitor* visitor)
+{
+    MutationCallback::trace(visitor);
+    ActiveDOMCallback::trace(visitor);
+}
+
 } // namespace blink

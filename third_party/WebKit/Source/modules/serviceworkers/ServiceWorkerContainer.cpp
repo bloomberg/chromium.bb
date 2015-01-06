@@ -104,6 +104,7 @@ void ServiceWorkerContainer::trace(Visitor* visitor)
     visitor->trace(m_readyRegistration);
     visitor->trace(m_ready);
     RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerContainer>::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptions& options)

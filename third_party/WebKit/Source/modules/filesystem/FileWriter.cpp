@@ -329,6 +329,7 @@ void FileWriter::trace(Visitor* visitor)
     visitor->trace(m_blobBeingWritten);
     EventTargetWithInlineData::trace(visitor);
     FileWriterBase::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

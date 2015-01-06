@@ -26,6 +26,7 @@ void DOMWindowStorageController::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
     WillBeHeapSupplement<Document>::trace(visitor);
+    DOMWindowLifecycleObserver::trace(visitor);
 }
 
 // static

@@ -488,6 +488,7 @@ void FileReader::trace(Visitor* visitor)
 {
     visitor->trace(m_error);
     RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

@@ -92,6 +92,7 @@ void IDBRequest::trace(Visitor* visitor)
     visitor->trace(m_cursorKey);
     visitor->trace(m_cursorPrimaryKey);
     RefCountedGarbageCollectedEventTargetWithInlineData<IDBRequest>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 ScriptValue IDBRequest::result(ExceptionState& exceptionState)

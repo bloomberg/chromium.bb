@@ -873,6 +873,7 @@ void MediaKeySession::trace(Visitor* visitor)
     visitor->trace(m_mediaKeys);
     visitor->trace(m_closedPromise);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaKeySession>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

@@ -51,10 +51,11 @@ class Geolocation final
     , public ScriptWrappable
     , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 public:
     static Geolocation* create(ExecutionContext*);
     virtual ~Geolocation();
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
     virtual void stop() override;
     Document* document() const;

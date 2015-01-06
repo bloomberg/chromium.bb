@@ -234,4 +234,9 @@ RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID,
 {
 }
 
+void RespondWithObserver::trace(Visitor* visitor)
+{
+    ContextLifecycleObserver::trace(visitor);
+}
+
 } // namespace blink

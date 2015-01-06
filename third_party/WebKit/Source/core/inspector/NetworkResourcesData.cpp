@@ -65,6 +65,11 @@ XHRReplayData::XHRReplayData(ExecutionContext* executionContext, const AtomicStr
 {
 }
 
+void XHRReplayData::trace(Visitor* visitor)
+{
+    ContextLifecycleObserver::trace(visitor);
+}
+
 // ResourceData
 NetworkResourcesData::ResourceData::ResourceData(const String& requestId, const String& loaderId)
     : m_requestId(requestId)

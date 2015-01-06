@@ -80,7 +80,6 @@ Worker::~Worker()
     ASSERT(isMainThread());
     if (!m_contextProxy)
         return;
-    ASSERT(executionContext()); // The context is protected by worker context proxy, so it cannot be destroyed while a Worker exists.
     m_contextProxy->workerObjectDestroyed();
 }
 

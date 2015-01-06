@@ -75,6 +75,7 @@ void DeviceSingleWindowEventController::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
     PlatformEventController::trace(visitor);
+    DOMWindowLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

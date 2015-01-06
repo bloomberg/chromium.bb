@@ -75,6 +75,7 @@ typedef StaticNodeTypeList<Node> StaticNodeList;
 
 class Internals final : public GarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Internals);
 public:
     static Internals* create(Document*);
     virtual ~Internals();

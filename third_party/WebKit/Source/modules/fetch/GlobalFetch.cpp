@@ -57,6 +57,7 @@ public:
 
 private:
     class StopDetector final : public NoBaseWillBeGarbageCollectedFinalized<StopDetector>, public ActiveDOMObject {
+        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StopDetector);
     public:
         static PassOwnPtrWillBeRawPtr<StopDetector> create(ExecutionContext* executionContext, FetchManager* fetchManager)
         {
@@ -68,6 +69,7 @@ private:
         void trace(Visitor* visitor)
         {
             visitor->trace(m_fetchManager);
+            ActiveDOMObject::trace(visitor);
         }
 
     private:

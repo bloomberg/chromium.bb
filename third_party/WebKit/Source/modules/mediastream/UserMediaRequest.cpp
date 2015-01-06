@@ -190,6 +190,7 @@ void UserMediaRequest::trace(Visitor* visitor)
     visitor->trace(m_controller);
     visitor->trace(m_successCallback);
     visitor->trace(m_errorCallback);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

@@ -82,6 +82,7 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
 void SuspendableScriptExecutor::trace(Visitor* visitor)
 {
     visitor->trace(m_frame);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

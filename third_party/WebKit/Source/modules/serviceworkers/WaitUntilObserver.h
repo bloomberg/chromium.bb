@@ -19,6 +19,7 @@ class ScriptValue;
 
 // Created for each ExtendableEvent instance.
 class WaitUntilObserver final : public GarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
 public:
     enum EventType {
         Activate,
@@ -37,7 +38,7 @@ public:
     // the given promise is resolved or rejected.
     void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) override;
 
 private:
     class ThenFunction;

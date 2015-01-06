@@ -51,6 +51,7 @@ class ExecutionContext;
 class FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileReader>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 public:
     static FileReader* create(ExecutionContext*);
 

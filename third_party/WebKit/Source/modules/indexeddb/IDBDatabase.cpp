@@ -100,6 +100,7 @@ void IDBDatabase::trace(Visitor* visitor)
 #endif
     visitor->trace(m_databaseCallbacks);
     RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 int64_t IDBDatabase::nextTransactionId()

@@ -71,4 +71,10 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionStat
     return scriptURL;
 }
 
+void AbstractWorker::trace(Visitor* visitor)
+{
+    EventTargetWithInlineData::trace(visitor);
+    ActiveDOMObject::trace(visitor);
+}
+
 } // namespace blink

@@ -43,6 +43,7 @@ class RTCDTMFSender final
     , public WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDTMFSender>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCDTMFSender* create(ExecutionContext*, WebRTCPeerConnectionHandler*, MediaStreamTrack*, ExceptionState&);

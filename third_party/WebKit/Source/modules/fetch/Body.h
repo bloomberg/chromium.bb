@@ -27,6 +27,7 @@ class Body
     , public ActiveDOMObject
     , public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Body);
 public:
     explicit Body(ExecutionContext*);
     virtual ~Body() { }
@@ -57,7 +58,7 @@ public:
     virtual void stop() override;
     virtual bool hasPendingActivity() const override;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 protected:
     // Copy constructor for clone() implementations

@@ -27,12 +27,16 @@
 #ifndef LifecycleObserver_h
 #define LifecycleObserver_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
 template<typename T>
-class LifecycleObserver {
+class LifecycleObserver : public WillBeGarbageCollectedMixin {
+#if ENABLE(OILPAN)
+    USING_PRE_FINALIZER(LifecycleObserver, dispose);
+#endif
 public:
     typedef T Context;
 
@@ -48,13 +52,24 @@ public:
         : m_lifecycleContext(nullptr)
         , m_observerType(type)
     {
+#if ENABLE(OILPAN)
+        ThreadState::current()->registerPreFinalizer(*this);
+#endif
         observeContext(context);
     }
     virtual ~LifecycleObserver()
     {
+#if !ENABLE(OILPAN)
+        dispose();
+#endif
+    }
+
+    virtual void trace(Visitor*) { }
+    virtual void contextDestroyed() { }
+    void dispose()
+    {
         observeContext(nullptr);
     }
-    virtual void contextDestroyed() { }
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
     void clearLifecycleContext() { m_lifecycleContext = nullptr; }

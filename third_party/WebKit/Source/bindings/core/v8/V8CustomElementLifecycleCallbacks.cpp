@@ -259,6 +259,7 @@ void V8CustomElementLifecycleCallbacks::trace(Visitor* visitor)
 {
     visitor->trace(m_owner);
     CustomElementLifecycleCallbacks::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

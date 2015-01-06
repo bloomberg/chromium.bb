@@ -21,6 +21,7 @@ class ExecutionContext;
 class ScriptState;
 
 class ScriptPromisePropertyBase : public GarbageCollectedFinalized<ScriptPromisePropertyBase>, public ContextLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptPromisePropertyBase);
 public:
     virtual ~ScriptPromisePropertyBase();
 
@@ -39,7 +40,7 @@ public:
 
     ScriptPromise promise(DOMWrapperWorld&);
 
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor*) override;
 
 protected:
     ScriptPromisePropertyBase(ExecutionContext*, Name);

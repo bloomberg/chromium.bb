@@ -202,6 +202,7 @@ void SpeechRecognition::trace(Visitor* visitor)
 #endif
     visitor->trace(m_finalResults);
     RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

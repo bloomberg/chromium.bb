@@ -249,6 +249,7 @@ void MediaStreamTrack::trace(Visitor* visitor)
 {
     visitor->trace(m_registeredMediaStreams);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

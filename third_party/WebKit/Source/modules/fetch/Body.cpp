@@ -288,6 +288,7 @@ void Body::trace(Visitor* visitor)
     visitor->trace(m_resolver);
     visitor->trace(m_stream);
     visitor->trace(m_streamSource);
+    ActiveDOMObject::trace(visitor);
 }
 
 Body::Body(ExecutionContext* context)

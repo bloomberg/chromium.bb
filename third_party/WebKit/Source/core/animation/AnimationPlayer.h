@@ -48,6 +48,7 @@ class AnimationPlayer final
     , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AnimationPlayer);
 public:
     enum AnimationPlayState {
         Idle,

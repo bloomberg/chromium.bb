@@ -814,6 +814,7 @@ void RTCPeerConnection::trace(Visitor* visitor)
     visitor->trace(m_scheduledEvents);
 #endif
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

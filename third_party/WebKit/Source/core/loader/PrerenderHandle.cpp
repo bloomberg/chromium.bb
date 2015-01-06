@@ -104,11 +104,15 @@ void PrerenderHandle::documentWasDetached()
     detach();
 }
 
-
 void PrerenderHandle::detach()
 {
     m_prerender->removeClient();
     m_prerender.clear();
+}
+
+void PrerenderHandle::trace(Visitor* visitor)
+{
+    DocumentLifecycleObserver::trace(visitor);
 }
 
 }

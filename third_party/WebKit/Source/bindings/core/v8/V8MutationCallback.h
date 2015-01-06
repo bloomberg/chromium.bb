@@ -39,6 +39,7 @@ namespace blink {
 class ExecutionContext;
 
 class V8MutationCallback final : public MutationCallback, public ActiveDOMCallback {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8MutationCallback);
 public:
     static PassOwnPtrWillBeRawPtr<V8MutationCallback> create(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> owner, ScriptState* scriptState)
     {
@@ -48,6 +49,8 @@ public:
 
     virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) override;
     virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+
+    virtual void trace(Visitor*) override;
 
 private:
     V8MutationCallback(v8::Handle<v8::Function>, v8::Handle<v8::Object>, ScriptState*);

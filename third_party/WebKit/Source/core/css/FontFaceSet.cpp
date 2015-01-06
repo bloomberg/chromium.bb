@@ -586,17 +586,18 @@ void FontFaceSet::didLayout(Document& document)
         fonts->didLayout();
 }
 
-#if ENABLE(OILPAN)
 void FontFaceSet::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_loadingFonts);
     visitor->trace(m_readyResolvers);
     visitor->trace(m_loadedFonts);
     visitor->trace(m_failedFonts);
     visitor->trace(m_nonCSSConnectedFaces);
     DocumentSupplement::trace(visitor);
-    EventTargetWithInlineData::trace(visitor);
-}
 #endif
+    EventTargetWithInlineData::trace(visitor);
+    ActiveDOMObject::trace(visitor);
+}
 
 } // namespace blink

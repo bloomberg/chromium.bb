@@ -84,6 +84,7 @@ void MediaDevicesRequest::trace(Visitor* visitor)
 {
     visitor->trace(m_controller);
     visitor->trace(m_callback);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

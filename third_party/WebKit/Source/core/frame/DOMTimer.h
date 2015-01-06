@@ -39,6 +39,7 @@ namespace blink {
 class ExecutionContext;
 
 class DOMTimer final : public RefCountedWillBeGarbageCollectedFinalized<DOMTimer>, public SuspendableTimer {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 public:
     // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.
     static int install(ExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
@@ -56,7 +57,7 @@ public:
     static double hiddenPageAlignmentInterval();
     static double visiblePageAlignmentInterval();
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) override;
 
     void dispose();
 

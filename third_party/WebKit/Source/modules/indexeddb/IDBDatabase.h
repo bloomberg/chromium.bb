@@ -55,6 +55,7 @@ class IDBDatabase final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBDatabase>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBDatabase* create(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);

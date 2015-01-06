@@ -51,6 +51,7 @@ class MIDIOutputMap;
 class MIDIAccess final : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>, public ActiveDOMObject, public MIDIAccessorClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIAccess>);
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
 public:
     static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {

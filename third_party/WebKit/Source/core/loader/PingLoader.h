@@ -57,6 +57,7 @@ class ResourceRequest;
 // during page unloading.
 //
 class PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private blink::WebURLLoaderClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PingLoader);
     WTF_MAKE_NONCOPYABLE(PingLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -71,7 +72,7 @@ public:
     static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
     static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) override;
 
 protected:
     PingLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);

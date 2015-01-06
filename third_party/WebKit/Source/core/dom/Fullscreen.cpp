@@ -606,6 +606,7 @@ void Fullscreen::trace(Visitor* visitor)
     visitor->trace(m_fullScreenRenderer);
     visitor->trace(m_eventQueue);
     DocumentSupplement::trace(visitor);
+    DocumentLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

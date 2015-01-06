@@ -573,6 +573,7 @@ void FontFace::trace(Visitor* visitor)
     visitor->trace(m_loadedProperty);
     visitor->trace(m_cssFontFace);
     visitor->trace(m_callbacks);
+    ActiveDOMObject::trace(visitor);
 }
 
 bool FontFace::hadBlankText() const

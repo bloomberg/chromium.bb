@@ -90,4 +90,9 @@ void Stream::stop()
     abort();
 }
 
+void Stream::trace(Visitor* visitor)
+{
+    ActiveDOMObject::trace(visitor);
+}
+
 } // namespace blink
