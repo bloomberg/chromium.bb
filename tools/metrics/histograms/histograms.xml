@@ -3336,7 +3336,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.PriorityBlockingTime" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>
     This histogram records the total duration of time during which at least one
     web request was blocked waiting for the cookie store to load. If no requests
@@ -3347,7 +3347,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.PriorityLoadCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>
     The number of distinct Effective Top-Level Domains Plus One (ETLD+1, i.e.,
     google.com, bbc.co.uk) for which a priority cookie load occurred.
@@ -3408,7 +3408,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>
     The amount of time (ms) between the cookie store load starting and
     completing.
@@ -3449,7 +3449,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeKeyLoadDBQueueWait" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>
     This histogram records the wall-clock delay between a priority load task
     being posted to the DB-thread and its execution.
@@ -3457,7 +3457,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeLoad" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>
     This histogram records the sum of the durations of all initial tasks loading
     cookies from the database.
