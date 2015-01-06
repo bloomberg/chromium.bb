@@ -2546,11 +2546,11 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAlive) {
       NetLog::PHASE_NONE);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers.get() == NULL);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
+  EXPECT_EQ(-1, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
@@ -2565,11 +2565,11 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAlive) {
   EXPECT_EQ(OK, rv);
 
   response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers.get() == NULL);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
+  EXPECT_EQ(-1, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
@@ -2603,10 +2603,11 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
 
   // The proxy responds to the connect with a 407.
   MockRead data_reads[] = {
-    MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-    MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-    MockRead("Content-Length: 10\r\n\r\n"),
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+      MockRead("Content-Length: 10\r\n\r\n"),
+      MockRead("0123456789"),  // Should not be reached.
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads),
@@ -2622,12 +2623,74 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
   EXPECT_EQ(OK, rv);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
-  EXPECT_EQ(10, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
+
+  // Flush the idle socket before the HttpNetworkTransaction goes out of scope.
+  session->CloseAllConnections();
+}
+
+// Test that we don't pass extraneous headers from the proxy's response to the
+// caller when the proxy responds to CONNECT with 407.
+TEST_P(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.google.com/");
+  request.load_flags = 0;
+
+  // Configure against proxy server "myproxy:70".
+  session_deps_.proxy_service.reset(ProxyService::CreateFixed("myproxy:70"));
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  // Since we have proxy, should try to establish tunnel.
+  MockWrite data_writes[] = {
+      MockWrite(
+          "CONNECT www.google.com:443 HTTP/1.1\r\n"
+          "Host: www.google.com\r\n"
+          "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+      MockRead("X-Foo: bar\r\n"),
+      MockRead("Set-Cookie: foo=bar\r\n"),
+      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+      MockRead("Content-Length: 10\r\n\r\n"),
+      MockRead(SYNCHRONOUS, ERR_UNEXPECTED),  // Should not be reached.
+  };
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_TRUE(response->headers->IsKeepAlive());
+  EXPECT_EQ(407, response->headers->response_code());
+  EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+  EXPECT_FALSE(response->headers->HasHeader("X-Foo"));
+  EXPECT_FALSE(response->headers->HasHeader("Set-Cookie"));
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);

@@ -483,25 +483,27 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // sanitize the response.  This still allows a rogue HTTPS proxy to
       // redirect an HTTPS site load to a similar-looking site, but no longer
       // allows it to impersonate the site the user requested.
-      if (is_https_proxy_ && SanitizeProxyRedirect(&response_, request_.url)) {
-        bool is_connection_reused = http_stream_parser_->IsConnectionReused();
-        redirect_has_load_timing_info_ =
-            transport_->GetLoadTimingInfo(
-                is_connection_reused, &redirect_load_timing_info_);
-        transport_.reset();
-        http_stream_parser_.reset();
-        return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
+      if (!is_https_proxy_ || !SanitizeProxyRedirect(&response_)) {
+        LogBlockedTunnelResponse();
+        return ERR_TUNNEL_CONNECTION_FAILED;
       }
 
-      // We're not using an HTTPS proxy, or we couldn't sanitize the redirect.
-      LogBlockedTunnelResponse();
-      return ERR_TUNNEL_CONNECTION_FAILED;
+      redirect_has_load_timing_info_ = transport_->GetLoadTimingInfo(
+          http_stream_parser_->IsConnectionReused(),
+          &redirect_load_timing_info_);
+      transport_.reset();
+      http_stream_parser_.reset();
+      return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
 
     case 407:  // Proxy Authentication Required
       // We need this status code to allow proxy authentication.  Our
       // authentication code is smart enough to avoid being tricked by an
       // active network attacker.
       // The next state is intentionally not set as it should be STATE_NONE;
+      if (!SanitizeProxyAuth(&response_)) {
+        LogBlockedTunnelResponse();
+        return ERR_TUNNEL_CONNECTION_FAILED;
+      }
       return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:

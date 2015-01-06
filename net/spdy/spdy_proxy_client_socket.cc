@@ -414,20 +414,24 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
     case 302:  // Found / Moved Temporarily
       // Try to return a sanitized response so we can follow auth redirects.
       // If we can't, fail the tunnel connection.
-      if (SanitizeProxyRedirect(&response_, request_.url)) {
-        redirect_has_load_timing_info_ =
-            spdy_stream_->GetLoadTimingInfo(&redirect_load_timing_info_);
-        // Note that this triggers a RST_STREAM_CANCEL.
-        spdy_stream_->DetachDelegate();
-        next_state_ = STATE_DISCONNECTED;
-        return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
-      } else {
+      if (!SanitizeProxyRedirect(&response_)) {
         LogBlockedTunnelResponse();
         return ERR_TUNNEL_CONNECTION_FAILED;
       }
 
+      redirect_has_load_timing_info_ =
+          spdy_stream_->GetLoadTimingInfo(&redirect_load_timing_info_);
+      // Note that this triggers a RST_STREAM_CANCEL.
+      spdy_stream_->DetachDelegate();
+      next_state_ = STATE_DISCONNECTED;
+      return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
+
     case 407:  // Proxy Authentication Required
       next_state_ = STATE_OPEN;
+      if (!SanitizeProxyAuth(&response_)) {
+        LogBlockedTunnelResponse();
+        return ERR_TUNNEL_CONNECTION_FAILED;
+      }
       return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:
