@@ -145,7 +145,7 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
       output_buffer_byte_size_(0),
       state_(kUninitialized),
       frame_num_(0),
-      last_idr_frame_num_(0),
+      idr_pic_id_(0),
       bitrate_(0),
       framerate_(0),
       cpb_size_(0),
@@ -280,19 +280,24 @@ void VaapiVideoEncodeAccelerator::RecycleVASurfaceID(
 void VaapiVideoEncodeAccelerator::BeginFrame(bool force_keyframe) {
   memset(&current_pic_, 0, sizeof(current_pic_));
 
+  // If the current picture is an IDR picture, frame_num shall be equal to 0.
+  if (force_keyframe)
+    frame_num_ = 0;
+
   current_pic_.frame_num = frame_num_++;
   frame_num_ %= idr_period_;
 
-  if (current_pic_.frame_num % i_period_ == 0 || force_keyframe)
+  if (current_pic_.frame_num == 0) {
+    current_pic_.idr = true;
+    // H264 spec mandates idr_pic_id to differ between two consecutive IDRs.
+    idr_pic_id_ ^= 1;
+    ref_pic_list0_.clear();
+  }
+
+  if (current_pic_.frame_num % i_period_ == 0)
     current_pic_.type = media::H264SliceHeader::kISlice;
   else
     current_pic_.type = media::H264SliceHeader::kPSlice;
-
-  if (current_pic_.frame_num % idr_period_ == 0 || force_keyframe) {
-    current_pic_.idr = true;
-    last_idr_frame_num_ = current_pic_.frame_num;
-    ref_pic_list0_.clear();
-  }
 
   if (current_pic_.type != media::H264SliceHeader::kBSlice)
     current_pic_.ref = true;
@@ -423,7 +428,7 @@ bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
   slice_param.macroblock_info = VA_INVALID_ID;
   slice_param.slice_type = current_pic_.type;
   slice_param.pic_parameter_set_id = current_pps_.pic_parameter_set_id;
-  slice_param.idr_pic_id = last_idr_frame_num_;
+  slice_param.idr_pic_id = idr_pic_id_;
   slice_param.pic_order_cnt_lsb = current_pic_.pic_order_cnt_lsb;
   slice_param.num_ref_idx_active_override_flag = true;
 

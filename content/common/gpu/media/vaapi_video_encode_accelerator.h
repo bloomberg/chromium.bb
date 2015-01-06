@@ -186,8 +186,8 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
 
   // frame_num to be used for the next frame.
   unsigned int frame_num_;
-  // frame_num of the previous IDR.
-  unsigned int last_idr_frame_num_;
+  // idr_pic_id to be used for the next frame.
+  unsigned int idr_pic_id_;
 
   // Current bitrate in bps.
   unsigned int bitrate_;
