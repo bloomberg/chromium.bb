@@ -171,11 +171,11 @@ int Statement::ColumnCount() const {
 
 ColType Statement::ColumnType(int col) const {
   // Verify that our enum matches sqlite's values.
-  COMPILE_ASSERT(COLUMN_TYPE_INTEGER == SQLITE_INTEGER, integer_no_match);
-  COMPILE_ASSERT(COLUMN_TYPE_FLOAT == SQLITE_FLOAT, float_no_match);
-  COMPILE_ASSERT(COLUMN_TYPE_TEXT == SQLITE_TEXT, integer_no_match);
-  COMPILE_ASSERT(COLUMN_TYPE_BLOB == SQLITE_BLOB, blob_no_match);
-  COMPILE_ASSERT(COLUMN_TYPE_NULL == SQLITE_NULL, null_no_match);
+  static_assert(COLUMN_TYPE_INTEGER == SQLITE_INTEGER, "integer no match");
+  static_assert(COLUMN_TYPE_FLOAT == SQLITE_FLOAT, "float no match");
+  static_assert(COLUMN_TYPE_TEXT == SQLITE_TEXT, "integer no match");
+  static_assert(COLUMN_TYPE_BLOB == SQLITE_BLOB, "blob no match");
+  static_assert(COLUMN_TYPE_NULL == SQLITE_NULL, "null no match");
 
   return static_cast<ColType>(sqlite3_column_type(ref_->stmt(), col));
 }
