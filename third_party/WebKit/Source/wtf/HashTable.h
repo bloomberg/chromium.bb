@@ -521,6 +521,8 @@ namespace WTF {
         ValueType* expand(ValueType* entry = 0);
         void shrink() { rehash(m_tableSize / 2, 0); }
 
+        ValueType* expandBuffer(unsigned newTableSize, ValueType* entry, bool&);
+        ValueType* rehashTo(ValueType* newTable, unsigned newTableSize, ValueType* entry);
         ValueType* rehash(unsigned newTableSize, ValueType* entry);
         ValueType* reinsert(ValueType&);
 
@@ -1046,6 +1048,121 @@ namespace WTF {
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::expandBuffer(unsigned newTableSize, Value* entry, bool& success)
+    {
+        /*success = false;
+        RELEASE_ASSERT(m_tableSize <= newTableSize);
+        if (m_tableSize < newTableSize && !Allocator::expandHashTableBacking(m_table, newTableSize * sizeof(ValueType)))
+            return 0;
+
+        success = true;
+
+        Value* newEntry = nullptr;
+        unsigned oldTableSize = m_tableSize;
+        ValueType* originalTable = m_table;
+
+        ValueType* temporaryTable = allocateTable(oldTableSize);
+        if (Traits::emptyValueIsZero) {
+            memset(temporaryTable, 0, oldTableSize * sizeof(ValueType));
+        } else {
+            for (unsigned i = 0; i < oldTableSize; i++)
+                initializeBucket(temporaryTable[i]);
+        }
+        for (unsigned i = 0; i < oldTableSize; i++) {
+            if (&m_table[i] == entry)
+                newEntry = &temporaryTable[i];
+            Mover<ValueType, Allocator, Traits::needsDestruction>::move(m_table[i], temporaryTable[i]);
+        }
+
+        //newEntry = rehashTo(temporaryTable, newTableSize, entry);
+        m_table = temporaryTable;
+        if (Traits::emptyValueIsZero) {
+            memset(originalTable, 0, newTableSize * sizeof(ValueType));
+        } else {
+            for (unsigned i = 0; i < newTableSize; i++)
+                initializeBucket(originalTable[i]);
+        }
+        newEntry = rehashTo(originalTable, newTableSize, newEntry);
+        deleteAllBucketsAndDeallocate(temporaryTable, oldTableSize);
+        */
+        success = false;
+        ASSERT(m_tableSize < newTableSize);
+        if (!Allocator::expandHashTableBacking(m_table, newTableSize * sizeof(ValueType)))
+            return 0;
+
+        success = true;
+
+        Value* newEntry = nullptr;
+        unsigned oldTableSize = m_tableSize;
+        ValueType* originalTable = m_table;
+
+        ValueType* temporaryTable = allocateTable(oldTableSize);
+        for (unsigned i = 0; i < oldTableSize; i++) {
+            if (&m_table[i] == entry)
+                newEntry = &temporaryTable[i];
+            if (isEmptyOrDeletedBucket(m_table[i])) {
+                ASSERT(&m_table[i] != entry);
+                if (Traits::emptyValueIsZero) {
+                    memset(&temporaryTable[i], 0, sizeof(ValueType));
+                } else {
+                    initializeBucket(temporaryTable[i]);
+                }
+            } else {
+                Mover<ValueType, Allocator, Traits::needsDestruction>::move(m_table[i], temporaryTable[i]);
+            }
+        }
+        m_table = temporaryTable;
+
+        if (Traits::emptyValueIsZero) {
+            memset(originalTable, 0, newTableSize * sizeof(ValueType));
+        } else {
+            for (unsigned i = 0; i < newTableSize; i++)
+                initializeBucket(originalTable[i]);
+        }
+        newEntry = rehashTo(originalTable, newTableSize, newEntry);
+        deleteAllBucketsAndDeallocate(temporaryTable, oldTableSize);
+
+        return newEntry;
+    }
+
+template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::rehashTo(ValueType* newTable, unsigned newTableSize, Value* entry)
+    {
+        unsigned oldTableSize = m_tableSize;
+        ValueType* oldTable = m_table;
+
+#if DUMP_HASHTABLE_STATS
+        if (oldTableSize != 0)
+            atomicIncrement(&HashTableStats::numRehashes);
+#endif
+
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+        if (oldTableSize != 0)
+            ++m_stats->numRehashes;
+#endif
+
+        m_table = newTable;
+        m_tableSize = newTableSize;
+
+        Value* newEntry = 0;
+        for (unsigned i = 0; i != oldTableSize; ++i) {
+            if (isEmptyOrDeletedBucket(oldTable[i])) {
+                ASSERT(&oldTable[i] != entry);
+                continue;
+            }
+            Value* reinsertedEntry = reinsert(oldTable[i]);
+            if (&oldTable[i] == entry) {
+                ASSERT(!newEntry);
+                newEntry = reinsertedEntry;
+            }
+        }
+
+        m_deletedCount = 0;
+
+        return newEntry;
+    }
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::rehash(unsigned newTableSize, Value* entry)
     {
         unsigned oldTableSize = m_tableSize;
@@ -1061,25 +1178,18 @@ namespace WTF {
             ++m_stats->numRehashes;
 #endif
 
-        m_table = allocateTable(newTableSize);
-        m_tableSize = newTableSize;
-
-        Value* newEntry = 0;
-        for (unsigned i = 0; i != oldTableSize; ++i) {
-            if (isEmptyOrDeletedBucket(oldTable[i])) {
-                ASSERT(&oldTable[i] != entry);
-                continue;
-            }
-
-            Value* reinsertedEntry = reinsert(oldTable[i]);
-            if (&oldTable[i] == entry) {
-                ASSERT(!newEntry);
-                newEntry = reinsertedEntry;
-            }
+        // The Allocator::isGarbageCollected check is not needed.
+        // The check is just a static hint for a compiler to indicate that
+        // Base::expandBuffer returns false if Allocator is a DefaultAllocator.
+        if (Allocator::isGarbageCollected && newTableSize > oldTableSize) {
+            bool success;
+            Value* newEntry = expandBuffer(newTableSize, entry, success);
+            if (success)
+                return newEntry;
         }
 
-        m_deletedCount = 0;
-
+        ValueType* newTable = allocateTable(newTableSize);
+        Value* newEntry = rehashTo(newTable, newTableSize, entry);
         deleteAllBucketsAndDeallocate(oldTable, oldTableSize);
 
         return newEntry;
