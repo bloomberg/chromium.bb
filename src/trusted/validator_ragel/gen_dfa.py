@@ -1310,6 +1310,11 @@ def SplitL(instruction):
   instr_xmm.opcodes[2] = third_vex_byte.replace('.L.', '.0.')
   instr_ymm.opcodes[2] = third_vex_byte.replace('.L.', '.1.')
 
+  if Attribute('CPUFeature_AVX_Lis2') in instruction.attributes:
+    index = instruction.attributes.index(Attribute('CPUFeature_AVX_Lis2'))
+    instr_xmm.attributes[index] = Attribute('CPUFeature_AVX')
+    instr_ymm.attributes[index] = Attribute('CPUFeature_AVX2')
+
   if not has_explicit_operand_size:
     instr_xmm.attributes.append(Attribute('att-show-name-suffix-x'))
     instr_ymm.attributes.append(Attribute('att-show-name-suffix-y'))

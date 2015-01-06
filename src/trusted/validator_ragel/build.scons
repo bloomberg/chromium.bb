@@ -353,6 +353,8 @@ if ragel_involved:
     ('final_avx1_instrs_proof.py', ('32', '64'),
      '20141204.all_nonspecial_avx1', '20141210.remaining_avx1'),
     ('fma_proof.py', ('32', '64'), '20141210.remaining_avx1', '20141215.fma'),
+    ('vpminsd_avx2_proof.py', ('32', '64'),
+     '20141215.fma', '20150106.vpminsd.avx2'),
   ]
   for proof_file, bitnesses, old, new in trie_proofs:
     for bitness in bitnesses:

@@ -276,6 +276,9 @@ SUPPORTED_ATTRIBUTES = [
     'CPUFeature_x87',
     'CPUFeature_XOP',
 
+    # If L == 1: requires AVX2, else: requires AVX1
+    'CPUFeature_AVX_Lis2',
+
     # Attributes for enabling/disabling based on architecture and validity.
     'ia32',
     'amd64',
