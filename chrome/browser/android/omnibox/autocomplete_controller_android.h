@@ -46,7 +46,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
   base::android::ScopedJavaLocalRef<jobject> Classify(JNIEnv* env,
                                                       jobject obj,
                                                       jstring j_text);
-  void StartZeroSuggest(JNIEnv* env,
+  void OnOmniboxFocused(JNIEnv* env,
                         jobject obj,
                         jstring j_omnibox_text,
                         jstring j_current_url,

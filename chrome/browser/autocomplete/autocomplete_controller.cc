@@ -327,24 +327,20 @@ void AutocompleteController::Stop(bool clear_result) {
   }
 }
 
-void AutocompleteController::StartZeroSuggest(const AutocompleteInput& input) {
-  if (zero_suggest_provider_ == NULL)
-    return;
-
+void AutocompleteController::OnOmniboxFocused(const AutocompleteInput& input) {
   DCHECK(!in_start_);  // We should not be already running a query.
 
   // Call Start() on all prefix-based providers with an INVALID
   // AutocompleteInput to clear out cached |matches_|, which ensures that
   // they aren't used with zero suggest.
   for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
-    if (i->get() == zero_suggest_provider_)
+    if ((*i)->ProvidesMatchesOnOmniboxFocus())
       (*i)->Start(input, false);
     else
       (*i)->Start(AutocompleteInput(), false);
   }
 
-  if (!zero_suggest_provider_->matches().empty())
-    UpdateResult(false, false);
+  UpdateResult(false, false);
 }
 
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {

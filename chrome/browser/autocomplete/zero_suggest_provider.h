@@ -37,10 +37,10 @@ class PrefRegistrySyncable;
 
 // Autocomplete provider for searches based on the current URL.
 //
-// The controller will call StartZeroSuggest when the user focuses in the
-// omnibox. After construction, the autocomplete controller repeatedly calls
-// Start() with some user input, each time expecting to receive an updated
-// set of matches.
+// The controller will call ProvidesMatchesOnOmniboxFocus when the user focuses
+// the omnibox. After construction, the autocomplete controller repeatedly calls
+// Start() with some user input, each time expecting to receive an updated set
+// of matches.
 //
 // TODO(jered): Consider deleting this class and building this functionality
 // into SearchProvider after dogfood and after we break the association between
@@ -61,6 +61,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void Stop(bool clear_cached_results) override;
   void DeleteMatch(const AutocompleteMatch& match) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
+  bool ProvidesMatchesOnOmniboxFocus() const override;
 
   // Sets |field_trial_triggered_| to false.
   void ResetSession() override;

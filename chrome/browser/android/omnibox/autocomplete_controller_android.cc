@@ -64,7 +64,7 @@ const int kAndroidAutocompleteProviders =
 
 /**
  * A prefetcher class responsible for triggering zero suggest prefetch.
- * The prefetch occurs as a side-effect of calling StartZeroSuggest() on
+ * The prefetch occurs as a side-effect of calling OnOmniboxFocused() on
  * the AutocompleteController object.
  */
 class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
@@ -90,7 +90,7 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
   // AutocompleteInput object.
   base::string16 fake_request_source(base::ASCIIToUTF16(
       "http://www.foobarbazblah.com"));
-  controller_->StartZeroSuggest(AutocompleteInput(
+  controller_->OnOmniboxFocused(AutocompleteInput(
       fake_request_source, base::string16::npos, std::string(),
       GURL(fake_request_source), OmniboxEventProto::INVALID_SPEC, false, false,
       true, true, ChromeAutocompleteSchemeClassifier(profile)));
@@ -161,7 +161,7 @@ ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::Classify(
   return GetTopSynchronousResult(env, obj, j_text, true);
 }
 
-void AutocompleteControllerAndroid::StartZeroSuggest(
+void AutocompleteControllerAndroid::OnOmniboxFocused(
     JNIEnv* env,
     jobject obj,
     jstring j_omnibox_text,
@@ -184,7 +184,7 @@ void AutocompleteControllerAndroid::StartZeroSuggest(
       omnibox_text, base::string16::npos, std::string(), current_url,
       ClassifyPage(current_url, is_query_in_omnibox, focused_from_fakebox),
       false, false, true, true, ChromeAutocompleteSchemeClassifier(profile_));
-  autocomplete_controller_->StartZeroSuggest(input_);
+  autocomplete_controller_->OnOmniboxFocused(input_);
 }
 
 void AutocompleteControllerAndroid::Stop(JNIEnv* env,

@@ -197,6 +197,10 @@ class AutocompleteProvider
   // Returns this provider's type.
   Type type() const { return type_; }
 
+  // Returns whether the provider wants to provide matches in response to the
+  // omnibox being focused.
+  virtual bool ProvidesMatchesOnOmniboxFocus() const;
+
   // Returns a string describing this provider's type.
   const char* GetName() const;
 

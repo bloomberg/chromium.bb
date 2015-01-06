@@ -153,7 +153,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results) {
   if (clear_cached_results) {
     // We do not call Clear() on |results_| to retain |verbatim_relevance|
     // value in the |results_| object. |verbatim_relevance| is used at the
-    // beginning of the next StartZeroSuggest() call to determine the current
+    // beginning of the next OnOmniboxFocused() call to determine the current
     // url match relevance.
     results_.suggest_results.clear();
     results_.navigation_results.clear();
@@ -175,6 +175,10 @@ void ZeroSuggestProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   BaseSearchProvider::AddProviderInfo(provider_info);
   if (!results_.suggest_results.empty() || !results_.navigation_results.empty())
     provider_info->back().set_times_returned_results_in_session(1);
+}
+
+bool ZeroSuggestProvider::ProvidesMatchesOnOmniboxFocus() const {
+  return true;
 }
 
 void ZeroSuggestProvider::ResetSession() {

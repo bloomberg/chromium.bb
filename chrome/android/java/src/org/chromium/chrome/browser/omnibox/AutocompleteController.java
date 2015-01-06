@@ -127,7 +127,7 @@ public class AutocompleteController {
         if (profile == null || TextUtils.isEmpty(url)) return;
         mNativeAutocompleteControllerAndroid = nativeInit(profile);
         if (mNativeAutocompleteControllerAndroid != 0) {
-            nativeStartZeroSuggest(mNativeAutocompleteControllerAndroid, omniboxText, url,
+            nativeOnOmniboxFocused(mNativeAutocompleteControllerAndroid, omniboxText, url,
                     isQueryInOmnibox, focusedFromFakebox);
         }
     }
@@ -276,7 +276,7 @@ public class AutocompleteController {
     private native void nativeOnSuggestionSelected(long nativeAutocompleteControllerAndroid,
             int selectedIndex, String currentPageUrl, boolean isQueryInOmnibox,
             boolean focusedFromFakebox, long elapsedTimeSinceModified, WebContents webContents);
-    private native void nativeStartZeroSuggest(long nativeAutocompleteControllerAndroid,
+    private native void nativeOnOmniboxFocused(long nativeAutocompleteControllerAndroid,
             String omniboxText, String currentUrl, boolean isQueryInOmnibox,
             boolean focusedFromFakebox);
     private native void nativeDeleteSuggestion(long nativeAutocompleteControllerAndroid,

@@ -948,7 +948,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // that we avoid PermanentURL() here because it's not guaranteed to give us
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    autocomplete_controller()->StartZeroSuggest(AutocompleteInput(
+    autocomplete_controller()->OnOmniboxFocused(AutocompleteInput(
         permanent_text_, base::string16::npos, std::string(),
         delegate_->GetURL(), ClassifyPage(), false, false, true, true,
         ChromeAutocompleteSchemeClassifier(profile_)));
