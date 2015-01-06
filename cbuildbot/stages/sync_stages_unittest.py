@@ -648,7 +648,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
             len([x for x in actions if x.action == action_type]) <= 1)
 
   def testSpeculativePreCQ(self):
-    changes = self._PrepareChangesWithPendingVerifications()
+    changes = self._PrepareChangesWithPendingVerifications(
+        [constants.PRE_CQ_DEFAULT_CONFIGS] * 2)
 
     # Turn our changes into speculatifve PreCQ candidates.
     for change in changes:
@@ -697,18 +698,33 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.assertEqual(self._GetPreCQStatus(changes[0]),
                      constants.CL_STATUS_INFLIGHT)
 
-    # Fake the CLs being verified.
+    # Fake CL 0 being verified by all configs.
     for config in constants.PRE_CQ_DEFAULT_CONFIGS:
       self.fake_db.InsertCLActions(
           build_ids[config],
           [clactions.CLAction.FromGerritPatchAndAction(
               changes[0], constants.CL_ACTION_VERIFIED)])
 
+    # Fake CL 1 being rejected and failed by all configs except the first.
+    for config in constants.PRE_CQ_DEFAULT_CONFIGS[1:]:
+      self.fake_db.InsertCLActions(
+          build_ids[config],
+          [clactions.CLAction.FromGerritPatchAndAction(
+              changes[1], constants.CL_ACTION_KICKED_OUT)])
+      self.fake_db.InsertCLActions(
+          build_ids[config],
+          [clactions.CLAction.FromGerritPatchAndAction(
+              changes[1], constants.CL_ACTION_PRE_CQ_FAILED)])
+
+
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
-    # Verify that we don't mark the change as fully verified (not passed).
+    # Verify that we mark CL 0 as fully verified (not passed).
     self.assertEqual(self._GetPreCQStatus(changes[0]),
                      constants.CL_STATUS_FULLY_VERIFIED)
+    # Verify that CL 1 has status failed.
+    self.assertEqual(self._GetPreCQStatus(changes[1]),
+                     constants.CL_STATUS_FAILED)
 
     # Mark our changes as ready, and see if they are immediately passed.
     for change in changes:

@@ -1220,8 +1220,17 @@ class PreCQLauncherStage(SyncStage):
     """
     _, db = self._run.GetCIDBHandle()
     action_history = db.GetActionsForChanges(changes)
+    for change in changes:
+      self._ProcessRequeuedAndSpeculative(change, action_history)
+
+
     status_map = {c: clactions.GetCLPreCQStatus(c, action_history)
                   for c in changes}
+
+    # Filter out failed speculative changes.
+    changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
+               or c.HasReadyFlag()]
+
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     _, inflight, verified = clactions.GetPreCQCategories(progress_map)
     current_db_time = db.GetTime()
@@ -1248,8 +1257,6 @@ class PreCQLauncherStage(SyncStage):
     # Changes that will be passed.
     will_pass = set()
 
-    for change in changes:
-      self._ProcessRequeuedAndSpeculative(change, action_history)
 
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
