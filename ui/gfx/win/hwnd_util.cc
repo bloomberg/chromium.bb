@@ -5,6 +5,7 @@
 #include "ui/gfx/win/hwnd_util.h"
 
 #include "base/i18n/rtl.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/tracked_objects.h"
 #include "base/win/metro.h"
@@ -112,6 +113,10 @@ void* SetWindowUserData(HWND hwnd, void* user_data) {
 }
 
 void* GetWindowUserData(HWND hwnd) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 GetWindowUserData"));
+
   DWORD process_id = 0;
   GetWindowThreadProcessId(hwnd, &process_id);
   // A window outside the current process needs to be ignored.

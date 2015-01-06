@@ -321,9 +321,9 @@ void MessagePumpForUI::HandleTimerMessage() {
 
 bool MessagePumpForUI::ProcessNextWindowsMessage() {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 <<MessagePumpForUI::ProcessNextWindowsMessage>>"));
+          "440919 MessagePumpForUI::ProcessNextWindowsMessage1"));
 
   // If there are sent messages in the queue then PeekMessage internally
   // dispatches the message and returns false. We return true in this
@@ -334,6 +334,11 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
   if (HIWORD(queue_status) & QS_SENDMESSAGE)
     sent_messages_in_queue = true;
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 MessagePumpForUI::ProcessNextWindowsMessage2"));
+
   MSG msg;
   if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE)
     return ProcessMessageHelper(msg);
@@ -343,9 +348,9 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 MessagePumpForUI::ProcessMessageHelper"));
+          "440919 MessagePumpForUI::ProcessMessageHelper1"));
 
   TRACE_EVENT1("base", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
@@ -361,8 +366,18 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_hwnd_)
     return ProcessPumpReplacementMessage();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 MessagePumpForUI::ProcessMessageHelper2"));
+
   if (CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode))
     return true;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 MessagePumpForUI::ProcessMessageHelper3"));
 
   uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
   if (state_->dispatcher)
@@ -378,6 +393,11 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
 }
 
 bool MessagePumpForUI::ProcessPumpReplacementMessage() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 MessagePumpForUI::ProcessPumpReplacementMessage"));
+
   // When we encounter a kMsgHaveWork message, this method is called to peek
   // and process a replacement message, such as a WM_PAINT or WM_TIMER.  The
   // goal is to make the kMsgHaveWork as non-intrusive as possible, even though
