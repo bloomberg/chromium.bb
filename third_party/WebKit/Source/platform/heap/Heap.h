@@ -575,8 +575,6 @@ public:
         return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 
-    void mark(Visitor*);
-
     // This method is needed just to avoid compilers from removing m_padding.
     uint64_t unusedMethod() const { return m_padding; }
 

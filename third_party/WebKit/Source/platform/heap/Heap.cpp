@@ -497,6 +497,30 @@ bool LargeObject::isEmpty()
     return !heapObjectHeader()->isMarked();
 }
 
+#if ENABLE(ASSERT)
+static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
+{
+    // Scan through the object's fields and check that they are all zero.
+    Address* objectFields = reinterpret_cast<Address*>(objectPointer);
+    for (size_t i = 0; i < objectSize / sizeof(Address); ++i) {
+        if (objectFields[i] != 0)
+            return false;
+    }
+    return true;
+}
+#endif
+
+static void markPointer(Visitor* visitor, HeapObjectHeader* header)
+{
+    const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
+    if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
+        visitor->markHeaderNoTracing(header);
+        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
+    } else {
+        visitor->markHeader(header, gcInfo->m_trace);
+    }
+}
+
 void LargeObject::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
@@ -505,7 +529,7 @@ void LargeObject::checkAndMarkPointer(Visitor* visitor, Address address)
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
 #endif
-    mark(visitor);
+    markPointer(visitor, heapObjectHeader());
 }
 
 void LargeObject::markUnmarkedObjectsDead()
@@ -520,31 +544,6 @@ void LargeObject::markUnmarkedObjectsDead()
 void LargeObject::removeFromHeap(ThreadHeap* heap)
 {
     heap->freeLargeObject(this);
-}
-
-#if ENABLE(ASSERT)
-static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
-{
-    // Scan through the object's fields and check that they are all zero.
-    Address* objectFields = reinterpret_cast<Address*>(objectPointer);
-    for (size_t i = 0; i < objectSize / sizeof(Address); ++i) {
-        if (objectFields[i] != 0)
-            return false;
-    }
-    return true;
-}
-#endif
-
-void LargeObject::mark(Visitor* visitor)
-{
-    HeapObjectHeader* header = heapObjectHeader();
-    const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
-    if (gcInfo->hasVTable() && !vTableInitialized(payload())) {
-        visitor->markHeaderNoTracing(header);
-        ASSERT(isUninitializedMemory(payload(), payloadSize()));
-    } else {
-        visitor->markHeader(header, gcInfo->m_trace);
-    }
 }
 
 ThreadHeap::ThreadHeap(ThreadState* state, int index)
@@ -1645,17 +1644,10 @@ void HeapPage::checkAndMarkPointer(Visitor* visitor, Address address)
     HeapObjectHeader* header = findHeaderFromAddress(address);
     if (!header || header->isDead())
         return;
-
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
 #endif
-    const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
-    if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
-        visitor->markHeaderNoTracing(header);
-        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
-    } else {
-        visitor->markHeader(header, gcInfo->m_trace);
-    }
+    markPointer(visitor, header);
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
