@@ -26,21 +26,31 @@ extern "C" {
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_test_base.h"
 
+#if defined(OS_POSIX)
+#include "base/macros.h"
+#include "ipc/file_descriptor_set_posix.h"
+#endif
+
 namespace {
 
-const unsigned kNumFDsToSend = 20;
+const unsigned kNumFDsToSend = 7;  // per message
+const unsigned kNumMessages = 20;
 const char* kDevZeroPath = "/dev/zero";
+
+#if defined(OS_POSIX)
+COMPILE_ASSERT(kNumFDsToSend == FileDescriptorSet::kMaxDescriptorsPerMessage,
+  num_fds_to_send_must_be_the_same_as_the_max_desc_per_message);
+#endif
 
 class MyChannelDescriptorListenerBase : public IPC::Listener {
  public:
   bool OnMessageReceived(const IPC::Message& message) override {
     PickleIterator iter(message);
-
     base::FileDescriptor descriptor;
-
-    IPC::ParamTraits<base::FileDescriptor>::Read(&message, &iter, &descriptor);
-
-    HandleFD(descriptor.fd);
+    while (IPC::ParamTraits<base::FileDescriptor>::Read(
+               &message, &iter, &descriptor)) {
+      HandleFD(descriptor.fd);
+    }
     return true;
   }
 
@@ -57,7 +67,7 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
   }
 
   bool GotExpectedNumberOfDescriptors() const {
-    return num_fds_received_ == kNumFDsToSend;
+    return num_fds_received_ == kNumFDsToSend * kNumMessages;
   }
 
   void OnChannelError() override {
@@ -66,6 +76,7 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
 
  protected:
   void HandleFD(int fd) override {
+    ASSERT_GE(fd, 0);
     // Check that we can read from the FD.
     char buf;
     ssize_t amt_read = read(fd, &buf, 1);
@@ -82,7 +93,7 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
     ASSERT_EQ(expected_inode_num_, st.st_ino);
 
     ++num_fds_received_;
-    if (num_fds_received_ == kNumFDsToSend)
+    if (num_fds_received_ == kNumFDsToSend * kNumMessages)
       base::MessageLoop::current()->Quit();
   }
 
@@ -101,14 +112,15 @@ class IPCSendFdsTest : public IPCTestBase {
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
 
-    for (unsigned i = 0; i < kNumFDsToSend; ++i) {
-      const int fd = open(kDevZeroPath, O_RDONLY);
-      ASSERT_GE(fd, 0);
-      base::FileDescriptor descriptor(fd, true);
-
+    for (unsigned i = 0; i < kNumMessages; ++i) {
       IPC::Message* message =
           new IPC::Message(0, 3, IPC::Message::PRIORITY_NORMAL);
-      IPC::ParamTraits<base::FileDescriptor>::Write(message, descriptor);
+      for (unsigned j = 0; j < kNumFDsToSend; ++j) {
+        const int fd = open(kDevZeroPath, O_RDONLY);
+        ASSERT_GE(fd, 0);
+        base::FileDescriptor descriptor(fd, true);
+        IPC::ParamTraits<base::FileDescriptor>::Write(message, descriptor);
+      }
       ASSERT_TRUE(sender()->Send(message));
     }
 
