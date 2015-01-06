@@ -21,7 +21,6 @@
 #include "base/template_util.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "base/threading/thread.h"
-#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 
 namespace {
@@ -248,9 +247,6 @@ bool Credentials::MoveToNewUserNS() {
 }
 
 bool Credentials::DropFileSystemAccess() {
-  // Chrooting to a safe empty dir will only be safe if no directory file
-  // descriptor is available to the process.
-  DCHECK(!ProcUtil::HasOpenDirectory(-1));
   return ChrootToSafeEmptyDir();
 }
 

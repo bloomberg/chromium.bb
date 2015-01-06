@@ -72,7 +72,7 @@ SANDBOX_TEST(Credentials, GetCurrentCapString) {
 
 SANDBOX_TEST(Credentials, MoveToNewUserNS) {
   Credentials creds;
-  creds.DropAllCapabilities();
+  CHECK(creds.DropAllCapabilities());
   bool moved_to_new_ns = creds.MoveToNewUserNS();
   fprintf(stdout,
           "Unprivileged CLONE_NEWUSER supported: %s\n",
@@ -85,13 +85,13 @@ SANDBOX_TEST(Credentials, MoveToNewUserNS) {
     return;
   }
   CHECK(creds.HasAnyCapability());
-  creds.DropAllCapabilities();
+  CHECK(creds.DropAllCapabilities());
   CHECK(!creds.HasAnyCapability());
 }
 
 SANDBOX_TEST(Credentials, SupportsUserNS) {
   Credentials creds;
-  creds.DropAllCapabilities();
+  CHECK(creds.DropAllCapabilities());
   bool user_ns_supported = Credentials::SupportsNewUserNS();
   bool moved_to_new_ns = creds.MoveToNewUserNS();
   CHECK_EQ(user_ns_supported, moved_to_new_ns);
@@ -99,7 +99,7 @@ SANDBOX_TEST(Credentials, SupportsUserNS) {
 
 SANDBOX_TEST(Credentials, UidIsPreserved) {
   Credentials creds;
-  creds.DropAllCapabilities();
+  CHECK(creds.DropAllCapabilities());
   uid_t old_ruid, old_euid, old_suid;
   gid_t old_rgid, old_egid, old_sgid;
   PCHECK(0 == getresuid(&old_ruid, &old_euid, &old_suid));
@@ -135,7 +135,7 @@ SANDBOX_TEST(Credentials, NestedUserNS) {
   CHECK(creds.DropAllCapabilities());
   // Probably missing kernel support.
   if (!creds.MoveToNewUserNS()) return;
-  creds.DropAllCapabilities();
+  CHECK(creds.DropAllCapabilities());
   // As of 3.12, the kernel has a limit of 32. See create_user_ns().
   const int kNestLevel = 10;
   for (int i = 0; i < kNestLevel; ++i) {
