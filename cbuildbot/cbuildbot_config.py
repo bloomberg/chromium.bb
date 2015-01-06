@@ -687,6 +687,8 @@ class HWTestConfig(object):
     num: Maximum number of DUTs to use when scheduling tests in the hw lab.
     minimum_duts: minimum number of DUTs required for testing in the hw lab.
     retry: Whether we should retry tests that fail in a suite run.
+    max_retries: Integer, maximum job retries allowed at suite level.
+                 None for no max.
     suite_min_duts: Preferred minimum duts. Lab will prioritize on getting such
                     number of duts even if the suite is competing with
                     other suites that have higher priority.
@@ -731,6 +733,7 @@ class HWTestConfig(object):
     async_kwargs.update(async_dict)
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
     async_kwargs['retry'] = False
+    async_kwargs['max_retries'] = None
     async_kwargs['async'] = True
 
     # BVT + AU suite.
@@ -761,7 +764,8 @@ class HWTestConfig(object):
       *kwargs: overrides for the configs
     """
     afdo_dict = dict(pool=constants.HWTEST_SUITES_POOL,
-                     timeout=120 * 60, num=1, async=True, retry=False)
+                     timeout=120 * 60, num=1, async=True, retry=False,
+                     max_retries=None)
     afdo_dict.update(kwargs)
     return [cls('perf_v2', **afdo_dict)]
 
@@ -798,7 +802,7 @@ class HWTestConfig(object):
     """
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
                         priority=constants.HWTEST_PFQ_PRIORITY,
-                        retry=False, minimum_duts=4)
+                        retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
     return cls.DefaultListNonCanary(**default_dict)
@@ -845,7 +849,7 @@ class HWTestConfig(object):
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, blocking=False,
                file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=True, minimum_duts=0, suite_min_duts=0):
+               retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0):
     """Constructor -- see members above."""
     assert not async or (not blocking and not retry)
     assert not warn_only or not critical
@@ -860,6 +864,7 @@ class HWTestConfig(object):
     self.file_bugs = file_bugs
     self.priority = priority
     self.retry = retry
+    self.max_retries = max_retries
     self.minimum_duts = minimum_duts
     self.suite_min_duts = suite_min_duts
 

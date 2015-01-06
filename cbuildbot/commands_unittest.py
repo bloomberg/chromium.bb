@@ -207,6 +207,7 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self._priority = 'test-priority'
     self._timeout_mins = 23
     self._retry = False
+    self._max_retries = 3
     self._minimum_duts = 2
     self._suite_min_duts = 2
 
@@ -224,7 +225,7 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     commands.RunHWTestSuite(self._build, self._suite, self._board,
                             self._pool, self._num, self._file_bugs,
                             self._wait_for_results, self._priority,
-                            self._timeout_mins, self._retry,
+                            self._timeout_mins, self._retry, self._max_retries,
                             self._minimum_duts, self._suite_min_duts,
                             debug=False)
     self.assertCommandCalled([
@@ -233,7 +234,8 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
         '--board', 'test-board', '--pool', 'test-pool', '--num', '42',
         '--file_bugs', 'True', '--no_wait', 'True',
         '--priority', 'test-priority', '--timeout_mins', '23',
-        '--retry', 'False', '--minimum_duts', '2', '--suite_min_duts', '2',
+        '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
+        '--suite_min_duts', '2',
     ], error_code_ok=True)
 
   def testRunHWTestSuiteFailure(self):

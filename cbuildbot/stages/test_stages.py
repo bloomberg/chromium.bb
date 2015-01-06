@@ -276,6 +276,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                             priority=self.suite_config.priority,
                             timeout_mins=self.suite_config.timeout_mins,
                             retry=self.suite_config.retry,
+                            max_retries=self.suite_config.max_retries,
                             minimum_duts=self.suite_config.minimum_duts,
                             suite_min_duts=self.suite_config.suite_min_duts,
                             debug=debug)

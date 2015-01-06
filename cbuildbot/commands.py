@@ -812,7 +812,8 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
                              timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
-                   retry=None, minimum_duts=0, suite_min_duts=0, debug=True):
+                   retry=None, max_retries=None,
+                   minimum_duts=0, suite_min_duts=0, debug=True):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -829,6 +830,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     timeout_mins: Timeout in minutes for the suite job and its sub-jobs.
     retry: If True, will enable job-level retry. Only works when
            wait_for_results is True.
+    max_retries: Integer, maximum job retries allowed at suite level.
+                 None for no max.
     minimum_duts: The minimum number of DUTs should be available in lab for the
                   suite job to be created. If it's set to 0, the check will be
                   skipped.
@@ -866,6 +869,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
   if retry is not None:
     cmd += ['--retry', str(retry)]
+
+  if max_retries is not None:
+    cmd += ['--max_retries', str(max_retries)]
 
   if minimum_duts != 0:
     cmd += ['--minimum_duts', str(minimum_duts)]
