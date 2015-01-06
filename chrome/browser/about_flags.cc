@@ -1966,7 +1966,7 @@ const Experiment kExperiments[] = {
     "enable-extension-action-redesign",
     IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_NAME,
     IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionActionRedesign)
   },
 #endif
