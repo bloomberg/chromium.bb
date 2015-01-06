@@ -778,9 +778,6 @@ CANARY_MASTER = 'master-release'
 PFQ_MASTER = 'master-chromium-pfq'
 
 
-# Useful google storage locations.
-PRE_CQ_GROUP_GS_LOCATION = 'trybot-pre-cq-group'
-
 # Email validation regex. Not quite fully compliant with RFC 2822, but good
 # approximation.
 EMAIL_REGEX = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}'

@@ -234,8 +234,6 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                        metadata_lib.GerritChangeTuple(gerrit_number=4,
                                                       internal=True)],
           },
-          'correctly_rejected_by_stage': {CQ: {}, PRE_CQ: {}},
-          'incorrectly_rejected_by_stage': {PRE_CQ: {}},
           'rejections': 10}
       # Ignore handling times in comparison, since these are not fully
       # reproducible from run to run of the unit test.

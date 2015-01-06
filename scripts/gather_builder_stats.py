@@ -33,9 +33,6 @@ CQ_MASTER = constants.CQ_MASTER
 PFQ_MASTER = constants.PFQ_MASTER
 CANARY_MASTER = constants.CANARY_MASTER
 
-# Useful google storage locations.
-PRE_CQ_GROUP_GS_LOCATION = constants.PRE_CQ_GROUP_GS_LOCATION
-
 # Bot types
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
@@ -910,20 +907,6 @@ class CanaryMasterStats(StatsManager):
     super(CanaryMasterStats, self).__init__(CANARY_MASTER, **kwargs)
 
 
-# TODO(mtennant): Add Sheets support for PreCQ by creating a PreCQTable
-# class modeled after CQMasterTable and then adding it as TABLE_CLASS here.
-# TODO(mtennant): Add Graphite support for PreCQ by CARBON_FUNCS_BY_VERSION
-# in this class.
-class PreCQStats(StatsManager):
-  """Manager stats gathering for the Pre Commit Queue."""
-  TABLE_CLASS = None
-  BOT_TYPE = PRE_CQ
-  GET_SHEETS_VERSION = False
-
-  def __init__(self, **kwargs):
-    super(PreCQStats, self).__init__(PRE_CQ_GROUP_GS_LOCATION, **kwargs)
-
-
 class CLStats(StatsManager):
   """Manager for stats about CL actions taken by the Commit Queue."""
   PATCH_HANDLING_TIME_SUMMARY_KEY = 'patch_handling_time'
@@ -944,9 +927,7 @@ class CLStats(StatsManager):
     self.reasons = {}
     self.blames = {}
     self.summary = {}
-    self.builds_by_number = {}
     self.build_numbers_by_build_id = {}
-    self.pre_cq_stats = PreCQStats(db=self.db)
 
   def GatherFailureReasons(self, creds):
     """Gather the reasons why our builds failed and the blamed bugs or CLs.
@@ -1047,26 +1028,11 @@ class CLStats(StatsManager):
     self.actions = self.db.GetActionHistory(start_date, end_date)
     self.GatherFailureReasons(creds)
 
-    # Gather the pre-cq stats as well. The build number won't apply here since
-    # the pre-cq has different build numbers. We intentionally represent the
-    # Pre-CQ stats in a different object to help keep things simple.
-    self.pre_cq_stats.Gather(start_date,
-                             end_date,
-                             sort_by_build_number=sort_by_build_number)
-
-    self.builds_by_number = {(CQ, b.build_number): b for b in self.builds}
-    self.builds_by_number.update({(PRE_CQ, b.build_number): b
-                                  for b in self.pre_cq_stats.builds})
-
-    # Remove PreCQ builds without a build_id.
-    self.pre_cq_stats.builds = _RemoveBuildsWithNoBuildId(
-        self.pre_cq_stats.builds, 'PreCQ')
+    # Remove builds without a build_id.
     self.builds = _RemoveBuildsWithNoBuildId(self.builds, 'CQ')
 
     self.build_numbers_by_build_id.update(
         {b['build_id'] : b.build_number for b in self.builds})
-    self.build_numbers_by_build_id.update(
-        {b['build_id'] : b.build_number for b in self.pre_cq_stats.builds})
 
   def GetSubmittedPatchNumber(self, actions):
     """Get the patch number of the final patchset submitted.
@@ -1135,65 +1101,6 @@ class CLStats(StatsManager):
       return CQ
     else:
       return PRE_CQ
-
-  def CalculateStageFailures(self, reject_actions, submitted_changes,
-                             good_patch_rejections):
-    """Calculate what stages correctly or incorrectly failed.
-
-    Args:
-      reject_actions: A list of actions that reject CLs.
-      submitted_changes: A dict mapping submitted GerritChangeTuple to a list
-        of associated actions.
-      good_patch_rejections: A dict mapping submitted GerritPatchTuple to a list
-        of associated incorrect rejections.
-
-    Returns:
-      correctly_rejected_by_stage: A dict, where dict[bot_type][stage_name]
-        counts the number of times a probably bad patch was rejected due to a
-        failure in this stage.
-      incorrectly_rejected_by_stage: A dict, where dict[bot_type][stage_name]
-        counts the number of times a probably good patch was rejected due to a
-        failure in this stage.
-    """
-    # Keep track of a list of builds that were manually annotated as bad CL.
-    # These are used to ensure that we don't treat real failures as being flaky.
-    bad_cl_builds = set()
-    for a in reject_actions:
-      if self.BotType(a) == CQ:
-        build_number = self.build_numbers_by_build_id.get(a.build_id)
-        if build_number:
-          reason = self.reasons.get(build_number)
-          if reason == self.REASON_BAD_CL:
-            bad_cl_builds.add(a.build_id)
-
-    # Keep track of the stages that correctly detected a bad CL. We assume
-    # here that all of the stages that are broken were broken by the bad CL.
-    correctly_rejected_by_stage = {}
-    for _, _, a, falsely_rejected in self.ClassifyRejections(submitted_changes):
-      if not falsely_rejected:
-        good = correctly_rejected_by_stage.setdefault(self.BotType(a), {})
-        build_number = self.build_numbers_by_build_id.get(a.build_id)
-        if build_number:
-          build = self.builds_by_number.get((self.BotType(a), build_number))
-          if build:
-            for stage_name in build.GetFailedStages():
-              good[stage_name] = good.get(stage_name, 0) + 1
-
-    # Keep track of the stages that failed flakily.
-    incorrectly_rejected_by_stage = {}
-    for rejections in good_patch_rejections.values():
-      for a in rejections:
-        # A stage only failed flakily if it wasn't broken by another CL.
-        if a.build_id not in bad_cl_builds:
-          bad = incorrectly_rejected_by_stage.setdefault(self.BotType(a), {})
-          build_number = self.build_numbers_by_build_id.get(a.build_id)
-          if build_number:
-            build = self.builds_by_number.get((self.BotType(a), build_number))
-            if build:
-              for stage_name in build.GetFailedStages():
-                bad[stage_name] = bad.get(stage_name, 0) + 1
-
-    return correctly_rejected_by_stage, incorrectly_rejected_by_stage
 
   def GoodPatchRejections(self, submitted_changes):
     """Find good patches that were incorrectly rejected.
@@ -1381,10 +1288,6 @@ class CLStats(StatsManager):
       for x in range(max(rejection_counts) + 1):
         good_patch_rejection_breakdown.append((x, rejection_counts.count(x)))
 
-    correctly_rejected_by_stage, incorrectly_rejected_by_stage = \
-        self.CalculateStageFailures(reject_actions, submitted_changes,
-                                    good_patch_rejections)
-
     summary = {
         'total_cl_actions': len(self.actions),
         'unique_cls': len(self.per_cl_actions),
@@ -1400,8 +1303,6 @@ class CLStats(StatsManager):
         'median_handling_time': numpy.median(patch_handle_times),
         self.PATCH_HANDLING_TIME_SUMMARY_KEY: patch_handle_times,
         'bad_cl_candidates': bad_cl_candidates,
-        'correctly_rejected_by_stage': correctly_rejected_by_stage,
-        'incorrectly_rejected_by_stage': incorrectly_rejected_by_stage,
         'unique_blames_change_count': len(unique_cl_blames),
     }
 
@@ -1506,14 +1407,6 @@ class CLStats(StatsManager):
     logging.info('Reasons why builds failed:')
     self._PrintCounts(build_reason_counts, fmt_fai)
 
-    logging.info('Stages from the Pre-CQ that caught real failures:')
-    fmt = '  %(cnt)d broken patches were caught by %(reason)s'
-    self._PrintCounts(correctly_rejected_by_stage.get(PRE_CQ, {}), fmt)
-
-    logging.info('Stages from the Pre-CQ that failed but succeeded on retry')
-    fmt = '  %(cnt)d good patches failed incorrectly in %(reason)s'
-    self._PrintCounts(incorrectly_rejected_by_stage.get(PRE_CQ, {}), fmt)
-
     super_summary.update(summary)
     self.summary = super_summary
     return super_summary
@@ -1568,8 +1461,6 @@ def GetParser():
                     help='Gather stats for the PFQ master.')
   mode.add_argument('--canary-master', action='store_true', default=False,
                     help='Gather stats for the Canary master.')
-  mode.add_argument('--pre-cq', action='store_true', default=False,
-                    help='Gather stats for the Pre-CQ.')
   mode.add_argument('--cq-slaves', action='store_true', default=False,
                     help='Gather stats for all CQ slaves.')
   mode.add_argument('--cl-actions', action='store_true', default=False,
@@ -1680,10 +1571,6 @@ def main(argv):
             db=db,
             ss_key=options.ss_key or CANARY_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
-
-  if options.pre_cq:
-    # TODO(mtennant): Add spreadsheet and/or graphite support for pre-cq.
-    stats_managers.append(PreCQStats(db=db))
 
   if options.cq_slaves:
     targets = _GetSlavesOfMaster(CQ_MASTER)
