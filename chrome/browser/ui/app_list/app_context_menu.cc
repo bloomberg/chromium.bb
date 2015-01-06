@@ -181,6 +181,15 @@ bool AppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
 }
 
 base::string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
+  // If streamlined hosted apps are enabled, then we do not need to consider
+  // the case when command_id == TOGGLE_PIN (see AppContextMenu::GetMenuModel).
+  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
+    DCHECK_EQ(LAUNCH_NEW, command_id);
+    return IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR) ?
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB) :
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
+  }
+
   if (command_id == TOGGLE_PIN) {
     return controller_->IsAppPinned(app_id_) ?
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN) :
