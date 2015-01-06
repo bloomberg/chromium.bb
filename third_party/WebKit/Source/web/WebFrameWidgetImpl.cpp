@@ -173,7 +173,7 @@ void WebFrameWidgetImpl::updateMainFrameLayoutSize()
     if (!m_localRoot)
         return;
 
-    RefPtr<FrameView> view = m_localRoot->frameView();
+    RefPtrWillBeRawPtr<FrameView> view = m_localRoot->frameView();
     if (!view)
         return;
 
@@ -442,7 +442,7 @@ void WebFrameWidgetImpl::setFocus(bool enable)
     m_page->focusController().setFocused(enable);
     if (enable) {
         m_page->focusController().setActive(true);
-        RefPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
+        RefPtrWillBeRawPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame && focusedFrame->isLocalFrame()) {
             LocalFrame* localFrame = toLocalFrame(focusedFrame.get());
             Element* element = localFrame->document()->focusedElement();
@@ -719,7 +719,7 @@ bool WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& event)
     // event.
     m_suppressNextKeypressEvent = false;
 
-    RefPtr<Frame> focusedFrame = focusedCoreFrame();
+    RefPtrWillBeRawPtr<Frame> focusedFrame = focusedCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrame()) {
         WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame.get()));
         webFrame->client()->forwardInputEvent(&event);
@@ -729,7 +729,7 @@ bool WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& event)
     if (!focusedFrame || !focusedFrame->isLocalFrame())
         return false;
 
-    RefPtr<LocalFrame> frame = toLocalFrame(focusedFrame.get());
+    RefPtrWillBeRawPtr<LocalFrame> frame = toLocalFrame(focusedFrame.get());
 
     PlatformKeyboardEventBuilder evt(event);
 
