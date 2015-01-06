@@ -1,0 +1,6 @@
+AXWebArea
+    AXList AXSubrole=AXContentList AXSelectedChildren=[] AXVisibleChildren=["AXGroup group 1","AXGroup group 2"]
+        AXGroup AXTitle='Item 1'
+            AXStaticText AXValue='Item 1'
+        AXGroup AXTitle='Item 2'
+            AXStaticText AXValue='Item 2'

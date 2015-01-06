@@ -1,0 +1,4 @@
+AXWebArea
+    AXList AXSelectedChildren=["AXStaticText 4","AXStaticText 5"]
+        AXStaticText AXTitle='Item 4'
+        AXStaticText AXTitle='Item 5'
