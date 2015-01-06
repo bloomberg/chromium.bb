@@ -997,7 +997,7 @@ void WebContentsImpl::NotifyNavigationStateChanged(
     InvalidateTypes changed_flags) {
   // Create and release the audio power save blocker depending on whether the
   // tab is actively producing audio or not.
-  if (changed_flags == INVALIDATE_TYPE_TAB &&
+  if ((changed_flags & INVALIDATE_TYPE_TAB) &&
       AudioStreamMonitor::monitoring_available()) {
     if (WasRecentlyAudible()) {
       if (!audio_power_save_blocker_)
