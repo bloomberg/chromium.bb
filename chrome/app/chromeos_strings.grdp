@@ -2780,6 +2780,9 @@ Press any key to continue exploring.
   <message name="IDS_ENABLE_DEBUGGING_SCREEN_ROOTFS_REMOVE_MSG" desc="Text shown on enable debugging features screen below warning messages if device needs extra restart before powerwash.">
     A removal of rootfs protection and restart is required before enabling other debugging features.
   </message>
+  <message name="IDS_ENABLE_DEBUGGING_LEARN_MORE" desc="Learn more link text in the enable debugging features dialog.">
+    Learn more.
+  </message>
   <message name="IDS_ENABLE_DEBUGGING_REMOVE_ROOTFS_BUTTON" desc="Button for rootfs protection removal shown on enable debugging dialog.">
     Proceed
   </message>
@@ -2809,6 +2812,23 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_ENABLE_DEBUGGING_EMPTY_ROOT_PASSWORD_LABEL" desc="Text for root password entry field label from enable debugging features dialog.">
     leave empty if you want to set the root password to the default test image value
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_HELP" desc="Help content of the enable debugging features dialog.">
+    <ph name="BEGIN_H3">&lt;h3&gt;</ph>Debugging Features<ph name="END_H3">&lt;/h3&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    You can enable the debugging features on your Chromebook in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
+    <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Remove rootfs verification so you can modify OS files
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable SSH access to the device using the standard test keys so you can use tools such as <ph name="BEGIN_CODE">&lt;span style=&quot;color:grey;font-family:monospace&quot;&gt;</ph>&apos;cros flash&apos;<ph name="END_CODE">&lt;/span&gt;</ph> to access the device
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable booting from USB so you can install an OS image from a USB drive
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Set both the dev and the system root login password to a custom value so you can manually SSH into the device
+    <ph name="END_LIST">&lt;/ul&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    Once enabled, most of the debugging features will remain enabled even after performing a powerwash or wiping the data on an enterprise managed device.  To fully disable all debugging features, complete the Chrome OS recovery process (https://support.google.com/chromebook/answer/1080595).
+    <ph name="BR">&lt;br&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    For more information about the debugging features see:<ph name="BR">&lt;br&gt;</ph>
+    http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
   </message>
 
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">

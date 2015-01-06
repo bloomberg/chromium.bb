@@ -126,15 +126,6 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
      */
     onBeforeShow: function(data) {
       this.setDialogView_(this.UI_STATE.NONE);
-
-      if (data === undefined)
-        return;
-
-      // TODO(zelidrag): http://crbug.com/431950, show the link once we
-      // create HC article.
-      // if (!('isOfficialBuild' in data && data['isOfficialBuild']))
-      //  $('enable-debugging-help-link').hidden = true;
-      $('enable-debugging-help-link').hidden = true;
     },
 
     onPasswordChanged_: function() {

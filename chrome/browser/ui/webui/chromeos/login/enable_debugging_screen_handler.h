@@ -77,9 +77,6 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
 
   Delegate* delegate_;
 
-  // Help application used for help dialogs.
-  scoped_refptr<HelpAppLauncher> help_app_;
-
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
 

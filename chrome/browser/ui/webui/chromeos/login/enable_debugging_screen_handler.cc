@@ -11,7 +11,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -21,6 +22,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -48,11 +50,7 @@ void EnableDebuggingScreenHandler::PrepareToShow() {
 }
 
 void EnableDebuggingScreenHandler::ShowWithParams() {
-  base::DictionaryValue debugging_screen_params;
-#if defined(OFFICIAL_BUILD)
-  debugging_screen_params.SetBoolean("isOfficialBuild", true);
-#endif
-  ShowScreen(kEnableDebuggingScreen, &debugging_screen_params);
+  ShowScreen(kEnableDebuggingScreen, NULL);
 
   UpdateUIState(UI_STATE_WAIT);
 
@@ -99,6 +97,8 @@ void EnableDebuggingScreenHandler::DeclareLocalizedValues(
                IDS_ENABLE_DEBUGGING_ENABLE_BUTTON);
   builder->Add("enableDebuggingRemveRootfsMessage",
                IDS_ENABLE_DEBUGGING_SCREEN_ROOTFS_REMOVE_MSG);
+  builder->Add("enableDebuggingLearnMore",
+               IDS_ENABLE_DEBUGGING_LEARN_MORE);
   builder->Add("enableDebuggingSetupMessage",
                IDS_ENABLE_DEBUGGING_SETUP_MESSAGE);
   builder->Add("enableDebuggingWaitMessage",
@@ -279,9 +279,17 @@ void EnableDebuggingScreenHandler::UpdateUIState(
 
 void EnableDebuggingScreenHandler::HandleOnLearnMore() {
   VLOG(1) << "Trying to view the help article about debugging features.";
-  if (!help_app_.get())
-    help_app_ = new HelpAppLauncher(GetNativeWindow());
-  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_ENABLE_DEBUGGING);
+  const std::string help_content =
+      l10n_util::GetStringUTF8(IDS_ENABLE_DEBUGGING_HELP);
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + help_content);
+
+  LoginWebDialog* dialog = new LoginWebDialog(
+      Profile::FromWebUI(web_ui()),
+      NULL,
+      GetNativeWindow(),
+      l10n_util::GetStringUTF16(IDS_ENABLE_DEBUGGING_SCREEN_TITLE),
+      data_url);
+  dialog->Show();
 }
 
 }  // namespace chromeos
