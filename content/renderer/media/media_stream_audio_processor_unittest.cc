@@ -271,7 +271,8 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
     MediaAudioConstraints::kGoogExperimentalNoiseSuppression,
     MediaAudioConstraints::kGoogHighpassFilter,
     MediaAudioConstraints::kGoogNoiseSuppression,
-    MediaAudioConstraints::kGoogTypingNoiseDetection
+    MediaAudioConstraints::kGoogTypingNoiseDetection,
+    kMediaStreamAudioHotword
   };
 
   // Verify mandatory constraints.
@@ -343,6 +344,14 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
 #else
     EXPECT_FALSE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
 #endif
+  }
+
+  {
+    // |kMediaStreamAudioHotword| is always off by default.
+    MockMediaConstraintFactory constraint_factory;
+    MediaAudioConstraints audio_constraints(
+        constraint_factory.CreateWebMediaConstraints(), 0);
+    EXPECT_FALSE(audio_constraints.GetProperty(kMediaStreamAudioHotword));
   }
 }
 

@@ -134,6 +134,27 @@ void FilterAudioEffects(const StreamOptions& options, int* effects) {
   }
 }
 
+// Unlike other effects, hotword is off by default, so turn it on if it's
+// requested and available.
+void EnableHotwordEffect(const StreamOptions& options, int* effects) {
+  DCHECK(effects);
+  std::string value;
+  if (options.GetFirstAudioConstraintByName(
+          kMediaStreamAudioHotword, &value, NULL) && value == "true") {
+#if defined(OS_CHROMEOS)
+    chromeos::AudioDeviceList devices;
+    chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+    // Only enable if a hotword device exists.
+    for (size_t i = 0; i < devices.size(); ++i) {
+      if (devices[i].type == chromeos::AUDIO_TYPE_AOKR) {
+        DCHECK(devices[i].is_input);
+        *effects |= media::AudioParameters::HOTWORD;
+      }
+    }
+#endif
+  }
+}
+
 // Private helper method for SendMessageToNativeLog() that obtains the global
 // MediaStreamManager instance on the UI thread before sending |message| to the
 // webrtcLoggingPrivate API.
@@ -1412,6 +1433,8 @@ bool MediaStreamManager::FindExistingRequestedDeviceInfo(
           // is set to and not what the capabilities are.
           FilterAudioEffects(request->options,
               &existing_device_info->device.input.effects);
+          EnableHotwordEffect(request->options,
+                              &existing_device_info->device.input.effects);
           *existing_request_state = request->state(device_it->device.type);
           return true;
         }
@@ -1651,6 +1674,8 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
             // request asks for.
             FilterAudioEffects(request->options,
                 &device_it->device.input.effects);
+            EnableHotwordEffect(request->options,
+                                &device_it->device.input.effects);
 
             device_it->device.matched_output = info->device.matched_output;
           }

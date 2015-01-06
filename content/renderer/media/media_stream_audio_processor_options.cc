@@ -67,6 +67,7 @@ struct {
 #else
   { kMediaStreamAudioDucking, false },
 #endif
+  { kMediaStreamAudioHotword, false },
 };
 
 bool IsAudioProcessingConstraint(const std::string& key) {
