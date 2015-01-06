@@ -843,7 +843,9 @@ struct TypenameStringTrait {
 #endif
 
 // s_gcInfoMap is a map used to encode a GCInfo* into a 15 bit integer.
-const size_t gcInfoIndexMax = 1 << 15;
+// FIXME: Currently we only allow 2^12 types of GCInfos because
+// s_gcInfoMap[2^15] increases the bss size unacceptably.
+const size_t gcInfoIndexMax = 1 << 12;
 extern PLATFORM_EXPORT int s_gcInfoIndex;
 extern PLATFORM_EXPORT const GCInfo* s_gcInfoMap[gcInfoIndexMax];
 
