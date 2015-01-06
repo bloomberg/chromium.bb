@@ -72,14 +72,12 @@ WebContentLayerImpl::PaintContentsToDisplayList(
     return cc::DisplayItemList::Create();
 
   WebDisplayItemListImpl list;
-#if WEB_DISPLAY_ITEM_LIST_IS_DEFINED
   bool can_use_lcd_text = true;
   client_->paintContents(
       &list, clip, can_use_lcd_text,
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
-#endif
   return list.ToDisplayItemList();
 }
 

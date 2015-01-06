@@ -28,9 +28,7 @@ using blink::WebCompositorAnimation;
 using blink::WebCompositorAnimationCurve;
 using blink::WebContentLayer;
 using blink::WebContentLayerClient;
-#if WEB_DISPLAY_ITEM_LIST_IS_DEFINED
 using blink::WebDisplayItemList;
-#endif
 using blink::WebExternalTextureLayer;
 using blink::WebExternalTextureLayerClient;
 using blink::WebFilterAnimationCurve;
@@ -95,11 +93,9 @@ WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
                                    is_left_side_vertical_scrollbar);
 }
 
-#if WEB_DISPLAY_ITEM_LIST_IS_DEFINED
 WebDisplayItemList* WebCompositorSupportImpl::createDisplayItemList() {
   return new WebDisplayItemListImpl();
 }
-#endif
 
 WebCompositorAnimation* WebCompositorSupportImpl::createAnimation(
     const blink::WebCompositorAnimationCurve& curve,
