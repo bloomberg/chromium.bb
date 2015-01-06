@@ -401,6 +401,11 @@ bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
 
 SkMatrix GraphicsContext::getTotalMatrix() const
 {
+    // FIXME: this is a hack to avoid changing all call sites of getTotalMatrix() to not use this method.
+    // The code needs to be cleand up after Slimming Paint is launched.
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return SkMatrix::I();
+
     if (contextDisabled() || !m_canvas)
         return SkMatrix::I();
 
