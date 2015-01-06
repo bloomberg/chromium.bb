@@ -41,7 +41,7 @@ namespace blink {
 // RETURN_GCINFO_INDEX) returns an incremented value of s_gcInfoIndex,
 // the initial value of s_gcInfoIndex should be set to 0.
 int s_gcInfoIndex = 0;
-const GCInfo* s_gcInfoMap[gcInfoIndexMax] = { 0 };
+GCInfo const** s_gcInfoTable = nullptr;
 
 int Visitor::m_traceDepth = 0;
 

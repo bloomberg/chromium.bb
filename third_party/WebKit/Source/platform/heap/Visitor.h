@@ -842,12 +842,10 @@ struct TypenameStringTrait {
 };
 #endif
 
-// s_gcInfoMap is a map used to encode a GCInfo* into a 15 bit integer.
-// FIXME: Currently we only allow 2^12 types of GCInfos because
-// s_gcInfoMap[2^15] increases the bss size unacceptably.
-const size_t gcInfoIndexMax = 1 << 12;
+// s_gcInfoTable is a map used to encode a GCInfo* into a 15 bit integer.
+const size_t gcInfoIndexMax = 1 << 15;
 extern PLATFORM_EXPORT int s_gcInfoIndex;
-extern PLATFORM_EXPORT const GCInfo* s_gcInfoMap[gcInfoIndexMax];
+extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
 
 // This macro should be used when returning a unique 15 bit integer
 // for a given gcInfo.
@@ -855,7 +853,8 @@ extern PLATFORM_EXPORT const GCInfo* s_gcInfoMap[gcInfoIndexMax];
     static const size_t gcInfoIndex = atomicIncrement(&s_gcInfoIndex); \
     ASSERT(gcInfoIndex >= 1); \
     ASSERT(gcInfoIndex < gcInfoIndexMax); \
-    s_gcInfoMap[gcInfoIndex] = &gcInfo; \
+    ASSERT(s_gcInfoTable); \
+    s_gcInfoTable[gcInfoIndex] = &gcInfo; \
     return gcInfoIndex;
 
 template<typename T>

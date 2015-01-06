@@ -1982,6 +1982,10 @@ void Heap::init()
     s_allocatedObjectSize = 0;
     s_allocatedSpace = 0;
     s_markedObjectSize = 0;
+
+    const size_t tableSize = gcInfoIndexMax * sizeof(GCInfo);
+    s_gcInfoTable = reinterpret_cast<GCInfo const**>(new uint8_t[tableSize]);
+    memset(s_gcInfoTable, 0, tableSize);
 }
 
 void Heap::shutdown()
@@ -2015,6 +2019,8 @@ void Heap::doShutdown()
     s_ephemeronStack = nullptr;
     delete s_regionTree;
     s_regionTree = nullptr;
+    delete[] s_gcInfoTable;
+    s_gcInfoTable = nullptr;
     ThreadState::shutdown();
     ASSERT(Heap::allocatedSpace() == 0);
 }

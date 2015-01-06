@@ -934,7 +934,8 @@ public:
     {
         ASSERT(gcInfoIndex >= 1);
         ASSERT(gcInfoIndex < gcInfoIndexMax);
-        const GCInfo* info = s_gcInfoMap[gcInfoIndex];
+        ASSERT(s_gcInfoTable);
+        const GCInfo* info = s_gcInfoTable[gcInfoIndex];
         ASSERT(info);
         return info;
     }
