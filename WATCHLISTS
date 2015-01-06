@@ -364,12 +364,7 @@
       'filepath': 'ui/gfx/image/',
     },
     'gfx_geometry': {
-      'filepath': 'ui/gfx/rect|'\
-                  'ui/gfx/quad|'\
-                  'ui/gfx/point|'\
-                  'ui/gfx/size|'\
-                  'ui/gfx/transform|'\
-                  'ui/gfx/vector2d',
+      'filepath': 'ui/gfx/geometry/',
     },
     'gn': {
       'filepath': 'tools/gn',
