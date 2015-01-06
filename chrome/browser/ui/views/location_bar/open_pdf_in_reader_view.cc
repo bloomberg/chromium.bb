@@ -35,6 +35,10 @@ void OpenPDFInReaderView::Update(content::WebContents* web_contents) {
   }
 
   SetVisible(!!model_);
+
+  // Hide the bubble if it is currently shown and the icon is hidden.
+  if (!model_ && bubble_)
+    bubble_->GetWidget()->Hide();
 }
 
 void OpenPDFInReaderView::ShowBubble() {
