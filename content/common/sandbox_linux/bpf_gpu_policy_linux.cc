@@ -69,7 +69,15 @@ inline bool IsArchitectureI386() {
 }
 
 inline bool IsArchitectureArm() {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline bool IsOzone() {
+#if defined(USE_OZONE)
   return true;
 #else
   return false;
@@ -127,6 +135,17 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
       RAW_CHECK(false);
       return -ENOSYS;
   }
+}
+
+void AddV4L2GpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
+  // Device nodes for V4L2 video decode accelerator drivers.
+  static const char kDevVideoDecPath[] = "/dev/video-dec";
+
+  // Device nodes for V4L2 video encode accelerator drivers.
+  static const char kDevVideoEncPath[] = "/dev/video-enc";
+
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoDecPath));
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoEncPath));
 }
 
 class GpuBrokerProcessPolicy : public GpuProcessPolicy {
@@ -300,6 +319,8 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
   if (!IsChromeOS()) {
     permissions.push_back(
         BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kDevShm));
+  } else if (IsArchitectureArm() || IsOzone()){
+    AddV4L2GpuWhitelist(&permissions);
   }
 
   // Add eventual extra files from permissions_extra.
