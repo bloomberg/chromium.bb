@@ -163,28 +163,16 @@ if (!is_component_build) {
     ]
   }
 
-  # Not a 'test' because this is loaded via mojo_shell as an app.
-  # To run the test:
+  # Note, this 'test' must be loaded via mojo_shell as an app:
+  #
   #   out/Debug/mojo_shell mojo:media_test
-  # You can get "mojo_shell" using mojo/public/tools/download_shell_binary.py
+  #
+  # To get "mojo_shell" you must specify "use_prebuilt_mojo_shell=true" in GN.
   mojo_native_application("media_test") {
     testonly = true
-    sources = [
-      "media_renderer_apptest.cc",
-    ]
 
     deps = [
-      ":media",
-      ":renderer_proxy",
-      "//base",
-      "//media",
-      "//media/mojo/interfaces",
-      "//media:shared_memory_support",
-      "//mojo/application",
-      "//mojo/application:test_support",
-      "//mojo/common",
-      "//mojo/environment:chromium",
-      "//mojo/public/c/system:for_shared_library",
+      "//media/test:mojo_pipeline_integration_tests",
     ]
   }
 }

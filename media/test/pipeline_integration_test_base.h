@@ -130,7 +130,7 @@ class PipelineIntegrationTestBase {
   void CreateDemuxer(const std::string& filename);
 
   // Creates and returns a Renderer.
-  scoped_ptr<Renderer> CreateRenderer();
+  virtual scoped_ptr<Renderer> CreateRenderer();
 
   void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
 
