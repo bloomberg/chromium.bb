@@ -332,6 +332,7 @@ def HasNoPerfResults(builder):
       'mac-toolchain_arm',
       'win-pnacl-x86_32',
       'linux-pnacl-x86_32-tests-mips',
+      'precise64-toolchain_bionic',
   ]
 
 
