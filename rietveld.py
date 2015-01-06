@@ -337,11 +337,12 @@ class Rietveld(object):
 
   def trigger_try_jobs(
       self, issue, patchset, reason, clobber, revision, builders_and_tests,
-      master=None):
+      master=None, category='cq'):
     """Requests new try jobs.
 
     |builders_and_tests| is a map of builders: [tests] to run.
     |master| is the name of the try master the builders belong to.
+    |category| is used to distinguish regular jobs and experimental jobs.
 
     Returns the keys of the new TryJobResult entites.
     """
@@ -350,6 +351,7 @@ class Rietveld(object):
       ('clobber', 'True' if clobber else 'False'),
       ('builders', json.dumps(builders_and_tests)),
       ('xsrf_token', self.xsrf_token()),
+      ('category', category),
     ]
     if revision:
       params.append(('revision', revision))
@@ -361,15 +363,17 @@ class Rietveld(object):
     return self.post('/%d/try/%d' % (issue, patchset), params)
 
   def trigger_distributed_try_jobs(
-      self, issue, patchset, reason, clobber, revision, masters):
+      self, issue, patchset, reason, clobber, revision, masters,
+      category='cq'):
     """Requests new try jobs.
 
     |masters| is a map of masters: map of builders: [tests] to run.
+    |category| is used to distinguish regular jobs and experimental jobs.
     """
     for (master, builders_and_tests) in masters.iteritems():
       self.trigger_try_jobs(
           issue, patchset, reason, clobber, revision, builders_and_tests,
-          master)
+          master, category)
 
   def get_pending_try_jobs(self, cursor=None, limit=100):
     """Retrieves the try job requests in pending state.
@@ -719,11 +723,12 @@ class ReadOnlyRietveld(object):
 
   def trigger_try_jobs(  # pylint:disable=R0201
       self, issue, patchset, reason, clobber, revision, builders_and_tests,
-      master=None):
+      master=None, category='cq'):
     logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %
         (builders_and_tests, issue))
 
   def trigger_distributed_try_jobs(  # pylint:disable=R0201
-      self, issue, patchset, reason, clobber, revision, masters):
+      self, issue, patchset, reason, clobber, revision, masters,
+      category='cq'):
     logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %
         (masters, issue))
