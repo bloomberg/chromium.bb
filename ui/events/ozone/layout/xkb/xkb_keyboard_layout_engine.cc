@@ -626,7 +626,8 @@ XkbKeyCodeConverter::~XkbKeyCodeConverter() {
 
 XkbKeyboardLayoutEngine::XkbKeyboardLayoutEngine(
     const XkbKeyCodeConverter& converter)
-    : key_code_converter_(converter) {
+    : num_lock_mod_mask_(0),
+    key_code_converter_(converter) {
   // TODO: add XKB_CONTEXT_NO_ENVIRONMENT_NAMES
   xkb_context_.reset(xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES));
   xkb_context_include_path_append(xkb_context_.get(),
@@ -749,7 +750,6 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
                {ui::EF_ALT_DOWN, XKB_MOD_NAME_ALT},
                {ui::EF_CAPS_LOCK_DOWN, XKB_MOD_NAME_CAPS},
                {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
-               {ui::EF_NUMPAD_KEY, XKB_MOD_NAME_NUM},
                {ui::EF_MOD3_DOWN, "Mod3"},
                {ui::EF_ALTGR_DOWN, "Mod5"}};
   xkb_flag_map_.clear();
@@ -764,6 +764,13 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
       xkb_flag_map_.push_back(e);
     }
   }
+
+  // Update num lock mask.
+  num_lock_mod_mask_ = 0;
+  xkb_mod_index_t num_mod_index =
+      xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
+  if (num_mod_index != XKB_MOD_INVALID)
+    num_lock_mod_mask_ = static_cast<xkb_mod_mask_t>(1) << num_mod_index;
 }
 
 xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
@@ -773,6 +780,8 @@ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
     if (ui_flags & entry.ui_flag)
       xkb_flags |= entry.xkb_flag;
   }
+  // NumLock is always on.
+  xkb_flags |= num_lock_mod_mask_;
   return xkb_flags;
 }
 
