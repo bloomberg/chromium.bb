@@ -928,16 +928,19 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
  * thumbnail: { url, transform }
  * media: { artist, album, title, width, height, imageTransform, etc. }
  * fetchedMedia: { same fields here }
+ * @param {!MessagePort=} opt_messagePort Message port overriding the default
+ *     worker port.
  * @constructor
  * @extends {MetadataProvider}
  */
-function ContentProvider() {
+function ContentProvider(opt_messagePort) {
   MetadataProvider.call(this);
 
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.urlFilter_ = /.*/;
 
-  var dispatcher = new SharedWorker(ContentProvider.WORKER_SCRIPT).port;
+  var dispatcher = opt_messagePort ?
+      opt_messagePort : new SharedWorker(ContentProvider.WORKER_SCRIPT).port;
   dispatcher.onmessage = this.onMessage_.bind(this);
   dispatcher.postMessage({verb: 'init'});
   dispatcher.start();
@@ -947,8 +950,13 @@ function ContentProvider() {
   // 'initialized' message.  See below.
   this.initialized_ = false;
 
-  // Map from Entry.toURL() to callback.
-  // Note that simultaneous requests for same url are handled in MetadataCache.
+  /**
+   * Map from Entry.toURL() to callback.
+   * Note that simultaneous requests for same url are handled in MetadataCache.
+   * @type {!Object<!string, !Array<function(Object)>>}
+   * @const
+   * @private
+   */
   this.callbacks_ = {};
 }
 
@@ -997,9 +1005,13 @@ ContentProvider.prototype.fetch = function(entry, type, callback) {
     setTimeout(callback.bind(null, {}), 0);
     return;
   }
-  var entryURL = entry.toURL();
-  this.callbacks_[entryURL] = callback;
-  this.dispatcher_.postMessage({verb: 'request', arguments: [entryURL]});
+  var url = entry.toURL();
+  if (this.callbacks_[url]) {
+    this.callbacks_[url].push(callback);
+  } else {
+    this.callbacks_[url] = [callback];
+    this.dispatcher_.postMessage({verb: 'request', arguments: [url]});
+  }
 };
 
 /**
@@ -1084,9 +1096,11 @@ ContentProvider.ConvertContentMetadata = function(metadata, opt_result) {
  * @private
  */
 ContentProvider.prototype.onResult_ = function(url, metadata) {
-  var callback = this.callbacks_[url];
+  var callbacks = this.callbacks_[url];
   delete this.callbacks_[url];
-  callback(ContentProvider.ConvertContentMetadata(metadata));
+  for (var i = 0; i < callbacks.length; i++) {
+    callbacks[i](ContentProvider.ConvertContentMetadata(metadata));
+  }
 };
 
 /**

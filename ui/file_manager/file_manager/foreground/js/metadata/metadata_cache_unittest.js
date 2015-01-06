@@ -439,3 +439,23 @@ function testAddObserver() {
   metadataCache.set(fileEntry4);
   assertEquals(2, observerCalls.length);
 }
+
+/**
+ * Tests content provider.
+ */
+function testContentProvider(callback) {
+  var fileSystem = new MockFileSystem('volumeId');
+  var entry = new MockFileEntry(fileSystem, '/sample.txt');
+  var metadataCache = new MetadataCache([new ContentProvider({
+    start: function() {},
+    postMessage: function(message) {
+      if (message.verb == 'request') {
+        Promise.resolve().then(function() {
+          this.onmessage(
+              {data: {verb: 'result', arguments: [entry.toURL(), {}]}});
+        }.bind(this));
+      }
+    }
+  })]);
+  reportPromise(getLatest(metadataCache, [entry], 'media|thumbnail'), callback);
+}
