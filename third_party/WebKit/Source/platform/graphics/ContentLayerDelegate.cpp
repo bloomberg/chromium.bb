@@ -90,7 +90,6 @@ void ContentLayerDelegate::paintContents(
     picture = adoptRef(recorder.endRecording());
 
     ASSERT(m_painter->displayItemList());
-    ASSERT(m_painter->displayItemList()->paintList().size() > 0);
 
     const PaintList& paintList = m_painter->displayItemList()->paintList();
     for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)

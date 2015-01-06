@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "core/paint/LayerClipRecorder.h"
+#include "core/paint/LayerPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
@@ -51,10 +52,19 @@ public:
 #endif
 };
 
+#ifndef NDEBUG
+#define TRACE_DISPLAY_ITEMS(expected, actual) \
+    String trace = "Expected: " + (expected).asDebugString() + " Actual: " + (actual).asDebugString(); \
+    SCOPED_TRACE(trace.utf8().data());
+#else
+#define TRACE_DISPLAY_ITEMS(expected, actual)
+#endif
+
 #define EXPECT_DISPLAY_LIST(actual, expectedSize, ...) { \
     EXPECT_EQ((size_t)expectedSize, actual.size()); \
     const TestDisplayItem expected[] = { __VA_ARGS__ }; \
     for (size_t index = 0; index < expectedSize; index++) { \
+        TRACE_DISPLAY_ITEMS(expected[index], *actual[index]); \
         EXPECT_EQ(expected[index].client(), actual[index]->client()); \
         EXPECT_EQ(expected[index].type(), actual[index]->type()); \
     } \
@@ -443,6 +453,35 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     rootDisplayItemList().invalidateAll();
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstRenderer->displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
+}
+
+TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
+{
+    setBodyInnerHTML("<div id='div' contentEditable='true'>XYZ</div>");
+    RenderView* renderView = document().renderView();
+    RenderLayer* rootLayer = renderView->layer();
+    RenderObject* htmlRenderer = document().documentElement()->renderer();
+    Element* div = toElement(document().body()->firstChild());
+    RenderObject* divRenderer = document().body()->firstChild()->renderer();
+    RenderObject* textRenderer = div->firstChild()->renderer();
+
+    SkCanvas canvas(800, 600);
+    GraphicsContext context(&canvas, &rootDisplayItemList());
+    LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
+        TestDisplayItem(htmlRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
+        TestDisplayItem(textRenderer, DisplayItem::DrawingPaintPhaseForeground));
+
+    div->focus();
+    document().view()->updateLayoutAndStyleForPainting();
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
+        TestDisplayItem(htmlRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
+        TestDisplayItem(textRenderer, DisplayItem::DrawingPaintPhaseForeground),
+        TestDisplayItem(divRenderer, DisplayItem::DrawingPaintPhaseCaret));
 }
 
 } // anonymous namespace

@@ -51,6 +51,7 @@ enum PaintPhase {
     PaintPhaseTextClip = 10,
     PaintPhaseMask = 11,
     PaintPhaseClippingMask = 12,
+    PaintPhaseCaret = 13,
     // These values must be kept in sync with DisplayItem::Type.
 };
 

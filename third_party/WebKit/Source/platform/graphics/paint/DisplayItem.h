@@ -40,6 +40,7 @@ public:
         DrawingPaintPhaseTextClip = 10,
         DrawingPaintPhaseMask = 11,
         DrawingPaintPhaseClippingMask = 12,
+        DrawingPaintPhaseCaret = 13,
         ClipLayerOverflowControls,
         ClipLayerBackground,
         ClipLayerParent,

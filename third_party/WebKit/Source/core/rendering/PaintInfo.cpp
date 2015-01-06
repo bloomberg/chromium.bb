@@ -39,6 +39,7 @@ DisplayItem::Type PaintInfo::displayItemTypeForClipping() const
     case PaintPhaseBlockBackground:
     case PaintPhaseSelfOutline:
     case PaintPhaseMask:
+    case PaintPhaseCaret:
         ASSERT_NOT_REACHED();
     }
     // This should never happen.

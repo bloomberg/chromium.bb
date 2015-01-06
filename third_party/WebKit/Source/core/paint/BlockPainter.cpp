@@ -227,8 +227,8 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
-    if (paintPhase == PaintPhaseForeground) {
-        RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, paintPhase, bounds);
+    if (paintPhase == PaintPhaseForeground && hasCaret()) {
+        RenderDrawingRecorder recorder(paintInfo.context, m_renderBlock, PaintPhaseCaret, bounds);
         if (!recorder.canUseCachedDrawing())
             paintCarets(paintInfo, paintOffset);
     }

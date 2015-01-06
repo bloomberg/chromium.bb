@@ -25,6 +25,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case DisplayItem::DrawingPaintPhaseTextClip: return "DrawingPaintPhaseTextClip";
     case DisplayItem::DrawingPaintPhaseMask: return "DrawingPaintPhaseMask";
     case DisplayItem::DrawingPaintPhaseClippingMask: return "DrawingPaintPhaseClippingMask";
+    case DrawingPaintPhaseCaret: return "DrawingPaintPhaseCaret";
     case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
     case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";
     case DisplayItem::ClipLayerParent: return "ClipLayerParent";
