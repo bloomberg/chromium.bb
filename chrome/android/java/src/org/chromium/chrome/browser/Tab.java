@@ -144,6 +144,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** {@link ContentViewCore} showing the current page, or {@code null} if the tab is frozen. */
     private ContentViewCore mContentViewCore;
 
+    /** The parent view of the ContentView and the InfoBarContainer. */
+    private FrameLayout mContentViewParent;
+
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
 
@@ -769,8 +772,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         This can be {@code null}, if the tab is frozen or being initialized or destroyed.
      */
     public View getView() {
-        return mNativePage != null ? mNativePage.getView() :
-                (mContentViewCore != null ? mContentViewCore.getContainerView() : null);
+        return mNativePage != null ? mNativePage.getView() : mContentViewParent;
     }
 
     /**
@@ -1294,6 +1296,18 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         cvc.getContainerView().setOnHierarchyChangeListener(this);
         cvc.getContainerView().setOnSystemUiVisibilityChangeListener(this);
 
+        // Wrap the ContentView in a FrameLayout, which will contain both the ContentView and the
+        // InfoBarContainer. The alternative -- placing the InfoBarContainer inside the ContentView
+        // -- causes problems since then the ContentView would contain both real views (the
+        // infobars) and virtual views (the web page elements), which breaks Android accessibility.
+        // http://crbug.com/416663
+        if (mContentViewParent != null) {
+            assert false;
+            mContentViewParent.removeAllViews();
+        }
+        mContentViewParent = new FrameLayout(mContext);
+        mContentViewParent.addView(cvc.getContainerView());
+
         mWebContentsDelegate = createWebContentsDelegate();
         mWebContentsObserver = new TabWebContentsObserver(mContentViewCore.getWebContents());
         mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore.getWebContents());
@@ -1312,9 +1326,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // initialized.
             WebContents webContents = mContentViewCore.getWebContents();
             mInfoBarContainer = new InfoBarContainer(
-                    mContext, getId(), mContentViewCore.getContainerView(), webContents);
+                    mContext, getId(), mContentViewParent, webContents);
         } else {
-            mInfoBarContainer.onParentViewChanged(getId(), mContentViewCore.getContainerView());
+            mInfoBarContainer.onParentViewChanged(getId(), mContentViewParent);
         }
 
         if (AppBannerManager.isEnabled() && mAppBannerManager == null) {
@@ -1705,9 +1719,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         destroyContentViewCoreInternal(mContentViewCore);
 
-        if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
-            mInfoBarContainer.removeFromParentView();
-        }
+        mContentViewParent.removeAllViews();
+        mContentViewParent = null;
         mContentViewCore.destroy();
         mContentViewCore = null;
 
