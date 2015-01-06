@@ -34,7 +34,7 @@ void CSSParser::parseSelector(const String& selector, CSSSelectorList& selectorL
     if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
         Vector<CSSParserToken> tokens;
         CSSTokenizer::tokenize(selector, tokens);
-        CSSSelectorParser::parseSelector(tokens, m_bisonParser.m_context, selectorList);
+        CSSSelectorParser::parseSelector(tokens, m_bisonParser.m_context, starAtom, nullptr, selectorList);
         return;
     }
     m_bisonParser.parseSelector(selector, selectorList);
@@ -49,6 +49,9 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContex
 
 void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& text, const TextPosition& startPosition, CSSParserObserver* observer, bool logErrors)
 {
+    // FIXME: Add inspector observer support in the new CSS parser
+    if (!observer && RuntimeEnabledFeatures::newCSSParserEnabled())
+        return CSSParserImpl::parseStyleSheet(text, context, styleSheet);
     BisonCSSParser(context).parseSheet(styleSheet, text, startPosition, observer, logErrors);
 }
 

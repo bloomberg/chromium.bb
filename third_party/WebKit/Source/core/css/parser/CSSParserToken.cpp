@@ -82,6 +82,7 @@ void CSSParserToken::convertToDimensionWithUnit(String unit)
 {
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;
+    m_value = unit;
     m_unit = CSSPrimitiveValue::fromName(unit);
 }
 

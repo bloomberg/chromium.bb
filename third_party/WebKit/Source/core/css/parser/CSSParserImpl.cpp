@@ -19,10 +19,12 @@
 
 namespace blink {
 
-CSSParserImpl::CSSParserImpl(const CSSParserContext& context, const String& s)
+CSSParserImpl::CSSParserImpl(const CSSParserContext& context, const String& string, StyleSheetContents* styleSheet)
 : m_context(context)
+, m_defaultNamespace(starAtom)
+, m_styleSheet(styleSheet)
 {
-    CSSTokenizer::tokenize(s, m_tokens);
+    CSSTokenizer::tokenize(string, m_tokens);
 }
 
 bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
@@ -91,6 +93,8 @@ bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context)
 {
+    AllowedRulesType allowedRules = RegularRules;
+
     CSSParserImpl parser(context, string);
     CSSParserTokenRange range(parser.m_tokens);
     range.consumeWhitespaceAndComments();
@@ -98,9 +102,9 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
         return nullptr; // Parse error, empty rule
     RefPtrWillBeRawPtr<StyleRuleBase> rule;
     if (range.peek().type() == AtKeywordToken)
-        rule = parser.consumeAtRule(range);
+        rule = parser.consumeAtRule(range, allowedRules);
     else
-        rule = parser.consumeQualifiedRule(range);
+        rule = parser.consumeQualifiedRule(range, allowedRules);
     if (!rule)
         return nullptr; // Parse error, failed to consume rule
     range.consumeWhitespaceAndComments();
@@ -109,13 +113,83 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
     return rule;
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserTokenRange& range)
+void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet)
 {
-    // FIXME: Implement at-rule parsing
-    return nullptr;
+    CSSParserImpl parser(context, string, styleSheet);
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules = parser.consumeRuleList(parser.m_tokens, TopLevelRuleList);
+    for (const auto& rule : rules)
+        styleSheet->parserAppendRule(rule);
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSParserTokenRange& range)
+WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType ruleListType)
+{
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> result;
+
+    AllowedRulesType allowedRules;
+    switch (ruleListType) {
+    case TopLevelRuleList:
+        allowedRules = AllowCharsetRules;
+        break;
+    case RegularRuleList:
+        allowedRules = RegularRules;
+        break;
+    case KeyframesRuleList:
+        allowedRules = KeyframeRules;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    while (!range.atEnd()) {
+        switch (range.peek().type()) {
+        case WhitespaceToken:
+        case CommentToken:
+            range.consumeWhitespaceAndComments();
+            break;
+        case AtKeywordToken:
+            if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, allowedRules))
+                result.append(rule);
+            break;
+        default:
+            // FIXME: TopLevelRuleList should skip <CDO-token> and <CDC-token>
+            if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeQualifiedRule(range, allowedRules))
+                result.append(rule);
+            break;
+        }
+    }
+
+    return result;
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserTokenRange& range, AllowedRulesType& allowedRules)
+{
+    ASSERT(range.peek().type() == AtKeywordToken);
+    const String& name = range.consume().value();
+    const CSSParserToken* preludeStart = &range.peek();
+    while (!range.atEnd() && range.peek().type() != LeftBraceToken && range.peek().type() != SemicolonToken)
+        range.consumeComponentValue();
+
+    CSSParserTokenRange prelude = range.makeSubRange(preludeStart, &range.peek());
+    // The prelude isn't used yet since individual at-rules are not yet implemented,
+    // so this silences a compiler warning.
+    prelude.peek();
+
+    if (range.atEnd() || range.peek().type() == SemicolonToken) {
+        range.consume();
+        if (allowedRules == AllowCharsetRules && equalIgnoringCase(name, "charset")) {
+            // @charset is actually parsed before we get into the CSS parser.
+            // In theory we should validate the prelude is a string, but we don't
+            // have error logging yet so it doesn't matter.
+            return nullptr;
+        }
+        return nullptr; // Parser error, unrecognised at-rule without block
+    }
+
+    range.consumeBlock();
+    return nullptr; // Parser error, unrecognised at-rule with block
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSParserTokenRange& range, AllowedRulesType& allowedRules)
 {
     const CSSParserToken* preludeStart = &range.peek();
     while (!range.atEnd() && range.peek().type() != LeftBraceToken)
@@ -126,13 +200,20 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSPar
 
     CSSParserTokenRange prelude = range.makeSubRange(preludeStart, &range.peek());
     CSSParserTokenRange block = range.consumeBlock();
-    return consumeStyleRule(prelude, block);
+
+    if (allowedRules <= RegularRules) {
+        allowedRules = RegularRules;
+        return consumeStyleRule(prelude, block);
+    }
+
+    ASSERT_NOT_REACHED();
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     CSSSelectorList selectorList;
-    CSSSelectorParser::parseSelector(prelude, m_context, selectorList);
+    CSSSelectorParser::parseSelector(prelude, m_context, m_defaultNamespace, m_styleSheet, selectorList);
     if (!selectorList.isValid())
         return nullptr; // Parse error, invalid selector list
     consumeDeclarationList(block, CSSRuleSourceData::STYLE_RULE);

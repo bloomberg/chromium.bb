@@ -351,7 +351,7 @@ TEST(CSSTokenizerTest, DimensionToken)
     TEST_TOKENS("5\\ ", dimension(IntegerValueType, 5, " "));
     TEST_TOKENS("40\\70\\78", dimension(IntegerValueType, 40, "px"));
     TEST_TOKENS("4e3e2", dimension(NumberValueType, 4000, "e2"));
-    TEST_TOKENS("0x10px", dimension(IntegerValueType, 0, "x1px"));
+    TEST_TOKENS("0x10px", dimension(IntegerValueType, 0, "x10px"));
     TEST_TOKENS("4unit ", dimension(IntegerValueType, 4, "unit"), whitespace);
     TEST_TOKENS("5e+", dimension(IntegerValueType, 5, "e"), delim('+'));
     TEST_TOKENS("2e.5", dimension(IntegerValueType, 2, "e"), number(NumberValueType, 0.5));

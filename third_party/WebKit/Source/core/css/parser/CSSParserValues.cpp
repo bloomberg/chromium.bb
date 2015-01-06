@@ -125,6 +125,11 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             break;
         }
         case DimensionToken:
+            if (!token.unitType() && token.value() == "__qem") {
+                value.setFromNumber(token.numericValue(), CSSParserValue::Q_EMS);
+                value.isInt = (token.numericValueType() == IntegerValueType);
+                break;
+            }
         case NumberToken:
         case PercentageToken:
             value.setFromNumber(token.numericValue(), token.unitType());

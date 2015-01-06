@@ -17,10 +17,10 @@ class StyleSheetContents;
 // the intermediate CSSParserSelector.
 class CSSSelectorParser {
 public:
-    static void parseSelector(CSSParserTokenRange, const CSSParserContext&, CSSSelectorList&);
+    static void parseSelector(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*, CSSSelectorList&);
 
 private:
-    CSSSelectorParser(CSSParserTokenRange, const CSSParserContext&);
+    CSSSelectorParser(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*);
 
     // These will all consume trailing comments if successful
 
@@ -55,7 +55,7 @@ private:
 
     const CSSParserContext& m_context;
     AtomicString m_defaultNamespace;
-    StyleSheetContents* m_styleSheet;
+    StyleSheetContents* m_styleSheet; // FIXME: Should be const
 
     bool m_failedParsing;
 };

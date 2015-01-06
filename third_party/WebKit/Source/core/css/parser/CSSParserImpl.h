@@ -18,6 +18,7 @@ namespace blink {
 
 class StyleRule;
 class StyleRuleBase;
+class StyleSheetContents;
 class ImmutableStylePropertySet;
 class Element;
 class MutableStylePropertySet;
@@ -25,16 +26,38 @@ class MutableStylePropertySet;
 class CSSParserImpl {
     STACK_ALLOCATED();
 public:
-    CSSParserImpl(const CSSParserContext&, const String&);
+    CSSParserImpl(const CSSParserContext&, const String&, StyleSheetContents* = nullptr);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     static bool parseDeclaration(MutableStylePropertySet*, const String&, const CSSParserContext&);
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&);
+    static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
 
 private:
-    // These two functions update the range they're given
-    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&);
-    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&);
+    enum RuleListType {
+        TopLevelRuleList,
+        RegularRuleList,
+        KeyframesRuleList
+    };
+
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> consumeRuleList(CSSParserTokenRange, RuleListType);
+
+    enum AllowedRulesType {
+        // As per css-syntax, css-cascade and css-namespaces, @charset rules
+        // must come first, followed by @import then @namespace.
+        // AllowImportRules actually means we allow @import and any rules thay
+        // may follow it, i.e. @namespace rules and regular rules.
+        // AllowCharsetRules and AllowNamespaceRules behave similarly.
+        AllowCharsetRules,
+        AllowImportRules,
+        AllowNamespaceRules,
+        RegularRules,
+        KeyframeRules
+    };
+
+    // These two functions update the range they're given and allowed rules
+    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType&);
+    PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType&);
 
     PassRefPtrWillBeRawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
 
@@ -49,8 +72,8 @@ private:
     Vector<CSSParserToken> m_tokens;
     CSSParserContext m_context;
 
-    // FIXME: We need to store a context style sheet, similar to the Bison parser
-    // for at least crbug.com/9877 and marking that we've seen rem units.
+    AtomicString m_defaultNamespace;
+    RawPtrWillBeMember<StyleSheetContents> m_styleSheet;
 };
 
 } // namespace blink

@@ -11,9 +11,9 @@
 
 namespace blink {
 
-void CSSSelectorParser::parseSelector(CSSParserTokenRange tokenRange, const CSSParserContext& context, CSSSelectorList& output)
+void CSSSelectorParser::parseSelector(CSSParserTokenRange tokenRange, const CSSParserContext& context, const AtomicString& defaultNamespace, StyleSheetContents* styleSheet, CSSSelectorList& output)
 {
-    CSSSelectorParser parser(tokenRange, context);
+    CSSSelectorParser parser(tokenRange, context, defaultNamespace, styleSheet);
     parser.m_tokenRange.consumeWhitespaceAndComments();
     CSSSelectorList result;
     parser.consumeComplexSelectorList(result);
@@ -22,11 +22,11 @@ void CSSSelectorParser::parseSelector(CSSParserTokenRange tokenRange, const CSSP
     ASSERT(!(output.isValid() && parser.m_failedParsing));
 }
 
-CSSSelectorParser::CSSSelectorParser(CSSParserTokenRange tokenRange, const CSSParserContext& context)
+CSSSelectorParser::CSSSelectorParser(CSSParserTokenRange tokenRange, const CSSParserContext& context, const AtomicString& defaultNamespace, StyleSheetContents* styleSheet)
 : m_tokenRange(tokenRange)
 , m_context(context)
-, m_defaultNamespace(starAtom)
-, m_styleSheet(nullptr)
+, m_defaultNamespace(defaultNamespace)
+, m_styleSheet(styleSheet)
 , m_failedParsing(false)
 {
 }
