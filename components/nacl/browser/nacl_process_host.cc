@@ -808,6 +808,8 @@ bool NaClProcessHost::StartNaClExecution() {
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.process_type = process_type_;
+  bool enable_nacl_debug = enable_debug_stub_ &&
+      NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   if (uses_nonsfi_mode_) {
     // Currently, non-SFI mode is supported only on Linux.
 #if defined(OS_LINUX)
@@ -815,12 +817,15 @@ bool NaClProcessHost::StartNaClExecution() {
     // not created.
     DCHECK(!socket_for_sel_ldr_.IsValid());
 #endif
+    if (enable_nacl_debug) {
+      base::ProcessId pid = base::GetProcId(process_->GetData().handle);
+      LOG(WARNING) << "nonsfi nacl plugin running in " << pid;
+    }
   } else {
     params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
     params.validation_cache_key = nacl_browser->GetValidationCacheKey();
     params.version = NaClBrowser::GetDelegate()->GetVersionString();
-    params.enable_debug_stub = enable_debug_stub_ &&
-        NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
+    params.enable_debug_stub = enable_nacl_debug;
     params.enable_mojo = base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableNaClMojo);
 
