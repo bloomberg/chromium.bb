@@ -27,7 +27,7 @@ class PrefRegistrySyncable;
 
 namespace autofill {
 
-// This class defines the interface to the controller for TabAutofillManager.
+// This class defines the interface to the controller for ChromeAutofillClient.
 class AutofillDialogController {
  public:
   virtual ~AutofillDialogController();

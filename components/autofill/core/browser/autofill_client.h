@@ -100,7 +100,7 @@ class AutofillClient {
   // Causes the dialog for request autocomplete feature to be shown.
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
-      const GURL& source_url,
+      content::RenderFrameHost* render_frame_host,
       const ResultCallback& callback) = 0;
 
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and

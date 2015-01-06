@@ -366,51 +366,6 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
   DISALLOW_COPY_AND_ASSIGN(RequestAutocompleteRendererTest);
 };
 
-TEST_F(RequestAutocompleteRendererTest, SiblingNavigateIgnored) {
-  // Pretend that a sibling frame navigated. No cancel should be sent.
-  NavigateFrame(sibling_frame());
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_CancelRequestAutocomplete::ID));
-}
-
-TEST_F(RequestAutocompleteRendererTest, SubframeNavigateCancels) {
-  // Pretend that the invoking frame navigated. A cancel should be sent.
-  NavigateFrame(invoking_frame());
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_CancelRequestAutocomplete::ID));
-}
-
-TEST_F(RequestAutocompleteRendererTest, MainFrameNavigateCancels) {
-  // Pretend that the top-level frame navigated. A cancel should be sent.
-  NavigateFrame(GetMainFrame());
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_CancelRequestAutocomplete::ID));
-}
-
-TEST_F(RequestAutocompleteRendererTest, NoCancelOnSubframeNavigateAfterDone) {
-  // Pretend that the dialog was cancelled.
-  SimulateRequestAutocompleteResult(
-      invoking_frame_, WebFormElement::AutocompleteResultErrorCancel,
-      base::ASCIIToUTF16("Print me to the console"));
-
-  // Additional navigations should not crash nor send cancels.
-  NavigateFrame(invoking_frame());
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_CancelRequestAutocomplete::ID));
-}
-
-TEST_F(RequestAutocompleteRendererTest, NoCancelOnMainFrameNavigateAfterDone) {
-  // Pretend that the dialog was cancelled.
-  SimulateRequestAutocompleteResult(
-      invoking_frame_, WebFormElement::AutocompleteResultErrorCancel,
-      base::ASCIIToUTF16("Print me to the console"));
-
-  // Additional navigations should not crash nor send cancels.
-  NavigateFrame(GetMainFrame());
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_CancelRequestAutocomplete::ID));
-}
-
 TEST_F(RequestAutocompleteRendererTest, InvokingTwiceOnlyShowsOnce) {
   // Attempting to show the requestAutocomplete dialog again should be ignored.
   invoking_frame_->autofillClient()->didRequestAutocomplete(invoking_form());

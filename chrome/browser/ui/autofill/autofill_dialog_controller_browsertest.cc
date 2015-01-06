@@ -462,6 +462,45 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     return !!controller;
   }
 
+  void RunTestPageInIframe(const net::SpawnedTestServer& server) {
+    InitializeDOMMessageQueue();
+    GURL iframe_url = server.GetURL(
+        "files/request_autocomplete/test_page.html");
+
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(std::string("data:text/html,") +
+        "<!doctype html>"
+        "<html>"
+          "<body>"
+            "<iframe style='position: fixed;"
+                           "height: 100%;"
+                           "width: 100%;'"
+                "id='racFrame'></iframe>"
+            "<script>"
+              "function send(msg) {"
+                "domAutomationController.setAutomationId(0);"
+                "domAutomationController.send(msg);"
+              "}"
+              "var racFrame = document.getElementById('racFrame');"
+              "racFrame.onload = function() {"
+                "send('iframe loaded');"
+              "};"
+              "racFrame.src = \"" + iframe_url.spec() + "\";"
+              "function navigateFrame() {"
+                "racFrame.src = 'about:blank';"
+              "}"
+            "</script>"
+          "</body>"
+        "</html>"));
+
+    ChromeAutofillClient* client =
+        ChromeAutofillClient::FromWebContents(GetActiveWebContents());
+    ExpectDomMessage("iframe loaded");
+    EXPECT_FALSE(client->GetDialogControllerForTesting());
+    InitiateDialog();
+    EXPECT_TRUE(client->GetDialogControllerForTesting());
+  }
+
   // Wait for a message from the DOM automation controller (from JS in the
   // page). Requires |SetUpHtmlAndInvoke()| be called first.
   void ExpectDomMessage(const std::string& expected) {
@@ -472,12 +511,15 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   }
 
   void InitiateDialog() {
-    dom_message_queue_.reset(new content::DOMMessageQueue);
-
+    InitializeDOMMessageQueue();
     // Triggers the onclick handler which invokes requestAutocomplete().
     content::WebContents* contents = GetActiveWebContents();
     content::SimulateMouseClick(contents, 0, blink::WebMouseEvent::ButtonLeft);
     ExpectDomMessage("clicked");
+  }
+
+  void InitializeDOMMessageQueue() {
+    dom_message_queue_.reset(new content::DOMMessageQueue);
   }
 
   // Returns the value filled into the first field with autocomplete attribute
@@ -1771,6 +1813,50 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   EXPECT_EQ(ASCIIToUTF16("24"), controller->transaction_amount_);
   EXPECT_EQ(ASCIIToUTF16("USD"), controller->transaction_currency_);
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, HideOnNavigate) {
+  base::WeakPtr<TestAutofillDialogController> weak_ptr =
+      controller()->AsWeakPtr();
+  EXPECT_TRUE(weak_ptr.get());
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  EXPECT_FALSE(weak_ptr.get());
+}
+
+// Tests that the rAc dialog hides when the main frame is navigated, even if
+// it was invoked from a child frame.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, HideOnNavigateMainFrame) {
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(http_server.Start());
+  RunTestPageInIframe(http_server);
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ChromeAutofillClient* client =
+      ChromeAutofillClient::FromWebContents(GetActiveWebContents());
+  EXPECT_FALSE(client->GetDialogControllerForTesting());
+}
+
+// Tests that the rAc dialog hides when the iframe it's in is navigated.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, HideOnNavigateIframe) {
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(http_server.Start());
+  RunTestPageInIframe(http_server);
+
+  std::string unused;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(GetRenderViewHost(),
+                                                     "navigateFrame();",
+                                                     &unused));
+  ExpectDomMessage("iframe loaded");
+  ChromeAutofillClient* client =
+      ChromeAutofillClient::FromWebContents(GetActiveWebContents());
+  EXPECT_FALSE(client->GetDialogControllerForTesting());
 }
 
 }  // namespace autofill

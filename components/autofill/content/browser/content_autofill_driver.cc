@@ -183,9 +183,6 @@ bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
   IPC_MESSAGE_FORWARD(AutofillHostMsg_RequestAutocomplete,
                       &request_autocomplete_manager_,
                       RequestAutocompleteManager::OnRequestAutocomplete)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_CancelRequestAutocomplete,
-                      &request_autocomplete_manager_,
-                      RequestAutocompleteManager::OnCancelRequestAutocomplete)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

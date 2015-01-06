@@ -45,7 +45,7 @@ class CustomTestAutofillClient : public TestAutofillClient {
   ~CustomTestAutofillClient() override {}
 
   void ShowRequestAutocompleteDialog(const FormData& form,
-                                     const GURL& source_url,
+                                     content::RenderFrameHost* rfh,
                                      const ResultCallback& callback) override {
     if (should_simulate_success_) {
       FormStructure form_structure(form);
@@ -140,7 +140,7 @@ class RequestAutocompleteManagerTest :
 
 TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteSuccess) {
   blink::WebFormElement::AutocompleteResult result;
-  request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
+  request_autocomplete_manager_->OnRequestAutocomplete(FormData());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
   EXPECT_EQ(blink::WebFormElement::AutocompleteResultSuccess, result);
 }
@@ -148,7 +148,7 @@ TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteSuccess) {
 TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteCancel) {
   blink::WebFormElement::AutocompleteResult result;
   autofill_client_.set_should_simulate_success(false);
-  request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
+  request_autocomplete_manager_->OnRequestAutocomplete(FormData());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
   EXPECT_EQ(blink::WebFormElement::AutocompleteResultErrorDisabled, result);
 }
@@ -159,7 +159,7 @@ TEST_F(RequestAutocompleteManagerTest,
        OnRequestAutocompleteWithAutofillDisabled) {
   blink::WebFormElement::AutocompleteResult result;
   driver_->mock_autofill_manager()->set_autofill_enabled(false);
-  request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
+  request_autocomplete_manager_->OnRequestAutocomplete(FormData());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
   EXPECT_EQ(blink::WebFormElement::AutocompleteResultSuccess, result);
 }

@@ -32,7 +32,7 @@ class TestAutofillClient : public AutofillClient {
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
   void ShowRequestAutocompleteDialog(const FormData& form,
-                                     const GURL& source_url,
+                                     content::RenderFrameHost* rfh,
                                      const ResultCallback& callback) override;
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,

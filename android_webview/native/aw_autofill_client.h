@@ -72,7 +72,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   virtual void ScanCreditCard(const CreditCardScanCallback& callback) override;
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,
-      const GURL& source_url,
+      content::RenderFrameHost* rfh,
       const ResultCallback& callback) override;
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,

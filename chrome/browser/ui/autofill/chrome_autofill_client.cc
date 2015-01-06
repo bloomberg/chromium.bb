@@ -26,7 +26,7 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
@@ -42,7 +42,8 @@ namespace autofill {
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      unmask_controller_(web_contents) {
+      unmask_controller_(web_contents),
+      last_rfh_to_rac_(nullptr) {
   DCHECK(web_contents);
 
 #if !defined(OS_ANDROID)
@@ -136,12 +137,13 @@ void ChromeAutofillClient::ScanCreditCard(
 
 void ChromeAutofillClient::ShowRequestAutocompleteDialog(
     const FormData& form,
-    const GURL& source_url,
+    content::RenderFrameHost* render_frame_host,
     const ResultCallback& callback) {
   HideRequestAutocompleteDialog();
-
+  last_rfh_to_rac_ = render_frame_host;
+  GURL frame_url = render_frame_host->GetLastCommittedURL();
   dialog_controller_ = AutofillDialogController::Create(web_contents(), form,
-                                                        source_url, callback);
+                                                        frame_url, callback);
   if (dialog_controller_) {
     dialog_controller_->Show();
   } else {
@@ -199,8 +201,22 @@ bool ChromeAutofillClient::IsAutocompleteEnabled() {
 }
 
 void ChromeAutofillClient::HideRequestAutocompleteDialog() {
-  if (dialog_controller_.get())
+  if (dialog_controller_)
     dialog_controller_->Hide();
+}
+
+void ChromeAutofillClient::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  if (dialog_controller_ && render_frame_host == last_rfh_to_rac_)
+    HideRequestAutocompleteDialog();
+}
+
+void ChromeAutofillClient::DidNavigateAnyFrame(
+    content::RenderFrameHost* render_frame_host,
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (dialog_controller_ && render_frame_host == last_rfh_to_rac_)
+    HideRequestAutocompleteDialog();
 }
 
 void ChromeAutofillClient::WebContentsDestroyed() {

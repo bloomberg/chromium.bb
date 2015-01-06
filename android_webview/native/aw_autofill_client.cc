@@ -209,7 +209,7 @@ void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
 
 void AwAutofillClient::ShowRequestAutocompleteDialog(
     const autofill::FormData& form,
-    const GURL& source_url,
+    content::RenderFrameHost* rfh,
     const ResultCallback& callback) {
   NOTIMPLEMENTED();
 }

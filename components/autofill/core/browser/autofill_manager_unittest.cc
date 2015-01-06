@@ -2840,7 +2840,7 @@ class MockAutofillClient : public TestAutofillClient {
   ~MockAutofillClient() override {}
 
   void ShowRequestAutocompleteDialog(const FormData& form,
-                                     const GURL& source_url,
+                                     content::RenderFrameHost* rfh,
                                      const ResultCallback& callback) override {
     callback.Run(user_supplied_data_ ? AutocompleteResultSuccess :
                                        AutocompleteResultErrorDisabled,

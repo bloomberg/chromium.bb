@@ -66,10 +66,8 @@ class AutofillAgent : public content::RenderFrameObserver,
    private:
     // content::RenderViewObserver:
     void OnDestruct() override;
-    void FrameDetached(blink::WebFrame* frame) override;
     void FocusedNodeChanged(const blink::WebNode& node) override;
     void Resized() override;
-    void FrameWillClose(blink::WebFrame* frame) override;
 
     AutofillAgent* agent_;
 
@@ -119,10 +117,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Pass-throughs from LegacyAutofillAgent. These correlate with
   // RenderViewObserver methods.
-  void FrameDetached(blink::WebFrame* frame);
   void FocusedNodeChanged(const blink::WebNode& node);
   void Resized();
-  void LegacyFrameWillClose(blink::WebFrame* frame);
 
   // PageClickListener:
   void FormControlElementClicked(const blink::WebFormControlElement& element,
@@ -217,7 +213,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void HidePopup();
 
   // Formerly cached forms for all frames, now only caches forms for the current
-  // frame. TODO(estade): simplify |FormCache| to only work with a single frame.
+  // frame.
   FormCache form_cache_;
 
   PasswordAutofillAgent* password_autofill_agent_;  // Weak reference.

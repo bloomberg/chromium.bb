@@ -54,9 +54,10 @@ class ChromeAutofillClient
   void ConfirmSaveCreditCard(const base::Closure& save_card_callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
-  void ShowRequestAutocompleteDialog(const FormData& form,
-                                     const GURL& source_url,
-                                     const ResultCallback& callback) override;
+  void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      content::RenderFrameHost* render_frame_host,
+      const ResultCallback& callback) override;
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -75,6 +76,11 @@ class ChromeAutofillClient
   void OnFirstUserGestureObserved() override;
 
   // content::WebContentsObserver implementation.
+  void RenderFrameDeleted(content::RenderFrameHost* rfh) override;
+  void DidNavigateAnyFrame(
+      content::RenderFrameHost* render_frame_host,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
   void WebContentsDestroyed() override;
 
   // ZoomObserver implementation.
@@ -117,6 +123,9 @@ class ChromeAutofillClient
   // scoped_ptr.
   AutofillKeystoneBridgeWrapper* bridge_wrapper_;
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+  // The last render frame that called requestAutocomplete.
+  content::RenderFrameHost* last_rfh_to_rac_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

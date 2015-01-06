@@ -23,12 +23,9 @@ class RequestAutocompleteManager {
   explicit RequestAutocompleteManager(ContentAutofillDriver* autofill_driver);
   ~RequestAutocompleteManager();
 
-  // Requests an interactive autocomplete UI to be shown for |frame_url| with
-  // |form|.
-  void OnRequestAutocomplete(const FormData& form, const GURL& frame_url);
-
-  // Requests that any running interactive autocomplete be cancelled.
-  void OnCancelRequestAutocomplete();
+  // Requests an interactive autocomplete UI to be shown for the associated
+  // frame.
+  void OnRequestAutocomplete(const FormData& form);
 
  private:
   // Tells the renderer that the current interactive autocomplete dialog
@@ -44,7 +41,6 @@ class RequestAutocompleteManager {
   // and calls |callback| once the interaction is complete.
   void ShowRequestAutocompleteDialog(
       const FormData& form,
-      const GURL& source_url,
       const AutofillClient::ResultCallback& callback);
 
   // The autofill driver owns and outlives |this|.

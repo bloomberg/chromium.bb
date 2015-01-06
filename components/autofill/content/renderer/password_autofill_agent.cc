@@ -987,9 +987,8 @@ void PasswordAutofillAgent::DidStopLoading() {
   did_stop_loading_ = true;
 }
 
-void PasswordAutofillAgent::FrameDetached(blink::WebFrame* frame) {
-  if (frame == render_frame()->GetWebFrame())
-    FrameClosing();
+void PasswordAutofillAgent::FrameDetached() {
+  FrameClosing();
 }
 
 void PasswordAutofillAgent::WillSendSubmitEvent(
@@ -1377,11 +1376,6 @@ void PasswordAutofillAgent::LegacyPasswordAutofillAgent::DidStopLoading() {
 void PasswordAutofillAgent::LegacyPasswordAutofillAgent::
     DidStartProvisionalLoad(blink::WebLocalFrame* navigated_frame) {
   agent_->LegacyDidStartProvisionalLoad(navigated_frame);
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::FrameDetached(
-    blink::WebFrame* frame) {
-  agent_->FrameDetached(frame);
 }
 
 }  // namespace autofill

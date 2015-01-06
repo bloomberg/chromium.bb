@@ -1995,6 +1995,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   // have IPCs fired off.
   is_detaching_ = true;
 
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameDetached(frame));
 

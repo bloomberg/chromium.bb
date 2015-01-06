@@ -53,7 +53,7 @@ void TestAutofillClient::ScanCreditCard(
 
 void TestAutofillClient::ShowRequestAutocompleteDialog(
     const FormData& form,
-    const GURL& source_url,
+    content::RenderFrameHost* rfh,
     const ResultCallback& callback) {
 }
 

@@ -187,13 +187,6 @@ void AutofillAgent::DidFinishDocumentLoad() {
   ProcessForms();
 }
 
-void AutofillAgent::FrameDetached(WebFrame* frame) {
-  if (frame != render_frame()->GetWebFrame())
-    return;
-
-  form_cache_.Reset();
-}
-
 void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
   FormData form_data;
   if (WebFormElementToFormData(form,
@@ -245,19 +238,6 @@ void AutofillAgent::Resized() {
   HidePopup();
 }
 
-void AutofillAgent::LegacyFrameWillClose(blink::WebFrame* frame) {
-  if (in_flight_request_form_.isNull())
-    return;
-
-  for (blink::WebFrame* temp = render_frame()->GetWebFrame(); temp;
-       temp = temp->parent()) {
-    if (temp == frame) {
-      Send(new AutofillHostMsg_CancelRequestAutocomplete(routing_id()));
-      break;
-    }
-  }
-}
-
 void AutofillAgent::didRequestAutocomplete(
     const WebFormElement& form) {
   DCHECK_EQ(form.document().frame(), render_frame()->GetWebFrame());
@@ -274,7 +254,6 @@ void AutofillAgent::didRequestAutocomplete(
       !net::IsCertStatusError(ssl_status.cert_status);
   bool allow_unsafe = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kReduceSecurityForTesting);
-
   FormData form_data;
   std::string error_message;
   if (!in_flight_request_form_.isNull()) {
@@ -310,7 +289,7 @@ void AutofillAgent::didRequestAutocomplete(
   HidePopup();
 
   in_flight_request_form_ = form;
-  Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data, url));
+  Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data));
 }
 
 void AutofillAgent::setIgnoreTextChanges(bool ignore) {
@@ -801,10 +780,6 @@ void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
   // No-op. Don't delete |this|.
 }
 
-void AutofillAgent::LegacyAutofillAgent::FrameDetached(WebFrame* frame) {
-  agent_->FrameDetached(frame);
-}
-
 void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
     const WebNode& node) {
   agent_->FocusedNodeChanged(node);
@@ -812,11 +787,6 @@ void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
 
 void AutofillAgent::LegacyAutofillAgent::Resized() {
   agent_->Resized();
-}
-
-void AutofillAgent::LegacyAutofillAgent::FrameWillClose(
-    blink::WebFrame* frame) {
-  agent_->LegacyFrameWillClose(frame);
 }
 
 }  // namespace autofill

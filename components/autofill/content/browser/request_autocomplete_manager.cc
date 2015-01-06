@@ -45,21 +45,14 @@ RequestAutocompleteManager::RequestAutocompleteManager(
 
 RequestAutocompleteManager::~RequestAutocompleteManager() {}
 
-void RequestAutocompleteManager::OnRequestAutocomplete(
-    const FormData& form,
-    const GURL& frame_url) {
+void RequestAutocompleteManager::OnRequestAutocomplete(const FormData& form) {
   if (!IsValidFormData(form))
     return;
 
   AutofillClient::ResultCallback callback =
       base::Bind(&RequestAutocompleteManager::ReturnAutocompleteResult,
                  weak_ptr_factory_.GetWeakPtr());
-  ShowRequestAutocompleteDialog(form, frame_url, callback);
-}
-
-void RequestAutocompleteManager::OnCancelRequestAutocomplete() {
-  autofill_driver_->autofill_manager()->client()
-      ->HideRequestAutocompleteDialog();
+  ShowRequestAutocompleteDialog(form, callback);
 }
 
 void RequestAutocompleteManager::ReturnAutocompleteResult(
@@ -88,10 +81,10 @@ void RequestAutocompleteManager::ReturnAutocompleteResult(
 
 void RequestAutocompleteManager::ShowRequestAutocompleteDialog(
     const FormData& form,
-    const GURL& source_url,
     const AutofillClient::ResultCallback& callback) {
   AutofillClient* client = autofill_driver_->autofill_manager()->client();
-  client->ShowRequestAutocompleteDialog(form, source_url, callback);
+  client->ShowRequestAutocompleteDialog(
+      form, autofill_driver_->render_frame_host(), callback);
 }
 
 }  // namespace autofill
