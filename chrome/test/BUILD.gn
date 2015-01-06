@@ -225,11 +225,11 @@ if (!is_android) {
     sources = rebase_path(gypi_values.test_support_sync_integration_sources,
                           ".",
                           "//chrome")
+    public_deps = [ "//chrome/browser" ]
     deps = [
       ":test_support",
       "//base",
       "//chrome",
-      "//chrome/browser",
       "//components/invalidation",
       "//components/invalidation:test_support",
       "//net",
