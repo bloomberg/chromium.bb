@@ -262,6 +262,15 @@ AutofillProfile::AutofillProfile(const std::string& guid,
       phone_number_(1, PhoneNumber(this)) {
 }
 
+AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
+    : AutofillDataModel(base::GenerateGUID(), std::string()),
+      record_type_(type),
+      name_(1),
+      email_(1),
+      phone_number_(1, PhoneNumber(this)) {
+  DCHECK(type == SERVER_PROFILE);
+}
+
 AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       record_type_(LOCAL_PROFILE),

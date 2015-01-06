@@ -335,6 +335,27 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
               base::Unretained(this))));
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::UnmaskServerCreditCard(
+    const std::string& id,
+    const base::string16& full_number,
+    WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (AutofillTable::FromWebDatabase(db)->UnmaskServerCreditCard(
+          id, full_number))
+    return WebDatabase::COMMIT_NEEDED;
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
+WebDatabase::State
+    AutofillWebDataBackendImpl::MaskServerCreditCard(
+        const std::string& id,
+        WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (AutofillTable::FromWebDatabase(db)->MaskServerCreditCard(id))
+    return WebDatabase::COMMIT_NEEDED;
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
 WebDatabase::State
     AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
         const base::Time& delete_begin,

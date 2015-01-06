@@ -88,6 +88,9 @@ class AutofillWebDataService : public AutofillWebData,
   // Server cards.
   WebDataServiceBase::Handle GetServerCreditCards(
       WebDataServiceConsumer* consumer) override;
+  void UnmaskServerCreditCard(const std::string& id,
+                              const base::string16& full_number) override;
+  void MaskServerCreditCard(const std::string& id) override;
 
   void RemoveAutofillDataModifiedBetween(const base::Time& delete_begin,
                                          const base::Time& delete_end) override;

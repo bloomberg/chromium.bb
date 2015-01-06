@@ -89,22 +89,24 @@ class AutofillWebDataBackendImpl
       const base::Time& delete_end,
       WebDatabase* db);
 
-
   // Removes the Form-value |value| which has been entered in form input fields
   // named |name| from the database.
   WebDatabase::State RemoveFormValueForElementName(const base::string16& name,
                                                    const base::string16& value,
                                                    WebDatabase* db);
 
-  // Adds an Autofill profile to the web database.
+  // Adds an Autofill profile to the web database. Valid only for local
+  // profiles.
   WebDatabase::State AddAutofillProfile(const AutofillProfile& profile,
                                         WebDatabase* db);
 
-  // Updates an Autofill profile in the web database.
+  // Updates an Autofill profile in the web database. Valid only for local
+  // profiles.
   WebDatabase::State UpdateAutofillProfile(const AutofillProfile& profile,
                                            WebDatabase* db);
 
-  // Removes an Autofill profile from the web database.
+  // Removes an Autofill profile from the web database. Valid only for local
+  // profiles.
   WebDatabase::State RemoveAutofillProfile(const std::string& guid,
                                            WebDatabase* db);
 
@@ -117,15 +119,15 @@ class AutofillWebDataBackendImpl
       const std::vector<autofill::AutofillEntry>& autofill_entries,
       WebDatabase* db);
 
-  // Adds a credit card to the web database.
+  // Adds a credit card to the web database. Valid only for local cards.
   WebDatabase::State AddCreditCard(const CreditCard& credit_card,
                                    WebDatabase* db);
 
-  // Updates a credit card in the web database.
+  // Updates a credit card in the web database. Valid only for local cards.
   WebDatabase::State UpdateCreditCard(const CreditCard& credit_card,
                                       WebDatabase* db);
 
-  // Removes a credit card from the web database.
+  // Removes a credit card from the web database. Valid only for local cards.
   WebDatabase::State RemoveCreditCard(const std::string& guid,
                                       WebDatabase* db);
 
@@ -133,14 +135,23 @@ class AutofillWebDataBackendImpl
   scoped_ptr<WDTypedResult> GetCreditCards(WebDatabase* db);
   scoped_ptr<WDTypedResult> GetServerCreditCards(WebDatabase* db);
 
-  // Removes Autofill records from the database.
+  // Server credit cards can be masked (only last 4 digits stored) or unmasked
+  // (all data stored). These toggle between the two states.
+  WebDatabase::State UnmaskServerCreditCard(const std::string& id,
+                                            const base::string16& full_number,
+                                            WebDatabase* db);
+  WebDatabase::State MaskServerCreditCard(const std::string& id,
+                                          WebDatabase* db);
+
+  // Removes Autofill records from the database. Valid only for local
+  // cards/profiles.
   WebDatabase::State RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       WebDatabase* db);
 
-  // Removes origin URLs associated with Autofill profiles and credit cards from
-  // the database.
+  // Removes origin URLs associated with Autofill profiles and credit cards
+  // from the database. Valid only for local cards/profiles.
   WebDatabase::State RemoveOriginURLsModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end,

@@ -269,6 +269,10 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool GetAutofillServerProfiles(
       std::vector<AutofillProfile*>* profiles);
 
+  // Sets the server profiles. All old profiles are deleted and replaced with
+  // the given ones.
+  void SetAutofillServerProfiles(const std::vector<AutofillProfile>& profiles);
+
   // Records a single credit card in the credit_cards table.
   bool AddCreditCard(const CreditCard& credit_card);
 
@@ -288,12 +292,16 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
   virtual bool GetServerCreditCards(std::vector<CreditCard*>* credit_cards);
 
+  // Replaces all server credit cards with the given vector. Unmasked cards
+  // present in the new list will be preserved (even if the input is MASKED).
+  void SetServerCreditCards(const std::vector<CreditCard>& credit_cards);
+
   // Cards synced from the server may be "masked" (only last 4 digits
   // available) or "unmasked" (everything is available). These functions set
   // that state.
-  void UnmaskWalletCreditCard(const std::string& id,
+  bool UnmaskServerCreditCard(const std::string& id,
                               const base::string16& full_number);
-  void MaskWalletCreditCard(const std::string& id);
+  bool MaskServerCreditCard(const std::string& id);
 
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.  Returns the

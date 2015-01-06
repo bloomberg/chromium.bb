@@ -101,6 +101,12 @@ class AutofillWebData {
   virtual WebDataServiceBase::Handle GetServerCreditCards(
       WebDataServiceConsumer* consumer) = 0;
 
+  // Toggles the record for a server credit card between masked (only last 4
+  // digits) and full (all digits).
+  virtual void UnmaskServerCreditCard(const std::string& id,
+                                      const base::string16& full_number) = 0;
+  virtual void MaskServerCreditCard(const std::string& id) = 0;
+
   // Removes Autofill records from the database.
   virtual void RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;

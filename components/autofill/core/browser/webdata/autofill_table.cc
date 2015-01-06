@@ -117,6 +117,16 @@ scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
   return profile.Pass();
 }
 
+void BindEncryptedCardToColumn(sql::Statement* s,
+                                 int column_index,
+                                 const base::string16& number) {
+  std::string encrypted_data;
+  OSCrypt::EncryptString16(number, &encrypted_data);
+  s->BindBlob(column_index, encrypted_data.data(),
+              static_cast<int>(encrypted_data.length()));
+
+}
+
 void BindCreditCardToStatement(const CreditCard& credit_card,
                                sql::Statement* s) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
@@ -126,12 +136,8 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_NAME));
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_MONTH));
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR));
-
-  std::string encrypted_data;
-  OSCrypt::EncryptString16(credit_card.GetRawInfo(CREDIT_CARD_NUMBER),
-                           &encrypted_data);
-  s->BindBlob(index++, encrypted_data.data(),
-              static_cast<int>(encrypted_data.length()));
+  BindEncryptedCardToColumn(s, index++,
+                            credit_card.GetRawInfo(CREDIT_CARD_NUMBER));
 
   s->BindInt64(index++, Time::Now().ToTimeT());
   s->BindString(index++, credit_card.origin());
@@ -954,8 +960,88 @@ bool AutofillTable::GetAutofillProfiles(
 
 bool AutofillTable::GetAutofillServerProfiles(
     std::vector<AutofillProfile*>* profiles) {
-  // TODO(brettw) write this.
-  return true;
+  profiles->clear();
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT "
+        "id,"
+        "company_name,"
+        "street_address,"
+        "address_1,"  // ADDRESS_HOME_STATE
+        "address_2,"  // ADDRESS_HOME_CITY
+        "address_3,"  // ADDRESS_HOME_DEPENDENT_LOCALITY
+        "address_4,"  // Not supported in AutofillProfile yet.
+        "postal_code,"  // ADDRESS_HOME_ZIP
+        "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
+        "country_code,"  // ADDRESS_HOME_COUNTRY
+        "language_code "
+      "FROM server_addresses"));
+
+  while (s.Step()) {
+    int index = 0;
+    scoped_ptr<AutofillProfile> profile(new AutofillProfile(
+        AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
+
+    profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                        s.ColumnString16(index++));
+    index++;  // Skip address_4 which we haven't added to AutofillProfile yet.
+    profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_SORTING_CODE, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
+    profile->set_language_code(s.ColumnString(index++));
+
+    profiles->push_back(profile.release());
+  }
+
+  return s.Succeeded();
+}
+
+void AutofillTable::SetAutofillServerProfiles(
+    const std::vector<AutofillProfile>& profiles) {
+  // Delete all old ones first.
+  sql::Statement delete_old(db_->GetUniqueStatement(
+      "DELETE FROM server_addresses"));
+  delete_old.Run();
+
+  sql::Statement insert(db_->GetUniqueStatement(
+      "INSERT INTO server_addresses("
+        "id,"
+        "company_name,"
+        "street_address,"
+        "address_1,"  // ADDRESS_HOME_STATE
+        "address_2,"  // ADDRESS_HOME_CITY
+        "address_3,"  // ADDRESS_HOME_DEPENDENT_LOCALITY
+        "address_4,"  // Not supported in AutofillProfile yet.
+        "postal_code,"  // ADDRESS_HOME_ZIP
+        "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
+        "country_code,"  // ADDRESS_HOME_COUNTRY
+        "language_code) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
+  for (const auto& profile : profiles) {
+    DCHECK(profile.record_type() == AutofillProfile::SERVER_PROFILE);
+
+    int index = 0;
+    insert.BindString(index++, profile.server_id());
+    insert.BindString16(index++, profile.GetRawInfo(COMPANY_NAME));
+    insert.BindString16(index++,
+                        profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_STATE));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_CITY));
+    insert.BindString16(index++,
+                        profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
+    index++;  // SKip address_4 which we haven't added to AutofillProfile yet.
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_ZIP));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+    insert.BindString(index++, profile.language_code());
+
+    insert.Run();
+    insert.Reset(true);
+  }
 }
 
 bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
@@ -1106,11 +1192,13 @@ bool AutofillTable::GetServerCreditCards(
       "card_number_encrypted, "  // 0
       "last_four,"     // 1
       "masked.id,"     // 2
-      "status,"        // 3
-      "name_on_card,"  // 4
+      "type,"          // 3
+      "status,"        // 4
+      "name_on_card,"  // 5
       "exp_month,"     // 6
       "exp_year "      // 7
-      "FROM masked_credit_cards masked JOIN unmasked_credit_cards unmasked "
+      "FROM masked_credit_cards masked "
+      "LEFT OUTER JOIN unmasked_credit_cards unmasked "
       "ON masked.id = unmasked.id"));
   while (s.Step()) {
     int index = 0;
@@ -1119,15 +1207,24 @@ bool AutofillTable::GetServerCreditCards(
     // is a full card, otherwise it's masked.
     base::string16 full_card_number = UnencryptedCardFromColumn(s, index++);
     base::string16 last_four = s.ColumnString16(index++);
-    CreditCard::RecordType type = full_card_number.empty() ?
-        CreditCard::MASKED_WALLET_CARD :
-        CreditCard::FULL_WALLET_CARD;
-    std::string wallet_id = s.ColumnString(index++);
+    CreditCard::RecordType record_type = full_card_number.empty() ?
+        CreditCard::MASKED_SERVER_CARD :
+        CreditCard::FULL_SERVER_CARD;
+    std::string server_id = s.ColumnString(index++);
 
-    CreditCard* card = new CreditCard(wallet_id, type);
+    CreditCard* card = new CreditCard(record_type, server_id);
     card->SetRawInfo(
         CREDIT_CARD_NUMBER,
-        type == CreditCard::MASKED_WALLET_CARD ? last_four : full_card_number);
+        record_type == CreditCard::MASKED_SERVER_CARD ? last_four
+                                                      : full_card_number);
+    std::string card_type = s.ColumnString(index++);
+    if (record_type == CreditCard::MASKED_SERVER_CARD) {
+      // The type must be set after setting the number to override the
+      // autodectected type.
+      card->SetTypeForMaskedCard(card_type.c_str());
+    } else {
+      DCHECK_EQ(CreditCard::GetCreditCardType(full_card_number), card_type);
+    }
 
     index++;  // TODO(brettw) hook up status. For now, skip over it.
     card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(index++));
@@ -1138,10 +1235,85 @@ bool AutofillTable::GetServerCreditCards(
   return s.Succeeded();
 }
 
-void AutofillTable::UnmaskWalletCreditCard(const std::string& id,
+void AutofillTable::SetServerCreditCards(
+    const std::vector<CreditCard>& credit_cards) {
+  // Delete all old values.
+  sql::Statement masked_delete(db_->GetUniqueStatement(
+      "DELETE FROM masked_credit_cards"));
+  masked_delete.Run();
+
+  // Delete all items in the unmasked table that aren't in the new set.
+  sql::Statement get_unmasked(db_->GetUniqueStatement(
+      "SELECT id FROM unmasked_credit_cards"));
+  while (get_unmasked.Step()) {
+    // We expect relatively few cards, just do brute-force.
+    std::string server_id = get_unmasked.ColumnString(0);
+    bool found_card = false;
+    for (const CreditCard& cur_card : credit_cards) {
+      if (cur_card.server_id() == server_id) {
+        found_card = true;
+        break;
+      }
+    }
+    if (!found_card) {
+      // This unmasked card in the DB isn't present in the input. The statement
+      // is compiled every time because it's much more likely that this is never
+      // executed than it runs more than once.
+      sql::Statement unmasked_delete(db_->GetUniqueStatement(
+          "DELETE FROM unmasked_credit_cards WHERE id = ?"));
+      unmasked_delete.BindString(0, server_id);
+      unmasked_delete.Run();
+      DCHECK_EQ(1, db_->GetLastChangeCount());
+    }
+  }
+
+  sql::Statement masked_insert(db_->GetUniqueStatement(
+      "INSERT INTO masked_credit_cards("
+      "id,"            // 0
+      "type,"          // 1
+      "status,"        // 2
+      "name_on_card,"  // 3
+      "last_four,"     // 4
+      "exp_month,"     // 4
+      "exp_year) "     // 5
+      "VALUES (?,?,?,?,?,?,?)"));
+  sql::Statement unmasked_insert(db_->GetUniqueStatement(
+      "INSERT INTO unmasked_credit_cards("
+      "id,"                     // 0
+      "card_number_encrypted)"  // 1
+      "VALUES (?,?)"));
+  for (const CreditCard& card : credit_cards) {
+    DCHECK(card.record_type() != CreditCard::LOCAL_CARD);
+
+    masked_insert.BindString(0, card.server_id());
+    masked_insert.BindString(1, card.type());
+    masked_insert.BindNull(2);  // Skip status which doesn't have storage yet.
+    masked_insert.BindString16(3, card.GetRawInfo(CREDIT_CARD_NAME));
+    masked_insert.BindString16(4, card.LastFourDigits());
+    masked_insert.BindString16(5, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+    masked_insert.BindString16(6,
+                               card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+    masked_insert.Run();
+    masked_insert.Reset(true);
+
+    if (card.record_type() == CreditCard::FULL_SERVER_CARD) {
+      // Unmasked cards also get an entry in the unmasked table. Note that the
+      // input card could be MASKED but if we have an UNMASKED entry for that
+      // card already, it will be preserved.
+      unmasked_insert.BindString(0, card.server_id());
+      BindEncryptedCardToColumn(&unmasked_insert, 1,
+                                card.GetRawInfo(CREDIT_CARD_NUMBER));
+      unmasked_insert.Run();
+      unmasked_insert.Reset(true);
+    }
+  }
+}
+
+bool AutofillTable::UnmaskServerCreditCard(const std::string& id,
                                            const base::string16& full_number) {
   // Make sure there aren't duplicates for this card.
-  MaskWalletCreditCard(id);
+  MaskServerCreditCard(id);
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO unmasked_credit_cards(id, card_number_encrypted) "
       "VALUES (?,?)"));
@@ -1153,13 +1325,15 @@ void AutofillTable::UnmaskWalletCreditCard(const std::string& id,
              static_cast<int>(encrypted_data.length()));
 
   s.Run();
+  return db_->GetLastChangeCount() > 0;
 }
 
-void AutofillTable::MaskWalletCreditCard(const std::string& id) {
+bool AutofillTable::MaskServerCreditCard(const std::string& id) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM unmasked_credit_cards WHERE id = ?"));
   s.BindString(0, id);
   s.Run();
+  return db_->GetLastChangeCount() > 0;
 }
 
 bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {

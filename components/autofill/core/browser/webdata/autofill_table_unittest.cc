@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1602,6 +1604,188 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
                              CompareAutofillEntries);
 
   CompareAutofillEntrySets(entry_set, expected_entries);
+}
+
+TEST_F(AutofillTableTest, SetGetServerCards) {
+  std::vector<CreditCard> inputs;
+  inputs.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "a123"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+
+  inputs.push_back(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
+  inputs[1].SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Rick Roman"));
+  inputs[1].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  inputs[1].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
+  inputs[1].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
+  inputs[1].SetTypeForMaskedCard(kVisaCard);
+
+  table_->SetServerCreditCards(inputs);
+
+  std::vector<CreditCard*> outputs;
+  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_EQ(inputs.size(), outputs.size());
+
+  // Ordering isn't guaranteed, so fix the ordering if it's backwards.
+  if (outputs[1]->server_id() == inputs[0].server_id())
+    std::swap(outputs[0], outputs[1]);
+
+  // GUIDs for server cards are dynamically generated so will be different
+  // after reading from the DB. Check they're valid, but otherwise don't count
+  // them in the comparison.
+  inputs[0].set_guid(std::string());
+  inputs[1].set_guid(std::string());
+  outputs[0]->set_guid(std::string());
+  outputs[1]->set_guid(std::string());
+
+  EXPECT_EQ(inputs[0], *outputs[0]);
+  EXPECT_EQ(inputs[1], *outputs[1]);
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+}
+
+TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
+  base::string16 masked_number(ASCIIToUTF16("1111"));
+  std::vector<CreditCard> inputs;
+  inputs.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jay Johnson"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, masked_number);
+  inputs[0].SetTypeForMaskedCard(kVisaCard);
+  table_->SetServerCreditCards(inputs);
+
+  // Unmask the number. The full number should be available.
+  base::string16 full_number(ASCIIToUTF16("4111111111111111"));
+  ASSERT_TRUE(table_->UnmaskServerCreditCard(inputs[0].server_id(),
+                                             full_number));
+
+  std::vector<CreditCard*> outputs;
+  table_->GetServerCreditCards(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_TRUE(CreditCard::FULL_SERVER_CARD == outputs[0]->record_type());
+  EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+
+  // Re-mask the number, we should only get the last 4 digits out.
+  ASSERT_TRUE(table_->MaskServerCreditCard(inputs[0].server_id()));
+  table_->GetServerCreditCards(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_TRUE(CreditCard::MASKED_SERVER_CARD == outputs[0]->record_type());
+  EXPECT_EQ(masked_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+}
+
+// Calling SetServerCreditCards should replace all existing cards, but unmasked
+// cards should not be re-masked.
+TEST_F(AutofillTableTest, SetServerCardModify) {
+  // Add a masked card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  masked_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
+  masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
+  masked_card.SetTypeForMaskedCard(kVisaCard);
+
+  std::vector<CreditCard> inputs;
+  inputs.push_back(masked_card);
+  table_->SetServerCreditCards(inputs);
+
+  // Now call Set with the full number.
+  base::string16 full_number = ASCIIToUTF16("4111111111111111");
+  inputs[0].set_record_type(CreditCard::FULL_SERVER_CARD);
+  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, full_number);
+  table_->SetServerCreditCards(inputs);
+
+  // The card should now be unmasked.
+  std::vector<CreditCard*> outputs;
+  table_->GetServerCreditCards(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_TRUE(outputs[0]->record_type() == CreditCard::FULL_SERVER_CARD);
+  EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+
+  // Call set again with the masked number.
+  inputs[0] = masked_card;
+  table_->SetServerCreditCards(inputs);
+
+  // The card should stay unmasked.
+  table_->GetServerCreditCards(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_TRUE(outputs[0]->record_type() == CreditCard::FULL_SERVER_CARD);
+  EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+
+  // Set inputs that do not include our old card.
+  CreditCard random_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  random_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Rick Roman"));
+  random_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  random_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
+  random_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("2222"));
+  random_card.SetTypeForMaskedCard(kVisaCard);
+  inputs[0] = random_card;
+  table_->SetServerCreditCards(inputs);
+
+  // We should have only the new card, the other one should have been deleted.
+  table_->GetServerCreditCards(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_TRUE(outputs[0]->record_type() == CreditCard::MASKED_SERVER_CARD);
+  EXPECT_EQ(random_card.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(ASCIIToUTF16("2222"), outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+
+  // Putting back the original card masked should make it masked (this tests
+  // that the unmasked data was really deleted).
+  inputs[0] = masked_card;
+  table_->SetServerCreditCards(inputs);
+  table_->GetServerCreditCards(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_TRUE(outputs[0]->record_type() == CreditCard::MASKED_SERVER_CARD);
+  EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(ASCIIToUTF16("1111"), outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+}
+
+TEST_F(AutofillTableTest, SetServerProfile) {
+  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
+  std::vector<AutofillProfile> inputs;
+  inputs.push_back(one);
+  table_->SetAutofillServerProfiles(inputs);
+
+  std::vector<AutofillProfile*> outputs;
+  table_->GetAutofillServerProfiles(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
+
+  // Set a different profile.
+  AutofillProfile two(AutofillProfile::SERVER_PROFILE, "b456");
+  inputs[0] = two;
+  table_->SetAutofillServerProfiles(inputs);
+
+  // The original one should have been replaced.
+  table_->GetAutofillServerProfiles(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(two.server_id(), outputs[0]->server_id());
+
+  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  outputs.clear();
 }
 
 }  // namespace autofill

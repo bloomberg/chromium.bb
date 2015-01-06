@@ -19,17 +19,18 @@ namespace autofill {
 class CreditCard : public AutofillDataModel {
  public:
   enum RecordType {
-    // A card with a complete number managed by Chrome (and not Wallet).
+    // A card with a complete number managed by Chrome (and not representing
+    // something on the server).
     LOCAL_CARD,
 
     // A card from Wallet with masked information. Such cards will only have
     // the last 4 digits of the card number, and require an extra download to
-    // convert to a FULL_WALLET_CARD.
-    MASKED_WALLET_CARD,
+    // convert to a FULL_SERVER_CARD.
+    MASKED_SERVER_CARD,
 
-    // A card from Wallet with full information. This card is not locally
-    // editable.
-    FULL_WALLET_CARD,
+    // A card from the Wallet server with full information. This card is not
+    // locally editable.
+    FULL_SERVER_CARD,
   };
 
   CreditCard(const std::string& guid, const std::string& origin);
@@ -37,9 +38,9 @@ class CreditCard : public AutofillDataModel {
              int expiration_month,
              int expiration_year);
 
-  // Creates a wallet card. This sets the wallet-specific records. To set the
-  // rest, use SetRawInfo like a normal card.
-  CreditCard(const std::string& wallet_id, RecordType type);
+  // Creates a server card.  The type must be MASKED_SERVER_CARD or
+  // FULL_SERVER_CARD.
+  CreditCard(RecordType type, const std::string& server_id);
 
   // For use in STL containers.
   CreditCard();
@@ -104,7 +105,7 @@ class CreditCard : public AutofillDataModel {
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
 
-  const std::string& wallet_id() const { return wallet_id_; }
+  const std::string& server_id() const { return server_id_; }
 
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
@@ -136,11 +137,11 @@ class CreditCard : public AutofillDataModel {
   bool IsEmpty(const std::string& app_locale) const;
 
   // Returns true if all field types have valid values set. Server masked cards
-  // will not be complete. MASKED_WALLET_CARDs will never be complete.
+  // will not be complete. MASKED_SERVER_CARDs will never be complete.
   bool IsComplete() const;
 
   // Returns true if all field types have valid values set and the card is not
-  // expired. MASKED_WALLET_CARDs will never be valid because the number is
+  // expired. MASKED_SERVER_CARDs will never be valid because the number is
   // not complete.
   bool IsValid() const;
 
@@ -179,7 +180,7 @@ class CreditCard : public AutofillDataModel {
   // See enum definition above.
   RecordType record_type_;
 
-  // The credit card number. For MASKED_WALLET_CARDs, this number will
+  // The credit card number. For MASKED_SERVER_CARDs, this number will
   // just contain the last four digits of the card number.
   base::string16 number_;
 
@@ -193,9 +194,9 @@ class CreditCard : public AutofillDataModel {
   int expiration_month_;
   int expiration_year_;
 
-  // For wallet cards (both MASKED and UNMASKED) this is the ID assigned by the
+  // For server cards (both MASKED and UNMASKED) this is the ID assigned by the
   // server to uniquely identify this card.
-  std::string wallet_id_;
+  std::string server_id_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

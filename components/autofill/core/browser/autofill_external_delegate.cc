@@ -269,7 +269,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
   } else if (identifier == POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT) {
     CreditCard fake_masked_card(base::ASCIIToUTF16("8431"), 5, 2016);
-    fake_masked_card.set_record_type(CreditCard::MASKED_WALLET_CARD);
+    fake_masked_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
     fake_masked_card.SetTypeForMaskedCard(kAmericanExpressCard);
     manager_->client()->ShowUnmaskPrompt(fake_masked_card, GetWeakPtr());
   } else {
