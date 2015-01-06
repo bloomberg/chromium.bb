@@ -14,16 +14,16 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
  public:
   explicit BatteryStatusManagerDefault(
       const BatteryStatusService::BatteryUpdateCallback& callback) {}
-  virtual ~BatteryStatusManagerDefault() {}
+  ~BatteryStatusManagerDefault() override {}
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
     NOTIMPLEMENTED();
     return false;
   }
 
-  virtual void StopListeningBatteryChange() override { NOTIMPLEMENTED(); }
+  void StopListeningBatteryChange() override { NOTIMPLEMENTED(); }
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerDefault);
 };
