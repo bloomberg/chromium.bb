@@ -29,7 +29,6 @@ class MenuMessageLoopAura : public MenuMessageLoop {
   void Run(MenuController* controller,
            Widget* owner,
            bool nested_menu) override;
-  bool ShouldQuitNow() const override;
   void QuitNow() override;
   void RepostEventToWindow(const ui::LocatedEvent& event,
                            gfx::NativeWindow window,

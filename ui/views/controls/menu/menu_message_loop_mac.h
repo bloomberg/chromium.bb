@@ -19,7 +19,6 @@ class MenuMessageLoopMac : public MenuMessageLoop {
   virtual void Run(MenuController* controller,
                    Widget* owner,
                    bool nested_menu) override;
-  virtual bool ShouldQuitNow() const override;
   virtual void QuitNow() override;
   virtual void RepostEventToWindow(const ui::LocatedEvent& event,
                                    gfx::NativeWindow window,

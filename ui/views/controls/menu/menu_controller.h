@@ -504,9 +504,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Terminates the current nested message-loop.
   void TerminateNestedMessageLoop();
 
-  // Returns true if SetExitType() should quit the message loop.
-  bool ShouldQuitNow() const;
-
   // Handles the mouse location event on the submenu |source|.
   void HandleMouseLocation(SubmenuView* source,
                            const gfx::Point& mouse_location);

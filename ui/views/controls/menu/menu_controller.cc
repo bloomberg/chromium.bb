@@ -2261,8 +2261,7 @@ void MenuController::SetExitType(ExitType type) {
   //
   // It's safe to invoke QuitNestedMessageLoop() multiple times, it only effects
   // the current loop.
-  bool quit_now = message_loop_->ShouldQuitNow() && exit_type_ != EXIT_NONE &&
-      message_loop_depth_;
+  bool quit_now = exit_type_ != EXIT_NONE && message_loop_depth_;
   if (quit_now)
     TerminateNestedMessageLoop();
 }

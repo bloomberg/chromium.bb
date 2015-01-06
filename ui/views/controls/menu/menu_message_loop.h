@@ -34,10 +34,6 @@ class MenuMessageLoop {
   // menu).
   virtual void Run(MenuController*, Widget* owner, bool nested_menu) = 0;
 
-  // Returns true if it is a good time to call QuitNow().
-  // Returns false otherwise, for example if a drag and drop is in progress.
-  virtual bool ShouldQuitNow() const = 0;
-
   // Quit an earlier call to Run().
   virtual void QuitNow() = 0;
 

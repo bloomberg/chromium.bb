@@ -37,10 +37,6 @@ void MenuMessageLoopMac::Run(MenuController* controller,
   run_loop.Run();
 }
 
-bool MenuMessageLoopMac::ShouldQuitNow() const {
-  return true;
-}
-
 void MenuMessageLoopMac::QuitNow() {
   base::MessageLoop::current()->QuitNow();
 }

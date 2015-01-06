@@ -182,12 +182,6 @@ void MenuMessageLoopAura::Run(MenuController* controller,
 #endif
 }
 
-bool MenuMessageLoopAura::ShouldQuitNow() const {
-  aura::Window* root = GetOwnerRootWindow(owner_);
-  return !aura::client::GetDragDropClient(root) ||
-         !aura::client::GetDragDropClient(root)->IsDragDropInProgress();
-}
-
 void MenuMessageLoopAura::QuitNow() {
   CHECK(!message_loop_quit_.is_null());
   message_loop_quit_.Run();
