@@ -60,7 +60,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
  private:
   using NativeViewGLSurfaceEGL::Initialize;
 
-  virtual ~GLSurfaceOzoneEGL() {
+  ~GLSurfaceOzoneEGL() override {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
 
@@ -156,7 +156,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   }
 
  private:
-  virtual ~GLSurfaceOzoneSurfaceless() {
+  ~GLSurfaceOzoneSurfaceless() override {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
 

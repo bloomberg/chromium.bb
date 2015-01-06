@@ -14,7 +14,7 @@ namespace {
 class StubInputController : public InputController {
  public:
   StubInputController();
-  virtual ~StubInputController();
+  ~StubInputController() override;
 
   // InputController:
   bool HasMouse() override;

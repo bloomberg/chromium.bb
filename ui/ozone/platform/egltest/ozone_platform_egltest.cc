@@ -200,7 +200,7 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
       : eglplatform_shim_(eglplatform_shim) {
     native_window_ = eglplatform_shim_->ShimGetNativeWindow(window_id);
   }
-  ~SurfaceOzoneEgltest() {
+  ~SurfaceOzoneEgltest() override {
     bool ret = eglplatform_shim_->ShimReleaseNativeWindow(native_window_);
     DCHECK(ret);
   }
@@ -297,7 +297,7 @@ const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
 class OzonePlatformEgltest : public OzonePlatform {
  public:
   OzonePlatformEgltest() : shim_initialized_(false) {}
-  virtual ~OzonePlatformEgltest() {
+  ~OzonePlatformEgltest() override {
     if (shim_initialized_)
       eglplatform_shim_.ShimTerminate();
   }

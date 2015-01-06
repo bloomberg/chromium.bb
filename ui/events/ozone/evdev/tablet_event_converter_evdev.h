@@ -29,7 +29,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
                             CursorDelegateEvdev* cursor,
                             const EventDeviceInfo& info,
                             const EventDispatchCallback& callback);
-  virtual ~TabletEventConverterEvdev();
+  ~TabletEventConverterEvdev() override;
 
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;

@@ -15,18 +15,18 @@ namespace ui {
 class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
  public:
   CursorLoaderOzone();
-  virtual ~CursorLoaderOzone();
+  ~CursorLoaderOzone() override;
 
   // CursorLoader overrides:
-  virtual void LoadImageCursor(int id,
-                               int resource_id,
-                               const gfx::Point& hot) override;
-  virtual void LoadAnimatedCursor(int id,
-                                  int resource_id,
-                                  const gfx::Point& hot,
-                                  int frame_delay_ms) override;
-  virtual void UnloadAll() override;
-  virtual void SetPlatformCursor(gfx::NativeCursor* cursor) override;
+  void LoadImageCursor(int id,
+                       int resource_id,
+                       const gfx::Point& hot) override;
+  void LoadAnimatedCursor(int id,
+                          int resource_id,
+                          const gfx::Point& hot,
+                          int frame_delay_ms) override;
+  void UnloadAll() override;
+  void SetPlatformCursor(gfx::NativeCursor* cursor) override;
 
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.

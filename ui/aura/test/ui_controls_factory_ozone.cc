@@ -20,16 +20,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
  public:
   UIControlsOzone(WindowTreeHost* host) : host_(host) {}
 
-  virtual bool SendKeyPress(gfx::NativeWindow window,
-                            ui::KeyboardCode key,
-                            bool control,
-                            bool shift,
-                            bool alt,
-                            bool command) override {
+  bool SendKeyPress(gfx::NativeWindow window,
+                    ui::KeyboardCode key,
+                    bool control,
+                    bool shift,
+                    bool alt,
+                    bool command) override {
     return SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, base::Closure());
   }
-  virtual bool SendKeyPressNotifyWhenDone(
+  bool SendKeyPressNotifyWhenDone(
       gfx::NativeWindow window,
       ui::KeyboardCode key,
       bool control,
@@ -86,10 +86,10 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return true;
   }
 
-  virtual bool SendMouseMove(long screen_x, long screen_y) override {
+  bool SendMouseMove(long screen_x, long screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
   }
-  virtual bool SendMouseMoveNotifyWhenDone(
+  bool SendMouseMoveNotifyWhenDone(
       long screen_x,
       long screen_y,
       const base::Closure& closure) override {
@@ -116,11 +116,10 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseEvents(ui_controls::MouseButton type,
-                               int state) override {
+  bool SendMouseEvents(ui_controls::MouseButton type, int state) override {
     return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
   }
-  virtual bool SendMouseEventsNotifyWhenDone(
+  bool SendMouseEventsNotifyWhenDone(
       ui_controls::MouseButton type,
       int state,
       const base::Closure& closure) override {
@@ -166,10 +165,10 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseClick(ui_controls::MouseButton type) override {
+  bool SendMouseClick(ui_controls::MouseButton type) override {
     return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
   }
-  virtual void RunClosureAfterAllPendingUIEvents(
+  void RunClosureAfterAllPendingUIEvents(
       const base::Closure& closure) override {
     if (!closure.is_null())
       base::MessageLoop::current()->PostTask(FROM_HERE, closure);

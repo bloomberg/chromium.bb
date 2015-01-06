@@ -33,7 +33,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
                        GesturePropertyProvider* gesture_property_provider
 #endif
                        );
-  virtual ~InputControllerEvdev();
+  ~InputControllerEvdev() override;
 
   // InputController:
   bool HasMouse() override;
