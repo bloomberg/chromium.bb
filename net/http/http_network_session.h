@@ -118,6 +118,7 @@ class NET_EXPORT HttpNetworkSession
     bool quic_disable_connection_pooling;
     int quic_load_server_info_timeout_ms;
     bool quic_disable_loading_server_info_for_new_servers;
+    float quic_load_server_info_timeout_srtt_multiplier;
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;

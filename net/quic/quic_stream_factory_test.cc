@@ -164,6 +164,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  /*disable_connection_pooling=*/false,
                  /*load_server_info_timeout=*/0u,
                  /*disable_loading_server_info_for_new_servers=*/false,
+                 /*load_server_info_timeout_srtt_multiplier=*/0.0f,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),

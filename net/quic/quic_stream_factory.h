@@ -106,6 +106,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool disable_connection_pooling,
       int load_server_info_timeout,
       bool disable_loading_server_info_for_new_servers,
+      float load_server_info_timeout_srtt_multiplier,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -226,6 +227,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void ActivateSession(const QuicServerId& key,
                        QuicClientSession* session);
 
+  // Returns |srtt| in micro seconds from ServerNetworkStats. Returns 0 if there
+  // is no |http_server_properties_| or if |http_server_properties_| doesn't
+  // have ServerNetworkStats for the given |server_id|.
+  int64 GetServerNetworkStatsSmoothedRttInMicroseconds(
+      const QuicServerId& server_id) const;
+
   // Initializes the cached state associated with |server_id| in
   // |crypto_config_| with the information in |server_info|.
   void InitializeCachedStateInCryptoConfig(
@@ -293,6 +300,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // servers. New servers are those servers for which there is no QUIC protocol
   // entry in AlternateProtocolMap.
   bool disable_loading_server_info_for_new_servers_;
+
+  // Specifies the ratio between time to load QUIC server information from disk
+  // cache to 'smoothed RTT'. This ratio is used to calculate the timeout in
+  // milliseconds to wait for loading of QUIC server information. If we don't
+  // want to timeout, set |load_server_info_timeout_srtt_multiplier_| to 0.
+  float load_server_info_timeout_srtt_multiplier_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that

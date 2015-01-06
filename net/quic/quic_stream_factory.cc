@@ -374,13 +374,20 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 
   // To mitigate the effects of disk cache taking too long to load QUIC server
   // information, set up a timer to cancel WaitForDataReady's callback.
-  if (factory_->load_server_info_timeout_ms_ > 0) {
+  int64 load_server_info_timeout_ms = factory_->load_server_info_timeout_ms_;
+  if (factory_->load_server_info_timeout_srtt_multiplier_ > 0) {
+    DCHECK_EQ(0, load_server_info_timeout_ms);
+    load_server_info_timeout_ms =
+        (factory_->load_server_info_timeout_srtt_multiplier_ *
+         factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(server_id_)) /
+        1000;
+  }
+  if (load_server_info_timeout_ms > 0) {
     factory_->task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&QuicStreamFactory::Job::CancelWaitForDataReadyCallback,
                    weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(
-            factory_->load_server_info_timeout_ms_));
+        base::TimeDelta::FromMilliseconds(load_server_info_timeout_ms));
   }
 
   disk_cache_load_start_time_ = base::TimeTicks::Now();
@@ -557,6 +564,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool disable_connection_pooling,
     int load_server_info_timeout,
     bool disable_loading_server_info_for_new_servers,
+    float load_server_info_timeout_srtt_multiplier,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -577,6 +585,8 @@ QuicStreamFactory::QuicStreamFactory(
       load_server_info_timeout_ms_(load_server_info_timeout),
       disable_loading_server_info_for_new_servers_(
           disable_loading_server_info_for_new_servers),
+      load_server_info_timeout_srtt_multiplier_(
+          load_server_info_timeout_srtt_multiplier),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       task_runner_(nullptr),
@@ -1011,15 +1021,9 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
-  if (http_server_properties_) {
-    const ServerNetworkStats* stats =
-        http_server_properties_->GetServerNetworkStats(
-            server_id.host_port_pair());
-    if (stats != nullptr) {
-      config.SetInitialRoundTripTimeUsToSend(
-          static_cast<uint32>(stats->srtt.InMicroseconds()));
-    }
-  }
+  int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
+  if (srtt > 0)
+    config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
 
   if (quic_server_info_factory_ && !server_info) {
     // Start the disk cache loading so that we can persist the newer QUIC server
@@ -1065,6 +1069,18 @@ void QuicStreamFactory::ActivateSession(
                                 server_id.is_https());
   DCHECK(!ContainsKey(ip_aliases_[ip_alias_key], session));
   ip_aliases_[ip_alias_key].insert(session);
+}
+
+int64 QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
+    const QuicServerId& server_id) const {
+  if (!http_server_properties_)
+    return 0;
+  const ServerNetworkStats* stats =
+      http_server_properties_->GetServerNetworkStats(
+          server_id.host_port_pair());
+  if (stats == nullptr)
+    return 0;
+  return stats->srtt.InMicroseconds();
 }
 
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(

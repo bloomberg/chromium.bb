@@ -193,6 +193,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> quic_disable_connection_pooling;
     Optional<int> quic_load_server_info_timeout_ms;
     Optional<bool> quic_disable_loading_server_info_for_new_servers;
+    Optional<float> quic_load_server_info_timeout_srtt_multiplier;
     Optional<size_t> quic_max_packet_length;
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
@@ -367,13 +368,19 @@ class IOThread : public content::BrowserThreadDelegate {
       const VariationParameters& quic_trial_params);
 
   // Returns the timeout value for loading of QUIC sever information from disk
-  // cache base on field trial. Returns 0 if there is an error parsing the
+  // cache based on field trial. Returns 0 if there is an error parsing the
   // field trial params, or if the default value should be used.
   static int GetQuicLoadServerInfoTimeout(
       const VariationParameters& quic_trial_params);
 
   // Returns true if QUIC sever information shouldn't be loaded for new servers.
   static bool ShouldDisableLoadingServerInfoForNewServers(
+      const VariationParameters& quic_trial_params);
+
+  // Returns the ratio of time to load QUIC sever information from disk cache to
+  // 'smoothed RTT' based on field trial. Returns 0 if there is an error parsing
+  // the field trial params, or if the default value should be used.
+  static float GetQuicLoadServerInfoTimeoutSrttMultiplier(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in
