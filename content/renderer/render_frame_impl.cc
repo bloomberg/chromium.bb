@@ -81,7 +81,7 @@
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
-#include "content/renderer/push_messaging_dispatcher.h"
+#include "content/renderer/push_messaging/push_messaging_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"

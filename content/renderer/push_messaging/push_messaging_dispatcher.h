@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PUSH_MESSAGING_DISPATCHER_H_
-#define CONTENT_RENDERER_PUSH_MESSAGING_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
+#define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
 
 #include <string>
 
@@ -58,4 +58,4 @@ class PushMessagingDispatcher : public RenderFrameObserver,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PUSH_MESSAGING_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
