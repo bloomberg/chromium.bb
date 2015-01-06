@@ -455,12 +455,6 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternateReverse);
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingTimingFunctionPassThru)
-{
-    m_timing.timingFunction = m_stepTimingFunction;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-}
-
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionLinear)
 {
     m_timing.timingFunction = m_linearTimingFunction;
@@ -482,7 +476,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionSteps)
 {
     m_timing.timingFunction = m_stepTimingFunction;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
@@ -531,32 +525,32 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionWithStepNotOkay)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionWithStepOkay)
 {
     (*m_keyframeVector2)[0]->setEasing(m_stepTimingFunction.get());
     m_keyframeAnimationEffect2 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector2);
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     (*m_keyframeVector5)[0]->setEasing(m_stepTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_linearTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_stepTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
     (*m_keyframeVector5)[1]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
     (*m_keyframeVector5)[3]->setEasing(m_stepTimingFunction.get());
     m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)

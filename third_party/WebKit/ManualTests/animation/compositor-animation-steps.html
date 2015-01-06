@@ -1,0 +1,96 @@
+<html>
+<style>
+div {
+    position: relative;
+    height: 100px;
+    width: 100px;
+    background: blue;
+}
+</style>
+<body>
+<p>
+Each section below has two boxes, the top runs on the main thread, the bottom
+on the compositor.
+</p><p>
+This test is successful if the boxes are mostly in sync and all finish at the
+same time.
+</p>
+<hr>
+
+Steps for easing timing function is set to 9
+<br>
+<div id="test1a">MT</div>
+<div id="test1b">CT</div>
+<hr>
+
+Per-keyframe steps easing function
+<br>
+<div id="test2a">MT</div>
+<div id="test2b">CT</div>
+
+Steps easing function combined with a cubic-bezier keyframe
+(FIXME: the combining of timing functions is not fully supported in CT)
+<br>
+<div id="test3a">MT</div>
+<div id="test3b">CT</div>
+
+<script>
+var transformKeyframes = [
+    {transform: 'translateX(0px)'},
+    {transform: 'translateX(500px)'}
+    ];
+var leftKeyframes = [
+    {left: '0'},
+    {left: '500px'}
+    ];
+var player1a = test1a.animate(leftKeyframes, {
+        duration: 6000,
+        iterations: Infinity,
+        easing: 'steps(9)'
+    });
+var player1b = test1b.animate(transformKeyframes, {
+        duration: 6000,
+        iterations: Infinity,
+        easing: 'steps(9)'
+    });
+
+var transformKeyframesEasing = [
+    {transform: 'translateX(0px)', easing: 'steps(18)'},
+    {transform: 'translateX(250px)', easing: 'steps(9)'},
+    {transform: 'translateX(500px)'}
+    ];
+var leftKeyframesEasing = [
+    {left: '0', easing: 'steps(18)'},
+    {left: '250px', easing: 'steps(9)'},
+    {left: '500px'}
+    ];
+var player2a = test2a.animate(leftKeyframesEasing, {
+        duration: 6000,
+        iterations: Infinity
+    });
+var player2b = test2b.animate(transformKeyframesEasing, {
+        duration: 6000,
+        iterations: Infinity
+    });
+
+var transformKeyframesCombinedEasing = [
+    {transform: 'translateX(0px)', easing: 'cubic-bezier(.5, -1, .5, 2)'},
+    {transform: 'translateX(500px)'}
+    ];
+var leftKeyframesCombinedEasing = [
+    {left: '0', easing: 'cubic-bezier(.5, -1, .5, 2)'},
+    {left: '500px'}
+    ];
+var player3a = test3a.animate(leftKeyframesCombinedEasing, {
+        duration: 6000,
+        iterations: Infinity,
+        easing: 'steps(9)'
+    });
+var player3b = test3b.animate(transformKeyframesCombinedEasing, {
+        duration: 6000,
+        iterations: Infinity,
+        easing: 'steps(9)'
+    });
+</script>
+</body>
+</html>

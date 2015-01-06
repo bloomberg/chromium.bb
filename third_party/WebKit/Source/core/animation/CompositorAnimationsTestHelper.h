@@ -108,6 +108,7 @@ public:
     MOCK_METHOD1_T(add, void(const KeyframeType&));
     MOCK_METHOD2_T(add, void(const KeyframeType&, WebCompositorAnimationCurve::TimingFunctionType));
     MOCK_METHOD5_T(add, void(const KeyframeType&, double, double, double, double));
+    MOCK_METHOD3_T(add, void(const KeyframeType&, int steps, float stepsStartOffset));
 
     MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on WebFloatAnimationCurve, but can't hurt to have here.
 

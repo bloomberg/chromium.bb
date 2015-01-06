@@ -145,7 +145,6 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     for (const auto& property : properties) {
         const PropertySpecificKeyframeVector& keyframes = keyframeEffect.getPropertySpecificKeyframes(property);
         ASSERT(keyframes.size() >= 2);
-        auto* lastKeyframe = keyframes.last().get();
         for (const auto& keyframe : keyframes) {
             // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
             if (keyframe->composite() != AnimationEffect::CompositeReplace || !keyframe->getAnimatableValue())
@@ -167,10 +166,6 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
             default:
                 return false;
             }
-
-            // FIXME: Remove this check when crbug.com/229405 is resolved
-            if (keyframe != lastKeyframe && keyframe->easing().type() == TimingFunction::StepsFunction)
-                return false;
         }
     }
 
@@ -181,11 +176,11 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (timing.timingFunction->type() != TimingFunction::LinearFunction) {
         // Checks the of size of KeyframeVector instead of PropertySpecificKeyframeVector.
         const KeyframeVector& keyframes = keyframeEffect.getFrames();
-        if (keyframes.size() == 2 && keyframes.first()->easing().type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
+        if (keyframes.size() == 2 && keyframes.first()->easing().type() == TimingFunction::LinearFunction)
             return true;
 
         // FIXME: Support non-linear timing functions in the compositor for
-        // more than two keyframes and step timing functions in the compositor.
+        // more than two keyframes.
         return false;
     }
 
@@ -334,8 +329,24 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
     }
 
     case TimingFunction::StepsFunction:
-    default:
-        ASSERT_NOT_REACHED();
+        const StepsTimingFunction* steps = toStepsTimingFunction(timingFunction);
+
+        float stepsStartOffset;
+        switch (steps->stepAtPosition()) {
+        case StepsTimingFunction::Start:
+            stepsStartOffset = 1;
+            break;
+        case StepsTimingFunction::Middle:
+            stepsStartOffset = 0.5;
+            break;
+        case StepsTimingFunction::End:
+            stepsStartOffset = 0;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            return;
+        }
+        curve.add(keyframe, steps->numberOfSteps(), stepsStartOffset);
         return;
     }
 }
