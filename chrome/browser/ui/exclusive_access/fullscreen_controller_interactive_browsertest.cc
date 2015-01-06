@@ -647,7 +647,6 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 }
 
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
 // Flaky on Windows, Linux, CrOS: http://crbug.com/159000
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_MouseLockSilentAfterTargetUnlock \

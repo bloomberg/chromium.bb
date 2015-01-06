@@ -361,14 +361,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_DisallowNavigation DISABLED_DisallowNavigation
-#else
-#define MAYBE_DisallowNavigation DisallowNavigation
-#endif
-
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   TabsAddedNotificationObserver observer(2);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -538,17 +531,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
           << message_;
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_LaunchWithFileExtensionAndMimeType DISABLED_LaunchWithFileExtensionAndMimeType
-#else
-#define MAYBE_LaunchWithFileExtensionAndMimeType LaunchWithFileExtensionAndMimeType
-#endif
-
 // Tests that launch data is sent through if the file extension and MIME type
 // both match.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       MAYBE_LaunchWithFileExtensionAndMimeType) {
+                       LaunchWithFileExtensionAndMimeType) {
   SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/launch_file_by_extension_and_type")) << message_;
@@ -1104,15 +1090,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
   EXPECT_TRUE(result_catcher.GetNextResult());
 }
 
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
-#else
 // This test depends on focus and so needs to be in interactive_ui_tests.
 // http://crbug.com/227041
-#define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WebContentsHasFocus) {
   LoadAndLaunchPlatformApp("minimal", "Launched");
 
   EXPECT_EQ(1LU, GetAppWindowCount());
