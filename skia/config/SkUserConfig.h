@@ -287,6 +287,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_ADDRRECT
 #endif
 
+#ifndef SK_IGNORE_GPU_LAYER_HOISTING
+#   define SK_IGNORE_GPU_LAYER_HOISTING
+#endif
+
 // If this goes well, we can have Skia respect DYNAMIC_ANNOTATIONS_ENABLED directly.
 #if DYNAMIC_ANNOTATIONS_ENABLED
 #    define SK_DYNAMIC_ANNOTATIONS_ENABLED 1
