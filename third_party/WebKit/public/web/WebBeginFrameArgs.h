@@ -14,13 +14,6 @@ struct WebBeginFrameArgs {
         , interval(interval)
     { }
 
-    // TODO: Remove this constructor once Chromium has been updated.
-    WebBeginFrameArgs(double lastFrameTimeMonotonic)
-        : lastFrameTimeMonotonic(lastFrameTimeMonotonic)
-        , deadline(0)
-        , interval(0)
-    { }
-
     // FIXME: Upgrade the time in CLOCK_MONOTONIC values to use a TimeTick like
     // class rather than a bare double.
 

@@ -92,7 +92,7 @@ public:
     // FIXME: Remove this function once Chrome side patch lands.
     void animate(double monotonicFrameBeginTime)
     {
-        beginFrame(WebBeginFrameArgs(monotonicFrameBeginTime));
+        beginFrame(WebBeginFrameArgs(monotonicFrameBeginTime, 0, 0));
     }
     virtual void beginFrame(const WebBeginFrameArgs& frameTime) { }
 
