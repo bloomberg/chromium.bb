@@ -170,9 +170,6 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
         range.consumeComponentValue();
 
     CSSParserTokenRange prelude = range.makeSubRange(preludeStart, &range.peek());
-    // The prelude isn't used yet since individual at-rules are not yet implemented,
-    // so this silences a compiler warning.
-    prelude.peek();
 
     if (range.atEnd() || range.peek().type() == SemicolonToken) {
         range.consume();
@@ -182,11 +179,16 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
             // have error logging yet so it doesn't matter.
             return nullptr;
         }
-        return nullptr; // Parser error, unrecognised at-rule without block
+        if (allowedRules <= AllowNamespaceRules && equalIgnoringCase(name, "namespace")) {
+            allowedRules = AllowNamespaceRules;
+            consumeNamespaceRule(prelude);
+            return nullptr;
+        }
+        return nullptr; // Parse error, unrecognised at-rule without block
     }
 
     range.consumeBlock();
-    return nullptr; // Parser error, unrecognised at-rule with block
+    return nullptr; // Parse error, unrecognised at-rule with block
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSParserTokenRange& range, AllowedRulesType& allowedRules)
@@ -208,6 +210,45 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSPar
 
     ASSERT_NOT_REACHED();
     return nullptr;
+}
+
+// Takes a single component value
+static String consumeStringOrURI(CSSParserTokenRange range)
+{
+    const CSSParserToken& token = range.peek();
+
+    if (token.type() == StringToken || token.type() == UrlToken)
+        return AtomicString(range.consume().value());
+
+    if (token.type() != FunctionToken || !equalIgnoringCase(token.value(), "url"))
+        return AtomicString();
+
+    CSSParserTokenRange contents = range.consumeBlock();
+    contents.consumeWhitespaceAndComments();
+    const CSSParserToken& uri = contents.consume();
+    contents.consumeWhitespaceAndComments();
+    if (!contents.atEnd() || uri.type() != StringToken)
+        return AtomicString();
+    return AtomicString(uri.value());
+}
+
+void CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
+{
+    prelude.consumeWhitespaceAndComments();
+    AtomicString namespacePrefix;
+    if (prelude.peek().type() == IdentToken)
+        namespacePrefix = AtomicString(prelude.consumeIncludingWhitespaceAndComments().value());
+
+    const CSSParserToken* uriStart = &prelude.peek();
+    prelude.consumeComponentValue();
+    AtomicString uri(consumeStringOrURI(prelude.makeSubRange(uriStart, &prelude.peek())));
+    prelude.consumeWhitespaceAndComments();
+    if (uri.isNull() || !prelude.atEnd())
+        return; // Parse error, expected string or URI
+
+    m_styleSheet->parserAddNamespace(namespacePrefix, uri);
+    if (namespacePrefix.isNull())
+        m_defaultNamespace = uri;
 }
 
 PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)

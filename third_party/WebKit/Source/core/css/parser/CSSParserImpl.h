@@ -59,6 +59,7 @@ private:
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType&);
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType&);
 
+    void consumeNamespaceRule(CSSParserTokenRange prelude); // This modifies m_styleSheet directly!
     PassRefPtrWillBeRawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
 
     // FIXME: We should use a CSSRule::Type here
