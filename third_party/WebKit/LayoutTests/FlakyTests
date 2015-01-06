@@ -1074,8 +1074,6 @@ Bug(gardener) [ Debug Win7 ] http/tests/xmlhttprequest/ontimeout-event-override-
 Bug(gardener) [ Debug Win7 ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
-crbug.com/420240 [ Release Lion ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
-crbug.com/420240 [ Debug Win7 ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/415872 [ Release Linux ] http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
 crbug.com/415872 [ Debug Linux ] http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
 crbug.com/415872 [ Release SnowLeopard ] http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
