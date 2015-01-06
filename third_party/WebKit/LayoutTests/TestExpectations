@@ -844,8 +844,10 @@ crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
 crbug.com/437078 fast/text/text-letter-spacing.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/437078 fast/text/international/rtl-negative-letter-spacing.html [ Pass ImageOnlyFailure ]
 
-# Recheck this when rebaseline lands.
-crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/inline/justify-emphasis-inline-box.html [ NeedsManualRebaseline ]
+crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
+crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
+crbug.com/446408 [ Win Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
+crbug.com/446408 [ Linux Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
