@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/voicesearch_ui.h"
+#include "chrome/browser/ui/webui/voice_search_ui.h"
 
 #include <string>
 
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -29,6 +31,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
@@ -89,6 +92,33 @@ void AddLineBreak(base::ListValue* list) {
   AddPair(list, "", "");
 }
 
+void AddSharedModulePlatformsOnFileThread(base::ListValue* list,
+                                          const base::FilePath& path,
+                                          base::Closure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+
+  if (!path.empty()) {
+    // Display available platforms for shared module.
+    base::FilePath platforms_path = path.AppendASCII("_platform_specific");
+    base::FileEnumerator enumerator(
+        platforms_path, false, base::FileEnumerator::DIRECTORIES);
+    base::string16 files;
+    for (base::FilePath name = enumerator.Next();
+         !name.empty();
+         name = enumerator.Next()) {
+      files += name.BaseName().LossyDisplayName() + ASCIIToUTF16(" ");
+    }
+    AddPair16(list,
+              ASCIIToUTF16("Shared Module Platforms"),
+              files.empty() ? ASCIIToUTF16("undefined") : files);
+    AddLineBreak(list);
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                   FROM_HERE,
+                                   callback);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // VoiceSearchDomHandler
@@ -98,7 +128,9 @@ void AddLineBreak(base::ListValue* list) {
 // The handler for Javascript messages for the about:flags page.
 class VoiceSearchDomHandler : public WebUIMessageHandler {
  public:
-  explicit VoiceSearchDomHandler(Profile* profile) : profile_(profile) {}
+  explicit VoiceSearchDomHandler(Profile* profile)
+      : profile_(profile),
+        weak_factory_(this) {}
 
   ~VoiceSearchDomHandler() override {}
 
@@ -113,14 +145,19 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
  private:
   // Callback for the "requestVoiceSearchInfo" message. No arguments.
   void HandleRequestVoiceSearchInfo(const base::ListValue* args) {
+    PopulatePageInformation();
+  }
+
+  void ReturnVoiceSearchInfo(scoped_ptr<base::ListValue> info) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(info);
     base::DictionaryValue voiceSearchInfo;
-    PopulatePageInformation(&voiceSearchInfo);
-    web_ui()->CallJavascriptFunction("returnVoiceSearchInfo",
-                                     voiceSearchInfo);
+    voiceSearchInfo.Set("voiceSearchInfo", info.release());
+    web_ui()->CallJavascriptFunction("returnVoiceSearchInfo", voiceSearchInfo);
   }
 
   // Fill in the data to be displayed on the page.
-  void PopulatePageInformation(base::DictionaryValue* voiceSearchInfo) {
+  void PopulatePageInformation() {
     // Store Key-Value pairs of about-information.
     scoped_ptr<base::ListValue> list(new base::ListValue());
 
@@ -129,6 +166,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddAudioInfo(list.get());
     AddLanguageInfo(list.get());
     AddHotwordInfo(list.get());
+    AddAppListInfo(list.get());
 
     std::string extension_id = extension_misc::kHotwordExtensionId;
     HotwordService* hotword_service =
@@ -140,11 +178,30 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddExtensionInfo(extension_misc::kHotwordSharedModuleId,
                      "Shared Module",
                      list.get());
-    AddAppListInfo(list.get());
 
-    // voiceSearchInfo will take ownership of list, and clean it up on
-    // destruction.
-    voiceSearchInfo->Set("voiceSearchInfo", list.release());
+    base::FilePath path;
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile_);
+    if (extension_system) {
+      ExtensionService* extension_service =
+          extension_system->extension_service();
+      const extensions::Extension* extension =
+          extension_service->GetExtensionById(
+              extension_misc::kHotwordSharedModuleId, true);
+      if (extension)
+        path = extension->path();
+    }
+    base::ListValue* raw_list = list.get();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(
+            &AddSharedModulePlatformsOnFileThread,
+            raw_list,
+            path,
+            base::Bind(&VoiceSearchDomHandler::ReturnVoiceSearchInfo,
+                       weak_factory_.GetWeakPtr(),
+                       base::Passed(list.Pass()))));
   }
 
   // Adds information regarding the system and chrome version info to list.
@@ -366,10 +423,12 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
       }
     }
     AddPair(list, "Start Page State", state);
+    AddLineBreak(list);
 #endif
   }
 
   Profile* profile_;
+  base::WeakPtrFactory<VoiceSearchDomHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchDomHandler);
 };

@@ -2511,8 +2511,8 @@
       'browser/ui/webui/extensions/extension_icon_source.h',
       'browser/ui/webui/extensions/pack_extension_handler.cc',
       'browser/ui/webui/extensions/pack_extension_handler.h',
-      'browser/ui/webui/voicesearch_ui.cc',
-      'browser/ui/webui/voicesearch_ui.h',
+      'browser/ui/webui/voice_search_ui.cc',
+      'browser/ui/webui/voice_search_ui.h',
     ],
     'chrome_browser_ui_global_error_sources': [
       'browser/ui/cocoa/global_error_bubble_controller.h',
