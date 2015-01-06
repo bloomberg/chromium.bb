@@ -1567,7 +1567,3 @@ crbug.com/445097 inspector-protocol/timeline/timeline-dispatchEvent.html [ Pass 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445955 [ Mac ] web-animations-api/player-cancel-finishes.html [ Pass Failure ]
-
-crbug.com/446261 [ XP ] svg/as-background-image/background-image-preserveaspectRatio-support.html [ NeedsRebaseline ]
-crbug.com/446261 [ XP ] svg/as-background-image/svg-as-background-5.html [ NeedsRebaseline ]
-crbug.com/446261 [ XP ] svg/as-image/img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
