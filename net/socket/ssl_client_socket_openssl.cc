@@ -20,6 +20,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_local.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
@@ -930,6 +931,11 @@ bool SSLClientSocketOpenSSL::DoTransportIO() {
   return network_moved;
 }
 
+// TODO(vadimt): Remove including "base/threading/thread_local.h" and
+// g_first_run_completed once crbug.com/424386 is fixed.
+base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_first_run_completed =
+    LAZY_INSTANCE_INITIALIZER;
+
 int SSLClientSocketOpenSSL::DoHandshake() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int net_error = OK;
@@ -945,11 +951,25 @@ int SSLClientSocketOpenSSL::DoHandshake() {
 
     rv = SSL_do_handshake(ssl_);
   } else {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 DoHandshake_WithoutCert"));
+    if (g_first_run_completed.Get().Get()) {
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile1(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "424386 DoHandshake_WithoutCert Not First"));
 
-    rv = SSL_do_handshake(ssl_);
+      rv = SSL_do_handshake(ssl_);
+    } else {
+      g_first_run_completed.Get().Set(true);
+
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile1(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "424386 DoHandshake_WithoutCert First"));
+
+      rv = SSL_do_handshake(ssl_);
+    }
   }
 
   if (client_auth_cert_needed_) {
