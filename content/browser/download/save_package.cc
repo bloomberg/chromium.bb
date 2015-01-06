@@ -255,7 +255,7 @@ GURL SavePackage::GetUrlToBeSaved() {
   // different (like having "view-source:" on the front).
   NavigationEntry* visible_entry =
       web_contents()->GetController().GetVisibleEntry();
-  return visible_entry->GetURL();
+  return visible_entry ? visible_entry->GetURL() : GURL::EmptyGURL();
 }
 
 void SavePackage::Cancel(bool user_action) {
