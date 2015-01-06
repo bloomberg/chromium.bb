@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/SVGShapePainter.h"
 
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"

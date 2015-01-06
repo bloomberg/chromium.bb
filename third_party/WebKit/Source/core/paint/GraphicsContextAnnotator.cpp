@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/paint/GraphicsContextAnnotator.h"
 
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/rendering/PaintInfo.h"

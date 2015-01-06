@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/TableRowPainter.h"
 
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/TableCellPainter.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableRow.h"

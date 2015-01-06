@@ -6,9 +6,9 @@
 #include "core/paint/SVGContainerPainter.h"
 
 #include "core/paint/FloatClipRecorder.h"
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"

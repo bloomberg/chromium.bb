@@ -7,7 +7,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"

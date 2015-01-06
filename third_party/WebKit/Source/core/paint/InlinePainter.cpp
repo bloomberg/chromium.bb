@@ -6,10 +6,10 @@
 #include "core/paint/InlinePainter.h"
 
 #include "core/paint/BoxPainter.h"
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"

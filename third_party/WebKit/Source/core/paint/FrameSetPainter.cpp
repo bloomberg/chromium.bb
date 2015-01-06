@@ -6,7 +6,7 @@
 #include "core/paint/FrameSetPainter.h"
 
 #include "core/html/HTMLFrameSetElement.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFrameSet.h"
 

@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/paint/SVGImagePainter.h"
 
+#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderImageResource.h"
