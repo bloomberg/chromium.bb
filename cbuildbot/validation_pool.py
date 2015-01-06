@@ -2333,6 +2333,10 @@ class ValidationPool(object):
       lab_fail: The build failed purely due to test lab infrastructure failures.
       no_stat: A list of builders which failed prematurely without reporting
         status.
+
+    Returns:
+      (retry, msg): retry is a boolean indicating whether the failure should be
+      retried. msg is a message to communicate what happened.
     """
     msg = []
     if no_stat:
@@ -2353,7 +2357,7 @@ class ValidationPool(object):
     # Limit the number of suspects to 20 so that the list of suspects isn't
     # ridiculously long.
     max_suspects = 20
-    other_suspects = suspects - set([change])
+    other_suspects = set(suspects) - set([change])
     if len(other_suspects) < max_suspects:
       other_suspects_str = cros_patch.GetChangesAsString(other_suspects)
     else:
@@ -2399,7 +2403,7 @@ class ValidationPool(object):
       msg.insert(
           0, 'NOTE: The Commit Queue will retry your change automatically.')
 
-    return '\n\n'.join(msg)
+    return will_retry_automatically, '\n\n'.join(msg)
 
   def _ChangeFailedValidation(self, change, messages, suspects, sanity,
                               infra_fail, lab_fail, no_stat):
@@ -2417,13 +2421,12 @@ class ValidationPool(object):
       no_stat: A list of builders which failed prematurely without reporting
         status.
     """
-    msg = self._CreateValidationFailureMessage(
+    retry, msg = self._CreateValidationFailureMessage(
         self.pre_cq_trybot, change, suspects, messages,
         sanity, infra_fail, lab_fail, no_stat)
     self.SendNotification(change, '%(details)s', details=msg)
-    if sanity:
-      if change in suspects:
-        self.RemoveReady(change)
+    if not retry:
+      self.RemoveReady(change)
 
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
                               no_stat=None):

@@ -669,9 +669,6 @@ class ValidationFailureOrTimeout(MoxBase):
     self.PatchObject(
         triage_lib.CalculateSuspects, 'FindSuspects',
         return_value=self._patches)
-    self.PatchObject(
-        validation_pool.ValidationPool, '_CreateValidationFailureMessage',
-        return_value=self._PATCH_MESSAGE)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveReady')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
@@ -1298,7 +1295,8 @@ class TestCreateValidationFailureMessage(MoxBase):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
   def _AssertMessage(self, change, suspects, messages, sanity=True,
-                     infra_fail=False, lab_fail=False, no_stat=None):
+                     infra_fail=False, lab_fail=False, no_stat=None,
+                     xretry=False):
     """Call the _CreateValidationFailureMessage method.
 
     Args:
@@ -1309,12 +1307,14 @@ class TestCreateValidationFailureMessage(MoxBase):
       infra_fail: True if build failed due to infrastructure issues.
       lab_fail: True if build failed due to lab infrastructure issues.
       no_stat: List of builders that did not start.
+      xretry: Whether we expect the change to be retried.
     """
-    msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
+    retry, msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
         False, change, set(suspects), [], sanity=sanity,
         infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat)
     for x in messages:
       self.assertTrue(x in msg)
+    self.assertEqual(retry, xretry)
     return msg
 
   def testSuspectChange(self):
@@ -1327,7 +1327,8 @@ class TestCreateValidationFailureMessage(MoxBase):
     patch1, patch2 = self.GetPatches(2)
     self._AssertMessage(patch1, [patch2],
                         ['This failure was probably caused by',
-                         'retry your change automatically'])
+                         'retry your change automatically'],
+                        xretry=True)
 
   def testSuspectChanges(self):
     """Test case where 1 is suspected, but so is 2."""
@@ -1339,7 +1340,8 @@ class TestCreateValidationFailureMessage(MoxBase):
     """Test case where 2 and 3 are suspected."""
     patches = self.GetPatches(3)
     self._AssertMessage(patches[0], patches[1:],
-                        ['One of the following changes is probably'])
+                        ['One of the following changes is probably'],
+                        xretry=True)
 
   def testNoMessages(self):
     """Test case where there are no messages."""
@@ -1352,7 +1354,7 @@ class TestCreateValidationFailureMessage(MoxBase):
     self._AssertMessage(
         patches[0], patches, ['The build was consider not sane',
                               'retry your change automatically'],
-        sanity=False)
+        sanity=False, xretry=True)
 
   def testLabFailMessage(self):
     """Test case where the build failed due to lab failures."""
@@ -1360,7 +1362,7 @@ class TestCreateValidationFailureMessage(MoxBase):
     self._AssertMessage(
         patches[0], patches, ['Lab infrastructure',
                               'retry your change automatically'],
-        lab_fail=True)
+        lab_fail=True, xretry=True)
 
   def testInfraFailMessage(self):
     """Test case where the build failed due to infrastructure failures."""
@@ -1373,7 +1375,7 @@ class TestCreateValidationFailureMessage(MoxBase):
     self._AssertMessage(
         patches[1], [patches[0]], ['may have been caused by infrastructure',
                                    'retry your change automatically'],
-        infra_fail=True)
+        infra_fail=True, xretry=True)
 
 
 class TestCreateDisjointTransactions(MoxBase):
