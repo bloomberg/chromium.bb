@@ -54,24 +54,10 @@ int NaClRuntimeHostInterfaceReportExitStatusNotImplemented(
   return -NACL_ABI_EINVAL;
 }
 
-int NaClRuntimeHostInterfaceCreateProcessNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    struct NaClDesc                 **out_sock_addr,
-    struct NaClDesc                 **out_app_addr) {
-  NaClLog(3,
-          ("NaClRuntimeHostInterfaceCreateProcess(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self,
-          (uintptr_t) out_sock_addr,
-          (uintptr_t) out_app_addr);
-  return -NACL_ABI_EINVAL;
-}
-
 struct NaClRuntimeHostInterfaceVtbl const kNaClRuntimeHostInterfaceVtbl = {
   {
     NaClRuntimeHostInterfaceDtor,
   },
   NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented,
   NaClRuntimeHostInterfaceReportExitStatusNotImplemented,
-  NaClRuntimeHostInterfaceCreateProcessNotImplemented,
 };

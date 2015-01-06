@@ -85,62 +85,9 @@ static void NaClKernelServiceInitializationCompleteRpc(
   (*NACL_VTBL(NaClKernelService, nksp)->InitializationComplete)(nksp);
 }
 
-int NaClKernelServiceCreateProcess(
-    struct NaClKernelService   *self,
-    struct NaClDesc            **out_sock_addr,
-    struct NaClDesc            **out_app_addr) {
-  NaClLog(4,
-          ("NaClKernelServiceCreateProcess(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"\n"),
-          (uintptr_t) self,
-          (uintptr_t) out_sock_addr,
-          (uintptr_t) out_app_addr);
-
-  return (*NACL_VTBL(NaClRuntimeHostInterface, self->runtime_host)->
-          CreateProcess)(self->runtime_host,
-                         out_sock_addr,
-                         out_app_addr);
-}
-
-static void NaClKernelServiceCreateProcessRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClKernelService  *nksp =
-    (struct NaClKernelService *) rpc->channel->server_instance_data;
-  int                       status;
-  struct NaClDesc           *sock_addr = NULL;
-  struct NaClDesc           *app_addr = NULL;
-  UNREFERENCED_PARAMETER(in_args);
-
-  NaClLog(4, "NaClKernelServiceCreateProcessRpc: creating process\n");
-  status = (*NACL_VTBL(NaClKernelService, nksp)->CreateProcess)(
-      nksp, &sock_addr, &app_addr);
-  out_args[0]->u.ival = status;
-  out_args[1]->u.hval = (0 == status)
-      ? sock_addr
-      : (struct NaClDesc *) NaClDescInvalidMake();
-  out_args[2]->u.hval = (0 == status)
-      ? app_addr
-      : (struct NaClDesc *) NaClDescInvalidMake();
-  NaClLog(4,
-          ("NaClKernelServiceCreateProcessRpc: status %d, sock_addr"
-           " 0x08%"NACL_PRIxPTR", app_addr 0x%08"NACL_PRIxPTR"\n"),
-          status, (uintptr_t) sock_addr, (uintptr_t) app_addr);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-  if (0 == status) {
-    NaClDescUnref(sock_addr);
-    NaClDescUnref(app_addr);
-  }
-}
-
 struct NaClSrpcHandlerDesc const kNaClKernelServiceHandlers[] = {
   { NACL_KERNEL_SERVICE_INITIALIZATION_COMPLETE,
     NaClKernelServiceInitializationCompleteRpc, },
-  { NACL_KERNEL_SERVICE_CREATE_PROCESS,
-    NaClKernelServiceCreateProcessRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
 };
 
@@ -155,5 +102,4 @@ struct NaClKernelServiceVtbl const kNaClKernelServiceVtbl = {
     NaClSimpleServiceRpcHandler,
   },
   NaClKernelServiceInitializationComplete,
-  NaClKernelServiceCreateProcess,
 };

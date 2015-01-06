@@ -38,16 +38,6 @@ struct NaClKernelServiceVtbl {
 
   void                          (*InitializationComplete)(
       struct NaClKernelService *self);
-
-  /*
-   * Create new service runtime process and return its socket address
-   * in |out_sock_addr| argument. Returns 0 if successful or negative
-   * ABI error value otherwise (see service_runtime/include/sys/errno.h)
-   */
-  int                           (*CreateProcess)(
-      struct NaClKernelService *self,
-      struct NaClDesc          **out_sock_addr,
-      struct NaClDesc          **out_app_addr);
 };
 
 extern struct NaClKernelServiceVtbl const kNaClKernelServiceVtbl;

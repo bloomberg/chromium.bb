@@ -161,87 +161,6 @@ static void NaClReverseServiceModuleExitRpc(
   (*done_cls->Run)(done_cls);
 }
 
-static void NaClReverseServiceCreateProcessRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  struct NaClDesc           *sock_addr;
-  struct NaClDesc           *app_addr;
-  int                       status;
-  UNREFERENCED_PARAMETER(in_args);
-
-  NaClLog(4,
-          "Entered NaClReverseServiceCreateProcessRpc: 0x%08"NACL_PRIxPTR"\n",
-          (uintptr_t) nrsp);
-  status = (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-            CreateProcess)(nrsp->iface, &sock_addr, &app_addr);
-  out_args[0]->u.ival = status;
-  out_args[1]->u.hval = (0 == status)
-      ? sock_addr
-      : (struct NaClDesc *) NaClDescInvalidMake();
-  out_args[2]->u.hval = (0 == status)
-      ? app_addr
-      : (struct NaClDesc *) NaClDescInvalidMake();
-  NaClLog(4, "Leaving NaClReverseServiceCreateProcessRpc\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
-struct CreateProcessFunctorState {
-  struct NaClDesc **out_sock_addr;
-  struct NaClDesc **out_app_addr;
-  int32_t *out_pid;
-  struct NaClSrpcClosure *cls;
-};
-
-static void CreateProcessFunctor(void *functor_state,
-                                 struct NaClDesc *sock_addr,
-                                 struct NaClDesc *app_addr,
-                                 int32_t pid) {
-  struct CreateProcessFunctorState *state =
-      (struct CreateProcessFunctorState *) functor_state;
-  if (NULL == sock_addr) {
-    sock_addr = (struct NaClDesc *) NaClDescInvalidMake();
-  }
-  if (NULL == app_addr) {
-    app_addr = (struct NaClDesc *) NaClDescInvalidMake();
-  }
-  *state->out_sock_addr = sock_addr;
-  *state->out_app_addr = app_addr;
-  *state->out_pid = pid;
-  (*state->cls->Run)(state->cls);
-}
-
-static void NaClReverseServiceCreateProcessFunctorResultRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  struct CreateProcessFunctorState functor_state;
-
-  UNREFERENCED_PARAMETER(in_args);
-
-  NaClLog(4,
-          "Entered NaClReverseServiceCreateProcessFunctorResultRpc: 0x%08"
-          NACL_PRIxPTR"\n",
-          (uintptr_t) nrsp);
-  functor_state.out_sock_addr = &out_args[0]->u.hval;
-  functor_state.out_app_addr = &out_args[1]->u.hval;
-  functor_state.out_pid = &out_args[2]->u.ival;
-  functor_state.cls = done_cls;
-
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-   CreateProcessFunctorResult)(nrsp->iface,
-                               CreateProcessFunctor, &functor_state);
-  NaClLog(4, "Leaving NaClReverseServiceCreateProcessFunctorResultRpc\n");
-}
-
 /*
  * Manifest name service, internal APIs.
  *
@@ -459,9 +378,6 @@ struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, NaClReverseServiceAddChannelRpc, },
   { NACL_REVERSE_CONTROL_INIT_DONE, NaClReverseServiceModuleInitDoneRpc, },
   { NACL_REVERSE_CONTROL_REPORT_STATUS, NaClReverseServiceModuleExitRpc, },
-  { NACL_REVERSE_CONTROL_CREATE_PROCESS, NaClReverseServiceCreateProcessRpc, },
-  { NACL_REVERSE_CONTROL_CREATE_PROCESS_INTERLOCKED,
-    NaClReverseServiceCreateProcessFunctorResultRpc, },
   { NACL_MANIFEST_LOOKUP, NaClReverseServiceManifestLookupRpc, },
   { NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE, NaClReverseServiceRequestQuotaForWriteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
@@ -634,19 +550,6 @@ void NaClReverseInterfaceReportExitStatus(
           (uintptr_t) self, exit_status);
 }
 
-int NaClReverseInterfaceCreateProcess(
-    struct NaClReverseInterface   *self,
-    struct NaClDesc               **out_sock_addr,
-    struct NaClDesc               **out_app_addr) {
-  NaClLog(3,
-          ("NaClReverseInterfaceCreateProcess(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self,
-          (uintptr_t) out_sock_addr,
-          (uintptr_t) out_app_addr);
-  return -NACL_ABI_EAGAIN;
-}
-
 int64_t NaClReverseInterfaceRequestQuotaForWrite(
     struct NaClReverseInterface   *self,
     char const                    *file_id,
@@ -659,28 +562,6 @@ int64_t NaClReverseInterfaceRequestQuotaForWrite(
   return 0;
 }
 
-void NaClReverseInterfaceCreateProcessFunctorResult(
-    struct NaClReverseInterface *self,
-    void (*result_functor)(void *functor_state,
-                           struct NaClDesc *out_sock_addr,
-                           struct NaClDesc *out_app_addr,
-                           int32_t out_pid_or_errno),
-    void *functor_state) {
-  NaClLog(3,
-          ("NaClReverseInterfaceCreateProcessFunctorResult(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self,
-          (uintptr_t) result_functor,
-          (uintptr_t) functor_state);
-}
-
-void NaClReverseInterfaceFinalizeProcess(struct NaClReverseInterface *self,
-                                         int32_t pid) {
-  NaClLog(3,
-          ("NaClReverseInterfaceFinalizeProcess(0x%08"NACL_PRIxPTR", %d)\n"),
-          (uintptr_t) self, pid);
-}
-
 struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
   {
     NaClReverseInterfaceDtor,
@@ -689,8 +570,5 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
   NaClReverseInterfaceOpenManifestEntry,
   NaClReverseInterfaceReportCrash,
   NaClReverseInterfaceReportExitStatus,
-  NaClReverseInterfaceCreateProcess,
-  NaClReverseInterfaceCreateProcessFunctorResult,
-  NaClReverseInterfaceFinalizeProcess,
   NaClReverseInterfaceRequestQuotaForWrite,
 };

@@ -83,67 +83,6 @@ void ReportExitStatus(NaClReverseInterface* self,
   }
 }
 
-int CreateProcess(NaClReverseInterface* self,
-                  NaClDesc** out_sock_addr,
-                  NaClDesc** out_app_addr) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "CreateProcess, no reverse_interface.\n");
-    return -NACL_ABI_EAGAIN;
-  }
-
-  int status;
-  nacl::DescWrapper* sock_addr;
-  nacl::DescWrapper* app_addr;
-  if (0 == (status = wrapper->iface->CreateProcess(&sock_addr, &app_addr))) {
-    *out_sock_addr = sock_addr->desc();
-    *out_app_addr = app_addr->desc();
-  }
-  return status;
-}
-
-class CreateProcessFunctorBinder : public nacl::CreateProcessFunctorInterface {
- public:
-  CreateProcessFunctorBinder(void (*functor)(void* functor_state,
-                                             NaClDesc* out_sock_addr,
-                                             NaClDesc* out_app_addr,
-                                             int32_t out_pid_or_errno),
-                             void* functor_state)
-      : functor_(functor), state_(functor_state) {}
-
-  virtual void Results(nacl::DescWrapper* out_sock_addr,
-                       nacl::DescWrapper* out_app_addr,
-                       int32_t out_pid_or_errno) {
-    functor_(state_, out_sock_addr->desc(), out_app_addr->desc(),
-             out_pid_or_errno);
-  }
- private:
-  void (*functor_)(void*, NaClDesc*, NaClDesc*, int32_t);
-  void* state_;
-};
-
-void CreateProcessFunctorResult(NaClReverseInterface* self,
-                                void (*functor)(void* functor_state,
-                                                NaClDesc* out_sock_addr,
-                                                NaClDesc* out_app_addr,
-                                                int32_t out_pid_or_errno),
-                                void *functor_state) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-
-  CreateProcessFunctorBinder callback(functor, functor_state);
-  wrapper->iface->CreateProcessFunctorResult(&callback);
-}
-
-void FinalizeProcess(NaClReverseInterface* self,
-                     int32_t pid) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-
-  wrapper->iface->FinalizeProcess(pid);
-}
-
 int64_t RequestQuotaForWrite(NaClReverseInterface* self,
                              char const* file_id,
                              int64_t offset,
@@ -177,9 +116,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   OpenManifestEntry,
   ReportCrash,
   ReportExitStatus,
-  CreateProcess,
-  CreateProcessFunctorResult,
-  FinalizeProcess,
   RequestQuotaForWrite,
 };
 

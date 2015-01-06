@@ -1,2 +1,0 @@
-reverse_service_add_manifest_mapping my_nexe ${nexe_file}
-wait_for_exit

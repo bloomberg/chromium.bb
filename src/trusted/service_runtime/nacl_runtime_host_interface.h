@@ -28,11 +28,6 @@ struct NaClRuntimeHostInterfaceVtbl {
   int                           (*ReportExitStatus)(
       struct NaClRuntimeHostInterface *self,
       int                             exit_status);
-
-  int                           (*CreateProcess)(
-      struct NaClRuntimeHostInterface *self,
-      struct NaClDesc                 **out_sock_addr,
-      struct NaClDesc                 **out_app_addr);
 };
 
 /*
@@ -50,11 +45,6 @@ int NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented(
 int NaClRuntimeHostInterfaceReportExitStatusNotImplemented(
     struct NaClRuntimeHostInterface *self,
     int                             exit_status);
-
-int NaClRuntimeHostInterfaceCreateProcessNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    struct NaClDesc                 **out_sock_addr,
-    struct NaClDesc                 **out_app_addr);
 
 extern struct NaClRuntimeHostInterfaceVtbl const kNaClRuntimeHostInterfaceVtbl;
 

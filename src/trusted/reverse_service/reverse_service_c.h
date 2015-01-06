@@ -129,40 +129,6 @@ struct NaClReverseInterfaceVtbl {
       int                           exit_status);
 
   /*
-   * Create new service runtime process and return secure command
-   * channel and untrusted application channel socket addresses. Returns
-   * 0 if successful or negative ABI error value otherwise (see
-   * service_runtime/include/sys/errno.h).  DEPRECATED.
-   */
-  int                           (*CreateProcess)(
-      struct NaClReverseInterface  *self,
-      struct NaClDesc              **out_sock_addr,
-      struct NaClDesc              **out_app_addr);
-
-  /*
-   * Create new service runtime process and return secure command
-   * channel, untrusted application channel socket addresses, and pid
-   * via a result delivery functor.  Returns negated ABI errno value
-   * in pid if there were errors (see the header file
-   * service_runtime/include/sys/errno.h).  The |out_pid_or_errno|
-   * functor argument is also used to allow the "init" process to
-   * inform the embedding environment, via FinalizeProcess, that it is
-   * okay to finalize any resources associated with the identified
-   * subprocess when the subprocess has exited.
-   */
-  void                          (*CreateProcessFunctorResult)(
-      struct NaClReverseInterface *self,
-      void (*result_functor)(void *functor_state,
-                             struct NaClDesc *out_sock_addr,
-                             struct NaClDesc *out_app_addr,
-                             int32_t out_pid_or_errno),
-      void *functor_state);
-
-  void                          (*FinalizeProcess)(
-      struct NaClReverseInterface *self,
-      int32_t pid);
-
-  /*
    * Quota checking for files that were sent to the untrusted module.
    * TODO(sehr): remove the stub interface once the plugin provides one.
    */
@@ -196,22 +162,6 @@ void NaClReverseInterfaceReportCrash(
 void NaClReverseInterfaceReportExitStatus(
     struct NaClReverseInterface   *self,
     int                           exit_status);
-
-void NaClReverseInterfaceCreateProcessFunctorResult(
-    struct NaClReverseInterface *self,
-    void (*result_functor)(void *functor_state,
-                           struct NaClDesc *out_sock_addr,
-                           struct NaClDesc *out_app_addr,
-                           int32_t out_pid_or_errno),
-    void *functor_state);
-
-void NaClReverseInterfaceFinalizeProcess(struct NaClReverseInterface *self,
-                                         int32_t pid);
-
-int NaClReverseInterfaceCreateProcess(
-    struct NaClReverseInterface   *self,
-    struct NaClDesc               **out_sock_addr,
-    struct NaClDesc               **out_app_addr);
 
 int64_t NaClReverseInterfaceRequestQuotaForWrite(
     struct NaClReverseInterface   *self,

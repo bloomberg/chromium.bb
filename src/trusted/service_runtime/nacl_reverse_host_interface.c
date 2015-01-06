@@ -118,50 +118,10 @@ int NaClReverseHostInterfaceReportExitStatus(
   return status;
 }
 
-int NaClReverseHostInterfaceCreateProcess(
-    struct NaClRuntimeHostInterface *vself,
-    struct NaClDesc                 **out_sock_addr,
-    struct NaClDesc                 **out_app_addr) {
-  struct NaClReverseHostInterface *self =
-      (struct NaClReverseHostInterface *) vself;
-  NaClSrpcError   rpc_result;
-  int             pid = 0;
-
-  NaClLog(3,
-          ("NaClReverseHostInterfaceCreateProcess(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self,
-          (uintptr_t) out_sock_addr,
-          (uintptr_t) out_app_addr);
-
-  NaClXMutexLock(&self->server->mu);
-  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
-      self->server->reverse_channel_initialization_state) {
-    rpc_result = NaClSrpcInvokeBySignature(
-        &self->server->reverse_channel,
-        NACL_REVERSE_CONTROL_CREATE_PROCESS_INTERLOCKED,
-        out_sock_addr,
-        out_app_addr,
-        &pid);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(LOG_FATAL,
-              "NaClReverseHostInterfaceCreateProcess: RPC failed, result %d\n",
-              rpc_result);
-    }
-  } else {
-    NaClLog(4, "NaClReverseHostInterfaceCreateProcess: no reverse channel"
-            ", no plugin to talk to.\n");
-    pid = -NACL_ABI_ENODEV;
-  }
-  NaClXMutexUnlock(&self->server->mu);
-  return pid;
-}
-
 struct NaClRuntimeHostInterfaceVtbl const kNaClReverseHostInterfaceVtbl = {
   {
     NaClReverseHostInterfaceDtor,
   },
   NaClReverseHostInterfaceStartupInitializationComplete,
   NaClReverseHostInterfaceReportExitStatus,
-  NaClReverseHostInterfaceCreateProcess,
 };
