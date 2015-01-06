@@ -475,9 +475,9 @@
         }],
         ['use_ozone==1', {
           'dependencies': [
-            '../ozone/ozone.gyp:ozone_base',
             '../events/devices/events_devices.gyp:events_devices',
             '../events/ozone/events_ozone.gyp:events_ozone_layout',
+            '../ozone/ozone.gyp:ozone_base',
           ],
         }],
         ['use_aura==1 and OS=="win"', {

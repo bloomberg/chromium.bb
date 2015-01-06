@@ -605,8 +605,8 @@ component("base") {
     ]
 
     deps += [
-      "//ui/ozone:ozone_base",
       "//ui/events/ozone:events_ozone_layout",
+      "//ui/ozone:ozone_base",
     ]
   }
 
@@ -615,6 +615,11 @@ component("base") {
       "dragdrop/drag_drop_types.h",
       "dragdrop/drop_target_event.cc",
       "dragdrop/drop_target_event.h",
+    ]
+  }
+
+  if (!toolkit_views && !use_aura) {
+    sources -= [
       "dragdrop/os_exchange_data.cc",
       "dragdrop/os_exchange_data.h",
       "nine_image_painter_factory.cc",
@@ -763,7 +768,6 @@ if (!is_android) {
         "cocoa/nsgraphics_context_additions_unittest.mm",
         "cocoa/nsview_additions_unittest.mm",
         "cocoa/tracking_area_unittest.mm",
-        "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
         "models/list_model_unittest.cc",
         "models/list_selection_model_unittest.cc",
         "models/tree_node_model_unittest.cc",
@@ -772,7 +776,6 @@ if (!is_android) {
         "touch/selection_bound_unittest.cc",
         "view_prop_unittest.cc",
         "webui/web_ui_util_unittest.cc",
-        "x/selection_requestor_unittest.cc",
       ]
     }
 
@@ -828,10 +831,6 @@ if (!is_android) {
         "win/hwnd_subclass_unittest.cc",
         "win/open_file_name_win_unittest.cc",
       ]
-      sources -= [
-        "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
-        "x/selection_requestor_unittest.cc",
-      ]
 
       ldflags = [
         "/DELAYLOAD:d2d1.dll",
@@ -878,11 +877,6 @@ if (!is_android) {
     }
 
     if (is_mac) {
-      sources -= [
-        "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
-        "x/selection_requestor_unittest.cc",
-      ]
-
       deps += [
         "//third_party/mozilla",
         #'ui_base_tests_bundle',  TODO(GYP)
@@ -898,11 +892,14 @@ if (!is_android) {
       ]
     }
 
-    if (is_chromeos) {
-      sources -= [
+    if (use_x11 && !is_chromeos) {
+      sources += [
         "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
         "x/selection_requestor_unittest.cc",
       ]
+    }
+
+    if (is_chromeos) {
       deps += [ "//chromeos" ]
     }
   }
