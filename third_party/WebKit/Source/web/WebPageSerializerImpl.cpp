@@ -112,7 +112,7 @@ WebPageSerializerImpl::SerializeDomParam::SerializeDomParam(const KURL& url,
     , isHTMLDocument(document->isHTMLDocument())
     , haveSeenDocType(false)
     , haveAddedCharsetDeclaration(false)
-    , skipMetaElement(0)
+    , skipMetaElement(nullptr)
     , isInScriptOrStyleTag(false)
     , haveAddedXMLProcessingDirective(false)
     , haveAddedContentsBeforeEnd(false)

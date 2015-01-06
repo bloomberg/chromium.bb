@@ -64,6 +64,7 @@ class WebLocalFrameImpl;
 // buffer is full. See comments of WebViewDelegate::SendSerializedHtmlData
 // for getting more information.
 class WebPageSerializerImpl {
+    STACK_ALLOCATED();
 public:
     // Do serialization action. Return false means no available frame has been
     // serialized, otherwise return true.
@@ -89,7 +90,7 @@ public:
 
 private:
     // Specified frame which need to be serialized;
-    WebLocalFrameImpl* m_specifiedWebLocalFrameImpl;
+    RawPtrWillBeMember<WebLocalFrameImpl> m_specifiedWebLocalFrameImpl;
     // Pointer of WebPageSerializerClient
     WebPageSerializerClient* m_client;
     // This hash map is used to map resource URL of original link to its local
@@ -110,22 +111,26 @@ private:
     // Local directory name of all local resource files.
     WTF::String m_localDirectoryName;
     // Vector for saving all frames which need to be serialized.
-    Vector<WebLocalFrameImpl*> m_frames;
+    WillBeHeapVector<RawPtrWillBeMember<WebLocalFrameImpl>> m_frames;
 
     // Web entities conversion maps.
     WebEntities m_htmlEntities;
     WebEntities m_xmlEntities;
 
-    struct SerializeDomParam {
+    class SerializeDomParam {
+        STACK_ALLOCATED();
+    public:
+        SerializeDomParam(const KURL&, const WTF::TextEncoding&, Document*, const WTF::String& directoryName);
+
         const KURL& url;
         const WTF::TextEncoding& textEncoding;
-        Document* document;
+        RawPtrWillBeMember<Document> document;
         const WTF::String& directoryName;
         bool isHTMLDocument; // document.isHTMLDocument()
         bool haveSeenDocType;
         bool haveAddedCharsetDeclaration;
         // This meta element need to be skipped when serializing DOM.
-        const Element* skipMetaElement;
+        RawPtrWillBeMember<const Element> skipMetaElement;
         // Flag indicates we are in script or style tag.
         bool isInScriptOrStyleTag;
         bool haveAddedXMLProcessingDirective;
@@ -135,8 +140,6 @@ private:
         // PreActionBeforeSerializeEndTag if the function adds new contents into
         // serialization stream.
         bool haveAddedContentsBeforeEnd;
-
-        SerializeDomParam(const KURL&, const WTF::TextEncoding&, Document*, const WTF::String& directoryName);
     };
 
     // Collect all target frames which need to be serialized.
