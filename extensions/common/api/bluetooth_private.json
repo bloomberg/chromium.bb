@@ -36,6 +36,22 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "disconnectAll",
+        "type": "function",
+        "description": "Tears down all connections to the given device.",
+        "parameters": [
+          {
+            "name": "deviceAddress",
+            "type": "string"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

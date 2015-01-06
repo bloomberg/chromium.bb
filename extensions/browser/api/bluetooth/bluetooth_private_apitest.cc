@@ -120,6 +120,12 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   scoped_ptr<NiceMock<MockBluetoothDevice> > mock_device_;
 };
 
+ACTION_TEMPLATE(InvokeCallbackArgument,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  ::std::tr1::get<k>(args).Run();
+}
+
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, SetAdapterState) {
   ON_CALL(*mock_adapter_.get(), GetName())
       .WillByDefault(ReturnPointee(&adapter_name_));
@@ -180,6 +186,22 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, PasskeyPairing) {
   EXPECT_CALL(*mock_device_, ExpectingPasskey()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, SetPasskey(900531));
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/passkey_pairing"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
+  EXPECT_CALL(*mock_device_, IsConnected())
+      .Times(6)
+      .WillOnce(Return(false))
+      .WillOnce(Return(true))
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_device_, Disconnect(_, _))
+      .Times(3)
+      .WillOnce(InvokeCallbackArgument<1>())
+      .WillOnce(InvokeCallbackArgument<1>())
+      .WillOnce(InvokeCallbackArgument<0>());
+  ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/disconnect"))
       << message_;
 }
 

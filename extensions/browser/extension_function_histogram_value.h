@@ -1001,6 +1001,7 @@ enum HistogramValue {
   INLINE_INSTALL_PRIVATE_INSTALL,
   LAUNCHERPAGE_SETENABLED,
   CRYPTOTOKENPRIVATE_REQUESTPERMISSION,
+  BLUETOOTHPRIVATE_DISCONNECTALL,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

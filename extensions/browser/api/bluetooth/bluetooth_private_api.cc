@@ -71,6 +71,8 @@ const char kSetAdapterPropertyError[] = "Error setting adapter properties: $1";
 const char kDeviceNotFoundError[] =
     "Given address is not a valid Bluetooth device.";
 
+const char kDeviceNotConnectedError[] = "Device is not connected";
+
 const char kPairingNotEnabled[] =
     "Pairing must be enabled to set a pairing response.";
 
@@ -79,6 +81,8 @@ const char kInvalidPairingResponseOptions[] =
 
 const char kAdapterNotPresent[] =
     "Could not find a Bluetooth adapter.";
+
+const char kDisconnectError[] = "Failed to disconnect device";
 
 // Returns true if the pairing response options passed into the
 // setPairingResponse function are valid.
@@ -283,6 +287,60 @@ bool BluetoothPrivateSetPairingResponseFunction::DoWork(
 
   SendResponse(true);
   return true;
+}
+
+BluetoothPrivateDisconnectAllFunction::BluetoothPrivateDisconnectAllFunction() {
+}
+
+BluetoothPrivateDisconnectAllFunction::
+    ~BluetoothPrivateDisconnectAllFunction() {
+}
+
+bool BluetoothPrivateDisconnectAllFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  scoped_ptr<bt_private::DisconnectAll::Params> params(
+      bt_private::DisconnectAll::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  device::BluetoothDevice* device = adapter->GetDevice(params->device_address);
+  if (!device) {
+    SetError(kDeviceNotFoundError);
+    SendResponse(false);
+    return true;
+  }
+
+  if (!device->IsConnected()) {
+    SetError(kDeviceNotConnectedError);
+    SendResponse(false);
+    return true;
+  }
+
+  device->Disconnect(
+      base::Bind(&BluetoothPrivateDisconnectAllFunction::OnSuccessCallback,
+                 this),
+      base::Bind(&BluetoothPrivateDisconnectAllFunction::OnErrorCallback, this,
+                 adapter, params->device_address));
+
+  return true;
+}
+
+void BluetoothPrivateDisconnectAllFunction::OnSuccessCallback() {
+  SendResponse(true);
+}
+
+void BluetoothPrivateDisconnectAllFunction::OnErrorCallback(
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const std::string& device_address) {
+  // The call to Disconnect may report an error if the device was disconnected
+  // due to an external reason. In this case, report "Not Connected" as the
+  // error.
+  device::BluetoothDevice* device = adapter->GetDevice(device_address);
+  if (device && !device->IsConnected())
+    SetError(kDeviceNotConnectedError);
+  else
+    SetError(kDisconnectError);
+
+  SendResponse(false);
 }
 
 }  // namespace core_api
