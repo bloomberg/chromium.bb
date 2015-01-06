@@ -99,7 +99,6 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/Logging.h"
 #include "platform/NotImplemented.h"
-#include "platform/OverscrollTheme.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -4260,11 +4259,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
         updateLayerTreeBackgroundColor();
         m_layerTreeView->setHasTransparentBackground(isTransparent());
-#if USE(RUBBER_BANDING)
-        RefPtr<Image> overhangImage = OverscrollTheme::theme()->getOverhangImage();
-        if (overhangImage && overhangImage->nativeImageForCurrentFrame())
-            m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
-#endif
         updateLayerTreeViewport();
         m_isAcceleratedCompositingActive = true;
         if (m_pageOverlays)

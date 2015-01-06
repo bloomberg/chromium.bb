@@ -42,7 +42,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
-#include "platform/OverscrollTheme.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -97,10 +96,6 @@ void PinchViewport::setSize(const IntSize& size)
         // Need to re-compute sizes for the overlay scrollbars.
         setupScrollbar(WebScrollbar::Horizontal);
         setupScrollbar(WebScrollbar::Vertical);
-
-        if (m_overscrollElasticityLayer) {
-            OverscrollTheme::theme()->updateOverhangShadowLayer(m_overscrollElasticityLayer.get(), m_innerViewportContainerLayer.get());
-        }
     }
 }
 
@@ -300,11 +295,6 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         // Setup the inner viewport overlay scrollbars.
         setupScrollbar(WebScrollbar::Horizontal);
         setupScrollbar(WebScrollbar::Vertical);
-
-        // Put a shadow around the overscroll elasticity layer which is used to translate
-        // contents during overscroll bounce.
-        OverscrollTheme::theme()->setUpOverhangShadowLayer(m_overscrollElasticityLayer.get());
-        OverscrollTheme::theme()->updateOverhangShadowLayer(m_overscrollElasticityLayer.get(), m_innerViewportContainerLayer.get());
     }
 
     m_innerViewportScrollLayer->removeAllChildren();

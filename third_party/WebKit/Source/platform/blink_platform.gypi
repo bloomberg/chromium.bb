@@ -71,8 +71,6 @@
       'MIMETypeRegistry.h',
       'NotImplemented.cpp',
       'NotImplemented.h',
-      'OverscrollTheme.cpp',
-      'OverscrollTheme.h',
       'PODArena.h',
       'PODFreeListArena.h',
       'PODInterval.h',
