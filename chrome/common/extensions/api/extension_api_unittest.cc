@@ -798,6 +798,7 @@ TEST(ExtensionAPITest, NoPermissions) {
     { "management.uninstallSelf", true },
     // But other functions in those modules do.
     { "management.getPermissionWarningsById", false },
+    { "runtime.connectNative", false },
   };
 
   scoped_ptr<ExtensionAPI> extension_api(

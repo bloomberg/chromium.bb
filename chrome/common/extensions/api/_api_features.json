@@ -335,9 +335,6 @@
   "extension.onRequest": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
-  "extension.sendNativeMessage": {
-    "dependencies": ["permission:nativeMessaging"]
-  },
   "extension.sendRequest": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },

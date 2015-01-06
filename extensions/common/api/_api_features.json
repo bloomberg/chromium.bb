@@ -214,6 +214,10 @@
     ],
     "matches": ["<all_urls>"]
   },
+  "runtime.connectNative": {
+    "dependencies": ["permission:nativeMessaging"],
+    "contexts": ["blessed_extension"]
+  },
   "runtime.getURL": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
@@ -241,6 +245,10 @@
       "web_page"
     ],
     "matches": ["<all_urls>"]
+  },
+  "runtime.sendNativeMessage": {
+    "dependencies": ["permission:nativeMessaging"],
+    "contexts": ["blessed_extension"]
   },
   "serial": {
     "dependencies": ["permission:serial"],

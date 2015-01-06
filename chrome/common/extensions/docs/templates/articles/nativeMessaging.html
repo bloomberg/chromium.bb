@@ -142,6 +142,9 @@ Sending and receiving messages to and from a native application is very similar
 to cross-extension messaging. The main difference is that
 $(ref:runtime.connectNative) is used instead of $(ref:runtime.connect),
 and $(ref:runtime.sendNativeMessage) is used instead of $(ref:runtime.sendMessage).
+<br>
+These methods can only be used if the "nativeMessaging" permission
+is <a href="declare_permissions">declared</a> in your {{platform}}'s manifest file.
 
 <p>
 The Following example creates a $(ref:runtime.Port) object that's connected to native
@@ -227,8 +230,9 @@ Here are some errors and tips for solving the issues:
   the communication protocol in the native messaging host.
   <ul>
     <li>
-      Make sure that all output in <code>stdout</code> adheres to the native
-      messaging protocol. If you want to print some data for debugging purposes,
+      Make sure that all output in <code>stdout</code> adheres to the
+      <a href="#native-messaging-host-protocol">native messaging protocol</a>.
+      If you want to print some data for debugging purposes,
       write to <code>stderr</code>.
     <li>
       Make sure that the 32-bit message length is in the platform's native
