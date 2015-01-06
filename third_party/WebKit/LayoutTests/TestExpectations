@@ -70,6 +70,7 @@ crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/positioning/inline-blo
 crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/margin-collapse/103.html [ Failure ImageOnlyFailure ]
 
 crbug.com/444211 [ Win Mac ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ImageOnlyFailure ]
+crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
 
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
