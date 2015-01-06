@@ -941,6 +941,7 @@
       'network/HTTPParsersTest.cpp',
       'network/ResourceRequestTest.cpp',
       'scheduler/SchedulerTest.cpp',
+      'scroll/ScrollableAreaTest.cpp',
       'testing/ArenaTestHelpers.h',
       'testing/TreeTestHelpers.cpp',
       'testing/TreeTestHelpers.h',

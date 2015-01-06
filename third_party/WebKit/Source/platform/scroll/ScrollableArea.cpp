@@ -183,7 +183,7 @@ void ScrollableArea::programmaticallyScrollSmoothlyToOffset(const FloatPoint& of
 void ScrollableArea::notifyScrollPositionChanged(const IntPoint& position)
 {
     scrollPositionChanged(DoublePoint(position));
-    scrollAnimator()->setCurrentPosition(position);
+    scrollAnimator()->setCurrentPosition(scrollPosition());
 }
 
 void ScrollableArea::scrollPositionChanged(const DoublePoint& position)
