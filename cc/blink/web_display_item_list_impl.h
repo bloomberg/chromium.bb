@@ -43,6 +43,8 @@ class WebDisplayItemListImpl {
       const blink::WebRect& clip_rect,
       const blink::WebVector<SkRRect>& rounded_clip_rects);
   virtual void appendEndClipItem();
+  virtual void appendFloatClipItem(const blink::WebFloatRect& clip_rect);
+  virtual void appendEndFloatClipItem();
   virtual void appendTransformItem(const SkMatrix44& matrix);
   virtual void appendEndTransformItem();
   virtual void appendTransparencyItem(float opacity,

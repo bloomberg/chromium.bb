@@ -378,6 +378,8 @@
         'resources/eviction_tile_priority_queue.h',
         'resources/filter_display_item.cc',
         'resources/filter_display_item.h',
+        'resources/float_clip_display_item.cc',
+        'resources/float_clip_display_item.h',
         'resources/gpu_rasterizer.cc',
         'resources/gpu_rasterizer.h',
         'resources/gpu_tile_task_worker_pool.cc',

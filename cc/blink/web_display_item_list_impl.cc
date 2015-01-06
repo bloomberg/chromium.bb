@@ -10,6 +10,7 @@
 #include "cc/resources/clip_display_item.h"
 #include "cc/resources/drawing_display_item.h"
 #include "cc/resources/filter_display_item.h"
+#include "cc/resources/float_clip_display_item.h"
 #include "cc/resources/transform_display_item.h"
 #include "cc/resources/transparency_display_item.h"
 #include "skia/ext/refptr.h"
@@ -50,6 +51,15 @@ void WebDisplayItemListImpl::appendClipItem(
 
 void WebDisplayItemListImpl::appendEndClipItem() {
   display_item_list_->AppendItem(cc::EndClipDisplayItem::Create());
+}
+
+void WebDisplayItemListImpl::appendFloatClipItem(
+    const blink::WebFloatRect& clip_rect) {
+  display_item_list_->AppendItem(cc::FloatClipDisplayItem::Create(clip_rect));
+}
+
+void WebDisplayItemListImpl::appendEndFloatClipItem() {
+  display_item_list_->AppendItem(cc::EndFloatClipDisplayItem::Create());
 }
 
 void WebDisplayItemListImpl::appendTransformItem(const SkMatrix44& matrix) {
