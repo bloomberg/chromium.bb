@@ -1,5 +1,7 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
     ROLE_SYSTEM_TABLE name='Browser and Engine'
+        IA2_ROLE_CAPTION
+            ROLE_SYSTEM_STATICTEXT name='Browser and Engine'
         ROLE_SYSTEM_ROW
             ROLE_SYSTEM_CELL
                 ROLE_SYSTEM_STATICTEXT name='Browser'

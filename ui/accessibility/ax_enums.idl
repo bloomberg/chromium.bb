@@ -74,6 +74,7 @@
     button,
     button_drop_down,
     canvas,
+    caption,
     cell,
     check_box,
     client,

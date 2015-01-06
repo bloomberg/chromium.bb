@@ -31,6 +31,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_BUSY_INDICATOR, NSAccessibilityBusyIndicatorRole},
       {ui::AX_ROLE_BUTTON, NSAccessibilityButtonRole},
       {ui::AX_ROLE_CANVAS, NSAccessibilityImageRole},
+      {ui::AX_ROLE_CAPTION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_CELL, @"AXCell"},
       {ui::AX_ROLE_CHECK_BOX, NSAccessibilityCheckBoxRole},
       {ui::AX_ROLE_COLOR_WELL, NSAccessibilityColorWellRole},

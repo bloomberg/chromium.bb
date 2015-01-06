@@ -3435,6 +3435,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         ia_role_ = ROLE_SYSTEM_GRAPHIC;
       }
       break;
+    case ui::AX_ROLE_CAPTION:
+      ia_role_ = ROLE_SYSTEM_TEXT;
+      ia2_role_ = IA2_ROLE_CAPTION;
+      break;
     case ui::AX_ROLE_CELL:
       ia_role_ = ROLE_SYSTEM_CELL;
       break;

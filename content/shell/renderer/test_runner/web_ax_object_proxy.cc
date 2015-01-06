@@ -42,6 +42,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Button");
     case blink::WebAXRoleCanvas:
       return result.append("Canvas");
+    case blink::WebAXRoleCaption:
+      return result.append("Caption");
     case blink::WebAXRoleCell:
       return result.append("Cell");
     case blink::WebAXRoleCheckBox:

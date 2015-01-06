@@ -1,5 +1,7 @@
 AXWebArea
     AXTable AXTitle='Browser and Engine'
+        AXGroup
+            AXStaticText AXValue='Browser and Engine'
         AXRow
             AXCell
                 AXStaticText AXValue='Browser'

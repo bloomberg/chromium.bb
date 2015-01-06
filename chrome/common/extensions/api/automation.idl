@@ -63,6 +63,7 @@
     button,
     buttonDropDown,
     canvas,
+    caption,
     cell,
     checkBox,
     client,

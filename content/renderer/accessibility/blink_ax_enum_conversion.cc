@@ -106,6 +106,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_BUTTON;
     case blink::WebAXRoleCanvas:
       return ui::AX_ROLE_CANVAS;
+    case blink::WebAXRoleCaption:
+      return ui::AX_ROLE_CAPTION;
     case blink::WebAXRoleCell:
       return ui::AX_ROLE_CELL;
     case blink::WebAXRoleCheckBox:
