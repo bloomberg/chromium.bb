@@ -500,7 +500,7 @@ bool LargeObject::isEmpty()
 void LargeObject::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
-    if (!objectContains(address) || heapObjectHeader()->isDead())
+    if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
         return;
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
@@ -600,6 +600,23 @@ void ThreadHeap::updateRemainingAllocationSize()
         m_lastRemainingAllocationSize = remainingAllocationSize();
     }
     ASSERT(m_lastRemainingAllocationSize == remainingAllocationSize());
+}
+
+void ThreadHeap::setAllocationPoint(Address point, size_t size)
+{
+#if ENABLE(ASSERT)
+    if (point) {
+        ASSERT(size);
+        BaseHeapPage* page = pageFromObject(point);
+        ASSERT(!page->isLargeObject());
+        ASSERT(size <= static_cast<HeapPage*>(page)->payloadSize());
+    }
+#endif
+    if (hasCurrentAllocationArea())
+        addToFreeList(currentAllocationPoint(), remainingAllocationSize());
+    updateRemainingAllocationSize();
+    m_currentAllocationPoint = point;
+    m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
 }
 
 Address ThreadHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex)
@@ -806,11 +823,13 @@ void FreeList::addToFreeList(Address address, size_t size)
     }
     entry = new (NotNull, address) FreeListEntry(size);
 #if defined(ADDRESS_SANITIZER)
+    BaseHeapPage* page = pageFromObject(address);
+    ASSERT(!page->isLargeObject());
     // For ASan we don't add the entry to the free lists until the
     // asanDeferMemoryReuseCount reaches zero.  However we always add entire
     // pages to ensure that adding a new page will increase the allocation
     // space.
-    if (HeapPage::payloadSize() != size && !entry->shouldAddToFreeList())
+    if (static_cast<HeapPage*>(page)->payloadSize() != size && !entry->shouldAddToFreeList())
         return;
 #endif
     int index = bucketIndexForSize(size);
@@ -921,7 +940,7 @@ bool ThreadHeap::coalesce()
     for (HeapPage* page = m_firstPage; page; page = page->next()) {
         page->clearObjectStartBitMap();
         Address startOfGap = page->payload();
-        for (Address headerAddress = startOfGap; headerAddress < page->end(); ) {
+        for (Address headerAddress = startOfGap; headerAddress < page->payloadEnd(); ) {
             HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
             size_t size = header->size();
             ASSERT(size > 0);
@@ -950,8 +969,8 @@ bool ThreadHeap::coalesce()
             startOfGap = headerAddress;
         }
 
-        if (startOfGap != page->end())
-            addToFreeList(startOfGap, page->end() - startOfGap);
+        if (startOfGap != page->payloadEnd())
+            addToFreeList(startOfGap, page->payloadEnd() - startOfGap);
     }
     Heap::decreaseAllocatedObjectSize(freedSize);
     ASSERT(m_promptlyFreedSize == freedSize);
@@ -1269,7 +1288,7 @@ void ThreadHeap::allocatePage()
     }
 
     Heap::increaseAllocatedSpace(blinkPageSize);
-    addToFreeList(page->payload(), HeapPage::payloadSize());
+    addToFreeList(page->payload(), page->payloadSize());
 }
 
 #if ENABLE(ASSERT)
@@ -1457,7 +1476,7 @@ size_t HeapPage::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
     Address headerAddress = payload();
-    ASSERT(headerAddress != end());
+    ASSERT(headerAddress != payloadEnd());
     do {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         if (!header->isFree()) {
@@ -1466,8 +1485,8 @@ size_t HeapPage::objectPayloadSizeForTesting()
         }
         ASSERT(header->size() < blinkPagePayloadSize());
         headerAddress += header->size();
-        ASSERT(headerAddress <= end());
-    } while (headerAddress < end());
+        ASSERT(headerAddress <= payloadEnd());
+    } while (headerAddress < payloadEnd());
     return objectPayloadSize;
 }
 
@@ -1482,7 +1501,7 @@ void HeapPage::sweep(ThreadHeap* heap)
     clearObjectStartBitMap();
 
     Address startOfGap = payload();
-    for (Address headerAddress = startOfGap; headerAddress < end(); ) {
+    for (Address headerAddress = startOfGap; headerAddress < payloadEnd(); ) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() > 0);
         ASSERT(header->size() < blinkPagePayloadSize());
@@ -1524,13 +1543,13 @@ void HeapPage::sweep(ThreadHeap* heap)
         Heap::increaseMarkedObjectSize(header->size());
         startOfGap = headerAddress;
     }
-    if (startOfGap != end())
-        heap->addToFreeList(startOfGap, end() - startOfGap);
+    if (startOfGap != payloadEnd())
+        heap->addToFreeList(startOfGap, payloadEnd() - startOfGap);
 }
 
 void HeapPage::markUnmarkedObjectsDead()
 {
-    for (Address headerAddress = payload(); headerAddress < end();) {
+    for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
         // Check if a free list entry first since we cannot call
@@ -1556,7 +1575,7 @@ void HeapPage::populateObjectStartBitMap()
 {
     memset(&m_objectStartBitMap, 0, objectStartBitMapSize);
     Address start = payload();
-    for (Address headerAddress = start; headerAddress < end();) {
+    for (Address headerAddress = start; headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         size_t objectOffset = headerAddress - start;
         ASSERT(!(objectOffset & allocationMask));
@@ -1565,7 +1584,7 @@ void HeapPage::populateObjectStartBitMap()
         ASSERT(mapIndex < objectStartBitMapSize);
         m_objectStartBitMap[mapIndex] |= (1 << (objectStartNumber & 7));
         headerAddress += header->size();
-        ASSERT(headerAddress <= end());
+        ASSERT(headerAddress <= payloadEnd());
     }
     m_objectStartBitMapComputed = true;
 }
@@ -1657,7 +1676,7 @@ const GCInfo* HeapPage::findGCInfo(Address address)
 void HeapPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
     HeapObjectHeader* header = nullptr;
-    for (Address addr = payload(); addr < end(); addr += header->size()) {
+    for (Address addr = payload(); addr < payloadEnd(); addr += header->size()) {
         header = reinterpret_cast<HeapObjectHeader*>(addr);
         if (json)
             json->pushInteger(header->encodedSize());
@@ -1691,7 +1710,7 @@ void HeapPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 #if defined(ADDRESS_SANITIZER)
 void HeapPage::poisonUnmarkedObjects()
 {
-    for (Address headerAddress = payload(); headerAddress < end(); ) {
+    for (Address headerAddress = payload(); headerAddress < payloadEnd(); ) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
 
@@ -1866,7 +1885,7 @@ public:
     void reportStats()
     {
         fprintf(stderr, "\n---------- AFTER MARKING -------------------\n");
-        for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().end(); it != end; ++it) {
+        for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().payloadEnd(); it != end; ++it) {
             fprintf(stderr, "%s %u", it->key.ascii().data(), it->value.size());
 
             if (it->key == "blink::Document")
@@ -1889,7 +1908,7 @@ public:
 
         fprintf(stderr, " [previously %u]", previous.size());
         for (uintptr_t object : current) {
-            if (previous.find(object) == previous.end())
+            if (previous.find(object) == previous.payloadEnd())
                 continue;
             count++;
         }
@@ -1899,7 +1918,7 @@ public:
 
         fprintf(stderr, " {survived 2GCs %d: ", count);
         for (uintptr_t object : current) {
-            if (previous.find(object) == previous.end())
+            if (previous.find(object) == previous.payloadEnd())
                 continue;
             fprintf(stderr, "%ld", object);
             if (--count)
@@ -1912,10 +1931,10 @@ public:
     static void dumpPathToObjectFromObjectGraph(const ObjectGraph& graph, uintptr_t target)
     {
         ObjectGraph::const_iterator it = graph.find(target);
-        if (it == graph.end())
+        if (it == graph.payloadEnd())
             return;
         fprintf(stderr, "Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
-        while (it != graph.end()) {
+        while (it != graph.payloadEnd()) {
             fprintf(stderr, "<- %lx of %s\n", it->value.first, it->value.second.utf8().data());
             it = graph.find(it->value.first);
         }

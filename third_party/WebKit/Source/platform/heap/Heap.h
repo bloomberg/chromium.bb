@@ -410,6 +410,17 @@ class HeapPage final : public BaseHeapPage {
 public:
     HeapPage(PageMemory*, ThreadHeap*);
 
+    Address payload()
+    {
+        return address() + sizeof(HeapPage) + headerPadding();
+    }
+    size_t payloadSize()
+    {
+        return (blinkPagePayloadSize() - sizeof(HeapPage) - headerPadding()) & ~allocationMask;
+    }
+    Address payloadEnd() { return payload() + payloadSize(); }
+    bool containedInObjectPayload(Address address) { return payload() <= address && address < payloadEnd(); }
+
     void link(HeapPage** previousNext)
     {
         m_next = *previousNext;
@@ -460,18 +471,6 @@ public:
 
     HeapPage* next() { return m_next; }
 
-    Address payload()
-    {
-        return address() + sizeof(HeapPage) + headerPadding();
-    }
-
-    static size_t payloadSize()
-    {
-        return (blinkPagePayloadSize() - sizeof(HeapPage) - headerPadding()) & ~allocationMask;
-    }
-
-    Address end() { return payload() + payloadSize(); }
-
     void clearObjectStartBitMap();
 
 #if defined(ADDRESS_SANITIZER)
@@ -506,6 +505,11 @@ public:
         , m_payloadSize(payloadSize)
     {
     }
+
+    Address payload() { return heapObjectHeader()->payload(); }
+    size_t payloadSize() { return m_payloadSize; }
+    Address payloadEnd() { return payload() + payloadSize(); }
+    bool containedInObjectPayload(Address address) { return payload() <= address && address < payloadEnd(); }
 
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
@@ -555,13 +559,6 @@ public:
         m_next = nullptr;
     }
 
-    // The LargeObject pseudo-page contains one actual object. Determine
-    // whether the pointer is within that object.
-    bool objectContains(Address object)
-    {
-        return (payload() <= object) && (object < address() + size());
-    }
-
     LargeObject* next()
     {
         return m_next;
@@ -571,9 +568,6 @@ public:
     {
         return sizeof(LargeObject) + headerPadding() +  sizeof(HeapObjectHeader) + m_payloadSize;
     }
-
-    Address payload() { return heapObjectHeader()->payload(); }
-    size_t payloadSize() { return m_payloadSize; }
 
     HeapObjectHeader* heapObjectHeader()
     {
@@ -776,16 +770,7 @@ private:
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
-    void setAllocationPoint(Address point, size_t size)
-    {
-        ASSERT(!point || findPageFromAddress(point));
-        ASSERT(size <= HeapPage::payloadSize());
-        if (hasCurrentAllocationArea())
-            addToFreeList(currentAllocationPoint(), remainingAllocationSize());
-        updateRemainingAllocationSize();
-        m_currentAllocationPoint = point;
-        m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
-    }
+    inline void setAllocationPoint(Address, size_t);
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, size_t gcInfoIndex);
 
