@@ -48978,10 +48978,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="21" label="NETWORK_TIMEOUT"/>
   <int value="22" label="NETWORK_DISCONNECTED"/>
   <int value="23" label="NETWORK_SERVER_DOWN"/>
+  <int value="24" label="NETWORK_INVALID_REQUEST"/>
   <int value="30" label="SERVER_FAILED"/>
   <int value="31" label="SERVER_NO_RANGE"/>
   <int value="32" label="SERVER_PRECONDITION"/>
   <int value="33" label="SERVER_BAD_CONTENT"/>
+  <int value="34" label="SERVER_UNAUTHORIZED"/>
+  <int value="35" label="SERVER_CERT_PROBLEM"/>
   <int value="40" label="USER_CANCELED"/>
   <int value="41" label="USER_SHUTDOWN"/>
   <int value="50" label="CRASH"/>
