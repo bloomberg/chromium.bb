@@ -32,7 +32,7 @@
 #include "hb-private.hh"
 
 
-#line 36 "hb-buffer-deserialize-text.hh.tmp"
+#line 36 "../../src/hb-buffer-deserialize-text.hh"
 static const unsigned char _deserialize_text_trans_keys[] = {
 	0u, 0u, 9u, 122u, 45u, 57u, 48u, 57u, 45u, 57u, 48u, 57u, 48u, 57u, 45u, 57u, 
 	48u, 57u, 44u, 44u, 45u, 57u, 48u, 57u, 44u, 57u, 9u, 124u, 9u, 124u, 0u, 0u, 
@@ -339,12 +339,12 @@ _hb_buffer_deserialize_glyphs_text (hb_buffer_t *buffer,
   hb_glyph_info_t info;
   hb_glyph_position_t pos;
   
-#line 343 "hb-buffer-deserialize-text.hh.tmp"
+#line 343 "../../src/hb-buffer-deserialize-text.hh"
 	{
 	cs = deserialize_text_start;
 	}
 
-#line 348 "hb-buffer-deserialize-text.hh.tmp"
+#line 348 "../../src/hb-buffer-deserialize-text.hh"
 	{
 	int _slen;
 	int _trans;
@@ -476,7 +476,7 @@ _resume:
 	*end_ptr = p;
 }
 	break;
-#line 480 "hb-buffer-deserialize-text.hh.tmp"
+#line 480 "../../src/hb-buffer-deserialize-text.hh"
 	}
 
 _again:
@@ -553,7 +553,7 @@ _again:
 	*end_ptr = p;
 }
 	break;
-#line 557 "hb-buffer-deserialize-text.hh.tmp"
+#line 557 "../../src/hb-buffer-deserialize-text.hh"
 	}
 	}
 
