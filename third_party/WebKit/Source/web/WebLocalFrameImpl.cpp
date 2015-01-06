@@ -153,6 +153,7 @@
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "modules/speech/SpeechRecognitionController.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/clipboard/ClipboardUtilities.h"
@@ -707,7 +708,7 @@ void WebLocalFrameImpl::dispatchUnloadEvent()
 
 NPObject* WebLocalFrameImpl::windowObject() const
 {
-    if (!frame())
+    if (!frame() || ScriptForbiddenScope::isScriptForbidden())
         return 0;
     return frame()->script().windowScriptNPObject();
 }
