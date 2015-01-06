@@ -424,8 +424,9 @@ void MessageService::OpenChannelToNativeApp(
   content::RenderWidgetHost* render_widget_host =
       content::RenderWidgetHost::FromID(source_process_id, source_routing_id);
   gfx::NativeView native_view =
-      render_widget_host ? render_widget_host->GetView()->GetNativeView()
-                         : nullptr;
+      (render_widget_host && render_widget_host->GetView())
+          ? render_widget_host->GetView()->GetNativeView()
+          : nullptr;
 
   std::string error = kReceivingEndDoesntExistError;
   scoped_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
