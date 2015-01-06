@@ -18,17 +18,12 @@ void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
   return NULL;
 }
 
-bool CommonDecoder::Bucket::SetSize(size_t size) {
+void CommonDecoder::Bucket::SetSize(size_t size) {
   if (size != size_) {
     data_.reset(size ? new int8[size] : NULL);
-    if (!data_.get() && (size != 0)) {
-      size_ = 0;
-      return false;
-    }
     size_ = size;
     memset(data_.get(), 0, size);
   }
-  return true;
 }
 
 bool CommonDecoder::Bucket::SetData(
@@ -191,9 +186,7 @@ error::Error CommonDecoder::HandleSetBucketSize(
   uint32 size = args.size;
 
   Bucket* bucket = CreateBucket(bucket_id);
-  if (!bucket->SetSize(size)) {
-    return error::kOutOfBounds;
-  }
+  bucket->SetSize(size);
   return error::kNoError;
 }
 

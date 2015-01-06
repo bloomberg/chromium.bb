@@ -67,7 +67,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     }
 
     // Sets the size of the bucket.
-    bool SetSize(size_t size);
+    void SetSize(size_t size);
 
     // Sets a part of the bucket.
     // Returns false if offset or size is out of range.
