@@ -128,11 +128,12 @@ void GpuRasterizer::AddToMultiPictureDraw(const Tile* tile,
   if (!sk_surface)
     return;
 
+  SkRTreeFactory factory;
   SkPictureRecorder recorder;
   gfx::Size size = resource->size();
   const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
-      recorder.beginRecording(size.width(), size.height(), NULL, flags));
+      recorder.beginRecording(size.width(), size.height(), &factory, flags));
 
   canvas->save();
   tile->raster_source()->PlaybackToCanvas(canvas.get(), tile->content_rect(),
