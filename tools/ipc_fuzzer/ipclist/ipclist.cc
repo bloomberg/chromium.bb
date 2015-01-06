@@ -34,7 +34,7 @@ static msginfo msgtable[] = {
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
 };
 #define MSGTABLE_SIZE (sizeof(msgtable)/sizeof(msgtable[0]))
-COMPILE_ASSERT(MSGTABLE_SIZE, CHECK_YOUR_HEADERS_FOR_AN_EXTRA_SEMICOLON);
+static_assert(MSGTABLE_SIZE, "check your headers for an extra semicolon");
 
 static bool check_msgtable() {
   bool result = true;

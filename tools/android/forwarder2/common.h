@@ -80,7 +80,7 @@ class FixedSizeStringBuilder {
   char* write_ptr_;
   char buffer_[BufferSize];
 
-  COMPILE_ASSERT(BufferSize >= 1, Size_of_buffer_must_be_at_least_one);
+  static_assert(BufferSize >= 1, "size of buffer must be at least one");
   DISALLOW_COPY_AND_ASSIGN(FixedSizeStringBuilder);
 };
 
