@@ -646,6 +646,7 @@ bool XkbKeyboardLayoutEngine::CanSetCurrentLayout() const {
 
 bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
     const std::string& layout_name) {
+  xkb_keymap* keymap = NULL;
 #if defined(OS_CHROMEOS)
   size_t dash_index = layout_name.find('-');
   size_t parentheses_index = layout_name.find('(');
@@ -669,15 +670,20 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
     .variant = layout_variant.c_str(),
     .options = ""
   };
-  xkb_keymap* keymap = xkb_keymap_new_from_names(xkb_context_.get(),
-                                                 &names,
-                                                 XKB_KEYMAP_COMPILE_NO_FLAGS);
-  if (keymap) {
-    SetKeymap(keymap);
-    return true;
-  }
+  keymap = xkb_keymap_new_from_names(xkb_context_.get(),
+                                     &names,
+                                     XKB_KEYMAP_COMPILE_NO_FLAGS);
+#else
+  keymap = xkb_map_new_from_string(xkb_context_.get(),
+                                   layout_name.c_str(),
+                                   XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_COMPILE_NO_FLAGS);
 #endif  // defined(OS_CHROMEOS)
-  return false;
+  if (!keymap)
+    return false;
+
+  SetKeymap(keymap);
+  return true;
 }
 
 bool XkbKeyboardLayoutEngine::UsesISOLevel5Shift() const {
