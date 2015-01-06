@@ -135,10 +135,10 @@ struct PDFFontSubstitution {
 };
 
 PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
-  COMPILE_ASSERT(PP_BROWSERFONT_TRUSTED_WEIGHT_100 == 0,
-                 PP_BrowserFont_Trusted_Weight_Min);
-  COMPILE_ASSERT(PP_BROWSERFONT_TRUSTED_WEIGHT_900 == 8,
-                 PP_BrowserFont_Trusted_Weight_Max);
+  static_assert(PP_BROWSERFONT_TRUSTED_WEIGHT_100 == 0,
+                "PP_BrowserFont_Trusted_Weight min");
+  static_assert(PP_BROWSERFONT_TRUSTED_WEIGHT_900 == 8,
+                "PP_BrowserFont_Trusted_Weight max");
   const int kMinimumWeight = 100;
   const int kMaximumWeight = 900;
   int normalized_weight =
