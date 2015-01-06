@@ -318,46 +318,21 @@ namespace WTF {
         };
     };
 
-#if COMPILER(MSVC)
-template<typename T, bool = __is_class(T)> struct NeedsTracingMSVC;
-
-template<typename T>
-struct NeedsTracingMSVC<T, true> {
-    __if_exists(T::trace)
-    {
-        static const bool value = true;
-    }
-    __if_not_exists(T::trace)
-    {
-        static const bool value = false;
-    }
-};
-
-template<typename T>
-struct NeedsTracingMSVC<T, false> {
-    static const bool value = false;
-};
-#endif
-
 template<typename T>
 class NeedsTracing {
-#if COMPILER(MSVC)
-public:
-    static const bool value = NeedsTracingMSVC<T>::value;
-#else
     typedef char YesType;
     typedef struct NoType {
         char padding[8];
     } NoType;
-    template<size_t> struct HasMethod;
-    template<typename V> static YesType checkHasTraceMethod(HasMethod<sizeof(static_cast<void (V::*)(blink::Visitor*)>(&V::trace))>*);
+
+    // Note that this also checks if a superclass of V has a trace method.
+    template<typename V> static YesType checkHasTraceMethod(V* v, blink::Visitor* p = 0, typename EnableIf<IsSameType<decltype(v->trace(p)), void>::value>::Type* g = 0);
     template<typename V> static NoType checkHasTraceMethod(...);
 public:
     // We add sizeof(T) to both sides here, because we want it to fail for
     // incomplete types. Otherwise it just assumes that incomplete types do not
     // have a trace method, which may not be true.
     static const bool value = sizeof(YesType) + sizeof(T) == sizeof(checkHasTraceMethod<T>(nullptr)) + sizeof(T);
-#endif // COMPILER(MSVC)
 };
 
 // Convenience template wrapping the NeedsTracingLazily template in
