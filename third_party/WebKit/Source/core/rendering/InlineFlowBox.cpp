@@ -794,10 +794,9 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
     if (isFlippedLinesWritingMode(writingMode)) {
         // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite shadow that applies, since
         // the line is "upside down" in terms of block coordinates.
-        // FIXME: This bears a little more explanation.
         LayoutUnit oldLogicalTop = logicalOutsets.top();
-        logicalOutsets.setTop(-logicalOutsets.bottom());
-        logicalOutsets.setBottom(-oldLogicalTop);
+        logicalOutsets.setTop(logicalOutsets.bottom());
+        logicalOutsets.setBottom(oldLogicalTop);
     }
 
     LayoutRect shadowBounds(logicalFrameRect());
