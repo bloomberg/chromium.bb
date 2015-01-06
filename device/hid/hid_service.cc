@@ -4,6 +4,7 @@
 
 #include "device/hid/hid_service.h"
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -21,27 +22,8 @@ namespace device {
 
 namespace {
 
-HidService* g_service = NULL;
-
-}  // namespace
-
-class HidService::Destroyer : public base::MessageLoop::DestructionObserver {
- public:
-  explicit Destroyer(HidService* hid_service)
-      : hid_service_(hid_service) {}
-  ~Destroyer() override {}
-
- private:
-  // base::MessageLoop::DestructionObserver implementation.
-  void WillDestroyCurrentMessageLoop() override {
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
-    delete hid_service_;
-    delete this;
-    g_service = NULL;
-  }
-
-  HidService* hid_service_;
-};
+HidService* g_service;
+}
 
 HidService* HidService::GetInstance(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
@@ -54,8 +36,8 @@ HidService* HidService::GetInstance(
     g_service = new HidServiceWin();
 #endif
     if (g_service != nullptr) {
-      Destroyer* destroyer = new Destroyer(g_service);
-      base::MessageLoop::current()->AddDestructionObserver(destroyer);
+      base::AtExitManager::RegisterTask(base::Bind(
+          &base::DeletePointer<HidService>, base::Unretained(g_service)));
     }
   }
   return g_service;
@@ -64,12 +46,8 @@ HidService* HidService::GetInstance(
 void HidService::SetInstanceForTest(HidService* instance) {
   DCHECK(!g_service);
   g_service = instance;
-  Destroyer* destroyer = new Destroyer(g_service);
-  base::MessageLoop::current()->AddDestructionObserver(destroyer);
-}
-
-HidService::~HidService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AtExitManager::RegisterTask(base::Bind(&base::DeletePointer<HidService>,
+                                               base::Unretained(g_service)));
 }
 
 void HidService::GetDevices(const GetDevicesCallback& callback) {
@@ -106,6 +84,10 @@ bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
 }
 
 HidService::HidService() : enumeration_ready_(false) {
+}
+
+HidService::~HidService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void HidService::AddDevice(const HidDeviceInfo& info) {

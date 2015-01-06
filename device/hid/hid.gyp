@@ -13,6 +13,9 @@
       'include_dirs': [
         '../..',
       ],
+      'dependencies': [
+        '../core/core.gyp:device_core',
+      ],
       'sources': [
         'device_monitor_linux.cc',
         'device_monitor_linux.h',

@@ -14,7 +14,9 @@ extern "C" {
 }
 
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/win/scoped_handle.h"
+#include "device/core/device_monitor_win.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 
@@ -26,7 +28,7 @@ class MessageWindow;
 
 namespace device {
 
-class HidServiceWin : public HidService {
+class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
  public:
   HidServiceWin();
 
@@ -36,11 +38,6 @@ class HidServiceWin : public HidService {
  private:
   virtual ~HidServiceWin();
 
-  void RegisterForDeviceNotifications();
-  bool HandleMessage(UINT message,
-                     WPARAM wparam,
-                     LPARAM lparam,
-                     LRESULT* result);
   void DoInitialEnumeration();
   static void CollectInfoFromButtonCaps(PHIDP_PREPARSED_DATA preparsed_data,
                                         HIDP_REPORT_TYPE report_type,
@@ -50,15 +47,16 @@ class HidServiceWin : public HidService {
                                        HIDP_REPORT_TYPE report_type,
                                        USHORT value_caps_length,
                                        HidCollectionInfo* collection_info);
-  void PlatformAddDevice(const std::string& device_path);
-  void PlatformRemoveDevice(const std::string& device_path);
+
+  // DeviceMonitorWin::Observer implementation:
+  void OnDeviceAdded(const std::string& device_path) override;
+  void OnDeviceRemoved(const std::string& device_path) override;
 
   // Tries to open the device read-write and falls back to read-only.
   base::win::ScopedHandle OpenDevice(const std::string& device_path);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<base::win::MessageWindow> window_;
-  HDEVNOTIFY notify_handle_;
+  ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceWin);
 };

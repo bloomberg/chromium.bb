@@ -16,6 +16,8 @@
       'sources': [
         'device_client.cc',
         'device_client.h',
+        'device_monitor_win.cc',
+        'device_monitor_win.h',
       ],
     },
   ],

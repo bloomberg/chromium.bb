@@ -18,7 +18,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/win/message_window.h"
 #include "device/hid/hid_connection_win.h"
 #include "device/hid/hid_device_info.h"
 #include "net/base/io_buffer.h"
@@ -28,17 +27,15 @@
 #pragma comment(lib, "hid.lib")
 
 namespace device {
-namespace {
 
-const char kHIDClass[] = "HIDClass";
-const wchar_t kWindowClassName[] = L"HidServiceMessageWindow";
-
-}  // namespace
-
-HidServiceWin::HidServiceWin() {
+HidServiceWin::HidServiceWin() : device_observer_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());
-  RegisterForDeviceNotifications();
+  DeviceMonitorWin* device_monitor =
+      DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_HID);
+  if (device_monitor) {
+    device_observer_.Add(device_monitor);
+  }
   DoInitialEnumeration();
 }
 
@@ -65,49 +62,6 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
 }
 
 HidServiceWin::~HidServiceWin() {
-  if (notify_handle_) {
-    UnregisterDeviceNotification(notify_handle_);
-  }
-}
-
-void HidServiceWin::RegisterForDeviceNotifications() {
-  window_.reset(new base::win::MessageWindow());
-  if (!window_->CreateNamed(
-          base::Bind(&HidServiceWin::HandleMessage, base::Unretained(this)),
-          base::string16(kWindowClassName))) {
-    LOG(ERROR) << "Failed to create message window: " << kWindowClassName;
-    window_.reset();
-  }
-  DEV_BROADCAST_DEVICEINTERFACE db = { sizeof(DEV_BROADCAST_DEVICEINTERFACE),
-                                       DBT_DEVTYP_DEVICEINTERFACE,
-                                       0,
-                                       GUID_DEVINTERFACE_HID };
-  notify_handle_ = RegisterDeviceNotification(window_->hwnd(), &db,
-                                              DEVICE_NOTIFY_WINDOW_HANDLE);
-  if (!notify_handle_) {
-    LOG(ERROR) << "Failed to register for device notifications.";
-    window_.reset();
-  }
-}
-
-bool HidServiceWin::HandleMessage(UINT message,
-                                  WPARAM wparam,
-                                  LPARAM lparam,
-                                  LRESULT* result) {
-  if (message == WM_DEVICECHANGE) {
-    DEV_BROADCAST_DEVICEINTERFACE* db =
-        reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(lparam);
-    std::string device_path(base::SysWideToUTF8(db->dbcc_name));
-    DCHECK(base::IsStringASCII(device_path));
-    if (wparam == DBT_DEVICEARRIVAL) {
-      PlatformAddDevice(base::StringToLowerASCII(device_path));
-    } else if (wparam == DBT_DEVICEREMOVECOMPLETE) {
-      PlatformRemoveDevice(base::StringToLowerASCII(device_path));
-    }
-    *result = NULL;
-    return true;
-  }
-  return false;
 }
 
 void HidServiceWin::DoInitialEnumeration() {
@@ -149,7 +103,7 @@ void HidServiceWin::DoInitialEnumeration() {
       std::string device_path(
           base::SysWideToUTF8(device_interface_detail_data->DevicePath));
       DCHECK(base::IsStringASCII(device_path));
-      PlatformAddDevice(device_path);
+      OnDeviceAdded(base::StringToLowerASCII(device_path));
     }
   }
 
@@ -201,7 +155,7 @@ void HidServiceWin::CollectInfoFromValueCaps(
   }
 }
 
-void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
+void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
   HidDeviceInfo device_info;
   device_info.device_id = device_path;
 
@@ -282,7 +236,7 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
   AddDevice(device_info);
 }
 
-void HidServiceWin::PlatformRemoveDevice(const std::string& device_path) {
+void HidServiceWin::OnDeviceRemoved(const std::string& device_path) {
   RemoveDevice(device_path);
 }
 

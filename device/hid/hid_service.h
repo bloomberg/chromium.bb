@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -59,6 +60,7 @@ class HidService {
                        const ConnectCallback& callback) = 0;
 
  protected:
+  friend void base::DeletePointer<HidService>(HidService* service);
   friend class HidConnectionTest;
 
   typedef std::map<HidDeviceId, HidDeviceInfo> DeviceMap;
@@ -75,8 +77,6 @@ class HidService {
   base::ThreadChecker thread_checker_;
 
  private:
-  class Destroyer;
-
   DeviceMap devices_;
   bool enumeration_ready_;
   std::vector<GetDevicesCallback> pending_enumerations_;
