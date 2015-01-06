@@ -8,6 +8,8 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
+import java.util.List;
+
 /**
  * An interface to be notified about changes to a TabModel.
  */
@@ -85,4 +87,15 @@ public interface TabModelObserver {
      */
     void tabClosureCommitted(Tab tab);
 
+    /**
+     * Called when "all tabs" are pending closure.
+     *
+     * @param tabIds The list of tabs IDs that are pending closure.
+     */
+    void allTabsPendingClosure(List<Integer> tabIds);
+
+    /**
+     * Called when an "all tabs" closure has been committed and can't be undone anymore.
+     */
+    void allTabsClosureCommitted();
 }

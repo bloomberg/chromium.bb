@@ -8,6 +8,8 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
+import java.util.List;
+
 /**
  * An empty base implementation of the TabModelObserver interface.
  */
@@ -47,6 +49,14 @@ public class EmptyTabModelObserver implements TabModelObserver {
 
     @Override
     public void tabClosureCommitted(Tab tab) {
+    }
+
+    @Override
+    public void allTabsPendingClosure(List<Integer> tabIds) {
+    }
+
+    @Override
+    public void allTabsClosureCommitted() {
     }
 
 }

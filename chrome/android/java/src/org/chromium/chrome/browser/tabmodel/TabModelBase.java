@@ -281,6 +281,10 @@ public abstract class TabModelBase extends TabModelJniBridge {
         }
 
         assert !mRewoundList.hasPendingClosures();
+
+        if (supportsPendingClosures()) {
+            for (TabModelObserver obs : mObservers) obs.allTabsClosureCommitted();
+        }
     }
 
     @Override
@@ -353,6 +357,11 @@ public abstract class TabModelBase extends TabModelJniBridge {
             closedTabs.add(tab.getId());
             closeTab(tab, animate, uponExit, canUndo, false);
         }
+
+        if (!uponExit && canUndo && supportsPendingClosures()) {
+            for (TabModelObserver obs : mObservers) obs.allTabsPendingClosure(closedTabs);
+        }
+
         return closedTabs;
     }
 
