@@ -360,7 +360,7 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
 
     RenderLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
     // Get the outer viewport scroll layer.
-    WebLayer* scrollLayer = compositor->scrollLayer()->platformLayer();
+    WebLayer* scrollLayer = compositor->scrollLayer() ? compositor->scrollLayer()->platformLayer() : 0;
 
     m_webOverlayScrollbarHorizontal->setScrollLayer(scrollLayer);
     m_webOverlayScrollbarVertical->setScrollLayer(scrollLayer);

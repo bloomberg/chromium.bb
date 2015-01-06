@@ -720,7 +720,7 @@ GraphicsLayer* FrameView::layerForScrolling() const
     RenderView* renderView = this->renderView();
     if (!renderView)
         return 0;
-    return renderView->compositor()->scrollLayer();
+    return renderView->compositor()->frameScrollLayer();
 }
 
 GraphicsLayer* FrameView::layerForHorizontalScrollbar() const
@@ -3756,6 +3756,9 @@ bool FrameView::userInputScrollable(ScrollbarOrientation orientation) const
     Document* document = frame().document();
     Element* fullscreenElement = Fullscreen::fullscreenElementFrom(*document);
     if (fullscreenElement && fullscreenElement != document->documentElement())
+        return false;
+
+    if (frame().settings() && frame().settings()->rootLayerScrolls())
         return false;
 
     ScrollbarMode mode = (orientation == HorizontalScrollbar) ?

@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderGeometryMap.h"
@@ -393,6 +394,10 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
         if (verticalScrollbarLayer)
             setupScrollbarLayer(verticalScrollbarLayer, scrollbarLayer, webLayer, containerLayer);
     }
+
+    // Update the viewport layer registration if the outer viewport may have changed.
+    if (m_page->settings().rootLayerScrolls() && isForRootLayer(scrollableArea))
+        m_page->chrome().registerViewportLayers();
 
     return !!webLayer;
 }
@@ -861,18 +866,32 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
     m_shouldScrollOnMainThreadDirty = true;
 }
 
+bool ScrollingCoordinator::isForRootLayer(ScrollableArea* scrollableArea) const
+{
+    if (!m_page->mainFrame()->isLocalFrame())
+        return false;
+
+    // FIXME(305811): Refactor for OOPI.
+    RenderView* renderView = m_page->deprecatedLocalMainFrame()->view()->renderView();
+    return renderView ? scrollableArea == renderView->layer()->scrollableArea() : false;
+}
+
 bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
 {
     if (!m_page->mainFrame()->isLocalFrame())
         return false;
 
+    // FIXME(305811): Refactor for OOPI.
     return scrollableArea == m_page->deprecatedLocalMainFrame()->view();
 }
 
 bool ScrollingCoordinator::isForViewport(ScrollableArea* scrollableArea) const
 {
-    return isForMainFrame(scrollableArea)
-        || scrollableArea == &m_page->frameHost().pinchViewport();
+    bool isForOuterViewport = m_page->settings().rootLayerScrolls() ?
+        isForRootLayer(scrollableArea) :
+        isForMainFrame(scrollableArea);
+
+    return isForOuterViewport || scrollableArea == &m_page->frameHost().pinchViewport();
 }
 
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
@@ -942,8 +961,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 {
     MainThreadScrollingReasons reasons = static_cast<MainThreadScrollingReasons>(0);
 
-    // FIXME: make threaded scrolling work correctly with rootLayerScrolls.
-    if (!m_page->settings().threadedScrollingEnabled() || m_page->settings().rootLayerScrolls())
+    if (!m_page->settings().threadedScrollingEnabled())
         reasons |= ThreadedScrollingDisabled;
 
     if (!m_page->mainFrame()->isLocalFrame())

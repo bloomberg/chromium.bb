@@ -409,6 +409,11 @@ void Chrome::notifyPopupOpeningObservers() const
         observers[i]->willOpenPopup();
 }
 
+void Chrome::registerViewportLayers() const
+{
+    m_client->registerViewportLayers();
+}
+
 void Chrome::willBeDestroyed()
 {
     m_client->chromeDestroyed();

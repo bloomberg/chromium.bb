@@ -1467,11 +1467,9 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/bidi-neut
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
 
 # These crash because window.scrollTo hasn't been properly wired up yet.
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-subpixel.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-nan-scroll-position.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element-renderer.html [ Crash ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure Pass Crash ]
 
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]

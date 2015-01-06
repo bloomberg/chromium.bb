@@ -4279,6 +4279,7 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
     if (!page()->mainFrame()->isLocalFrame())
         return;
 
+    // FIXME(305811): Refactor for OOPI.
     FrameView* frameView = page()->deprecatedLocalMainFrame()->view();
     if (!frameView)
         return;
@@ -4292,9 +4293,25 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
     frameView->setInProgrammaticScroll(oldProgrammaticScroll);
 }
 
+void WebViewImpl::updateRootLayerScrollPosition(const IntPoint& scrollPosition)
+{
+    if (!page()->mainFrame()->isLocalFrame())
+        return;
+
+    // FIXME(305811): Refactor for OOPI.
+    FrameView* frameView = page()->deprecatedLocalMainFrame()->view();
+    if (!frameView)
+        return;
+
+    ScrollableArea* scrollableArea = frameView->renderView()->layer()->scrollableArea();
+    if (scrollableArea->scrollPosition() == scrollPosition)
+        return;
+    scrollableArea->notifyScrollPositionChanged(scrollPosition);
+}
+
 void WebViewImpl::applyViewportDeltas(
     const WebSize& pinchViewportDelta,
-    const WebSize& mainFrameDelta,
+    const WebSize& outerViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
     float topControlsDelta)
@@ -4318,9 +4335,19 @@ void WebViewImpl::applyViewportDeltas(
 
     frameView->setElasticOverscroll(elasticOverscrollDelta + frameView->elasticOverscroll());
 
-    IntPoint mainFrameScrollOffset = IntPoint(mainFrame()->scrollOffset());
-    mainFrameScrollOffset.move(mainFrameDelta.width, mainFrameDelta.height);
-    updateMainFrameScrollPosition(mainFrameScrollOffset, false);
+    bool rootLayerScrolls = page()->settings().rootLayerScrolls();
+    ScrollableArea* outerViewport;
+    if (rootLayerScrolls)
+        outerViewport = frameView->renderView()->layer()->scrollableArea();
+    else
+        outerViewport = frameView;
+
+    IntPoint outerViewportOffset = outerViewport->scrollPosition();
+    outerViewportOffset.move(outerViewportDelta.width, outerViewportDelta.height);
+    if (rootLayerScrolls)
+        updateRootLayerScrollPosition(outerViewportOffset);
+    else
+        updateMainFrameScrollPosition(outerViewportOffset, false);
 }
 
 void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)

@@ -116,6 +116,7 @@ public:
 protected:
     explicit ScrollingCoordinator(Page*);
 
+    bool isForRootLayer(ScrollableArea*) const;
     bool isForMainFrame(ScrollableArea*) const;
     bool isForViewport(ScrollableArea*) const;
 

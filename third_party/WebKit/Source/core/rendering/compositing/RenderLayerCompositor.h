@@ -112,6 +112,7 @@ public:
 
     RenderLayer* rootRenderLayer() const;
     GraphicsLayer* rootGraphicsLayer() const;
+    GraphicsLayer* frameScrollLayer() const;
     GraphicsLayer* scrollLayer() const;
     GraphicsLayer* containerLayer() const;
 

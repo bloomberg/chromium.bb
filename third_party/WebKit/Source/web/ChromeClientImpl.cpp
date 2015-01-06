@@ -39,6 +39,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
 #include "core/frame/Console.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
@@ -883,6 +884,12 @@ void ChromeClientImpl::textFieldDataListChanged(HTMLInputElement& input)
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(input.document().frame());
     if (webframe->autofillClient())
         webframe->autofillClient()->dataListOptionsChanged(WebInputElement(&input));
+}
+
+void ChromeClientImpl::registerViewportLayers() const
+{
+    if (m_webView->rootGraphicsLayer() && m_webView->layerTreeView() && m_webView->pinchVirtualViewportEnabled())
+        m_webView->page()->frameHost().pinchViewport().registerLayersWithTreeView(m_webView->layerTreeView());
 }
 
 } // namespace blink

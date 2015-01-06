@@ -236,6 +236,8 @@ public:
     virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
     virtual void showImeIfNeeded() { }
 
+    virtual void registerViewportLayers() const { }
+
 protected:
     virtual ~ChromeClient() { }
 };

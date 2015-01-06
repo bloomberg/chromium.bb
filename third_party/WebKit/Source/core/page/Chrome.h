@@ -132,6 +132,8 @@ public:
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);
 
+    void registerViewportLayers() const;
+
     void willBeDestroyed();
 
 private:

@@ -671,9 +671,17 @@ GraphicsLayer* RenderLayerCompositor::rootGraphicsLayer() const
     return m_rootContentLayer.get();
 }
 
-GraphicsLayer* RenderLayerCompositor::scrollLayer() const
+GraphicsLayer* RenderLayerCompositor::frameScrollLayer() const
 {
     return m_scrollLayer.get();
+}
+
+GraphicsLayer* RenderLayerCompositor::scrollLayer() const
+{
+    Settings* settings = m_renderView.document().settings();
+    return settings && settings->rootLayerScrolls() ?
+        rootRenderLayer()->scrollableArea()->layerForScrolling() :
+        frameScrollLayer();
 }
 
 GraphicsLayer* RenderLayerCompositor::containerLayer() const

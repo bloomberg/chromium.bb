@@ -177,6 +177,8 @@ public:
     virtual void didUpdateTextOfFocusedElementByNonUserInput() override;
     virtual void showImeIfNeeded() override;
 
+    virtual void registerViewportLayers() const override;
+
 private:
     virtual bool isChromeClientImpl() const override { return true; }
 
