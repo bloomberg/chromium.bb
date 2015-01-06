@@ -49,6 +49,11 @@ public:
 
     virtual bool isContextThread() const { return true; }
 
+    virtual void notifyContextDestroyed()
+    {
+        lifecycleNotifier().notifyContextDestroyed();
+    }
+
     // Called from the constructor of observers.
     void wasObservedBy(Observer*);
 

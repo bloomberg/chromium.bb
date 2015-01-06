@@ -2215,6 +2215,15 @@ void Document::detach(const AttachContext& context)
     // destruction.
     clearDOMWindow();
 #endif
+
+    // FIXME: Currently we call notifyContextDestroyed() only in
+    // Document::detach(), which means that we don't call
+    // notifyContextDestroyed() for a document that doesn't get detached.
+    // If such a document has any observer, the observer won't get
+    // a contextDestroyed() notification. This can happen for a document
+    // created by DOMImplementation::createDocument().
+    LifecycleContext<Document>::notifyContextDestroyed();
+    ExecutionContext::notifyContextDestroyed();
 }
 
 void Document::prepareForDestruction()

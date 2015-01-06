@@ -53,13 +53,18 @@ class IDBRequestTest : public testing::Test {
 public:
     IDBRequestTest()
         : m_scope(v8::Isolate::GetCurrent())
-        , m_executionContext(adoptRefWillBeNoop(new NullExecutionContext()))
     {
+    }
+
+    virtual void SetUp() override
+    {
+        m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
         m_scope.scriptState()->setExecutionContext(m_executionContext.get());
     }
 
-    ~IDBRequestTest()
+    virtual void TearDown() override
     {
+        m_executionContext->notifyContextDestroyed();
         m_scope.scriptState()->setExecutionContext(0);
     }
 

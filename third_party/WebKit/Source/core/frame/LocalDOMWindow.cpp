@@ -581,6 +581,7 @@ void LocalDOMWindow::willDetachFrameHost()
 {
     frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     frame()->host()->consoleMessageStorage().frameWindowDiscarded(this);
+    LocalDOMWindow::notifyContextDestroyed();
 }
 
 void LocalDOMWindow::willDestroyDocumentInFrame()
@@ -629,6 +630,8 @@ void LocalDOMWindow::reset()
 #if ENABLE(ASSERT)
     m_hasBeenReset = true;
 #endif
+
+    LocalDOMWindow::notifyContextDestroyed();
 }
 
 bool LocalDOMWindow::isCurrentlyDisplayedInFrame() const

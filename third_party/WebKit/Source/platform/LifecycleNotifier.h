@@ -45,9 +45,13 @@ public:
         return adoptPtr(new LifecycleNotifier(context));
     }
 
-
     virtual ~LifecycleNotifier();
 
+    // notifyContextDestroyed() should be explicitly dispatched from an
+    // observed context to notify observers contextDestroyed().
+    // At the point of contextDestroyed() is called, m_context is still
+    // valid and thus it is safe to use m_context during the notification.
+    virtual void notifyContextDestroyed();
 
     // FIXME: this won't need to be virtual anymore.
     virtual void addObserver(Observer*);
@@ -59,6 +63,7 @@ protected:
     explicit LifecycleNotifier(Context* context)
         : m_iterating(IteratingNone)
         , m_context(context)
+        , m_didCallContextDestroyed(false)
     {
     }
 
@@ -81,18 +86,35 @@ private:
 
     ObserverSet m_observers;
     Context* m_context;
+    bool m_didCallContextDestroyed;
 };
 
 template<typename T>
 inline LifecycleNotifier<T>::~LifecycleNotifier()
 {
+    // FIXME: Enable the following ASSERT. Also see a FIXME in Document::detach().
+    // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
+
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
-    for (typename ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); it = m_observers.begin()) {
-        Observer* observer = *it;
-        m_observers.remove(observer);
+    for (Observer* observer : m_observers) {
+        ASSERT(observer->lifecycleContext() == m_context);
+        observer->clearLifecycleContext();
+    }
+}
+
+template<typename T>
+inline void LifecycleNotifier<T>::notifyContextDestroyed()
+{
+    // Don't notify contextDestroyed() twice.
+    if (m_didCallContextDestroyed)
+        return;
+
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
+    for (Observer* observer : m_observers) {
         ASSERT(observer->lifecycleContext() == m_context);
         observer->contextDestroyed();
     }
+    m_didCallContextDestroyed = true;
 }
 
 template<typename T>
@@ -108,8 +130,6 @@ inline void LifecycleNotifier<T>::removeObserver(typename LifecycleNotifier<T>::
     RELEASE_ASSERT(m_iterating != IteratingOverAll);
     m_observers.remove(observer);
 }
-
-
 
 } // namespace blink
 

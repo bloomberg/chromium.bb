@@ -141,22 +141,6 @@ private:
     void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);
     void didFailLoadingBlob(FileError::ErrorCode);
 
-    // LifecycleObserver functions.
-    virtual void contextDestroyed() override
-    {
-        // In oilpan we cannot assume this channel's finalizer has been called
-        // before the document it is observing is dead and finalized since there
-        // is no eager finalization. Instead the finalization happens at the
-        // next GC which could be long enough after the Peer::destroy call for
-        // the context (ie. Document) to be dead too. If the context's finalizer
-        // is run first this method gets called. Instead we assert the channel
-        // has been disconnected which happens in Peer::destroy.
-        ASSERT(!m_handle);
-        ASSERT(!m_client);
-        ASSERT(!m_identifier);
-        ContextLifecycleObserver::contextDestroyed();
-    }
-
     // m_handle is a handle of the connection.
     // m_handle == 0 means this channel is closed.
     OwnPtr<WebSocketHandle> m_handle;

@@ -77,10 +77,12 @@ public:
     virtual void contextDestroyed() override
     {
         ASSERT(executionContext());
-        OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
-        ASSERT_UNUSED(self, self == this);
+        // It is possible that resetAsyncCallChains() is already called and thus
+        // this ExecutionContextData is removed from m_executionContextDataMap.
+        if (m_tracker->m_executionContextDataMap.take(executionContext())) {
+            dispose();
+        }
         ContextLifecycleObserver::contextDestroyed();
-        dispose();
     }
 
     int nextAsyncOperationUniqueId()

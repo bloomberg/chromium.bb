@@ -624,6 +624,8 @@ void Page::willBeDestroyed()
     if (m_validationMessageClient)
         m_validationMessageClient->willBeDestroyed();
     m_mainFrame = nullptr;
+
+    Page::notifyContextDestroyed();
 }
 
 Page::PageClients::PageClients()

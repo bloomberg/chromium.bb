@@ -214,6 +214,8 @@ void WorkerGlobalScope::dispose()
     // being carried out on the right thread. We therefore cannot clear
     // the thread field before all references to the worker global
     // scope are gone.
+
+    ExecutionContext::notifyContextDestroyed();
 }
 
 void WorkerGlobalScope::didEvaluateWorkerScript()

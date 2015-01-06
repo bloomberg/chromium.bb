@@ -45,21 +45,19 @@ public:
     };
 
     explicit LifecycleObserver(Context* context, Type type = GenericType)
-        : m_lifecycleContext(0)
+        : m_lifecycleContext(nullptr)
         , m_observerType(type)
     {
         observeContext(context);
     }
-
     virtual ~LifecycleObserver()
     {
-        observeContext(0);
+        observeContext(nullptr);
     }
-
-    virtual void contextDestroyed() { m_lifecycleContext = 0; }
-
+    virtual void contextDestroyed() { }
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
+    void clearLifecycleContext() { m_lifecycleContext = nullptr; }
     Type observerType() const { return m_observerType; }
 
 protected:

@@ -6333,6 +6333,7 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     RenderLayer* renderLayer =  videoFullscreen->renderer()->enclosingLayer();
     GraphicsLayer* graphicsLayer = renderLayer->graphicsLayerBacking();
     EXPECT_TRUE(graphicsLayer->contentsAreVisible());
+    context->notifyContextDestroyed();
 }
 
 TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
