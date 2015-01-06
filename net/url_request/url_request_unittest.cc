@@ -7686,10 +7686,10 @@ TEST_F(HTTPSFallbackTest, TLSv1FallbackReset) {
 TEST_F(HTTPSFallbackTest, FallbackSCSV) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
-  // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
+  // Configure HTTPS server to be intolerant of TLS >= 1.1 in order to trigger
   // a version fallback.
   ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
   // Have the server process TLS_FALLBACK_SCSV so that version fallback
   // connections are rejected.
   ssl_options.fallback_scsv_enabled = true;
@@ -7708,10 +7708,10 @@ TEST_F(HTTPSFallbackTest, FallbackSCSV) {
 TEST_F(HTTPSFallbackTest, FallbackSCSVClosed) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
-  // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
+  // Configure HTTPS server to be intolerant of TLS >= 1.1 in order to trigger
   // a version fallback.
   ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
   ssl_options.tls_intolerance_type =
       SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
   // Have the server process TLS_FALLBACK_SCSV so that version fallback

@@ -118,13 +118,8 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
     case SSL_R_INVALID_TICKET_KEYS_LENGTH:
     // SSL_do_handshake reports this error when the server responds to a
     // ClientHello with a fatal close_notify alert.
-    case SSL_AD_REASON_OFFSET + SSL_AD_CLOSE_NOTIFY:
+    case SSL_R_SSLV3_ALERT_CLOSE_NOTIFY:
     case SSL_R_SSLV3_ALERT_UNEXPECTED_MESSAGE:
-    // TODO(joth): SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE may be returned from the
-    // server after receiving ClientHello if there's no common supported cipher.
-    // Ideally we'd map that specific case to ERR_SSL_VERSION_OR_CIPHER_MISMATCH
-    // to match the NSS implementation. See also http://goo.gl/oMtZW
-    case SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE:
     case SSL_R_SSLV3_ALERT_NO_CERTIFICATE:
     case SSL_R_SSLV3_ALERT_ILLEGAL_PARAMETER:
     case SSL_R_TLSV1_ALERT_DECODE_ERROR:
@@ -139,8 +134,20 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       // The only way that the certificate verify callback can fail is if
       // the leaf certificate changed during a renegotiation.
       return ERR_SSL_SERVER_CERT_CHANGED;
-    case SSL_AD_REASON_OFFSET + SSL3_AD_INAPPROPRIATE_FALLBACK:
+    case SSL_R_TLSV1_ALERT_INAPPROPRIATE_FALLBACK:
       return ERR_SSL_INAPPROPRIATE_FALLBACK;
+    // SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE may be returned from the server after
+    // receiving ClientHello if there's no common supported cipher. Map that
+    // specific case to ERR_SSL_VERSION_OR_CIPHER_MISMATCH to match the NSS
+    // implementation. See https://goo.gl/oMtZW and https://crbug.com/446505.
+    case SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE: {
+      uint32_t previous = ERR_peek_error();
+      if (previous != 0 && ERR_GET_LIB(previous) == ERR_LIB_SSL &&
+          ERR_GET_REASON(previous) == SSL_R_HANDSHAKE_FAILURE_ON_CLIENT_HELLO) {
+        return ERR_SSL_VERSION_OR_CIPHER_MISMATCH;
+      }
+      return ERR_SSL_PROTOCOL_ERROR;
+    }
     default:
       LOG(WARNING) << "Unmapped error reason: " << ERR_GET_REASON(error_code);
       return ERR_SSL_PROTOCOL_ERROR;

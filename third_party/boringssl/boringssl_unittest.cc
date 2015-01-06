@@ -234,3 +234,7 @@ TEST(BoringSSL, SSL) {
 TEST(BoringSSL, PQueue) {
   TestSimple("pqueue_test");
 }
+
+TEST(BoringSSL, HKDF) {                                                        
+  TestSimple("hkdf_test");                                                     
+}
