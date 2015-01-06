@@ -1458,7 +1458,6 @@ _brillo_boards = frozenset([
   'gizmo',
   'kayle',
   'lemmings',
-  'mipsel-o32-generic',
   'panther_embedded',
   'storm',
   'urara',
