@@ -243,9 +243,11 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
   if (CanNavigateLocally(frame, request))
     return default_policy;
 
-  navigator_host_->RequestNavigate(
-      WebNavigationPolicyToNavigationTarget(default_policy),
-      mojo::URLRequest::From(request).Pass());
+  if (navigator_host_.get()) {
+    navigator_host_->RequestNavigate(
+        WebNavigationPolicyToNavigationTarget(default_policy),
+        mojo::URLRequest::From(request).Pass());
+  }
 
   return blink::WebNavigationPolicyIgnore;
 }
@@ -261,7 +263,8 @@ void HTMLDocument::didNavigateWithinPage(
     blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
-  navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
+  if (navigator_host_.get())
+    navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
 }
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
