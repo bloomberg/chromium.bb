@@ -356,13 +356,18 @@ bool ManagementGetPermissionWarningsByManifestFunction::RunAsync() {
 }
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
-    scoped_ptr<base::DictionaryValue> parsed_manifest) {
-  CHECK(parsed_manifest.get());
+    scoped_ptr<base::Value> value) {
+  if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
+    OnParseFailure(keys::kManifestParseError);
+    return;
+  }
+  const base::DictionaryValue* parsed_manifest =
+      static_cast<const base::DictionaryValue*>(value.get());
 
   scoped_refptr<Extension> extension =
       Extension::Create(base::FilePath(), Manifest::INVALID_LOCATION,
                         *parsed_manifest, Extension::NO_FLAGS, &error_);
-  if (!extension.get()) {
+  if (!extension) {
     OnParseFailure(keys::kExtensionCreateError);
     return;
   }

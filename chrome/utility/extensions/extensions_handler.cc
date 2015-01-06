@@ -87,7 +87,6 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnzipToDir, OnUnzipToDir)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
@@ -169,21 +168,6 @@ void ExtensionsHandler::OnDecodeImageBase64(
   }
 
   ChromeContentUtilityClient::DecodeImageAndSend(decoded_vector, false);
-}
-
-void ExtensionsHandler::OnParseJSON(const std::string& json) {
-  int error_code;
-  std::string error;
-  base::Value* value = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &error_code, &error);
-  if (value) {
-    base::ListValue wrapper;
-    wrapper.Append(value);
-    Send(new ChromeUtilityHostMsg_ParseJSON_Succeeded(wrapper));
-  } else {
-    Send(new ChromeUtilityHostMsg_ParseJSON_Failed(error));
-  }
-  ReleaseProcessIfNeeded();
 }
 
 void ExtensionsHandler::OnCheckMediaFile(

@@ -13,12 +13,21 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_json_parser.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
+
+// No anonymous namespace, because const variables automatically get internal
+// linkage.
+const char kInvalidDataTypeError[] =
+    "Data from web resource server is missing or not valid JSON.";
+
+const char kUnexpectedJSONFormatError[] =
+    "Data from web resource server does not have expected format.";
 
 WebResourceService::WebResourceService(PrefService* prefs,
                                        const GURL& web_resource_server,
@@ -30,7 +39,6 @@ WebResourceService::WebResourceService(PrefService* prefs,
       resource_request_allowed_notifier_(
           prefs,
           switches::kDisableBackgroundNetworking),
-      json_unpacker_(NULL),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
       apply_locale_to_url_(apply_locale_to_url),
@@ -42,56 +50,39 @@ WebResourceService::WebResourceService(PrefService* prefs,
   DCHECK(prefs);
 }
 
-WebResourceService::~WebResourceService() {
-  if (in_fetch_)
-    EndFetch();
-}
-
-void WebResourceService::OnUnpackFinished(
-    const base::DictionaryValue& parsed_json) {
-  Unpack(parsed_json);
-  EndFetch();
-}
-
-void WebResourceService::OnUnpackError(const std::string& error_message) {
-  LOG(ERROR) << error_message;
-  EndFetch();
-}
-
-void WebResourceService::EndFetch() {
-  if (json_unpacker_) {
-    json_unpacker_->ClearDelegate();
-    json_unpacker_ = NULL;
-  }
-  in_fetch_ = false;
-}
-
 void WebResourceService::StartAfterDelay() {
   // If resource requests are not allowed, we'll get a callback when they are.
   if (resource_request_allowed_notifier_.ResourceRequestsAllowed())
     OnResourceRequestsAllowed();
 }
 
-void WebResourceService::OnResourceRequestsAllowed() {
-  int64 delay = start_fetch_delay_ms_;
-  // Check whether we have ever put a value in the web resource cache;
-  // if so, pull it out and see if it's time to update again.
-  if (prefs_->HasPrefPath(last_update_time_pref_name_)) {
-    std::string last_update_pref =
-        prefs_->GetString(last_update_time_pref_name_);
-    if (!last_update_pref.empty()) {
-      double last_update_value;
-      base::StringToDouble(last_update_pref, &last_update_value);
-      int64 ms_until_update = cache_update_delay_ms_ -
-          static_cast<int64>((base::Time::Now() - base::Time::FromDoubleT(
-          last_update_value)).InMilliseconds());
-      // Wait at least |start_fetch_delay_ms_|.
-      if (ms_until_update > start_fetch_delay_ms_)
-        delay = ms_until_update;
-    }
+WebResourceService::~WebResourceService() {
+}
+
+void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
+  // Delete the URLFetcher when this function exits.
+  scoped_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
+
+  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
+    std::string data;
+    source->GetResponseAsString(&data);
+
+    // SafeJsonParser calls EndFetch and releases itself on completion.
+    scoped_refptr<SafeJsonParser> json_parser(new SafeJsonParser(
+        data,
+        base::Bind(&WebResourceService::OnUnpackFinished,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&WebResourceService::OnUnpackError,
+                   weak_ptr_factory_.GetWeakPtr())));
+    json_parser->Start();
+  } else {
+    // Don't parse data if attempt to download was unsuccessful.
+    // Stop loading new web resource data, and silently exit.
+    // We do not call SafeJsonParser, so we need to call EndFetch ourselves.
+    EndFetch();
   }
-  // Start fetch and wait for UpdateResourceCache.
-  ScheduleFetch(delay);
+
+  Release();
 }
 
 // Delay initial load of resource data into cache so as not to interfere
@@ -142,23 +133,50 @@ void WebResourceService::StartFetch() {
   url_fetcher_->Start();
 }
 
-void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
-  // Delete the URLFetcher when this function exits.
-  scoped_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
+void WebResourceService::EndFetch() {
+  in_fetch_ = false;
+}
 
-  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
-    std::string data;
-    source->GetResponseAsString(&data);
-
-    // UnpackerClient calls EndFetch and releases itself on completion.
-    json_unpacker_ = JSONAsynchronousUnpacker::Create(this);
-    json_unpacker_->Start(data);
-  } else {
-    // Don't parse data if attempt to download was unsuccessful.
-    // Stop loading new web resource data, and silently exit.
-    // We do not call UnpackerClient, so we need to call EndFetch ourselves.
-    EndFetch();
+void WebResourceService::OnUnpackFinished(
+    scoped_ptr<base::Value> value) {
+  if (!value) {
+    // Page information not properly read, or corrupted.
+    OnUnpackError(kInvalidDataTypeError);
+    return;
   }
+  const base::DictionaryValue* dict = nullptr;
+  if (!value->GetAsDictionary(&dict)) {
+    OnUnpackError(kUnexpectedJSONFormatError);
+    return;
+  }
+  Unpack(*dict);
 
-  Release();
+  EndFetch();
+}
+
+void WebResourceService::OnUnpackError(const std::string& error_message) {
+  LOG(ERROR) << error_message;
+  EndFetch();
+}
+
+void WebResourceService::OnResourceRequestsAllowed() {
+  int64 delay = start_fetch_delay_ms_;
+  // Check whether we have ever put a value in the web resource cache;
+  // if so, pull it out and see if it's time to update again.
+  if (prefs_->HasPrefPath(last_update_time_pref_name_)) {
+    std::string last_update_pref =
+        prefs_->GetString(last_update_time_pref_name_);
+    if (!last_update_pref.empty()) {
+      double last_update_value;
+      base::StringToDouble(last_update_pref, &last_update_value);
+      int64 ms_until_update = cache_update_delay_ms_ -
+          static_cast<int64>((base::Time::Now() - base::Time::FromDoubleT(
+          last_update_value)).InMilliseconds());
+      // Wait at least |start_fetch_delay_ms_|.
+      if (ms_until_update > start_fetch_delay_ms_)
+        delay = ms_until_update;
+    }
+  }
+  // Start fetch and wait for UpdateResourceCache.
+  ScheduleFetch(delay);
 }

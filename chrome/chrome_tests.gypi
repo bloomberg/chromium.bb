@@ -523,6 +523,7 @@
       'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
       'browser/safe_browsing/safe_browsing_service_browsertest.cc',
       'browser/safe_browsing/safe_browsing_test.cc',
+      'browser/safe_json_parser_browsertest.cc',
       'browser/search/suggestions/image_fetcher_impl_browsertest.cc',
       'browser/service_process/service_process_control_browsertest.cc',
       'browser/services/gcm/fake_gcm_profile_service.cc',

@@ -92,10 +92,6 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_UnzipToDir,
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_DecodeImageBase64,
                      std::string)  // base64 encoded image contents
 
-// Tell the utility process to parse a JSON string into a Value object.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseJSON,
-                     std::string /* JSON to parse */)
-
 #if defined(OS_WIN)
 // Tell the utility process to parse the iTunes preference XML file contents
 // and return the path to the iTunes directory.
@@ -190,19 +186,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Succeeded,
 // an error string to be reported to the user.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Failed,
                      std::string /* error */)
-
-// Reply when the utility process successfully parsed a JSON string.
-//
-// WARNING: The result can be of any Value subclass type, but we can't easily
-// pass indeterminate value types by const object reference with our IPC macros,
-// so we put the result Value into a ListValue. Handlers should examine the
-// first (and only) element of the ListValue for the actual result.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Succeeded,
-                     base::ListValue)
-
-// Reply when the utility process failed in parsing a JSON string.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Failed,
-                     std::string /* error message, if any*/)
 
 #if defined(OS_WIN)
 // Reply after parsing the iTunes preferences XML file contents with either the

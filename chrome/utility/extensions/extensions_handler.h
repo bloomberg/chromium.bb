@@ -7,7 +7,6 @@
 
 #include "base/base64.h"
 #include "base/compiler_specific.h"
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/utility/utility_message_handler.h"
@@ -42,7 +41,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
                          int location, int creation_flags);
   void OnUnzipToDir(const base::FilePath& zip_path, const base::FilePath& dir);
   void OnDecodeImageBase64(const std::string& encoded_data);
-  void OnParseJSON(const std::string& json);
   void OnCheckMediaFile(int64 milliseconds_of_decoding,
                         const IPC::PlatformFileForTransit& media_file);
 

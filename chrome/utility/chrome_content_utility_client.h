@@ -55,6 +55,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
                        const base::FileDescriptor& dest_fd);
 #endif  // defined(OS_CHROMEOS)
 
+  void OnParseJSON(const std::string& json);
   void OnPatchFileBsdiff(const base::FilePath& input_file,
                          const base::FilePath& patch_file,
                          const base::FilePath& output_file);
