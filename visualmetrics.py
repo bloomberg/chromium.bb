@@ -45,7 +45,7 @@ import tempfile
 
 def video_to_frames(video, directory, force, orange_file, find_viewport, full_resolution, timeline_file):
     viewport = None
-    first_frame = os.path.join(directory, 'image-000000')
+    first_frame = os.path.join(directory, 'ms_000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
         if os.path.isfile(video):
             video = os.path.realpath(video)
@@ -213,7 +213,7 @@ def adjust_frame_times(directory):
             if offset is None:
                 offset = frame_time
             new_time = frame_time - offset
-            dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+            dest = os.path.join(directory, 'ms_{0:06d}.png'.format(new_time))
             os.rename(frame, dest)
 
 
@@ -221,7 +221,7 @@ def eliminate_duplicate_frames(directory):
     try:
         # Do a first pass looking for the first non-blank frame with an allowance
         # for up to a 2% per-pixel difference for noise in the white field.
-        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        files = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
         blank = files[0]
 
         from PIL import Image
@@ -248,7 +248,7 @@ def eliminate_duplicate_frames(directory):
 
         # Do a second pass looking for the last frame but with an allowance for up
         # to a 10% difference in individual pixels to deal with noise around text.
-        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        files = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
         count = len(files)
         duplicates = []
         if count > 2:
@@ -358,23 +358,23 @@ def generate_orange_png(orange_file):
 
 
 def synchronize_to_timeline(directory, timeline_file):
-    offset = get_timeline_offset(directory, timeline_file)
+    offset = get_timeline_offset(timeline_file)
     if offset > 0:
-        frames = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
-        match = re.compile('image-(?P<ms>[0-9]+)\.png')
+        frames = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
+        match = re.compile('ms_(?P<ms>[0-9]+)\.png')
         for frame in frames:
             m = re.search(match, frame)
             if m is not None:
                 frame_time = int(m.groupdict().get('ms'))
                 new_time = max(frame_time - offset, 0)
-                dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+                dest = os.path.join(directory, 'ms_{0:06d}.png'.format(new_time))
                 if frame != dest:
                     if os.path.isfile(dest):
                         os.remove(dest)
                     os.rename(frame, dest)
 
 
-def get_timeline_offset(directory, timeline_file):
+def get_timeline_offset(timeline_file):
     offset = 0
     try:
         file_name, ext = os.path.splitext(timeline_file)
@@ -480,15 +480,15 @@ def calculate_histograms(directory, histograms_file, force, viewport):
         try:
             extension = None
             directory = os.path.realpath(directory)
-            first_frame = os.path.join(directory, 'image-000000')
+            first_frame = os.path.join(directory, 'ms_000000')
             if os.path.isfile(first_frame + '.png'):
                 extension = '.png'
             elif os.path.isfile(first_frame + '.jpg'):
                 extension = '.jpg'
             if extension is not None:
                 histograms = []
-                frames = sorted(glob.glob(os.path.join(directory, 'image-*' + extension)))
-                match = re.compile('image-(?P<ms>[0-9]+)\.')
+                frames = sorted(glob.glob(os.path.join(directory, 'ms_*' + extension)))
+                match = re.compile('ms_(?P<ms>[0-9]+)\.')
                 for frame in frames:
                     m = re.search(match, frame)
                     if m is not None:
@@ -540,8 +540,8 @@ def calculate_image_histogram(file):
 
 def convert_to_jpeg(directory, quality):
     directory = os.path.realpath(directory)
-    files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
-    match = re.compile('(?P<base>image-[0-9]+\.)')
+    files = sorted(glob.glob(os.path.join(directory, 'ms_*.png')))
+    match = re.compile('(?P<base>ms_[0-9]+\.)')
     for file in files:
         m = re.search(match, file)
         if m is not None:
