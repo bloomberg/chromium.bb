@@ -31,7 +31,7 @@
             '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
           ],
         }],
-        ['target_arch=="ia32" and OS=="linux"', {
+        ['(target_arch=="ia32" or target_arch=="arm") and OS=="linux"', {
           'dependencies': [
             '../src/nonsfi/loader/loader.gyp:nonsfi_loader',
           ],
