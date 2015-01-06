@@ -470,10 +470,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
  public:
-  LayerTreeHostDelegatedTestLayerUsesFrameDamage()
-      : LayerTreeHostDelegatedTestCaseSingleDelegatedLayer(),
-        first_draw_for_source_frame_(true) {}
-
   void DidCommit() override {
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -581,16 +577,12 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
             CreateFrameData(gfx::Rect(0, 0, 10, 10), gfx::Rect(3, 3, 1, 1)));
         break;
     }
-    first_draw_for_source_frame_ = true;
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame,
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
-
-    if (!first_draw_for_source_frame_)
-      return draw_result;
 
     gfx::Rect damage_rect;
     if (!frame->has_no_damage) {
@@ -669,7 +661,6 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
 
  protected:
   scoped_refptr<DelegatedRendererLayer> delegated_copy_;
-  bool first_draw_for_source_frame_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestLayerUsesFrameDamage);
