@@ -110,12 +110,12 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // Queues the blocked writer for later resumption.
   void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) override;
 
-  // Called whenever the QuicTimeWaitListManager adds a new connection
-  // to the time-wait list.
+  // Called whenever the QuicTimeWaitListManager adds a new connection to the
+  // time-wait list.
   void OnConnectionAddedToTimeWaitList(QuicConnectionId connection_id) override;
 
-  // Called whenever the QuicTimeWaitListManager removes an old connection
-  // from the time-wait list.
+  // Called whenever the QuicTimeWaitListManager removes an old connection from
+  // the time-wait list.
   void OnConnectionRemovedFromTimeWaitList(
       QuicConnectionId connection_id) override;
 
