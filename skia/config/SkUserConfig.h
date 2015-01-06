@@ -138,6 +138,16 @@
 #define SK_SUPPORT_UNITTEST
 #endif
 
+/* If cross process SkPictureImageFilters are not explicitly enabled then
+   they are always disabled.
+ */
+#ifndef SK_ALLOW_CROSSPROCESS_PICTUREIMAGEFILTERS
+    #ifndef SK_DISALLOW_CROSSPROCESS_PICTUREIMAGEFILTERS
+        #define SK_DISALLOW_CROSSPROCESS_PICTUREIMAGEFILTERS
+    #endif
+#endif
+
+
 /* If your system embeds skia and has complex event logging, define this
    symbol to name a file that maps the following macros to your system's
    equivalents:
