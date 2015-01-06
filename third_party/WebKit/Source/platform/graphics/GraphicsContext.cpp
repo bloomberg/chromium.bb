@@ -426,6 +426,13 @@ void GraphicsContext::adjustTextRenderMode(SkPaint* paint) const
     paint->setLCDRenderText(couldUseLCDRenderedText());
 }
 
+bool GraphicsContext::couldUseLCDRenderedText() const
+{
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return true;
+    return m_isCertainlyOpaque && m_shouldSmoothFonts;
+}
+
 void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
 {
     if (contextDisabled())

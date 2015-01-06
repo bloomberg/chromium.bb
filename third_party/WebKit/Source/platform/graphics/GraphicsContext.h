@@ -162,7 +162,7 @@ public:
 
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*) const;
-    bool couldUseLCDRenderedText() const { return m_isCertainlyOpaque && m_shouldSmoothFonts; }
+    bool couldUseLCDRenderedText() const;
 
     void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->setTextDrawingMode(mode); }
     TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }
