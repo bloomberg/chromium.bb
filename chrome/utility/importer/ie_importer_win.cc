@@ -477,18 +477,24 @@ void IEImporter::ImportHistory() {
   int total_schemes = arraysize(kSchemes);
 
   base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
-  HRESULT result;
-  result = url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
-                                           CLSCTX_INPROC_SERVER);
-  if (FAILED(result))
+  if (FAILED(url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
+                                             CLSCTX_INPROC_SERVER))) {
     return;
+  }
   base::win::ScopedComPtr<IEnumSTATURL> enum_url;
-  if (SUCCEEDED(result = url_history_stg2->EnumUrls(enum_url.Receive()))) {
+  if (SUCCEEDED(url_history_stg2->EnumUrls(enum_url.Receive()))) {
     std::vector<ImporterURLRow> rows;
     STATURL stat_url;
-    ULONG fetched;
+
+    // IEnumSTATURL::Next() doesn't fill STATURL::dwFlags by default. Need to
+    // call IEnumSTATURL::SetFilter() with STATURL_QUERYFLAG_TOPLEVEL flag to
+    // specify how STATURL structure will be filled.
+    // The first argument of IEnumSTATURL::SetFilter() specifies the URL prefix
+    // that is used by IEnumSTATURL::Next() for filtering items by URL.
+    // So need to pass an empty string here to get all history items.
+    enum_url->SetFilter(L"", STATURL_QUERYFLAG_TOPLEVEL);
     while (!cancelled() &&
-           (result = enum_url->Next(1, &stat_url, &fetched)) == S_OK) {
+           enum_url->Next(1, &stat_url, NULL) == S_OK) {
       base::string16 url_string;
       if (stat_url.pwcsUrl) {
         url_string = stat_url.pwcsUrl;
@@ -510,10 +516,13 @@ void IEImporter::ImportHistory() {
       ImporterURLRow row(url);
       row.title = title_string;
       row.last_visit = base::Time::FromFileTime(stat_url.ftLastVisited);
-      if (stat_url.dwFlags == STATURL_QUERYFLAG_TOPLEVEL) {
+      if (stat_url.dwFlags == STATURLFLAG_ISTOPLEVEL) {
         row.visit_count = 1;
         row.hidden = false;
       } else {
+        // dwFlags should only contain the STATURLFLAG_ISTOPLEVEL bit per
+        // the filter set above.
+        DCHECK(!stat_url.dwFlags);
         row.hidden = true;
       }
 
