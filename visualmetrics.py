@@ -81,13 +81,12 @@ def extract_frames(video, directory, full_resolution, viewport):
     if filter is not None:
         crop = ''
         if viewport is not None:
-            crop = 'crop=w={0}:h={1}:x={2}:y={3},'.format(viewport['width'], viewport['height'],
-                                                         viewport['x'], viewport['y'])
+            crop = 'crop={0}:{1}:{2}:{3},'.format(viewport['width'], viewport['height'], viewport['x'], viewport['y'])
         scale = 'scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih),'
         if full_resolution:
             scale = ''
         command = ['ffmpeg', '-v', 'debug', '-i', video, '-vsync',  '0',
-                   '-vf', crop + scale + decimate + '=hi=64:lo=640:frac=0.001',
+                   '-vf', crop + scale + decimate + '=0:64:640:0.001',
                    os.path.join(directory, 'img-%d.png')]
         logging.debug(' '.join(command))
         lines = []
