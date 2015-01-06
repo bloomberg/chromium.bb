@@ -198,14 +198,16 @@ PDFViewer.prototype = {
         pageDownHandler();
         return;
       case 37:  // Left arrow key.
-        // Go to the previous page if there are no horizontal scrollbars.
-        if (!this.viewport_.documentHasScrollbars().x) {
-          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        } else if (fromScriptingAPI) {
-          position.x -= Viewport.SCROLL_INCREMENT;
-          this.viewport.position = position;
+        if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+          // Go to the previous page if there are no horizontal scrollbars.
+          if (!this.viewport_.documentHasScrollbars().x) {
+            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+            // Since we do the movement of the page.
+            e.preventDefault();
+          } else if (fromScriptingAPI) {
+            position.x -= Viewport.SCROLL_INCREMENT;
+            this.viewport.position = position;
+          }
         }
         return;
       case 38:  // Up arrow key.
@@ -215,14 +217,16 @@ PDFViewer.prototype = {
         }
         return;
       case 39:  // Right arrow key.
-        // Go to the next page if there are no horizontal scrollbars.
-        if (!this.viewport_.documentHasScrollbars().x) {
-          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        } else if (fromScriptingAPI) {
-          position.x += Viewport.SCROLL_INCREMENT;
-          this.viewport.position = position;
+        if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+          // Go to the next page if there are no horizontal scrollbars.
+          if (!this.viewport_.documentHasScrollbars().x) {
+            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+            // Since we do the movement of the page.
+            e.preventDefault();
+          } else if (fromScriptingAPI) {
+            position.x += Viewport.SCROLL_INCREMENT;
+            this.viewport.position = position;
+          }
         }
         return;
       case 40:  // Down arrow key.
