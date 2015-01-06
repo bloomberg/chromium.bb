@@ -60,7 +60,6 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/converters/surfaces",
     "//mojo/public/c/system:for_shared_library",
-    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/utility",
     "//mojo/public/interfaces/application",
     "//mojo/services/network/public/cpp",
@@ -80,6 +79,7 @@ source_set("lib") {
   ]
 
   public_deps = [
+    "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:blink",
   ]
 }
