@@ -24,13 +24,9 @@
   width: 26px;
 }
 
-.user-email-label {
-  -webkit-margin-start: 10px;
-}
-
+.user-email-label,
 .user-name-label {
   -webkit-margin-start: 10px;
-  color: darkgray;
 }
 
 .user-email-name-block {
