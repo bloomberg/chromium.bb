@@ -67,7 +67,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   };
 
   AudioVideoPipelineDeviceTest();
-  virtual ~AudioVideoPipelineDeviceTest();
+  ~AudioVideoPipelineDeviceTest() override;
 
   void ConfigureForFile(std::string filename);
   void ConfigureForAudioOnly(std::string filename);

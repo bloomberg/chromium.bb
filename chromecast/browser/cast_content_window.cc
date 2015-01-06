@@ -22,24 +22,24 @@ namespace chromecast {
 class CastFillLayout : public aura::LayoutManager {
  public:
   explicit CastFillLayout(aura::Window* root) : root_(root) {}
-  virtual ~CastFillLayout() {}
+  ~CastFillLayout() override {}
 
  private:
-  virtual void OnWindowResized() override {}
+  void OnWindowResized() override {}
 
-  virtual void OnWindowAddedToLayout(aura::Window* child) override {
+  void OnWindowAddedToLayout(aura::Window* child) override {
     child->SetBounds(root_->bounds());
   }
 
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
 
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
 
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
 
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override {
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
 

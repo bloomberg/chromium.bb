@@ -20,7 +20,7 @@ class CastNetworkDelegate : public net::NetworkDelegateImpl {
   static net::X509Certificate* DeviceCert();
 
   CastNetworkDelegate();
-  virtual ~CastNetworkDelegate();
+  ~CastNetworkDelegate() override;
 
   virtual void Initialize(bool use_sync_signing) = 0;
 
@@ -29,8 +29,8 @@ class CastNetworkDelegate : public net::NetworkDelegateImpl {
 
  private:
   // net::NetworkDelegate implementation:
-  virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const base::FilePath& path) const override;
+  bool OnCanAccessFile(const net::URLRequest& request,
+                       const base::FilePath& path) const override;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetworkDelegate);
 };

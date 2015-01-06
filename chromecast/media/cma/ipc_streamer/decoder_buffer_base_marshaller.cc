@@ -24,15 +24,15 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   void Initialize();
 
   // DecoderBufferBase implementation.
-  virtual base::TimeDelta timestamp() const override;
-  virtual const uint8* data() const override;
-  virtual uint8* writable_data() const override;
-  virtual int data_size() const override;
-  virtual const ::media::DecryptConfig* decrypt_config() const override;
-  virtual bool end_of_stream() const override;
+  base::TimeDelta timestamp() const override;
+  const uint8* data() const override;
+  uint8* writable_data() const override;
+  int data_size() const override;
+  const ::media::DecryptConfig* decrypt_config() const override;
+  bool end_of_stream() const override;
 
  private:
-  virtual ~DecoderBufferFromMsg();
+  ~DecoderBufferFromMsg() override;
 
   // Indicates whether this is an end of stream frame.
   bool is_eos_;

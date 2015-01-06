@@ -22,12 +22,11 @@ class CastAccessTokenStore : public content::AccessTokenStore {
   explicit CastAccessTokenStore(content::BrowserContext* browser_context);
 
  private:
-  virtual ~CastAccessTokenStore();
+  ~CastAccessTokenStore() override;
 
   // AccessTokenStore implementation:
-  virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& callback) override;
-  virtual void SaveAccessToken(
+  void LoadAccessTokens(const LoadAccessTokensCallbackType& callback) override;
+  void SaveAccessToken(
       const GURL& server_url, const base::string16& access_token) override;
 
   void GetRequestContextGetterOnUIThread();

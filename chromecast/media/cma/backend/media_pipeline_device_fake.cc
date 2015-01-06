@@ -27,14 +27,14 @@ namespace media {
 class MediaClockDeviceFake : public MediaClockDevice {
  public:
   MediaClockDeviceFake();
-  virtual ~MediaClockDeviceFake();
+  ~MediaClockDeviceFake() override;
 
   // MediaClockDevice implementation.
-  virtual State GetState() const override;
-  virtual bool SetState(State new_state) override;
-  virtual bool ResetTimeline(base::TimeDelta time) override;
-  virtual bool SetRate(float rate) override;
-  virtual base::TimeDelta GetTime() override;
+  State GetState() const override;
+  bool SetState(State new_state) override;
+  bool ResetTimeline(base::TimeDelta time) override;
+  bool SetRate(float rate) override;
+  base::TimeDelta GetTime() override;
 
  private:
   State state_;
@@ -130,20 +130,20 @@ const size_t kMaxFrameCount = 20;
 class MediaComponentDeviceFake : public MediaComponentDevice {
  public:
   explicit MediaComponentDeviceFake(MediaClockDeviceFake* media_clock_device);
-  virtual ~MediaComponentDeviceFake();
+  ~MediaComponentDeviceFake() override;
 
   // MediaComponentDevice implementation.
-  virtual void SetClient(const Client& client) override;
-  virtual State GetState() const override;
-  virtual bool SetState(State new_state) override;
-  virtual bool SetStartPts(base::TimeDelta time) override;
-  virtual FrameStatus PushFrame(
+  void SetClient(const Client& client) override;
+  State GetState() const override;
+  bool SetState(State new_state) override;
+  bool SetStartPts(base::TimeDelta time) override;
+  FrameStatus PushFrame(
       const scoped_refptr<DecryptContext>& decrypt_context,
       const scoped_refptr<DecoderBufferBase>& buffer,
       const FrameStatusCB& completion_cb) override;
-  virtual base::TimeDelta GetRenderingTime() const override;
-  virtual base::TimeDelta GetRenderingDelay() const override;
-  virtual bool GetStatistics(Statistics* stats) const override;
+  base::TimeDelta GetRenderingTime() const override;
+  base::TimeDelta GetRenderingDelay() const override;
+  bool GetStatistics(Statistics* stats) const override;
 
  private:
   struct FakeDecoderBuffer {
@@ -358,22 +358,22 @@ bool MediaComponentDeviceFake::GetStatistics(Statistics* stats) const {
 class AudioPipelineDeviceFake : public AudioPipelineDevice {
  public:
   explicit AudioPipelineDeviceFake(MediaClockDeviceFake* media_clock_device);
-  virtual ~AudioPipelineDeviceFake();
+  ~AudioPipelineDeviceFake() override;
 
   // AudioPipelineDevice implementation.
-  virtual void SetClient(const Client& client) override;
-  virtual State GetState() const override;
-  virtual bool SetState(State new_state) override;
-  virtual bool SetStartPts(base::TimeDelta time) override;
-  virtual FrameStatus PushFrame(
+  void SetClient(const Client& client) override;
+  State GetState() const override;
+  bool SetState(State new_state) override;
+  bool SetStartPts(base::TimeDelta time) override;
+  FrameStatus PushFrame(
       const scoped_refptr<DecryptContext>& decrypt_context,
       const scoped_refptr<DecoderBufferBase>& buffer,
       const FrameStatusCB& completion_cb) override;
-  virtual base::TimeDelta GetRenderingTime() const override;
-  virtual base::TimeDelta GetRenderingDelay() const override;
-  virtual bool SetConfig(const ::media::AudioDecoderConfig& config) override;
-  virtual void SetStreamVolumeMultiplier(float multiplier) override;
-  virtual bool GetStatistics(Statistics* stats) const override;
+  base::TimeDelta GetRenderingTime() const override;
+  base::TimeDelta GetRenderingDelay() const override;
+  bool SetConfig(const ::media::AudioDecoderConfig& config) override;
+  void SetStreamVolumeMultiplier(float multiplier) override;
+  bool GetStatistics(Statistics* stats) const override;
 
  private:
   scoped_ptr<MediaComponentDeviceFake> fake_pipeline_;
@@ -454,22 +454,22 @@ bool AudioPipelineDeviceFake::GetStatistics(Statistics* stats) const {
 class VideoPipelineDeviceFake : public VideoPipelineDevice {
  public:
   explicit VideoPipelineDeviceFake(MediaClockDeviceFake* media_clock_device);
-  virtual ~VideoPipelineDeviceFake();
+  ~VideoPipelineDeviceFake() override;
 
   // VideoPipelineDevice implementation.
-  virtual void SetClient(const Client& client) override;
-  virtual State GetState() const override;
-  virtual bool SetState(State new_state) override;
-  virtual bool SetStartPts(base::TimeDelta time) override;
-  virtual FrameStatus PushFrame(
+  void SetClient(const Client& client) override;
+  State GetState() const override;
+  bool SetState(State new_state) override;
+  bool SetStartPts(base::TimeDelta time) override;
+  FrameStatus PushFrame(
       const scoped_refptr<DecryptContext>& decrypt_context,
       const scoped_refptr<DecoderBufferBase>& buffer,
       const FrameStatusCB& completion_cb) override;
-  virtual base::TimeDelta GetRenderingTime() const override;
-  virtual base::TimeDelta GetRenderingDelay() const override;
-  virtual void SetVideoClient(const VideoClient& client) override;
-  virtual bool SetConfig(const ::media::VideoDecoderConfig& config) override;
-  virtual bool GetStatistics(Statistics* stats) const override;
+  base::TimeDelta GetRenderingTime() const override;
+  base::TimeDelta GetRenderingDelay() const override;
+  void SetVideoClient(const VideoClient& client) override;
+  bool SetConfig(const ::media::VideoDecoderConfig& config) override;
+  bool GetStatistics(Statistics* stats) const override;
 
  private:
   scoped_ptr<MediaComponentDeviceFake> fake_pipeline_;

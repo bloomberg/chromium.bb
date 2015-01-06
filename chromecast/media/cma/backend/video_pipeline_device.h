@@ -42,7 +42,7 @@ class VideoPipelineDevice : public MediaComponentDevice {
   };
 
   VideoPipelineDevice();
-  virtual ~VideoPipelineDevice();
+  ~VideoPipelineDevice() override;
 
   // Registers |client| as the video specific event handler.
   virtual void SetVideoClient(const VideoClient& client) = 0;

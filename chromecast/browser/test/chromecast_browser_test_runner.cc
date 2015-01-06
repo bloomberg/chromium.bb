@@ -23,7 +23,7 @@ class BrowserTestSuite : public content::ContentTestSuiteBase {
   BrowserTestSuite(int argc, char** argv)
       : content::ContentTestSuiteBase(argc, argv) {
   }
-  virtual ~BrowserTestSuite() {
+  ~BrowserTestSuite() override {
   }
 
  private:
@@ -33,13 +33,13 @@ class BrowserTestSuite : public content::ContentTestSuiteBase {
 class ChromecastTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
   ChromecastTestLauncherDelegate() {}
-  virtual ~ChromecastTestLauncherDelegate() {}
+  ~ChromecastTestLauncherDelegate() override {}
 
-  virtual int RunTestSuite(int argc, char** argv) override {
+  int RunTestSuite(int argc, char** argv) override {
     return BrowserTestSuite(argc, argv).Run();
   }
 
-  virtual bool AdjustChildProcessCommandLine(
+  bool AdjustChildProcessCommandLine(
       base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) override {
     // TODO(gunsch): handle temp_data_dir
@@ -48,7 +48,7 @@ class ChromecastTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
  protected:
-  virtual content::ContentMainDelegate* CreateContentMainDelegate() override {
+  content::ContentMainDelegate* CreateContentMainDelegate() override {
     return new CastMainDelegate();
   }
 

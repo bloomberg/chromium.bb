@@ -30,29 +30,27 @@ class CastResourceDelegate : public ui::ResourceBundle::Delegate {
   static CastResourceDelegate* GetInstance();
 
   CastResourceDelegate();
-  virtual ~CastResourceDelegate();
+  ~CastResourceDelegate() override;
 
   // ui:ResourceBundle::Delegate implementation:
-  virtual base::FilePath GetPathForResourcePack(
+  base::FilePath GetPathForResourcePack(
       const base::FilePath& pack_path,
       ui::ScaleFactor scale_factor) override;
-  virtual base::FilePath GetPathForLocalePack(
+  base::FilePath GetPathForLocalePack(
       const base::FilePath& pack_path,
       const std::string& locale) override;
-  virtual gfx::Image GetImageNamed(int resource_id) override;
-  virtual gfx::Image GetNativeImageNamed(
+  gfx::Image GetImageNamed(int resource_id) override;
+  gfx::Image GetNativeImageNamed(
       int resource_id,
       ui::ResourceBundle::ImageRTL rtl) override;
-  virtual base::RefCountedStaticMemory* LoadDataResourceBytes(
+  base::RefCountedStaticMemory* LoadDataResourceBytes(
       int resource_id,
       ui::ScaleFactor scale_factor) override;
-  virtual bool GetRawDataResource(int resource_id,
-                                  ui::ScaleFactor scale_factor,
-                                  base::StringPiece* value) override;
-  virtual bool GetLocalizedString(int message_id,
-                                  base::string16* value) override;
-  virtual scoped_ptr<gfx::Font> GetFont(
-      ui::ResourceBundle::FontStyle style) override;
+  bool GetRawDataResource(int resource_id,
+                          ui::ScaleFactor scale_factor,
+                          base::StringPiece* value) override;
+  bool GetLocalizedString(int message_id, base::string16* value) override;
+  scoped_ptr<gfx::Font> GetFont(ui::ResourceBundle::FontStyle style) override;
 
   // Adds/removes/clears extra localized strings.
   void AddExtraLocalizedString(int resource_id,

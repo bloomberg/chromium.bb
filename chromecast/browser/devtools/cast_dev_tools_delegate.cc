@@ -31,9 +31,9 @@ class Target : public content::DevToolsTarget {
  public:
   explicit Target(scoped_refptr<content::DevToolsAgentHost> agent_host);
 
-  virtual std::string GetId() const override { return agent_host_->GetId(); }
-  virtual std::string GetParentId() const override { return std::string(); }
-  virtual std::string GetType() const override {
+  std::string GetId() const override { return agent_host_->GetId(); }
+  std::string GetParentId() const override { return std::string(); }
+  std::string GetType() const override {
     switch (agent_host_->GetType()) {
       case content::DevToolsAgentHost::TYPE_WEB_CONTENTS:
         return kTargetTypePage;
@@ -46,30 +46,19 @@ class Target : public content::DevToolsTarget {
     }
     return kTargetTypeOther;
   }
-  virtual std::string GetTitle() const override {
-    return agent_host_->GetTitle();
-  }
-  virtual std::string GetDescription() const override { return std::string(); }
-  virtual GURL GetURL() const override {
-    return agent_host_->GetURL();
-  }
-  virtual GURL GetFaviconURL() const override { return favicon_url_; }
-  virtual base::TimeTicks GetLastActivityTime() const override {
+  std::string GetTitle() const override { return agent_host_->GetTitle(); }
+  std::string GetDescription() const override { return std::string(); }
+  GURL GetURL() const override { return agent_host_->GetURL(); }
+  GURL GetFaviconURL() const override { return favicon_url_; }
+  base::TimeTicks GetLastActivityTime() const override {
     return last_activity_time_;
   }
-  virtual bool IsAttached() const override {
-    return agent_host_->IsAttached();
-  }
-  virtual scoped_refptr<content::DevToolsAgentHost> GetAgentHost()
-      const override {
+  bool IsAttached() const override { return agent_host_->IsAttached(); }
+  scoped_refptr<content::DevToolsAgentHost> GetAgentHost() const override {
     return agent_host_;
   }
-  virtual bool Activate() const override {
-    return agent_host_->Activate();
-  }
-  virtual bool Close() const override {
-    return agent_host_->Close();
-  }
+  bool Activate() const override { return agent_host_->Activate(); }
+  bool Close() const override { return agent_host_->Close(); }
 
  private:
   scoped_refptr<content::DevToolsAgentHost> agent_host_;

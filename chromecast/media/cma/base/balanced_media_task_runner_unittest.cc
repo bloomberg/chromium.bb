@@ -45,7 +45,7 @@ MediaTaskRunnerTestContext::~MediaTaskRunnerTestContext() {
 class BalancedMediaTaskRunnerTest : public testing::Test {
  public:
   BalancedMediaTaskRunnerTest();
-  virtual ~BalancedMediaTaskRunnerTest();
+  ~BalancedMediaTaskRunnerTest() override;
 
   void SetupTest(base::TimeDelta max_delta,
                  const std::vector<std::vector<int> >& timestamps_in_ms,

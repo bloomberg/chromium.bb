@@ -36,11 +36,11 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
       const scoped_refptr<BalancedMediaTaskRunnerFactory>&
       media_task_runner_factory,
       ::media::DemuxerStream* demuxer_stream);
-  virtual ~DemuxerStreamAdapter();
+  ~DemuxerStreamAdapter() override;
 
   // CodedFrameProvider implementation.
-  virtual void Read(const ReadCB& read_cb) override;
-  virtual void Flush(const base::Closure& flush_cb) override;
+  void Read(const ReadCB& read_cb) override;
+  void Flush(const base::Closure& flush_cb) override;
 
  private:
   void ResetMediaTaskRunner();

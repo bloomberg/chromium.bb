@@ -27,13 +27,13 @@ class DummyMediaTaskRunner : public MediaTaskRunner {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // MediaTaskRunner implementation.
-  virtual bool PostMediaTask(
+  bool PostMediaTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta timestamp) override;
 
  private:
-  virtual ~DummyMediaTaskRunner();
+  ~DummyMediaTaskRunner() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> const task_runner_;
 

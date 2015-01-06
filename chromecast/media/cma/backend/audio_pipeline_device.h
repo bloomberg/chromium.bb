@@ -19,7 +19,7 @@ class AudioPipelineDeviceClient;
 class AudioPipelineDevice : public MediaComponentDevice {
  public:
   AudioPipelineDevice();
-  virtual ~AudioPipelineDevice();
+  ~AudioPipelineDevice() override;
 
   // Provide the audio configuration.
   // Must be called before switching from |kStateUninitialized| to |kStateIdle|.

@@ -40,11 +40,11 @@ class BufferingFrameProvider : public CodedFrameProvider {
       size_t max_buffer_size,
       size_t max_frame_size,
       const FrameBufferedCB& frame_buffered_cb);
-  virtual ~BufferingFrameProvider();
+  ~BufferingFrameProvider() override;
 
   // CodedFrameProvider implementation.
-  virtual void Read(const ReadCB& read_cb) override;
-  virtual void Flush(const base::Closure& flush_cb) override;
+  void Read(const ReadCB& read_cb) override;
+  void Flush(const base::Closure& flush_cb) override;
 
  private:
   class BufferWithConfig {

@@ -14,7 +14,7 @@ namespace media {
 class VideoPlaneFake : public VideoPlane {
  public:
   VideoPlaneFake();
-  virtual ~VideoPlaneFake();
+  ~VideoPlaneFake() override;
 
   // VideoPlane implementation.
   gfx::Size GetScreenResolution() override;

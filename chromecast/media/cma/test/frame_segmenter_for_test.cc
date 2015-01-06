@@ -282,16 +282,16 @@ void OnNewBuffer(BufferList* buffer_list,
 class FakeDemuxerHost : public ::media::DemuxerHost {
  public:
   // DemuxerHost implementation.
-  virtual void AddBufferedTimeRange(base::TimeDelta start,
-                                    base::TimeDelta end) override {}
-  virtual void SetDuration(base::TimeDelta duration) override {}
-  virtual void OnDemuxerError(::media::PipelineStatus error) override {
+  void AddBufferedTimeRange(base::TimeDelta start,
+                            base::TimeDelta end) override {}
+  void SetDuration(base::TimeDelta duration) override {}
+  void OnDemuxerError(::media::PipelineStatus error) override {
     LOG(FATAL) << "OnDemuxerError: " << error;
   }
-  virtual void AddTextStream(::media::DemuxerStream* text_stream,
-                             const ::media::TextTrackConfig& config) override {
+  void AddTextStream(::media::DemuxerStream* text_stream,
+                     const ::media::TextTrackConfig& config) override {
   }
-  virtual void RemoveTextStream(::media::DemuxerStream* text_stream) override {
+  void RemoveTextStream(::media::DemuxerStream* text_stream) override {
   }
 };
 

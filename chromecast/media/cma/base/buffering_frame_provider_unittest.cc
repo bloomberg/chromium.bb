@@ -27,7 +27,7 @@ namespace media {
 class BufferingFrameProviderTest : public testing::Test {
  public:
   BufferingFrameProviderTest();
-  virtual ~BufferingFrameProviderTest();
+  ~BufferingFrameProviderTest() override;
 
   // Setup the test.
   void Configure(

@@ -17,15 +17,15 @@ class FrameGeneratorForTest;
 class MockFrameProvider : public CodedFrameProvider {
  public:
   MockFrameProvider();
-  virtual ~MockFrameProvider();
+  ~MockFrameProvider() override;
 
   void Configure(
       const std::vector<bool>& delayed_task_pattern,
       scoped_ptr<FrameGeneratorForTest> frame_generator);
 
   // CodedFrameProvider implementation.
-  virtual void Read(const ReadCB& read_cb) override;
-  virtual void Flush(const base::Closure& flush_cb) override;
+  void Read(const ReadCB& read_cb) override;
+  void Flush(const base::Closure& flush_cb) override;
 
  private:
   void DoRead(const ReadCB& read_cb);

@@ -27,15 +27,15 @@ class CastBrowserContext::CastResourceContext :
   explicit CastResourceContext(
       URLRequestContextFactory* url_request_context_factory) :
     url_request_context_factory_(url_request_context_factory) {}
-  virtual ~CastResourceContext() {}
+  ~CastResourceContext() override {}
 
   // ResourceContext implementation:
-  virtual net::HostResolver* GetHostResolver() override {
+  net::HostResolver* GetHostResolver() override {
     return url_request_context_factory_->GetMainGetter()->
         GetURLRequestContext()->host_resolver();
   }
 
-  virtual net::URLRequestContext* GetRequestContext() override {
+  net::URLRequestContext* GetRequestContext() override {
     return url_request_context_factory_->GetMainGetter()->
         GetURLRequestContext();
   }

@@ -58,7 +58,7 @@ class URLRequestContextFactory::URLRequestContextGetter
         factory_(factory) {
   }
 
-  virtual net::URLRequestContext* GetURLRequestContext() override {
+  net::URLRequestContext* GetURLRequestContext() override {
     if (!request_context_) {
       if (is_media_) {
         request_context_.reset(factory_->CreateMediaRequestContext());
@@ -73,14 +73,14 @@ class URLRequestContextFactory::URLRequestContextGetter
     return request_context_.get();
   }
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
     return content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
   }
 
  private:
-  virtual ~URLRequestContextGetter() {}
+  ~URLRequestContextGetter() override {}
 
   const bool is_media_;
   URLRequestContextFactory* const factory_;
@@ -105,7 +105,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
-  virtual net::URLRequestContext* GetURLRequestContext() override {
+  net::URLRequestContext* GetURLRequestContext() override {
     if (!request_context_) {
       request_context_.reset(factory_->CreateMainRequestContext(
           browser_context_, &protocol_handlers_, request_interceptors_.Pass()));
@@ -114,14 +114,14 @@ class URLRequestContextFactory::MainURLRequestContextGetter
     return request_context_.get();
   }
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
     return content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
   }
 
  private:
-  virtual ~MainURLRequestContextGetter() {}
+  ~MainURLRequestContextGetter() override {}
 
   content::BrowserContext* const browser_context_;
   URLRequestContextFactory* const factory_;

@@ -32,13 +32,13 @@ class MediaTaskRunnerWithNotification : public MediaTaskRunner {
       const base::Closure& shutdown_cb);
 
   // MediaTaskRunner implementation.
-  virtual bool PostMediaTask(
+  bool PostMediaTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta timestamp) override;
 
  private:
-  virtual ~MediaTaskRunnerWithNotification();
+  ~MediaTaskRunnerWithNotification() override;
 
   scoped_refptr<MediaTaskRunner> const media_task_runner_;
 
@@ -93,13 +93,13 @@ class BalancedMediaTaskRunner
   base::TimeDelta GetMediaTimestamp() const;
 
   // MediaTaskRunner implementation.
-  virtual bool PostMediaTask(
+  bool PostMediaTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta timestamp) override;
 
  private:
-  virtual ~BalancedMediaTaskRunner();
+  ~BalancedMediaTaskRunner() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> const task_runner_;
 

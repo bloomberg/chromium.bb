@@ -18,9 +18,9 @@ class CastNetworkDelegateSimple : public CastNetworkDelegate {
 
  private:
   // CastNetworkDelegate implementation:
-  virtual void Initialize(bool use_sync_signing) override {}
-  virtual bool IsWhitelisted(const GURL& gurl, int render_process_id,
-                             bool for_device_auth) const override {
+  void Initialize(bool use_sync_signing) override {}
+  bool IsWhitelisted(const GURL& gurl, int render_process_id,
+                     bool for_device_auth) const override {
     return false;
   }
 

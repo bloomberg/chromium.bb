@@ -23,30 +23,28 @@ class CastBrowserContext : public content::BrowserContext {
  public:
   explicit CastBrowserContext(
       URLRequestContextFactory* url_request_context_factory);
-  virtual ~CastBrowserContext();
+  ~CastBrowserContext() override;
 
   // BrowserContext implementation:
-  virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
-  virtual base::FilePath GetPath() const override;
-  virtual bool IsOffTheRecord() const override;
-  virtual net::URLRequestContextGetter* GetRequestContext() override;
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+  base::FilePath GetPath() const override;
+  bool IsOffTheRecord() const override;
+  net::URLRequestContextGetter* GetRequestContext() override;
+  net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) override;
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() override;
-  virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
+  net::URLRequestContextGetter* GetMediaRequestContext() override;
+  net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) override;
-  virtual net::URLRequestContextGetter*
-      GetMediaRequestContextForStoragePartition(
-          const base::FilePath& partition_path,
-          bool in_memory) override;
-  virtual content::ResourceContext* GetResourceContext() override;
-  virtual content::DownloadManagerDelegate*
-      GetDownloadManagerDelegate() override;
-  virtual content::BrowserPluginGuestManager* GetGuestManager() override;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
-  virtual content::PushMessagingService* GetPushMessagingService() override;
-  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory) override;
+  content::ResourceContext* GetResourceContext() override;
+  content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  content::BrowserPluginGuestManager* GetGuestManager() override;
+  storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::PushMessagingService* GetPushMessagingService() override;
+  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
 
   net::URLRequestContextGetter* GetSystemRequestContext();
 

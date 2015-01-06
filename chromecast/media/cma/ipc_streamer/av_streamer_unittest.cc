@@ -33,11 +33,11 @@ class FifoMemoryChunk : public MediaMemoryChunk {
  public:
   FifoMemoryChunk(void* mem, size_t size)
       : mem_(mem), size_(size) {}
-  virtual ~FifoMemoryChunk() {}
+  ~FifoMemoryChunk() override {}
 
-  virtual void* data() const override { return mem_; }
-  virtual size_t size() const override { return size_; }
-  virtual bool valid() const override { return true; }
+  void* data() const override { return mem_; }
+  size_t size() const override { return size_; }
+  bool valid() const override { return true; }
 
  private:
   void* mem_;
@@ -51,7 +51,7 @@ class FifoMemoryChunk : public MediaMemoryChunk {
 class AvStreamerTest : public testing::Test {
  public:
   AvStreamerTest();
-  virtual ~AvStreamerTest();
+  ~AvStreamerTest() override;
 
   // Setups the test.
   void Configure(

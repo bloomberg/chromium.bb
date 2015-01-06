@@ -36,7 +36,7 @@ namespace media {
 class AudioVideoPipelineImplTest : public testing::Test {
  public:
   AudioVideoPipelineImplTest();
-  virtual ~AudioVideoPipelineImplTest();
+  ~AudioVideoPipelineImplTest() override;
 
   void Initialize(const base::Closure& done_cb,
                   ::media::PipelineStatus status,

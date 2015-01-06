@@ -27,13 +27,13 @@ namespace shell {
 class ChromecastBrowserTest : public content::BrowserTestBase {
  protected:
   ChromecastBrowserTest();
-  virtual ~ChromecastBrowserTest();
+  ~ChromecastBrowserTest() override;
 
   // testing::Test implementation:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // BrowserTestBase implementation:
-  virtual void RunTestOnMainThreadLoop() override;
+  void RunTestOnMainThreadLoop() override;
 
  protected:
   void NavigateToURL(content::WebContents* window, const GURL& gurl);

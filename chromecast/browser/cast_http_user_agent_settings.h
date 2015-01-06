@@ -16,11 +16,11 @@ namespace shell {
 class CastHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:
   CastHttpUserAgentSettings();
-  virtual ~CastHttpUserAgentSettings();
+  ~CastHttpUserAgentSettings() override;
 
   // net::HttpUserAgentSettings implementation:
-  virtual std::string GetAcceptLanguage() const override;
-  virtual std::string GetUserAgent() const override;
+  std::string GetAcceptLanguage() const override;
+  std::string GetUserAgent() const override;
 
  private:
   mutable std::string accept_language_;

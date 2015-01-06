@@ -14,7 +14,7 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
  public:
   ChromecastShellBrowserTest() : url_(url::kAboutBlankURL) {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     CreateBrowser();
     NavigateToURL(web_contents(), url_);
   }

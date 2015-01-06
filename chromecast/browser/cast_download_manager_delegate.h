@@ -14,20 +14,18 @@ namespace shell {
 class CastDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
   CastDownloadManagerDelegate();
-  virtual ~CastDownloadManagerDelegate();
+  ~CastDownloadManagerDelegate() override;
 
   // content::DownloadManagerDelegate implementation:
-  virtual void GetNextId(
-      const content::DownloadIdCallback& callback) override;
-  virtual bool DetermineDownloadTarget(
+  void GetNextId(const content::DownloadIdCallback& callback) override;
+  bool DetermineDownloadTarget(
       content::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
-  virtual bool ShouldOpenFileBasedOnExtension(
-      const base::FilePath& path) override;
-  virtual bool ShouldCompleteDownload(
+  bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
+  bool ShouldCompleteDownload(
       content::DownloadItem* item,
       const base::Closure& complete_callback) override;
-  virtual bool ShouldOpenDownload(
+  bool ShouldOpenDownload(
       content::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
 

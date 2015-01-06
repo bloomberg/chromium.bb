@@ -29,7 +29,7 @@ class DecryptContext;
 class BrowserCdmCast : public ::media::BrowserCdm {
  public:
   BrowserCdmCast();
-  virtual ~BrowserCdmCast() override;
+  ~BrowserCdmCast() override;
 
   // PlayerTracker implementation.
   int RegisterPlayer(const base::Closure& new_key_cb,

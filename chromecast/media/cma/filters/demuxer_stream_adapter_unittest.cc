@@ -41,7 +41,7 @@ class DummyDemuxerStream : public ::media::DemuxerStream {
   DummyDemuxerStream(int cycle_count,
                      int delayed_frame_count,
                      const std::list<int>& config_idx);
-  virtual ~DummyDemuxerStream();
+  ~DummyDemuxerStream() override;
 
   // ::media::DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
@@ -153,7 +153,7 @@ void DummyDemuxerStream::DoRead(const ReadCB& read_cb) {
 class DemuxerStreamAdapterTest : public testing::Test {
  public:
   DemuxerStreamAdapterTest();
-  virtual ~DemuxerStreamAdapterTest();
+  ~DemuxerStreamAdapterTest() override;
 
   void Initialize(::media::DemuxerStream* demuxer_stream);
   void Start();

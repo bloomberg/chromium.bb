@@ -19,12 +19,12 @@ class VideoPipelineDeviceFake;
 class MediaPipelineDeviceFake : public MediaPipelineDevice {
  public:
   MediaPipelineDeviceFake();
-  virtual ~MediaPipelineDeviceFake();
+  ~MediaPipelineDeviceFake() override;
 
   // MediaPipelineDevice implementation.
-  virtual AudioPipelineDevice* GetAudioPipelineDevice() const override;
-  virtual VideoPipelineDevice* GetVideoPipelineDevice() const override;
-  virtual MediaClockDevice* GetMediaClockDevice() const override;
+  AudioPipelineDevice* GetAudioPipelineDevice() const override;
+  VideoPipelineDevice* GetVideoPipelineDevice() const override;
+  MediaClockDevice* GetMediaClockDevice() const override;
 
  private:
   scoped_ptr<MediaClockDeviceFake> media_clock_device_;

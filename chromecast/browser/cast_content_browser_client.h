@@ -18,27 +18,26 @@ class URLRequestContextFactory;
 class CastContentBrowserClient: public content::ContentBrowserClient {
  public:
   CastContentBrowserClient();
-  virtual ~CastContentBrowserClient();
+  ~CastContentBrowserClient() override;
 
   // content::ContentBrowserClient implementation:
-  virtual content::BrowserMainParts* CreateBrowserMainParts(
+  content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  virtual void RenderProcessWillLaunch(
-      content::RenderProcessHost* host) override;
-  virtual net::URLRequestContextGetter* CreateRequestContext(
+  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+  net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
       override;
-  virtual bool IsHandledURL(const GURL& url) override;
-  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
-                                              int child_process_id) override;
-  virtual content::AccessTokenStore* CreateAccessTokenStore() override;
-  virtual void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
-                                   const GURL& url,
-                                   content::WebPreferences* prefs) override;
-  virtual std::string GetApplicationLocale() override;
-  virtual void AllowCertificateError(
+  bool IsHandledURL(const GURL& url) override;
+  void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
+                                      int child_process_id) override;
+  content::AccessTokenStore* CreateAccessTokenStore() override;
+  void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
+                           const GURL& url,
+                           content::WebPreferences* prefs) override;
+  std::string GetApplicationLocale() override;
+  void AllowCertificateError(
       int render_process_id,
       int render_view_id,
       int cert_error,
@@ -50,12 +49,12 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       bool expired_previous_decision,
       const base::Callback<void(bool)>& callback,
       content::CertificateRequestResultType* result) override;
-  virtual void SelectClientCertificate(
+  void SelectClientCertificate(
       int render_process_id,
       int render_frame_id,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) override;
-  virtual bool CanCreateWindow(
+  bool CanCreateWindow(
       const GURL& opener_url,
       const GURL& opener_top_level_frame_url,
       const GURL& source_origin,
@@ -70,14 +69,13 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       int render_process_id,
       int opener_id,
       bool* no_javascript_access) override;
-  virtual content::DevToolsManagerDelegate*
-      GetDevToolsManagerDelegate() override;
-  virtual void GetAdditionalMappedFilesForChildProcess(
+  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::FileDescriptorInfo* mappings) override;
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)
-  virtual content::ExternalVideoSurfaceContainer*
+  content::ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(
       content::WebContents* web_contents) override;
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)

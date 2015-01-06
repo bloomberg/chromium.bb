@@ -42,7 +42,7 @@ class UnixDomainServerSocketFactory
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const override {
+  scoped_ptr<net::ServerSocket> Create() const override {
     return scoped_ptr<net::ServerSocket>(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),
@@ -61,7 +61,7 @@ class TCPServerSocketFactory
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const override {
+  scoped_ptr<net::ServerSocket> Create() const override {
     return scoped_ptr<net::ServerSocket>(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
   }

@@ -30,7 +30,7 @@ class DecoderBufferClear : public DecoderBufferBase {
   bool end_of_stream() const override;
 
  private:
-  virtual ~DecoderBufferClear();
+  ~DecoderBufferClear() override;
 
   scoped_refptr<DecoderBufferBase> const buffer_;
 

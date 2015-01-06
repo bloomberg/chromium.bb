@@ -17,12 +17,12 @@ class CastCrashReporterClient : public crash_reporter::CrashReporterClient {
   static void InitCrashReporter(const std::string& process_type);
 
   CastCrashReporterClient();
-  virtual ~CastCrashReporterClient();
+  ~CastCrashReporterClient() override;
 
   // crash_reporter::CrashReporterClient implementation:
-  virtual bool EnableBreakpadForProcess(
+  bool EnableBreakpadForProcess(
       const std::string& process_type) override;
-  virtual bool HandleCrashDump(const char* crashdump_filename) override;
+  bool HandleCrashDump(const char* crashdump_filename) override;
 
  private:
   static char* GetProcessType();

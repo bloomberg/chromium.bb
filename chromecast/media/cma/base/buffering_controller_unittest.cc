@@ -39,7 +39,7 @@ MockBufferingControllerClient::~MockBufferingControllerClient() {
 class BufferingControllerTest : public testing::Test {
  public:
   BufferingControllerTest();
-  virtual ~BufferingControllerTest();
+  ~BufferingControllerTest() override;
 
  protected:
   scoped_ptr<BufferingController> buffering_controller_;

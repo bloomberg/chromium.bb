@@ -14,17 +14,17 @@ std::string GetUserAgent();
 
 class CastContentClient : public content::ContentClient {
  public:
-  virtual ~CastContentClient();
+  ~CastContentClient() override;
 
   // content::ContentClient implementation:
-  virtual std::string GetUserAgent() const override;
-  virtual base::string16 GetLocalizedString(int message_id) const override;
-  virtual base::StringPiece GetDataResource(
+  std::string GetUserAgent() const override;
+  base::string16 GetLocalizedString(int message_id) const override;
+  base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
-  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+  base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const override;
-  virtual gfx::Image& GetNativeImageNamed(int resource_id) const override;
+  gfx::Image& GetNativeImageNamed(int resource_id) const override;
 };
 
 }  // namespace shell
