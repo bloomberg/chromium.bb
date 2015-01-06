@@ -10,9 +10,8 @@ if (cpu_arch == "arm") {
   import("//native_client/build/config/arm.gni")
 }
 
-
 bootstrap_lib_path = "$target_out_dir/libnacl_bootstrap_lib.a"
-bootstrap_raw_path = "$target_gen_dir/nacl_bootstrap_raw"
+bootstrap_raw_path = "$target_out_dir/nacl_bootstrap_raw"
 bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
 
 linker_script_path = rebase_path("nacl_bootstrap.x")
@@ -103,7 +102,6 @@ static_library("nacl_bootstrap_lib") {
   ]
 }
 
-
 action("nacl_bootstrap_raw") {
   deps = [
     ":nacl_bootstrap_lib",
@@ -143,8 +141,8 @@ action("nacl_bootstrap_raw") {
   ]
 }
 
-action("nacl_helper_bootstrap") {
-  datadeps = [
+action("munge_nacl_helper_bootstrap") {
+  deps = [
     ":nacl_bootstrap_raw",
   ]
 

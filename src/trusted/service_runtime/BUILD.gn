@@ -253,7 +253,7 @@ executable("sel_ldr") {
   }
   if (is_linux) {
     datadeps = [
-      "//native_client/src/trusted/service_runtime/linux:nacl_helper_bootstrap"
+      "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap"
     ]
   }
 }
