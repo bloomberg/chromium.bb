@@ -180,10 +180,12 @@ public:
     inline Address payloadEnd();
 
     inline void checkHeader() const;
+#if ENABLE(ASSERT)
     // Zap magic number with a new magic number that means there was once an
     // object allocated here, but it was freed because nobody marked it during
     // GC.
     void zapMagic();
+#endif
 
     void finalize(Address, size_t);
     static HeapObjectHeader* fromPayload(const void*);
@@ -370,7 +372,9 @@ public:
     // conservatively mark all objects that could be referenced from
     // the stack.
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
+#if ENABLE(ASSERT)
     virtual bool contains(Address) = 0;
+#endif
 
 #if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfo(Address) = 0;
@@ -413,6 +417,7 @@ public:
 
     bool isEmpty();
 
+#if ENABLE(ASSERT)
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
     // the result can be used to populate the negative page cache.
@@ -422,6 +427,7 @@ public:
         ASSERT(blinkPageStart == address() - WTF::kSystemPageSize); // Page is at aligned address plus guard page size.
         return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
     }
+#endif
 
     HeapPage* next() { return m_next; }
 
@@ -530,6 +536,7 @@ public:
         return (payload() <= object) && (object < address() + size());
     }
 
+#if ENABLE(ASSERT)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
     // populate the negative page cache.
@@ -537,6 +544,7 @@ public:
     {
         return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
     }
+#endif
 
     LargeObject* next()
     {
