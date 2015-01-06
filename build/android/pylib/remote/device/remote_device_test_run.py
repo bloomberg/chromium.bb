@@ -138,28 +138,37 @@ class RemoteDeviceTestRun(test_run.TestRun):
     logging.info('Test status: %s' % self._results['detailed_status'])
     return self._results['status']
 
-  def _UploadAppToDevice(self, apk_path):
+  def _AmInstrumentTestSetup(self, app_path, test_path, runner_package):
+    config = {'runner': runner_package}
+
+    self._app_id = self._UploadAppToDevice(app_path)
+    self._test_id = self._UploadTestToDevice('robotium', test_path)
+
+    logging.info('Setting config: %s' % config)
+    self._SetTestConfig('robotium', config)
+
+  def _UploadAppToDevice(self, app_path):
     """Upload app to device."""
-    logging.info('Upload %s to remote service.' % apk_path)
-    apk_name = os.path.basename(apk_path)
-    with open(apk_path, 'rb') as apk_src:
-      upload_results = appurify_sanitized.api.apps_upload(self._env.token,
-                                                apk_src, 'raw', name=apk_name)
+    logging.info('Upload %s to remote service.' % app_path)
+    apk_name = os.path.basename(app_path)
+    with open(app_path, 'rb') as apk_src:
+      upload_results = appurify_sanitized.api.apps_upload(
+          self._env.token, apk_src, 'raw', name=apk_name)
       remote_device_helper.TestHttpResponse(
-          upload_results, 'Unable to upload %s.' %(apk_path))
+          upload_results, 'Unable to upload %s.' % app_path)
       return upload_results.json()['response']['app_id']
 
-  def _UploadTestToDevice(self, test_type):
+  def _UploadTestToDevice(self, test_type, test_path):
     """Upload test to device
     Args:
       test_type: Type of test that is being uploaded. Ex. uirobot, gtest..
     """
-    logging.info('Uploading %s to remote service.' % self._test_instance.apk)
-    with open(self._test_instance.apk, 'rb') as test_src:
+    logging.info('Uploading %s to remote service.' % test_path)
+    with open(test_path, 'rb') as test_src:
       upload_results = appurify_sanitized.api.tests_upload(
-          self._env.token, test_src, 'raw', test_type, app_id=self._app_id)
+          self._env.token, test_src, 'raw', test_type)
       remote_device_helper.TestHttpResponse(upload_results,
-          'Unable to upload %s.' %(self._test_instance.apk))
+          'Unable to upload %s.' % test_path)
       return upload_results.json()['response']['test_id']
 
   def _SetTestConfig(self, runner_type, body):
@@ -174,7 +183,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
       config.write(''.join('%s\n' % l for l in config_data))
       config.flush()
       config.seek(0)
-      config_response = appurify_sanitized.api.config_upload(self._env.token,
-                                                   config, self._test_id)
-      remote_device_helper.TestHttpResponse(config_response,
-                                            'Unable to upload test config.')
+      config_response = appurify_sanitized.api.config_upload(
+          self._env.token, config, self._test_id)
+      remote_device_helper.TestHttpResponse(
+          config_response, 'Unable to upload test config.')

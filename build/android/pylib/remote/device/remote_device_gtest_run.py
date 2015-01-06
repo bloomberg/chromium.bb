@@ -18,7 +18,6 @@ from pylib.remote.device import remote_device_helper
 class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run gtests and uirobot tests on a remote device."""
 
-  DEFAULT_RUNNER_TYPE = 'robotium'
   DEFAULT_RUNNER_PACKAGE = (
       'org.chromium.native_test.ChromiumNativeTestInstrumentationTestRunner')
 
@@ -30,24 +29,22 @@ class RemoteDeviceGtestRun(remote_device_test_run.RemoteDeviceTestRun):
   def _TriggerSetUp(self):
     """Set up the triggering of a test run."""
     logging.info('Triggering test run.')
-    self._app_id = self._UploadAppToDevice(self._test_instance.apk)
 
-    if not self._env.runner_type:
-      runner_type = self.DEFAULT_RUNNER_TYPE
-      logging.info('Using default runner type: %s', self.DEFAULT_RUNNER_TYPE)
-    else:
-      runner_type = self._env.runner_type
+    if self._env.runner_type:
+      logging.warning('Ignoring configured runner_type "%s"',
+                      self._env.runner_type)
 
     if not self._env.runner_package:
       runner_package = self.DEFAULT_RUNNER_PACKAGE
       logging.info('Using default runner package: %s',
-                    self.DEFAULT_RUNNER_TYPE)
+                   self.DEFAULT_RUNNER_PACKAGE)
     else:
       runner_package = self._env.runner_package
 
-    self._test_id = self._UploadTestToDevice(runner_type)
-    config_body = {'runner': runner_package}
-    self._SetTestConfig(runner_type, config_body)
+    dummy_app_path = os.path.join(
+        constants.GetOutDirectory(), 'apks', 'remote_device_dummy.apk')
+    self._AmInstrumentTestSetup(dummy_app_path, self._test_instance.apk,
+                                runner_package)
 
   _INSTRUMENTATION_STREAM_LEADER = 'INSTRUMENTATION_STATUS: stream='
 

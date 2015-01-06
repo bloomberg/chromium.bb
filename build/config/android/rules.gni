@@ -1450,7 +1450,10 @@ template("unittest_apk") {
   android_apk(target_name) {
     _apk_name = test_suite_name
     final_apk_path = "$root_build_dir/${_apk_name}_apk/${_apk_name}-debug.apk"
-    java_files = [ "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java" ]
+    java_files = [
+      "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java",
+      "//testing/android/java/src/org/chromium/native_test/ChromiumNativeTestInstrumentationTestRunner.java",
+    ]
     android_manifest = "//testing/android/java/AndroidManifest.xml"
     native_libs = [ unittests_binary ]
     if (defined(invoker.asset_location)) {
@@ -1458,6 +1461,7 @@ template("unittest_apk") {
     }
     deps = [
       "//base:base_java",
+      "//build/android/pylib/remote/device/dummy:remote_device_dummy_apk",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
