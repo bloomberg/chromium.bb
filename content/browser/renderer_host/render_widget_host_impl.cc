@@ -805,7 +805,8 @@ void RenderWidgetHostImpl::WaitForSurface() {
   }
 
   TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
-  TimeTicks end_time = TimeTicks::Now() + max_delay;
+  TimeTicks start_time = TimeTicks::Now();
+  TimeDelta elapsed_delay;
   do {
     TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForUpdate");
 
@@ -833,8 +834,12 @@ void RenderWidgetHostImpl::WaitForSurface() {
     // BackingStore yet. This is necessary to support the GPU path which
     // typically has multiple frames pipelined -- we may need to skip one or two
     // BackingStore messages to get to the latest.
-    max_delay = end_time - TimeTicks::Now();
-  } while (max_delay > TimeDelta::FromSeconds(0));
+    elapsed_delay = TimeTicks::Now() - start_time;
+  } while (elapsed_delay < max_delay);
+
+  UMA_HISTOGRAM_CUSTOM_TIMES("OSX.RendererHost.SurfaceWaitTime", elapsed_delay,
+                             TimeDelta::FromMilliseconds(1),
+                             TimeDelta::FromMilliseconds(200), 50);
 }
 #endif
 

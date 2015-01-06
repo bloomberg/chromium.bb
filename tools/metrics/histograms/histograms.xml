@@ -22700,6 +22700,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="OSX.RendererHost.SurfaceWaitTime" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This event records the amount of time that the browser process main thread
+    blocks, waiting for a frame with the right dimensions to arrive from the gpu
+    process.
+  </summary>
+</histogram>
+
 <histogram name="OSX.Settings.ScreensHaveSeparateSpaces"
     enum="OSXScreensHaveSeparateSpaces">
   <owner>erikchen@chromium.org</owner>
