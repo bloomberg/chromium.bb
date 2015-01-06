@@ -8,9 +8,9 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/idle/idle_api_constants.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/idle.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -27,7 +27,7 @@ const int kPollInterval = 1;
 
 class DefaultEventDelegate : public IdleManager::EventDelegate {
  public:
-  explicit DefaultEventDelegate(Profile* profile);
+  explicit DefaultEventDelegate(content::BrowserContext* context);
   ~DefaultEventDelegate() override;
 
   void OnStateChanged(const std::string& extension_id,
@@ -36,11 +36,11 @@ class DefaultEventDelegate : public IdleManager::EventDelegate {
   void UnregisterObserver(EventRouter::Observer* observer) override;
 
  private:
-  Profile* profile_;
+  content::BrowserContext* const context_;
 };
 
-DefaultEventDelegate::DefaultEventDelegate(Profile* profile)
-    : profile_(profile) {
+DefaultEventDelegate::DefaultEventDelegate(content::BrowserContext* context)
+    : context_(context) {
 }
 
 DefaultEventDelegate::~DefaultEventDelegate() {
@@ -52,19 +52,19 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
   args->Append(IdleManager::CreateIdleValue(new_state));
   scoped_ptr<Event> event(new Event(idle::OnStateChanged::kEventName,
                                     args.Pass()));
-  event->restrict_to_browser_context = profile_;
-  EventRouter::Get(profile_)
+  event->restrict_to_browser_context = context_;
+  EventRouter::Get(context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void DefaultEventDelegate::RegisterObserver(
     EventRouter::Observer* observer) {
-  EventRouter::Get(profile_)
+  EventRouter::Get(context_)
       ->RegisterObserver(observer, idle::OnStateChanged::kEventName);
 }
 
 void DefaultEventDelegate::UnregisterObserver(EventRouter::Observer* observer) {
-  EventRouter::Get(profile_)->UnregisterObserver(observer);
+  EventRouter::Get(context_)->UnregisterObserver(observer);
 }
 
 class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
@@ -117,11 +117,11 @@ IdleMonitor::IdleMonitor(IdleState initial_state)
       threshold(kDefaultIdleThreshold) {
 }
 
-IdleManager::IdleManager(Profile* profile)
-    : profile_(profile),
+IdleManager::IdleManager(content::BrowserContext* context)
+    : context_(context),
       last_state_(IDLE_STATE_ACTIVE),
       idle_time_provider_(new DefaultIdleProvider()),
-      event_delegate_(new DefaultEventDelegate(profile)),
+      event_delegate_(new DefaultEventDelegate(context)),
       extension_registry_observer_(this),
       weak_factory_(this) {
 }
@@ -130,7 +130,7 @@ IdleManager::~IdleManager() {
 }
 
 void IdleManager::Init() {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(context_));
   event_delegate_->RegisterObserver(this);
 }
 

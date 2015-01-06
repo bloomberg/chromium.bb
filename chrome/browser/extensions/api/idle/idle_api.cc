@@ -35,7 +35,7 @@ bool IdleQueryStateFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForProfile(GetProfile())->QueryState(
+  IdleManagerFactory::GetForBrowserContext(context_)->QueryState(
       threshold, base::Bind(&IdleQueryStateFunction::IdleStateCallback, this));
 
   // Don't send the response, it'll be sent by our callback
@@ -52,7 +52,7 @@ bool IdleSetDetectionIntervalFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForProfile(GetProfile())
+  IdleManagerFactory::GetForBrowserContext(context_)
       ->SetThreshold(extension_id(), threshold);
 
   return true;

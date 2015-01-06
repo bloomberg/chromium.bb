@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDLE_IDLE_API_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/idle.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
 // Implementation of the chrome.idle.queryState API.
-class IdleQueryStateFunction : public ChromeAsyncExtensionFunction {
+class IdleQueryStateFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("idle.queryState", IDLE_QUERYSTATE)
 
@@ -26,7 +26,7 @@ class IdleQueryStateFunction : public ChromeAsyncExtensionFunction {
 };
 
 // Implementation of the chrome.idle.setDetectionInterval API.
-class IdleSetDetectionIntervalFunction : public ChromeSyncExtensionFunction {
+class IdleSetDetectionIntervalFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("idle.setDetectionInterval",
                              IDLE_SETDETECTIONINTERVAL)

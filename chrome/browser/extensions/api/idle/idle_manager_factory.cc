@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 
 #include "chrome/browser/extensions/api/idle/idle_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -13,10 +12,10 @@
 namespace extensions {
 
 // static
-IdleManager* IdleManagerFactory::GetForProfile(
-    Profile* profile) {
+IdleManager* IdleManagerFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<IdleManager*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -35,8 +34,8 @@ IdleManagerFactory::~IdleManagerFactory() {
 }
 
 KeyedService* IdleManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  IdleManager* idle_manager = new IdleManager(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  IdleManager* idle_manager = new IdleManager(context);
   idle_manager->Init();
   return idle_manager;
 }

@@ -8,14 +8,16 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace extensions {
 class IdleManager;
 
 class IdleManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static IdleManager* GetForProfile(Profile* profile);
+  static IdleManager* GetForBrowserContext(content::BrowserContext* context);
 
   static IdleManagerFactory* GetInstance();
 
@@ -27,7 +29,7 @@ class IdleManagerFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedBaseFactory implementation.
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+      content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;

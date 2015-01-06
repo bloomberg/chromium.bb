@@ -23,7 +23,9 @@ namespace base {
 class StringValue;
 }  // namespace base
 
-class Profile;
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace extensions {
 class ExtensionRegistry;
@@ -68,7 +70,7 @@ class IdleManager : public ExtensionRegistryObserver,
     DISALLOW_COPY_AND_ASSIGN(EventDelegate);
   };
 
-  explicit IdleManager(Profile* profile);
+  explicit IdleManager(content::BrowserContext* context);
   ~IdleManager() override;
 
   void Init();
@@ -119,7 +121,7 @@ class IdleManager : public ExtensionRegistryObserver,
   void UpdateIdleState();
   void UpdateIdleStateCallback(int idle_time);
 
-  Profile* profile_;
+  content::BrowserContext* const context_;
 
   IdleState last_state_;
   MonitorMap monitors_;

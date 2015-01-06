@@ -117,12 +117,16 @@ ScopedListen::~ScopedListen() {
   idle_manager_->OnListenerRemoved(details);
 }
 
-KeyedService* IdleManagerTestFactory(content::BrowserContext* profile) {
-  return new IdleManager(static_cast<Profile*>(profile));
+KeyedService* IdleManagerTestFactory(content::BrowserContext* context) {
+  return new IdleManager(context);
 }
 
 }  // namespace
 
+// TODO(derat): Make this instead derive from extensions::ApiUnitTest after
+// moving it out of the unit_tests target. Its base class can't be changed
+// before then since doing so results in crashes due to multiple
+// content::NotificationService instances being created.
 class IdleTest : public ExtensionApiUnittest {
  public:
   void SetUp() override;
@@ -138,7 +142,8 @@ void IdleTest::SetUp() {
 
   IdleManagerFactory::GetInstance()->SetTestingFactory(browser()->profile(),
                                                        &IdleManagerTestFactory);
-  idle_manager_ = IdleManagerFactory::GetForProfile(browser()->profile());
+  idle_manager_ = IdleManagerFactory::GetForBrowserContext(
+      browser()->profile());
 
   idle_provider_ = new TestIdleProvider();
   idle_manager_->SetIdleTimeProviderForTest(
