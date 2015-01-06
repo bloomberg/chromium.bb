@@ -211,11 +211,6 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self._Act(build_id, change, 'polenta')
     self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_INFLIGHT)
 
-    # Marking the CL as KICKED_OUT should mark it as FAILED, as a workaround
-    # for Bug 429777. TODO(davidjames): Remove this.
-    self._Act(build_id, change, constants.CL_ACTION_KICKED_OUT)
-    self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_FAILED)
-
 
   def testGetCLPreCQProgress(self):
     change = metadata_lib.GerritPatchTuple(1, 1, False)

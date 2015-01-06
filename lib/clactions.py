@@ -139,25 +139,14 @@ def GetCLPreCQStatus(change, action_history):
   Returns:
     The status, as a string, or None if there is no recorded pre-cq status.
   """
-  raw_actions_for_patch = ActionsForPatch(change, action_history)
-  actions_for_patch = [a for a in raw_actions_for_patch
+  actions_for_patch = ActionsForPatch(change, action_history)
+  actions_for_patch = [a for a in actions_for_patch
                        if a.action in _PRECQ_ACTION_TO_STATUS]
 
   if not actions_for_patch:
     return None
 
-  action = actions_for_patch[-1].action
-
-  # Workaround an old bug in the Pre-CQ where it forgot to mark patches as
-  # failed. See http://crbug.com/429777 . TODO(davidjames): Remove this.
-  if action == constants.CL_ACTION_PRE_CQ_INFLIGHT:
-    for a in reversed(raw_actions_for_patch):
-      if a.action == action:
-        break
-      elif a.action == constants.CL_ACTION_KICKED_OUT:
-        action = constants.CL_ACTION_PRE_CQ_FAILED
-
-  return TranslatePreCQActionToStatus(action)
+  return TranslatePreCQActionToStatus(actions_for_patch[-1].action)
 
 
 def ActionsForPatch(change, action_history):
