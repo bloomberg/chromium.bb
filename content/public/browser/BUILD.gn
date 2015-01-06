@@ -46,6 +46,7 @@ source_set("browser_sources") {
   configs += [ "//content:content_implementation" ]
 
   public_deps = [
+    "//content/public/common:mojo_bindings",
     # We expose skia headers in the public API.
     "//skia",
     "//mojo/public/cpp/system",
