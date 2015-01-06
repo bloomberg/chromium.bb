@@ -1254,11 +1254,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // resulted in a browser startup.
 const char kWinJumplistAction[]             = "win-jumplist-action";
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-// Specifies a custom URL for fetching plug-ins metadata. Used for testing.
-const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
-#endif
-
 #if defined(OS_ANDROID)
 // Disables support for playing videos on Chromecast devices.
 const char kDisableCast[]                    = "disable-cast";
