@@ -48,9 +48,6 @@ crbug.com/148816 [ Mac Win Linux ] fast/dom/Window/window-scaled-viewport-proper
 crbug.com/148816 [ Mac Win Linux ] fast/dom/element-bounding-client-rect-relative-to-viewport.html [ Pass Failure ]
 
 # Failing with virtual-viewport mode on, disable for now and fix ASAP
-crbug.com/428980 inspector/device-emulation/device-emulation-980-only-viewport.html [ Crash ]
-crbug.com/428980 inspector/device-emulation/device-emulation-320-only-viewport.html [ Crash ]
-crbug.com/428980 inspector/device-emulation/device-emulation-small.html [ Crash ]
 crbug.com/428980 fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
