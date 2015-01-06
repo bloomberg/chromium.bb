@@ -185,6 +185,13 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
     return false;
   }
 
+  if (is_delta && !crl_set_.get()) {
+    // The update server gave us a delta update, but we don't have any base
+    // revision to apply it to.
+    LOG(WARNING) << "Received unsolicited delta update.";
+    return false;
+  }
+
   if (!is_delta) {
     if (!net::CRLSetStorage::Parse(crl_set_bytes, &crl_set_)) {
       LOG(WARNING) << "Failed to parse CRL set from update CRX";
