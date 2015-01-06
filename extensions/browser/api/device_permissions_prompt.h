@@ -10,7 +10,10 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "content/public/browser/browser_thread.h"
+#include "device/usb/usb_service.h"
 
 namespace content {
 class BrowserContext;
@@ -31,21 +34,20 @@ class Extension;
 class DevicePermissionsPrompt {
  public:
   // Context information available to the UI implementation.
-  class Prompt : public base::RefCountedThreadSafe<Prompt> {
+  class Prompt : public base::RefCountedThreadSafe<
+                     Prompt,
+                     content::BrowserThread::DeleteOnFileThread>,
+                 public device::UsbService::Observer {
    public:
     // Displayed properties of a device.
     struct DeviceInfo {
-      DeviceInfo(scoped_refptr<device::UsbDevice> device,
-                 const base::string16& name,
-                 const base::string16& product_string,
-                 const base::string16& manufacturer_string,
-                 const base::string16& serial_number);
+      DeviceInfo(scoped_refptr<device::UsbDevice> device);
       ~DeviceInfo();
 
       scoped_refptr<device::UsbDevice> device;
       base::string16 name;
-      base::string16 product_string;
-      base::string16 manufacturer_string;
+      base::string16 original_manufacturer_string;
+      base::string16 original_product_string;
       base::string16 serial_number;
     };
 
@@ -96,13 +98,21 @@ class DevicePermissionsPrompt {
     void set_filters(const std::vector<device::UsbDeviceFilter>& filters);
 
    private:
-    friend class base::RefCountedThreadSafe<Prompt>;
+    friend struct content::BrowserThread::DeleteOnThread<
+        content::BrowserThread::FILE>;
+    friend class base::DeleteHelper<Prompt>;
 
     virtual ~Prompt();
 
     // Querying for devices must be done asynchronously on the FILE thread.
     void DoDeviceQuery();
     void SetDevices(const std::vector<DeviceInfo>& devices);
+    void AddDevice(const DeviceInfo& device);
+    void RemoveDevice(scoped_refptr<device::UsbDevice> device);
+
+    // device::UsbService::Observer implementation:
+    void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
+    void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
     const extensions::Extension* extension_;
     content::BrowserContext* browser_context_;
@@ -110,6 +120,8 @@ class DevicePermissionsPrompt {
     std::vector<device::UsbDeviceFilter> filters_;
     std::vector<DeviceInfo> devices_;
     Observer* observer_;
+    ScopedObserver<device::UsbService, device::UsbService::Observer>
+        usb_service_observer_;
   };
 
   class Delegate {
