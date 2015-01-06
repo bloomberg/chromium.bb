@@ -646,9 +646,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       tot_sanity = False
 
     if inflight:
-      # Some slave(s) timed out due to unknown causes. We don't have
-      # any more information, so reject all changes.
-      # TODO: We should revise on how to handle timeouts.
+      # Some slave(s) timed out due to unknown causes, so only reject infra
+      # changes (probably just chromite changes).
       self.sync_stage.pool.HandleValidationTimeout(sanity=tot_sanity,
                                                    changes=changes)
       return

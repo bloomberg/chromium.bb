@@ -2213,8 +2213,9 @@ class ValidationPool(object):
   def HandleValidationTimeout(self, changes=None, sanity=True):
     """Handles changes that timed out.
 
-    This handler removes the commit ready bit from the specified changes and
-    sends the developer a message explaining why.
+    If sanity is set, then this handler removes the commit ready bit
+    from infrastructure changes and sends the developer a message explaining
+    why.
 
     Args:
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
@@ -2226,22 +2227,27 @@ class ValidationPool(object):
       changes = self.changes
 
     logging.info('Validation timed out for all changes.')
-    msg = ('%(queue)s timed out while verifying your change in '
-           '%(build_log)s . This means that a supporting builder did not '
-           'finish building your change within the specified timeout.')
-    if sanity:
-      msg += (' If you believe this happened in error, just re-mark your '
-              'commit as ready. Your change will then get automatically '
-              'retried.')
-    else:
-      msg += (' The build failure may have been caused by infrastructure '
-              'issues, so no changes will be blamed for the failure.')
+    base_msg = ('%(queue)s timed out while verifying your change in '
+                '%(build_log)s . This means that a supporting builder did not '
+                'finish building your change within the specified timeout.')
+
+    blamed = triage_lib.CalculateSuspects.FilterChangesForInfraFail(changes)
 
     for change in changes:
       logging.info('Validation timed out for change %s.', change)
-      self.SendNotification(change, msg)
-      if sanity:
+      if sanity and change in blamed:
+        msg = ('%s If you believe this happened in error, just re-mark your '
+               'commit as ready. Your change will then get automatically '
+               'retried.' % base_msg)
+        self.SendNotification(change, msg)
         self.RemoveReady(change)
+      else:
+        msg = ('NOTE: The Commit Queue will retry your change automatically.'
+               '\n\n'
+               '%s The build failure may have been caused by infrastructure '
+               'issues, so your change will not be blamed for the failure.'
+               % base_msg)
+        self.SendNotification(change, msg)
 
   def SendNotification(self, change, msg, **kwargs):
     if not kwargs.get('build_log'):

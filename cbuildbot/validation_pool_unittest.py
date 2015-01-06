@@ -691,6 +691,12 @@ class ValidationFailureOrTimeout(MoxBase):
     self._pool.HandleValidationTimeout()
     self.assertEqual(len(self._patches), self._pool.RemoveReady.call_count)
 
+  def testOnlyChromitePatchesWereRejectedByTimeout(self):
+    self._patches[-1].project = 'chromiumos/tacos'
+    self._pool.HandleValidationTimeout()
+    self.assertEqual(len(self._patches), self._pool.SendNotification.call_count)
+    self.assertEqual(len(self._patches) - 1, self._pool.RemoveReady.call_count)
+
   def testNoSuspectsWithFailure(self):
     """Tests no change is blamed when there is no suspect."""
     self.PatchObject(triage_lib.CalculateSuspects, 'FindSuspects',
