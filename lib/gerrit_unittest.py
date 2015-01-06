@@ -18,6 +18,12 @@ from chromite.lib import git
 from chromite.lib import gob_util
 
 
+# NOTE: The following test cases are designed to run as part of the release
+# qualification process for the googlesource.com servers:
+#   GerritHelperTest
+# Any new test cases must be manually added to the qualification test suite.
+
+
 # pylint: disable=W0212,R0904
 class GerritHelperTest(cros_test_lib.GerritTestCase):
   """Unittests for GerritHelper."""
