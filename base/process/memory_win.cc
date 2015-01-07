@@ -4,6 +4,7 @@
 
 #include "base/process/memory.h"
 
+#include <new.h>
 #include <psapi.h>
 
 #include "base/logging.h"
@@ -13,13 +14,12 @@ namespace base {
 
 namespace {
 
-void OnNoMemory() {
-  // Kill the process. This is important for security, since WebKit doesn't
-  // NULL-check many memory allocations. If a malloc fails, returns NULL, and
-  // the buffer is then used, it provides a handy mapping of memory starting at
-  // address 0 for an attacker to utilize.
+int OnNoMemory(size_t) {
+  // Kill the process. This is important for security since most of code
+  // does not check the result of memory allocation.
   __debugbreak();
   _exit(1);
+  return 0;
 }
 
 // HeapSetInformation function pointer.
@@ -68,7 +68,8 @@ void EnableTerminationOnHeapCorruption() {
 }
 
 void EnableTerminationOnOutOfMemory() {
-  std::set_new_handler(&OnNoMemory);
+  _set_new_handler(&OnNoMemory);
+  _set_new_mode(1);
 }
 
 HMODULE GetModuleFromAddress(void* address) {
