@@ -589,9 +589,10 @@ chrome.cast.initialize = function(apiConfig, successCallback, errorCallback) {};
  * @param {function(!chrome.cast.Session)} successCallback
  * @param {function(chrome.cast.Error)} errorCallback
  * @param {chrome.cast.SessionRequest=} opt_sessionRequest
+ * @param {string=} opt_label
  */
 chrome.cast.requestSession = function(
-    successCallback, errorCallback, opt_sessionRequest) {};
+    successCallback, errorCallback, opt_sessionRequest, opt_label) {};
 
 
 /**
