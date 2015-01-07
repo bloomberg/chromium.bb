@@ -251,8 +251,6 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_openat:
       DCHECK(broker_process_);
       return Trap(GpuSIGSYS_Handler, broker_process_);
-    case __NR_setpriority:
-      return sandbox::RestrictGetSetpriority(GetPolicyPid());
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
       return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
