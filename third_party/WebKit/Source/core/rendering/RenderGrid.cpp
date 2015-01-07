@@ -1444,6 +1444,11 @@ static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const Ren
     return child.constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child.borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
 }
 
+bool RenderGrid::allowedToStretchLogicalHeightForChild(const RenderBox& child) const
+{
+    return child.style()->logicalHeight().isAuto() && !child.style()->marginBeforeUsing(style()).isAuto() && !child.style()->marginAfterUsing(style()).isAuto();
+}
+
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
 bool RenderGrid::needToStretchChildLogicalHeight(const RenderBox& child) const
 {
@@ -1495,7 +1500,7 @@ void RenderGrid::applyStretchAlignmentToChildIfNeeded(RenderBox& child, LayoutUn
         return;
 
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    if (child.style()->logicalHeight().isAuto()) {
+    if (allowedToStretchLogicalHeightForChild(child)) {
         // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
         if (!hasOrthogonalWritingMode) {
