@@ -28,6 +28,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTableCol.h"
 
 namespace blink {
@@ -60,10 +61,13 @@ void HTMLTableColElement::collectStyleForPresentationAttribute(const QualifiedNa
 void HTMLTableColElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == spanAttr) {
-        int newSpan = value.toInt();
-        // If the value of span is not a valid non-negative integer greater than zero,
-        // set it to 1.
-        m_span = newSpan ? newSpan : 1;
+        int newSpan = 0;
+        if (value.isEmpty() || !parseHTMLInteger(value, newSpan) || newSpan < 1) {
+            // If the value of span is not a valid non-negative integer greater than zero,
+            // set it to 1.
+            newSpan = 1;
+        }
+        m_span = newSpan;
         if (renderer() && renderer()->isRenderTableCol())
             renderer()->updateFromElement();
     } else if (name == widthAttr) {
