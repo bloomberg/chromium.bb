@@ -10,6 +10,8 @@ import math_utils
 import source_control
 import ttest
 
+from bisect_state import RevisionState
+
 
 class BisectResults(object):
   """Contains results of the completed bisect.
@@ -76,6 +78,9 @@ class BisectResults(object):
 
     self.warnings = runtime_warnings
 
+    self.retest_results_tot = None
+    self.retest_results_reverted = None
+
     if first_working_rev is not None and last_broken_rev is not None:
       statistics = self._ComputeRegressionStatistics(
           rev_states, first_working_rev, last_broken_rev)
@@ -100,6 +105,29 @@ class BisectResults(object):
       self.confidence = 0
       self.culprit_revisions = []
       self.other_regressions = []
+
+  def AddRetestResults(self, results_tot, results_reverted):
+    if not results_tot or not results_reverted:
+      self.warnings.append(
+          'Failed to re-test reverted culprit CL against ToT.')
+      return
+
+    confidence_params = (results_reverted[0]['values'],
+        results_tot[0]['values'])
+    confidence = BisectResults.ConfidenceScore(*confidence_params)
+
+    self.retest_results_tot = RevisionState('ToT', 'n/a', 0)
+    self.retest_results_tot.value = results_tot[0]
+
+    self.retest_results_reverted = RevisionState('Reverted', 'n/a', 0)
+    self.retest_results_reverted.value = results_reverted[0]
+
+    if confidence <= bisect_utils.HIGH_CONFIDENCE:
+      self.warnings.append(
+          'Confidence of re-test with reverted CL is not high.'
+          ' Check that the regression hasn\'t already recovered. '
+          ' There\'s still a chance this is a regression, as performance of'
+          ' local builds may not match official builds.' )
 
   @staticmethod
   def _GetResultBasedWarnings(culprit_revisions, opts, confidence):

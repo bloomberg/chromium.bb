@@ -172,6 +172,25 @@ def OutputAnnotationStepClosed():
   sys.stdout.flush()
 
 
+def OutputAnnotationStepText(text):
+  """Outputs appropriate annotation to print text.
+
+  Args:
+    name: The text to print.
+  """
+  print
+  print '@@@STEP_TEXT@%s@@@' % text
+  print
+  sys.stdout.flush()
+
+
+def OutputAnnotationStepWarning():
+  """Outputs appropriate annotation to signal a warning."""
+  print
+  print '@@@STEP_WARNINGS@@@'
+  print
+
+
 def OutputAnnotationStepLink(label, url):
   """Outputs appropriate annotation to print a link.
 

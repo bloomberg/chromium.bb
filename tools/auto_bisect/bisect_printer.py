@@ -22,7 +22,8 @@ Status: %(status)s
 Test Command: %(command)s
 Test Metric: %(metrics)s
 Relative Change: %(change)s
-Estimated Confidence: %(confidence).02f%%"""
+Estimated Confidence: %(confidence).02f%%
+Retested CL with revert: %(retest)s"""
 
 # When the bisect was aborted without a bisect failure the following template
 # is used.
@@ -138,10 +139,12 @@ class BisectPrinter(object):
         self._PrintRevisionInfo(cl, info, depot)
       if bisect_results.other_regressions:
         self._PrintOtherRegressions(bisect_results.other_regressions)
+    self._PrintRetestResults(bisect_results)
     self._PrintTestedCommitsTable(bisect_results.state.GetRevisionStates(),
                                   bisect_results.first_working_revision,
                                   bisect_results.last_broken_revision,
-                                  bisect_results.confidence)
+                                  bisect_results.confidence,
+                                  final_step=True)
     self._PrintStepTime(bisect_results.state.GetRevisionStates())
     self._PrintReproSteps()
     self._PrintThankYou()
@@ -317,6 +320,17 @@ class BisectPrinter(object):
                                       revision_state.revision,
                                       state_str)
 
+  def _PrintRetestResults(self, bisect_results):
+    if (not bisect_results.retest_results_tot or
+        not bisect_results.retest_results_reverted):
+      return
+    print
+    print '===== RETEST RESULTS ====='
+    self._PrintTestedCommitsEntry(
+        bisect_results.retest_results_tot, '', '', '')
+    self._PrintTestedCommitsEntry(
+        bisect_results.retest_results_reverted, '', '', '')
+
   def _PrintReproSteps(self):
     """Prints out a section of the results explaining how to run the test.
 
@@ -379,12 +393,15 @@ class BisectPrinter(object):
       status = 'Failure, could not reproduce.'
       change = 'Bisect could not reproduce a change.'
 
+    retest_text = 'Yes' if bisect_results.retest_results_tot else 'No'
+
     print RESULTS_BANNER % {
         'status': status,
         'command': self.opts.command,
         'metrics': metrics,
         'change': change,
         'confidence': bisect_results.confidence,
+        'retest': retest_text,
     }
 
   @staticmethod
