@@ -30,22 +30,6 @@ class CSSParserImpl {
     STACK_ALLOCATED();
 public:
     CSSParserImpl(const CSSParserContext&, const String&, StyleSheetContents* = nullptr);
-    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
-    static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
-    static bool parseDeclaration(MutableStylePropertySet*, const String&, const CSSParserContext&);
-    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&);
-    static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
-
-    static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
-
-private:
-    enum RuleListType {
-        TopLevelRuleList,
-        RegularRuleList,
-        KeyframesRuleList
-    };
-
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> consumeRuleList(CSSParserTokenRange, RuleListType);
 
     enum AllowedRulesType {
         // As per css-syntax, css-cascade and css-namespaces, @charset rules
@@ -59,6 +43,23 @@ private:
         RegularRules,
         KeyframeRules
     };
+
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
+    static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
+    static bool parseDeclaration(MutableStylePropertySet*, const String&, const CSSParserContext&);
+    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&, AllowedRulesType);
+    static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
+
+    static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
+
+private:
+    enum RuleListType {
+        TopLevelRuleList,
+        RegularRuleList,
+        KeyframesRuleList
+    };
+
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> consumeRuleList(CSSParserTokenRange, RuleListType);
 
     // These two functions update the range they're given and allowed rules
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType&);

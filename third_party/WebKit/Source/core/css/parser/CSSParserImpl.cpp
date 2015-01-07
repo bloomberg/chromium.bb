@@ -93,10 +93,8 @@ bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const
     return true;
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context)
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context, AllowedRulesType allowedRules)
 {
-    AllowedRulesType allowedRules = RegularRules;
-
     CSSParserImpl parser(context, string);
     CSSParserTokenRange range(parser.m_tokens);
     range.consumeWhitespaceAndComments();
