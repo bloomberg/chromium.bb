@@ -83,7 +83,11 @@ class ComponentsTestSuite : public base::TestSuite {
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
     base::FilePath resources_pack_path;
+#if !defined(OS_ANDROID)
     PathService::Get(base::DIR_MODULE, &resources_pack_path);
+#else
+    PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &resources_pack_path);
+#endif
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path.AppendASCII("resources.pak"),
         ui::SCALE_FACTOR_NONE);
