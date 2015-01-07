@@ -228,6 +228,9 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     case media::VP8PROFILE_ANY:
       DVLOG(2) << "Initialize(): profile VP8PROFILE_ANY";
       break;
+    case media::VP9PROFILE_ANY:
+      DVLOG(2) << "Initialize(): profile VP9PROFILE_ANY";
+      break;
     default:
       DLOG(ERROR) << "Initialize(): unsupported profile=" << profile;
       return false;
@@ -679,8 +682,8 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
     return false;
   } else {
     DCHECK_GE(video_profile_, media::VP8PROFILE_MIN);
-    DCHECK_LE(video_profile_, media::VP8PROFILE_MAX);
-    // For VP8, we can just dump the entire buffer.  No fragmentation needed,
+    DCHECK_LE(video_profile_, media::VP9PROFILE_MAX);
+    // For VP8/9, we can just dump the entire buffer.  No fragmentation needed,
     // and we never return a partial frame.
     *endpos = size;
     decoder_partial_frame_pending_ = false;

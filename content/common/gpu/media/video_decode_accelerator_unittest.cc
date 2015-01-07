@@ -78,10 +78,10 @@ namespace {
 // The syntax of each test-video is:
 //  filename:width:height:numframes:numfragments:minFPSwithRender:minFPSnoRender
 // where only the first field is required.  Value details:
-// - |filename| must be an h264 Annex B (NAL) stream or an IVF VP8 stream.
+// - |filename| must be an h264 Annex B (NAL) stream or an IVF VP8/9 stream.
 // - |width| and |height| are in pixels.
 // - |numframes| is the number of picture frames in the file.
-// - |numfragments| NALU (h264) or frame (VP8) count in the stream.
+// - |numfragments| NALU (h264) or frame (VP8/9) count in the stream.
 // - |minFPSwithRender| and |minFPSnoRender| are minimum frames/second speeds
 //   expected to be achieved with and without rendering to the screen, resp.
 //   (the latter tests just decode speed).
@@ -299,7 +299,7 @@ class GLRenderingVDAClient
   // Helpers for GetBytesForNextFragment above.
   void GetBytesForNextNALU(size_t start_pos, size_t* end_pos);  // For h.264.
   std::string GetBytesForNextFrame(
-      size_t start_pos, size_t* end_pos);  // For VP8.
+      size_t start_pos, size_t* end_pos);  // For VP8/9.
 
   // Request decode of the next fragment in the encoded data.
   void DecodeNextFragment();
@@ -682,7 +682,7 @@ std::string GLRenderingVDAClient::GetBytesForFirstFragment(
     *end_pos = start_pos;
     return std::string();
   }
-  DCHECK_LE(profile_, media::VP8PROFILE_MAX);
+  DCHECK_LE(profile_, media::VP9PROFILE_MAX);
   return GetBytesForNextFragment(start_pos, end_pos);
 }
 
@@ -696,7 +696,7 @@ std::string GLRenderingVDAClient::GetBytesForNextFragment(
     }
     return encoded_data_.substr(start_pos, *end_pos - start_pos);
   }
-  DCHECK_LE(profile_, media::VP8PROFILE_MAX);
+  DCHECK_LE(profile_, media::VP9PROFILE_MAX);
   return GetBytesForNextFrame(start_pos, end_pos);
 }
 
@@ -745,7 +745,7 @@ static bool FragmentHasConfigInfo(const uint8* data, size_t size,
 
     return nalu.nal_unit_type == media::H264NALU::kSPS;
   } else if (profile >= media::VP8PROFILE_MIN &&
-             profile <= media::VP8PROFILE_MAX) {
+             profile <= media::VP9PROFILE_MAX) {
     return (size > 0 && !(data[0] & 0x01));
   }
   // Shouldn't happen at this point.

@@ -9,6 +9,9 @@
 #include "content/common/gpu/media/generic_v4l2_video_device.h"
 #include "content/common/gpu/media/tegra_v4l2_video_device.h"
 
+// TODO(posciak): remove this once V4L2 headers are updated.
+#define V4L2_PIX_FMT_VP9 v4l2_fourcc('V', 'P', '9', '0')
+
 namespace content {
 
 V4L2Device::~V4L2Device() {}
@@ -75,6 +78,9 @@ uint32 V4L2Device::VideoCodecProfileToV4L2PixFmt(
   } else if (profile >= media::VP8PROFILE_MIN &&
              profile <= media::VP8PROFILE_MAX) {
     return V4L2_PIX_FMT_VP8;
+  } else if (profile >= media::VP9PROFILE_MIN &&
+             profile <= media::VP9PROFILE_MAX) {
+    return V4L2_PIX_FMT_VP9;
   } else {
     LOG(FATAL) << "Add more cases as needed";
     return 0;
