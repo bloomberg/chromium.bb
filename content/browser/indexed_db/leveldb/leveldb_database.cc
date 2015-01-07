@@ -103,7 +103,7 @@ static leveldb::Status OpenDB(
   options.create_if_missing = true;
   options.paranoid_checks = true;
   options.filter_policy = filter_policy->get();
-  options.reuse_logs = true;
+  options.reuse_logs = false;
   options.compression = leveldb::kSnappyCompression;
 
   // For info about the troubles we've run into with this parameter, see:
