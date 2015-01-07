@@ -744,6 +744,7 @@ class PatchSeries(object):
       A list of the filtered changes.
     """
     by_repo = {}
+    changes_to_fetch = []
     for change in changes:
       try:
         self._helper_pool.ForChange(change)
@@ -753,6 +754,7 @@ class PatchSeries(object):
         continue
       repo = self.GetGitRepoForChange(change, strict=True)
       by_repo.setdefault(repo, []).append(change)
+      changes_to_fetch.append(change)
 
     # Fetch changes in parallel. The change.Fetch() method modifies the
     # 'change' object, so make sure we grab all of that information.
@@ -760,13 +762,14 @@ class PatchSeries(object):
       fetched_changes = manager.dict()
       def FetchChangesForRepo(repo):
         for change in by_repo[repo]:
+          original_id = change.id
           change.Fetch(repo)
-          fetched_changes[change] = change
+          fetched_changes[original_id] = change
       parallel.RunTasksInProcessPool(FetchChangesForRepo,
                                      [[repo] for repo in by_repo])
 
       # Return the list of fetched changes in the order they were requested.
-      return [fetched_changes[c] for c in changes if c in fetched_changes]
+      return [fetched_changes[c.id] for c in changes_to_fetch]
 
   @_ManifestDecorator
   def Apply(self, changes, frozen=True, honor_ordering=False,

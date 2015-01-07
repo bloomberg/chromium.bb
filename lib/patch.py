@@ -1271,6 +1271,8 @@ class UploadedLocalPatch(GitRepoPatch):
     self.original_branch = original_branch
     self.original_sha1 = ParseSHA1(original_sha1)
     self._original_sha1_valid = False if self.original_sha1 is None else True
+    if self._original_sha1_valid and not self.id:
+      self.id = AddPrefix(self, self.original_sha1)
 
   def LookupAliases(self):
     """Return the list of lookup keys this change is known by."""
