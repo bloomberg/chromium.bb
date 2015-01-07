@@ -539,8 +539,8 @@ void RenderThreadImpl::Init() {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   is_elastic_overscroll_enabled_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedEventHandlingMac) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableThreadedEventHandlingMac) &&
       base::mac::IsOSLionOrLater();
 #else
   is_elastic_overscroll_enabled_ = false;

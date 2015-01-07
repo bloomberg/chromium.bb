@@ -1339,7 +1339,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSandboxLogging,
 #endif
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    switches::kEnableThreadedEventHandlingMac,
+    switches::kDisableThreadedEventHandlingMac,
 #endif
 #if defined(OS_WIN)
     switches::kDisableDirectWrite,

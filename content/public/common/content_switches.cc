@@ -945,10 +945,11 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
 
-// Allows input events to be handed on the compositor thread.
-// This feature is under development, see http://crbug.com/138003.
-extern const char kEnableThreadedEventHandlingMac[] =
-    "enable-threaded-event-handling-mac";
+// Force all input events to be handled by Blink on thread. This will be removed
+// once compositor thread events have stuck.
+// http://crbug.com/138003
+extern const char kDisableThreadedEventHandlingMac[] =
+    "disable-threaded-event-handling-mac";
 #endif
 
 #if defined(OS_WIN)

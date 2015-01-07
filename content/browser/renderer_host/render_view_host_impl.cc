@@ -403,8 +403,12 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
     prefs.pinch_overlay_scrollbar_thickness = 10;
   }
 #if defined(OS_MACOSX)
+  // This preference has the effect of disabling Blink's elastic overscroll,
+  // and may be removed when Blink's elastic overscroll implementation is
+  // removed.
+  // http://crbug.com/138003
   prefs.rubber_banding_on_compositor_thread =
-      command_line.HasSwitch(switches::kEnableThreadedEventHandlingMac);
+      !command_line.HasSwitch(switches::kDisableThreadedEventHandlingMac);
 #endif
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
