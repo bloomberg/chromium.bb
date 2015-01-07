@@ -36,7 +36,12 @@ RendererPreferences::RendererPreferences()
       tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP),
       disable_client_blocked_error_page(false),
       plugin_fullscreen_allowed(true),
-      use_video_overlay_for_embedded_encrypted_video(false) {
+      use_video_overlay_for_embedded_encrypted_video(false),
+      caption_font_height(0),
+      small_caption_font_height(0),
+      menu_font_height(0),
+      status_font_height(0),
+      message_font_height(0) {
 }
 
 RendererPreferences::~RendererPreferences() { }

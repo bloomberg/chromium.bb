@@ -316,6 +316,7 @@ NativeFont PlatformFontWin::GetNativeFont() const {
   return font_ref_->hfont();
 }
 
+// static
 void PlatformFontWin::SetDirectWriteFactory(IDWriteFactory* factory) {
   // We grab a reference on the DirectWrite factory. This reference is
   // leaked, which is ok because skia leaks it as well.
@@ -323,11 +324,25 @@ void PlatformFontWin::SetDirectWriteFactory(IDWriteFactory* factory) {
   direct_write_factory_ = factory;
 }
 
+// static
 void PlatformFontWin::GetTextMetricsForFont(HDC hdc,
                                             HFONT font,
                                             TEXTMETRIC* text_metrics) {
   base::win::ScopedSelectObject scoped_font(hdc, font);
   GetTextMetrics(hdc, text_metrics);
+}
+
+// static
+int PlatformFontWin::GetFontSize(const LOGFONT& font_info) {
+  if (font_info.lfHeight < 0)
+    return -font_info.lfHeight;
+
+  base::win::ScopedGetDC screen_dc(NULL);
+  base::win::ScopedGDIObject<HFONT> font(CreateFontIndirect(&font_info));
+
+  TEXTMETRIC font_metrics = {0};
+  PlatformFontWin::GetTextMetricsForFont(screen_dc, font, &font_metrics);
+  return font_metrics.tmAscent;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

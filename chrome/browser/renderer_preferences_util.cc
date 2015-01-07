@@ -31,6 +31,11 @@
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#include "ui/gfx/platform_font_win.h"
+#endif
+
 namespace renderer_preferences_util {
 
 void UpdateFromSystemSettings(content::RendererPreferences* prefs,
@@ -107,6 +112,31 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 #if !defined(OS_MACOSX)
   prefs->plugin_fullscreen_allowed =
       pref_service->GetBoolean(prefs::kFullscreenAllowed);
+#endif
+
+#if defined(OS_WIN)
+  NONCLIENTMETRICS_XP metrics = {0};
+  base::win::GetNonClientMetrics(&metrics);
+
+  prefs->caption_font_family_name = metrics.lfCaptionFont.lfFaceName;
+  prefs->caption_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfCaptionFont);
+
+  prefs->small_caption_font_family_name = metrics.lfSmCaptionFont.lfFaceName;
+  prefs->small_caption_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfSmCaptionFont);
+
+  prefs->menu_font_family_name = metrics.lfMenuFont.lfFaceName;
+  prefs->menu_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfMenuFont);
+
+  prefs->status_font_family_name = metrics.lfStatusFont.lfFaceName;
+  prefs->status_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfStatusFont);
+
+  prefs->message_font_family_name = metrics.lfMessageFont.lfFaceName;
+  prefs->message_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfMessageFont);
 #endif
 }
 

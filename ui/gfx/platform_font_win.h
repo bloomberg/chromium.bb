@@ -77,6 +77,10 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   static void GetTextMetricsForFont(HDC hdc,
                                     HFONT font,
                                     TEXTMETRIC* text_metrics);
+
+  // Returns the size of the font based on the font information passed in.
+  static int GetFontSize(const LOGFONT& font_info);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);

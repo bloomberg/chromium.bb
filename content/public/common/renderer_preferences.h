@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_render_params.h"
@@ -126,6 +127,23 @@ struct CONTENT_EXPORT RendererPreferences {
   // Whether video-overlay (hole-punching) should be used for the embedded
   // encrypted video.  Currently only used by Android.
   bool use_video_overlay_for_embedded_encrypted_video;
+
+  // The default system font settings for caption, small caption, menu and
+  // status messages. Used only by Windows.
+  base::string16 caption_font_family_name;
+  int32 caption_font_height;
+
+  base::string16 small_caption_font_family_name;
+  int32 small_caption_font_height;
+
+  base::string16 menu_font_family_name;
+  int32 menu_font_height;
+
+  base::string16 status_font_family_name;
+  int32 status_font_height;
+
+  base::string16 message_font_family_name;
+  int32 message_font_height;
 };
 
 }  // namespace content

@@ -755,7 +755,7 @@ class CONTENT_EXPORT RenderViewImpl
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   void UpdateFontRenderingFromRendererPrefs();
 #else
   void UpdateFontRenderingFromRendererPrefs() {}
