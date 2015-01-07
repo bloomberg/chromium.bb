@@ -1685,40 +1685,21 @@ def GetPreferredTryMasters(project, change):
   if all(re.search(r'[\\\/_]ios[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
-  builders = [
-      'android_aosp',
-      'android_arm64_dbg_recipe',
-      'android_arm64_dbg_recipe',
-      'android_chromium_gn_compile_dbg',
-      'android_chromium_gn_compile_rel',
-      'android_clang_dbg_recipe',
-      'android_clang_dbg_recipe',
-      'android_dbg_tests_recipe',
-      'ios_dbg_simulator',
-      'ios_rel_device',
-      'ios_rel_device_ninja',
-      'linux_chromium_asan_rel',
-      'linux_chromium_chromeos_compile_dbg_ng',
-      'linux_chromium_chromeos_rel_ng',
-      'linux_chromium_compile_dbg_32_ng',
-      'linux_chromium_gn_dbg',
-      'linux_chromium_gn_rel',
-      'linux_chromium_rel_ng',
-      'linux_gpu',
-      'mac_chromium_compile_dbg_ng',
-      'mac_chromium_rel_ng',
-      'win8_chromium_rel',
-      'win_chromium_compile_dbg',
-      'win_chromium_rel_ng',
-      'win_chromium_x64_rel_ng',
-      'win_gpu',
-  ]
+  import os
+  import json
+  with open(os.path.join(
+      change.RepositoryRoot(), 'testing', 'commit_queue', 'config.json')) as f:
+    cq_config = json.load(f)
+    cq_trybots = cq_config.get('trybots', {})
+    builders = cq_trybots.get('launched', {})
+    for master, master_config in cq_trybots.get('triggered', {}).iteritems():
+      for triggered_bot in master_config:
+        builders.get(master, {}).pop(triggered_bot, None)
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for chromeos.
   if any(re.search(r'[\\\/_](aura|chromeos)', f) for f in files):
-    builders.extend([
-        'linux_chromium_chromeos_asan_rel_ng',
-    ])
+    tryserver_linux = builders.setdefault('tryserver.chromium.linux', {})
+    tryserver_linux['linux_chromium_chromeos_asan_rel_ng'] = ['defaulttests']
 
-  return GetDefaultTryConfigs(builders)
+  return builders
