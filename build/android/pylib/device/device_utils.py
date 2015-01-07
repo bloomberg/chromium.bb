@@ -31,6 +31,7 @@ from pylib.utils import host_utils
 from pylib.utils import md5sum
 from pylib.utils import parallelizer
 from pylib.utils import timeout_retry
+from pylib.utils import zip_utils
 
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 3
@@ -831,15 +832,7 @@ class DeviceUtils(object):
   def _CreateDeviceZip(zip_path, host_device_tuples):
     with zipfile.ZipFile(zip_path, 'w') as zip_file:
       for host_path, device_path in host_device_tuples:
-        if os.path.isfile(host_path):
-          zip_file.write(host_path, device_path, zipfile.ZIP_DEFLATED)
-        else:
-          for hd, _, files in os.walk(host_path):
-            dd = '%s/%s' % (device_path, os.path.relpath(host_path, hd))
-            zip_file.write(hd, dd, zipfile.ZIP_STORED)
-            for f in files:
-              zip_file.write(os.path.join(hd, f), '%s/%s' % (dd, f),
-                             zipfile.ZIP_DEFLATED)
+        zip_utils.WriteToZipFile(zip_file, host_path, device_path)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def FileExists(self, device_path, timeout=None, retries=None):

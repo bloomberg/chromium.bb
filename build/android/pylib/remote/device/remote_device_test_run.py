@@ -9,11 +9,13 @@ import os
 import sys
 import tempfile
 import time
+import zipfile
 
 from pylib import constants
 from pylib.base import test_run
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
+from pylib.utils import zip_utils
 
 class RemoteDeviceTestRun(test_run.TestRun):
   """Run gtests and uirobot tests on a remote device."""
@@ -142,7 +144,26 @@ class RemoteDeviceTestRun(test_run.TestRun):
     config = {'runner': runner_package}
 
     self._app_id = self._UploadAppToDevice(app_path)
-    self._test_id = self._UploadTestToDevice('robotium', test_path)
+
+    data_deps = self._test_instance.GetDataDependencies()
+    if data_deps:
+      with tempfile.NamedTemporaryFile(suffix='.zip') as test_with_deps:
+        sdcard_files = []
+        host_test = os.path.basename(test_path)
+        with zipfile.ZipFile(test_with_deps.name, 'w') as zip_file:
+          zip_file.write(test_path, host_test, zipfile.ZIP_DEFLATED)
+          for h, _ in data_deps:
+            zip_utils.WriteToZipFile(zip_file, h, '.')
+            if os.path.isdir(h):
+              sdcard_files.extend(os.listdir(h))
+            else:
+              sdcard_files.extend(h)
+        config['sdcard_files'] = ','.join(sdcard_files)
+        config['host_test'] = host_test
+        self._test_id = self._UploadTestToDevice(
+            'robotium', test_with_deps.name)
+    else:
+      self._test_id = self._UploadTestToDevice('robotium', test_path)
 
     logging.info('Setting config: %s' % config)
     self._SetTestConfig('robotium', config)
