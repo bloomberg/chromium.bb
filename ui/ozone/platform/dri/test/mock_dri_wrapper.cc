@@ -105,6 +105,11 @@ bool MockDriWrapper::SetCrtc(drmModeCrtc* crtc,
   return true;
 }
 
+bool MockDriWrapper::DisableCrtc(uint32_t crtc_id) {
+  current_framebuffer_ = 0;
+  return true;
+}
+
 ScopedDrmConnectorPtr MockDriWrapper::GetConnector(uint32_t connector_id) {
   return ScopedDrmConnectorPtr(DrmAllocator<drmModeConnector>());
 }

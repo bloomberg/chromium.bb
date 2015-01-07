@@ -109,8 +109,19 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
   // If nothing changed just enable the controller. Note, we perform an exact
   // comparison on the mode since the refresh rate may have changed.
   if (SameMode(mode, controller->get_mode()) &&
-      origin == controller->origin() && !controller->IsDisabled())
+      origin == controller->origin()) {
+    if (controller->IsDisabled()) {
+      HardwareDisplayControllers::iterator mirror =
+          FindActiveDisplayControllerByLocation(modeset_bounds);
+      // If there is an active controller at the same location then start mirror
+      // mode.
+      if (mirror != controllers_.end())
+        return HandleMirrorMode(it, mirror, crtc, connector);
+    }
+
+    // Just re-enable the controller to re-use the current state.
     return controller->Enable();
+  }
 
   // Either the mode or the location of the display changed, so exit mirror
   // mode and configure the display independently. If the caller still wants

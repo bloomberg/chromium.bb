@@ -48,6 +48,7 @@ void HandlePageFlipEvent(int fd,
 HardwareDisplayController::HardwareDisplayController(
     scoped_ptr<CrtcController> controller)
     : is_disabled_(true) {
+  memset(&mode_, 0, sizeof(mode_));
   AddCrtc(controller.Pass());
 }
 
@@ -75,12 +76,8 @@ bool HardwareDisplayController::Enable() {
   TRACE_EVENT0("dri", "HDC::Enable");
   DCHECK(!current_planes_.empty());
   const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(current_planes_);
-  DCHECK(primary->buffer.get());
-  bool status = true;
-  for (size_t i = 0; i < crtc_controllers_.size(); ++i)
-    status &= crtc_controllers_[i]->Modeset(*primary, mode_);
 
-  return status;
+  return Modeset(*primary, mode_);
 }
 
 void HardwareDisplayController::Disable() {
