@@ -51,24 +51,6 @@
           ],
         },
         {
-          'target_name': 'monacl_syscall_win64',
-          'type': 'static_library',
-          'defines': [
-            '<@(nacl_defines)',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            '<(monacl_codegen_dir)/mojo_syscall.cc',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            }
-          },
-        },
-        {
           'target_name': 'monacl_sel',
           'type': 'static_library',
           'defines': [
@@ -98,6 +80,30 @@
             'nacl/monacl_shell.cc',
           ],
         },
+      ],
+      'conditions': [
+        ['OS=="win" and target_arch=="ia32"', {
+          'targets': [
+            {
+              'target_name': 'monacl_syscall_win64',
+              'type': 'static_library',
+              'defines': [
+                '<@(nacl_defines)',
+              ],
+              'include_dirs': [
+                '..',
+              ],
+              'sources': [
+                '<(monacl_codegen_dir)/mojo_syscall.cc',
+              ],
+              'configurations': {
+                'Common_Base': {
+                  'msvs_target_platform': 'x64',
+                }
+              },
+            },
+          ],
+        }],
       ],
     }],
   ],
