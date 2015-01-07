@@ -51,6 +51,11 @@ PassRefPtr<AXTableCell> AXTableCell::create(RenderObject* renderer, AXObjectCach
     return adoptRef(new AXTableCell(renderer, axObjectCache));
 }
 
+bool AXTableCell::isTableHeaderCell() const
+{
+    return node() && node()->hasTagName(thTag);
+}
+
 bool AXTableCell::computeAccessibilityIsIgnored() const
 {
     AXObjectInclusion decision = defaultObjectInclusion();
@@ -104,8 +109,7 @@ static AccessibilityRole decideRoleFromSibling(Node* siblingNode)
 
 AccessibilityRole AXTableCell::scanToDecideHeaderRole()
 {
-    Node* node = m_renderer ? m_renderer->node() : 0;
-    if (!node || !node->hasTagName(thTag))
+    if (!isTableHeaderCell())
         return CellRole;
 
     // Check scope attribute first.
