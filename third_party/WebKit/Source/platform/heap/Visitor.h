@@ -331,7 +331,7 @@ public:
 #if ENABLE(ASSERT)
         TraceTrait<T>::checkGCInfo(t);
 #endif
-        TraceTrait<T>::mark(toDerived(), t);
+        TraceTrait<T>::mark(Derived::fromHelper(this), t);
 
         STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "attempted to mark non garbage collected object");
     }
@@ -340,7 +340,7 @@ public:
     template<typename T>
     void trace(const Member<T>& t)
     {
-        toDerived()->mark(t.get());
+        Derived::fromHelper(this)->mark(t.get());
     }
 
     // Fallback method used only when we need to trace raw pointers of T.
@@ -348,13 +348,13 @@ public:
     template<typename T>
     void trace(const T* t)
     {
-        toDerived()->mark(const_cast<T*>(t));
+        Derived::fromHelper(this)->mark(const_cast<T*>(t));
     }
 
     template<typename T>
     void trace(T* t)
     {
-        toDerived()->mark(t);
+        Derived::fromHelper(this)->mark(t);
     }
 
     // WeakMember version of the templated trace method. It doesn't keep
@@ -375,7 +375,7 @@ public:
     template<typename T>
     void traceInCollection(T& t, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
     {
-        HashTraits<T>::traceInCollection(toDerived(), t, strongify);
+        HashTraits<T>::traceInCollection(Derived::fromHelper(this), t, strongify);
     }
 
     // Fallback trace method for part objects to allow individual trace methods
@@ -394,7 +394,7 @@ public:
             if (!vtable)
                 return;
         }
-        const_cast<T&>(t).trace(toDerived());
+        const_cast<T&>(t).trace(Derived::fromHelper(this));
     }
 
     // For simple cases where you just want to zero out a cell when the thing
@@ -409,20 +409,20 @@ public:
     template<typename T>
     void registerWeakCell(T** cell)
     {
-        toDerived()->registerWeakCellWithCallback(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
+        Derived::fromHelper(this)->registerWeakCellWithCallback(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
     }
 
     // The following trace methods are for off-heap collections.
     template<typename T, size_t inlineCapacity>
     void trace(const Vector<T, inlineCapacity>& vector)
     {
-        OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator> >::trace(toDerived(), vector);
+        OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator> >::trace(Derived::fromHelper(this), vector);
     }
 
     template<typename T, size_t N>
     void trace(const Deque<T, N>& deque)
     {
-        OffHeapCollectionTraceTrait<Deque<T, N> >::trace(toDerived(), deque);
+        OffHeapCollectionTraceTrait<Deque<T, N> >::trace(Derived::fromHelper(this), deque);
     }
 
 #if !ENABLE(OILPAN)
@@ -475,19 +475,19 @@ public:
     }
 #endif
 
-    void markNoTracing(const void* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
-    void markHeaderNoTracing(HeapObjectHeader* header) { toDerived()->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
-    template<typename T> void markNoTracing(const T* pointer) { toDerived()->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
+    void markNoTracing(const void* pointer) { Derived::fromHelper(this)->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
+    void markHeaderNoTracing(HeapObjectHeader* header) { Derived::fromHelper(this)->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
+    template<typename T> void markNoTracing(const T* pointer) { Derived::fromHelper(this)->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
 
     template<typename T, void (T::*method)(Visitor*)>
     void registerWeakMembers(const T* obj)
     {
-        toDerived()->registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
+        Derived::fromHelper(this)->registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
     }
 
     void registerWeakMembers(const void* object, WeakPointerCallback callback)
     {
-        toDerived()->registerWeakMembers(object, object, callback);
+        Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
     }
 
     template<typename T> inline bool isAlive(T* obj)
@@ -501,7 +501,7 @@ public:
         // always 'alive'.
         if (!obj)
             return true;
-        return ObjectAliveTrait<T>::isHeapObjectAlive(toDerived(), obj);
+        return ObjectAliveTrait<T>::isHeapObjectAlive(Derived::fromHelper(this), obj);
     }
     template<typename T> inline bool isAlive(const Member<T>& member)
     {
@@ -520,8 +520,6 @@ private:
         if (*cell && !self->isAlive(*cell))
             *cell = nullptr;
     }
-
-    Derived* toDerived() { return static_cast<Derived*>(this); }
 };
 
 // Visitor is used to traverse the Blink object graph. Used for the
@@ -639,6 +637,8 @@ protected:
 #endif
 
 private:
+    static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }
+
     // The maximum depth of eager, unrolled trace() calls that is
     // considered safe and allowed.
     const int kMaxEagerTraceDepth = 100;

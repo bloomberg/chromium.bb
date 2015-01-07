@@ -9,11 +9,12 @@
 
 namespace blink {
 
-class InlinedGlobalMarkingVisitor final : public VisitorHelper<Visitor>, public MarkingVisitorImpl<InlinedGlobalMarkingVisitor> {
+class InlinedGlobalMarkingVisitor final : public VisitorHelper<InlinedGlobalMarkingVisitor>, public MarkingVisitorImpl<InlinedGlobalMarkingVisitor> {
 public:
-    using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
-    friend class VisitorHelper<Visitor>;
+    friend class VisitorHelper<InlinedGlobalMarkingVisitor>;
+    using Helper = VisitorHelper<InlinedGlobalMarkingVisitor>;
     friend class MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
+    using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
 
     explicit InlinedGlobalMarkingVisitor(Visitor* visitor)
         : m_visitor(visitor)
@@ -27,27 +28,29 @@ public:
     InlinedGlobalMarkingVisitor* operator->() { return this; }
 
     // FIXME: This is a temporary hack to cheat old Blink GC plugin checks.
-    // Old GC Plugin doesn't accept calling VisitorHelper<Visitor>::trace
+    // Old GC Plugin doesn't accept calling Helper::trace
     // as a valid mark. This manual redirect worksaround the issue by
     // making the method declaration on Visitor class.
     template <typename T>
     void trace(const T& t)
     {
-        VisitorHelper<Visitor>::trace(t);
+        Helper::trace(t);
     }
 
-    using VisitorHelper<Visitor>::mark;
+    using Helper::mark;
 
     inline void mark(const void* objectPointer, TraceCallback callback)
     {
         Impl::mark(objectPointer, callback);
     }
 
-    using VisitorHelper<Visitor>::registerWeakMembers;
+    using Helper::registerWeakMembers;
     inline void registerWeakMembers(const void* closure, const void* objectPointer, WeakPointerCallback callback)
     {
         Impl::registerWeakMembers(closure, objectPointer, callback);
     }
+
+    using Impl::ensureMarked;
 
     inline bool canTraceEagerly() const { return m_visitor->canTraceEagerly(); }
     inline void incrementTraceDepth() { m_visitor->incrementTraceDepth(); }
@@ -72,6 +75,11 @@ protected:
 #endif
 
 private:
+    static InlinedGlobalMarkingVisitor fromHelper(Helper* helper)
+    {
+        return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
+    }
+
     Visitor* m_visitor;
 };
 
