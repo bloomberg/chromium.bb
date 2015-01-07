@@ -19,7 +19,11 @@
       ],
     },
     {
-      'target_name': 'mojo_public_none',
+      # Targets that (a) need to obtain the settings that mojo_system passes on
+      # to its direct dependents but (b) are not themselves in a position to
+      # hardcode a dependency to mojo_system vs. mojo_system_impl (e.g.,
+      # because they are components) should depend on this target.
+      'target_name': 'mojo_system_placeholder',
       'type': 'none',
     },
     {
