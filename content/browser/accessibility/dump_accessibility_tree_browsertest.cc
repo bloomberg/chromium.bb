@@ -126,10 +126,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityANameCalc) {
   RunHtmlTest(FILE_PATH_LITERAL("a-name-calc.html"));
 }
 
-// crrev.com/481753002 will change the alt content used for the name value.
-// Re-baseline after the Blink change goes in
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    DISABLED_AccessibilityANoText) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityANoText) {
   RunHtmlTest(FILE_PATH_LITERAL("a-no-text.html"));
 }
 
