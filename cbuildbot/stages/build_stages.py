@@ -229,7 +229,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
     # Only update the board if we need to do so.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     board_path = os.path.join(chroot_path, 'build', self._current_board)
-    if not os.path.isdir(board_path):
+    if not os.path.isdir(board_path) or self._run.config.board_replace:
       usepkg = self._run.config.usepkg_build_packages
       commands.SetupBoard(
           self._build_root, board=self._current_board, usepkg=usepkg,
