@@ -21,7 +21,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -171,7 +170,6 @@ void ProfileResetter::ResetDefaultSearchEngine() {
     template_url_service_->RepairPrepopulatedSearchEngines();
 
     // Reset Google search URL.
-    prefs->ClearPref(prefs::kLastPromptedGoogleURL);
     const TemplateURL* default_search_provider =
         template_url_service_->GetDefaultSearchProvider();
     if (default_search_provider &&

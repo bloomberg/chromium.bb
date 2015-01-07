@@ -14,30 +14,17 @@ static_library("browser") {
     "google_url_tracker.h",
     "google_url_tracker_client.cc",
     "google_url_tracker_client.h",
-    "google_url_tracker_infobar_delegate.cc",
-    "google_url_tracker_infobar_delegate.h",
-    "google_url_tracker_map_entry.cc",
-    "google_url_tracker_map_entry.h",
-    "google_url_tracker_navigation_helper.cc",
-    "google_url_tracker_navigation_helper.h",
     "google_util.cc",
     "google_util.h",
   ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
 
   deps = [
     "//base",
     "//base:prefs",
     "//components/keyed_service/core",
-    "//components/infobars/core",
     "//components/strings",
     "//components/url_fixer",
     "//net",
-    "//ui/base",
     "//url",
   ]
 }
@@ -55,7 +42,6 @@ source_set("unit_tests") {
     "//base",
     "//base:prefs",
     "//base:prefs_test_support",
-    "//components/infobars/core",
     "//net:test_support",
     "//testing/gtest",
   ]

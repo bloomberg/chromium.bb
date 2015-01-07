@@ -1476,8 +1476,6 @@
       'browser/google/google_update_win.h',
       'browser/google/google_url_tracker_factory.cc',
       'browser/google/google_url_tracker_factory.h',
-      'browser/google/google_url_tracker_navigation_helper_impl.cc',
-      'browser/google/google_url_tracker_navigation_helper_impl.h',
     ],
     'chrome_browser_history_sources': [
       'browser/history/android/android_history_provider_service.cc',

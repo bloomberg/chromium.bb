@@ -13,6 +13,12 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
+namespace {
+
+const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
+
+}  // namespace
+
 
 // static
 GoogleURLTracker* GoogleURLTrackerFactory::GetForProfile(Profile* profile) {
@@ -36,6 +42,11 @@ GoogleURLTrackerFactory::~GoogleURLTrackerFactory() {
 
 KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  // Delete this now-unused pref.
+  // At some point in the future, this code can be removed entirely.
+  static_cast<Profile*>(context)->GetOriginalProfile()->GetPrefs()->ClearPref(
+      kLastPromptedGoogleURL);
+
   scoped_ptr<GoogleURLTrackerClient> client(
       new ChromeGoogleURLTrackerClient(Profile::FromBrowserContext(context)));
   return new GoogleURLTracker(client.Pass(), GoogleURLTracker::NORMAL_MODE);
@@ -48,7 +59,7 @@ void GoogleURLTrackerFactory::RegisterProfilePrefs(
       GoogleURLTracker::kDefaultGoogleHomepage,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(
-      prefs::kLastPromptedGoogleURL,
+      kLastPromptedGoogleURL,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }

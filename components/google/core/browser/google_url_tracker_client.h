@@ -26,14 +26,6 @@ class GoogleURLTrackerClient {
     google_url_tracker_ = google_url_tracker;
   }
 
-  // Enables or disables listening for navigation starts. OnNavigationPending
-  // will be called for each navigation start if listening is enabled.
-  virtual void SetListeningForNavigationStart(bool listen) = 0;
-
-  // Returns whether or not the client is currently listening for navigation
-  // starts.
-  virtual bool IsListeningForNavigationStart() = 0;
-
   // Returns whether background networking is enabled.
   virtual bool IsBackgroundNetworkingEnabled() = 0;
 

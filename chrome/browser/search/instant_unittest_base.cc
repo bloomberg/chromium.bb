@@ -14,9 +14,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -96,9 +94,6 @@ void InstantUnitTestBase::SetUpHelper() {
   ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
 
   UIThreadSearchTermsData::SetGoogleBaseURL("https://www.google.com/");
-  TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
-  pref_service->SetUserPref(prefs::kLastPromptedGoogleURL,
-                            new base::StringValue("https://www.google.com/"));
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
 }
