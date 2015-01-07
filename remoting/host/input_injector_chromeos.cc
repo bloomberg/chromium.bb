@@ -4,6 +4,8 @@
 
 #include "remoting/host/input_injector_chromeos.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -12,6 +14,7 @@
 #include "remoting/proto/internal.pb.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
 
@@ -43,7 +46,8 @@ ui::EventFlags MouseButtonToUIFlags(MouseEvent::MouseButton button) {
 // This class is run exclusively on the UI thread of the browser process.
 class InputInjectorChromeos::Core {
  public:
-  explicit Core(scoped_ptr<ui::SystemInputInjector> delegate_);
+  Core(scoped_ptr<ui::SystemInputInjector> delegate_,
+       ui::InputController* input_controller);
 
   // Mirrors the public InputInjectorChromeos interface.
   void InjectClipboardEvent(const ClipboardEvent& event);
@@ -53,21 +57,32 @@ class InputInjectorChromeos::Core {
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
+  void HandleAutoRepeat(ui::DomCode dom_code, bool pressed);
+
   scoped_ptr<ui::SystemInputInjector> delegate_;
+  ui::InputController* input_controller_;
   scoped_ptr<Clipboard> clipboard_;
 
   // Used to rotate the input coordinates appropriately based on the current
   // display rotation settings.
   scoped_ptr<PointTransformer> point_transformer_;
 
+  // Used by HandleAutoRepeat().
+  std::set<ui::DomCode> pressed_keys_;
+  bool saved_auto_repeat_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-InputInjectorChromeos::Core::Core(scoped_ptr<ui::SystemInputInjector> delegate)
+InputInjectorChromeos::Core::Core(scoped_ptr<ui::SystemInputInjector> delegate,
+                                  ui::InputController* input_controller)
     : delegate_(delegate.Pass()),
+      input_controller_(input_controller),
       // Implemented by remoting::ClipboardAura.
-      clipboard_(Clipboard::Create()) {
-  DCHECK(delegate);
+      clipboard_(Clipboard::Create()),
+      saved_auto_repeat_enabled_(false) {
+  DCHECK(delegate_);
+  DCHECK(input_controller_);
   DCHECK(clipboard_);
 }
 
@@ -80,17 +95,46 @@ void InputInjectorChromeos::Core::InjectKeyEvent(const KeyEvent& event) {
   DCHECK(event.has_pressed());
   DCHECK(event.has_usb_keycode());
 
-  // TODO(kelvinp): Disable AutoRepeat as long as keys are pressed on ChromeOS
-  // when the auto-repeat API is ready to avoid triggering the auto-repeat if
-  // network congestion delays the key-up event from the client
-  // (See crbug.com/425201).
-
   ui::DomCode dom_code =
       ui::KeycodeConverter::UsbKeycodeToDomCode(event.usb_keycode());
 
   // Ignore events which can't be mapped.
   if (dom_code != ui::DomCode::NONE) {
+    HandleAutoRepeat(dom_code, event.pressed());
     delegate_->InjectKeyPress(dom_code, event.pressed());
+  }
+}
+
+// Disables auto-repeat as long as keys are pressed to avoid duplicated
+// key-presses if network congestion delays the key-up event from the client.
+void InputInjectorChromeos::Core::HandleAutoRepeat(ui::DomCode dom_code,
+                                                   bool pressed) {
+  if (pressed) {
+    if (pressed_keys_.find(dom_code) != pressed_keys_.end()) {
+      // Key is already held down, so lift the key up to ensure this repeated
+      // press takes effect.
+      // TODO(kelvinp): Fix this code to inject auto-repeated key presses as
+      // the expected behavior of "down down down ... up" as opposed to current
+      // implementation "down up down ... up".
+      delegate_->InjectKeyPress(dom_code, false);
+    }
+
+    if (pressed_keys_.empty()) {
+      // Disable auto-repeat, if necessary, when any key is pressed.
+      saved_auto_repeat_enabled_ = input_controller_->IsAutoRepeatEnabled();
+      if (saved_auto_repeat_enabled_) {
+        input_controller_->SetAutoRepeatEnabled(false);
+      }
+    }
+    pressed_keys_.insert(dom_code);
+  } else {
+    pressed_keys_.erase(dom_code);
+    if (pressed_keys_.empty()) {
+      // Re-enable auto-repeat, if necessary, when all keys are released.
+      if (saved_auto_repeat_enabled_) {
+        input_controller_->SetAutoRepeatEnabled(true);
+      }
+    }
   }
 }
 
@@ -123,7 +167,8 @@ InputInjectorChromeos::InputInjectorChromeos(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : input_task_runner_(task_runner) {
   ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
-  core_.reset(new Core(ozone_platform->CreateSystemInputInjector()));
+  core_.reset(new Core(ozone_platform->CreateSystemInputInjector(),
+                       ozone_platform->GetInputController()));
 }
 
 InputInjectorChromeos::~InputInjectorChromeos() {
