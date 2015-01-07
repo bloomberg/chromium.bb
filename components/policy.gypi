@@ -62,7 +62,7 @@
           ],
         },
       ],
-    }, {  # component=="static_library"
+    }, {  # component=="shared_library"
       'targets': [
         {
           # GN version: //components/policy:policy_component
