@@ -20,14 +20,39 @@ function testExifEncodeAndDecode() {
             id: 0x10f,
             format: 2,
             componentCount: 12,
-            value: 'Manufacture'
+            value: 'Manufacture\0'
           },
           // Device model
           272: {
             id: 0x110,
             format: 2,
             componentCount: 12,
-            value: 'DeviceModel'
+            value: 'DeviceModel\0'
+          },
+          // GPS Pointer
+          34853: {
+            id: 0x8825,
+            format: 4,
+            componentCount: 1,
+            value: 0 // The value is set by the encoder.
+          }
+        },
+        exif: {
+          // Lens model
+          42036: {
+            id: 0xa434,
+            format: 2,
+            componentCount: 10,
+            value: 'LensModel\0'
+          }
+        },
+        gps: {
+          // GPS latitude ref
+          1: {
+            id: 0x1,
+            format: 2,
+            componentCount: 2,
+            value: 'N\0'
           }
         }
       }
@@ -56,14 +81,29 @@ function testExifEncodeAndDecode() {
   // Check ifd.image.
   assertEquals(1, parsedMetadata.ifd.image[0x112].value); // Orientation
 
+  // Since thumbnail is compressed with JPEG, compression must be 6.
+  assertEquals(6, parsedMetadata.ifd.image[0x102].value);
+
   // Check ifd.exif.
   assertEquals(1920, parsedMetadata.ifd.exif[0xA002].value); // PixelXDimension
   assertEquals(1080, parsedMetadata.ifd.exif[0xA003].value); // PixelYDimension
 
-  // TODO(yawano) Change exif_encoder to preserve these fields.
-  // These fileds are not encoded.
-  assertEquals(undefined, parsedMetadata.ifd.image[0x10F]); // Manufacture
-  assertEquals(undefined, parsedMetadata.ifd.image[0x110]); // Device model
+  // These fields should be copied correctly.
+  // Manufacture
+  assertEquals('Manufacture\0', parsedMetadata.ifd.image[0x10F].value);
+  // Device model
+  assertEquals('DeviceModel\0', parsedMetadata.ifd.image[0x110].value);
+  // Lens model
+  assertEquals('LensModel\0', parsedMetadata.ifd.exif[0xa434].value);
+  // GPS latitude ref
+  assertEquals('N\0', parsedMetadata.ifd.gps[0x1].value);
+
+  // Software should be set as Gallery.app
+  assertEquals('Chrome OS Gallery App\0',
+      parsedMetadata.ifd.image[0x131].value);
+
+  // TODO(yawano): Datetime should be updated.
+  assertEquals(undefined, parsedMetadata.ifd.image[0x132]); // Datetime
 
   // Thumbnail image
   assert(parsedMetadata.thumbnailTransform);

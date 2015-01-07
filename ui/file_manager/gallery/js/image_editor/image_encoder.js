@@ -205,6 +205,10 @@ ImageEncoder.MetadataEncoder.getMimeType_ = function(metadata) {
 /**
  * Returns metadata.
  * @return {!Object} A metadata.
+ *
+ * TODO(yawano): MetadataEncoder.getMetadata seems not to be used anymore.
+ *     Investigate this, and remove if possible. Should not modify a metadata by
+ *     using an encoder.
  */
 ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
   return this.metadata_;
