@@ -389,7 +389,7 @@ void FrameView::invalidateRect(const IntRect& rect)
     DisableCompositingQueryAsserts disabler;
     if (!parent()) {
         if (HostWindow* window = hostWindow())
-            window->invalidateContentsAndRootView(rect);
+            window->invalidateRect(rect);
         return;
     }
 
@@ -1400,7 +1400,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         }
     }
 
-    hostWindow()->invalidateContentsForSlowScroll(updateRect);
+    hostWindow()->invalidateRect(updateRect);
 }
 
 void FrameView::restoreScrollbar()
@@ -1744,7 +1744,7 @@ void FrameView::contentRectangleForPaintInvalidation(const IntRect& rect)
         return;
 
     if (HostWindow* window = hostWindow())
-        window->invalidateContentsAndRootView(contentsToWindow(paintRect));
+        window->invalidateRect(contentsToWindow(paintRect));
 }
 
 void FrameView::contentsResized()
@@ -3578,7 +3578,7 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
         IntPoint panIconDirtySquareLocation = IntPoint(m_panScrollIconPoint.x() - (panIconDirtySquareSizeLength / 2), m_panScrollIconPoint.y() - (panIconDirtySquareSizeLength / 2));
         IntRect panScrollIconDirtyRect = IntRect(panIconDirtySquareLocation, IntSize(panIconDirtySquareSizeLength, panIconDirtySquareSizeLength));
         panScrollIconDirtyRect.intersect(clipRect);
-        window->invalidateContentsAndRootView(panScrollIconDirtyRect);
+        window->invalidateRect(panScrollIconDirtyRect);
     }
 
     if (!scrollContentsFastPath(-scrollDelta))
@@ -3876,9 +3876,9 @@ void FrameView::updateOverhangAreas()
     IntRect verticalOverhangRect;
     calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
     if (!horizontalOverhangRect.isEmpty())
-        window->invalidateContentsAndRootView(horizontalOverhangRect);
+        window->invalidateRect(horizontalOverhangRect);
     if (!verticalOverhangRect.isEmpty())
-        window->invalidateContentsAndRootView(verticalOverhangRect);
+        window->invalidateRect(verticalOverhangRect);
 }
 
 bool FrameView::isPointInScrollbarCorner(const IntPoint& windowPoint)
@@ -3989,7 +3989,7 @@ void FrameView::addPanScrollIcon(const IntPoint& iconPosition)
         return;
     m_shouldDrawPanScrollIcon = true;
     m_panScrollIconPoint = IntPoint(iconPosition.x() - panIconSizeLength / 2 , iconPosition.y() - panIconSizeLength / 2);
-    window->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
+    window->invalidateRect(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void FrameView::removePanScrollIcon()
@@ -3998,7 +3998,7 @@ void FrameView::removePanScrollIcon()
     if (!window)
         return;
     m_shouldDrawPanScrollIcon = false;
-    window->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
+    window->invalidateRect(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void FrameView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll, bool updatePositionSynchronously)

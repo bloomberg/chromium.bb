@@ -105,16 +105,11 @@ private:
 #endif
     }
 
-    virtual void invalidateContentsAndRootView(const IntRect& paintRect) override
+    virtual void invalidateRect(const IntRect& paintRect) override
     {
         if (paintRect.isEmpty())
             return;
         m_popup->widgetClient()->didInvalidateRect(paintRect);
-    }
-
-    virtual void invalidateContentsForSlowScroll(const IntRect& updateRect) override
-    {
-        invalidateContentsAndRootView(updateRect);
     }
 
     virtual void scheduleAnimation() override

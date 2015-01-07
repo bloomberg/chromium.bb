@@ -109,8 +109,7 @@ public:
     virtual void setStatusbarText(const WTF::String& message) override;
     virtual bool tabsToLinks() override;
     virtual IntRect windowResizerRect() const override;
-    virtual void invalidateContentsAndRootView(const IntRect&) override;
-    virtual void invalidateContentsForSlowScroll(const IntRect&) override;
+    virtual void invalidateRect(const IntRect&) override;
     virtual void scheduleAnimation() override;
     virtual void scheduleAnimationForFrame(LocalFrame* localRoot) override;
     virtual IntRect rootViewToScreen(const IntRect&) const override;

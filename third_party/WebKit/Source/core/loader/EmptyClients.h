@@ -125,8 +125,7 @@ public:
 
     virtual IntRect windowResizerRect() const override { return IntRect(); }
 
-    virtual void invalidateContentsAndRootView(const IntRect&) override { }
-    virtual void invalidateContentsForSlowScroll(const IntRect&) override { }
+    virtual void invalidateRect(const IntRect&) override { }
     virtual void scheduleAnimation() override { }
 
     virtual IntRect rootViewToScreen(const IntRect& r) const override { return r; }

@@ -106,8 +106,7 @@ public:
     ~WebPopupMenuImpl();
 
     // HostWindow methods:
-    virtual void invalidateContentsAndRootView(const IntRect&) override final;
-    virtual void invalidateContentsForSlowScroll(const IntRect&) override final;
+    virtual void invalidateRect(const IntRect&) override final;
     virtual void scheduleAnimation() override final;
     virtual IntRect rootViewToScreen(const IntRect&) const override final;
     virtual WebScreenInfo screenInfo() const override final;

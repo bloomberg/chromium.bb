@@ -366,7 +366,7 @@ void WebPopupMenuImpl::setTextDirection(WebTextDirection)
 //-----------------------------------------------------------------------------
 // HostWindow
 
-void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
+void WebPopupMenuImpl::invalidateRect(const IntRect& paintRect)
 {
     if (paintRect.isEmpty())
         return;
@@ -374,11 +374,6 @@ void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
         m_client->didInvalidateRect(paintRect);
     if (m_rootLayer)
         m_rootLayer->layer()->invalidateRect(paintRect);
-}
-
-void WebPopupMenuImpl::invalidateContentsForSlowScroll(const IntRect& updateRect)
-{
-    invalidateContentsAndRootView(updateRect);
 }
 
 void WebPopupMenuImpl::scheduleAnimation()

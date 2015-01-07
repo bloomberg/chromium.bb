@@ -867,7 +867,7 @@ int PopupListBox::popupContentHeight() const
 void PopupListBox::invalidateRect(const IntRect& rect)
 {
     if (HostWindow* h = hostWindow())
-        h->invalidateContentsAndRootView(rect);
+        h->invalidateRect(rect);
 }
 
 IntRect PopupListBox::windowClipRect() const
@@ -1049,7 +1049,7 @@ void PopupListBox::setScrollOffset(const IntPoint& newOffset)
         IntRect clipRect = windowClipRect();
         IntRect updateRect = clipRect;
         updateRect.intersect(convertToContainingWindow(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight())));
-        window->invalidateContentsForSlowScroll(updateRect);
+        window->invalidateRect(updateRect);
     }
 }
 

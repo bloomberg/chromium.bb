@@ -55,7 +55,7 @@ void SVGImageChromeClient::chromeDestroyed()
     m_image = 0;
 }
 
-void SVGImageChromeClient::invalidateContentsAndRootView(const IntRect& r)
+void SVGImageChromeClient::invalidateRect(const IntRect& r)
 {
     // If m_image->m_page is null, we're being destructed, don't fire changedInRect() in that case.
     if (m_image && m_image->imageObserver() && m_image->m_page)

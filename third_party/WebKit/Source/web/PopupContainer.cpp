@@ -542,7 +542,7 @@ void PopupContainer::getPopupMenuInfo(WebPopupMenuInfo* info)
 void PopupContainer::invalidateRect(const IntRect& rect)
 {
     if (HostWindow* h = hostWindow())
-        h->invalidateContentsAndRootView(rect);
+        h->invalidateRect(rect);
 }
 
 HostWindow* PopupContainer::hostWindow() const

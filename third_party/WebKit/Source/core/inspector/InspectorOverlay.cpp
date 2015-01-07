@@ -136,12 +136,7 @@ public:
         m_client.setToolTip(tooltip, direction);
     }
 
-    virtual void invalidateContentsAndRootView(const IntRect&) override
-    {
-        m_overlay->invalidate();
-    }
-
-    virtual void invalidateContentsForSlowScroll(const IntRect&) override
+    virtual void invalidateRect(const IntRect&) override
     {
         m_overlay->invalidate();
     }

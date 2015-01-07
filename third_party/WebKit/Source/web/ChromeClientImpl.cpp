@@ -475,16 +475,11 @@ IntRect ChromeClientImpl::windowResizerRect() const
     return result;
 }
 
-void ChromeClientImpl::invalidateContentsAndRootView(const IntRect& updateRect)
+void ChromeClientImpl::invalidateRect(const IntRect& updateRect)
 {
     if (updateRect.isEmpty())
         return;
     m_webView->invalidateRect(updateRect);
-}
-
-void ChromeClientImpl::invalidateContentsForSlowScroll(const IntRect& updateRect)
-{
-    invalidateContentsAndRootView(updateRect);
 }
 
 void ChromeClientImpl::scheduleAnimation()

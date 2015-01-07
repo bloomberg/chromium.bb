@@ -46,7 +46,7 @@ public:
 
 private:
     virtual void chromeDestroyed() override;
-    virtual void invalidateContentsAndRootView(const IntRect&) override;
+    virtual void invalidateRect(const IntRect&) override;
     virtual void scheduleAnimation() override;
 
     void animationTimerFired(Timer<SVGImageChromeClient>*);
