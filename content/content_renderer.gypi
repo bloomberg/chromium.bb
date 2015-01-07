@@ -146,8 +146,6 @@
       'renderer/dom_utils.h',
       'renderer/drop_data_builder.cc',
       'renderer/drop_data_builder.h',
-      'renderer/fetchers/image_resource_fetcher.cc',
-      'renderer/fetchers/image_resource_fetcher.h',
       'renderer/fetchers/manifest_fetcher.cc',
       'renderer/fetchers/manifest_fetcher.h',
       'renderer/fetchers/multi_resolution_image_resource_fetcher.cc',
