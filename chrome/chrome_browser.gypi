@@ -754,6 +754,7 @@
       'browser/browser_process.h',
       'browser/browser_process_platform_part_base.cc',
       'browser/browser_process_platform_part_base.h',
+      'browser/password_manager/password_manager_util_ios.mm',
     ],
     # Desktop Linux and ChromeOS.
     'chrome_browser_linux_sources': [
