@@ -425,6 +425,10 @@ int TCPSocketWin::Accept(scoped_ptr<TCPSocketWin>* socket,
 
 int TCPSocketWin::Connect(const IPEndPoint& address,
                           const CompletionCallback& callback) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::Connect"));
+
   DCHECK(CalledOnValidThread());
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_connect_);
@@ -797,6 +801,10 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
 }
 
 int TCPSocketWin::DoConnect() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect"));
+
   DCHECK_EQ(connect_os_error_, 0);
   DCHECK(!core_.get());
 
