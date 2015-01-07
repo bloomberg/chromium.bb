@@ -17,7 +17,7 @@ crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 crbug.com/443780 virtual/slimmingpaint/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
 
 crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.html [ ImageOnlyFailure ]
-crbug.com/441639 [ Mac Win ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
+crbug.com/441639 [ Linux ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]
 
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
@@ -1392,7 +1392,7 @@ crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.
 
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
 
-crbug.com/429128 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass Timeout ]
+crbug.com/429128 [ Linux ] virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass ImageOnlyFailure ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
