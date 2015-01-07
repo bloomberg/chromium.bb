@@ -42,7 +42,7 @@ template<unsigned size>
 void testInitialCapacity()
 {
     const unsigned initialCapacity = WTF::HashTableCapacityForSize<size>::value;
-    HashSet<int, DefaultHash<int>::Hash, InitialCapacityTestHashTraits<initialCapacity> > testSet;
+    HashSet<int, DefaultHash<int>::Hash, InitialCapacityTestHashTraits<initialCapacity>> testSet;
 
     // Initial capacity is null.
     EXPECT_EQ(0UL, testSet.capacity());
@@ -95,14 +95,14 @@ TEST(HashSetTest, HashSetOwnPtr)
 {
     bool deleted1 = false, deleted2 = false;
 
-    typedef HashSet<OwnPtr<Dummy> > OwnPtrSet;
+    typedef HashSet<OwnPtr<Dummy>> OwnPtrSet;
     OwnPtrSet set;
 
     Dummy* ptr1 = new Dummy(deleted1);
     {
         // AddResult in a separate scope to avoid assertion hit,
         // since we modify the container further.
-        HashSet<OwnPtr<Dummy> >::AddResult res1 = set.add(adoptPtr(ptr1));
+        HashSet<OwnPtr<Dummy>>::AddResult res1 = set.add(adoptPtr(ptr1));
         EXPECT_EQ(ptr1, res1.storedValue->get());
     }
 
@@ -114,7 +114,7 @@ TEST(HashSetTest, HashSetOwnPtr)
 
     Dummy* ptr2 = new Dummy(deleted2);
     {
-        HashSet<OwnPtr<Dummy> >::AddResult res2 = set.add(adoptPtr(ptr2));
+        HashSet<OwnPtr<Dummy>>::AddResult res2 = set.add(adoptPtr(ptr2));
         EXPECT_EQ(res2.storedValue->get(), ptr2);
     }
 
@@ -187,7 +187,7 @@ TEST(HashSetTest, HashSetRefPtr)
     bool isDeleted = false;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
     EXPECT_EQ(0, DummyRefCounted::s_refInvokesCount);
-    HashSet<RefPtr<DummyRefCounted> > set;
+    HashSet<RefPtr<DummyRefCounted>> set;
     set.add(ptr);
     // Referenced only once (to store a copy in the container).
     EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);

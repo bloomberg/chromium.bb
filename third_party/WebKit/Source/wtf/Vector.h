@@ -309,7 +309,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void clearUnusedSlots(T* from, T* to)
         {
-            VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T> >::value), T>::clear(from, to);
+            VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T>>::value), T>::clear(from, to);
         }
 
     protected:
@@ -1216,9 +1216,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
         const T* bufferBegin = buffer();
         const T* bufferEnd = buffer() + size();
-        if (ShouldBeTraced<VectorTraits<T> >::value) {
+        if (ShouldBeTraced<VectorTraits<T>>::value) {
             for (const T* bufferEntry = bufferBegin; bufferEntry != bufferEnd; bufferEntry++)
-                Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
         }
         if (this->hasOutOfLineBuffer())
             Allocator::markNoTracing(visitor, buffer());
@@ -1226,7 +1226,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
 #if !ENABLE(OILPAN)
     template<typename T, size_t N>
-    struct NeedsTracing<Vector<T, N> > {
+    struct NeedsTracing<Vector<T, N>> {
         static const bool value = false;
     };
 #endif

@@ -189,17 +189,17 @@ static void printLiveStringStats(void*)
     MutexLocker locker(statsMutex());
     HashSet<void*>& strings = liveStrings();
 
-    HashMap<StringImpl*, RefPtr<PerStringStats> > stats;
+    HashMap<StringImpl*, RefPtr<PerStringStats>> stats;
     for (HashSet<void*>::iterator iter = strings.begin(); iter != strings.end(); ++iter) {
         StringImpl* string = static_cast<StringImpl*>(*iter);
-        HashMap<StringImpl*, RefPtr<PerStringStats> >::iterator entry = stats.find(string);
+        HashMap<StringImpl*, RefPtr<PerStringStats>>::iterator entry = stats.find(string);
         RefPtr<PerStringStats> value = entry == stats.end() ? RefPtr<PerStringStats>(PerStringStats::create()) : entry->value;
         value->add(string);
         stats.set(string, value.release());
     }
 
-    Vector<RefPtr<PerStringStats> > all;
-    for (HashMap<StringImpl*, RefPtr<PerStringStats> >::iterator iter = stats.begin(); iter != stats.end(); ++iter)
+    Vector<RefPtr<PerStringStats>> all;
+    for (HashMap<StringImpl*, RefPtr<PerStringStats>>::iterator iter = stats.begin(); iter != stats.end(); ++iter)
         all.append(iter->value);
 
     std::sort(all.begin(), all.end());

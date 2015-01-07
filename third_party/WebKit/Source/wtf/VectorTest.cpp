@@ -129,7 +129,7 @@ private:
     int* m_destructNumber;
 };
 
-typedef WTF::Vector<OwnPtr<DestructCounter> > OwnPtrVector;
+typedef WTF::Vector<OwnPtr<DestructCounter>> OwnPtrVector;
 
 TEST(VectorTest, OwnPtr)
 {

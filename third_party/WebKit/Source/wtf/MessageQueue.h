@@ -77,7 +77,7 @@ namespace WTF {
     private:
         mutable Mutex m_mutex;
         ThreadCondition m_condition;
-        Deque<OwnPtr<DataType> > m_queue;
+        Deque<OwnPtr<DataType>> m_queue;
         bool m_killed;
     };
 

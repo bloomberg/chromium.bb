@@ -534,16 +534,16 @@ namespace WTF {
         ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
         const T* bufferBegin = m_buffer.buffer();
         const T* end = bufferBegin + m_end;
-        if (ShouldBeTraced<VectorTraits<T> >::value) {
+        if (ShouldBeTraced<VectorTraits<T>>::value) {
             if (m_start <= m_end) {
                 for (const T* bufferEntry = bufferBegin + m_start; bufferEntry != end; bufferEntry++)
-                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
             } else {
                 for (const T* bufferEntry = bufferBegin; bufferEntry != end; bufferEntry++)
-                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
                 const T* bufferEnd = m_buffer.buffer() + m_buffer.capacity();
                 for (const T* bufferEntry = bufferBegin + m_start; bufferEntry != bufferEnd; bufferEntry++)
-                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                    Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
             }
         }
         if (m_buffer.hasOutOfLineBuffer())
@@ -558,7 +558,7 @@ namespace WTF {
 
 #if !ENABLE(OILPAN)
     template<typename T, size_t N>
-    struct NeedsTracing<Deque<T, N> > {
+    struct NeedsTracing<Deque<T, N>> {
         static const bool value = false;
     };
 #endif

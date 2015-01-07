@@ -331,7 +331,7 @@ namespace WTF {
     inline typename HashMap<T, U, V, W, X, Y>::iterator
     HashMap<T, U, V, W, X, Y>::find(const TYPE& value)
     {
-        return m_impl.template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator> >(value);
+        return m_impl.template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(value);
     }
 
     template<typename T, typename U, typename V, typename W, typename X, typename Y>
@@ -339,7 +339,7 @@ namespace WTF {
     inline typename HashMap<T, U, V, W, X, Y>::const_iterator
     HashMap<T, U, V, W, X, Y>::find(const TYPE& value) const
     {
-        return m_impl.template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator> >(value);
+        return m_impl.template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(value);
     }
 
     template<typename T, typename U, typename V, typename W, typename X, typename Y>
@@ -347,14 +347,14 @@ namespace WTF {
     inline bool
     HashMap<T, U, V, W, X, Y>::contains(const TYPE& value) const
     {
-        return m_impl.template contains<HashMapTranslatorAdapter<ValueTraits, HashTranslator> >(value);
+        return m_impl.template contains<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(value);
     }
 
     template<typename T, typename U, typename V, typename W, typename X, typename Y>
     typename HashMap<T, U, V, W, X, Y>::AddResult
     HashMap<T, U, V, W, X, Y>::inlineAdd(KeyPeekInType key, MappedPassInReferenceType mapped)
     {
-        return m_impl.template add<HashMapTranslator<ValueTraits, HashFunctions> >(key, mapped);
+        return m_impl.template add<HashMapTranslator<ValueTraits, HashFunctions>>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X, typename Y>
@@ -374,7 +374,7 @@ namespace WTF {
     typename HashMap<T, U, V, W, X, Y>::AddResult
     HashMap<T, U, V, W, X, Y>::add(const TYPE& key, MappedPassInType value)
     {
-        return m_impl.template addPassingHashCode<HashMapTranslatorAdapter<ValueTraits, HashTranslator> >(key, value);
+        return m_impl.template addPassingHashCode<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(key, value);
     }
 
     template<typename T, typename U, typename V, typename W, typename X, typename Y>
@@ -494,7 +494,7 @@ namespace WTF {
 
 #if !ENABLE(OILPAN)
 template<typename T, typename U, typename V, typename W, typename X>
-struct NeedsTracing<HashMap<T, U, V, W, X> > {
+struct NeedsTracing<HashMap<T, U, V, W, X>> {
     static const bool value = false;
 };
 #endif

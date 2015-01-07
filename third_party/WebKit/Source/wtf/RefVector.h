@@ -12,7 +12,7 @@
 namespace blink {
 
 template <typename T>
-class RefVector : public RefCounted<RefVector<T> > {
+class RefVector : public RefCounted<RefVector<T>> {
 public:
     static PassRefPtr<RefVector> create() { return adoptRef(new RefVector<T>); }
     PassRefPtr<RefVector> copy() { return adoptRef(new RefVector<T>(*this)); }

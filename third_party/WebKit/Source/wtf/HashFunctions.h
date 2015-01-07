@@ -138,7 +138,7 @@ namespace WTF {
         static bool equal(T a, std::nullptr_t) { return a == 0; }
         static const bool safeToCompareToEmptyOrDeleted = true;
     };
-    template<typename P> struct PtrHash<RefPtr<P> > : PtrHash<P*> {
+    template<typename P> struct PtrHash<RefPtr<P>> : PtrHash<P*> {
         using PtrHash<P*>::hash;
         static unsigned hash(const RefPtr<P>& key) { return hash(key.get()); }
         static unsigned hash(const PassRefPtr<P>& key) { return hash(key.get()); }
@@ -148,7 +148,7 @@ namespace WTF {
         static bool equal(const RefPtr<P>& a, P* b) { return a == b; }
         static bool equal(const RefPtr<P>& a, const PassRefPtr<P>& b) { return a == b; }
     };
-    template<typename P> struct PtrHash<RawPtr<P> > : PtrHash<P*> {
+    template<typename P> struct PtrHash<RawPtr<P>> : PtrHash<P*> {
         using PtrHash<P*>::hash;
         static unsigned hash(const RawPtr<P>& key) { return hash(key.get()); }
         using PtrHash<P*>::equal;
@@ -156,7 +156,7 @@ namespace WTF {
         static bool equal(P* a, const RawPtr<P>& b) { return a == b; }
         static bool equal(const RawPtr<P>& a, P* b) { return a == b; }
     };
-    template<typename P> struct PtrHash<OwnPtr<P> > : PtrHash<P*> {
+    template<typename P> struct PtrHash<OwnPtr<P>> : PtrHash<P*> {
         using PtrHash<P*>::hash;
         static unsigned hash(const OwnPtr<P>& key) { return hash(key.get()); }
         static unsigned hash(const PassOwnPtr<P>& key) { return hash(key.get()); }
@@ -216,32 +216,32 @@ namespace WTF {
     // make PtrHash the default hash function for pointer types that don't specialize
 
     template<typename P> struct DefaultHash<P*> { typedef PtrHash<P*> Hash; };
-    template<typename P> struct DefaultHash<RefPtr<P> > { typedef PtrHash<RefPtr<P> > Hash; };
-    template<typename P> struct DefaultHash<RawPtr<P> > { typedef PtrHash<RawPtr<P> > Hash; };
-    template<typename P> struct DefaultHash<OwnPtr<P> > { typedef PtrHash<OwnPtr<P> > Hash; };
+    template<typename P> struct DefaultHash<RefPtr<P>> { typedef PtrHash<RefPtr<P>> Hash; };
+    template<typename P> struct DefaultHash<RawPtr<P>> { typedef PtrHash<RawPtr<P>> Hash; };
+    template<typename P> struct DefaultHash<OwnPtr<P>> { typedef PtrHash<OwnPtr<P>> Hash; };
 
     // make IntPairHash the default hash function for pairs of (at most) 32-bit integers.
 
-    template<> struct DefaultHash<std::pair<short, short> > { typedef IntPairHash<short, short> Hash; };
-    template<> struct DefaultHash<std::pair<short, unsigned short> > { typedef IntPairHash<short, unsigned short> Hash; };
-    template<> struct DefaultHash<std::pair<short, int> > { typedef IntPairHash<short, int> Hash; };
-    template<> struct DefaultHash<std::pair<short, unsigned> > { typedef IntPairHash<short, unsigned> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned short, short> > { typedef IntPairHash<unsigned short, short> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned short, unsigned short> > { typedef IntPairHash<unsigned short, unsigned short> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned short, int> > { typedef IntPairHash<unsigned short, int> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned short, unsigned> > { typedef IntPairHash<unsigned short, unsigned> Hash; };
-    template<> struct DefaultHash<std::pair<int, short> > { typedef IntPairHash<int, short> Hash; };
-    template<> struct DefaultHash<std::pair<int, unsigned short> > { typedef IntPairHash<int, unsigned short> Hash; };
-    template<> struct DefaultHash<std::pair<int, int> > { typedef IntPairHash<int, int> Hash; };
-    template<> struct DefaultHash<std::pair<int, unsigned> > { typedef IntPairHash<unsigned, unsigned> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned, short> > { typedef IntPairHash<unsigned, short> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned, unsigned short> > { typedef IntPairHash<unsigned, unsigned short> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned, int> > { typedef IntPairHash<unsigned, int> Hash; };
-    template<> struct DefaultHash<std::pair<unsigned, unsigned> > { typedef IntPairHash<unsigned, unsigned> Hash; };
+    template<> struct DefaultHash<std::pair<short, short>> { typedef IntPairHash<short, short> Hash; };
+    template<> struct DefaultHash<std::pair<short, unsigned short>> { typedef IntPairHash<short, unsigned short> Hash; };
+    template<> struct DefaultHash<std::pair<short, int>> { typedef IntPairHash<short, int> Hash; };
+    template<> struct DefaultHash<std::pair<short, unsigned>> { typedef IntPairHash<short, unsigned> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned short, short>> { typedef IntPairHash<unsigned short, short> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned short, unsigned short>> { typedef IntPairHash<unsigned short, unsigned short> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned short, int>> { typedef IntPairHash<unsigned short, int> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned short, unsigned>> { typedef IntPairHash<unsigned short, unsigned> Hash; };
+    template<> struct DefaultHash<std::pair<int, short>> { typedef IntPairHash<int, short> Hash; };
+    template<> struct DefaultHash<std::pair<int, unsigned short>> { typedef IntPairHash<int, unsigned short> Hash; };
+    template<> struct DefaultHash<std::pair<int, int>> { typedef IntPairHash<int, int> Hash; };
+    template<> struct DefaultHash<std::pair<int, unsigned>> { typedef IntPairHash<unsigned, unsigned> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned, short>> { typedef IntPairHash<unsigned, short> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned, unsigned short>> { typedef IntPairHash<unsigned, unsigned short> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned, int>> { typedef IntPairHash<unsigned, int> Hash; };
+    template<> struct DefaultHash<std::pair<unsigned, unsigned>> { typedef IntPairHash<unsigned, unsigned> Hash; };
 
     // make PairHash the default hash function for pairs of arbitrary values.
 
-    template<typename T, typename U> struct DefaultHash<std::pair<T, U> > { typedef PairHash<T, U> Hash; };
+    template<typename T, typename U> struct DefaultHash<std::pair<T, U>> { typedef PairHash<T, U> Hash; };
 
 } // namespace WTF
 

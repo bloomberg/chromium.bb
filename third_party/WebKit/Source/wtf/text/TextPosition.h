@@ -83,7 +83,7 @@ public:
     OrdinalNumber m_column;
 };
 
-WTF_EXPORT PassOwnPtr<Vector<unsigned> > lineEndings(const String&);
+WTF_EXPORT PassOwnPtr<Vector<unsigned>> lineEndings(const String&);
 
 } // namespace WTF
 

@@ -103,9 +103,9 @@ unsigned StringAppend<StringType1, StringType2>::length()
 }
 
 template<typename StringType1, typename StringType2>
-class StringTypeAdapter<StringAppend<StringType1, StringType2> > {
+class StringTypeAdapter<StringAppend<StringType1, StringType2>> {
 public:
-    StringTypeAdapter<StringAppend<StringType1, StringType2> >(StringAppend<StringType1, StringType2>& buffer)
+    StringTypeAdapter<StringAppend<StringType1, StringType2>>(StringAppend<StringType1, StringType2>& buffer)
         : m_buffer(buffer)
     {
     }
@@ -132,9 +132,9 @@ inline StringAppend<const char*, AtomicString> operator+(const char* string1, co
 }
 
 template<typename U, typename V>
-inline StringAppend<const char*, StringAppend<U, V> > operator+(const char* string1, const StringAppend<U, V>& string2)
+inline StringAppend<const char*, StringAppend<U, V>> operator+(const char* string1, const StringAppend<U, V>& string2)
 {
-    return StringAppend<const char*, StringAppend<U, V> >(string1, string2);
+    return StringAppend<const char*, StringAppend<U, V>>(string1, string2);
 }
 
 inline StringAppend<const UChar*, String> operator+(const UChar* string1, const String& string2)
@@ -148,9 +148,9 @@ inline StringAppend<const UChar*, AtomicString> operator+(const UChar* string1, 
 }
 
 template<typename U, typename V>
-inline StringAppend<const UChar*, StringAppend<U, V> > operator+(const UChar* string1, const StringAppend<U, V>& string2)
+inline StringAppend<const UChar*, StringAppend<U, V>> operator+(const UChar* string1, const StringAppend<U, V>& string2)
 {
-    return StringAppend<const UChar*, StringAppend<U, V> >(string1, string2);
+    return StringAppend<const UChar*, StringAppend<U, V>>(string1, string2);
 }
 
 template<typename T>

@@ -30,9 +30,9 @@
 
 namespace WTF {
 
-PassOwnPtr<Vector<unsigned> > lineEndings(const String& text)
+PassOwnPtr<Vector<unsigned>> lineEndings(const String& text)
 {
-    OwnPtr<Vector<unsigned> > result(adoptPtr(new Vector<unsigned>()));
+    OwnPtr<Vector<unsigned>> result(adoptPtr(new Vector<unsigned>()));
 
     unsigned start = 0;
     while (start < text.length()) {

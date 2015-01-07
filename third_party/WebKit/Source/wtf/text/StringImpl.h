@@ -736,7 +736,7 @@ template<typename T> struct DefaultHash;
 template<> struct DefaultHash<StringImpl*> {
     typedef StringHash Hash;
 };
-template<> struct DefaultHash<RefPtr<StringImpl> > {
+template<> struct DefaultHash<RefPtr<StringImpl>> {
     typedef StringHash Hash;
 };
 

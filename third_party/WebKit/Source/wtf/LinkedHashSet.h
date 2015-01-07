@@ -295,7 +295,7 @@ struct LinkedHashSetExtractor {
 };
 
 template<typename Value, typename ValueTraitsArg, typename Allocator>
-struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Value, Allocator> > {
+struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Value, Allocator>> {
     typedef LinkedHashSetNode<Value, Allocator> Node;
     typedef ValueTraitsArg ValueTraits;
 
@@ -601,7 +601,7 @@ template<typename Value, typename U, typename V, typename W>
 template<typename HashTranslator, typename T>
 inline bool LinkedHashSet<Value, U, V, W>::contains(const T& value) const
 {
-    return m_impl.template contains<LinkedHashSetTranslatorAdapter<HashTranslator> >(value);
+    return m_impl.template contains<LinkedHashSetTranslatorAdapter<HashTranslator>>(value);
 }
 
 template<typename T, typename U, typename V, typename W>
@@ -729,7 +729,7 @@ void deleteAllValues(const LinkedHashSet<ValueType, T, U>& set)
 
 #if !ENABLE(OILPAN)
 template<typename T, typename U, typename V>
-struct NeedsTracing<LinkedHashSet<T, U, V> > {
+struct NeedsTracing<LinkedHashSet<T, U, V>> {
     static const bool value = false;
 };
 #endif

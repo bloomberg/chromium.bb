@@ -95,25 +95,25 @@ void WTF::StringTypeAdapter<const LChar*>::writeTo(UChar* destination)
     StringImpl::copyChars(destination, m_buffer, m_length);
 }
 
-void WTF::StringTypeAdapter<Vector<char> >::writeTo(LChar* destination)
+void WTF::StringTypeAdapter<Vector<char>>::writeTo(LChar* destination)
 {
     for (size_t i = 0; i < m_buffer.size(); ++i)
         destination[i] = static_cast<unsigned char>(m_buffer[i]);
 }
 
-void WTF::StringTypeAdapter<Vector<char> >::writeTo(UChar* destination)
+void WTF::StringTypeAdapter<Vector<char>>::writeTo(UChar* destination)
 {
     for (size_t i = 0; i < m_buffer.size(); ++i)
         destination[i] = static_cast<unsigned char>(m_buffer[i]);
 }
 
-void WTF::StringTypeAdapter<Vector<LChar> >::writeTo(LChar* destination)
+void WTF::StringTypeAdapter<Vector<LChar>>::writeTo(LChar* destination)
 {
     for (size_t i = 0; i < m_buffer.size(); ++i)
         destination[i] = m_buffer[i];
 }
 
-void WTF::StringTypeAdapter<Vector<LChar> >::writeTo(UChar* destination)
+void WTF::StringTypeAdapter<Vector<LChar>>::writeTo(UChar* destination)
 {
     for (size_t i = 0; i < m_buffer.size(); ++i)
         destination[i] = m_buffer[i];

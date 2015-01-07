@@ -101,7 +101,7 @@ private:
     int* m_destructNumber;
 };
 
-typedef WTF::HashMap<int, OwnPtr<DestructCounter> > OwnPtrHashMap;
+typedef WTF::HashMap<int, OwnPtr<DestructCounter>> OwnPtrHashMap;
 
 TEST(HashMapTest, OwnPtrAsValue)
 {
@@ -241,7 +241,7 @@ public:
 private:
     int m_v;
 };
-typedef HashMap<int, OwnPtr<SimpleClass> > IntSimpleMap;
+typedef HashMap<int, OwnPtr<SimpleClass>> IntSimpleMap;
 
 TEST(HashMapTest, AddResult)
 {

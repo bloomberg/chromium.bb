@@ -212,9 +212,9 @@ private:
 };
 
 template<>
-class WTF_EXPORT StringTypeAdapter<Vector<char> > {
+class WTF_EXPORT StringTypeAdapter<Vector<char>> {
 public:
-    StringTypeAdapter<Vector<char> >(const Vector<char>& buffer)
+    StringTypeAdapter<Vector<char>>(const Vector<char>& buffer)
         : m_buffer(buffer)
     {
     }
@@ -232,9 +232,9 @@ private:
 };
 
 template<>
-class StringTypeAdapter<Vector<LChar> > {
+class StringTypeAdapter<Vector<LChar>> {
 public:
-    StringTypeAdapter<Vector<LChar> >(const Vector<LChar>& buffer)
+    StringTypeAdapter<Vector<LChar>>(const Vector<LChar>& buffer)
         : m_buffer(buffer)
     {
     }

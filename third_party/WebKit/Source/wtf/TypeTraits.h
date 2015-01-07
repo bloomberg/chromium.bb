@@ -344,7 +344,7 @@ public:
 };
 
 template<typename T, typename U>
-struct NeedsTracing<std::pair<T, U> > {
+struct NeedsTracing<std::pair<T, U>> {
     static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
 };
 

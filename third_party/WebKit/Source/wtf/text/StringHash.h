@@ -67,7 +67,7 @@ namespace WTF {
     public:
         static unsigned hash(const UChar* data, unsigned length)
         {
-            return StringHasher::computeHashAndMaskTop8Bits<UChar, foldCase<UChar> >(data, length);
+            return StringHasher::computeHashAndMaskTop8Bits<UChar, foldCase<UChar>>(data, length);
         }
 
         static unsigned hash(StringImpl* str)
@@ -79,7 +79,7 @@ namespace WTF {
 
         static unsigned hash(const LChar* data, unsigned length)
         {
-            return StringHasher::computeHashAndMaskTop8Bits<LChar, foldCase<LChar> >(data, length);
+            return StringHasher::computeHashAndMaskTop8Bits<LChar, foldCase<LChar>>(data, length);
         }
 
         static inline unsigned hash(const char* data, unsigned length)

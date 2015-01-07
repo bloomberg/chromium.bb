@@ -74,7 +74,7 @@ namespace WTF {
     // Note that for a ListHashSet you cannot specify the HashTraits as a
     // template argument. It uses the default hash traits for the ValueArg
     // type.
-    template<typename ValueArg, size_t inlineCapacity = 256, typename HashArg = typename DefaultHash<ValueArg>::Hash, typename AllocatorArg = ListHashSetAllocator<ValueArg, inlineCapacity> > class ListHashSet
+    template<typename ValueArg, size_t inlineCapacity = 256, typename HashArg = typename DefaultHash<ValueArg>::Hash, typename AllocatorArg = ListHashSetAllocator<ValueArg, inlineCapacity>> class ListHashSet
         : public ListHashSetDestructorBase<ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>, AllocatorArg, AllocatorArg::isGarbageCollected> {
         typedef AllocatorArg Allocator;
         WTF_USE_ALLOCATOR(ListHashSet, Allocator);
@@ -771,7 +771,7 @@ namespace WTF {
     template<typename HashTranslator, typename T>
     inline typename ListHashSet<ValueType, inlineCapacity, U, V>::iterator ListHashSet<ValueType, inlineCapacity, U, V>::find(const T& value)
     {
-        ImplTypeConstIterator it = m_impl.template find<ListHashSetTranslatorAdapter<HashTranslator> >(value);
+        ImplTypeConstIterator it = m_impl.template find<ListHashSetTranslatorAdapter<HashTranslator>>(value);
         if (it == m_impl.end())
             return end();
         return makeIterator(*it);
@@ -781,7 +781,7 @@ namespace WTF {
     template<typename HashTranslator, typename T>
     inline typename ListHashSet<ValueType, inlineCapacity, U, V>::const_iterator ListHashSet<ValueType, inlineCapacity, U, V>::find(const T& value) const
     {
-        ImplTypeConstIterator it = m_impl.template find<ListHashSetTranslatorAdapter<HashTranslator> >(value);
+        ImplTypeConstIterator it = m_impl.template find<ListHashSetTranslatorAdapter<HashTranslator>>(value);
         if (it == m_impl.end())
             return end();
         return makeConstIterator(*it);
@@ -791,7 +791,7 @@ namespace WTF {
     template<typename HashTranslator, typename T>
     inline bool ListHashSet<ValueType, inlineCapacity, U, V>::contains(const T& value) const
     {
-        return m_impl.template contains<ListHashSetTranslatorAdapter<HashTranslator> >(value);
+        return m_impl.template contains<ListHashSetTranslatorAdapter<HashTranslator>>(value);
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
@@ -1005,7 +1005,7 @@ namespace WTF {
 
 #if !ENABLE(OILPAN)
     template<typename T, size_t U, typename V>
-    struct NeedsTracing<ListHashSet<T, U, V> > {
+    struct NeedsTracing<ListHashSet<T, U, V>> {
         static const bool value = false;
     };
 #endif

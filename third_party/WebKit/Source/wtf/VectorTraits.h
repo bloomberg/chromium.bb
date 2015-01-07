@@ -66,10 +66,10 @@ namespace WTF {
     // moving with memcpy (and then not destructing the original) will totally
     // work.
     template<typename P>
-    struct VectorTraits<RefPtr<P> > : SimpleClassVectorTraits<RefPtr<P> > { };
+    struct VectorTraits<RefPtr<P>> : SimpleClassVectorTraits<RefPtr<P>> { };
 
     template<typename P>
-    struct VectorTraits<OwnPtr<P> > : SimpleClassVectorTraits<OwnPtr<P> > {
+    struct VectorTraits<OwnPtr<P>> : SimpleClassVectorTraits<OwnPtr<P>> {
         // OwnPtr -> PassOwnPtr has a very particular structure that
         // tricks the normal type traits into thinking that the class
         // is "trivially copyable".
@@ -83,7 +83,7 @@ namespace WTF {
     static_assert(VectorTraits<OwnPtr<int>>::canCompareWithMemcmp, "inefficient OwnPtr Vector");
 
     template<typename First, typename Second>
-    struct VectorTraits<pair<First, Second> >
+    struct VectorTraits<pair<First, Second>>
     {
         typedef VectorTraits<First> FirstTraits;
         typedef VectorTraits<Second> SecondTraits;

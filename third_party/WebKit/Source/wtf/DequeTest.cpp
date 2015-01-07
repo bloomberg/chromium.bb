@@ -163,7 +163,7 @@ private:
     int* m_destructNumber;
 };
 
-typedef WTF::Deque<OwnPtr<DestructCounter> > OwnPtrDeque;
+typedef WTF::Deque<OwnPtr<DestructCounter>> OwnPtrDeque;
 
 TEST(DequeTest, OwnPtr)
 {

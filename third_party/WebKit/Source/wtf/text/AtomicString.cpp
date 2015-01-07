@@ -275,7 +275,7 @@ PassRefPtr<StringImpl> AtomicString::add(const UChar* s, unsigned length, unsign
         return StringImpl::empty();
 
     HashAndCharacters<UChar> buffer = { existingHash, s, length };
-    return addToStringTable<HashAndCharacters<UChar>, HashAndCharactersTranslator<UChar> >(buffer);
+    return addToStringTable<HashAndCharacters<UChar>, HashAndCharactersTranslator<UChar>>(buffer);
 }
 
 PassRefPtr<StringImpl> AtomicString::add(const UChar* s)
@@ -412,7 +412,7 @@ template<typename CharacterType>
 static inline HashSet<StringImpl*>::iterator findString(const StringImpl* stringImpl)
 {
     HashAndCharacters<CharacterType> buffer = { stringImpl->existingHash(), stringImpl->getCharacters<CharacterType>(), stringImpl->length() };
-    return atomicStrings().find<HashAndCharactersTranslator<CharacterType> >(buffer);
+    return atomicStrings().find<HashAndCharactersTranslator<CharacterType>>(buffer);
 }
 
 StringImpl* AtomicString::find(const StringImpl* stringImpl)

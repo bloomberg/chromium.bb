@@ -176,7 +176,7 @@ static_assert(IsConvertibleToInteger<float>::value, "float should be convertible
 static_assert(!IsConvertibleToInteger<char*>::value, "char* should not be convertible to integer");
 static_assert(!IsConvertibleToInteger<const char*>::value, "const char* should not be convertible to integer");
 static_assert(!IsConvertibleToInteger<volatile char*>::value, "volatile char* should not be convertible to integer");
-static_assert(!IsConvertibleToInteger<IsConvertibleToInteger<bool> >::value, "struct should not be convertible to integer");
+static_assert(!IsConvertibleToInteger<IsConvertibleToInteger<bool>>::value, "struct should not be convertible to integer");
 
 static_assert((IsPointerConvertible<int, int>::Value), "pointers to the same type should be convertible");
 static_assert((!IsPointerConvertible<int, unsigned>::Value), "int pointers should not be convertible to unsigned pointers");
@@ -197,12 +197,12 @@ class TestBaseClass {
 class TestDerivedClass : public TestBaseClass<int> {
 };
 
-static_assert((IsSubclass<TestDerivedClass, TestBaseClass<int> >::value), "Derived class should be a subclass of its base");
+static_assert((IsSubclass<TestDerivedClass, TestBaseClass<int>>::value), "Derived class should be a subclass of its base");
 static_assert((!IsSubclass<TestBaseClass<int>, TestDerivedClass>::value), "Base class should not be a sublass of a derived class");
 static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), "Derived class should be a subclass of template from its base");
 static_assert((IsSameType<RemoveTemplate<TestBaseClass<int>, TestBaseClass>::Type, int>::value), "RemoveTemplate should remove the template typename from the type");
 static_assert((IsSameType<RemoveTemplate<int, TestBaseClass>::Type, int>::value), "RemoveTemplate should not alter non-template types");
-static_assert((IsPointerConvertible<TestDerivedClass, TestBaseClass<int> >::Value), "Derived class pointers should be convertible to base class pointers");
+static_assert((IsPointerConvertible<TestDerivedClass, TestBaseClass<int>>::Value), "Derived class pointers should be convertible to base class pointers");
 static_assert((!IsPointerConvertible<TestBaseClass<int>, TestDerivedClass>::Value), "Base class pointers should not be convertible to derived class pointers");
 
 static_assert((IsSameType<bool, RemoveConst<const bool>::Type>::value), "RemoveConst should produce the corresponding non-const type");
