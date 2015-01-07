@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,9 +22,12 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -35,11 +39,14 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "policy/proto/device_management_backend.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using ::testing::ReturnRef;
 using base::Time;
 using base::TimeDelta;
+using chromeos::disks::DiskMountManager;
 
 namespace em = enterprise_management;
 
@@ -136,6 +143,25 @@ int64 GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
   return active_milliseconds;
 }
 
+std::vector<em::VolumeInfo> GetFakeVolumeInfo(
+    const std::vector<em::VolumeInfo>& volume_info,
+    const std::vector<std::string>& mount_points) {
+  EXPECT_EQ(volume_info.size(), mount_points.size());
+  // Make sure there's a matching mount point for every volume info.
+  for (const em::VolumeInfo& info : volume_info) {
+    bool found = false;
+    for (const std::string& mount_point : mount_points) {
+      if (info.volume_id() == mount_point) {
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found) << "Could not find matching mount point for "
+                       << info.volume_id();
+  }
+  return volume_info;
+}
+
 }  // namespace
 
 namespace policy {
@@ -160,6 +186,16 @@ class DeviceStatusCollectorTest : public testing::Test {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     env->SetVar("TZ", "UTC");
 
+    // Initialize our mock mounted disk volumes.
+    scoped_ptr<chromeos::disks::MockDiskMountManager> mock_disk_mount_manager =
+        make_scoped_ptr(new chromeos::disks::MockDiskMountManager());
+    AddMountPoint("/mount/volume1");
+    AddMountPoint("/mount/volume2");
+    EXPECT_CALL(*mock_disk_mount_manager, mount_points())
+        .WillRepeatedly(ReturnRef(mount_point_map_));
+
+    // DiskMountManager takes ownership of the MockDiskMountManager.
+    DiskMountManager::InitializeForTesting(mock_disk_mount_manager.release());
     TestingDeviceStatusCollector::RegisterPrefs(prefs_.registry());
 
     // Remove the real DeviceSettingsProvider and replace it with a stub.
@@ -174,14 +210,23 @@ class DeviceStatusCollectorTest : public testing::Test {
     RestartStatusCollector();
   }
 
+  void AddMountPoint(const std::string& mount_point) {
+    mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
+        mount_point,
+        DiskMountManager::MountPointInfo(
+            mount_point, mount_point, chromeos::MOUNT_TYPE_DEVICE,
+            chromeos::disks::MOUNT_CONDITION_NONE)));
+  }
+
   virtual ~DeviceStatusCollectorTest() {
     // Finish pending tasks.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     message_loop_.RunUntilIdle();
+    DiskMountManager::Shutdown();
 
     // Restore the real DeviceSettingsProvider.
     EXPECT_TRUE(
-      cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
+        cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
     cros_settings_->AddSettingsProvider(device_settings_provider_);
   }
 
@@ -260,6 +305,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   ScopedStubEnterpriseInstallAttributes install_attributes_;
   TestingPrefServiceSimple prefs_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  DiskMountManager::MountPointMap mount_point_map_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::CrosSettings* cros_settings_;
@@ -652,6 +698,52 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, false);
   GetStatus();
   EXPECT_EQ(0, status_.user_size());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
+  std::vector<std::string> expected_mount_points;
+  std::vector<em::VolumeInfo> expected_volume_info;
+  int size = 12345678;
+  for (const auto& mount_info :
+           DiskMountManager::GetInstance()->mount_points()) {
+    expected_mount_points.push_back(mount_info.first);
+    em::VolumeInfo info;
+    info.set_volume_id(mount_info.first);
+    // Just put unique numbers in for storage_total/free.
+    info.set_storage_total(size++);
+    info.set_storage_free(size++);
+    expected_volume_info.push_back(info);
+  }
+
+  EXPECT_FALSE(expected_volume_info.empty());
+
+  status_collector_->SetVolumeInfoFetcherForTest(
+      base::Bind(&GetFakeVolumeInfo, expected_volume_info));
+  message_loop_.RunUntilIdle();
+
+  GetStatus();
+  EXPECT_EQ(expected_mount_points.size(),
+            static_cast<size_t>(status_.volume_info_size()));
+
+  // Walk the returned VolumeInfo to make sure it matches.
+  for (const em::VolumeInfo& expected_info : expected_volume_info) {
+    bool found = false;
+    for (const em::VolumeInfo& info : status_.volume_info()) {
+      if (info.volume_id() == expected_info.volume_id()) {
+        EXPECT_EQ(expected_info.storage_total(), info.storage_total());
+        EXPECT_EQ(expected_info.storage_free(), info.storage_free());
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found) << "No matching VolumeInfo for "
+                       << expected_info.volume_id();
+  }
+
+  // Now turn off hardware status reporting - should have no data.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+  GetStatus();
+  EXPECT_EQ(0, status_.volume_info_size());
 }
 
 // Fake device state.

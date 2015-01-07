@@ -568,7 +568,7 @@ message DeviceUser {
 // Information about a single disk volume.
 message VolumeInfo {
   optional string volume_id = 1;
-  optional int64 storage_used = 2;
+  optional int64 storage_total = 2;
   optional int64 storage_free = 3;
 }
 
