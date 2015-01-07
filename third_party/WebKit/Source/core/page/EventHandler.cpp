@@ -172,18 +172,15 @@ private:
     double m_start;
 };
 
-static inline ScrollGranularity wheelGranularityToScrollGranularity(unsigned deltaMode)
+static inline ScrollGranularity wheelGranularityToScrollGranularity(WheelEvent* event)
 {
-    switch (deltaMode) {
-    case WheelEvent::DOM_DELTA_PAGE:
+    unsigned deltaMode = event->deltaMode();
+    if (deltaMode == WheelEvent::DOM_DELTA_PAGE)
         return ScrollByPage;
-    case WheelEvent::DOM_DELTA_LINE:
+    if (deltaMode == WheelEvent::DOM_DELTA_LINE)
         return ScrollByLine;
-    case WheelEvent::DOM_DELTA_PIXEL:
-        return ScrollByPixel;
-    default:
-        return ScrollByPixel;
-    }
+    ASSERT(deltaMode == WheelEvent::DOM_DELTA_PIXEL);
+    return event->hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
 }
 
 // Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
@@ -2044,7 +2041,7 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
         return;
 
     Node* stopNode = m_previousWheelScrolledNode.get();
-    ScrollGranularity granularity = wheelGranularityToScrollGranularity(wheelEvent->deltaMode());
+    ScrollGranularity granularity = wheelGranularityToScrollGranularity(wheelEvent);
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).

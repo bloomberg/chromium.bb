@@ -806,7 +806,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
         WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(),  IntPoint(2, 6), IntPoint(10, 30),
-        true, false, false, false, 0, true);
+        true, false, false, false, 0, true, true);
     WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->renderView(), *event);
     EXPECT_EQ(1, webMouseWheel.wheelTicksX);
     EXPECT_EQ(3, webMouseWheel.wheelTicksY);

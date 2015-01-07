@@ -36,6 +36,7 @@ WheelEvent::WheelEvent()
     , m_deltaZ(0)
     , m_deltaMode(DOM_DELTA_PIXEL)
     , m_canScroll(true)
+    , m_hasPreciseScrollingDeltas(false)
 {
 }
 
@@ -47,12 +48,13 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
     , m_deltaZ(initializer.deltaZ())
     , m_deltaMode(initializer.deltaMode())
     , m_canScroll(true)
+    , m_hasPreciseScrollingDeltas(false)
 {
 }
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtrWillBeRawPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& windowLocation,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, bool hasPreciseScrollingDeltas)
     : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
         windowLocation.x(), windowLocation.y(), 0, 0, ctrlKey, altKey, shiftKey, metaKey, 0, buttons,
         nullptr, nullptr, false, PlatformMouseEvent::RealOrIndistinguishable)
@@ -62,6 +64,7 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaZ(0)
     , m_deltaMode(deltaMode)
     , m_canScroll(canScroll)
+    , m_hasPreciseScrollingDeltas(hasPreciseScrollingDeltas)
 {
 }
 
@@ -101,7 +104,7 @@ WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent&
         deltaMode(event), view, event.globalPosition(), event.position(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
         MouseEvent::platformModifiersToButtons(event.modifiers()),
-        event.canScroll()));
+        event.canScroll(), event.hasPreciseScrollingDeltas()));
 }
 
 WheelEvent& WheelEventDispatchMediator::event() const
