@@ -59,14 +59,7 @@ ViewEventTestBase::ViewEventTestBase()
 }
 
 void ViewEventTestBase::Done() {
-  base::MessageLoop::current()->Quit();
-
-  // If we're in a nested message loop, as is the case with menus, we
-  // need to quit twice. The second quit does that for us. Finish all
-  // pending UI events before posting closure because events it may be
-  // executed before UI events are executed.
-  ui_controls::RunClosureAfterAllPendingUIEvents(
-      base::MessageLoop::QuitClosure());
+  run_loop_.Quit();
 }
 
 void ViewEventTestBase::SetUpTestCase() {
@@ -147,7 +140,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ViewEventTestBase::DoTestOnMessageLoop, this));
 
-  content::RunMessageLoop();
+  content::RunThisRunLoop(&run_loop_);
 }
 
 gfx::Size ViewEventTestBase::GetPreferredSize() const {

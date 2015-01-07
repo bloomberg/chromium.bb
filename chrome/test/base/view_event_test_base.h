@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,6 +150,8 @@ class ViewEventTestBase : public views::WidgetDelegate,
   scoped_ptr<ViewEventTestPlatformPart> platform_part_;
 
   views::TestViewsDelegate views_delegate_;
+
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);
 };
