@@ -314,6 +314,8 @@ public class FullscreenHtmlApiHandler {
             b.putInt(TextBubble.ANIM_STYLE_ID, R.style.FullscreenNotificationBubble);
             mNotificationBubble = new TextBubble(mWindow.getContext(), b);
             mNotificationBubble.getBubbleTextView().setGravity(Gravity.CENTER_HORIZONTAL);
+            mNotificationBubble.getBubbleTextView().setTextColor(
+                    mWindow.getContext().getResources().getColor(R.color.default_text_color));
             mNotificationBubble.getBackground().setAlpha(NOTIFICATION_BUBBLE_ALPHA);
             mNotificationBubble.setTouchable(false);
         }
