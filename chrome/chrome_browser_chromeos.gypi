@@ -898,8 +898,6 @@
         'browser/chromeos/system/input_device_settings_impl_x11.cc',
         'browser/chromeos/system/pointer_device_observer.cc',
         'browser/chromeos/system/pointer_device_observer.h',
-        'browser/chromeos/system/syslogs_provider.cc',
-        'browser/chromeos/system/syslogs_provider.h',
         'browser/chromeos/system/timezone_util.cc',
         'browser/chromeos/system/timezone_util.h',
         'browser/chromeos/system_logs/command_line_log_source.cc',
