@@ -39,8 +39,8 @@
     readonly attribute long naturalWidth;
     [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString srcset;
-    [Reflect, RuntimeEnabled=PictureSizes] attribute DOMString sizes;
-    [RuntimeEnabled=PictureSizes] readonly attribute DOMString currentSrc;
+    [Reflect] attribute DOMString sizes;
+    readonly attribute DOMString currentSrc;
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute long vspace;
     attribute long width;

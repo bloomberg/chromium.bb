@@ -643,14 +643,11 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     }
 
     if (!foundURL) {
-        float effectiveSize = 0;
-        if (RuntimeEnabledFeatures::pictureSizesEnabled()) {
-            String sizes = fastGetAttribute(sizesAttr);
-            if (!sizes.isNull())
-                UseCounter::count(document(), UseCounter::Sizes);
-            SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
-            effectiveSize = parser.length();
-        }
+        String sizes = fastGetAttribute(sizesAttr);
+        if (!sizes.isNull())
+            UseCounter::count(document(), UseCounter::Sizes);
+        SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
+        float effectiveSize = parser.length();
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }

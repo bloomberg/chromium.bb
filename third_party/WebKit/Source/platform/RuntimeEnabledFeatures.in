@@ -98,7 +98,6 @@ PathOpsSVGClipping status=experimental
 PeerConnection status=stable
 Permissions status=experimental
 Picture status=stable
-PictureSizes status=stable
 PreciseMemoryInfo
 PrefixedEncryptedMedia status=stable
 // This feature is deprecated and we are evangalizing affected sites.

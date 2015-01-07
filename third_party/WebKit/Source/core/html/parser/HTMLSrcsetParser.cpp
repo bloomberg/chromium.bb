@@ -41,7 +41,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/ParsingUtilities.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -201,7 +200,7 @@ static bool parseDescriptors(const CharType* attribute, Vector<DescriptorToken>&
             continue;
         CharType c = attribute[descriptor.lastIndex()];
         bool isValid = false;
-        if (RuntimeEnabledFeatures::pictureSizesEnabled() && c == 'w') {
+        if (c == 'w') {
             if (result.hasDensity() || result.hasWidth()) {
                 srcsetError(document, "it has multiple 'w' descriptors or a mix of 'x' and 'w' descriptors.");
                 return false;
@@ -212,7 +211,7 @@ static bool parseDescriptors(const CharType* attribute, Vector<DescriptorToken>&
                 return false;
             }
             result.setResourceWidth(resourceWidth);
-        } else if (RuntimeEnabledFeatures::pictureSizesEnabled() && c == 'h') {
+        } else if (c == 'h') {
             // This is here only for future compat purposes.
             // The value of the 'h' descriptor is not used.
             if (result.hasDensity() || result.hasHeight()) {

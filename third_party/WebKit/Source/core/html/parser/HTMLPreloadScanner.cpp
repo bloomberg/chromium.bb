@@ -117,8 +117,7 @@ public:
     {
         if (match(m_tagImpl, imgTag)
             || match(m_tagImpl, sourceTag)) {
-            if (RuntimeEnabledFeatures::pictureSizesEnabled())
-                m_sourceSize = SizesAttributeParser(m_mediaValues, String()).length();
+            m_sourceSize = SizesAttributeParser(m_mediaValues, String()).length();
             return;
         }
         if ( !match(m_tagImpl, inputTag)
@@ -202,7 +201,7 @@ private:
             m_srcsetAttributeValue = attributeValue;
             m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_sourceSize, attributeValue);
             setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_sourceSize, m_imgSrcUrl, m_srcsetImageCandidate), AllowURLReplacement);
-        } else if (RuntimeEnabledFeatures::pictureSizesEnabled() && match(attributeName, sizesAttr) && !m_sourceSizeSet) {
+        } else if (match(attributeName, sizesAttr) && !m_sourceSizeSet) {
             m_sourceSize = SizesAttributeParser(m_mediaValues, attributeValue).length();
             m_sourceSizeSet = true;
             if (!m_srcsetImageCandidate.isEmpty()) {
