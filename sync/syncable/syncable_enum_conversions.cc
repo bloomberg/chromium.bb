@@ -15,12 +15,12 @@ namespace syncable {
 // We can't tokenize expected_min/expected_max since it can be a
 // general expression.
 #define ASSERT_ENUM_BOUNDS(enum_min, enum_max, expected_min, expected_max) \
-  COMPILE_ASSERT(static_cast<int>(enum_min) ==                          \
-                 static_cast<int>(expected_min),                        \
-                 enum_min##_not_expected_min);                          \
-  COMPILE_ASSERT(static_cast<int>(enum_max) ==                          \
-                 static_cast<int>(expected_max),                        \
-                 enum_max##_not_expected_max);
+  static_assert(static_cast<int>(enum_min) ==                              \
+                static_cast<int>(expected_min),                            \
+                #enum_min " not " #expected_min);                          \
+  static_assert(static_cast<int>(enum_max) ==                              \
+                static_cast<int>(expected_max),                            \
+                #enum_max " not " #expected_max);
 
 #define ENUM_CASE(enum_value) case enum_value: return #enum_value
 

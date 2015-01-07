@@ -43,9 +43,9 @@ const char* kUserSelectableDataTypeNames[] = {
   "tabs",
 };
 
-COMPILE_ASSERT(
+static_assert(
     34 == MODEL_TYPE_COUNT,
-    update_kUserSelectableDataTypeNames_to_match_UserSelectableTypes);
+    "update kUserSelectableDataTypeName to match UserSelectableTypes");
 
 void AddDefaultFieldValue(ModelType datatype,
                           sync_pb::EntitySpecifics* specifics) {

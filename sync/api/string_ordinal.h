@@ -27,20 +27,20 @@ struct StringOrdinalTraits {
 
 typedef Ordinal<StringOrdinalTraits> StringOrdinal;
 
-COMPILE_ASSERT(StringOrdinal::kZeroDigit == 'a',
-               StringOrdinalHasCorrectZeroDigit);
-COMPILE_ASSERT(StringOrdinal::kOneDigit == 'b',
-               StringOrdinalHasCorrectOneDigit);
-COMPILE_ASSERT(StringOrdinal::kMidDigit == 'n',
-               StringOrdinalHasCorrectMidDigit);
-COMPILE_ASSERT(StringOrdinal::kMaxDigit == 'z',
-               StringOrdinalHasCorrectMaxDigit);
-COMPILE_ASSERT(StringOrdinal::kMidDigitValue == 13,
-               StringOrdinalHasCorrectMidDigitValue);
-COMPILE_ASSERT(StringOrdinal::kMaxDigitValue == 25,
-               StringOrdinalHasCorrectMaxDigitValue);
-COMPILE_ASSERT(StringOrdinal::kRadix == 26,
-               StringOrdinalHasCorrectRadix);
+static_assert(StringOrdinal::kZeroDigit == 'a',
+              "StringOrdinal has incorrect zero digit");
+static_assert(StringOrdinal::kOneDigit == 'b',
+              "StringOrdinal has incorrect one digit");
+static_assert(StringOrdinal::kMidDigit == 'n',
+              "StringOrdinal has incorrect mid digit");
+static_assert(StringOrdinal::kMaxDigit == 'z',
+              "StringOrdinal has incorrect max digit");
+static_assert(StringOrdinal::kMidDigitValue == 13,
+              "StringOrdinal has incorrect mid digit value");
+static_assert(StringOrdinal::kMaxDigitValue == 25,
+              "StringOrdinal has incorrect max digit value");
+static_assert(StringOrdinal::kRadix == 26,
+              "StringOrdinal has incorrect radix");
 
 }  // namespace syncer
 

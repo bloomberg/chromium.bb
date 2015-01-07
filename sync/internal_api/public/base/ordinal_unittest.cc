@@ -38,50 +38,50 @@ typedef Ordinal<TestOrdinalTraits> TestOrdinal;
 typedef Ordinal<LongOrdinalTraits> LongOrdinal;
 typedef Ordinal<LargeOrdinalTraits> LargeOrdinal;
 
-COMPILE_ASSERT(TestOrdinal::kZeroDigit == '0',
-               TestOrdinalHasCorrectZeroDigit);
-COMPILE_ASSERT(TestOrdinal::kOneDigit == '1',
-               TestOrdinalHasCorrectOneDigit);
-COMPILE_ASSERT(TestOrdinal::kMidDigit == '2',
-               TestOrdinalHasCorrectMidDigit);
-COMPILE_ASSERT(TestOrdinal::kMaxDigit == '3',
-               TestOrdinalHasCorrectMaxDigit);
-COMPILE_ASSERT(TestOrdinal::kMidDigitValue == 2,
-               TestOrdinalHasCorrectMidDigitValue);
-COMPILE_ASSERT(TestOrdinal::kMaxDigitValue == 3,
-               TestOrdinalHasCorrectMaxDigitValue);
-COMPILE_ASSERT(TestOrdinal::kRadix == 4,
-               TestOrdinalHasCorrectRadix);
+static_assert(TestOrdinal::kZeroDigit == '0',
+              "incorrect TestOrdinal zero digit");
+static_assert(TestOrdinal::kOneDigit == '1',
+              "incorrect TestOrdinal one digit");
+static_assert(TestOrdinal::kMidDigit == '2',
+              "incorrect TestOrdinal min digit");
+static_assert(TestOrdinal::kMaxDigit == '3',
+              "incorrect TestOrdinal max digit");
+static_assert(TestOrdinal::kMidDigitValue == 2,
+              "incorrect TestOrdinal mid digit value");
+static_assert(TestOrdinal::kMaxDigitValue == 3,
+              "incorrect TestOrdinal max digit value");
+static_assert(TestOrdinal::kRadix == 4,
+              "incorrect TestOrdinal radix");
 
-COMPILE_ASSERT(LongOrdinal::kZeroDigit == '0',
-               LongOrdinalkZeroDigit_incorrect);
-COMPILE_ASSERT(LongOrdinal::kOneDigit == '1',
-               LongOrdinalkOneDigit_incorrect);
-COMPILE_ASSERT(LongOrdinal::kMidDigit == '5',
-               LongOrdinalkMidDigit_incorrect);
-COMPILE_ASSERT(LongOrdinal::kMaxDigit == '9',
-               LongOrdinalkMaxDigit_incorrect);
-COMPILE_ASSERT(LongOrdinal::kMidDigitValue == 5,
-               LongOrdinalkMidDigitValue_incorrect);
-COMPILE_ASSERT(LongOrdinal::kMaxDigitValue == 9,
-               LongOrdinalkMaxDigitValue_incorrect);
-COMPILE_ASSERT(LongOrdinal::kRadix == 10,
-               LongOrdinalkRadix_incorrect);
+static_assert(LongOrdinal::kZeroDigit == '0',
+              "incorrect LongOrdinal zero digit");
+static_assert(LongOrdinal::kOneDigit == '1',
+              "incorrect LongOrdinal one digit");
+static_assert(LongOrdinal::kMidDigit == '5',
+              "incorrect LongOrdinal mid digit");
+static_assert(LongOrdinal::kMaxDigit == '9',
+              "incorrect LongOrdinal max digit");
+static_assert(LongOrdinal::kMidDigitValue == 5,
+              "incorrect LongOrdinal mid digit value");
+static_assert(LongOrdinal::kMaxDigitValue == 9,
+              "incorrect LongOrdinal max digit value");
+static_assert(LongOrdinal::kRadix == 10,
+              "incorrect LongOrdinal radix");
 
-COMPILE_ASSERT(static_cast<char>(LargeOrdinal::kZeroDigit) == '\x00',
-               LargeOrdinalkZeroDigit_incorrect);
-COMPILE_ASSERT(static_cast<char>(LargeOrdinal::kOneDigit) == '\x01',
-               LargeOrdinalkOneDigit_incorrect);
-COMPILE_ASSERT(static_cast<char>(LargeOrdinal::kMidDigit) == '\x80',
-               LargeOrdinalkMidDigit_incorrect);
-COMPILE_ASSERT(static_cast<char>(LargeOrdinal::kMaxDigit) == '\xff',
-               LargeOrdinalkMaxDigit_incorrect);
-COMPILE_ASSERT(LargeOrdinal::kMidDigitValue == 128,
-               LargeOrdinalkMidDigitValue_incorrect);
-COMPILE_ASSERT(LargeOrdinal::kMaxDigitValue == 255,
-               LargeOrdinalkMaxDigitValue_incorrect);
-COMPILE_ASSERT(LargeOrdinal::kRadix == 256,
-               LargeOrdinalkRadix_incorrect);
+static_assert(static_cast<char>(LargeOrdinal::kZeroDigit) == '\x00',
+              "incorrect LargeOrdinal zero digit");
+static_assert(static_cast<char>(LargeOrdinal::kOneDigit) == '\x01',
+              "incorrect LargeOrdinal one digit");
+static_assert(static_cast<char>(LargeOrdinal::kMidDigit) == '\x80',
+              "incorrect LargeOrdinal mid digit");
+static_assert(static_cast<char>(LargeOrdinal::kMaxDigit) == '\xff',
+              "incorrect LargeOrdinal max digit");
+static_assert(LargeOrdinal::kMidDigitValue == 128,
+              "incorrect LargeOrdinal mid digit value");
+static_assert(LargeOrdinal::kMaxDigitValue == 255,
+              "incorrect LargeOrdinal max digit value");
+static_assert(LargeOrdinal::kRadix == 256,
+              "incorrect LargeOrdinal radix");
 
 // Create Ordinals that satisfy all but one criterion for validity.
 // IsValid() should return false for all of them.

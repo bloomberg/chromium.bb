@@ -11,11 +11,11 @@
 
 namespace syncer {
 
-#define ASSERT_ENUM_BOUNDS(enum_parent, enum_type, enum_min, enum_max)  \
-  COMPILE_ASSERT(enum_parent::enum_type##_MIN == enum_parent::enum_min, \
-                 enum_type##_MIN_not_##enum_min);                       \
-  COMPILE_ASSERT(enum_parent::enum_type##_MAX == enum_parent::enum_max, \
-                 enum_type##_MAX_not_##enum_max);
+#define ASSERT_ENUM_BOUNDS(enum_parent, enum_type, enum_min, enum_max) \
+  static_assert(enum_parent::enum_type##_MIN == enum_parent::enum_min, \
+                #enum_type "_MIN should be " #enum_min);               \
+  static_assert(enum_parent::enum_type##_MAX == enum_parent::enum_max, \
+                #enum_type "_MAX should be " #enum_max);
 
 #define ENUM_CASE(enum_parent, enum_value)              \
   case enum_parent::enum_value: return #enum_value

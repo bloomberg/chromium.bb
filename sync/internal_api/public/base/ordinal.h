@@ -141,15 +141,13 @@ class Ordinal {
   static const unsigned int kMaxDigitValue = kMaxDigit - kZeroDigit;
   static const unsigned int kRadix = kMaxDigitValue + 1;
 
-  COMPILE_ASSERT(kOneDigit > kZeroDigit, OrdinalOneDigitGreaterThanMinDigit);
-  COMPILE_ASSERT(kMidDigit > kOneDigit, OrdinalMidDigitGreaterThanOneDigit);
-  COMPILE_ASSERT(kMaxDigit > kMidDigit, OrdinalMaxDigitGreaterThanMidDigit);
-  COMPILE_ASSERT(kMinLength > 0, OrdinalMinLengthIsPositive);
-  COMPILE_ASSERT(kMidDigitValue > 1, OrdinalMidDigitValueGreaterThanOne);
-  COMPILE_ASSERT(kMaxDigitValue > kMidDigitValue,
-                 OrdinalMaxDigitValueGreaterThanMidDigitValue);
-  COMPILE_ASSERT(kRadix == kMaxDigitValue + 1,
-                 OrdinalRadixIsMaxDigitValuePlusOne);
+  static_assert(kOneDigit > kZeroDigit, "incorrect ordinal one digit");
+  static_assert(kMidDigit > kOneDigit, "incorrect ordinal mid digit");
+  static_assert(kMaxDigit > kMidDigit, "incorrect ordinal max digit");
+  static_assert(kMinLength > 0, "incorrect ordinal min length");
+  static_assert(kMidDigitValue > 1, "incorrect ordinal mid digit");
+  static_assert(kMaxDigitValue > kMidDigitValue, "incorrect ordinal max digit");
+  static_assert(kRadix == kMaxDigitValue + 1, "incorrect ordinal radix");
 
  private:
   // Returns true iff the given byte string satisfies the criteria for

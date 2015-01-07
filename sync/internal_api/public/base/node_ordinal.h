@@ -24,20 +24,20 @@ struct NodeOrdinalTraits {
 
 typedef Ordinal<NodeOrdinalTraits> NodeOrdinal;
 
-COMPILE_ASSERT(static_cast<char>(NodeOrdinal::kZeroDigit) == '\x00',
-               NodeOrdinalHasCorrectZeroDigit);
-COMPILE_ASSERT(static_cast<char>(NodeOrdinal::kOneDigit) == '\x01',
-               NodeOrdinalHasCorrectOneDigit);
-COMPILE_ASSERT(static_cast<char>(NodeOrdinal::kMidDigit) == '\x80',
-               NodeOrdinalHasCorrectMidDigit);
-COMPILE_ASSERT(static_cast<char>(NodeOrdinal::kMaxDigit) == '\xff',
-               NodeOrdinalHasCorrectMaxDigit);
-COMPILE_ASSERT(NodeOrdinal::kMidDigitValue == 128,
-               NodeOrdinalHasCorrectMidDigitValue);
-COMPILE_ASSERT(NodeOrdinal::kMaxDigitValue == 255,
-               NodeOrdinalHasCorrectMaxDigitValue);
-COMPILE_ASSERT(NodeOrdinal::kRadix == 256,
-               NodeOrdinalHasCorrectRadix);
+static_assert(static_cast<char>(NodeOrdinal::kZeroDigit) == '\x00',
+              "NodeOrdinal has incorrect zero digit");
+static_assert(static_cast<char>(NodeOrdinal::kOneDigit) == '\x01',
+              "NodeOrdinal has incorrect one digit");
+static_assert(static_cast<char>(NodeOrdinal::kMidDigit) == '\x80',
+              "NodeOrdinal has incorrect mid digit");
+static_assert(static_cast<char>(NodeOrdinal::kMaxDigit) == '\xff',
+              "NodeOrdinal has incorrect max digit");
+static_assert(NodeOrdinal::kMidDigitValue == 128,
+              "NodeOrdinal has incorrect mid digit value");
+static_assert(NodeOrdinal::kMaxDigitValue == 255,
+              "NodeOrdinal has incorrect max digit value");
+static_assert(NodeOrdinal::kRadix == 256,
+              "NodeOrdinal has incorrect radix");
 
 // Converts an int64 position (usually from the position_in_parent
 // field of SyncEntity) to a NodeOrdinal.  This transformation

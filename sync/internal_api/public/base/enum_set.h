@@ -46,8 +46,8 @@ class EnumSet {
   static const E kMinValue = MinEnumValue;
   static const E kMaxValue = MaxEnumValue;
   static const size_t kValueCount = kMaxValue - kMinValue + 1;
-  COMPILE_ASSERT(kMinValue < kMaxValue,
-                 min_value_must_be_less_than_max_value);
+  static_assert(kMinValue < kMaxValue,
+                "min value must be less than max value");
 
  private:
   // Declaration needed by Iterator.
