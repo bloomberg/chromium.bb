@@ -1823,7 +1823,7 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
   // Default to logging DB sizes unless |file_path| points at PrefixSet storage.
   std::string histogram_name("SB2.DatabaseSizeKilobytes");
   if (EndsWith(filename, kPrefixSetFileSuffix, true)) {
-    histogram_name = "SB2.PrefixSetKilobytes";
+    histogram_name = "SB2.PrefixSetSizeKilobytes";
     // Clear the PrefixSet suffix to have the histogram suffix selector below
     // work the same for PrefixSet-based storage as it does for simple safe
     // browsing stores.

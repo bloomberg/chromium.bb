@@ -29955,8 +29955,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>gab@chromium.org</owner>
   <summary>
     The size of one of the SafeBrowsing database file on disk in kilobytes,
-    after a database update has occurred (once on startup (delayed) and
-    periodically thereafter).
+    after a database update has occurred (once a few minutes after startup, and
+    every thirty minutes or so thereafter).
   </summary>
 </histogram>
 
@@ -30396,6 +30396,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.PrefixSetKilobytes" units="KB">
+  <obsolete>
+    Deprecated 01/2014. Replaced by suffixed SB2.PrefixSetSizeKilobytes.
+  </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>The size of one of the PrefixSet files in kilobytes.</summary>
 </histogram>
@@ -30422,6 +30425,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     For debugging PrefixSet.  How many fewer results GetPrefixes returns.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetSizeKilobytes" units="KB">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    The size of one of the PrefixSet files in kilobytes. Logged after a database
+    update has occurred and the PrefixSet has been flushed to disk (once a few
+    minutes after startup, and every thirty minutes or so thereafter).
   </summary>
 </histogram>
 
@@ -30536,7 +30548,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.SideEffectFreeWhitelistPrefixSetKilobytes" units="KB">
   <obsolete>
-    Deprecated 12/2014. Moved to SB2.PrefixSetKilobytes.SideEffectFreeWhitelist.
+    Deprecated 12/2014. Moved to
+    SB2.PrefixSetSizeKilobytes.SideEffectFreeWhitelist.
   </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>
@@ -61909,7 +61922,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="IPBlacklist" label="IPBlacklist"/>
   <suffix name="UnwantedSoftware" label="UnwantedSoftware"/>
   <affected-histogram name="SB2.DatabaseSizeKilobytes"/>
-  <affected-histogram name="SB2.PrefixSetKilobytes"/>
+  <affected-histogram name="SB2.PrefixSetSizeKilobytes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">
