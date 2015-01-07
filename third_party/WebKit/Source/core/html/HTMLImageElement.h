@@ -43,6 +43,8 @@ public:
 
     static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&);
     static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&);
+    static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width);
     static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();

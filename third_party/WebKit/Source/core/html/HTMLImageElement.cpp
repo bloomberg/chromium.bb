@@ -142,13 +142,26 @@ void HTMLImageElement::notifyViewportChanged()
     selectSourceURL(ImageLoader::UpdateSizeChanged);
 }
 
+PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document)
+{
+    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
+    image->m_elementCreatedByParser = false;
+    return image.release();
+}
+
+PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width)
+{
+    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
+    image->setWidth(width);
+    image->m_elementCreatedByParser = false;
+    return image.release();
+}
+
 PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
 {
     RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
-    if (width)
-        image->setWidth(width);
-    if (height)
-        image->setHeight(height);
+    image->setWidth(width);
+    image->setHeight(height);
     image->m_elementCreatedByParser = false;
     return image.release();
 }
