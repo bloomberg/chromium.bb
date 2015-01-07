@@ -47,7 +47,7 @@ static base::LazyInstance<base::internal::LazySysInfoValue<
 // from Chrome we work around this by defining a weak stub here, which uses
 // dlsym to but ensures that Chrome uses the real system
 // implementatation when loaded.  http://crbug.com/392191.
-int __system_property_get(const char* name, char* value) {
+BASE_EXPORT int __system_property_get(const char* name, char* value) {
   return g_lazy_real_system_property_get.Get().value()(name, value);
 }
 
