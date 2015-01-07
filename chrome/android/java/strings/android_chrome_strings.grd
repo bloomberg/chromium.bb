@@ -332,6 +332,26 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Certificate Viewer
       </message>
 
+      <!-- Sign-in strings -->
+      <message name="IDS_ADD_ACCOUNT_TITLE" desc="Title for add Google account dialog [CHAR-LIMIT=40]">
+        Add a Google Account
+      </message>
+      <message name="IDS_ADD_ACCOUNT_MESSAGE" desc="Message to display for add Google account dialog">
+        You have not yet set up a Google Account on this device
+      </message>
+      <message name="IDS_ADD_ACCOUNT_CONTINUE" desc="Continue button for add Google account dialog [CHAR-LIMIT=20]">
+        Continue
+      </message>
+      <message name="IDS_SIGNOUT_TITLE" desc="Title for sign out of Chrome dialog [CHAR-LIMIT=40]">
+        Sign out of Chrome
+      </message>
+      <message name="IDS_SIGNOUT_MESSAGE" desc="Message to display for sign out of Chrome dialog">
+        The data stored on this device as well as the data stored in your Google Account will remain in both places. However, new data or changes you make to your data will not be synchronized between them.
+      </message>
+      <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
+        You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.
+      </message>
+
       <!-- Sync error strings -->
       <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">
         Sync error
