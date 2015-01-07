@@ -276,20 +276,6 @@ def ParseConfigFile(filename):
   return config
 
 
-def IsComponentBuild(mini_installer_path):
-  """ Invokes the mini_installer asking whether it is a component build.
-
-  Args:
-    mini_installer_path: The path to mini_installer.exe.
-
-  Returns:
-    True if the mini_installer is a component build, False otherwise.
-  """
-  query_command = [ mini_installer_path, '--query-component-build' ]
-  exit_status = subprocess.call(query_command)
-  return exit_status == 0
-
-
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--build-dir', default='out',
@@ -320,26 +306,21 @@ def main():
 
   # Set the env var used by mini_installer.exe to decide to not show UI.
   os.environ['MINI_INSTALLER_TEST'] = '1'
-  is_component_build = IsComponentBuild(mini_installer_path)
-  if not is_component_build:
-    config = ParseConfigFile(args.config)
+  config = ParseConfigFile(args.config)
 
-    variable_expander = VariableExpander(mini_installer_path)
-    RunCleanCommand(args.force_clean, variable_expander)
-    for test in config.tests:
-      # If tests were specified via |tests|, their names are formatted like so:
-      test_name = '%s/%s/%s' % (InstallerTest.__module__,
-                                InstallerTest.__name__,
-                                test['name'])
-      if not args.test or test_name in args.test:
-        suite.addTest(InstallerTest(test['name'], test['traversal'], config,
-                                    variable_expander, args.quiet))
+  variable_expander = VariableExpander(mini_installer_path)
+  RunCleanCommand(args.force_clean, variable_expander)
+  for test in config.tests:
+    # If tests were specified via |tests|, their names are formatted like so:
+    test_name = '%s/%s/%s' % (InstallerTest.__module__,
+                              InstallerTest.__name__,
+                              test['name'])
+    if not args.test or test_name in args.test:
+      suite.addTest(InstallerTest(test['name'], test['traversal'], config,
+                                  variable_expander, args.quiet))
 
   verbosity = 2 if not args.quiet else 1
   result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
-  if is_component_build:
-    sys.stderr.write('Component build is currently unsupported by the '
-                     'mini_installer: http://crbug.com/377839\n')
   if args.write_full_results_to:
     with open(args.write_full_results_to, 'w') as fp:
       json.dump(_FullResults(suite, result, {}), fp, indent=2)

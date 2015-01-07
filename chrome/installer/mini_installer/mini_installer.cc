@@ -368,6 +368,24 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
   return TRUE;
 }
 
+#if defined(COMPONENT_BUILD)
+// An EnumResNameProc callback that writes the resource |name| to disk in the
+// directory |base_path_ptr| (which must end with a path separator).
+BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
+                                       const wchar_t* type,
+                                       wchar_t* name,
+                                       LONG_PTR base_path_ptr) {
+  const wchar_t* base_path = reinterpret_cast<const wchar_t*>(base_path_ptr);
+  PathString full_path;
+
+  PEResource resource(name, type, module);
+  return (resource.IsValid() &&
+          full_path.assign(base_path) &&
+          full_path.append(name) &&
+          resource.WriteToDisk(full_path.get()));
+}
+#endif
+
 // Finds and writes to disk resources of various types. Returns false
 // if there is a problem in writing any resource to disk. setup.exe resource
 // can come in one of three possible forms:
@@ -377,6 +395,9 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
 // If setup.exe is present in more than one form, the precedence order is
 // BN < BL < B7
 // For more details see chrome/tools/build/win/create_installer_archive.py.
+// For component builds (where setup.ex_ is always used), all files stored as
+// uncompressed 'BN' resources are also extracted. This is generally the set of
+// DLLs/resources needed by setup.exe to run.
 bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
                            const wchar_t* base_path, PathString* archive_path,
                            PathString* setup_path) {
@@ -462,6 +483,13 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
       }
     }
 
+#if defined(COMPONENT_BUILD)
+    // Extract the (uncompressed) modules required by setup.exe.
+    if (!::EnumResourceNames(module, kBinResourceType, WriteResourceToDirectory,
+                             reinterpret_cast<LONG_PTR>(base_path)))
+      return false;
+#endif
+
     return success;
   }
 
@@ -510,7 +538,13 @@ bool RunSetup(const Configuration& configuration, const wchar_t* archive_path,
 
   // Append the command line param for chrome archive file
   if (!cmd_line.append(L" --") ||
+#if defined(COMPONENT_BUILD)
+      // For faster developer turnaround, the component build generates
+      // uncompressed archives.
+      !cmd_line.append(kCmdUncompressedArchive) ||
+#else
       !cmd_line.append(kCmdInstallArchive) ||
+#endif
       !cmd_line.append(L"=\"") ||
       !cmd_line.append(archive_path) ||
       !cmd_line.append(L"\""))
@@ -589,8 +623,8 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
   return false;
 }
 
-// Creates and returns a temporary directory that can be used to extract
-// mini_installer payload.
+// Creates and returns a temporary directory in |work_dir| that can be used to
+// extract mini_installer payload. |work_dir| ends with a path separator.
 bool GetWorkDir(HMODULE module, PathString* work_dir) {
   PathString base_path;
   DWORD len = ::GetTempPath(base_path.capacity(), base_path.get());
@@ -757,17 +791,6 @@ bool ShouldDeleteExtractedFiles() {
 // Main function. First gets a working dir, unpacks the resources and finally
 // executes setup.exe to do the install/upgrade.
 ProcessExitCode WMain(HMODULE module) {
-#if defined(COMPONENT_BUILD)
-  if (::GetEnvironmentVariable(L"MINI_INSTALLER_TEST", NULL, 0) == 0) {
-    static const wchar_t kComponentBuildIncompatibleMessage[] =
-        L"mini_installer.exe is incompatible with the component build, please"
-        L" run setup.exe with the same command line instead. See"
-        L" http://crbug.com/127233#c17 for details.";
-    ::MessageBox(NULL, kComponentBuildIncompatibleMessage, NULL, MB_ICONERROR);
-    return GENERIC_ERROR;
-  }
-#endif
-
   // Always start with deleting potential leftovers from previous installations.
   // This can make the difference between success and failure.  We've seen
   // many installations out in the field fail due to out of disk space problems
@@ -782,17 +805,6 @@ ProcessExitCode WMain(HMODULE module) {
   Configuration configuration;
   if (!configuration.Initialize())
     return exit_code;
-
-  if (configuration.query_component_build()) {
-    // Exit immediately with a generic success exit code (0) to indicate
-    // component build and a generic failure exit code (1) to indicate static
-    // build. This is used by the tests in /src/chrome/test/mini_installer/.
-#if defined(COMPONENT_BUILD)
-    return SUCCESS_EXIT_CODE;
-#else
-    return GENERIC_ERROR;
-#endif
-  }
 
   // If the --cleanup switch was specified on the command line, then that means
   // we should only do the cleanup and then exit.
