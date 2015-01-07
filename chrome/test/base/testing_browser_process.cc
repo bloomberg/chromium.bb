@@ -433,8 +433,9 @@ void TestingBrowserProcess::SetBrowserPolicyConnector(
 
 void TestingBrowserProcess::SetSafeBrowsingService(
     SafeBrowsingService* sb_service) {
-#if !defined(OS_IOS)
+#if defined(OS_IOS)
   NOTIMPLEMENTED();
+#else
   sb_service_ = sb_service;
 #endif
 }
