@@ -21,7 +21,6 @@ namespace {
 
 int kParamActivePeriodInDaysValue = 7;
 int kParamExperimentLengthInDaysValue = 365;
-const char kParamBubbleStatusValue[] = "show_bubble";
 const char kGroupShowBubbleWithClock[] = "ShowBubbleWithClock";
 const char kGroupNeverShowBubbleWithClock[] = "NeverShowBubbleWithClock";
 
@@ -33,7 +32,7 @@ void SetupShowBubbleWithClockExperimentGroup() {
       base::IntToString(kParamActivePeriodInDaysValue);
   params[kParamExperimentLengthInDays] =
       base::IntToString(kParamExperimentLengthInDaysValue);
-  params[kParamBubbleStatus] = kParamBubbleStatusValue;
+  params[kParamBubbleStatus] = kParamBubbleStatusValueWhenShouldShow;
   ASSERT_TRUE(variations::AssociateVariationParams(
       kExperimentName, kGroupShowBubbleWithClock, params));
 }

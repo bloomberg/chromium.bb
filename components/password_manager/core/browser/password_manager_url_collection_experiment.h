@@ -43,9 +43,12 @@ extern const char kParamExperimentLengthInDays[];
 // The bubble is shown only once and only within a certain period. The length of
 // the period is the value of the experiment parameter |kParamTimePeriodInDays|.
 extern const char kParamActivePeriodInDays[];
-/// The name of the experiment parameter, value of which defines whether
+// The name of the experiment parameter, value of which defines whether
 // the bubble should appear or not.
 extern const char kParamBubbleStatus[];
+
+// The value of the experiment parameter, when bubble should appear.
+extern const char kParamBubbleStatusValueWhenShouldShow[];
 
 }  // namespace urls_collection_experiment
 }  // namespace password_manager

@@ -18,7 +18,7 @@ namespace urls_collection_experiment {
 
 namespace {
 
-const char kExperimentStartDate[] = "Mon, 15 Dec 00:00:00 2014 GMT";
+const char kExperimentStartDate[] = "Mon, 12 Jan 00:00:00 2015 GMT";
 
 // A safe default value. Using this will not show the bubble.
 const int kDefaultValueForStartingDayFactor = -1;
@@ -62,6 +62,7 @@ const char kExperimentName[] = "AskToSubmitURLBubble";
 const char kParamExperimentLengthInDays[] = "experiment_length_in_days";
 const char kParamActivePeriodInDays[] = "experiment_active_for_user_period";
 const char kParamBubbleStatus[] = "show_bubble_status";
+const char kParamBubbleStatusValueWhenShouldShow[] = "show";
 
 void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
@@ -94,7 +95,7 @@ base::Time DetermineStartOfActivityPeriod(PrefService* prefs,
 bool ShouldShowBubbleWithClock(PrefService* prefs, base::Clock* clock) {
   std::string show_bubble =
       variations::GetVariationParamValue(kExperimentName, kParamBubbleStatus);
-  if (show_bubble == "show_bubble")
+  if (show_bubble == kParamBubbleStatusValueWhenShouldShow)
     return ShouldShowBubbleInternal(prefs, clock);
   // "Do not show" is the default case.
   return false;
