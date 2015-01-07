@@ -22,6 +22,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -259,6 +260,11 @@ public class Shell extends LinearLayout {
         mIsFullscreen = enterFullscreen;
         LinearLayout toolBar = (LinearLayout) findViewById(R.id.toolbar);
         toolBar.setVisibility(enterFullscreen ? GONE : VISIBLE);
+
+        if (!mIsFullscreen) {
+            ContentVideoView videoView = ContentVideoView.getContentVideoView();
+            if (videoView != null) videoView.exitFullscreen(false);
+        }
     }
 
     @CalledByNative
