@@ -1010,7 +1010,7 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
 void WrenchMenuModel::CreateCutCopyPasteMenu() {
   AddSeparator(ui::LOWER_SEPARATOR);
 
-#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in Toolbar.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
@@ -1034,7 +1034,7 @@ void WrenchMenuModel::CreateZoomMenu() {
   // This menu needs to be enclosed by separators.
   AddSeparator(ui::LOWER_SEPARATOR);
 
-#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in Toolbar.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
