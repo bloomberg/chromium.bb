@@ -40,6 +40,21 @@ enum GpuTracerType {
   kTracerTypeDisjointTimer
 };
 
+// Central accesser to CPU Time
+class GPU_EXPORT CPUTime
+    : public base::RefCounted<CPUTime> {
+ public:
+  CPUTime();
+
+  virtual int64 GetCurrentTime();
+
+ protected:
+  virtual ~CPUTime();
+  friend class base::RefCounted<CPUTime>;
+
+  DISALLOW_COPY_AND_ASSIGN(CPUTime);
+};
+
 // Marker structure for a Trace.
 struct TraceMarker {
   TraceMarker(const std::string& category, const std::string& name);
@@ -51,10 +66,11 @@ struct TraceMarker {
 };
 
 // Traces GPU Commands.
-class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
+class GPU_EXPORT GPUTracer
+    : public base::SupportsWeakPtr<GPUTracer> {
  public:
   explicit GPUTracer(gles2::GLES2Decoder* decoder);
-  ~GPUTracer();
+  virtual ~GPUTracer();
 
   // Scheduled processing in decoder begins.
   bool BeginDecoding();
@@ -69,17 +85,22 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
   // End the last started trace marker.
   bool End(GpuTracerSource source);
 
-  bool IsTracing();
+  virtual bool IsTracing();
 
   // Retrieve the name of the current open trace.
   // Returns empty string if no current open trace.
   const std::string& CurrentCategory() const;
   const std::string& CurrentName() const;
 
- private:
+ protected:
   // Trace Processing.
   scoped_refptr<GPUTrace> CreateTrace(const std::string& category,
                                       const std::string& name);
+  virtual scoped_refptr<Outputter> CreateOutputter(const std::string& name);
+  virtual scoped_refptr<CPUTime> CreateCPUTime();
+  virtual GpuTracerType DetermineTracerType();
+  virtual void PostTask();
+
   void Process();
   void ProcessTraces();
 
@@ -87,6 +108,7 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
   void IssueProcessTask();
 
   scoped_refptr<Outputter> outputter_;
+  scoped_refptr<CPUTime> cpu_time_;
   std::vector<TraceMarker> markers_[NUM_TRACER_SOURCES];
   std::deque<scoped_refptr<GPUTrace> > traces_;
 
@@ -107,10 +129,18 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
 
 class Outputter : public base::RefCounted<Outputter> {
  public:
-  virtual void Trace(const std::string& category,
-                     const std::string& name,
-                     int64 start_time,
-                     int64 end_time) = 0;
+  virtual void TraceDevice(const std::string& category,
+                           const std::string& name,
+                           int64 start_time,
+                           int64 end_time) = 0;
+
+  virtual void TraceServiceBegin(const std::string& category,
+                                 const std::string& name,
+                                 void* id) = 0;
+
+  virtual void TraceServiceEnd(const std::string& category,
+                               const std::string& name,
+                               void* id) = 0;
 
  protected:
   virtual ~Outputter() {}
@@ -120,10 +150,18 @@ class Outputter : public base::RefCounted<Outputter> {
 class TraceOutputter : public Outputter {
  public:
   static scoped_refptr<TraceOutputter> Create(const std::string& name);
-  void Trace(const std::string& category,
-             const std::string& name,
-             int64 start_time,
-             int64 end_time) override;
+  void TraceDevice(const std::string& category,
+                   const std::string& name,
+                   int64 start_time,
+                   int64 end_time) override;
+
+  void TraceServiceBegin(const std::string& category,
+                         const std::string& name,
+                         void* id) override;
+
+  void TraceServiceEnd(const std::string& category,
+                       const std::string& name,
+                       void* id) override;
 
  protected:
   friend class base::RefCounted<Outputter>;
@@ -140,6 +178,7 @@ class GPU_EXPORT GPUTrace
     : public base::RefCounted<GPUTrace> {
  public:
   GPUTrace(scoped_refptr<Outputter> outputter,
+           scoped_refptr<CPUTime> cpu_time,
            const std::string& category,
            const std::string& name,
            int64 offset,
@@ -165,6 +204,7 @@ class GPU_EXPORT GPUTrace
   std::string category_;
   std::string name_;
   scoped_refptr<Outputter> outputter_;
+  scoped_refptr<CPUTime> cpu_time_;
 
   int64 offset_;
   int64 start_time_;
