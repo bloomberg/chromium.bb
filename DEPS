@@ -262,7 +262,7 @@ deps = {
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
 
   'src/third_party/libaddressinput/src':
-    Var('chromium_git') + '/external/libaddressinput.git' + '@' + '678a7f55a2ae7ccf417b4809e602b808b56a8ddb',
+    Var('chromium_git') + '/external/libaddressinput.git' + '@' + '61f63da7ae6fa469138d60dec5d6bbecc6ab43d6',
 
   # These are all at libphonenumber r728.
   'src/third_party/libphonenumber/src/phonenumbers':

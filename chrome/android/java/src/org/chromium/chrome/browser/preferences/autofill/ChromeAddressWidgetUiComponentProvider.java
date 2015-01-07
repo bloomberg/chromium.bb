@@ -59,6 +59,9 @@ class ChromeAddressWidgetUiComponentProvider extends AddressWidgetUiComponentPro
                 context.getString(com.android.i18n.addressinput.R.string.i18n_address_line1_label),
                 com.android.i18n.addressinput.R.string.libaddressinput_address_line_1_label);
         mI18nLabelMap.put(
+                context.getString(com.android.i18n.addressinput.R.string.i18n_pin_code_label),
+                com.android.i18n.addressinput.R.string.libaddressinput_pin_code_label);
+        mI18nLabelMap.put(
                 context.getString(com.android.i18n.addressinput.R.string.i18n_postal_code_label),
                 com.android.i18n.addressinput.R.string.libaddressinput_postal_code_label);
         mI18nLabelMap.put(
