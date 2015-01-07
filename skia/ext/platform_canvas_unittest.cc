@@ -4,17 +4,7 @@
 
 // TODO(awalker): clean up the const/non-const reference handling in this test
 
-#include "skia/ext/platform_canvas.h"
-
-#include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "skia/ext/platform_device.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 
 #if defined(OS_MACOSX)
 #import <ApplicationServices/ApplicationServices.h>
@@ -23,6 +13,15 @@
 #if !defined(OS_WIN)
 #include <unistd.h>
 #endif
+
+#include "base/memory/scoped_ptr.h"
+#include "skia/ext/platform_canvas.h"
+#include "skia/ext/platform_device.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace skia {
 
@@ -68,12 +67,8 @@ bool VerifyRect(const PlatformCanvas& canvas,
 // rectangle. Basically, we're just checking to make sure that the pixels in the
 // middle are of rect_color and pixels in the corners are of canvas_color.
 bool VerifyRoundedRect(const PlatformCanvas& canvas,
-                       uint32_t canvas_color,
-                       uint32_t rect_color,
-                       int x,
-                       int y,
-                       int w,
-                       int h) {
+                       uint32_t canvas_color, uint32_t rect_color,
+                       int x, int y, int w, int h) {
   SkBaseDevice* device = skia::GetTopDevice(canvas);
   const SkBitmap& bitmap = device->accessBitmap(false);
   SkAutoLockPixels lock(bitmap);
@@ -131,7 +126,7 @@ void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
 }
 #else
 void DrawNativeRect(PlatformCanvas& canvas, int x, int y, int w, int h) {
-  NOTIMPLEMENTED();
+  notImplemented();
 }
 #endif
 

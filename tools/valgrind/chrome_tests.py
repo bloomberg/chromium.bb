@@ -446,9 +446,6 @@ class ChromeTests:
                                "--ui-test-action-timeout=60000",
                                "--ui-test-action-max-timeout=150000"])
 
-  def TestSkia(self):
-    return self.SimpleTest("skia", "skia_unittests")
-
   def TestSql(self):
     return self.SimpleTest("chrome", "sql_unittests")
 
@@ -709,7 +706,6 @@ class ChromeTests:
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
     "sandbox": TestLinuxSandbox, "sandbox_linux_unittests": TestLinuxSandbox,
-    "skia": TestSkia,            "skia_unittests": TestSkia,
     "sql": TestSql,              "sql_unittests": TestSql,
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "sync_integration_tests": TestSyncIntegration,

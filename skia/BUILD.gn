@@ -7,9 +7,6 @@ import("//build/config/ui.gni")
 if (cpu_arch == "arm") {
   import("//build/config/arm.gni")
 }
-if (is_android) {
-  import("//build/config/android/rules.gni")
-}
 
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
@@ -712,47 +709,4 @@ source_set("skia_opts") {
   ]
 
   visibility = [ ":skia" ]
-}
-
-test("skia_unittests") {
-  sources = [
-    "ext/analysis_canvas_unittest.cc",
-    "ext/bitmap_platform_device_mac_unittest.cc",
-    "ext/convolver_unittest.cc",
-    "ext/image_operations_unittest.cc",
-    "ext/pixel_ref_utils_unittest.cc",
-    "ext/platform_canvas_unittest.cc",
-    "ext/recursive_gaussian_convolution_unittest.cc",
-    "ext/refptr_unittest.cc",
-    "ext/skia_utils_ios_unittest.mm",
-    "ext/skia_utils_mac_unittest.mm",
-    "ext/vector_canvas_unittest.cc",
-  ]
-
-  if (!is_win) {
-    sources -= [ "ext/vector_canvas_unittest.cc" ]
-  }
-
-  if (!is_win && !is_mac) {
-    sources -= [ "ext/platform_canvas_unittest.cc" ]
-  }
-
-  deps = [
-    ":skia",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//testing/gtest",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-}
-
-if (is_android) {
-  # GYP: //skia/skia_tests.gyp:skia_unittests_apk
-  unittest_apk("skia_unittests_apk") {
-    unittests_dep = ":skia_unittests"
-    deps = [
-      ":skia_unittests",
-    ]
-  }
 }

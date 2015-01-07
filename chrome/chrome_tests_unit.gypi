@@ -1418,6 +1418,17 @@
       '../components/search_engines/template_url_service_sync_unittest.cc',
       '../components/search_engines/template_url_service_unittest.cc',
 
+      '../skia/ext/analysis_canvas_unittest.cc',
+      '../skia/ext/bitmap_platform_device_mac_unittest.cc',
+      '../skia/ext/convolver_unittest.cc',
+      '../skia/ext/image_operations_unittest.cc',
+      '../skia/ext/pixel_ref_utils_unittest.cc',
+      '../skia/ext/platform_canvas_unittest.cc',
+      '../skia/ext/recursive_gaussian_convolution_unittest.cc',
+      '../skia/ext/refptr_unittest.cc',
+      '../skia/ext/skia_utils_ios_unittest.mm',
+      '../skia/ext/skia_utils_mac_unittest.mm',
+      '../skia/ext/vector_canvas_unittest.cc',
       '../testing/gtest_mac_unittest.mm',
       '../third_party/zlib/google/zip_reader_unittest.cc',
       '../third_party/zlib/google/zip_unittest.cc',
@@ -2467,6 +2478,11 @@
             'tools/convert_dict/convert_dict.gyp:convert_dict_lib',
           ],
         }],
+        ['OS!="win" and OS!="mac"', {
+          'sources!': [
+            '../skia/ext/platform_canvas_unittest.cc',
+          ],
+        }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
             'browser/media_galleries/fileapi/itunes_file_util_unittest.cc',
@@ -2545,6 +2561,7 @@
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
             'test/data/resource.rc',
+            '../skia/ext/vector_canvas_unittest.cc',
           ],
         }],
         ['OS=="android" or OS=="ios"', {
