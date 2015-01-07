@@ -170,13 +170,23 @@ bool TegraV4L2Device::Initialize() {
   return true;
 }
 
+bool TegraV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
+  return v4l2_pixfmt == V4L2_PIX_FMT_NV12M;
+}
+
 EGLImageKHR TegraV4L2Device::CreateEGLImage(EGLDisplay egl_display,
                                             EGLContext egl_context,
                                             GLuint texture_id,
                                             gfx::Size /* frame_buffer_size */,
                                             unsigned int buffer_index,
-                                            size_t /* planes_count */) {
+                                            uint32_t v4l2_pixfmt,
+                                            size_t /* num_v4l2_planes */) {
   DVLOG(3) << "CreateEGLImage()";
+  if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
+    LOG(ERROR) << "Unsupported V4L2 pixel format";
+    return EGL_NO_IMAGE_KHR;
+  }
+
   EGLint attr = EGL_NONE;
   EGLImageKHR egl_image =
       eglCreateImageKHR(egl_display,
@@ -208,13 +218,6 @@ uint32 TegraV4L2Device::PreferredInputFormat() {
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kEncoder);
   return V4L2_PIX_FMT_YUV420M;
-}
-
-uint32 TegraV4L2Device::PreferredOutputFormat() {
-  // TODO(posciak): We should support "dontcare" returns here once we
-  // implement proper handling (fallback, negotiation) for this in users.
-  CHECK_EQ(type_, kDecoder);
-  return V4L2_PIX_FMT_NV12M;
 }
 
 }  //  namespace content

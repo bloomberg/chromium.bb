@@ -67,6 +67,7 @@ static gfx::Size SampleSize(VideoFrame::Format format, size_t plane) {
         case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
         case VideoFrame::NATIVE_TEXTURE:
+        case VideoFrame::ARGB:
           break;
       }
   }
@@ -91,7 +92,13 @@ static gfx::Size CommonAlignment(VideoFrame::Format format) {
 // 2 for the UV plane in NV12.
 static int BytesPerElement(VideoFrame::Format format, size_t plane) {
   DCHECK(VideoFrame::IsValidPlane(plane, format));
-  return (format == VideoFrame::NV12 && plane == VideoFrame::kUVPlane) ? 2 : 1;
+  if (format == VideoFrame::ARGB)
+    return 4;
+
+  if (format == VideoFrame::NV12 && plane == VideoFrame::kUVPlane)
+    return 2;
+
+  return 1;
 }
 
 // Rounds up |coded_size| if necessary for |format|.
@@ -109,12 +116,25 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp) {
-  DCHECK(format != VideoFrame::UNKNOWN &&
-         format != VideoFrame::NV12 &&
-         format != VideoFrame::NATIVE_TEXTURE);
+  switch (format) {
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12A:
+    case VideoFrame::YV12J:
+    case VideoFrame::YV24:
+      break;
+
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NV12:
+    case VideoFrame::NATIVE_TEXTURE:
 #if defined(VIDEO_HOLE)
-  DCHECK(format != VideoFrame::HOLE);
+    case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
+    case VideoFrame::ARGB:
+      NOTIMPLEMENTED();
+      return nullptr;
+  }
 
   // Since we're creating a new YUV frame (and allocating memory for it
   // ourselves), we can pad the requested |coded_size| if necessary if the
@@ -159,6 +179,8 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "NV12";
     case VideoFrame::YV24:
       return "YV24";
+    case VideoFrame::ARGB:
+      return "ARGB";
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
   return "";
@@ -202,6 +224,7 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
     case VideoFrame::YV12A:
     case VideoFrame::NV12:
     case VideoFrame::YV16:
+    case VideoFrame::ARGB:
       // Check that software-allocated buffer formats are aligned correctly and
       // not empty.
       const gfx::Size alignment = CommonAlignment(format);
@@ -304,6 +327,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
   if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
     return NULL;
 
+  // TODO(posciak): This is not exactly correct, it's possible for one
+  // buffer to contain more than one plane.
   if (dmabuf_fds.size() != NumPlanes(format)) {
     LOG(FATAL) << "Not enough dmabuf fds provided!";
     return NULL;
@@ -522,6 +547,8 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
       return 0;
+    case VideoFrame::ARGB:
+      return 1;
     case VideoFrame::NV12:
       return 2;
     case VideoFrame::YV12:
@@ -554,11 +581,15 @@ gfx::Size VideoFrame::PlaneSize(Format format,
                                 const gfx::Size& coded_size) {
   DCHECK(IsValidPlane(plane, format));
 
-  // Align to multiple-of-two size overall. This ensures that non-subsampled
-  // planes can be addressed by pixel with the same scaling as the subsampled
-  // planes.
-  const int width = RoundUp(coded_size.width(), 2);
-  const int height = RoundUp(coded_size.height(), 2);
+  int width = coded_size.width();
+  int height = coded_size.height();
+  if (format != VideoFrame::ARGB) {
+    // Align to multiple-of-two size overall. This ensures that non-subsampled
+    // planes can be addressed by pixel with the same scaling as the subsampled
+    // planes.
+    width = RoundUp(width, 2);
+    height = RoundUp(height, 2);
+  }
 
   const gfx::Size subsample = SampleSize(format, plane);
   DCHECK(width % subsample.width() == 0);
@@ -570,7 +601,6 @@ gfx::Size VideoFrame::PlaneSize(Format format,
 size_t VideoFrame::PlaneAllocationSize(Format format,
                                        size_t plane,
                                        const gfx::Size& coded_size) {
-  // VideoFrame formats are (so far) all YUV and 1 byte per sample.
   return PlaneSize(format, plane, coded_size).GetArea();
 }
 
@@ -578,9 +608,9 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
 int VideoFrame::PlaneHorizontalBitsPerPixel(Format format, size_t plane) {
   DCHECK(IsValidPlane(plane, format));
   const int bits_per_element = 8 * BytesPerElement(format, plane);
-  const int pixels_per_element = SampleSize(format, plane).width();
-  DCHECK(bits_per_element % pixels_per_element == 0);
-  return bits_per_element / pixels_per_element;
+  const int horiz_pixels_per_element = SampleSize(format, plane).width();
+  DCHECK_EQ(bits_per_element % horiz_pixels_per_element, 0);
+  return bits_per_element / horiz_pixels_per_element;
 }
 
 // static

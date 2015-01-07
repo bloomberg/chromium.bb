@@ -40,6 +40,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     kMaxPlanes = 4,
 
     kYPlane = 0,
+    kARGBPlane = kYPlane,
     kUPlane = 1,
     kUVPlane = kUPlane,
     kVPlane = 2,
@@ -63,7 +64,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     YV12J = 7,  // JPEG color range version of YV12
     NV12 = 8,  // 12bpp 1x1 Y plane followed by an interleaved 2x2 UV plane.
     YV24 = 9,  // 24bpp YUV planar, no subsampling.
-    FORMAT_MAX = YV24,  // Must always be equal to largest entry logged.
+    ARGB = 10,  // 32bpp ARGB, 1 plane.
+    // Please update UMA histogram enumeration when adding new formats here.
+    FORMAT_MAX = ARGB,  // Must always be equal to largest entry logged.
   };
 
   // Returns the name of a Format as a string.

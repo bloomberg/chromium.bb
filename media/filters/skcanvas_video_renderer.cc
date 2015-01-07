@@ -52,6 +52,7 @@ bool IsYUV(media::VideoFrame::Format format) {
 #if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
+    case VideoFrame::ARGB:
       return false;
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
@@ -73,6 +74,7 @@ bool IsJPEGColorSpace(media::VideoFrame::Format format) {
 #if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
+    case VideoFrame::ARGB:
       return false;
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
@@ -198,7 +200,6 @@ void ConvertVideoFrameToRGBPixels(
       break;
 
     case media::VideoFrame::NATIVE_TEXTURE: {
-      DCHECK_EQ(video_frame->format(), media::VideoFrame::NATIVE_TEXTURE);
       SkBitmap tmp;
       tmp.installPixels(
           SkImageInfo::MakeN32Premul(video_frame->visible_rect().width(),
@@ -208,6 +209,8 @@ void ConvertVideoFrameToRGBPixels(
       video_frame->ReadPixelsFromNativeTexture(tmp);
       break;
     }
+
+    case media::VideoFrame::ARGB:
     default:
       NOTREACHED();
       break;
