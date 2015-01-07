@@ -196,7 +196,7 @@ class ContentDecryptorDelegate {
   bool DeserializeAudioFrames(PP_Resource audio_frames,
                               size_t data_size,
                               media::SampleFormat sample_format,
-                              media::Decryptor::AudioBuffers* frames);
+                              media::Decryptor::AudioFrames* frames);
 
   void SatisfyAllPendingCallbacksOnError();
 

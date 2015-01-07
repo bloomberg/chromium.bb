@@ -76,7 +76,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // Callback for Decryptor::DecryptAndDecodeAudio().
   void DeliverFrame(int buffer_size,
                     Decryptor::Status status,
-                    const Decryptor::AudioBuffers& frames);
+                    const Decryptor::AudioFrames& frames);
 
   // Callback for the |decryptor_| to notify this object that a new key has been
   // added.
@@ -86,7 +86,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   void DoReset();
 
   // Sets timestamps for |frames| and then passes them to |output_cb_|.
-  void ProcessDecodedFrames(const Decryptor::AudioBuffers& frames);
+  void ProcessDecodedFrames(const Decryptor::AudioFrames& frames);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

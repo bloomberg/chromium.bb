@@ -1036,7 +1036,7 @@ void ContentDecryptorDelegate::DeliverSamples(
 
   Decryptor::AudioDecodeCB audio_decode_cb = audio_decode_cb_.ResetAndReturn();
 
-  const Decryptor::AudioBuffers empty_frames;
+  const Decryptor::AudioFrames empty_frames;
 
   Decryptor::Status status =
       PpDecryptResultToMediaDecryptorStatus(sample_info->result);
@@ -1048,7 +1048,7 @@ void ContentDecryptorDelegate::DeliverSamples(
   media::SampleFormat sample_format =
       PpDecryptedSampleFormatToMediaSampleFormat(sample_info->format);
 
-  Decryptor::AudioBuffers audio_frame_list;
+  Decryptor::AudioFrames audio_frame_list;
   if (!DeserializeAudioFrames(audio_frames,
                               sample_info->data_size,
                               sample_format,
@@ -1071,7 +1071,7 @@ void ContentDecryptorDelegate::CancelDecode(Decryptor::StreamType stream_type) {
       audio_input_resource_ = NULL;
       if (!audio_decode_cb_.is_null())
         audio_decode_cb_.ResetAndReturn().Run(Decryptor::kSuccess,
-                                              Decryptor::AudioBuffers());
+                                              Decryptor::AudioFrames());
       break;
     case Decryptor::kVideo:
       // Release the shared memory as it can still be in use by the plugin.
@@ -1160,7 +1160,7 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
     PP_Resource audio_frames,
     size_t data_size,
     media::SampleFormat sample_format,
-    Decryptor::AudioBuffers* frames) {
+    Decryptor::AudioFrames* frames) {
   DCHECK(frames);
   EnterResourceNoLock<PPB_Buffer_API> enter(audio_frames, true);
   if (!enter.succeeded())
@@ -1249,7 +1249,7 @@ void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
     video_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
 
   if (!audio_decode_cb_.is_null()) {
-    const media::Decryptor::AudioBuffers empty_frames;
+    const media::Decryptor::AudioFrames empty_frames;
     audio_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError,
                                           empty_frames);
   }

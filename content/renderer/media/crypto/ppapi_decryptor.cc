@@ -316,7 +316,7 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
   DVLOG(3) << __FUNCTION__;
   if (!CdmDelegate() ||
       !CdmDelegate()->DecryptAndDecodeAudio(encrypted, audio_decode_cb)) {
-    audio_decode_cb.Run(kError, AudioBuffers());
+    audio_decode_cb.Run(kError, AudioFrames());
   }
 }
 
