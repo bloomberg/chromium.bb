@@ -376,20 +376,14 @@ void LaunchSelLdr(PP_Instance instance,
     return;
   }
 
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (!load_manager) {
-    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
-    base::SharedMemory::CloseHandle(launch_result.crash_info_shmem_handle);
-    return;
-  }
-  load_manager->set_nonsfi(PP_ToBool(uses_nonsfi_mode));
-
   if (!error_message_string.empty()) {
     if (PP_ToBool(main_service_runtime)) {
-      load_manager->ReportLoadError(PP_NACL_ERROR_SEL_LDR_LAUNCH,
-                                    "ServiceRuntime: failed to start",
-                                    error_message_string);
+      NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
+      if (load_manager) {
+        load_manager->ReportLoadError(PP_NACL_ERROR_SEL_LDR_LAUNCH,
+                                      "ServiceRuntime: failed to start",
+                                      error_message_string);
+      }
     }
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
@@ -407,6 +401,14 @@ void LaunchSelLdr(PP_Instance instance,
     g_instance_info.Get()[instance] = instance_info;
 
   *(static_cast<NaClHandle*>(imc_handle)) = ToNativeHandle(result_socket);
+
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
+  DCHECK(load_manager);
+  if (!load_manager) {
+    PostPPCompletionCallback(callback, PP_ERROR_FAILED);
+    base::SharedMemory::CloseHandle(launch_result.crash_info_shmem_handle);
+    return;
+  }
 
   // Store the crash information shared memory handle.
   load_manager->set_crash_info_shmem_handle(
@@ -679,13 +681,6 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
   // Fast path only works for installed file URLs.
   GURL gurl(file_url);
   if (!gurl.SchemeIs("chrome-extension"))
-    return PP_kInvalidFileHandle;
-
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (!load_manager)
-    return PP_kInvalidFileHandle;
-  if (load_manager->nonsfi())
     return PP_kInvalidFileHandle;
 
   content::PepperPluginInstance* plugin_instance =
