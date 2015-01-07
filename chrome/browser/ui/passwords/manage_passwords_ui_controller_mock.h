@@ -49,13 +49,15 @@ class ManagePasswordsUIControllerMock
 
   void UpdateBubbleAndIconVisibility() override;
 
+  base::TimeDelta Elapsed() const override;
+
   // Sneaky setters for testing.
   void SetPasswordFormMap(const autofill::ConstPasswordFormMap& map) {
     password_form_map_ = map;
   }
   void SetState(password_manager::ui::State state) { state_ = state; }
 
-  void SetTimer(base::ElapsedTimer* timer) { timer_.reset(timer); }
+  void SetElapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
 
   // True if this controller is installed on |web_contents()|.
   bool IsInstalled() const;
@@ -67,6 +69,7 @@ class ManagePasswordsUIControllerMock
   bool saved_password_;
   bool never_saved_password_;
   bool choose_credential_;
+  base::TimeDelta elapsed_;
 
   autofill::PasswordForm pending_password_;
 

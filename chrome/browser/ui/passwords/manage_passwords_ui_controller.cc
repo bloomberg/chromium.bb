@@ -93,6 +93,10 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 #endif
 }
 
+base::TimeDelta ManagePasswordsUIController::Elapsed() const {
+  return timer_ ? timer_->Elapsed() : base::TimeDelta::Max();
+}
+
 void ManagePasswordsUIController::OnAskToReportURL(const GURL& url) {
   origin_ = url;
   state_ = password_manager::ui::ASK_USER_REPORT_URL_STATE;
@@ -258,7 +262,7 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
 
   // Don't do anything if a navigation occurs before a user could reasonably
   // interact with the password bubble.
-  if (timer_ && timer_->Elapsed() < base::TimeDelta::FromSeconds(1))
+  if (Elapsed() < base::TimeDelta::FromSeconds(1))
     return;
 
   // This allows "Allow to collect URL?" bubble to outlive the coming

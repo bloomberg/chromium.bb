@@ -6,7 +6,7 @@
 #define BASE_TIMER_ELAPSED_TIMER_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -15,10 +15,9 @@ namespace base {
 class BASE_EXPORT ElapsedTimer {
  public:
   ElapsedTimer();
-  virtual ~ElapsedTimer() {}
 
   // Returns the time elapsed since object construction.
-  virtual TimeDelta Elapsed() const;
+  TimeDelta Elapsed() const;
 
  private:
   TimeTicks begin_;

@@ -29,19 +29,6 @@ namespace {
 const int64 kSlowNavigationDelayInMS = 2000;
 const int64 kQuickNavigationDelayInMS = 500;
 
-class MockElapsedTimer : public base::ElapsedTimer {
- public:
-  MockElapsedTimer() {}
-  base::TimeDelta Elapsed() const override { return delta_; }
-
-  void Advance(int64 ms) { delta_ = base::TimeDelta::FromMilliseconds(ms); }
-
- private:
-  base::TimeDelta delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockElapsedTimer);
-};
-
 }  // namespace
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
@@ -183,9 +170,8 @@ TEST_F(ManagePasswordsUIControllerTest, QuickNavigations) {
   // if a navigation occurs too quickly for a user to reasonably have been
   // able to interact with the bubble. This happens on `accounts.google.com`,
   // for instance.
-  scoped_ptr<MockElapsedTimer> timer(new MockElapsedTimer());
-  timer->Advance(kQuickNavigationDelayInMS);
-  controller()->SetTimer(timer.release());
+  controller()->SetElapsed(
+      base::TimeDelta::FromMilliseconds(kQuickNavigationDelayInMS));
   controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
                                      content::FrameNavigateParams());
   controller()->UpdateIconAndBubbleState(&mock);
@@ -208,9 +194,8 @@ TEST_F(ManagePasswordsUIControllerTest, SlowNavigations) {
 
   // Fake-navigate after a second. We expect the bubble's state to be reset
   // if a navigation occurs after this limit.
-  scoped_ptr<MockElapsedTimer> timer(new MockElapsedTimer());
-  timer->Advance(kSlowNavigationDelayInMS);
-  controller()->SetTimer(timer.release());
+  controller()->SetElapsed(
+      base::TimeDelta::FromMilliseconds(kSlowNavigationDelayInMS));
   controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
                                      content::FrameNavigateParams());
   controller()->UpdateIconAndBubbleState(&mock);

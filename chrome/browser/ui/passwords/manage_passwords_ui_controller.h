@@ -135,6 +135,10 @@ class ManagePasswordsUIController
   // manage passwords icon and bubble.
   virtual void UpdateBubbleAndIconVisibility();
 
+  // Returns the time elapsed since |timer_| was initialized,
+  // or base::TimeDelta::Max() if |timer_| was not initialized.
+  virtual base::TimeDelta Elapsed() const;
+
   // content::WebContentsObserver:
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -156,11 +160,6 @@ class ManagePasswordsUIController
   // the value in tests.
   password_manager::ui::State state_;
 
-  // Used to measure the amount of time on a page; if it's less than some
-  // reasonable limit, then don't close the bubble upon navigation. We create
-  // (and destroy) the timer in DidNavigateMainFrame.
-  scoped_ptr<base::ElapsedTimer> timer_;
-
  private:
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
@@ -170,6 +169,11 @@ class ManagePasswordsUIController
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
+
+  // Used to measure the amount of time on a page; if it's less than some
+  // reasonable limit, then don't close the bubble upon navigation. We create
+  // (and destroy) the timer in DidNavigateMainFrame.
+  scoped_ptr<base::ElapsedTimer> timer_;
 
   // Set by OnPasswordSubmitted() when the user submits a form containing login
   // information.  If the user responds to a subsequent "Do you want to save

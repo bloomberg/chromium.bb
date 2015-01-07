@@ -43,6 +43,10 @@ void ManagePasswordsUIControllerMock::UpdateBubbleAndIconVisibility() {
   OnBubbleShown();
 }
 
+base::TimeDelta ManagePasswordsUIControllerMock::Elapsed() const {
+  return elapsed_;
+}
+
 bool ManagePasswordsUIControllerMock::IsInstalled() const {
   return web_contents()->GetUserData(UserDataKey()) == this;
 }
