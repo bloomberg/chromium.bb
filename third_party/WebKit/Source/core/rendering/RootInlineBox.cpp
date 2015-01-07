@@ -678,8 +678,6 @@ void RootInlineBox::ascentAndDescentForBox(InlineBox* box, GlyphOverflowAndFallb
         setAscentAndDescent(ascent, descent, glyphOverflow->top, glyphOverflow->bottom, ascentDescentSet);
         affectsAscent = glyphOverflow->top - box->logicalTop() > 0;
         affectsDescent = glyphOverflow->bottom + box->logicalTop() > 0;
-        glyphOverflow->top = std::min(glyphOverflow->top, std::max(0, glyphOverflow->top - box->renderer().style(isFirstLineStyle())->fontMetrics().ascent(baselineType())));
-        glyphOverflow->bottom = std::min(glyphOverflow->bottom, std::max(0, glyphOverflow->bottom - box->renderer().style(isFirstLineStyle())->fontMetrics().descent(baselineType())));
     }
 
     if (includeMarginForBox(box)) {
