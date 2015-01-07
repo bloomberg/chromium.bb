@@ -701,7 +701,7 @@ function shouldHaveHadError(message)
 function asyncGC(callback) {
     GCController.collectAll();
     // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(callback, 1);
+    setTimeout(callback, 0);
 }
 
 function gc() {
@@ -726,7 +726,7 @@ function asyncMinorGC(callback) {
     else
         testFailed("Minor GC is available only when you enable the --expose-gc option in V8.");
     // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(callback, 1);
+    setTimeout(callback, 0);
 }
 
 function setPrintTestResultsLazily() {
