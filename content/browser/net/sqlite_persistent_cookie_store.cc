@@ -47,37 +47,10 @@ using base::Time;
 
 namespace {
 
-const char* kAllAtOnceLoad = "AllAtOnceLoad";
-const char* kDelayedLoad = "DelayedLoad";
-const char* kLoadStrategyFieldTrialName = "PersistentCookieStoreLoadStrategy";
-const int kModerateDelayMilliseconds = 200;
-const int kMinimalDelayMilliseconds = 0;
-
-// Whether instances of this class should use the default load strategy, which
-// is to sequentially load cookies one eTLD at a time with minimal delay
-// between loads.
-bool UseDefaultLoadStrategy() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kLoadStrategyFieldTrialName);
-  return group_name != kDelayedLoad && group_name != kAllAtOnceLoad;
-}
-
-// Whether instances of this class should use the delayed load strategy, which
-// is to sequentially load cookies one eTLD at a time with moderate delay
-// between loads.
-bool UseDelayedLoadStrategy() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kLoadStrategyFieldTrialName);
-  return group_name == kDelayedLoad;
-}
-
-// Whether instances of this class should use the all at once load strategy,
-// which is to load all cookies at once.
-bool UseAllAtOnceLoadStrategy() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kLoadStrategyFieldTrialName);
-  return group_name == kAllAtOnceLoad;
-}
+// The persistent cookie store is loaded into memory on eTLD at a time. This
+// variable controls the delay between loading eTLDs, so as to not overload the
+// CPU or I/O with these low priority requests immediately after start up.
+const int kLoadDelayMilliseconds = 200;
 
 }  // namespace
 
@@ -255,9 +228,6 @@ class SQLitePersistentCookieStore::Backend
                           const base::Closure& task);
   void PostClientTask(const tracked_objects::Location& origin,
                       const base::Closure& task);
-
-  // Loads all the cookies from the database at once.
-  bool LoadAllCookies();
 
   // Shared code between the different load strategies to be used after all
   // cookies have been loaded.
@@ -497,10 +467,7 @@ void SQLitePersistentCookieStore::Backend::LoadAndNotifyInBackground(
     PostClientTask(FROM_HERE, base::Bind(
         &Backend::CompleteLoadInForeground, this, loaded_callback, false));
   } else {
-    if (UseAllAtOnceLoadStrategy())
-      FinishedLoadingCookies(loaded_callback, true);
-    else
-      ChainLoadCookies(loaded_callback);
+    ChainLoadCookies(loaded_callback);
   }
 }
 
@@ -650,14 +617,6 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     return false;
   }
 
-  // When all cookies are going to be loaded at once, there is no longer any
-  // need to get all the domains and eTLDs.
-  if (UseAllAtOnceLoadStrategy()) {
-    bool success = LoadAllCookies();
-    initialized_ = success;
-    return success;
-  }
-
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Cookie.TimeInitializeDB",
       base::Time::Now() - start,
@@ -739,15 +698,10 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
   // then post a background task to continue chain-load;
   // Otherwise notify on client runner.
   if (load_success && keys_to_load_.size() > 0) {
-    bool use_delayed_load = UseDelayedLoadStrategy();
-    bool use_default_load = UseDefaultLoadStrategy();
-    DCHECK(use_delayed_load || use_default_load);
-    int delay_milliseconds = use_delayed_load ? kModerateDelayMilliseconds
-                                              : kMinimalDelayMilliseconds;
     bool success = background_task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&Backend::ChainLoadCookies, this, loaded_callback),
-        base::TimeDelta::FromMilliseconds(delay_milliseconds));
+        base::TimeDelta::FromMilliseconds(kLoadDelayMilliseconds));
     if (!success) {
       LOG(WARNING) << "Failed to post task from " << FROM_HERE.ToString()
                    << " to background_task_runner_.";
@@ -1274,42 +1228,6 @@ void SQLitePersistentCookieStore::Backend::PostClientTask(
     LOG(WARNING) << "Failed to post task from " << origin.ToString()
                  << " to client_task_runner_.";
   }
-}
-
-bool SQLitePersistentCookieStore::Backend::LoadAllCookies() {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-
-  sql::Statement smt;
-  if (restore_old_session_cookies_) {
-    smt.Assign(db_->GetCachedStatement(
-        SQL_FROM_HERE,
-        "SELECT creation_utc, host_key, name, value, encrypted_value, path, "
-        "expires_utc, secure, httponly, last_access_utc, has_expires, "
-        "persistent, priority FROM cookies"));
-  } else {
-    smt.Assign(db_->GetCachedStatement(
-        SQL_FROM_HERE,
-        "SELECT creation_utc, host_key, name, value, encrypted_value, path, "
-        "expires_utc, secure, httponly, last_access_utc, has_expires, "
-        "persistent, priority FROM cookies WHERE persistent = 1"));
-  }
-  if (!smt.is_valid()) {
-    smt.Clear();  // Disconnect smt_ref from db_.
-    meta_table_.Reset();
-    db_.reset();
-    return false;
-  }
-
-  std::vector<net::CanonicalCookie*> cookies;
-  MakeCookiesFromSQLStatement(&cookies, &smt);
-  smt.Reset(true);
-  {
-    base::AutoLock locked(lock_);
-    DCHECK(cookies_.empty());
-    cookies_.swap(cookies);
-  }
-
-  return true;
 }
 
 void SQLitePersistentCookieStore::Backend::FinishedLoadingCookies(
