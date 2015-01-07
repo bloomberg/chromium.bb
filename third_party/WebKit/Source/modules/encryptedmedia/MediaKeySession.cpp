@@ -57,8 +57,7 @@ namespace {
 
 // The list of possible values for |sessionType|.
 const char* kTemporary = "temporary";
-const char* kPersistentLicense = "persistent-license";
-const char* kPersistentReleaseMessage = "persistent-release-message";
+const char* kPersistent = "persistent";
 
 // Minimum and maximum length for session ids.
 enum {
@@ -294,7 +293,7 @@ private:
 
 MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* mediaKeys, const String& sessionType)
 {
-    ASSERT(isValidSessionType(sessionType));
+    ASSERT(sessionType == kTemporary || sessionType == kPersistent);
     RefPtrWillBeRawPtr<MediaKeySession> session = new MediaKeySession(scriptState, mediaKeys, sessionType);
     session->suspendIfNeeded();
     return session.get();
@@ -302,7 +301,7 @@ MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* me
 
 bool MediaKeySession::isValidSessionType(const String& sessionType)
 {
-    return (sessionType == kTemporary || sessionType == kPersistentLicense || sessionType == kPersistentReleaseMessage);
+    return (sessionType == kTemporary || sessionType == kPersistent);
 }
 
 MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, const String& sessionType)
@@ -458,12 +457,11 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
             scriptState, DOMException::create(InvalidAccessError, "The sessionId parameter is empty."));
     }
 
-    // 4. If this object's session type is not "persistent-license" or
-    //    "persistent-release-message", return a promise rejected with a
-    //    new DOMException whose name is InvalidAccessError.
-    if (m_sessionType != kPersistentLicense && m_sessionType != kPersistentReleaseMessage) {
+    // 4. If this object's session type is not "persistent", return a promise
+    //    rejected with a new DOMException whose name is "InvalidAccessError".
+    if (m_sessionType != kPersistent) {
         return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidAccessError, "The session type is not persistent."));
+            scriptState, DOMException::create(InvalidAccessError, "The session type is not 'persistent'."));
     }
 
     // 5. Let media keys be the MediaKeys object that created this object.
@@ -576,12 +574,11 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
             scriptState, DOMException::create(InvalidStateError, "The session is not callable."));
     }
 
-    // 2. If this object's session type is not "persistent-license" or
-    //    "persistent-release-message", return a promise rejected with a
-    //    new DOMException whose name is InvalidAccessError.
-    if (m_sessionType != kPersistentLicense && m_sessionType != kPersistentReleaseMessage) {
+    // 2. If this object's session type is not "persistent", return a promise
+    //    rejected with a new DOMException whose name is "InvalidAccessError".
+    if (m_sessionType != kPersistent) {
         return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidAccessError, "The session type is not persistent."));
+            scriptState, DOMException::create(InvalidAccessError, "The session type is not 'persistent'."));
     }
 
     // 3. If the Session Close algorithm has been run on this object, return a

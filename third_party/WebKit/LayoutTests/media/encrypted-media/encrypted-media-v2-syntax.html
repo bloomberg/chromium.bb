@@ -346,7 +346,6 @@
                 });
             }, 'Test MediaKeys generateRequest() exceptions.');
 
-            // FIXME: Add tests for 'persistent-release-message' once supported.
             var kLoadExceptionsTestCases = [
                 // Too few parameters.
                 {
@@ -355,60 +354,71 @@
                 },
                 {
                     exception: 'TypeError',
-                    func: function(mk2) { return mk2.createSession('persistent-license').load(); }
+                    func: function(mk2) { return mk2.createSession('persistent').load(); }
                 },
+                // Invalid parameters.
                 // 'temporary' sessions are never allowed, so always return
-                // 'InvalidAccessError'.
+                // 'InvalidAccessError'. For 'persistent' sessions, JS calls
+                // .toString() on the parameter if it is not already a string
+                // before passing it to code. So tests like mk6 or mk8 pass in
+                // "null" or "undefined" as the sessionId.
                 {
                     exception: 'InvalidAccessError',
                     func: function(mk3) { return mk3.createSession('temporary').load(''); }
                 },
                 {
                     exception: 'InvalidAccessError',
-                    func: function(mk4) { return mk4.createSession('temporary').load(1); }
+                    func: function(mk4) { return mk4.createSession('persistent').load(''); }
                 },
                 {
                     exception: 'InvalidAccessError',
-                    func: function(mk5) { return mk5.createSession('temporary').load('!@#$%^&*()'); }
-                },
-                {
-                    exception: 'InvalidAccessError',
-                    func: function(mk6) { return mk6.createSession('temporary').load('1234'); }
-                },
-                // Invalid parameters.
-                // For 'persistent' sessions, JS calls .toString() on the
-                // parameter if it is not already a string before passing it
-                // to code. So tests like mk8 or mk9 pass in "null" or
-                // "undefined" as the sessionId.
-                {
-                    exception: 'InvalidAccessError',
-                    func: function(mk7) { return mk7.createSession('persistent-license').load(''); }
+                    func: function(mk5) { return mk5.createSession('temporary').load(null); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function(mk8) { return mk8.createSession('persistent-license').load(null); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk9) { return mk9.createSession('persistent-license').load(undefined); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function(mk10) { return mk10.createSession('persistent-license').load(1); }
+                    func: function(mk6) { return mk6.createSession('persistent').load(null); }
                 },
                 {
                     exception: 'InvalidAccessError',
-                    func: function(mk11) { return mk11.createSession('persistent-license').load(new Uint8Array(0)); }
+                    func: function(mk7) { return mk7.createSession('temporary').load(undefined); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk8) { return mk8.createSession('persistent').load(undefined); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk9) { return mk9.createSession('temporary').load(1); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk10) { return mk10.createSession('persistent').load(1); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk11) { return mk11.createSession('temporary').load(new Uint8Array(0)); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk12) { return mk12.createSession('persistent').load(new Uint8Array(0)); }
                 },
                 // Invalid session id.
                 {
                     exception: 'InvalidAccessError',
-                    func: function(mk12) { return mk12.createSession('persistent-license').load('!@#$%^&*()'); }
+                    func: function(mk13) { return mk13.createSession('temporary').load('!@#$%^&*()'); }
                 },
-                // Valid session id (but not supported by Clear Key).
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk14) { return mk14.createSession('persistent').load('!@#$%^&*()'); }
+                },
+                // Valid session id (but not supported by ClearKey).
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk15) { return mk15.createSession('temporary').load('1234'); }
+                },
                 {
                     exception: 'NotSupportedError',
-                    func: function(mk13) { return mk13.createSession('persistent-license').load('1234'); }
+                    func: function(mk16) { return mk16.createSession('persistent').load('1234'); }
                 }
             ];
 
@@ -456,14 +466,7 @@
                     // Since this is optional, some Clear Key implementations
                     // will succeed, others will return a "NotSupportedError".
                     // Both are allowed results.
-                    func: function(mk) { return mk.createSession('persistent-license'); },
-                    isNotSupportedAllowed: true
-                },
-                {
-                    // Since this is optional, some Clear Key implementations
-                    // will succeed, others will return a "NotSupportedError".
-                    // Both are allowed results.
-                    func: function(mk) { return mk.createSession('persistent-release-message'); },
+                    func: function(mk) { return mk.createSession('persistent'); },
                     isNotSupportedAllowed: true
                 },
                 // Try additional parameter, which should be ignored.
@@ -524,12 +527,14 @@
             // success, if allowed. See comment above kCreateSessionTestCases.
             function test_generateRequest(testCase, mediaKeys, type, initData)
             {
+                var mediaKeySession;
                 try {
-                    var mediaKeySession = testCase.func.call(null, mediaKeys);
-                    return mediaKeySession.generateRequest(type, initData);
+                    mediaKeySession = testCase.func.call(null, mediaKeys);
                 } catch (e) {
                     assert_true(testCase.isNotSupportedAllowed);
+                    return new Promise(new Promise(function() {}));
                 }
+                return mediaKeySession.generateRequest(type, initData);
             }
 
             async_test(function(test)
@@ -766,19 +771,17 @@
                 }).catch(function(error) {
                     assert_equals(error.name, 'InvalidAccessError');
 
-                    // remove() on a closed persistent-license session should also fail.
-                    mediaKeySession = mediaKeys.createSession('persistent-license');
+                    // remove() on a closed persistent session should also fail.
+                    mediaKeySession = mediaKeys.createSession('persistent');
                     return mediaKeySession.generateRequest(type, initData);
                 }).then(function(result) {
                     return mediaKeySession.close();
                 }).then(function(result) {
                     return mediaKeySession.remove();
                 }).then(function(result) {
-                    assert_unreached('remove() should not succeed for closed persistent-license sessions');
+                    assert_unreached('remove() should not succeed for closed persistent sessions');
                 }).catch(function(error) {
                     assert_equals(error.name, 'InvalidStateError');
-
-                    // Add test for persistent-release-message once supported.
 
                     // Return something so the promise resolves.
                     return Promise.resolve();
@@ -811,10 +814,10 @@
 
             function create_remove_test(mediaKeys, type, initData)
             {
-                // Clear Key may not support persistent-license sessions.
+                // ClearKey may not support persistent sessions.
                 var mediaKeySession;
                 try {
-                    mediaKeySession = mediaKeys.createSession('persistent-license');
+                    mediaKeySession = mediaKeys.createSession('persistent');
                 } catch (error) {
                     // Not supported, so return a resolved promise.
                     assert_equals(error.name, 'NotSupportedError');
@@ -877,7 +880,7 @@
                     exception: 'InvalidAccessError',
                     func: function(mk) { return mk.setServerCertificate(new Uint8Array(0)); }
                 },
-                // Valid calls, but not supported by Clear Key.
+                // Valid calls, but not supported by ClearKey.
                 {
                     exception: 'NotSupportedError',
                     func: function(mk) { var cert = new Uint8Array(200); assert_true(ArrayBuffer.isView(cert)); return mk.setServerCertificate(cert); }
@@ -908,7 +911,7 @@
             }, 'Test MediaKeys setServerCertificate() exceptions.');
 
             // FIXME: Add test for successful setServerCertificate(). Note that
-            // Clear Key does not support it.
+            // ClearKey does not support it.
 
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
             // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.

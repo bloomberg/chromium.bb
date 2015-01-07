@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class ExecutionContext;
 class MediaKeySession;
 class ScriptState;
@@ -55,7 +54,7 @@ public:
     // implemented.
     const String& keySystem() const { return m_keySystem; }
 
-    MediaKeySession* createSession(ScriptState*, const String& sessionType, ExceptionState&);
+    MediaKeySession* createSession(ScriptState*, const String& sessionType);
 
     ScriptPromise setServerCertificate(ScriptState*, const DOMArrayPiece& serverCertificate);
 

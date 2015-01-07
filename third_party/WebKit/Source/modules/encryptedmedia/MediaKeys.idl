@@ -25,8 +25,7 @@
 
 enum SessionType {
     "temporary",
-    "persistent-license",
-    "persistent-release-message"
+    "persistent"
 };
 
 typedef (ArrayBuffer or ArrayBufferView) BufferSource;
@@ -36,7 +35,7 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
     GarbageCollected,
     TypeChecking=Interface
 ] interface MediaKeys {
-    [CallWith=ScriptState, RaisesException] MediaKeySession createSession(optional SessionType sessionType = "temporary");
+    [CallWith=ScriptState] MediaKeySession createSession(optional SessionType sessionType = "temporary");
 
     [CallWith=ScriptState] Promise<void> setServerCertificate(BufferSource serverCertificate);
 };
