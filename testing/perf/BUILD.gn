@@ -5,6 +5,7 @@
 source_set("perf") {
   sources = [
     "perf_test.cc",
+    "perf_test.h",
   ]
   deps = [
     "//base",

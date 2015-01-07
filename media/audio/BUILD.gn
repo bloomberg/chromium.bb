@@ -82,6 +82,8 @@ source_set("audio") {
     "audio_power_monitor.cc",
     "audio_power_monitor.h",
     "audio_source_diverter.h",
+    "clockless_audio_sink.cc",
+    "clockless_audio_sink.h",
     "fake_audio_consumer.cc",
     "fake_audio_consumer.h",
     "fake_audio_input_stream.cc",
@@ -246,8 +248,6 @@ source_set("audio") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "clockless_audio_sink.cc",
-    "clockless_audio_sink.h",
     "mock_audio_manager.cc",
     "mock_audio_manager.h",
     "mock_audio_source_callback.cc",

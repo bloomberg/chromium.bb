@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //third_party/safe_browsing:test_support
       'target_name': 'safe_browsing',
       'type': 'none',
       'sources': [

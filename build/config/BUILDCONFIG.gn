@@ -561,6 +561,9 @@ template("component") {
       if (defined(invoker.data)) {
         data = invoker.data
       }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      }
       if (defined(invoker.datadeps)) {
         datadeps = invoker.datadeps
       }
@@ -655,6 +658,9 @@ template("component") {
       }
       if (defined(invoker.data)) {
         data = invoker.data
+      }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
       }
       if (defined(invoker.datadeps)) {
         datadeps = invoker.datadeps
@@ -758,6 +764,9 @@ template("test") {
       if (defined(invoker.data)) {
         data = invoker.data
       }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      }
       if (defined(invoker.datadeps)) {
         datadeps = invoker.datadeps
       }
@@ -844,6 +853,9 @@ template("test") {
       }
       if (defined(invoker.data)) {
         data = invoker.data
+      }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
       }
       if (defined(invoker.datadeps)) {
         datadeps = invoker.datadeps

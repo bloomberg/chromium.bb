@@ -4,6 +4,7 @@
 {
   'targets': [
     {
+      # GN version: //chrome/test/perf
       'target_name': 'chrome_perf_test',
       'type': 'static_library',
       'sources': [

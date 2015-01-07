@@ -83,7 +83,6 @@
       'browser/browsing_data/browsing_data_remover_browsertest.cc',
       'browser/browsing_data/browsing_data_remover_test_util.cc',
       'browser/browsing_data/browsing_data_remover_test_util.h',
-      'browser/captive_portal/captive_portal_browsertest.cc',
       'browser/chrome_content_browser_client_browsertest.cc',
       'browser/chrome_main_browsertest.cc',
       'browser/chrome_plugin_browsertest.cc',
@@ -491,25 +490,6 @@
       'browser/ui/toolbar/browser_actions_bar_browsertest.h',
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
-      'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
-      'browser/ui/views/autofill/autofill_dialog_view_tester_views.h',
-      'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
-      'browser/ui/views/autofill/password_generation_popup_view_tester_views.cc',
-      'browser/ui/views/autofill/password_generation_popup_view_tester_views.h',
-      'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
-      'browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc',
-      'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
-      'browser/ui/views/frame/browser_view_browsertest.cc',
-      'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
-      'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
-      'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
-      'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
-      'browser/ui/views/select_file_dialog_extension_browsertest.cc',
-      'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
-      'browser/ui/views/toolbar/component_toolbar_actions_browsertest.cc',
-      'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
-      'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
-      'browser/ui/views/web_dialog_view_browsertest.cc',
       'browser/ui/webui/bidi_checker_web_ui_test.cc',
       'browser/ui/webui/bidi_checker_web_ui_test.h',
       'browser/ui/webui/bookmarks_ui_browsertest.cc',
@@ -586,6 +566,27 @@
       # TODO(craig): Rename this and run from base_unittests when the test
       # is safe to run there. See http://crbug.com/78722 for details.
       '../base/files/file_path_watcher_browsertest.cc',
+    ],
+    'chrome_browser_tests_views_sources': [
+      'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
+      'browser/ui/views/autofill/autofill_dialog_view_tester_views.h',
+      'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
+      'browser/ui/views/autofill/password_generation_popup_view_tester_views.cc',
+      'browser/ui/views/autofill/password_generation_popup_view_tester_views.h',
+      'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
+      'browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc',
+      'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
+      'browser/ui/views/frame/browser_view_browsertest.cc',
+      'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
+      'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
+      'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
+      'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
+      'browser/ui/views/select_file_dialog_extension_browsertest.cc',
+      'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
+      'browser/ui/views/toolbar/component_toolbar_actions_browsertest.cc',
+      'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
+      'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
+      'browser/ui/views/web_dialog_view_browsertest.cc',
     ],
     'chrome_browser_tests_chromeos_sources': [
       'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
@@ -2161,10 +2162,8 @@
             'FULL_SAFE_BROWSING',
           ],
         }],
-        ['enable_captive_portal_detection!=1', {
-          'sources/': [
-            ['exclude', '^browser/captive_portal/'],
-          ],
+        ['enable_captive_portal_detection==1', {
+          'sources': [ 'browser/captive_portal/captive_portal_browsertest.cc' ],
         }],
         ['enable_webrtc==0', {
           'sources!': [
@@ -2207,13 +2206,11 @@
             # ash environment to run these unit tests.
             #
             # TODO: enable these on windows and linux.
-            'browser/chromeos/system/tray_accessibility_browsertest.cc',
             'browser/ui/ash/accelerator_commands_browsertest.cc',
             'browser/ui/ash/accelerator_controller_browsertest.cc',
             'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
             'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
             'browser/ui/ash/shelf_browsertest.cc',
-            'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
             'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
           ],
         }],
@@ -2282,8 +2279,13 @@
         }],  # OS=="mac"
         ['OS=="mac" or OS=="win"', {
           'sources': [
+            'browser/extensions/api/networking_private/networking_private_apitest.cc',
+            'browser/extensions/api/networking_private/networking_private_service_client_apitest.cc',
             'browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc',
             'browser/media_galleries/fileapi/picasa_data_provider_browsertest.cc',
+          ],
+          'dependencies': [
+            '../components/components.gyp:wifi_test_support',
           ],
         }],
         ['os_posix == 0 or chromeos == 1', {
@@ -2307,31 +2309,16 @@
             }],
           ],
         }],
-        ['OS=="win" or OS == "mac"', {
-          'dependencies': [
-            '../components/components.gyp:wifi_test_support',
-          ],
-        }],
         ['chromeos == 1 and use_athena == 0', {
           'sources': [
             'browser/extensions/api/networking_private/networking_private_apitest.cc',
             'browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc',
           ],
         }],
-        ['OS=="win" or OS == "mac"', {
-          'sources': [
-            'browser/extensions/api/networking_private/networking_private_apitest.cc',
-            'browser/extensions/api/networking_private/networking_private_service_client_apitest.cc',
-          ],
-        }],
         ['toolkit_views==1', {
+          'sources': [ '<@(chrome_browser_tests_views_sources)' ],
           'dependencies': [
             '../ui/views/views.gyp:views',
-          ],
-        }, { # else: toolkit_views == 0
-          'sources/': [
-            ['exclude', '^../ui/views/'],
-            ['exclude', '^browser/ui/views/'],
           ],
         }],
         ['OS!="android" and OS!="ios" and use_athena==0', {

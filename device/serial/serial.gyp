@@ -91,7 +91,7 @@
       ],
     },
     {
-      # GN version: //device/serial:test_util
+      # GN version: //device/serial:test_support
       'target_name': 'device_serial_test_util',
       'type': 'static_library',
       'dependencies': [

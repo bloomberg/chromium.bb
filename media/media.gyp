@@ -1415,7 +1415,8 @@
       ],
     },
     {
-      # GN version: //media:test_support
+      # GN versions (it is split apart): //media:test_support,
+      # //media/base:test_support, and //media/audio:test_support
       'target_name': 'media_test_support',
       'type': 'static_library',
       'dependencies': [

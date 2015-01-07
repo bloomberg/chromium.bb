@@ -96,6 +96,7 @@ source_set("widevine_test_license_server") {
   if (is_chrome_branded && is_linux) {
     deps = [
       # TODO(GYP)
+      # This target should be removed and targets should have datadeps on this target:
       #"//third_party/widevine/test/license_server/license_server.gyp:test_license_server"
     ]
   }
