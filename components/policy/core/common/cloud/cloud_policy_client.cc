@@ -88,6 +88,7 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
 }
 
 void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
+                                 em::DeviceRegisterRequest::Flavor flavor,
                                  const std::string& auth_token,
                                  const std::string& client_id,
                                  const std::string& requisition,
@@ -124,6 +125,7 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
     request->set_requisition(requisition);
   if (!current_state_key.empty())
     request->set_server_backed_state_key(current_state_key);
+  request->set_flavor(flavor);
 
   request_job_->SetRetryCallback(
       base::Bind(&CloudPolicyClient::OnRetryRegister, base::Unretained(this)));

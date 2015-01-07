@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -111,12 +112,13 @@ void ConsumerEnrollmentHandler::OnOwnerAccessTokenAvailable(
   policy::DeviceCloudPolicyInitializer::AllowedDeviceModes device_modes;
   device_modes[policy::DEVICE_MODE_ENTERPRISE] = true;
 
+  EnrollmentConfig enrollment_config;
+  enrollment_config.mode = EnrollmentConfig::MODE_MANUAL;
   initializer->StartEnrollment(
       MANAGEMENT_MODE_CONSUMER_MANAGED, device_management_service_,
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_),
-      access_token,
-      device_modes,
+      enrollment_config, access_token, device_modes,
       base::Bind(&ConsumerEnrollmentHandler::OnEnrollmentCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
 }

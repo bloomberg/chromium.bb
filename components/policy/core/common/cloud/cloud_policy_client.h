@@ -111,6 +111,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // registration change or error notification.
   virtual void Register(
       enterprise_management::DeviceRegisterRequest::Type registration_type,
+      enterprise_management::DeviceRegisterRequest::Flavor flavor,
       const std::string& auth_token,
       const std::string& client_id,
       const std::string& requisition,

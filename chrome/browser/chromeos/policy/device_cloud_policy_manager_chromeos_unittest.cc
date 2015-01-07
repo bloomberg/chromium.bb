@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -427,9 +428,11 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
             profile_.get());
     ASSERT_TRUE(owner_settings_service);
 
+    EnrollmentConfig enrollment_config;
+    enrollment_config.mode = EnrollmentConfig::MODE_MANUAL;
     initializer_->StartEnrollment(
         management_mode_, &device_management_service_, owner_settings_service,
-        "auth token", modes,
+        enrollment_config, "auth token", modes,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();

@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
+#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -69,6 +70,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
       scoped_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+      const EnrollmentConfig& enrollment_config,
       const std::string& auth_token,
       const std::string& client_id,
       const std::string& requisition,
@@ -166,6 +168,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
+  EnrollmentConfig enrollment_config_;
   std::string auth_token_;
   std::string client_id_;
   std::string requisition_;

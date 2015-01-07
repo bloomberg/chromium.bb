@@ -319,8 +319,10 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
   if (error.state() == GoogleServiceAuthError::NONE) {
     // Start client registration. Either OnRegistrationStateChanged() or
     // OnClientError() will be called back.
-    client()->Register(em::DeviceRegisterRequest::USER, policy_token,
-                       std::string(), std::string(), std::string());
+    client()->Register(em::DeviceRegisterRequest::USER,
+                       em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
+                       policy_token, std::string(), std::string(),
+                       std::string());
   } else {
     // Failed to get a token, stop waiting and use an empty policy.
     CancelWaitForPolicyFetch();

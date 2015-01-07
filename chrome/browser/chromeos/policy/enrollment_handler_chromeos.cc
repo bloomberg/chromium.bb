@@ -40,6 +40,31 @@ const int kLockRetryTimeoutMs = 10 * 60 * 1000;  // 10 minutes.
 // testing DMServer implementations.
 const char kTestingRobotToken[] = "test-token";
 
+em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
+    policy::EnrollmentConfig::Mode mode) {
+  switch (mode) {
+    case policy::EnrollmentConfig::MODE_NONE:
+      break;
+    case policy::EnrollmentConfig::MODE_MANUAL:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL;
+    case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL_RENEW;
+    case policy::EnrollmentConfig::MODE_LOCAL_FORCED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_LOCAL_FORCED;
+    case policy::EnrollmentConfig::MODE_LOCAL_ADVERTISED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_LOCAL_ADVERTISED;
+    case policy::EnrollmentConfig::MODE_SERVER_FORCED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_SERVER_FORCED;
+    case policy::EnrollmentConfig::MODE_SERVER_ADVERTISED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_SERVER_ADVERTISED;
+    case policy::EnrollmentConfig::MODE_RECOVERY:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY;
+  }
+
+  NOTREACHED() << "Bad enrollment mode: " << mode;
+  return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL;
+}
+
 }  // namespace
 
 EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
@@ -50,6 +75,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
     scoped_ptr<CloudPolicyClient> client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+    const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
     const std::string& client_id,
     const std::string& requisition,
@@ -63,6 +89,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       owner_settings_service_(owner_settings_service),
       client_(client.Pass()),
       background_task_runner_(background_task_runner),
+      enrollment_config_(enrollment_config),
       auth_token_(auth_token),
       client_id_(client_id),
       requisition_(requisition),
@@ -245,8 +272,10 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
   CHECK_EQ(STEP_LOADING_STORE, enrollment_step_);
   if (store_->is_initialized()) {
     enrollment_step_ = STEP_REGISTRATION;
-    client_->Register(em::DeviceRegisterRequest::DEVICE, auth_token_,
-                      client_id_, requisition_, current_state_key_);
+    client_->Register(
+        em::DeviceRegisterRequest::DEVICE,
+        EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
+        auth_token_, client_id_, requisition_, current_state_key_);
   } else {
     // Do nothing. StartRegistration() will be called again from OnStoreLoaded()
     // after the CloudPolicyStore has initialized.
