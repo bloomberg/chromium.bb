@@ -23606,6 +23606,7 @@
             "mipsel-o32-generic"
         ],
         "build_type": "canary",
+        "chrome_sdk": true,
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Release Builds (canary) (internal)",
@@ -23627,7 +23628,6 @@
         "paygen_skip_delta_payloads": true,
         "push_image": true,
         "signer_tests": true,
-        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,

@@ -2652,11 +2652,11 @@ _non_testable_brillo_release.add_config('urara-release',
 )
 
 _release.add_config('mipsel-o32-generic-release',
-  brillo,
   non_testable_builder,
   boards=['mipsel-o32-generic'],
   paygen_skip_delta_payloads=True,
   afdo_use=False,
+  hw_tests=[],
 )
 
 _release.add_config('stumpy_moblab-release',
