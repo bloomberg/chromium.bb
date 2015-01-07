@@ -9,11 +9,6 @@
 
 namespace functions {
 
-namespace {
-
-
-}  // namespace
-
 const char kForEach[] = "foreach";
 const char kForEach_HelpShort[] =
     "foreach: Iterate over a list.";
@@ -46,6 +41,7 @@ const char kForEach_Help[] =
     "  a\n"
     "  b\n"
     "  c\n";
+
 Value RunForEach(Scope* scope,
                  const FunctionCallNode* function,
                  const ListNode* args_list,
