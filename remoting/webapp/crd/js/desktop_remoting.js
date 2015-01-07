@@ -261,11 +261,11 @@ remoting.DesktopRemoting.prototype.handleVideoStreamingStarted = function() {
 
 /**
  * @param {string} type The type of the extension message.
- * @param {string} data The payload of the extension message.
+ * @param {Object} message The parsed extension message data.
  * @return {boolean} Return true if the extension message was recognized.
  */
 remoting.DesktopRemoting.prototype.handleExtensionMessage = function(
-    type, data) {
+    type, message) {
   return false;
 };
 

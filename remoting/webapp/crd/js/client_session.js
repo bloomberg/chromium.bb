@@ -1723,13 +1723,13 @@ remoting.ClientSession.prototype.startStopRecording = function() {
 /**
  * Handles protocol extension messages.
  * @param {string} type Type of extension message.
- * @param {string} data Contents of the extension message.
+ * @param {Object} message The parsed extension message data.
  * @return {boolean} True if the message was recognized, false otherwise.
  */
 remoting.ClientSession.prototype.handleExtensionMessage =
-    function(type, data) {
+    function(type, message) {
   if (this.videoFrameRecorder_) {
-    return this.videoFrameRecorder_.handleMessage(type, data);
+    return this.videoFrameRecorder_.handleMessage(type, message);
   }
   return false;
 }

@@ -284,21 +284,17 @@ remoting.AppRemoting.prototype.handleVideoStreamingStarted = function() {
  * Called when an extension message needs to be handled.
  *
  * @param {string} type The type of the extension message.
- * @param {string} data The payload of the extension message.
+ * @param {Object} message The parsed extension message data.
  * @return {boolean} True if the extension message was recognized.
  */
-remoting.AppRemoting.prototype.handleExtensionMessage = function(type, data) {
-  var request = /** @type {Object} */base.jsonParseSafe(data);
-  if (typeof request != 'object') {
-    return false;
-  }
-
+remoting.AppRemoting.prototype.handleExtensionMessage = function(
+    type, message) {
   switch (type) {
 
     case 'openURL':
       // URL requests from the hosted app are untrusted, so disallow anything
       // other than HTTP or HTTPS.
-      var url = getStringAttr(request, 'url');
+      var url = getStringAttr(message, 'url');
       if (url.indexOf('http:') != 0 && url.indexOf('https:') != 0) {
         console.error('Bad URL: ' + url);
       } else {
@@ -307,13 +303,13 @@ remoting.AppRemoting.prototype.handleExtensionMessage = function(type, data) {
       return true;
 
     case 'onWindowRemoved':
-      var id = getNumberAttr(request, 'id');
+      var id = getNumberAttr(message, 'id');
       this.windowActivationMenu_.remove(id);
       return true;
 
     case 'onWindowAdded':
-      var id = getNumberAttr(request, 'id');
-      var title = getStringAttr(request, 'title');
+      var id = getNumberAttr(message, 'id');
+      var title = getStringAttr(message, 'title');
       this.windowActivationMenu_.add(id, title);
       return true;
 
@@ -322,15 +318,15 @@ remoting.AppRemoting.prototype.handleExtensionMessage = function(type, data) {
       return true;
 
     case 'setKeyboardLayouts':
-      var supportedLayouts = getArrayAttr(request, 'supportedLayouts');
-      var currentLayout = getStringAttr(request, 'currentLayout');
+      var supportedLayouts = getArrayAttr(message, 'supportedLayouts');
+      var currentLayout = getStringAttr(message, 'currentLayout');
       console.log('Current host keyboard layout: ' + currentLayout);
       console.log('Supported host keyboard layouts: ' + supportedLayouts);
       this.keyboardLayoutsMenu_.setLayouts(supportedLayouts, currentLayout);
       return true;
 
     case 'pingResponse':
-      var then = getNumberAttr(request, 'timestamp');
+      var then = getNumberAttr(message, 'timestamp');
       var now = new Date().getTime();
       this.contextMenu_.updateConnectionRTT(now - then);
       return true;

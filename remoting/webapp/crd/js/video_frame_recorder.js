@@ -52,17 +52,17 @@ remoting.VideoFrameRecorder.prototype.isRecording = function() {
 /**
  * Handles 'video-recorder' extension messages and returns true. Returns
  * false for all other message types.
+ *
  * @param {string} type Type of extension message.
- * @param {string} data Content of the extension message.
+ * @param {Object} message The parsed extension message data.
  * @return {boolean}
  */
 remoting.VideoFrameRecorder.prototype.handleMessage =
-    function(type, data) {
+    function(type, message) {
   if (type != 'video-recorder') {
     return false;
   }
 
-  var message = getJsonObjectFromString(data);
   var messageType = getStringAttr(message, 'type');
   var messageData = getStringAttr(message, 'data');
 
