@@ -1301,6 +1301,7 @@ crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 crbug.com/409534 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
+crbug.com/446744 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure Pass ]
 
 crbug.com/401902  virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
 
@@ -1503,6 +1504,8 @@ crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Fa
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
+crbug.com/446740 [ Debug ] virtual/display_list_2d_canvas/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout Crash ]
+crbug.com/446740 [ Release ] virtual/display_list_2d_canvas/fast/canvas/canvas-measure-text-rtl.html [ Pass Timeout ]
 
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 
@@ -1554,6 +1557,8 @@ crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/pixelated-canvas.html [ P
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-text-alignment.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/pixelated.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/check-stale-putImageData.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/shadow-offset-1.html [ Pass ImageOnlyFailure ]
 
 crbug.com/446420 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass ImageOnlyFailure ]
 crbug.com/446420 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass Crash ImageOnlyFailure ]
