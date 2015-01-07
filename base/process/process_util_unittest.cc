@@ -684,10 +684,8 @@ TEST_F(ProcessUtilTest, LaunchProcess) {
   // Test a non-trival value for clone_flags.
   // Don't test on Valgrind as it has limited support for clone().
   if (!RunningOnValgrind()) {
-    EXPECT_EQ(
-        "wibble\n",
-        TestLaunchProcess(
-            echo_base_test, env_changes, no_clear_environ, CLONE_FS | SIGCHLD));
+    EXPECT_EQ("wibble\n", TestLaunchProcess(echo_base_test, env_changes,
+                                            no_clear_environ, CLONE_FS));
   }
 
   EXPECT_EQ(

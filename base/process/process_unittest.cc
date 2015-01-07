@@ -7,10 +7,18 @@
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_LINUX)
+#include <errno.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -200,5 +208,42 @@ TEST_F(ProcessTest, SetProcessBackgroundedSelf) {
   int new_priority = process.GetPriority();
   EXPECT_EQ(old_priority, new_priority);
 }
+
+#if defined(OS_LINUX)
+const int kSuccess = 0;
+const int kFail = 1;
+
+MULTIPROCESS_TEST_MAIN(CheckPidProcess) {
+  const pid_t kInitPid = 1;
+  const pid_t pid = syscall(__NR_getpid);
+  if (pid != kInitPid) {
+    return kFail;
+  }
+
+  if (!RunningOnValgrind() && getpid() != pid) {
+    return kFail;
+  }
+
+  return kSuccess;
+}
+
+TEST_F(ProcessTest, CloneFlags) {
+  LaunchOptions options;
+  options.clone_flags = CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET;
+
+  const ProcessHandle proc = SpawnChildWithOptions("CheckPidProcess", options);
+  if (proc == kNullProcessHandle && errno == EINVAL) {
+    // Some of the namespace types are not supported.
+    return;
+  }
+
+  Process process(proc);
+  ASSERT_TRUE(process.IsValid());
+
+  int exit_code = kFail;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(kSuccess, exit_code);
+}
+#endif
 
 }  // namespace base

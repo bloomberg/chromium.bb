@@ -311,7 +311,17 @@ bool LaunchProcess(const std::vector<std::string>& argv,
     // and that signal handling follows the process-creation rules.
     RAW_CHECK(
         !(options.clone_flags & (CLONE_SIGHAND | CLONE_THREAD | CLONE_VM)));
-    pid = syscall(__NR_clone, options.clone_flags, 0, 0, 0);
+
+    // We specify a null ptid and ctid.
+    RAW_CHECK(
+        !(options.clone_flags &
+          (CLONE_CHILD_CLEARTID | CLONE_CHILD_SETTID | CLONE_PARENT_SETTID)));
+
+    // Since we use waitpid, we do not support custom termination signals in the
+    // clone flags.
+    RAW_CHECK((options.clone_flags & 0xff) == 0);
+
+    pid = ForkWithFlags(options.clone_flags | SIGCHLD, nullptr, nullptr);
   } else
 #endif
   {

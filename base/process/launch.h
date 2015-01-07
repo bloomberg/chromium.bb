@@ -115,6 +115,9 @@ struct BASE_EXPORT LaunchOptions {
 
 #if defined(OS_LINUX)
   // If non-zero, start the process using clone(), using flags as provided.
+  // Unlike in clone, clone_flags may not contain a custom termination signal
+  // that is sent to the parent when the child dies. The termination signal will
+  // always be set to SIGCHLD.
   int clone_flags;
 
   // By default, child processes will have the PR_SET_NO_NEW_PRIVS bit set. If
