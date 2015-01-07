@@ -64,6 +64,20 @@ class FakeCIDBConnection(object):
     self.buildTable.append(row)
     return build_id
 
+  def UpdateMetadata(self, build_id, metadata):
+    """See cidb.UpdateMetadata."""
+    d = metadata.GetDict()
+    versions = d.get('version') or {}
+    self.buildTable[build_id - 1].update(
+        {'chrome_version': versions.get('chrome'),
+         'milestone_version': versions.get('milestone'),
+         'platform_version': versions.get('platform'),
+         'full_version': versions.get('full'),
+         'sdk_version': d.get('sdk-versions'),
+         'toolchain_url': d.get('toolchain-url'),
+         'build_type': d.get('build_type')})
+    return 1
+
   def InsertCLActions(self, build_id, cl_actions, timestamp=None):
     """Insert a list of |cl_actions|."""
     if not cl_actions:
@@ -97,6 +111,10 @@ class FakeCIDBConnection(object):
            'status': status}
     self.buildStageTable[build_stage_id] = row
     return build_stage_id
+
+  def InsertBoardPerBuild(self, build_id, board):
+    # TODO(akeshet): Fill this placeholder.
+    pass
 
   def StartBuildStage(self, build_stage_id):
     if build_stage_id > len(self.buildStageTable):

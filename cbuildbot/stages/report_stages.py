@@ -269,6 +269,20 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
       for child_config in self._run.attrs.metadata.GetValue('child-configs'):
         db.InsertChildConfigPerBuild(build_id, child_config['name'])
 
+      # If this build has a master build, ensure that the master full_version
+      # is the same as this build's full_version. This is a sanity check to
+      # avoid bugs in master-slave logic.
+      master_id = self._run.attrs.metadata.GetDict().get('master_build_id')
+      if master_id is not None:
+        master_full_version = db.GetBuildStatus(master_id)['full_version']
+        my_full_version = self._run.attrs.metadata.GetValue('version').get(
+            'full')
+        if master_full_version != my_full_version:
+          raise failures_lib.MasterSlaveVersionMismatchFailure(
+              'Master build id %s has full_version %s, while slave version is '
+              '%s.' % (master_id, master_full_version, my_full_version))
+
+
 
 class ReportStage(generic_stages.BuilderStage,
                   generic_stages.ArchivingStageMixin):

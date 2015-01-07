@@ -11,22 +11,27 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
+from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import sync_stages_unittest
-from chromite.cbuildbot.stages import report_stages
-from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import cros_test_lib
-from chromite.lib import alerts
+from chromite.lib import fake_cidb
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import retry_stats
-
+from chromite.lib import toolchain
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
@@ -35,6 +40,51 @@ import mock
 
 # pylint: disable=protected-access
 
+class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTest):
+  """Tests that BuildReexecutionFinishedStage behaves as expected."""
+  def setUp(self):
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+    build_id = self.fake_db.InsertBuild(
+        'builder name', 'waterfall', 1, 'build config', 'bot hostname')
+
+    self._Prepare(build_id=build_id)
+
+    release_tag = '4815.0.0-rc1'
+    self._run.attrs.release_tag = '4815.0.0-rc1'
+    fake_versioninfo = manifest_version.VersionInfo(release_tag, '39')
+    self.PatchObject(gs.GSContext, 'Copy')
+    self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersionInfo',
+                     return_value=fake_versioninfo)
+    self.PatchObject(toolchain, 'GetToolchainsForBoard')
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.SetupMockCidb()
+
+  def testPerformStage(self):
+    """Test that a normal runs completes without error."""
+    self.RunStage()
+
+  def testMasterSlaveVersionMismatch(self):
+    """Test that master/slave version mismatch causes failure."""
+    master_release_tag = '9999.0.0-rc1'
+    master_build_id = self.fake_db.InsertBuild(
+        'master', 'waterfall', 2, 'master config', 'master hostname')
+    master_metadata = metadata_lib.CBuildbotMetadata()
+    master_metadata.UpdateKeyDictWithDict(
+        'version', {'full' : 'R39-9999.0.0-rc1',
+                    'milestone': '39',
+                    'platform': master_release_tag})
+    self._run.attrs.metadata.UpdateWithDict(
+        {'master_build_id': master_build_id})
+    self.fake_db.UpdateMetadata(master_build_id, master_metadata)
+
+    stage = self.ConstructStage()
+    with self.assertRaises(failures_lib.StepFailure):
+      stage.Run()
+
+  def ConstructStage(self):
+    return report_stages.BuildReexecutionFinishedStage(self._run)
 
 class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests that BuildStartStage behaves as expected."""

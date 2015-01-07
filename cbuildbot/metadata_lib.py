@@ -54,6 +54,12 @@ class _DummyLock(object):
   def release(self):
     pass
 
+  def __exit__(self, exc_type, exc_value, traceback):
+    pass
+
+  def __enter__(self):
+    pass
+
 class CBuildbotMetadata(object):
   """Class for recording metadata about a run."""
 
