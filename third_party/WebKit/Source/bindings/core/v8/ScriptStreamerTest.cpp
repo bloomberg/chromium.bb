@@ -67,7 +67,7 @@ public:
         : m_scope(v8::Isolate::GetCurrent())
         , m_settings(Settings::create())
         , m_resourceRequest("http://www.streaming-test.com/")
-        , m_resource(new ScriptResource(m_resourceRequest, "UTF-8"))
+        , m_resource(ScriptResource::create(m_resourceRequest, "UTF-8").leakPtr())
         , m_pendingScript(PendingScriptWrapper::create(0, m_resource)) // Takes ownership of m_resource.
     {
         m_settings->setV8ScriptStreamingEnabled(true);

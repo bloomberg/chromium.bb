@@ -45,8 +45,11 @@ public:
 class ScriptResource final : public TextResource {
 public:
     typedef ScriptResourceClient ClientType;
+    static PassOwnPtrWillBeRawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)
+    {
+        return adoptPtrWillBeNoop(new ScriptResource(request, charset));
+    }
 
-    ScriptResource(const ResourceRequest&, const String& charset);
     virtual ~ScriptResource();
 
     virtual void didAddClient(ResourceClient*) override;
@@ -59,6 +62,8 @@ public:
     bool mimeTypeAllowedByNosniff() const;
 
 private:
+    ScriptResource(const ResourceRequest&, const String& charset);
+
     AtomicString m_script;
 };
 
