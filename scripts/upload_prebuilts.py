@@ -827,6 +827,9 @@ def main(argv):
       acl = portage_util.FindOverlayFile(_GOOGLESTORAGE_GSUTIL_FILE,
                                          board=target.board_variant,
                                          buildroot=options.build_path)
+      if acl is None:
+        cros_build_lib.Die('No Google Storage ACL file %s found in %s overlay.',
+                           _GOOGLESTORAGE_GSUTIL_FILE, target.board_variant)
 
   binhost_conf_dir = None
   if options.binhost_conf_dir:
