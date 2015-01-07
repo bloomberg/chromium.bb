@@ -13,8 +13,6 @@
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ATHENA_EXPORT, bool);
-
 namespace athena {
 namespace {
 

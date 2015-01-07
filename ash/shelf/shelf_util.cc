@@ -7,7 +7,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfID);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfItemDetails*);
 
 namespace ash {

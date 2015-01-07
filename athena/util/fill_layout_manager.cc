@@ -8,9 +8,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
-// This is to avoid creating type definitoin for kAlwaysFillWindowKey.
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ATHENA_EXPORT, bool);
-
 namespace athena {
 namespace {
 

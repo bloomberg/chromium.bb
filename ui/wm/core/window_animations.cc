@@ -38,11 +38,9 @@
 #include "ui/wm/core/wm_core_switches.h"
 #include "ui/wm/public/animation_host.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationType)
 DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationTransition)
 DECLARE_WINDOW_PROPERTY_TYPE(float)
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(WM_EXPORT, bool)
 
 namespace wm {
 namespace {
