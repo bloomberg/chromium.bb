@@ -171,35 +171,26 @@ void RecordFullscreenStyle(FullscreenStyle style) {
 
 - (NSRect)window:(NSWindow*)window
 willPositionSheet:(NSWindow*)sheet
-       usingRect:(NSRect)defaultSheetRect {
+       usingRect:(NSRect)defaultSheetLocation {
   // Position the sheet as follows:
+  //  - If the bookmark bar is shown (attached to the normal toolbar), position
+  //    the sheet below the bookmark bar.
   //  - If the bookmark bar is hidden or shown as a bubble (on the NTP when the
   //    bookmark bar is disabled), position the sheet immediately below the
   //    normal toolbar.
-  //  - If the bookmark bar is shown (attached to the normal toolbar), position
-  //    the sheet below the bookmark bar.
   //  - If the bookmark bar is currently animating, position the sheet according
   //    to where the bar will be when the animation ends.
-  CGFloat defaultSheetY = defaultSheetRect.origin.y;
-  switch ([bookmarkBarController_ currentState]) {
-    case BookmarkBar::SHOW: {
-      NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
-      defaultSheetY = bookmarkBarFrame.origin.y;
-      break;
-    }
-    case BookmarkBar::HIDDEN:
-    case BookmarkBar::DETACHED: {
-      if ([self hasToolbar]) {
-        NSRect toolbarFrame = [[toolbarController_ view] frame];
-        defaultSheetY = toolbarFrame.origin.y;
-      } else {
-        // The toolbar is not shown in application mode. The sheet should be
-        // located at the top of the window, under the title of the window.
-        defaultSheetY = NSHeight([[window contentView] frame]) -
-                        defaultSheetRect.size.height;
-      }
-      break;
-    }
+  CGFloat defaultSheetY = defaultSheetLocation.origin.y;
+  if ([self supportsBookmarkBar] &&
+      [bookmarkBarController_ currentState] == BookmarkBar::SHOW) {
+    defaultSheetY = NSMinY([[bookmarkBarController_ view] frame]);
+  } else if ([self hasToolbar]) {
+    defaultSheetY = NSMinY([[toolbarController_ view] frame]);
+  } else {
+    // The toolbar is not shown in popup and application modes. The sheet
+    // should be located at the top of the window, under the title of the
+    // window.
+    defaultSheetY = NSMaxY([[window contentView] frame]);
   }
 
   // AppKit may shift the window up to fit the sheet on screen, but it will
@@ -217,8 +208,8 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat windowHeight = NSHeight([window frame]);
   defaultSheetY = std::min(defaultSheetY, windowHeight);
 
-  defaultSheetRect.origin.y = defaultSheetY;
-  return defaultSheetRect;
+  defaultSheetLocation.origin.y = defaultSheetY;
+  return defaultSheetLocation;
 }
 
 - (void)layoutSubviews {

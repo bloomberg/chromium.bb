@@ -492,36 +492,37 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   EXPECT_TRUE([controller() hasToolbar]);
   EXPECT_FALSE([controller() isBookmarkBarVisible]);
 
-  NSRect defaultAlertFrame = NSMakeRect(0, 0, 300, 200);
-  id sheet = MockWindowWithFrame(defaultAlertFrame);
+  id sheet = MockWindowWithFrame(NSMakeRect(0, 0, 300, 200));
   NSWindow* window = browser()->window()->GetNativeWindow();
-  NSRect alertFrame = [controller() window:window
-                         willPositionSheet:nil
-                                 usingRect:defaultAlertFrame];
+  NSRect contentFrame = [[window contentView] frame];
+  NSRect defaultLocation =
+      NSMakeRect(0, NSMaxY(contentFrame), NSWidth(contentFrame), 0);
+
+  NSRect sheetLocation = [controller() window:window
+                            willPositionSheet:nil
+                                    usingRect:defaultLocation];
   NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
-  EXPECT_EQ(NSMinY(alertFrame), NSMinY(toolbarFrame));
+  EXPECT_EQ(NSMinY(toolbarFrame), NSMinY(sheetLocation));
 
   // Open sheet with normal browser window, persistent bookmark bar.
   chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
   EXPECT_TRUE([controller() isBookmarkBarVisible]);
-  alertFrame = [controller() window:window
-                  willPositionSheet:sheet
-                          usingRect:defaultAlertFrame];
+  sheetLocation = [controller() window:window
+                     willPositionSheet:sheet
+                             usingRect:defaultLocation];
   NSRect bookmarkBarFrame = [[[controller() bookmarkBarController] view] frame];
-  EXPECT_EQ(NSMinY(alertFrame), NSMinY(bookmarkBarFrame));
+  EXPECT_EQ(NSMinY(bookmarkBarFrame), NSMinY(sheetLocation));
 
   // If the sheet is too large, it should be positioned at the top of the
   // window.
-  defaultAlertFrame = NSMakeRect(0, 0, 300, 2000);
-  sheet = MockWindowWithFrame(defaultAlertFrame);
-  alertFrame = [controller() window:window
-                  willPositionSheet:sheet
-                          usingRect:defaultAlertFrame];
-  EXPECT_EQ(NSMinY(alertFrame), NSHeight([window frame]));
+  sheet = MockWindowWithFrame(NSMakeRect(0, 0, 300, 2000));
+  sheetLocation = [controller() window:window
+                     willPositionSheet:sheet
+                             usingRect:defaultLocation];
+  EXPECT_EQ(NSHeight([window frame]), NSMinY(sheetLocation));
 
   // Reset the sheet's size.
-  defaultAlertFrame = NSMakeRect(0, 0, 300, 200);
-  sheet = MockWindowWithFrame(defaultAlertFrame);
+  sheet = MockWindowWithFrame(NSMakeRect(0, 0, 300, 200));
 
   // Make sure the profile does not have the bookmark visible so that
   // we'll create the shortcut window without the bookmark bar.
@@ -542,12 +543,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
 
   // Open sheet in an application window.
   [popupController showWindow:nil];
-  alertFrame = [popupController window:popupWindow
-                     willPositionSheet:sheet
-                             usingRect:defaultAlertFrame];
-  EXPECT_EQ(NSMinY(alertFrame),
-            NSHeight([[popupWindow contentView] frame]) -
-            defaultAlertFrame.size.height);
+  sheetLocation = [popupController window:popupWindow
+                        willPositionSheet:sheet
+                                usingRect:defaultLocation];
+  EXPECT_EQ(NSHeight([[popupWindow contentView] frame]), NSMinY(sheetLocation));
 
   // Close the application window.
   popup_browser->tab_strip_model()->CloseSelectedTabs();
