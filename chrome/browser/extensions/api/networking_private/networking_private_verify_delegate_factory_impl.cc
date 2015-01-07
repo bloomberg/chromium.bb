@@ -26,8 +26,9 @@ NetworkingPrivateVerifyDelegateFactoryImpl::CreateDelegate() {
   return make_scoped_ptr(new NetworkingPrivateVerifyDelegateChromeOS());
 #elif defined(OS_WIN) || defined(OSMACOSX)
   return make_scoped_ptr(new CryptoVerifyImpl());
-#endif
+#else
   return nullptr;
+#endif
 }
 
 }  // namespace extensions

@@ -13,13 +13,13 @@ def IsPatched():
   # script (because we know it's patched). Another case could be added here to
   # query the active VS installation and actually check the contents of xtree.
   # http://crbug.com/346399.
-  return os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', 1) == 0
+  return int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', 1)) == 1
 
 
 def DoMain(_):
   """Hook to be called from gyp without starting a separate python
   interpreter."""
-  return IsPatched()
+  return "1" if IsPatched() else "0"
 
 
 if __name__ == '__main__':
