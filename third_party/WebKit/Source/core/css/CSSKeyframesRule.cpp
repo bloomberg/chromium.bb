@@ -71,9 +71,11 @@ void StyleRuleKeyframes::wrapperRemoveKeyframe(unsigned index)
 
 int StyleRuleKeyframes::findKeyframeIndex(const String& key) const
 {
-    Vector<double> keys = *CSSParser::parseKeyframeKeyList(key);
+    OwnPtr<Vector<double>> keys = CSSParser::parseKeyframeKeyList(key);
+    if (!keys)
+        return -1;
     for (size_t i = m_keyframes.size(); i--; ) {
-        if (m_keyframes[i]->keys() == keys)
+        if (m_keyframes[i]->keys() == *keys)
             return i;
     }
     return -1;

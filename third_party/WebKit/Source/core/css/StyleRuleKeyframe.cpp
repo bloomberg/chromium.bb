@@ -36,7 +36,7 @@ bool StyleRuleKeyframe::setKeyText(const String& keyText)
     ASSERT(!keyText.isNull());
 
     OwnPtr<Vector<double> > keys = CSSParser::parseKeyframeKeyList(keyText);
-    if (keys->isEmpty())
+    if (!keys || keys->isEmpty())
         return false;
 
     m_keys = *keys;

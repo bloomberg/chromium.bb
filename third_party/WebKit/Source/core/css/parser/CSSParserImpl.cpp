@@ -121,6 +121,13 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
         styleSheet->parserAppendRule(rule);
 }
 
+PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
+{
+    Vector<CSSParserToken> tokens;
+    CSSTokenizer::tokenize(keyList, tokens);
+    return consumeKeyframeKeyList(tokens);
+}
+
 WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType ruleListType)
 {
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> result;
@@ -341,6 +348,27 @@ void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSProper
         return; // Parser error
     bool inViewport = ruleType == CSSRuleSourceData::VIEWPORT_RULE;
     CSSPropertyParser::parseValue(propertyID, important, &valueList, m_context, inViewport, m_parsedProperties, ruleType);
+}
+
+PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenRange range)
+{
+    OwnPtr<Vector<double>> result = adoptPtr(new Vector<double>);
+    while (true) {
+        range.consumeWhitespaceAndComments();
+        const CSSParserToken& token = range.consumeIncludingWhitespaceAndComments();
+        if (token.type() == PercentageToken && token.numericValue() >= 0 && token.numericValue() <= 100)
+            result->append(token.numericValue() / 100);
+        else if (token.type() == IdentToken && equalIgnoringCase(token.value(), "from"))
+            result->append(0);
+        else if (token.type() == IdentToken && equalIgnoringCase(token.value(), "to"))
+            result->append(1);
+        else
+            return nullptr; // Parser error, invalid value in keyframe selector
+        if (range.atEnd())
+            return result.release();
+        if (range.consume().type() != CommaToken)
+            return nullptr; // Parser error
+    }
 }
 
 } // namespace blink

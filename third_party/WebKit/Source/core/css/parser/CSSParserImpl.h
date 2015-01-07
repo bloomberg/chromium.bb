@@ -34,6 +34,8 @@ public:
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&);
     static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
 
+    static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
+
 private:
     enum RuleListType {
         TopLevelRuleList,
@@ -68,6 +70,8 @@ private:
     void consumeDeclarationList(CSSParserTokenRange, CSSRuleSourceData::Type);
     void consumeDeclaration(CSSParserTokenRange, CSSRuleSourceData::Type);
     void consumeDeclarationValue(CSSParserTokenRange, CSSPropertyID, bool important, CSSRuleSourceData::Type);
+
+    static PassOwnPtr<Vector<double>> consumeKeyframeKeyList(CSSParserTokenRange);
 
     // FIXME: Can we build StylePropertySets directly?
     // FIXME: Investigate using a smaller inline buffer
