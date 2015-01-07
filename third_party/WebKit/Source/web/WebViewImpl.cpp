@@ -3230,9 +3230,6 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth);
     }
 
-    if (pinchVirtualViewportEnabled())
-        view->resize(mainFrameSize());
-
     float newPageScaleFactor = pageScaleFactor();
     if (m_pageScaleConstraintsSet.needsReset() && m_pageScaleConstraintsSet.finalConstraints().initialScale != -1) {
         newPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().initialScale;
@@ -3241,11 +3238,6 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
     setPageScaleFactor(newPageScaleFactor);
 
     updateLayerTreeViewport();
-
-    // Relayout immediately to avoid violating the rule that needsLayout()
-    // isn't set at the end of a layout.
-    if (view->needsLayout())
-        view->layout();
 }
 
 void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
@@ -3953,6 +3945,16 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 
     if (m_pageScaleConstraintsSet.constraintsDirty())
         refreshPageScaleFactorAfterLayout();
+
+    FrameView* view = webframe->frame()->view();
+
+    if (pinchVirtualViewportEnabled())
+        view->resize(mainFrameSize());
+
+    // Relayout immediately to avoid violating the rule that needsLayout()
+    // isn't set at the end of a layout.
+    if (view->needsLayout())
+        view->layout();
 
     // In case we didn't have a size when the top controls were updated.
     didUpdateTopControls();
