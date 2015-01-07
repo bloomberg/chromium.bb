@@ -323,7 +323,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, Vec
         parseImageCandidatesFromSrcsetAttribute<UChar>(attribute, attribute.characters16(), attribute.length(), imageCandidates, document);
 }
 
-static int selectionLogic(Vector<ImageCandidate>& imageCandidates, float deviceScaleFactor, bool ignoreSrc)
+static unsigned selectionLogic(Vector<ImageCandidate>& imageCandidates, float deviceScaleFactor, bool ignoreSrc)
 {
     unsigned i = 0;
 
