@@ -122,6 +122,10 @@ class BuildStartStage(generic_stages.BuilderStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
+    if self._run.config['doc']:
+      cros_build_lib.PrintBuildbotLink('Builder documentation',
+                                       self._run.config['doc'])
+
     WriteBasicMetadata(self._run)
     d = self._run.attrs.metadata.GetDict()
 

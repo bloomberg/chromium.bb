@@ -650,6 +650,8 @@ _settings = dict(
   image_test=False,
 
 # =============================================================================
+# The documentation associated with the config.
+  doc=None,
 )
 
 
@@ -1089,6 +1091,8 @@ full = _config(
   trybot_list=True,
   description='Full Builds',
   image_test=True,
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+      'TOC-Continuous',
 )
 
 # Full builders with prebuilts.
@@ -1103,6 +1107,8 @@ pfq = _config(
   overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
   trybot_list=True,
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+      'TOC-Chrome-PFQ',
 )
 
 paladin = _config(
@@ -1117,6 +1123,7 @@ paladin = _config(
   images=['test'],
   chrome_sdk=True,
   chrome_sdk_build_chrome=False,
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
 )
 
 # Incremental builders are intended to test the developer workflow.
@@ -1126,6 +1133,8 @@ incremental = _config(
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
   description='Incremental Builds',
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+      'TOC-Continuous',
 )
 
 # This builds with more source available.
@@ -1168,6 +1177,8 @@ _cros_sdk = full_prebuilts.add_config('chromiumos-sdk',
   use_sdk=False,
   trybot_list=True,
   description='Build the SDK and all the cross-compilers',
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+      'TOC-Continuous',
 )
 
 asan = _config(
@@ -1178,6 +1189,8 @@ asan = _config(
   # Chrome binary, that update_engine can't handle in delta payloads due to
   # memory limits. Remove the following line once crbug.com/329248 is fixed.
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+      'TOC-ChromiumOS-SDK',
 )
 
 telemetry = _config(
@@ -1863,6 +1876,7 @@ pre_cq = paladin.derive(
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   description='Verifies compilation, building an image, and vm/unit tests '
               'if supported.',
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ',
 )
 
 # Pre-CQ targets that only check compilation and unit tests.
@@ -2285,6 +2299,7 @@ _release = full.derive(official, internal,
   description="Release Builds (canary) (internal)",
   chrome_sdk=True,
   image_test=True,
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries',
 )
 
 _grouped_config = _config(
