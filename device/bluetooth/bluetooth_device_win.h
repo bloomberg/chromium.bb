@@ -37,9 +37,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   virtual uint16 GetVendorID() const override;
   virtual uint16 GetProductID() const override;
   virtual uint16 GetDeviceID() const override;
-  virtual int GetRSSI() const override;
-  virtual int GetCurrentHostTransmitPower() const override;
-  virtual int GetMaximumHostTransmitPower() const override;
   virtual bool IsPaired() const override;
   virtual bool IsConnected() const override;
   virtual bool IsConnectable() const override;
@@ -48,6 +45,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   virtual bool ExpectingPinCode() const override;
   virtual bool ExpectingPasskey() const override;
   virtual bool ExpectingConfirmation() const override;
+  virtual void GetConnectionInfo(
+      const ConnectionInfoCallback& callback) override;
   virtual void Connect(
       PairingDelegate* pairing_delegate,
       const base::Closure& callback,
@@ -72,9 +71,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   virtual void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
-  virtual void StartConnectionMonitor(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
 
   // Used by BluetoothProfileWin to retrieve the service record for the given
   // |uuid|.

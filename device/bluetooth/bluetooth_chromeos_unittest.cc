@@ -143,6 +143,13 @@ class TestObserver : public BluetoothAdapter::Observer {
   scoped_refptr<BluetoothAdapter> adapter_;
 };
 
+// Callback for BluetoothDevice::GetConnectionInfo() that simply saves the
+// connection info to the bound argument.
+void SaveConnectionInfo(BluetoothDevice::ConnectionInfo* out,
+                        const BluetoothDevice::ConnectionInfo& conn_info) {
+  *out = conn_info;
+};
+
 }  // namespace
 
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
@@ -3270,6 +3277,45 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());
   EXPECT_EQ(0, device->GetDeviceID());
+}
+
+TEST_F(BluetoothChromeOSTest, GetConnectionInfoForDisconnectedDevice) {
+  GetAdapter();
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+
+  // Calling GetConnectionInfo for an unconnected device should return a result
+  // in which all fields are filled with BluetoothDevice::kUnknownPower.
+  BluetoothDevice::ConnectionInfo conn_info(0, 0, 0);
+  device->GetConnectionInfo(base::Bind(&SaveConnectionInfo, &conn_info));
+  int unknown_power = BluetoothDevice::kUnknownPower;
+  EXPECT_NE(0, unknown_power);
+  EXPECT_EQ(unknown_power, conn_info.rssi);
+  EXPECT_EQ(unknown_power, conn_info.transmit_power);
+  EXPECT_EQ(unknown_power, conn_info.max_transmit_power);
+}
+
+TEST_F(BluetoothChromeOSTest, GetConnectionInfoForConnectedDevice) {
+  GetAdapter();
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+
+  device->Connect(
+      NULL,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_TRUE(device->IsConnected());
+
+  // Calling GetConnectionInfo for a connected device should return valid
+  // results.
+  fake_bluetooth_device_client_->UpdateConnectionInfo(-10, 3, 4);
+  BluetoothDevice::ConnectionInfo conn_info;
+  device->GetConnectionInfo(base::Bind(&SaveConnectionInfo, &conn_info));
+  EXPECT_EQ(-10, conn_info.rssi);
+  EXPECT_EQ(3, conn_info.transmit_power);
+  EXPECT_EQ(4, conn_info.max_transmit_power);
 }
 
 }  // namespace chromeos

@@ -44,6 +44,9 @@ const int kSimulationIntervalMs = 750;
 const int kMinRSSI = -90;
 const int kMaxRSSI = -30;
 
+// The default value of connection info properties from GetConnInfo().
+const int kUnkownPower = 127;
+
 
 void SimulatedProfileSocket(int fd) {
   // Simulate a server-side socket of a profile; read data from the socket,
@@ -221,7 +224,9 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
       discovery_simulation_step_(0),
       incoming_pairing_simulation_step_(0),
       pairing_cancelled_(false),
-      connection_monitor_started_(false) {
+      connection_rssi_(kUnkownPower),
+      transmit_power_(kUnkownPower),
+      max_transmit_power_(kUnkownPower) {
   Properties* properties = new Properties(base::Bind(
       &FakeBluetoothDeviceClient::OnPropertyChanged,
       base::Unretained(this),
@@ -461,21 +466,17 @@ void FakeBluetoothDeviceClient::CancelPairing(
   callback.Run();
 }
 
-void FakeBluetoothDeviceClient::StartConnectionMonitor(
+void FakeBluetoothDeviceClient::GetConnInfo(
     const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
+    const ConnInfoCallback& callback,
     const ErrorCallback& error_callback) {
-  VLOG(1) << "StartConnectionMonitor: " << object_path.value();
-  connection_monitor_started_ = true;
-  callback.Run();
-}
+  Properties* properties = GetProperties(object_path);
+  if (!properties->connected.value()) {
+    error_callback.Run("org.bluez.Error.NotConnected", "Not Connected");
+    return;
+  }
 
-void FakeBluetoothDeviceClient::StopConnectionMonitor(
-    const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  connection_monitor_started_ = false;
-  callback.Run();
+  callback.Run(connection_rssi_, transmit_power_, max_transmit_power_);
 }
 
 void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
@@ -1017,6 +1018,15 @@ void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
   Properties* properties = iter->second;
   DCHECK(properties);
   properties->rssi.ReplaceValue(rssi);
+}
+
+void FakeBluetoothDeviceClient::UpdateConnectionInfo(
+    uint16 connection_rssi,
+    uint16 transmit_power,
+    uint16 max_transmit_power) {
+  connection_rssi_ = connection_rssi;
+  transmit_power_ = transmit_power;
+  max_transmit_power_ = max_transmit_power;
 }
 
 void FakeBluetoothDeviceClient::PinCodeCallback(

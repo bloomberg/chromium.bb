@@ -30,9 +30,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
   uint16 GetVendorID() const override;
   uint16 GetProductID() const override;
   uint16 GetDeviceID() const override;
-  int GetRSSI() const override;
-  int GetCurrentHostTransmitPower() const override;
-  int GetMaximumHostTransmitPower() const override;
   bool IsPaired() const override;
   bool IsConnected() const override;
   bool IsConnectable() const override;
@@ -41,6 +38,7 @@ class BluetoothDeviceMac : public BluetoothDevice {
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
+  void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
   void Connect(PairingDelegate* pairing_delegate,
                const base::Closure& callback,
                const ConnectErrorCallback& error_callback) override;
@@ -63,8 +61,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
   void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
-  void StartConnectionMonitor(const base::Closure& callback,
-                              const ErrorCallback& error_callback) override;
 
   // Returns the timestamp when the device was last seen during an inquiry.
   // Returns nil if the device has never been seen during an inquiry.

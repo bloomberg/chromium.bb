@@ -26,12 +26,6 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(address_));
   ON_CALL(*this, GetDeviceType())
       .WillByDefault(testing::Return(DEVICE_UNKNOWN));
-  ON_CALL(*this, GetRSSI())
-      .WillByDefault(testing::Return(kUnknownPower));
-  ON_CALL(*this, GetCurrentHostTransmitPower())
-      .WillByDefault(testing::Return(kUnknownPower));
-  ON_CALL(*this, GetMaximumHostTransmitPower())
-      .WillByDefault(testing::Return(kUnknownPower));
   ON_CALL(*this, GetVendorIDSource())
       .WillByDefault(testing::Return(VENDOR_ID_UNKNOWN));
   ON_CALL(*this, GetVendorID())

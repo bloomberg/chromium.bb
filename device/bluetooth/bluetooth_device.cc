@@ -21,6 +21,19 @@ BluetoothDevice::~BluetoothDevice() {
   STLDeleteValues(&gatt_services_);
 }
 
+BluetoothDevice::ConnectionInfo::ConnectionInfo()
+    : rssi(kUnknownPower),
+      transmit_power(kUnknownPower),
+      max_transmit_power(kUnknownPower) {}
+
+BluetoothDevice::ConnectionInfo::ConnectionInfo(
+    int rssi, int transmit_power, int max_transmit_power)
+    : rssi(rssi),
+      transmit_power(transmit_power),
+      max_transmit_power(max_transmit_power) {}
+
+BluetoothDevice::ConnectionInfo::~ConnectionInfo() {}
+
 base::string16 BluetoothDevice::GetName() const {
   std::string name = GetDeviceName();
   if (!name.empty()) {

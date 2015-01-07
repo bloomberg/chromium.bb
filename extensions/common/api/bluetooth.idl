@@ -65,23 +65,6 @@ namespace bluetooth {
     // Indicates whether the device is currently connected to the system.
     boolean? connected;
 
-    // Indicates the RSSI ("received signal strength indication") of the
-    // connection to the device, measured in dBm, to a resolution of 1dBm.
-    // If the device is currently connected, then measures the RSSI of the
-    // connection signal. Otherwise, measures the RSSI of the last inquiry sent
-    // to the device, where available. Absent if unavailable.
-    [nodoc] long? rssi;
-
-    // Indicates the host's current transmit power ("Tx power") for the
-    // connection to the device, measured in dBm, to a resolution of 1dBm.
-    // This value is only available if the device is currently connected.
-    [nodoc] long? currentHostTransmitPower;
-
-    // Indicates the host's maximum transmit power ("Tx power") for the
-    // connection to the device, measured in dBm, to a resolution of 1dBm.
-    // This value is only available if the device is currently connected.
-    [nodoc] long? maximumHostTransmitPower;
-
     // UUIDs of protocols, profiles and services advertised by the device.
     // For classic Bluetooth devices, this list is obtained from EIR data and
     // SDP tables. For Low Energy devices, this list is obtained from AD and

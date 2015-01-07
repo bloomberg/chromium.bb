@@ -35,9 +35,6 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(GetDeviceID, uint16());
   MOCK_CONST_METHOD0(GetName, base::string16());
   MOCK_CONST_METHOD0(GetDeviceType, BluetoothDevice::DeviceType());
-  MOCK_CONST_METHOD0(GetRSSI, int());
-  MOCK_CONST_METHOD0(GetCurrentHostTransmitPower, int());
-  MOCK_CONST_METHOD0(GetMaximumHostTransmitPower, int());
   MOCK_CONST_METHOD0(IsPaired, bool());
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(IsConnectable, bool());
@@ -46,6 +43,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(ExpectingPinCode, bool());
   MOCK_CONST_METHOD0(ExpectingPasskey, bool());
   MOCK_CONST_METHOD0(ExpectingConfirmation, bool());
+  MOCK_METHOD1(GetConnectionInfo, void(const ConnectionInfoCallback& callback));
   MOCK_METHOD3(Connect,
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
                     const base::Closure& callback,

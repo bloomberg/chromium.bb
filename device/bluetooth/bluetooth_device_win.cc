@@ -168,21 +168,6 @@ uint16 BluetoothDeviceWin::GetDeviceID() const {
   return 0;
 }
 
-int BluetoothDeviceWin::GetRSSI() const {
-  NOTIMPLEMENTED();
-  return kUnknownPower;
-}
-
-int BluetoothDeviceWin::GetCurrentHostTransmitPower() const {
-  NOTIMPLEMENTED();
-  return kUnknownPower;
-}
-
-int BluetoothDeviceWin::GetMaximumHostTransmitPower() const {
-  NOTIMPLEMENTED();
-  return kUnknownPower;
-}
-
 bool BluetoothDeviceWin::IsPaired() const {
   return paired_;
 }
@@ -216,6 +201,12 @@ bool BluetoothDeviceWin::ExpectingPasskey() const {
 bool BluetoothDeviceWin::ExpectingConfirmation() const {
   NOTIMPLEMENTED();
   return false;
+}
+
+void BluetoothDeviceWin::GetConnectionInfo(
+    const ConnectionInfoCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(ConnectionInfo());
 }
 
 void BluetoothDeviceWin::Connect(
@@ -277,12 +268,6 @@ void BluetoothDeviceWin::CreateGattConnection(
       const ConnectErrorCallback& error_callback) {
   // TODO(armansito): Implement.
   error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
-}
-
-void BluetoothDeviceWin::StartConnectionMonitor(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
 }
 
 const BluetoothServiceRecordWin* BluetoothDeviceWin::GetServiceRecord(

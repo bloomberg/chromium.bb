@@ -427,11 +427,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
     .WillRepeatedly(testing::Return(0x240A));
   EXPECT_CALL(*device1_.get(), GetDeviceID())
     .WillRepeatedly(testing::Return(0x0400));
-  EXPECT_CALL(*device1_, GetRSSI()).WillRepeatedly(testing::Return(-42));
-  EXPECT_CALL(*device1_, GetCurrentHostTransmitPower())
-      .WillRepeatedly(testing::Return(-16));
-  EXPECT_CALL(*device1_, GetMaximumHostTransmitPower())
-      .WillRepeatedly(testing::Return(10));
 
   BluetoothDevice::UUIDList uuids;
   uuids.push_back(BluetoothUUID("1105"));

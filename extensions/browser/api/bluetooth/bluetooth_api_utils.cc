@@ -112,19 +112,6 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
   out->paired.reset(new bool(device.IsPaired()));
   out->connected.reset(new bool(device.IsConnected()));
 
-  int rssi = device.GetRSSI();
-  if (rssi != BluetoothDevice::kUnknownPower)
-    out->rssi.reset(new int(rssi));
-
-  if (*out->connected) {
-    int current_transmit_power = device.GetCurrentHostTransmitPower();
-    if (current_transmit_power != BluetoothDevice::kUnknownPower)
-      out->current_host_transmit_power.reset(new int(current_transmit_power));
-    int maximum_transmit_power = device.GetMaximumHostTransmitPower();
-    if (maximum_transmit_power != BluetoothDevice::kUnknownPower)
-      out->maximum_host_transmit_power.reset(new int(maximum_transmit_power));
-  }
-
   std::vector<std::string>* string_uuids = new std::vector<std::string>();
   const device::BluetoothDevice::UUIDList& uuids = device.GetUUIDs();
   for (device::BluetoothDevice::UUIDList::const_iterator iter = uuids.begin();

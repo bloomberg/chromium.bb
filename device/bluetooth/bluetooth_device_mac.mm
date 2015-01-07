@@ -93,30 +93,6 @@ uint16 BluetoothDeviceMac::GetDeviceID() const {
   return 0;
 }
 
-int BluetoothDeviceMac::GetRSSI() const {
-  if (![device_ isConnected]) {
-    NOTIMPLEMENTED();
-    return kUnknownPower;
-  }
-
-  int rssi = [device_ rawRSSI];
-
-  // The API guarantees that +127 is returned in case the RSSI is not readable:
-  // http://goo.gl/bpURYv
-  if (rssi == 127)
-    return kUnknownPower;
-
-  return rssi;
-}
-
-int BluetoothDeviceMac::GetCurrentHostTransmitPower() const {
-  return GetHostTransmitPower(kReadCurrentTransmitPowerLevel);
-}
-
-int BluetoothDeviceMac::GetMaximumHostTransmitPower() const {
-  return GetHostTransmitPower(kReadMaximumTransmitPowerLevel);
-}
-
 bool BluetoothDeviceMac::IsPaired() const {
   return [device_ isPaired];
 }
@@ -162,6 +138,28 @@ bool BluetoothDeviceMac::ExpectingPasskey() const {
 bool BluetoothDeviceMac::ExpectingConfirmation() const {
   NOTIMPLEMENTED();
   return false;
+}
+
+void BluetoothDeviceMac::GetConnectionInfo(
+    const ConnectionInfoCallback& callback) {
+  ConnectionInfo connection_info;
+  if (![device_ isConnected]) {
+    callback.Run(connection_info);
+    return;
+  }
+
+  connection_info.rssi = [device_ rawRSSI];
+  // The API guarantees that +127 is returned in case the RSSI is not readable:
+  // http://goo.gl/bpURYv
+  if (connection_info.rssi == 127)
+    connection_info.rssi = kUnknownPower;
+
+  connection_info.transmit_power =
+      GetHostTransmitPower(kReadCurrentTransmitPowerLevel);
+  connection_info.max_transmit_power =
+      GetHostTransmitPower(kReadMaximumTransmitPowerLevel);
+
+  callback.Run(connection_info);
 }
 
 void BluetoothDeviceMac::Connect(
@@ -221,12 +219,6 @@ void BluetoothDeviceMac::CreateGattConnection(
       const ConnectErrorCallback& error_callback) {
   // TODO(armansito): Implement.
   error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
-}
-
-void BluetoothDeviceMac::StartConnectionMonitor(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
 }
 
 NSDate* BluetoothDeviceMac::GetLastInquiryUpdate() {

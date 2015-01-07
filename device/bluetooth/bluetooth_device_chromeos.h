@@ -39,9 +39,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   virtual uint16 GetVendorID() const override;
   virtual uint16 GetProductID() const override;
   virtual uint16 GetDeviceID() const override;
-  virtual int GetRSSI() const override;
-  virtual int GetCurrentHostTransmitPower() const override;
-  virtual int GetMaximumHostTransmitPower() const override;
   virtual bool IsPaired() const override;
   virtual bool IsConnected() const override;
   virtual bool IsConnectable() const override;
@@ -50,6 +47,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   virtual bool ExpectingPinCode() const override;
   virtual bool ExpectingPasskey() const override;
   virtual bool ExpectingConfirmation() const override;
+  void GetConnectionInfo(
+      const ConnectionInfoCallback& callback) override;
   virtual void Connect(
       device::BluetoothDevice::PairingDelegate* pairing_delegate,
       const base::Closure& callback,
@@ -74,9 +73,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   virtual void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
-  virtual void StartConnectionMonitor(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related
@@ -111,6 +107,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   // BluetoothGattServiceClient::Observer overrides.
   virtual void GattServiceAdded(const dbus::ObjectPath& object_path) override;
   virtual void GattServiceRemoved(const dbus::ObjectPath& object_path) override;
+
+  // Called by dbus:: on completion of the D-Bus method call to get the
+  // connection attributes of the current connection to the device.
+  void OnGetConnInfo(const ConnectionInfoCallback& callback,
+                     int16 rssi,
+                     int16 transmit_power,
+                     int16 max_transmit_power);
+  void OnGetConnInfoError(const ConnectionInfoCallback& callback,
+                          const std::string& error_name,
+                          const std::string& error_message);
 
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.
@@ -158,13 +164,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   void OnForgetError(const ErrorCallback& error_callback,
                      const std::string& error_name,
                      const std::string& error_message);
-
-  // Called by dbus:: on completion of the D-Bus method call to start the
-  // connection monitor.
-  void OnStartConnectionMonitor(const base::Closure& callback);
-  void OnStartConnectionMonitorError(const ErrorCallback& error_callback,
-                                     const std::string& error_name,
-                                     const std::string& error_message);
 
   // The adapter that owns this device instance.
   BluetoothAdapterChromeOS* adapter_;

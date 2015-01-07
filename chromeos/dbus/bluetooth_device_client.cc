@@ -16,6 +16,13 @@
 
 namespace chromeos {
 
+namespace {
+
+// Value returned for the the RSSI or TX power if it cannot be read.
+const int kUnknownPower = 127;
+
+}  // namespace
+
 const char BluetoothDeviceClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 const char BluetoothDeviceClient::kUnknownDeviceError[] =
@@ -41,10 +48,6 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kLegacyPairingProperty, &legacy_pairing);
   RegisterProperty(bluetooth_device::kModaliasProperty, &modalias);
   RegisterProperty(bluetooth_device::kRSSIProperty, &rssi);
-  RegisterProperty(bluetooth_device::kConnectionRSSI, &connection_rssi);
-  RegisterProperty(bluetooth_device::kConnectionTXPower, &connection_tx_power);
-  RegisterProperty(bluetooth_device::kConnectionTXPowerMax,
-                   &connection_tx_power_max);
 }
 
 BluetoothDeviceClient::Properties::~Properties() {
@@ -273,12 +276,12 @@ class BluetoothDeviceClientImpl
   }
 
   // BluetoothDeviceClient override.
-  virtual void StartConnectionMonitor(
-      const dbus::ObjectPath& object_path,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
-    dbus::MethodCall method_call(bluetooth_device::kBluetoothDeviceInterface,
-                                 bluetooth_device::kStartConnectionMonitor);
+  void GetConnInfo(const dbus::ObjectPath& object_path,
+                   const ConnInfoCallback& callback,
+                   const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(
+        bluetooth_plugin_device::kBluetoothPluginInterface,
+        bluetooth_plugin_device::kGetConnInfo);
 
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
@@ -287,39 +290,11 @@ class BluetoothDeviceClientImpl
       return;
     }
     object_proxy->CallMethodWithErrorCallback(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&BluetoothDeviceClientImpl::OnSuccess,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback),
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnGetConnInfoSuccess,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
         base::Bind(&BluetoothDeviceClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   error_callback));
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void StopConnectionMonitor(
-      const dbus::ObjectPath& object_path,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
-    dbus::MethodCall method_call(bluetooth_device::kBluetoothDeviceInterface,
-                                 bluetooth_device::kStopConnectionMonitor);
-
-    dbus::ObjectProxy* object_proxy =
-        object_manager_->GetObjectProxy(object_path);
-    if (!object_proxy) {
-      error_callback.Run(kUnknownDeviceError, "");
-      return;
-    }
-    object_proxy->CallMethodWithErrorCallback(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&BluetoothDeviceClientImpl::OnSuccess,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback),
-        base::Bind(&BluetoothDeviceClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   error_callback));
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
  protected:
@@ -363,6 +338,27 @@ class BluetoothDeviceClientImpl
                  dbus::Response* response) {
     DCHECK(response);
     callback.Run();
+  }
+
+  // Called when a response for the GetConnInfo method is received.
+  void OnGetConnInfoSuccess(const ConnInfoCallback& callback,
+                            dbus::Response* response) {
+    int16 rssi = kUnknownPower;
+    int16 transmit_power = kUnknownPower;
+    int16 max_transmit_power = kUnknownPower;
+
+    if (!response) {
+      LOG(ERROR) << "GetConnInfo succeeded, but no response received.";
+      callback.Run(rssi, transmit_power, max_transmit_power);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    if (!reader.PopInt16(&rssi) || !reader.PopInt16(&transmit_power) ||
+        !reader.PopInt16(&max_transmit_power)) {
+      LOG(ERROR) << "Arguments for GetConnInfo invalid.";
+    }
+    callback.Run(rssi, transmit_power, max_transmit_power);
   }
 
   // Called when a response for a failed method call is received.
