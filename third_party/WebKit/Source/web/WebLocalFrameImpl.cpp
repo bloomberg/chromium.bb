@@ -1876,6 +1876,7 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
     m_frame->init();
+    m_frame->loader().stateMachine()->advanceTo(m_frameLoaderClientImpl.backForwardLength() > 1 ? FrameLoaderStateMachine::CommittedMultipleRealLoads : FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
 void WebLocalFrameImpl::setAutofillClient(WebAutofillClient* autofillClient)
