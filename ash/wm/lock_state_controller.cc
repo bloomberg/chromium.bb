@@ -238,8 +238,7 @@ void LockStateController::OnLockStateChanged(bool locked) {
 
 void LockStateController::OnLockFailTimeout() {
   DCHECK(!system_is_locked_);
-  CHECK(false) << "We can not be sure about the lock state. Crash and let the "
-               << "SessionManager end the session";
+  LOG(FATAL) << "Screen lock took too long; crashing intentionally";
 }
 
 void LockStateController::StartLockToShutdownTimer() {
@@ -502,7 +501,8 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
   if (board == "x86-mario" ||
       StartsWithASCII(board, "x86-alex", true /* case_sensitive */) ||
-      StartsWithASCII(board, "x86-zgb", true /* case_sensitive */)) {
+      StartsWithASCII(board, "x86-zgb", true /* case_sensitive */) ||
+      StartsWithASCII(board, "daisy", true /* case_sensitive */)) {
     timeout *= 2;
   }
 #endif
