@@ -5,25 +5,23 @@
 # FOR HOW TO ROLL DEPS
 vars = {
     'breakpad_rev':
-         '1338',
+         'fe34e3f9fef1eb425b25a79f0da84e2f277d433b',
     'chromium_trunk':
          'http://src.chromium.org/svn/trunk',
     'android_tools_rev':
          'ea50cccc11657404ce22cf928062ed1a3927eb39',
-    'gyp_rev':
-         '1927',
     'tools_rev':
          '13800',
     'native_client_trunk':
          'http://src.chromium.org/native_client/trunk',
     'lcov_rev':
-         '149720',
+         'b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'gtest_rev':
-         '643',
-    'googlecode_url':
-         'http://%s.googlecode.com/svn',
+         '74de57c951aedebc5dfe26a27604353432392b98',
+    'gyp_rev':
+         '0ff4e1aa19641cda58e3ed98399e0d96e6ccd7c2',
     'lss_rev':
-         '26',
+         '2f724fced658cd6182096c615efdf3767b7c57fe',
     'chromium_git':
          'https://chromium.googlesource.com',
     'webkit_url':
