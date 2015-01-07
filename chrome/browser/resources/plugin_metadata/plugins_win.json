@@ -1,5 +1,5 @@
 {
-  "x-version": 15,
+  "x-version": 16,
   "google-talk": {
     "mime_types": [
     ],
@@ -137,9 +137,9 @@
     ],
     "versions": [
       {
-        "version": "15.0.0.189",
-        "status": "up_to_date",
-        "reference": "http://helpx.adobe.com/security/products/flash-player/apsb14-22.html"
+        "version": "16.0.0.235",
+        "status": "requires_authorization",
+        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb14-27.html"
       }
     ],
     "lang": "en-US",
@@ -155,9 +155,9 @@
     ],
     "versions": [
       {
-        "version": "12.0.4.144",
+        "version": "12.1.0.150",
         "status": "requires_authorization",
-        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-23.html"
+        "reference": "https://helpx.adobe.com/security/products/shockwave/apsb14-10.html"
       }
     ],
     "lang": "en-US",
@@ -177,18 +177,18 @@
     ],
     "versions": [
       {
-        "version": "10.1.12",
+        "version": "10.1.13",
         "status": "requires_authorization",
-        "reference": "https://helpx.adobe.com/security/products/reader/apsb14-20.html"
+        "reference": "https://helpx.adobe.com/security/products/reader/apsb14-28.html"
       },
       {
         "version": "11",
         "status": "out_of_date"
       },
       {
-        "version": "11.0.9",
+        "version": "11.0.10",
         "status": "requires_authorization",
-        "reference": "https://helpx.adobe.com/security/products/reader/apsb14-20.html"
+        "reference": "https://helpx.adobe.com/security/products/reader/apsb14-28.html"
       }
     ],
     "lang": "en-US",
@@ -252,9 +252,9 @@
     ],
     "versions": [
       {
-        "version": "7.7.5",
+        "version": "7.7.6",
         "status": "requires_authorization",
-        "reference": "http://support.apple.com/kb/HT6151"
+        "reference": "http://support.apple.com/kb/HT203092"
       }
     ],
     "lang": "en-US",

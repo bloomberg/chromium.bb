@@ -1,5 +1,5 @@
 {
-  "x-version": 6,
+  "x-version": 7,
   "google-talk": {
     "mime_types": [
     ],
@@ -115,9 +115,9 @@
     ],
     "versions": [
       {
-        "version": "15.0.0.189",
-        "status": "up_to_date",
-        "reference": "http://helpx.adobe.com/security/products/flash-player/apsb14-22.html"
+        "version": "16.0.0.235",
+        "status": "requires_authorization",
+        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb14-27.html"
       }
     ],
     "lang": "en-US",
@@ -198,8 +198,9 @@
     ],
     "versions": [
       {
-        "version": "7.6.6",
-        "status": "requires_authorization"
+        "version": "7.7.1",
+        "status": "requires_authorization",
+        "reference": "http://support.apple.com/en-us/HT5016"
       }
     ],
     "lang": "en-US",
