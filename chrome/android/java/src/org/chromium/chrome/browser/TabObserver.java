@@ -39,6 +39,35 @@ public interface TabObserver {
     void onLoadUrl(Tab tab, String url, int loadType);
 
     /**
+     * Called when a tab has started to load a page.
+     * <p>
+     * This will occur when the main frame has committed a provisional load, and will also
+     * occur in instances where we need to simulate load progress (i.e. swapping in a not
+     * fully loaded pre-rendered page).
+     * <p>
+     * For visual loading indicators/throbbers, {@link #onLoadStarted(Tab)} and
+     * {@link #onLoadStopped(Tab)} should be used to drive updates.
+     *
+     * @param tab The notifying {@link Tab}.
+     */
+    void onPageLoadStarted(Tab tab);
+
+    /**
+     * Called when a tab has finished loading a page.
+     *
+     * @param tab The notifying {@link Tab}.
+     */
+    void onPageLoadFinished(Tab tab);
+
+    /**
+     * Called when a tab has failed loading a page.
+     *
+     * @param tab The notifying {@link Tab}.
+     * @param errorCode The error code that causes the page to fail loading.
+     */
+    void onPageLoadFailed(Tab tab, int errorCode);
+
+    /**
      * Called when the favicon of a {@link Tab} has been updated.
      * @param tab The notifying {@link Tab}.
      */

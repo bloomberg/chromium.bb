@@ -485,6 +485,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 observer.onDidFailLoad(Tab.this, isProvisionalLoad, isMainFrame, errorCode,
                         description, failingUrl);
             }
+
+            if (isMainFrame) didFailPageLoad(errorCode);
         }
 
         @Override
@@ -1240,6 +1242,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         clearHungRendererState();
+
+        for (TabObserver observer : mObservers) observer.onPageLoadStarted(this);
     }
 
     /**
@@ -1249,6 +1253,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mIsTabStateDirty = true;
         updateTitle();
         updateFullscreenEnabledState();
+
+        for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
+    }
+
+    /**
+     * Called when a page has failed loading.
+     * @param errorCode The error code causing the page to fail loading.
+     */
+    protected void didFailPageLoad(int errorCode) {
+        for (TabObserver observer : mObservers) observer.onPageLoadFailed(this, errorCode);
     }
 
     /**
