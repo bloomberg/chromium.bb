@@ -559,6 +559,7 @@ bool HTMLImageElement::complete() const
 
 void HTMLImageElement::didMoveToNewDocument(Document& oldDocument)
 {
+    selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     imageLoader().elementDidMoveToNewDocument();
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
