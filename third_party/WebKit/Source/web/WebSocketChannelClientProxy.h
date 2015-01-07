@@ -59,6 +59,11 @@ public:
         impl->didClose(status, code, reason);
     }
 
+    virtual void trace(Visitor* visitor) override
+    {
+        WebSocketChannelClient::trace(visitor);
+    }
+
 private:
     explicit WebSocketChannelClientProxy(WebSocketImpl* impl)
         : m_impl(impl)

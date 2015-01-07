@@ -39,6 +39,11 @@ UserMediaController::UserMediaController(UserMediaClient* client)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController)
 
+void UserMediaController::trace(Visitor* visitor)
+{
+    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+}
+
 PassOwnPtrWillBeRawPtr<UserMediaController> UserMediaController::create(UserMediaClient* client)
 {
     return adoptPtrWillBeNoop(new UserMediaController(client));

@@ -47,6 +47,11 @@ DatabaseClientImpl::~DatabaseClientImpl()
 {
 }
 
+void DatabaseClientImpl::trace(Visitor* visitor)
+{
+    DatabaseClient::trace(visitor);
+}
+
 bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned long estimatedSize)
 {
     ASSERT(executionContext->isContextThread());

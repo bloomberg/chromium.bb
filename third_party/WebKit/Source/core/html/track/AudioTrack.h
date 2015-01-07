@@ -18,7 +18,9 @@ public:
     {
         return adoptRefWillBeNoop(new AudioTrack(id, kind, label, language, enabled));
     }
+
     virtual ~AudioTrack();
+    virtual void trace(Visitor*) override;
 
     bool enabled() const { return m_enabled; }
     void setEnabled(bool);

@@ -26,6 +26,11 @@ NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
 {
 }
 
+void NavigatorBeacon::trace(Visitor* visitor)
+{
+    WillBeHeapSupplement<Navigator>::trace(visitor);
+}
+
 const char* NavigatorBeacon::supplementName()
 {
     return "NavigatorBeacon";

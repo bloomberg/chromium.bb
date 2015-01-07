@@ -21,6 +21,11 @@ CredentialManagerClient::~CredentialManagerClient()
 {
 }
 
+void CredentialManagerClient::trace(Visitor* visitor)
+{
+    WillBeHeapSupplement<Page>::trace(visitor);
+}
+
 // static
 const char* CredentialManagerClient::supplementName()
 {

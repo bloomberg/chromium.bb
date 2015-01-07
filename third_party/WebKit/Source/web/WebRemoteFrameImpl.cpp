@@ -91,6 +91,11 @@ void PlaceholderFrameOwner::dispatchLoad()
 {
 }
 
+void PlaceholderFrameOwner::trace(Visitor* visitor)
+{
+    FrameOwner::trace(visitor);
+}
+
 WebRemoteFrame* WebRemoteFrame::create(WebRemoteFrameClient* client)
 {
     WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(client);

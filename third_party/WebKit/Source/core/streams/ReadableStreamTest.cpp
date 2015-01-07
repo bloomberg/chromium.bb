@@ -60,6 +60,10 @@ class MockUnderlyingSource : public GarbageCollectedFinalized<MockUnderlyingSour
     USING_GARBAGE_COLLECTED_MIXIN(MockUnderlyingSource);
 public:
     ~MockUnderlyingSource() override { }
+    virtual void trace(Visitor* visitor) override
+    {
+        UnderlyingSource::trace(visitor);
+    }
 
     MOCK_METHOD0(pullSource, void());
     MOCK_METHOD2(cancelSource, ScriptPromise(ScriptState*, ScriptValue));

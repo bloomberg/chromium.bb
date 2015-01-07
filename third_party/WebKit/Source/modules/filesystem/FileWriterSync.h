@@ -59,6 +59,7 @@ public:
         return new FileWriterSync();
     }
     virtual ~FileWriterSync();
+    virtual void trace(Visitor*) override;
 
     // FileWriterBase
     void write(Blob*, ExceptionState&);
@@ -82,4 +83,4 @@ private:
 
 } // namespace blink
 
-#endif // FileWriter_h
+#endif // FileWriterSync_h

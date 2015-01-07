@@ -20,6 +20,11 @@ VideoTrack::~VideoTrack()
 {
 }
 
+void VideoTrack::trace(Visitor* visitor)
+{
+    TrackBase::trace(visitor);
+}
+
 void VideoTrack::setSelected(bool selected)
 {
     if (selected == m_selected)

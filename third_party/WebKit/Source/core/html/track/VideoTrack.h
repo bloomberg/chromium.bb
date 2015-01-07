@@ -18,7 +18,9 @@ public:
     {
         return adoptRefWillBeNoop(new VideoTrack(id, kind, label, language, selected));
     }
+
     virtual ~VideoTrack();
+    virtual void trace(Visitor*) override;
 
     bool selected() const { return m_selected; }
     void setSelected(bool);

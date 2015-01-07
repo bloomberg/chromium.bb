@@ -23,6 +23,7 @@ class CredentialManagerClient final : public NoBaseWillBeGarbageCollectedFinaliz
 public:
     explicit CredentialManagerClient(WebCredentialManagerClient*);
     virtual ~CredentialManagerClient();
+    virtual void trace(Visitor*) override;
 
     static const char* supplementName();
     static CredentialManagerClient* from(Page*);

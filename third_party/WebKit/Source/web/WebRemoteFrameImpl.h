@@ -33,6 +33,8 @@ public:
     virtual bool isLocal() const override;
     virtual SandboxFlags sandboxFlags() const override;
     virtual void dispatchLoad() override;
+
+    virtual void trace(Visitor*) override;
 };
 
 class WebRemoteFrameImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebRemoteFrameImpl>, public WebRemoteFrame {

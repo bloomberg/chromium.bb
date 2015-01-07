@@ -20,6 +20,11 @@ AudioTrack::~AudioTrack()
 {
 }
 
+void AudioTrack::trace(Visitor* visitor)
+{
+    TrackBase::trace(visitor);
+}
+
 void AudioTrack::setEnabled(bool enabled)
 {
     if (enabled == m_enabled)
