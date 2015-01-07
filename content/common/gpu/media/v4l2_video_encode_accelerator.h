@@ -69,7 +69,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Record for codec input buffers.
   struct InputRecord {
     InputRecord();
-    ~InputRecord();
     bool at_device;
     scoped_refptr<media::VideoFrame> frame;
   };
@@ -77,7 +76,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
-    ~OutputRecord();
     bool at_device;
     linked_ptr<BitstreamBufferRef> buffer_ref;
     void* address;

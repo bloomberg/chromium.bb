@@ -58,7 +58,6 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   // Record for input buffers.
   struct InputRecord {
     InputRecord();
-    ~InputRecord();
     scoped_refptr<media::VideoFrame> frame;
     bool at_device;
   };
@@ -66,7 +65,6 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
-    ~OutputRecord();
     bool at_device;
     bool at_client;
     std::vector<int> fds;
@@ -80,7 +78,6 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   // device).
   struct JobRecord {
     JobRecord();
-    ~JobRecord();
     scoped_refptr<media::VideoFrame> frame;
     FrameReadyCB ready_cb;
   };
