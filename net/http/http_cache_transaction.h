@@ -109,6 +109,11 @@ class HttpCache::Transaction : public HttpTransaction {
     bypass_lock_for_test_ = true;
   }
 
+  // Generates a failure when attempting to conditionalize a network request.
+  void FailConditionalizationForTest() {
+    fail_conditionalization_for_test_ = true;
+  }
+
   // HttpTransaction methods:
   int Start(const HttpRequestInfo* request_info,
             const CompletionCallback& callback,
@@ -436,6 +441,7 @@ class HttpCache::Transaction : public HttpTransaction {
   bool vary_mismatch_;  // The request doesn't match the stored vary data.
   bool couldnt_conditionalize_request_;
   bool bypass_lock_for_test_;  // A test is exercising the cache lock.
+  bool fail_conditionalization_for_test_;  // Fail ConditionalizeRequest.
   scoped_refptr<IOBuffer> read_buf_;
   int io_buf_len_;
   int read_offset_;

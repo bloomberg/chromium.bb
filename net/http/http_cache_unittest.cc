@@ -3745,15 +3745,13 @@ TEST(HttpCache, GET_Crazy416) {
   RemoveMockTransaction(&transaction);
 }
 
-// Tests that we store partial responses that can't be validated, as they can
-// be used for requests that don't require revalidation.
+// Tests that we don't store partial responses that can't be validated.
 TEST(HttpCache, RangeGET_NoStrongValidators) {
   MockHttpCache cache;
   std::string headers;
 
-  // Write to the cache (40-49).
-  MockTransaction transaction(kRangeGET_TransactionOK);
-  AddMockTransaction(&transaction);
+  // Attempt to write to the cache (40-49).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
   transaction.response_headers = "Content-Length: 10\n"
                                  "Cache-Control: max-age=3600\n"
                                  "ETag: w/\"foo\"\n";
@@ -3764,29 +3762,26 @@ TEST(HttpCache, RangeGET_NoStrongValidators) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  // Now verify that there's cached data.
+  // Now verify that there's no cached data.
   RunTransactionTestWithResponse(cache.http_cache(), kRangeGET_TransactionOK,
                                  &headers);
 
   Verify206Response(headers, 40, 49);
-  EXPECT_EQ(1, cache.network_layer()->transaction_count());
-  EXPECT_EQ(1, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
-
-  RemoveMockTransaction(&transaction);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
 }
 
-// Tests failures to validate cache partial responses that lack strong
-// validators.
-TEST(HttpCache, RangeGET_NoValidation) {
+// Tests failures to conditionalize byte range requests.
+TEST(HttpCache, RangeGET_NoConditionalization) {
   MockHttpCache cache;
+  cache.FailConditionalizations();
   std::string headers;
 
   // Write to the cache (40-49).
-  MockTransaction transaction(kRangeGET_TransactionOK);
-  AddMockTransaction(&transaction);
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
   transaction.response_headers = "Content-Length: 10\n"
-                                 "ETag: w/\"foo\"\n";
+                                 "ETag: \"foo\"\n";
   RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
 
   Verify206Response(headers, 40, 49);
@@ -3802,20 +3797,18 @@ TEST(HttpCache, RangeGET_NoValidation) {
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(2, cache.disk_cache()->create_count());
-
-  RemoveMockTransaction(&transaction);
 }
 
 // Tests that restarting a partial request when the cached data cannot be
 // revalidated logs an event.
 TEST(HttpCache, RangeGET_NoValidation_LogsRestart) {
   MockHttpCache cache;
+  cache.FailConditionalizations();
 
   // Write to the cache (40-49).
   ScopedMockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.response_headers =
-      "Content-Length: 10\n"
-      "ETag: w/\"foo\"\n";
+  transaction.response_headers = "Content-Length: 10\n"
+                                 "ETag: \"foo\"\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   // Now verify that the cached data is not used.
@@ -3827,17 +3820,17 @@ TEST(HttpCache, RangeGET_NoValidation_LogsRestart) {
       log, net::NetLog::TYPE_HTTP_CACHE_RESTART_PARTIAL_REQUEST));
 }
 
-// Tests that a regular request (no range) with a sparse entry that doesn't have
-// strong validators results in a full response.
-TEST(HttpCache, GET_NoValidation) {
+// Tests that a failure to conditionalize a regular request (no range) with a
+// sparse entry results in a full response.
+TEST(HttpCache, GET_NoConditionalization) {
   MockHttpCache cache;
+  cache.FailConditionalizations();
   std::string headers;
 
   // Write to the cache (40-49).
   ScopedMockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.response_headers =
-      "Content-Length: 10\n"
-      "ETag: w/\"foo\"\n";
+  transaction.response_headers = "Content-Length: 10\n"
+                                 "ETag: \"foo\"\n";
   RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
 
   Verify206Response(headers, 40, 49);
@@ -3865,17 +3858,18 @@ TEST(HttpCache, GET_NoValidation) {
   EXPECT_EQ(2, cache.disk_cache()->create_count());
 }
 
-// Verifies that when asking for a range that would require the cache to modify
-// the range to ask, the actual server request matches the user's one.
-TEST(HttpCache, RangeGET_NoValidation2) {
+// Verifies that conditionalization failures when asking for a range that would
+// require the cache to modify the range to ask, result in a network request
+// that matches the user's one.
+TEST(HttpCache, RangeGET_NoConditionalization2) {
   MockHttpCache cache;
+  cache.FailConditionalizations();
   std::string headers;
 
   // Write to the cache (40-49).
   ScopedMockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.response_headers =
-      "Content-Length: 10\n"
-      "ETag: w/\"foo\"\n";
+  transaction.response_headers = "Content-Length: 10\n"
+                                 "ETag: \"foo\"\n";
   RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
 
   Verify206Response(headers, 40, 49);

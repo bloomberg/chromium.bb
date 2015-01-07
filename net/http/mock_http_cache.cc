@@ -524,6 +524,10 @@ void MockHttpCache::BypassCacheLock() {
   http_cache_.BypassLockForTest();
 }
 
+void MockHttpCache::FailConditionalizations() {
+  http_cache_.FailConditionalizationForTest();
+}
+
 bool MockHttpCache::ReadResponseInfo(disk_cache::Entry* disk_entry,
                                      net::HttpResponseInfo* response_info,
                                      bool* response_truncated) {

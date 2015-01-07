@@ -189,6 +189,9 @@ class MockHttpCache {
   // Wrapper to bypass the cache lock for new transactions.
   void BypassCacheLock();
 
+  // Wrapper to fail request conditionalization for new transactions.
+  void FailConditionalizations();
+
   // Helper function for reading response info from the disk cache.
   static bool ReadResponseInfo(disk_cache::Entry* disk_entry,
                                net::HttpResponseInfo* response_info,

@@ -202,6 +202,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     bypass_lock_for_test_ = true;
   }
 
+  // Causes all transactions created after this point to generate a failure
+  // when attempting to conditionalize a network request.
+  void FailConditionalizationForTest() {
+    fail_conditionalization_for_test_ = true;
+  }
+
   bool use_stale_while_revalidate() const {
     return use_stale_while_revalidate_;
   }
@@ -426,6 +432,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   scoped_ptr<BackendFactory> backend_factory_;
   bool building_backend_;
   bool bypass_lock_for_test_;
+  bool fail_conditionalization_for_test_;
 
   // true if the implementation of Cache-Control: stale-while-revalidate
   // directive is enabled (either via command-line flag or experiment).

@@ -307,9 +307,7 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 
 //-----------------------------------------------------------------------------
 
-HttpCache::Transaction::Transaction(
-    RequestPriority priority,
-    HttpCache* cache)
+HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
     : next_state_(STATE_NONE),
       request_(NULL),
       priority_(priority),
@@ -330,6 +328,7 @@ HttpCache::Transaction::Transaction(
       vary_mismatch_(false),
       couldnt_conditionalize_request_(false),
       bypass_lock_for_test_(false),
+      fail_conditionalization_for_test_(false),
       io_buf_len_(0),
       read_offset_(0),
       effective_load_flags_(0),
@@ -1711,6 +1710,16 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
     return OK;
   }
 
+  if (handling_206_ && !CanResume(false)) {
+    // There is no point in storing this resource because it will never be used.
+    // This may change if we support LOAD_ONLY_FROM_CACHE with sparse entries.
+    DoneWritingToEntry(false);
+    if (partial_.get())
+      partial_->FixResponseHeaders(response_.headers.get(), true);
+    next_state_ = STATE_PARTIAL_HEADERS_RECEIVED;
+    return OK;
+  }
+
   target_state_ = STATE_TRUNCATE_CACHED_DATA;
   next_state_ = truncated_ ? STATE_CACHE_WRITE_TRUNCATED_RESPONSE :
                              STATE_CACHE_WRITE_RESPONSE;
@@ -2576,10 +2585,11 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
     return false;
   }
 
-  if (response_.headers->response_code() == 206 &&
-      !response_.headers->HasStrongValidators()) {
+  if (fail_conditionalization_for_test_)
     return false;
-  }
+
+  DCHECK(response_.headers->response_code() != 206 ||
+         response_.headers->HasStrongValidators());
 
   // Just use the first available ETag and/or Last-Modified header value.
   // TODO(darin): Or should we use the last?

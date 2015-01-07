@@ -454,6 +454,7 @@ HttpCache::HttpCache(const net::HttpNetworkSession::Params& params,
       backend_factory_(backend_factory),
       building_backend_(false),
       bypass_lock_for_test_(false),
+      fail_conditionalization_for_test_(false),
       use_stale_while_revalidate_(params.use_stale_while_revalidate),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(new HttpNetworkSession(params))),
@@ -470,6 +471,7 @@ HttpCache::HttpCache(HttpNetworkSession* session,
       backend_factory_(backend_factory),
       building_backend_(false),
       bypass_lock_for_test_(false),
+      fail_conditionalization_for_test_(false),
       use_stale_while_revalidate_(session->params().use_stale_while_revalidate),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(session)),
@@ -483,6 +485,7 @@ HttpCache::HttpCache(HttpTransactionFactory* network_layer,
       backend_factory_(backend_factory),
       building_backend_(false),
       bypass_lock_for_test_(false),
+      fail_conditionalization_for_test_(false),
       use_stale_while_revalidate_(false),
       mode_(NORMAL),
       network_layer_(network_layer),
@@ -631,6 +634,8 @@ int HttpCache::CreateTransaction(RequestPriority priority,
       new HttpCache::Transaction(priority, this);
    if (bypass_lock_for_test_)
     transaction->BypassLockForTest();
+   if (fail_conditionalization_for_test_)
+     transaction->FailConditionalizationForTest();
 
   trans->reset(transaction);
   return OK;
