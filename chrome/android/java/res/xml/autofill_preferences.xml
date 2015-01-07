@@ -15,6 +15,7 @@
        android:enabled="true"
        android:title="@string/autofill_profiles_title"
        android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillProfileEditor"
+       android:contentDescription="@string/autofill_create_profile"
        />
 
     <org.chromium.chrome.browser.preferences.PreferenceCategoryWithButton
@@ -22,6 +23,7 @@
        android:enabled="true"
        android:title="@string/autofill_credit_cards_title"
        android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor"
+       android:contentDescription="@string/autofill_create_credit_card"
        />
 
 </PreferenceScreen>
