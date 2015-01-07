@@ -44,6 +44,7 @@ template("nacl_toolchain") {
   ld = invoker.ld
 
   gcc_toolchain(target_name) {
+    rebuild_define = "NACL_TC_REV=" + invoker.toolchain_revision
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
