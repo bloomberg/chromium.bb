@@ -1,14 +1,14 @@
 crbug.com/443780 virtual/slimmingpaint/fast/events/option-tab.html [ Failure ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-click-hyperlink.html [ Failure ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click-hyperlink.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 crbug.com/443780 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-in-iframe.html [ Timeout ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-click.html [ Timeout ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-event-fired.html [ Timeout ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-nested-divs.html [ Timeout ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-drag.html [ Timeout ]
-crbug.com/443780 virtual/slimmingpaint/fast/events/panScroll-nested-divs-forbidden.html [ Timeout ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-in-iframe.html [ Timeout ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click.html [ Timeout ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-event-fired.html [ Timeout ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-nested-divs.html [ Timeout ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-drag.html [ Timeout ]
+crbug.com/443780 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-nested-divs-forbidden.html [ Timeout ]
 crbug.com/443780 virtual/slimmingpaint/fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/event-view-toString.html [ Timeout ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure ]
@@ -16,8 +16,8 @@ crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ Failure ]
 
 crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.html [ ImageOnlyFailure ]
-crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
-crbug.com/441639 virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Timeout ]
+crbug.com/441639 [ Mac Win ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
+crbug.com/441639 [ Debug ] virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Timeout ]
 
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
@@ -135,11 +135,10 @@ crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFa
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/filter.html [ ImageOnlyFailure ]
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/clip.html [ ImageOnlyFailure ]
 crbug.com/412088 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ ImageOnlyFailure ]
-crbug.com/412088 virtual/slimmingpaint/svg/text/foreignObject-text-clipping-bug.xml [ ImageOnlyFailure ]
 crbug.com/412088 [ Mac Win7 ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
 crbug.com/412088 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ ImageOnlyFailure ]
 crbug.com/412088 [ XP ] virtual/slimmingpaint/svg/text/text-align-05-b.svg [ ImageOnlyFailure ]
-crbug.com/412088 virtual/slimmingpaint/svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
+crbug.com/412088 [ Mac ] virtual/slimmingpaint/svg/text/tspan-multiple-outline.svg [ ImageOnlyFailure ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
@@ -198,10 +197,8 @@ crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOn
 crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure ]
 crbug.com/443804 [ SnowLeopard Linux ] virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure Crash ]
 crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ Failure ]
-crbug.com/444591 virtual/slimmingpaint/fast/css/mask-missing-image-crash.html [ Failure ]
+crbug.com/444591 virtual/slimmingpaint/fast/css/mask-missing-image-crash.html [ Pass Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Failure ]
-crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/font-weight-1.html [ ImageOnlyFailure ]
-crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/fontfaceset-add-remove-while-loading.html [ Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/transformed-mask.html [ ImageOnlyFailure ]
 
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html [ Failure ]
@@ -732,8 +729,6 @@ crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.htm
 
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
-
-crbug.com/433710 http/tests/navigation/back-send-referrer.html [ Timeout ]
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
@@ -1467,9 +1462,8 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/bidi-neut
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
 
 # These crash because window.scrollTo hasn't been properly wired up yet.
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-subpixel.html [ Crash ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-nan-scroll-position.html [ Crash ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element-renderer.html [ Crash ]
+crbug.com/417782 [ Debug ] virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-subpixel.html [ Crash ]
+crbug.com/417782 [ Debug ] virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-nan-scroll-position.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure Pass Crash ]
 
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
@@ -1484,7 +1478,7 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-v
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ ImageOnlyFailure ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/417782 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Pass Timeout ]
 
 crbug.com/438888 http/tests/misc/acid3.html [ NeedsManualRebaseline ]
 crbug.com/438888 virtual/slimmingpaint/fast/block/positioning/055.html [ NeedsManualRebaseline ]
