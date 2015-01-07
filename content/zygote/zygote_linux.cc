@@ -374,7 +374,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CreatePipe(&read_pipe, &write_pipe);
     // This is roughly equivalent to a fork(). We are using ForkWithFlags mainly
     // to give it some more diverse test coverage.
-    pid = base::ForkWithFlags(SIGCHLD, nullptr, nullptr);
+    pid = sandbox::ForkWithFlags(SIGCHLD, nullptr, nullptr);
   }
 
   if (pid == 0) {

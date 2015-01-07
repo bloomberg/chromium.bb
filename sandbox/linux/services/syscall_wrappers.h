@@ -33,6 +33,18 @@ SANDBOX_EXPORT long sys_clone(unsigned long flags,
                               pid_t* ctid,
                               decltype(nullptr) regs);
 
+// A wrapper for clone with fork-like behavior, meaning that it returns the
+// child's pid in the parent and 0 in the child. |flags|, |ptid|, and |ctid| are
+// as in the clone system call (the CLONE_VM flag is not supported).
+//
+// This function uses the libc clone wrapper (which updates libc's pid cache)
+// internally, so callers may expect things like getpid() to work correctly
+// after in both the child and parent. An exception is when this code is run
+// under Valgrind. Valgrind does not support the libc clone wrapper, so the libc
+// pid cache may be incorrect after this function is called under Valgrind.
+SANDBOX_EXPORT pid_t
+ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid);
+
 SANDBOX_EXPORT void sys_exit_group(int status);
 
 // The official system call takes |args| as void*  (in order to be extensible),
