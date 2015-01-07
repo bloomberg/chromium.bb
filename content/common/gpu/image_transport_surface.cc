@@ -203,6 +203,9 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // GetVsyncValues before SwapBuffers to work around Mali driver bug:
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
+  for (auto& latency : latency_info_)
+    latency.AddLatencyNumber(ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0);
+
   // We use WeakPtr here to avoid manual management of life time of an instance
   // of this class. Callback will not be called once the instance of this class
   // is destroyed. However, this also means that the callback can be run on

@@ -19,6 +19,9 @@ namespace content {
 namespace {
 
 const uint32 kMaxInputCoordinates = LatencyInfo::kMaxInputCoordinates;
+const size_t kBrowserCompositeLatencyHistorySize = 60;
+const double kBrowserCompositeLatencyEstimationPercentile = 90.0;
+const double kBrowserCompositeLatencyEstimationSlack = 1.1;
 
 void UpdateLatencyCoordinatesImpl(const blink::WebTouchEvent& touch,
                                   LatencyInfo* latency) {
@@ -163,7 +166,10 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
 }  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
-    : last_event_id_(0), latency_component_id_(0), device_scale_factor_(1) {
+    : last_event_id_(0),
+      latency_component_id_(0),
+      device_scale_factor_(1),
+      browser_composite_latency_history_(kBrowserCompositeLatencyHistorySize) {
 }
 
 RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {
@@ -257,8 +263,11 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
     std::vector<LatencyInfo>* latencies) {
   DCHECK(latencies);
-  for (LatencyInfo& latency : *latencies)
+  for (LatencyInfo& latency : *latencies) {
     AddLatencyInfoComponentIds(&latency, latency_component_id_);
+    latency.AddLatencyNumber(
+        ui::INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT, 0, 0);
+  }
 }
 
 void RenderWidgetHostLatencyTracker::OnFrameSwapped(
@@ -303,6 +312,33 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
           100);
     }
   }
+
+  ui::LatencyInfo::LatencyComponent gpu_swap_component;
+  if (!latency.FindLatency(ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0,
+                           &gpu_swap_component)) {
+    return;
+  }
+
+  ui::LatencyInfo::LatencyComponent browser_swap_component;
+  if (latency.FindLatency(
+          ui::INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT, 0,
+          &browser_swap_component)) {
+    base::TimeDelta delta =
+        gpu_swap_component.event_time - browser_swap_component.event_time;
+    browser_composite_latency_history_.InsertSample(delta);
+  }
+}
+
+base::TimeDelta
+RenderWidgetHostLatencyTracker::GetEstimatedBrowserCompositeTime() const {
+  // TODO(brianderson): Remove lower bound on estimate once we're sure it won't
+  // cause regressions.
+  return std::max(
+      browser_composite_latency_history_.Percentile(
+          kBrowserCompositeLatencyEstimationPercentile) *
+          kBrowserCompositeLatencyEstimationSlack,
+      base::TimeDelta::FromMicroseconds(
+          (1.0f * base::Time::kMicrosecondsPerSecond) / (3.0f * 60)));
 }
 
 }  // namespace content

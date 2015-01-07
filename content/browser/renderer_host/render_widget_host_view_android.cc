@@ -1440,12 +1440,8 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
                "frame_time_us", frame_time.ToInternalValue());
   base::TimeTicks display_time = frame_time + vsync_period;
 
-  // TODO(brianderson): Use adaptive draw-time estimation.
-  base::TimeDelta estimated_browser_composite_time =
-      base::TimeDelta::FromMicroseconds(
-          (1.0f * base::Time::kMicrosecondsPerSecond) / (3.0f * 60));
-
-  base::TimeTicks deadline = display_time - estimated_browser_composite_time;
+  base::TimeTicks deadline =
+      display_time - host_->GetEstimatedBrowserCompositeTime();
 
   host_->Send(new ViewMsg_BeginFrame(
       host_->GetRoutingID(),

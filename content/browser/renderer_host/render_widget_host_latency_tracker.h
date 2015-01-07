@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "cc/base/rolling_time_delta_history.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "ui/events/latency_info.h"
@@ -48,6 +49,10 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   // Called when the RenderWidgetHost receives a swap update from the GPU.
   void OnFrameSwapped(const ui::LatencyInfo& latency);
 
+  // Produces an estimate of the time between browser composite and GPU swap,
+  // as informed by historical latency values.
+  base::TimeDelta GetEstimatedBrowserCompositeTime() const;
+
   // WebInputEvent coordinates are in DPIs, while LatencyInfo expects
   // coordinates in device pixels.
   void set_device_scale_factor(float device_scale_factor) {
@@ -62,6 +67,7 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   int64 last_event_id_;
   int64 latency_component_id_;
   float device_scale_factor_;
+  cc::RollingTimeDeltaHistory browser_composite_latency_history_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTracker);
 };
