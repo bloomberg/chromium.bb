@@ -141,11 +141,16 @@ message PowerManagementPolicy {
   // the login screen.
   optional bool wait_for_initial_user_activity = 12;
 
+  // If true, force the panel backlight to a non-zero brightness level in
+  // response to user activity if it was previously manually set to zero by the
+  // user.
+  optional bool force_nonzero_brightness_for_user_activity = 15;
+
   // Human-readable description of the factors contributing to this policy.
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
 
-  // Next ID to use: 15
+  // Next ID to use: 16
 }
 
 // Message included in IdleActionImminent signals.
