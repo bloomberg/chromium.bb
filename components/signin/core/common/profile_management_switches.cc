@@ -135,8 +135,13 @@ bool IsEnableWebBasedSignin() {
 }
 
 bool IsEnableWebviewBasedSignin() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebviewBasedSignin);
+  // For now, the webview is enabled only for desktop.
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableIframeBasedSignin);
+#endif
 }
 
 bool IsExtensionsMultiAccount() {

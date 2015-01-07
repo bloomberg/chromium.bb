@@ -14104,11 +14104,11 @@ Do you accept?
       <message name="IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable web-based sign-in flows">
         When enabled, will use a pure web-based sign-in flow on first run/NTP/wrench menu/settings page. Otherwise use a native flow with embedded webview.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBVIEW_BASED_SIGNIN_NAME" desc="Title for the flag to enable webview-based sign-in flows.">
-        Enables webview-based Chrome sign-in flows. This flag overrides --enable-web-based-signin.
+      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag to enable iframe-based sign-in flows.">
+        Enables iframe-based Chrome sign-in flows. This flag overrides --enable-web-based-signin.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBVIEW_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable webview-based sign-in flows">
-        When enabled, will use a webview-based Chrome sign-in flow.
+      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable iframe-based sign-in flows">
+        When enabled, will use an iframe-based Chrome sign-in flow; otherwise uses a webview-based flow.
       </message>
       <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
         Enable Google profile name and icon
