@@ -45,10 +45,11 @@ class GSContextMock(partial_mock.PartialCmdMock):
            'DEFAULT_GSUTIL_BUILDER_BIN', 'GSUTIL_URL')
   DEFAULT_ATTR = 'DoCommand'
 
-  GSResponsePreconditionFailed = """
-[Setting Content-Type=text/x-python]
-        GSResponseError:: status=412, code=PreconditionFailed,
-        reason=Precondition Failed."""
+  GSResponsePreconditionFailed = """\
+Copying file:///dev/null [Content-Type=application/octet-stream]...
+Uploading   gs://chromeos-throw-away-bucket/vapier/null:         0 B    \r\
+Uploading   gs://chromeos-throw-away-bucket/vapier/null:         0 B    \r\
+PreconditionException: 412 Precondition Failed"""
 
   DEFAULT_SLEEP_TIME = 0
   DEFAULT_RETRIES = 2
@@ -399,12 +400,12 @@ class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
     self.gs_mock.AddCmdResult(partial_mock.In('cp'), returncode=1)
     self.assertRaises(cros_build_lib.RunCommandError, self.Copy)
 
-  def testGSContextException(self):
-    """GSContextException is raised properly."""
+  def testGSContextPreconditionFailed(self):
+    """GSContextPreconditionFailed is raised properly."""
     self.gs_mock.AddCmdResult(
         partial_mock.In('cp'), returncode=1,
         error=self.gs_mock.GSResponsePreconditionFailed)
-    self.assertRaises(gs.GSContextException, self.Copy)
+    self.assertRaises(gs.GSContextPreconditionFailed, self.Copy)
 
   def testNonRecursive(self):
     """Test non-recursive copy."""
