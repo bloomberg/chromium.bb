@@ -773,13 +773,10 @@ def _RunPerfTests(args):
     return perf_test_runner.OutputJsonList(
         perf_options.steps, perf_options.output_json_list)
 
-  if perf_options.output_chartjson_data:
-    return perf_test_runner.OutputChartjson(
-        perf_options.print_step, perf_options.output_chartjson_data)
-
   # Just print the results from a single previously executed step.
   if perf_options.print_step:
-    return perf_test_runner.PrintTestOutput(perf_options.print_step)
+    return perf_test_runner.PrintTestOutput(
+        perf_options.print_step, perf_options.output_chartjson_data)
 
   runner_factory, tests, devices = perf_setup.Setup(perf_options)
 
