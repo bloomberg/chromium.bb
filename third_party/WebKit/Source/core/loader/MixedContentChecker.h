@@ -76,7 +76,6 @@ private:
         ContextTypeBlockable,
         ContextTypeOptionallyBlockable,
         ContextTypeShouldBeBlockable,
-        ContextTypeBlockableUnlessLax
     };
 
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);

@@ -7,8 +7,6 @@ if (window.testRunner) {
     testRunner.setCanOpenWindows();
     testRunner.setCloseRemainingWindowsWhenComplete(true);
 }
-if (window.internals)
-    internals.settings.setLaxMixedContentCheckingEnabled(false);
 
 window.addEventListener("message", function (e) {
     if (window.testRunner)

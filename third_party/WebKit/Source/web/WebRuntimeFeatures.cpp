@@ -278,11 +278,6 @@ void WebRuntimeFeatures::enableShowModalDialog(bool enable)
     RuntimeEnabledFeatures::setShowModalDialogEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableLaxMixedContentChecking(bool enable)
-{
-    RuntimeEnabledFeatures::setLaxMixedContentCheckingEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableCredentialManagerAPI(bool enable)
 {
     RuntimeEnabledFeatures::setCredentialManagerEnabled(enable);

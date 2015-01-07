@@ -60,7 +60,6 @@ namespace blink {
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalCSP(RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
-    , m_originalLaxMixedContentCheckingEnabled(RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
     , m_originalOverlayScrollbarsEnabled(RuntimeEnabledFeatures::overlayScrollbarsEnabled())
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
@@ -83,7 +82,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 {
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(m_originalCSP);
-    RuntimeEnabledFeatures::setLaxMixedContentCheckingEnabled(m_originalLaxMixedContentCheckingEnabled);
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_originalOverlayScrollbarsEnabled);
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
@@ -188,11 +186,6 @@ void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(enabled);
-}
-
-void InternalSettings::setLaxMixedContentCheckingEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setLaxMixedContentCheckingEnabled(enabled);
 }
 
 void InternalSettings::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool enabled)

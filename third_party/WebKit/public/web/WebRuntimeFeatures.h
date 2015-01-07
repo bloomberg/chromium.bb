@@ -134,8 +134,6 @@ public:
 
     BLINK_EXPORT static void enableShowModalDialog(bool);
 
-    BLINK_EXPORT static void enableLaxMixedContentChecking(bool);
-
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
 
     BLINK_EXPORT static void enableTextBlobs(bool);

@@ -95,6 +95,7 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     case WebURLRequest::RequestContextBeacon:
     case WebURLRequest::RequestContextCSPReport:
     case WebURLRequest::RequestContextEmbed:
+    case WebURLRequest::RequestContextEventSource:
     case WebURLRequest::RequestContextFetch:
     case WebURLRequest::RequestContextFont:
     case WebURLRequest::RequestContextForm:
@@ -114,13 +115,9 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     case WebURLRequest::RequestContextSubresource:
     case WebURLRequest::RequestContextTrack:
     case WebURLRequest::RequestContextWorker:
+    case WebURLRequest::RequestContextXMLHttpRequest:
     case WebURLRequest::RequestContextXSLT:
         return ContextTypeBlockable;
-
-    // "Blockable" mixed content whose behavior changed recently, and which is thus guarded behind the "lax" flag
-    case WebURLRequest::RequestContextEventSource:
-    case WebURLRequest::RequestContextXMLHttpRequest:
-        return ContextTypeBlockableUnlessLax;
 
     // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
     case WebURLRequest::RequestContextDownload:
@@ -232,7 +229,7 @@ void MixedContentChecker::count(LocalFrame* frame, WebURLRequest::RequestContext
     // Roll blockable content up into a single counter, count unblocked types individually so we
     // can determine when they can be safely moved to the blockable category:
     ContextType contextType = contextTypeFromContext(requestContext);
-    if (contextType == ContextTypeBlockable || contextType == ContextTypeBlockableUnlessLax) {
+    if (contextType == ContextTypeBlockable) {
         UseCounter::count(frame, UseCounter::MixedContentBlockable);
         return;
     }
@@ -312,8 +309,6 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
     bool strictMode = frame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
 
     ContextType contextType = contextTypeFromContext(requestContext);
-    if (contextType == ContextTypeBlockableUnlessLax)
-        contextType = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? ContextTypeOptionallyBlockable : ContextTypeBlockable;
 
     // If we're loading the main resource of a subframe, we need to take a close look at the loaded URL.
     // If we're dealing with a CORS-enabled scheme, then block mixed frames as active content. Otherwise,
@@ -341,11 +336,6 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         allowed = true;
         client->didDisplayInsecureContent();
         break;
-
-    case ContextTypeBlockableUnlessLax:
-        // We map this to either OptionallyBlockable or Blockable above.
-        ASSERT_NOT_REACHED();
-        return true;
     };
 
     if (reportingStatus == SendReport)
@@ -418,8 +408,6 @@ bool MixedContentChecker::canRunInsecureContent(SecurityOrigin* securityOrigin, 
 
 bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
 {
-    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
-        return canDisplayInsecureContent(securityOrigin, url, MixedContentChecker::WebSocket);
     return canRunInsecureContent(securityOrigin, url, MixedContentChecker::WebSocket);
 }
 
@@ -431,9 +419,6 @@ bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin
     if (url.protocolIs("javascript"))
         return true;
 
-    // If lax mixed content checking is enabled (noooo!), skip this check entirely.
-    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
-        return true;
     return canDisplayInsecureContent(securityOrigin, url, MixedContentChecker::Submission);
 }
 

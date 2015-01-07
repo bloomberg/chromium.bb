@@ -59,7 +59,6 @@ public:
 
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalCSP;
-        bool m_originalLaxMixedContentCheckingEnabled;
         bool m_originalOverlayScrollbarsEnabled;
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
@@ -116,7 +115,6 @@ public:
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setOverlayScrollbarsEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
-    void setLaxMixedContentCheckingEnabled(bool);
     void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
     void setImageColorProfilesEnabled(bool);
     void setImageAnimationPolicy(const String&, ExceptionState&);
