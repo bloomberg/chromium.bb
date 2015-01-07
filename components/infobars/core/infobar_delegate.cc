@@ -45,48 +45,52 @@ InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
 }
 
 AutoLoginInfoBarDelegate* InfoBarDelegate::AsAutoLoginInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 InsecureContentInfoBarDelegate*
     InfoBarDelegate::AsInsecureContentInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 MediaStreamInfoBarDelegate* InfoBarDelegate::AsMediaStreamInfoBarDelegate() {
-  return NULL;
+  return nullptr;
+}
+
+NativeAppInfoBarDelegate* InfoBarDelegate::AsNativeAppInfoBarDelegate() {
+  return nullptr;
 }
 
 PopupBlockedInfoBarDelegate* InfoBarDelegate::AsPopupBlockedInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 RegisterProtocolHandlerInfoBarDelegate*
     InfoBarDelegate::AsRegisterProtocolHandlerInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 ScreenCaptureInfoBarDelegate*
     InfoBarDelegate::AsScreenCaptureInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 ThemeInstalledInfoBarDelegate*
     InfoBarDelegate::AsThemePreviewInfobarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 translate::TranslateInfoBarDelegate*
 InfoBarDelegate::AsTranslateInfoBarDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 void InfoBarDelegate::StoreActiveEntryUniqueID() {
