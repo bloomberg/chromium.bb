@@ -168,24 +168,16 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
 
   def AddResultsForHeaderValidation(self, tab, results):
     via_count = 0
-    bypass_count = 0
     for resp in self.IterResponses(tab):
       if resp.IsValidByViaHeader():
         via_count += 1
       else:
-        bypassed, _ = self.IsProxyBypassed(tab)
-        if tab and bypassed:
-          logging.warning('Proxy bypassed for %s', resp.response.url)
-          bypass_count += 1
-        else:
-          r = resp.response
-          raise ChromeProxyMetricException, (
-              '%s: Via header (%s) is not valid (refer=%s, status=%d)' % (
-                  r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            '%s: Via header (%s) is not valid (refer=%s, status=%d)' % (
+                r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'checked_via_header', 'count', via_count))
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'request_bypassed', 'count', bypass_count))
 
   def AddResultsForClientVersion(self, tab, results):
     for resp in self.IterResponses(tab):
