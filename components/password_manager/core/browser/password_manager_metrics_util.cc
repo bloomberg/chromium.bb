@@ -85,6 +85,17 @@ size_t MonitoredDomainGroupId(const std::string& url_host,
   return 0;
 }
 
+void LogAllowToCollectURLBubbleUIDismissalReason(UIDismissalReason reason) {
+  AllowToCollectURLBubbleUIDismissalReason dismissal_reason = NO_INTERACTION;
+  if (reason == CLICKED_COLLECT_URL)
+    dismissal_reason = COLLECT_URL;
+  else if (reason == CLICKED_DO_NOT_COLLECT_URL)
+    dismissal_reason = DO_NOT_COLLECT_URL;
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.AllowToCollectURLBubble.UIDismissalReason",
+      dismissal_reason, NUM_ALLOW_TO_COLLECT_BUBBLE_DISMISSAL_REASON);
+}
+
 void LogUMAHistogramEnumeration(const std::string& name,
                                 int sample,
                                 int boundary_value) {

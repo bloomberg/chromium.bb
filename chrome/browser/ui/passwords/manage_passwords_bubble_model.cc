@@ -205,7 +205,13 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
 
   if (password_manager::ui::IsAskSubmitURLState(state_)) {
     state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
+    metrics_util::LogAllowToCollectURLBubbleUIDismissalReason(
+        dismissal_reason_);
+    // Return since we do not want to include "Allow to collect URL?" bubble
+    // data in other PasswordManager metrics.
+    return;
   }
+
   metrics_util::LogUIDismissalReason(dismissal_reason_);
   // Other use cases have been reported in the callbacks like OnSaveClicked().
   if (dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)

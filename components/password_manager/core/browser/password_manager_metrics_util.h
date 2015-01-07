@@ -56,6 +56,14 @@ enum UIDismissalReason {
   NOT_DISPLAYED
 };
 
+// Metrics: "PasswordManager.AllowToCollectURLBubble.UIDismissalReason"
+enum AllowToCollectURLBubbleUIDismissalReason {
+  NO_INTERACTION = 0,
+  COLLECT_URL,
+  DO_NOT_COLLECT_URL,
+  NUM_ALLOW_TO_COLLECT_BUBBLE_DISMISSAL_REASON,
+};
+
 // We monitor the performance of the save password heuristic for a handful of
 // domains. For privacy reasons we are not reporting UMA signals by domain, but
 // by a domain group. A domain group can contain multiple domains, and a domain
@@ -71,6 +79,9 @@ const size_t kGroupsPerDomain = 10u;
 // returns 0. |pref_service| needs to be the profile preference service.
 size_t MonitoredDomainGroupId(const std::string& url_host,
                               PrefService* pref_service);
+
+// Log the |reason| a user dismissed the "Allow to collect URL?" bubble.
+void LogAllowToCollectURLBubbleUIDismissalReason(UIDismissalReason reason);
 
 // A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
 // to vary over the program's runtime.

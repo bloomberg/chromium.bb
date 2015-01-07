@@ -23006,6 +23006,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AllowToCollectURLBubble.UIDismissalReason"
+    enum="PasswordManagerAllowToCollectURLBubble.UIDismissalReason">
+  <owner>melandory@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>Why was &quot;Allow to collect URL?&quot; bubble closed?</summary>
+</histogram>
+
 <histogram name="PasswordManager.BlacklistedSites">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -53058,6 +53065,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="47"
       label="manager did nothing (autocomplete off) / user typed in something
              / form submit succeeded"/>
+</enum>
+
+<enum name="PasswordManagerAllowToCollectURLBubble.UIDismissalReason"
+    type="int">
+  <int value="0" label="Bubble lost focus / No infobar interaction"/>
+  <int value="1" label="Clicked collect URL"/>
+  <int value="2" label="Clicked do not collect URL"/>
 </enum>
 
 <enum name="PasswordManagerOsPasswordStatus" type="int">

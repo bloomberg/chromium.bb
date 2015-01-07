@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
+const char kAllowToCollectURLBubbleUIDismissalReasonMetric[] =
+    "PasswordManager.AllowToCollectURLBubble.UIDismissalReason";
 
 class ManagePasswordsBubbleModelTest : public testing::Test {
  public:
@@ -298,8 +300,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURL) {
             model_->state());
 
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_COLLECT_URL, 1);
+      kAllowToCollectURLBubbleUIDismissalReasonMetric,
+      password_manager::metrics_util::COLLECT_URL, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickDoNotCollectURL) {
@@ -313,8 +315,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDoNotCollectURL) {
             model_->state());
 
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_DO_NOT_COLLECT_URL, 1);
+      kAllowToCollectURLBubbleUIDismissalReasonMetric,
+      password_manager::metrics_util::DO_NOT_COLLECT_URL, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest,
@@ -327,8 +329,8 @@ TEST_F(ManagePasswordsBubbleModelTest,
   EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
             model_->state());
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::NO_DIRECT_INTERACTION, 1);
+      kAllowToCollectURLBubbleUIDismissalReasonMetric,
+      password_manager::metrics_util::NO_INTERACTION, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURLBeforeNavigation) {
@@ -344,8 +346,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURLBeforeNavigation) {
             model_->state());
 
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_COLLECT_URL, 1);
+      kAllowToCollectURLBubbleUIDismissalReasonMetric,
+      password_manager::metrics_util::COLLECT_URL, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickDoNotCollectURLBeforeNavigation) {
@@ -361,8 +363,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDoNotCollectURLBeforeNavigation) {
             model_->state());
 
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_DO_NOT_COLLECT_URL, 1);
+      kAllowToCollectURLBubbleUIDismissalReasonMetric,
+      password_manager::metrics_util::DO_NOT_COLLECT_URL, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest,
@@ -377,8 +379,8 @@ TEST_F(ManagePasswordsBubbleModelTest,
   EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
             model_->state());
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::NO_DIRECT_INTERACTION, 1);
+      kAllowToCollectURLBubbleUIDismissalReasonMetric,
+      password_manager::metrics_util::NO_INTERACTION, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {
