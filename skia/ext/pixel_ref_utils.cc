@@ -93,8 +93,8 @@ class GatherPixelRefDevice : public SkBitmapDevice {
     if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect mapped_rect;
       draw.fMatrix->mapRect(&mapped_rect, rect);
-      mapped_rect.intersect(SkRect::Make(draw.fRC->getBounds()));
-      AddBitmap(bitmap, mapped_rect);
+      if (mapped_rect.intersect(SkRect::Make(draw.fRC->getBounds())))
+        AddBitmap(bitmap, mapped_rect);
     }
   }
   void drawOval(const SkDraw& draw,
@@ -327,8 +327,8 @@ class GatherPixelRefDevice : public SkBitmapDevice {
   void AddBitmap(const SkBitmap& bm, const SkRect& rect) {
     SkRect canvas_rect = SkRect::MakeWH(width(), height());
     SkRect paint_rect = SkRect::MakeEmpty();
-    paint_rect.intersect(rect, canvas_rect);
-    pixel_ref_set_->Add(bm.pixelRef(), paint_rect);
+    if (paint_rect.intersect(rect, canvas_rect))
+      pixel_ref_set_->Add(bm.pixelRef(), paint_rect);
   }
 
   bool GetBitmapFromPaint(const SkPaint& paint, SkBitmap* bm) {
