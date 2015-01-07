@@ -12,6 +12,9 @@ from pylib import cmd_helper
 
 _PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')
 _PROGUARD_SUPERCLASS_RE = re.compile(r'\s*?  Superclass:\s*([\S]+)$')
+_PROGUARD_SECTION_RE = re.compile(
+    r'^(?:Interfaces|Constant Pool|Fields|Methods|Class file attributes) '
+    r'\(count = \d+\):$')
 _PROGUARD_METHOD_RE = re.compile(r'\s*?- Method:\s*(\S*)[(].*$')
 _PROGUARD_ANNOTATION_RE = re.compile(r'\s*?- Annotation \[L(\S*);\]:$')
 _PROGUARD_ANNOTATION_CONST_RE = (
@@ -78,12 +81,6 @@ def Dump(jar_path):
     for line in proguard_output:
       line = line.strip('\r\n')
 
-      if len(line) == 0:
-        annotation = None
-        annotation_has_value = False
-        method_result = None
-        continue
-
       m = _PROGUARD_CLASS_RE.match(line)
       if m:
         class_result = {
@@ -104,6 +101,13 @@ def Dump(jar_path):
       m = _PROGUARD_SUPERCLASS_RE.match(line)
       if m:
         class_result['superclass'] = m.group(1).replace('/', '.')
+        continue
+
+      m = _PROGUARD_SECTION_RE.match(line)
+      if m:
+        annotation = None
+        annotation_has_value = False
+        method_result = None
         continue
 
       m = _PROGUARD_METHOD_RE.match(line)
