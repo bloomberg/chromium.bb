@@ -1934,9 +1934,20 @@ public class ContentViewCore
         return mActionHandler;
     }
 
+    // crbug.com/446717
+    private void actionModeInvalidateWAR() {
+        assert mActionMode != null;
+
+        try {
+            mActionMode.invalidate();
+        } catch (NullPointerException e) {
+            Log.w(TAG, "Ignoring NPE from ActionMode.invalidate() as workaround for L", e);
+        }
+    }
+
     private void showSelectActionBar() {
         if (mActionMode != null) {
-            mActionMode.invalidate();
+            actionModeInvalidateWAR();
             return;
         }
 
@@ -2282,7 +2293,7 @@ public class ContentViewCore
                         compositionEnd, isNonImeChange);
             }
 
-            if (mActionMode != null) mActionMode.invalidate();
+            if (mActionMode != null) actionModeInvalidateWAR();
         } finally {
             TraceEvent.end("ContentViewCore.updateImeAdapter");
         }
