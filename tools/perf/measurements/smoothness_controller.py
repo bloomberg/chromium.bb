@@ -37,9 +37,9 @@ class SmoothnessController(object):
       category_filter.AddIncludedCategory(c)
     options = tracing_options.TracingOptions()
     options.enable_chrome_trace = True
+    if tab.browser.platform.tracing_controller.IsDisplayTracingSupported():
+      options.enable_platform_display_trace = True
     tab.browser.platform.tracing_controller.Start(options, category_filter, 60)
-    if tab.browser.platform.IsDisplayTracingSupported():
-      tab.browser.platform.StartDisplayTracing();
 
   def Start(self, tab):
     # Start the smooth marker for all smooth actions.
@@ -50,20 +50,8 @@ class SmoothnessController(object):
   def Stop(self, tab):
     # End the smooth marker for  all smooth actions.
     self._interaction.End()
-    # Stop tracing for smoothness metric.
-    if tab.browser.platform.IsDisplayTracingSupported():
-      self._surface_flinger_trace_data = \
-          tab.browser.platform.StopDisplayTracing()
     self._trace_data = tab.browser.platform.tracing_controller.Stop()
-    trace_data_builder = trace_data_module.TraceDataBuilder()
-    for part in self._trace_data.active_parts:
-      trace_data_builder.AddEventsTo(part, self._trace_data.GetEventsFor(part))
-    if self._surface_flinger_trace_data:
-      trace_data_builder.AddEventsTo(
-          trace_data_module.SURFACE_FLINGER_PART,
-          self._surface_flinger_trace_data.GetEventsFor(
-              trace_data_module.SURFACE_FLINGER_PART))
-    self._timeline_model = TimelineModel(trace_data_builder.AsData())
+    self._timeline_model = TimelineModel(self._trace_data)
 
   def AddResults(self, tab, results):
     # Add results of smoothness metric. This computes the smoothness metric for
@@ -111,7 +99,5 @@ class SmoothnessController(object):
         self._timeline_model, renderer_thread, smooth_records, results)
 
   def CleanUp(self, tab):
-    if tab.browser.platform.IsDisplayTracingSupported():
-      tab.browser.platform.StopDisplayTracing()
     if tab.browser.platform.tracing_controller.is_tracing_running:
       tab.browser.platform.tracing_controller.Stop()

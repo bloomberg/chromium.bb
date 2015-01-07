@@ -17,13 +17,12 @@ class FakeTracingController(object):
     self.category_filter = None
   def Start(self, _options, category_filter, _timeout):
     self.category_filter = category_filter
-
+  def IsDisplayTracingSupported(self):
+    return False
 
 class FakePlatform(object):
   def __init__(self):
     self.tracing_controller = FakeTracingController()
-  def IsDisplayTracingSupported(self):
-    return False
   def CanMonitorPower(self):
     return False
 
