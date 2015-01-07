@@ -25,13 +25,15 @@ vars = {
   "breakpad_rev": "fe34e3f9fef1eb425b25a79f0da84e2f277d433b", # from svn revision 1338
   "android_tools_rev": "ea50cccc11657404ce22cf928062ed1a3927eb39",
 
+  # Separately pinned repositories, update with roll-dep individually.
+  "third_party_rev": "7e4c04567bd393069233676fc648333885e18da9", # from svn revision 13800
   "lcov_rev": "b37daf5968200da8ff520ce65c4e5bce4047dd15", # from svn revision 149720
-  "tools_rev": "13800",
+  "gnu_binutils_rev": "f4003433b61b25666565690caf3d7a7a1a4ec436", # from svn revision 8151
+  "mingw_rev": "3cc8b140b883a9fe4986d12cfd46c16a093d3527", # from svn revision 7064
+  "nsis_rev": "21b6ad22daa7bfc04b9f1c1805a34622e2607a93", # from svn revision 7071
+  "ragel_rev": "da42bb33f1b67c2d70b38ec1d2edf5263271b635", # from svn revision 9010
+  "validator_snapshots_rev": "88fa8d87fae94975f8f0e9716e2c29c1e6494cb5", # from svn revision 14247
 
-  "validator_snapshots_rev": "14247",
-
-  # These are URL prefixes rather than revision numbers, so keep them separate.
-  "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "chromium_git": "https://chromium.googlesource.com",
 
   # Three lines of non-changing comments so that
@@ -50,9 +52,10 @@ deps = {
   "testing/gtest":
     Var("chromium_git") + "/external/googletest.git@" + Var("gtest_rev"),
   "third_party":
-    Var("native_client_trunk") + "/src/third_party@" + Var("tools_rev"),
+    Var("chromium_git") + "/native_client/src/third_party.git@" +
+    Var("third_party_rev"),
   "validator_snapshots":
-    (Var("native_client_trunk") + "/src/validator_snapshots@" +
+    (Var("chromium_git") + "/native_client/src/validator_snapshots.git@" +
      Var("validator_snapshots_rev")),
   "third_party/lcov":
     Var("chromium_git") + "/chromium/src/third_party/lcov.git@" +
@@ -75,25 +78,27 @@ deps_os = {
   "win": {
     # GNU binutils assembler for x86-32.
     "third_party/gnu_binutils":
-      (Var("native_client_trunk") + "/deps/third_party/gnu_binutils@" +
-       Var("tools_rev")),
+      Var("chromium_git") +
+      "/native_client/deps/third_party/gnu_binutils.git@" +
+      Var("gnu_binutils_rev"),
     # GNU binutils assembler for x86-64.
     "third_party/mingw-w64/mingw/bin":
-      (Var("native_client_trunk") + "/deps/third_party/mingw-w64/mingw/bin@" +
-       Var("tools_rev")),
+      Var("chromium_git") +
+      "/native_client/deps/third_party/mingw-w64/mingw/bin.git@" +
+      Var("mingw_rev"),
     "third_party/NSIS":
-      (Var("native_client_trunk") + "/deps/third_party/NSIS@" +
-       Var("tools_rev")),
+      Var("chromium_git") + "/native_client/deps/third_party/NSIS.git@" +
+      Var("nsis_rev"),
   },
   "unix": {
     # Ragel for validator_ragel
     "third_party/ragel":
-      (Var("native_client_trunk") + "/deps/third_party/ragel@" +
-       Var("tools_rev")),
+      Var("chromium_git") + "/native_client/deps/third_party/ragel.git@" +
+      Var("ragel_rev"),
   },
   "android": {
     "third_party/android_tools":
-      (Var("chromium_git") + "/android_tools.git@" + Var("android_tools_rev"))
+      Var("chromium_git") + "/android_tools.git@" + Var("android_tools_rev")
   },
 }
 
