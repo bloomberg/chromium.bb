@@ -465,9 +465,9 @@ int ArmPrivateSysnoToErrno(int sysno) {
 class ArmPrivatePolicy : public Policy {
  public:
   ArmPrivatePolicy() {}
-  virtual ~ArmPrivatePolicy() {}
+  ~ArmPrivatePolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     // Start from |__ARM_NR_set_tls + 1| so as not to mess with actual
     // ARM private system calls.
