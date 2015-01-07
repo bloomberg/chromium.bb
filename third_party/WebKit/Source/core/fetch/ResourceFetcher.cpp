@@ -416,8 +416,7 @@ ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& reques
 ResourcePtr<RawResource> ResourceFetcher::fetchMedia(FetchRequest& request)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
-    // FIXME: Split this into audio and video.
-    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextVideo);
+    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextAudio || request.resourceRequest().requestContext() == WebURLRequest::RequestContextVideo);
     return toRawResource(requestResource(Resource::Media, request));
 }
 
