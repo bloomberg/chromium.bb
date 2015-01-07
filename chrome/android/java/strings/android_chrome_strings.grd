@@ -673,6 +673,13 @@ You are signing in with a managed account and giving its administrator control o
 Drag from top to exit.
       </message>
 
+      <!-- Download UI -->
+      <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
+        Download failed.
+      </message>
+      <message name="IDS_CANNOT_ADD_DOWNLOADED_ITEM_TO_MANAGER" desc="Toast for a download which has completed but cannot be added to the download manager">
+        Failed to add downloaded item to the download manager.
+      </message>
     </messages>
   </release>
 </grit>
