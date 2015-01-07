@@ -58,8 +58,8 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
 
   // The largest text height that fits in the button. If the font list height
   // is larger than this, it will be shrunk to match it.
-  // TODO(noms): Calculate this constant algorithmically.
-  const int kDisplayFontHeight = 15;
+  // TODO(noms): Calculate this constant algorithmically from the button's size.
+  const int kDisplayFontHeight = 16;
   SetFontList(GetFontList().DeriveWithHeightUpperBound(kDisplayFontHeight));
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
