@@ -434,6 +434,10 @@ MenuItemView* MenuController::Run(Widget* parent,
       // Set exit_all_, which makes sure all nested loops exit immediately.
       if (exit_type_ != EXIT_DESTROYED)
         SetExitType(EXIT_ALL);
+    } else if (exit_type_ != EXIT_NONE && message_loop_depth_) {
+      // If we're closing all menus, also mark the next topmost menu
+      // message loop for termination, so that we'll unwind fully.
+      TerminateNestedMessageLoop();
     }
   }
 
