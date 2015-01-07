@@ -325,11 +325,11 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
  * @param {Entry} source The entry to be copied.
  * @param {DirectoryEntry} parent The entry of the destination directory.
  * @param {string} newName The name of copied file.
- * @param {function(Entry, Entry)} entryChangedCallback
- *     Callback invoked when an entry is created with the source Entry and
+ * @param {function(string, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is created with the source URL and
  *     the destination Entry.
- * @param {function(Entry, number)} progressCallback Callback invoked
- *     periodically during the copying. It takes the source Entry and the
+ * @param {function(string, number)} progressCallback Callback invoked
+ *     periodically during the copying. It takes the source URL and the
  *     processed bytes of it.
  * @param {function(Entry)} successCallback Callback invoked when the copy
  *     is successfully done with the Entry of the created entry.
@@ -842,10 +842,10 @@ fileOperationUtil.CopyTask.prototype.run = function(
  * @param {Entry} sourceEntry An entry to be copied.
  * @param {DirectoryEntry} destinationEntry The entry which will contain the
  *     copied entry.
- * @param {function(Entry, Entry)} entryChangedCallback
- *     Callback invoked when an entry is created with the source Entry and
+ * @param {function(string, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is created with the source URL and
  *     the destination Entry.
- * @param {function(Entry, number)} progressCallback Callback invoked
+ * @param {function(string, number)} progressCallback Callback invoked
  *     periodically during the copying.
  * @param {function()} successCallback On success.
  * @param {function(fileOperationUtil.Error)} errorCallback On error.

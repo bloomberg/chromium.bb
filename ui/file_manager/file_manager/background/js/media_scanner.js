@@ -335,6 +335,7 @@ importer.DefaultScanResult.prototype.addFileEntry_ = function(entry) {
           function(metadata) {
             this.lastScanActivity_ = new Date();
             if ('size' in metadata) {
+              entry.size = metadata.size;
               this.totalBytes_ += metadata['size'];
               this.fileEntries_.push(entry);
               // Closure compiler currently requires an arg to resolve

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @type {!MockFileOperationManager} */
-var fileOperationManager;
+var progressCenter;
 
 /** @type {!TestMediaScanner} */
 var mediaScanner;
@@ -41,7 +41,7 @@ function setUp() {
     DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
   };
 
-  fileOperationManager = new MockFileOperationManager();
+  progressCenter = new MockProgressCenter();
 
   // Replace with test function.
   fileOperationUtil.copyTo = function(source, parent, newName,
@@ -69,7 +69,7 @@ function setUp() {
   importHistory = new importer.TestImportHistory();
   mediaScanner = new TestMediaScanner();
   mediaImporter = new importer.MediaImportHandler(
-      fileOperationManager,
+      progressCenter,
       importHistory);
 }
 
