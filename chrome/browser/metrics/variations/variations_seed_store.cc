@@ -64,6 +64,8 @@ enum VariationSeedEmptyState {
   VARIATIONS_SEED_EMPTY,
   VARIATIONS_SEED_CORRUPT,
   VARIATIONS_SEED_INVALID_SIGNATURE,
+  VARIATIONS_SEED_CORRUPT_BASE64,
+  VARIATIONS_SEED_CORRUPT_PROTOBUF,
   VARIATIONS_SEED_EMPTY_ENUM_SIZE,
 };
 
@@ -130,12 +132,9 @@ bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
 
   // If the decode process fails, assume the pref value is corrupt and clear it.
   std::string seed_data;
-  if (!base::Base64Decode(base64_seed_data, &seed_data) ||
-      !seed->ParseFromString(seed_data)) {
-    VLOG(1) << "Variations seed data in local pref is corrupt, clearing the "
-            << "pref.";
+  if (!base::Base64Decode(base64_seed_data, &seed_data)) {
     ClearPrefs();
-    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT);
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_BASE64);
     return false;
   }
 
@@ -147,14 +146,18 @@ bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
     UMA_HISTOGRAM_ENUMERATION("Variations.LoadSeedSignature", result,
                               VARIATIONS_SEED_SIGNATURE_ENUM_SIZE);
     if (result != VARIATIONS_SEED_SIGNATURE_VALID) {
-      VLOG(1) << "Variations seed signature in local pref missing or invalid "
-              << "with result: " << result << ". Clearing the pref.";
       ClearPrefs();
       RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_INVALID_SIGNATURE);
       // Record the invalid signature.
       invalid_base64_signature_ = base64_seed_signature;
       return false;
     }
+  }
+
+  if (!seed->ParseFromString(seed_data)) {
+    ClearPrefs();
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_PROTOBUF);
+    return false;
   }
 
   variations_serial_number_ = seed->serial_number();

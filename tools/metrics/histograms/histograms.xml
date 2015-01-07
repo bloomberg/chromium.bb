@@ -57903,8 +57903,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="VariationsSeedEmpty" type="int">
   <int value="0" label="Seed Not Empty"/>
   <int value="1" label="Seed Empty"/>
-  <int value="2" label="Seed Corrupt"/>
+  <int value="2" label="Seed Corrupt (Obsolete)"/>
   <int value="3" label="Seed Signature Verification Failed"/>
+  <int value="4" label="Seed Corrupt Base64 Data"/>
+  <int value="5" label="Seed Corrupt Protobuf"/>
 </enum>
 
 <enum name="VaryType" type="int">
