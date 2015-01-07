@@ -3827,6 +3827,83 @@ TEST(HttpCache, RangeGET_NoValidation_LogsRestart) {
       log, net::NetLog::TYPE_HTTP_CACHE_RESTART_PARTIAL_REQUEST));
 }
 
+// Tests that a regular request (no range) with a sparse entry that doesn't have
+// strong validators results in a full response.
+TEST(HttpCache, GET_NoValidation) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Write to the cache (40-49).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.response_headers =
+      "Content-Length: 10\n"
+      "ETag: w/\"foo\"\n";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Now verify that the cached data is not used.
+  // Don't ask for a range. The cache will attempt to use the cached data but
+  // should discard it as it cannot be validated. A regular request should go
+  // to the server and a new entry should be created.
+  transaction.request_headers = EXTRA_HEADER;
+  transaction.data = "Not a range";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  EXPECT_EQ(0U, headers.find("HTTP/1.1 200 OK\n"));
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+
+  // The last response was saved.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Verifies that when asking for a range that would require the cache to modify
+// the range to ask, the actual server request matches the user's one.
+TEST(HttpCache, RangeGET_NoValidation2) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Write to the cache (40-49).
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.response_headers =
+      "Content-Length: 10\n"
+      "ETag: w/\"foo\"\n";
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Now verify that the cached data is not used.
+  // Ask for a range that extends before and after the cached data so that the
+  // cache would normally mix data from three sources. After deleting the entry,
+  // the response will come from a single network request.
+  transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 20-29 rg: 30-39 rg: 40-49 rg: 50-59 ";
+  transaction.response_headers = kRangeGET_TransactionOK.response_headers;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  Verify206Response(headers, 20, 59);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+
+  // The last response was saved.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
 // Tests that we cache partial responses that lack content-length.
 TEST(HttpCache, RangeGET_NoContentLength) {
   MockHttpCache cache;

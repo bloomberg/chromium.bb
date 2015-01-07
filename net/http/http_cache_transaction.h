@@ -386,6 +386,10 @@ class HttpCache::Transaction : public HttpTransaction {
   // between the byte range request and the cached entry.
   int DoRestartPartialRequest();
 
+  // Resets the relavant internal state to remove traces of internal processing
+  // related to range requests. Deletes |partial_| if |delete_object| is true.
+  void ResetPartialState(bool delete_object);
+
   // Resets |network_trans_|, which must be non-NULL.  Also updates
   // |old_network_trans_load_timing_|, which must be NULL when this is called.
   void ResetNetworkTransaction();

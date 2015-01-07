@@ -2751,10 +2751,8 @@ bool HttpCache::Transaction::ValidatePartialResponse() {
   if (failure) {
     // We cannot truncate this entry, it has to be deleted.
     UpdateTransactionPattern(PATTERN_NOT_COVERED);
-    bool is_sparse = is_sparse_;
-    DoomPartialEntry(false);
     mode_ = NONE;
-    if (is_sparse || truncated_) {
+    if (is_sparse_ || truncated_) {
       // There was something cached to start with, either sparsed data (206), or
       // a truncated 200, which means that we probably modified the request,
       // adding a byte range or modifying the range requested by the caller.
@@ -2762,14 +2760,12 @@ bool HttpCache::Transaction::ValidatePartialResponse() {
         // We have not returned anything to the caller yet so it should be safe
         // to issue another network request, this time without us messing up the
         // headers.
-        partial_->RestoreHeaders(&custom_request_->extra_headers);
-        partial_.reset();
-        truncated_ = false;
+        ResetPartialState(true);
         return false;
       }
       LOG(WARNING) << "Failed to revalidate partial entry";
     }
-    partial_.reset();
+    DoomPartialEntry(true);
     return true;
   }
 
@@ -2996,6 +2992,7 @@ void HttpCache::Transaction::DoomPartialEntry(bool delete_object) {
   cache_->DoneWithEntry(entry_, this, false);
   entry_ = NULL;
   is_sparse_ = false;
+  truncated_ = false;
   if (delete_object)
     partial_.reset(NULL);
 }
@@ -3025,13 +3022,28 @@ int HttpCache::Transaction::DoPartialCacheReadCompleted(int result) {
 
 int HttpCache::Transaction::DoRestartPartialRequest() {
   // The stored data cannot be used. Get rid of it and restart this request.
-  // We need to also reset the |truncated_| flag as a new entry is created.
   net_log_.AddEvent(NetLog::TYPE_HTTP_CACHE_RESTART_PARTIAL_REQUEST);
-  DoomPartialEntry(!range_requested_);
+
+  // WRITE + Doom + STATE_INIT_ENTRY == STATE_CREATE_ENTRY (without an attempt
+  // to Doom the entry again).
   mode_ = WRITE;
-  truncated_ = false;
-  next_state_ = STATE_INIT_ENTRY;
+  ResetPartialState(!range_requested_);
+  next_state_ = STATE_CREATE_ENTRY;
   return OK;
+}
+
+void HttpCache::Transaction::ResetPartialState(bool delete_object) {
+  partial_->RestoreHeaders(&custom_request_->extra_headers);
+  DoomPartialEntry(delete_object);
+
+  if (!delete_object) {
+    // The simplest way to re-initialize partial_ is to create a new object.
+    partial_.reset(new PartialData());
+    if (partial_->Init(request_->extra_headers))
+      partial_->SetHeaders(custom_request_->extra_headers);
+    else
+      partial_.reset();
+  }
 }
 
 void HttpCache::Transaction::ResetNetworkTransaction() {
