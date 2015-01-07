@@ -918,6 +918,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
       1.4f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, PerTabResetsOnNavigation) {
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(http_server.Start());
+
+  GURL url_A = http_server.GetURL("files/simple.html");
+  GURL url_B("about:blank");
+
+  content::WebContents* web_contents = OpenUrlAndWaitForLoad(url_A);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  EXPECT_TRUE(RunSetZoomSettings(tab_id, "automatic", "per-tab"));
+
+  std::string mode;
+  std::string scope;
+  EXPECT_TRUE(RunGetZoomSettings(tab_id, &mode, &scope));
+  EXPECT_EQ("automatic", mode);
+  EXPECT_EQ("per-tab", scope);
+
+  // Navigation of tab should reset mode to per-origin.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url_B,
+                                                            1);
+  EXPECT_TRUE(RunGetZoomSettings(tab_id, &mode, &scope));
+  EXPECT_EQ("automatic", mode);
+  EXPECT_EQ("per-origin", scope);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetZoomSettings) {
   content::OpenURLParams params(GetOpenParams(url::kAboutBlankURL));
   content::WebContents* web_contents = OpenUrlAndWaitForLoad(params.url);

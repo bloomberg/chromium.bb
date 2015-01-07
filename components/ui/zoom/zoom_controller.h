@@ -151,6 +151,7 @@ class ZoomController : public content::WebContentsObserver,
   friend class content::WebContentsUserData<ZoomController>;
   friend class ::ZoomControllerTest;
 
+  void ResetZoomModeOnNavigationIfNeeded(const GURL& url);
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   // Updates the zoom icon and zoom percentage based on current values and

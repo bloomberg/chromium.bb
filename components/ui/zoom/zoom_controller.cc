@@ -235,15 +235,43 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
   zoom_mode_ = new_mode;
 }
 
+void ZoomController::ResetZoomModeOnNavigationIfNeeded(const GURL& url) {
+  if (zoom_mode_ != ZOOM_MODE_ISOLATED)
+    return;
+
+  int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();
+  content::HostZoomMap* zoom_map =
+    content::HostZoomMap::GetForWebContents(web_contents());
+  double old_zoom_level = zoom_map->GetZoomLevel(web_contents());
+  double new_zoom_level = zoom_map->GetZoomLevelForHostAndScheme(
+      url.scheme(), net::GetHostOrSpecFromURL(url));
+  event_data_.reset(new ZoomChangedEventData(
+      web_contents(), old_zoom_level, new_zoom_level, ZOOM_MODE_DEFAULT,
+      false /* can_show_bubble */));
+  // The call to ClearTemporaryZoomLevel() doesn't generate any events from
+  // HostZoomMap, but the call to UpdateState() at the end of this function
+  // will notify our observers.
+  // Note: it's possible the render_process/view ids have disappeared (e.g.
+  // if we navigated to a new origin), but this won't cause a problem in the
+  // call below.
+  zoom_map->ClearTemporaryZoomLevel(render_process_id, render_view_id);
+  zoom_mode_ = ZOOM_MODE_DEFAULT;
+}
+
 void ZoomController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (details.entry && details.entry->GetPageType() == content::PAGE_TYPE_ERROR)
     content::HostZoomMap::SendErrorPageZoomLevelRefresh(web_contents());
 
+  if (!details.is_in_page)
+    ResetZoomModeOnNavigationIfNeeded(params.url);
+
   // If the main frame's content has changed, the new page may have a different
   // zoom level from the old one.
   UpdateState(std::string());
+  DCHECK(!event_data_);
 }
 
 void ZoomController::WebContentsDestroyed() {
