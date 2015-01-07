@@ -48,11 +48,20 @@ namespace content {
 V4L2ImageProcessor::InputRecord::InputRecord() : at_device(false) {
 }
 
+V4L2ImageProcessor::InputRecord::~InputRecord() {
+}
+
 V4L2ImageProcessor::OutputRecord::OutputRecord()
     : at_device(false), at_client(false) {
 }
 
+V4L2ImageProcessor::OutputRecord::~OutputRecord() {
+}
+
 V4L2ImageProcessor::JobRecord::JobRecord() {
+}
+
+V4L2ImageProcessor::JobRecord::~JobRecord() {
 }
 
 V4L2ImageProcessor::V4L2ImageProcessor(scoped_ptr<V4L2Device> device)

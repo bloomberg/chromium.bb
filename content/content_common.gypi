@@ -759,15 +759,13 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
       ],
     }],
-    ['target_arch=="arm" and chromeos == 1 and use_x11 == 1', {
+    ['chromeos == 1 and (target_arch == "arm" or use_ozone == 1)', {
       'dependencies': [
         '../media/media.gyp:media',
       ],
       'sources': [
         'common/gpu/media/generic_v4l2_video_device.cc',
         'common/gpu/media/generic_v4l2_video_device.h',
-        'common/gpu/media/tegra_v4l2_video_device.cc',
-        'common/gpu/media/tegra_v4l2_video_device.h',
         'common/gpu/media/v4l2_image_processor.cc',
         'common/gpu/media/v4l2_image_processor.h',
         'common/gpu/media/v4l2_video_decode_accelerator.cc',
@@ -779,6 +777,14 @@
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
+      ],
+      'conditions': [
+        ['target_arch == "arm"', {
+          'sources': [
+            'common/gpu/media/tegra_v4l2_video_device.cc',
+            'common/gpu/media/tegra_v4l2_video_device.h',
+          ],
+        }],
       ],
     }],
     ['target_arch != "arm" and chromeos == 1', {

@@ -6,7 +6,9 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/generic_v4l2_video_device.h"
+#if defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/tegra_v4l2_video_device.h"
+#endif
 
 namespace content {
 
@@ -20,9 +22,11 @@ scoped_ptr<V4L2Device> V4L2Device::Create(Type type) {
   if (generic_device->Initialize())
     return generic_device.Pass();
 
+#if defined(ARCH_CPU_ARMEL)
   scoped_ptr<TegraV4L2Device> tegra_device(new TegraV4L2Device(type));
   if (tegra_device->Initialize())
     return tegra_device.Pass();
+#endif
 
   LOG(ERROR) << "Failed to create V4L2Device";
   return scoped_ptr<V4L2Device>();

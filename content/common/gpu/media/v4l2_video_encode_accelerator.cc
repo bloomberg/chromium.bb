@@ -59,8 +59,14 @@ struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {
 }
 
+V4L2VideoEncodeAccelerator::InputRecord::~InputRecord() {
+}
+
 V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord()
     : at_device(false), address(NULL), length(0) {
+}
+
+V4L2VideoEncodeAccelerator::OutputRecord::~OutputRecord() {
 }
 
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(

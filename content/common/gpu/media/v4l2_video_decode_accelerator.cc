@@ -74,7 +74,7 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   const scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
-  off_t bytes_used;
+  size_t bytes_used;
   const int32 input_id;
 };
 
