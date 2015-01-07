@@ -36,42 +36,39 @@ bool Path::IsRoot() const {
   return paths_.empty() || (paths_.size() == 1 && paths_[0] == "/");
 }
 
-Path& Path::Append(const std::string& path) {
-  StringArray_t paths = Split(path);
-  if (paths.empty())
-    return *this;
+Path& Path::MakeRelative() {
+  if (IsAbsolute()) {
+    paths_.erase(paths_.begin());
+  }
+  return *this;
+}
 
-  for (size_t index = 0; index < paths.size(); index++) {
-    // Skip ROOT
-    if (paths_.size() && index == 0 && paths[0] == "/")
-      continue;
-    paths_.push_back(paths[index]);
+Path& Path::Append(const Path& path) {
+  // Appending an absolute path effectivly sets the path, ignoring
+  // the current contents.
+  if (path.IsAbsolute()) {
+    paths_ = path.paths_;
+  } else {
+    for (size_t index = 0; index < path.paths_.size(); index++) {
+      paths_.push_back(path.paths_[index]);
+    }
   }
 
   paths_ = Normalize(paths_);
   return *this;
 }
 
-Path& Path::Prepend(const std::string& path) {
-  StringArray_t paths = Split(path);
-  if (paths.empty())
-    return *this;
+Path& Path::Append(const std::string& path) {
+  return Append(Path(path));
+}
 
-  for (size_t index = 0; index < paths_.size(); index++) {
-    // Skip ROOT
-    if (index == 0 && paths_[0] == "/")
-      continue;
-    paths.push_back(paths_[index]);
-  }
-
-  paths_ = Normalize(paths);
+Path& Path::Set(const StringArray_t path) {
+  paths_ = Normalize(path);
   return *this;
 }
 
 Path& Path::Set(const std::string& path) {
-  StringArray_t paths = Split(path);
-  paths_ = Normalize(paths);
-  return *this;
+  return Set(Split(path));
 }
 
 Path Path::Parent() const {

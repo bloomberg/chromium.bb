@@ -86,7 +86,7 @@ Error KernelObject::AcquireFsAndRelPath(const std::string& path,
     FsMap_t::iterator it = filesystems_.find(abs_parts.Range(0, max - len));
     if (it != filesystems_.end()) {
       rel_parts->Set("/");
-      rel_parts->Append(abs_parts.Range(max - len, max));
+      rel_parts->Append(Path(abs_parts.Range(max - len, max)));
 
       *out_fs = it->second;
       return 0;
@@ -118,22 +118,13 @@ Error KernelObject::AcquireFsAndNode(const std::string& path,
 
 Path KernelObject::GetAbsParts(const std::string& path) {
   AUTO_LOCK(cwd_lock_);
-
-  Path abs_parts;
-  if (path[0] == '/') {
-    abs_parts = path;
-  } else {
-    abs_parts = cwd_;
-    abs_parts.Append(path);
-  }
-
-  return abs_parts;
+  Path abs_parts(cwd_);
+  return abs_parts.Append(Path(path));
 }
 
 std::string KernelObject::GetCWD() {
   AUTO_LOCK(cwd_lock_);
   std::string out = cwd_;
-
   return out;
 }
 

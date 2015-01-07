@@ -405,8 +405,7 @@ Error HttpFs::LoadManifest(const std::string& manifest_name,
 }
 
 std::string HttpFs::MakeUrl(const Path& path) {
-  return url_root_ +
-         (path.IsAbsolute() ? path.Range(1, path.Size()) : path.Join());
+  return url_root_ + Path(path).MakeRelative().Join();
 }
 
 }  // namespace nacl_io

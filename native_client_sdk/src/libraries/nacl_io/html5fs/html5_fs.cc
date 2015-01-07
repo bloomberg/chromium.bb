@@ -90,8 +90,13 @@ Error Html5Fs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
 }
 
 Path Html5Fs::GetFullPath(const Path& path) {
-  Path full_path(path);
-  full_path.Prepend(prefix_);
+  if (prefix_.empty())
+    return path;
+
+  Path rel_path(path);
+  rel_path.MakeRelative();
+  Path full_path(prefix_);
+  full_path.Append(rel_path);
   return full_path;
 }
 

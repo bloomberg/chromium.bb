@@ -118,10 +118,6 @@ Error MemFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
 }
 
 Error MemFs::Mkdir(const Path& path, int mode) {
-  // We expect a Filesystem "absolute" path
-  if (!path.IsAbsolute())
-    return ENOENT;
-
   // The root of the filesystem is already created by the filesystem
   if (path.Size() == 1)
     return EEXIST;
@@ -237,10 +233,6 @@ Error MemFs::RemoveInternal(const Path& path, int remove_type) {
   bool remove_dir = (remove_type & REMOVE_DIR) != 0;
 
   if (dir_only) {
-    // We expect a Filesystem "absolute" path
-    if (!path.IsAbsolute())
-      return ENOENT;
-
     // The root of the filesystem is already created by the filesystem
     if (path.Size() == 1)
       return EEXIST;

@@ -37,9 +37,11 @@ class Path {
   size_t Size() const;
 
   // Update the path.
+  Path& Append(const Path& path);
   Path& Append(const std::string& path);
-  Path& Prepend(const std::string& path);
   Path& Set(const std::string& path);
+  Path& MakeRelative();
+  Path& Set(const StringArray_t path);
 
   // Return the parent path.
   Path Parent() const;

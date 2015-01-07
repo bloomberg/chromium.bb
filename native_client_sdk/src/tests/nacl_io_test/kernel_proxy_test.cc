@@ -1045,6 +1045,7 @@ TEST_F(KernelProxyErrorTest, WriteError) {
       .WillOnce(DoAll(SetArgPointee<3>(0),  // Wrote 0 bytes.
                       Return(1234)));       // Returned error 1234.
 
+  EXPECT_CALL(*mock_node, IsaDir()).Times(1);
   EXPECT_CALL(*mock_node, Destroy()).Times(1);
 
   int fd = ki_open("/dummy", O_WRONLY, 0);

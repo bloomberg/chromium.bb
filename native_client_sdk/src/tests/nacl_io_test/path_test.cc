@@ -189,15 +189,19 @@ TEST(PathTest, AppendAndJoin) {
   EXPECT_EQ("/", ph3.Join());
   ph3 = ph3.Append("USR/local/SHARE");
   EXPECT_EQ("/USR/local/SHARE", ph3.Join());
-  ph3 = ph3.Append("///////////////////////////////");
-  EXPECT_EQ("/USR/local/SHARE", ph3.Join());
 
   Path ph4("..");
   EXPECT_EQ("..", ph4.Join());
-  ph4 = ph4.Append("/node1/node3/../../node1/./");
+  ph4 = ph4.Append("node1/node3/../../node1/./");
   EXPECT_EQ("../node1", ph4.Join());
   ph4 = ph4.Append("node4/../../node1/./node5");
   EXPECT_EQ("../node1/node5", ph4.Join());
+}
+
+TEST(PathTest, AppendAbsolute) {
+  Path path("/usr/local");
+  path.Append("/foo");
+  EXPECT_EQ("/foo", path.Join());
 }
 
 TEST(PathTest, Invalid) {
@@ -256,16 +260,4 @@ TEST(PathTest, Range) {
   EXPECT_EQ("/an/absolute", p.Range(0, 3));
   EXPECT_EQ("an/absolute", p.Range(1, 3));
   EXPECT_EQ("absolute", p.Range(2, 3));
-}
-
-TEST(PathTest, PrependRelative) {
-  Path p("foo/bar");
-  p.Prepend("prefix");
-  EXPECT_EQ("prefix/foo/bar", p.Join());
-}
-
-TEST(PathTest, PrependAbsolute) {
-  Path p("/foo/bar");
-  p.Prepend("/prefix");
-  EXPECT_EQ("/prefix/foo/bar", p.Join());
 }
