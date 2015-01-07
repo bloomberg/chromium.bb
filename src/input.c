@@ -2226,6 +2226,11 @@ weston_seat_release_pointer(struct weston_seat *seat)
 
 		weston_pointer_reset_state(pointer);
 		seat_send_updated_caps(seat);
+
+		/* seat->pointer is intentionally not destroyed so that
+		 * a newly attached pointer on this seat will retain
+		 * the previous cursor co-ordinates.
+		 */
 	}
 }
 
