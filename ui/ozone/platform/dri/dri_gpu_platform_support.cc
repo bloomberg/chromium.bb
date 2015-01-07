@@ -202,4 +202,8 @@ void DriGpuPlatformSupport::RelinquishGpuResources(
   callback.Run();
 }
 
+IPC::MessageFilter* DriGpuPlatformSupport::GetMessageFilter() {
+  return nullptr;
+}
+
 }  // namespace ui

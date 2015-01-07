@@ -170,9 +170,13 @@ void GpuChildThread::OnInitialize() {
                             channel()));
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupport()
-      ->OnChannelEstablished(this);
+  ui::GpuPlatformSupport* gpu_platform_support =
+      ui::OzonePlatform::GetInstance()->GetGpuPlatformSupport();
+
+  gpu_platform_support->OnChannelEstablished(this);
+  IPC::MessageFilter* message_filter = gpu_platform_support->GetMessageFilter();
+  if (message_filter)
+    channel()->AddFilter(message_filter);
 #endif
 }
 

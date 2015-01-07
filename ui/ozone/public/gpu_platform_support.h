@@ -10,6 +10,10 @@
 #include "ipc/ipc_sender.h"
 #include "ui/ozone/ozone_base_export.h"
 
+namespace IPC {
+class MessageFilter;
+}
+
 namespace ui {
 
 // Platform-specific object to support a GPU process.
@@ -24,6 +28,8 @@ class OZONE_BASE_EXPORT GpuPlatformSupport : public IPC::Listener {
   virtual void OnChannelEstablished(IPC::Sender* sender) = 0;
 
   virtual void RelinquishGpuResources(const base::Closure& callback) = 0;
+
+  virtual IPC::MessageFilter* GetMessageFilter() = 0;
 };
 
 // Create a stub implementation.
