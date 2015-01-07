@@ -38,7 +38,10 @@ namespace sandbox {
 //    If B dies, all the processes in the namespace will die.
 //    B can fork() and the parent can assume the role of init(1), by using
 //    CreateInitProcessReaper().
-// 8. B requests being chroot-ed through ChrootMe() and
+// 8. B uses CreateNewSession() to move to a new session ID and process group.
+//    This prevents a sandboxed process from signaling its process group and
+//    get signals delivered across the PID namespace boundary.
+// 9. B requests being chroot-ed through ChrootMe() and
 //    requests other sandboxing status via the status functions.
 class SANDBOX_EXPORT SetuidSandboxClient {
  public:
@@ -52,6 +55,9 @@ class SANDBOX_EXPORT SetuidSandboxClient {
   // to an empty directory.
   // Will only work if we have been launched through the setuid helper.
   bool ChrootMe();
+  // Create a new session and a new process group. This helps isolate processes
+  // outside of the sandbox from processes inside.
+  bool CreateNewSession();
   // When a new PID namespace is created, the process with pid == 1 should
   // assume the role of init.
   // See sandbox/linux/services/init_process_reaper.h for more information

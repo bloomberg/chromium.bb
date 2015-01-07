@@ -90,6 +90,7 @@ void NaClSandbox::InitializeLayerOneSandbox() {
     CHECK(!HasOpenDirectory());
 
     // Get sandboxed.
+    CHECK(setuid_sandbox_client_->CreateNewSession());
     CHECK(setuid_sandbox_client_->ChrootMe());
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;

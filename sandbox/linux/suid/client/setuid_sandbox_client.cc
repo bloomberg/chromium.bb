@@ -208,6 +208,11 @@ bool SetuidSandboxClient::ChrootMe() {
   return true;
 }
 
+bool SetuidSandboxClient::CreateNewSession() {
+  // This could fail if the process is already a process group leader.
+  return 0 < setsid();
+}
+
 bool SetuidSandboxClient::CreateInitProcessReaper(
     base::Closure* post_fork_parent_callback) {
   return sandbox::CreateInitProcessReaper(post_fork_parent_callback);

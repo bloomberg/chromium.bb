@@ -417,6 +417,8 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
         "\n\n";
   }
 
+  CHECK(setuid_sandbox->CreateNewSession());
+
   if (!setuid_sandbox->ChrootMe())
     return false;
 
