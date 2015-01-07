@@ -20,7 +20,7 @@
         </activity>
     </application>
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
-    <instrumentation android:name="android.test.InstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.chrome.test.ChromeInstrumentationTestRunner"
         android:targetPackage="org.chromium.chrome.shell"
         android:label="Tests for org.chromium.chrome.shell"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
