@@ -34,8 +34,6 @@ class ServiceWorkerRegistrationHandle
   virtual ~ServiceWorkerRegistrationHandle();
 
   ServiceWorkerRegistrationObjectInfo GetObjectInfo();
-  ServiceWorkerObjectInfo CreateServiceWorkerHandleAndPass(
-      ServiceWorkerVersion* version);
 
   bool HasNoRefCount() const { return ref_count_ <= 0; }
   void IncrementRefCount();

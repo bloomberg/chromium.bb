@@ -173,11 +173,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void SendAssociateRegistrationMessage();
 
-  // Creates a ServiceWorkerHandle to retain |version| and returns a
-  // ServiceWorkerInfo with the handle ID to pass to the provider. The
-  // provider is responsible for releasing the handle.
-  ServiceWorkerObjectInfo CreateHandleAndPass(ServiceWorkerVersion* version);
-
   // Increase/decrease this host's process reference for |pattern|.
   void IncreaseProcessReference(const GURL& pattern);
   void DecreaseProcessReference(const GURL& pattern);

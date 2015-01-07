@@ -45,21 +45,6 @@ ServiceWorkerRegistrationHandle::GetObjectInfo() {
   return info;
 }
 
-ServiceWorkerObjectInfo
-ServiceWorkerRegistrationHandle::CreateServiceWorkerHandleAndPass(
-    ServiceWorkerVersion* version) {
-  ServiceWorkerObjectInfo info;
-  if (context_ && version) {
-    scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(context_,
-                                    dispatcher_host_,
-                                    version);
-    info = handle->GetObjectInfo();
-    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
-  }
-  return info;
-}
-
 void ServiceWorkerRegistrationHandle::IncrementRefCount() {
   DCHECK_GT(ref_count_, 0);
   ++ref_count_;
@@ -121,15 +106,16 @@ void ServiceWorkerRegistrationHandle::SetVersionAttributes(
   ServiceWorkerVersionAttributes attributes;
   if (mask.installing_changed()) {
     attributes.installing =
-        CreateServiceWorkerHandleAndPass(installing_version);
+        dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
+            installing_version);
   }
   if (mask.waiting_changed()) {
     attributes.waiting =
-        CreateServiceWorkerHandleAndPass(waiting_version);
+        dispatcher_host_->CreateAndRegisterServiceWorkerHandle(waiting_version);
   }
   if (mask.active_changed()) {
     attributes.active =
-        CreateServiceWorkerHandleAndPass(active_version);
+        dispatcher_host_->CreateAndRegisterServiceWorkerHandle(active_version);
   }
 
   dispatcher_host_->Send(new ServiceWorkerMsg_SetVersionAttributes(

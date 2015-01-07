@@ -233,16 +233,17 @@ ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
   return handle;
 }
 
-void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
-    scoped_ptr<ServiceWorkerHandle> handle) {
-  int handle_id = handle->handle_id();
-  handles_.AddWithID(handle.release(), handle_id);
-}
-
-void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
-    scoped_ptr<ServiceWorkerRegistrationHandle> handle) {
-  int handle_id = handle->handle_id();
-  registration_handles_.AddWithID(handle.release(), handle_id);
+ServiceWorkerObjectInfo
+ServiceWorkerDispatcherHost::CreateAndRegisterServiceWorkerHandle(
+    ServiceWorkerVersion* version) {
+  ServiceWorkerObjectInfo info;
+  if (GetContext() && version) {
+    scoped_ptr<ServiceWorkerHandle> handle =
+        ServiceWorkerHandle::Create(GetContext()->AsWeakPtr(), this, version);
+    info = handle->GetObjectInfo();
+    RegisterServiceWorkerHandle(handle.Pass());
+  }
+  return info;
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -587,11 +588,11 @@ void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
     GetOrCreateRegistrationHandle(provider_id, registration);
   *info = handle->GetObjectInfo();
 
-  attrs->installing = handle->CreateServiceWorkerHandleAndPass(
+  attrs->installing = CreateAndRegisterServiceWorkerHandle(
       registration->installing_version());
-  attrs->waiting = handle->CreateServiceWorkerHandleAndPass(
+  attrs->waiting = CreateAndRegisterServiceWorkerHandle(
       registration->waiting_version());
-  attrs->active = handle->CreateServiceWorkerHandleAndPass(
+  attrs->active = CreateAndRegisterServiceWorkerHandle(
       registration->active_version());
 }
 
@@ -907,6 +908,18 @@ void ServiceWorkerDispatcherHost::OnTerminateWorker(int handle_id) {
   }
   handle->version()->StopWorker(
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+}
+
+void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
+    scoped_ptr<ServiceWorkerHandle> handle) {
+  int handle_id = handle->handle_id();
+  handles_.AddWithID(handle.release(), handle_id);
+}
+
+void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
+    scoped_ptr<ServiceWorkerRegistrationHandle> handle) {
+  int handle_id = handle->handle_id();
+  registration_handles_.AddWithID(handle.release(), handle_id);
 }
 
 }  // namespace content

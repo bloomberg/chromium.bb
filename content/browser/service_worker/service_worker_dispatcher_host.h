@@ -26,6 +26,8 @@ class ServiceWorkerHandle;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationHandle;
+class ServiceWorkerVersion;
+struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
@@ -58,9 +60,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       int provider_id,
       ServiceWorkerRegistration* registration);
 
-  void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
-  void RegisterServiceWorkerRegistrationHandle(
-      scoped_ptr<ServiceWorkerRegistrationHandle> handle);
+  // Creates a ServiceWorkerHandle to retain |version| and returns a
+  // ServiceWorkerInfo with a newly created handle ID. The handle is held in
+  // the dispatcher host until its ref-count becomes zero via
+  // OnDecrementServiceWorkerRefCount.
+  ServiceWorkerObjectInfo CreateAndRegisterServiceWorkerHandle(
+      ServiceWorkerVersion* version);
 
   MessagePortMessageFilter* message_port_message_filter() {
     return message_port_message_filter_;
@@ -118,6 +123,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                              const std::vector<int>& sent_message_port_ids);
   void OnServiceWorkerObjectDestroyed(int handle_id);
   void OnTerminateWorker(int handle_id);
+
+  void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
+  void RegisterServiceWorkerRegistrationHandle(
+      scoped_ptr<ServiceWorkerRegistrationHandle> handle);
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,

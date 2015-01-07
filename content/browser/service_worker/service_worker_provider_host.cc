@@ -120,7 +120,8 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       previous_version && version && version->skip_waiting();
 
   dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
-      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version),
+      kDocumentMainThreadId, provider_id(),
+      dispatcher_host_->CreateAndRegisterServiceWorkerHandle(version),
       should_notify_controllerchange));
 }
 
@@ -297,7 +298,8 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     if (dispatcher_host_ && associated_registration_->active_version()) {
       dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
           kDocumentMainThreadId, provider_id(),
-          CreateHandleAndPass(associated_registration_->active_version()),
+          dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
+              associated_registration_->active_version()),
           false /* shouldNotifyControllerChange */));
     }
   }
@@ -312,29 +314,15 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
           provider_id(), associated_registration_.get());
 
   ServiceWorkerVersionAttributes attrs;
-  attrs.installing = handle->CreateServiceWorkerHandleAndPass(
+  attrs.installing = dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
       associated_registration_->installing_version());
-  attrs.waiting = handle->CreateServiceWorkerHandleAndPass(
+  attrs.waiting = dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
       associated_registration_->waiting_version());
-  attrs.active = handle->CreateServiceWorkerHandleAndPass(
+  attrs.active = dispatcher_host_->CreateAndRegisterServiceWorkerHandle(
       associated_registration_->active_version());
 
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
       kDocumentMainThreadId, provider_id(), handle->GetObjectInfo(), attrs));
-}
-
-ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
-    ServiceWorkerVersion* version) {
-  ServiceWorkerObjectInfo info;
-  if (context_ && version) {
-    scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(context_,
-                                    dispatcher_host_,
-                                    version);
-    info = handle->GetObjectInfo();
-    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
-  }
-  return info;
 }
 
 void ServiceWorkerProviderHost::IncreaseProcessReference(
