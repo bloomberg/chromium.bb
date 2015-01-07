@@ -8,16 +8,19 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 
 class Profile;
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }
 
 // This class represents a "site list" that is part of a content pack. It is
@@ -30,19 +33,18 @@ class ListValue;
 // Effectively, SupervisedUserURLFilter then acts as a big whitelist which is
 // the union of the whitelists in all sites in all content packs. See
 // http://goo.gl/cBCB8 for a diagram.
-class SupervisedUserSiteList {
+class SupervisedUserSiteList
+    : public base::RefCountedThreadSafe<SupervisedUserSiteList> {
  public:
+  typedef base::Callback<void(const scoped_refptr<SupervisedUserSiteList>&)>
+      LoadedCallback;
+
   struct Site {
-    Site(const base::string16& name, int category_id);
+    explicit Site(const base::string16& name);
     ~Site();
 
     // The human-readable name for the site.
     base::string16 name;
-
-    // An identifier for the category. Categories are hardcoded and start with
-    // 1, but apart from the offset correspond to the return values from
-    // GetCategoryNames() below.
-    int category_id;
 
     // A list of URL patterns that should be whitelisted for the site.
     std::vector<std::string> patterns;
@@ -50,33 +52,39 @@ class SupervisedUserSiteList {
     // A list of SHA1 hashes of hostnames that should be whitelisted
     // for the site.
     std::vector<std::string> hostname_hashes;
+
+    // Copying and assignment is allowed.
   };
 
-  explicit SupervisedUserSiteList(const base::FilePath& path);
-  ~SupervisedUserSiteList();
+  // Asynchronously loads the site list from |file| and calls |callback| with
+  // the newly created object.
+  static void Load(const base::FilePath& file, const LoadedCallback& callback);
 
-  // Creates a copy of the site list.
-  // Caller takes ownership of the returned value.
-  SupervisedUserSiteList* Clone() const;
-
-  // Returns a list of all categories.
-  // TODO(bauerb): The list is hardcoded for now, but if we allow custom
-  // categories, this should live in some registry.
-  static void GetCategoryNames(std::vector<base::string16>* categories);
+  // Sets whether the site list should be loaded in-process or out-of-process.
+  // In-process loading should only be used in tests (to avoid having to set up
+  // child process handling).
+  static void SetLoadInProcessForTesting(bool in_process);
 
   // Returns a list of all sites in this site list.
-  void GetSites(std::vector<Site>* sites);
-
-  // Returns the path to the site list. Public for testing.
-  // TODO(bauerb): Remove this again.
-  const base::FilePath& path() const { return path_; }
+  const std::vector<Site>& sites() const { return sites_; }
 
  private:
-  bool LazyLoad();
+  friend class base::RefCountedThreadSafe<SupervisedUserSiteList>;
 
-  base::FilePath path_;
-  scoped_ptr<base::DictionaryValue> categories_;
-  scoped_ptr<base::ListValue> sites_;
+  explicit SupervisedUserSiteList(const base::ListValue& sites);
+  ~SupervisedUserSiteList();
+
+  // Static private so they can access the private constructor.
+  static void ParseJson(const base::FilePath& path,
+                        const SupervisedUserSiteList::LoadedCallback& callback,
+                        const std::string& json);
+  static void OnJsonParseSucceeded(
+      const base::FilePath& path,
+      base::TimeTicks start_time,
+      const SupervisedUserSiteList::LoadedCallback& callback,
+      scoped_ptr<base::Value> value);
+
+  std::vector<Site> sites_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserSiteList);
 };

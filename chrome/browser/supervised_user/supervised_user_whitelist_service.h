@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "sync/api/syncable_service.h"
 
@@ -38,7 +39,8 @@ class ManagedUserWhitelistSpecifics;
 
 class SupervisedUserWhitelistService : public syncer::SyncableService {
  public:
-  typedef base::Callback<void(ScopedVector<SupervisedUserSiteList> site_lists)>
+  typedef base::Callback<void(
+      const std::vector<scoped_refptr<SupervisedUserSiteList> >&)>
       SiteListsChangedCallback;
 
   SupervisedUserWhitelistService(
@@ -100,6 +102,10 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
 
   void OnWhitelistReady(const std::string& id,
                         const base::FilePath& whitelist_path);
+  void OnWhitelistLoaded(
+      const std::string& id,
+      base::TimeTicks start_time,
+      const scoped_refptr<SupervisedUserSiteList>& whitelist);
 
   PrefService* prefs_;
   scoped_ptr<component_updater::SupervisedUserWhitelistInstaller> installer_;
@@ -109,7 +115,8 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
   // loaded yet, in which case it will not be in |loaded_whitelists_| yet.
   // On the other hand, every loaded whitelist has to be registered.
   std::set<std::string> registered_whitelists_;
-  std::map<std::string, base::FilePath> loaded_whitelists_;
+  std::map<std::string, scoped_refptr<SupervisedUserSiteList> >
+      loaded_whitelists_;
 
   base::WeakPtrFactory<SupervisedUserWhitelistService> weak_ptr_factory_;
 

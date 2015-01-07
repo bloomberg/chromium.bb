@@ -11962,6 +11962,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ManagedUsers.Whitelist.JsonParseDuration" units="milliseconds">
+  <owner>bauerb@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The total amount of time taken to parse the JSON contents of a whitelist out
+    of process.
+  </summary>
+</histogram>
+
+<histogram name="ManagedUsers.Whitelist.ReadDuration" units="milliseconds">
+  <owner>bauerb@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The amount of time taken to read a whitelist file from disk.
+  </summary>
+</histogram>
+
+<histogram name="ManagedUsers.Whitelist.TotalLoadDuration" units="milliseconds">
+  <owner>bauerb@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The total amount of time taken to load a whitelist from disk and parse it,
+    including jumps to the blocking thread.
+  </summary>
+</histogram>
+
 <histogram name="Manifest.FetchResult" enum="ManifestFetchResultType">
   <owner>mlamouri@chromium.org</owner>
   <summary>

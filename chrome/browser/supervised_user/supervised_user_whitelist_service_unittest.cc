@@ -9,11 +9,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "sync/api/sync_change.h"
@@ -78,8 +82,12 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
     service_->AddSiteListsChangedCallback(
         base::Bind(&SupervisedUserWhitelistServiceTest::OnSiteListsChanged,
                    base::Unretained(this)));
+    SupervisedUserSiteList::SetLoadInProcessForTesting(true);
   }
-  ~SupervisedUserWhitelistServiceTest() override {}
+
+  ~SupervisedUserWhitelistServiceTest() override {
+    SupervisedUserSiteList::SetLoadInProcessForTesting(false);
+  }
 
  protected:
   void PrepareInitialPreferences() {
@@ -127,17 +135,22 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
     return nullptr;
   }
 
-  void OnSiteListsChanged(ScopedVector<SupervisedUserSiteList> site_lists) {
-    site_lists_ = site_lists.Pass();
+  void OnSiteListsChanged(
+      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
+    site_lists_ = site_lists;
+    if (!site_lists_changed_callback_.is_null())
+      site_lists_changed_callback_.Run();
   }
 
+  base::MessageLoop message_loop_;
   TestingProfile profile_;
 
   // Owned by the SupervisedUserWhitelistService.
   MockSupervisedUserWhitelistInstaller* installer_;
   scoped_ptr<SupervisedUserWhitelistService> service_;
 
-  ScopedVector<SupervisedUserSiteList> site_lists_;
+  std::vector<scoped_refptr<SupervisedUserSiteList>> site_lists_;
+  base::Closure site_lists_changed_callback_;
 };
 
 TEST_F(SupervisedUserWhitelistServiceTest, MergeEmpty) {
@@ -170,11 +183,20 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
   EXPECT_EQ(0u, site_lists_.size());
 
   // Notify that whitelist A is ready.
-  base::FilePath kWhitelistAPath(FILE_PATH_LITERAL("/path/to/aaaa"));
-  installer_->NotifyWhitelistReady("aaaa", kWhitelistAPath);
+  base::RunLoop run_loop;
+  site_lists_changed_callback_ = run_loop.QuitClosure();
+  base::FilePath test_data_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  base::FilePath whitelist_path =
+      test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
+  installer_->NotifyWhitelistReady("aaaa", whitelist_path);
+  run_loop.Run();
 
   ASSERT_EQ(1u, site_lists_.size());
-  EXPECT_EQ(kWhitelistAPath.value(), site_lists_[0]->path().value());
+  const std::vector<SupervisedUserSiteList::Site>& sites =
+      site_lists_[0]->sites();
+  EXPECT_EQ(3u, sites.size());
+  EXPECT_EQ("YouTube", base::UTF16ToUTF8(sites[0].name));
 
   // Do the initial merge. One item should be added (whitelist C), one should be
   // modified (whitelist B), and one item should be removed (whitelist A).

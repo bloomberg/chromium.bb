@@ -72,7 +72,6 @@ class SupervisedUserService : public KeyedService,
                               public chrome::BrowserListObserver,
                               public SupervisedUserURLFilter::Observer {
  public:
-  typedef std::vector<base::string16> CategoryList;
   typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
   typedef base::Callback<void(const GoogleServiceAuthError&)> AuthErrorCallback;
   typedef base::Callback<void(bool)> SuccessCallback;
@@ -114,14 +113,6 @@ class SupervisedUserService : public KeyedService,
 
   // Returns the whitelist service.
   SupervisedUserWhitelistService* GetWhitelistService();
-
-  // Returns the URL's category, obtained from the installed content packs.
-  int GetCategory(const GURL& url);
-
-  // Returns the list of all known human-readable category names, sorted by ID
-  // number. Called in the critical path of drawing the history UI, so needs to
-  // be fast.
-  void GetCategoryNames(CategoryList* list);
 
   // Whether the user can request access to blocked URLs.
   bool AccessRequestsEnabled();
@@ -204,6 +195,7 @@ class SupervisedUserService : public KeyedService,
                            ChangesIncludedSessionOnChangedSettings);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
                            ChangesSyncSessionStateOnChangedSettings);
+
   // A bridge from the UI thread to the SupervisedUserURLFilters, one of which
   // lives on the IO thread. This class mediates access to them and makes sure
   // they are kept in sync.
@@ -217,11 +209,12 @@ class SupervisedUserService : public KeyedService,
 
     void SetDefaultFilteringBehavior(
         SupervisedUserURLFilter::FilteringBehavior behavior);
-    void LoadWhitelists(ScopedVector<SupervisedUserSiteList> site_lists);
+    void LoadWhitelists(
+        const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
     void LoadBlacklist(const base::FilePath& path,
                        const base::Closure& callback);
-    void SetManualHosts(scoped_ptr<std::map<std::string, bool> > host_map);
-    void SetManualURLs(scoped_ptr<std::map<GURL, bool> > url_map);
+    void SetManualHosts(scoped_ptr<std::map<std::string, bool>> host_map);
+    void SetManualURLs(scoped_ptr<std::map<GURL, bool>> url_map);
 
     void InitAsyncURLChecker(net::URLRequestContextGetter* context,
                              const std::string& cx);
@@ -291,7 +284,8 @@ class SupervisedUserService : public KeyedService,
 
   void OnDefaultFilteringBehaviorChanged();
 
-  void OnSiteListsChanged(ScopedVector<SupervisedUserSiteList> site_lists);
+  void OnSiteListsChanged(
+      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
   // Asynchronously downloads a static blacklist file from |url|, stores it at
   // |path|, loads it, and applies it to the URL filters. If |url| is not valid

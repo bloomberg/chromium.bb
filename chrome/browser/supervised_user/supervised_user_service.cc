@@ -103,20 +103,11 @@ void SupervisedUserService::URLFilterContext::SetDefaultFilteringBehavior(
 }
 
 void SupervisedUserService::URLFilterContext::LoadWhitelists(
-    ScopedVector<SupervisedUserSiteList> site_lists) {
-  // SupervisedUserURLFilter::LoadWhitelists takes ownership of |site_lists|,
-  // so we make an additional copy of it.
-  // TODO(bauerb): This is kinda ugly.
-  ScopedVector<SupervisedUserSiteList> site_lists_copy;
-  for (const SupervisedUserSiteList* site_list : site_lists)
-    site_lists_copy.push_back(site_list->Clone());
-
-  ui_url_filter_->LoadWhitelists(site_lists.Pass());
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SupervisedUserURLFilter::LoadWhitelists,
-                 io_url_filter_, base::Passed(&site_lists_copy)));
+    const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
+  ui_url_filter_->LoadWhitelists(site_lists);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&SupervisedUserURLFilter::LoadWhitelists,
+                                     io_url_filter_, site_lists));
 }
 
 void SupervisedUserService::URLFilterContext::LoadBlacklist(
@@ -282,25 +273,6 @@ SupervisedUserURLFilter* SupervisedUserService::GetURLFilterForUIThread() {
 
 SupervisedUserWhitelistService* SupervisedUserService::GetWhitelistService() {
   return whitelist_service_.get();
-}
-
-// Items not on any list must return -1 (CATEGORY_NOT_ON_LIST in history.js).
-// Items on a list, but with no category, must return 0 (CATEGORY_OTHER).
-#define CATEGORY_NOT_ON_LIST -1;
-#define CATEGORY_OTHER 0;
-
-int SupervisedUserService::GetCategory(const GURL& url) {
-  std::vector<SupervisedUserSiteList::Site*> sites;
-  GetURLFilterForUIThread()->GetSites(url, &sites);
-  if (sites.empty())
-    return CATEGORY_NOT_ON_LIST;
-
-  return (*sites.begin())->category_id;
-}
-
-// static
-void SupervisedUserService::GetCategoryNames(CategoryList* list) {
-  SupervisedUserSiteList::GetCategoryNames(list);
 }
 
 std::string SupervisedUserService::GetCustodianEmailAddress() const {
@@ -593,8 +565,8 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
 }
 
 void SupervisedUserService::OnSiteListsChanged(
-    ScopedVector<SupervisedUserSiteList> site_lists) {
-  url_filter_context_.LoadWhitelists(site_lists.Pass());
+    const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
+  url_filter_context_.LoadWhitelists(site_lists);
 }
 
 void SupervisedUserService::OnSiteListUpdated() {

@@ -322,13 +322,21 @@ class SupervisedUserServiceExtensionTestBase
     return extension;
   }
 
-  void OnSiteListsChanged(ScopedVector<SupervisedUserSiteList> site_lists) {
-    site_lists_ = site_lists.Pass();
+  void OnSiteListsChanged(
+      const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
+    site_lists_ = site_lists;
+    sites_.clear();
+    for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists) {
+      const std::vector<SupervisedUserSiteList::Site>& sites =
+          site_list->sites();
+      sites_.insert(sites_.end(), sites.begin(), sites.end());
+    }
   }
 
   bool is_supervised_;
   extensions::ScopedCurrentChannel channel_;
-  ScopedVector<SupervisedUserSiteList> site_lists_;
+  std::vector<scoped_refptr<SupervisedUserSiteList> > site_lists_;
+  std::vector<SupervisedUserSiteList::Site> sites_;
 };
 
 class SupervisedUserServiceExtensionTestUnsupervised
@@ -460,12 +468,10 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   observer.Wait();
 
   ASSERT_EQ(1u, site_lists_.size());
-  std::vector<SupervisedUserSiteList::Site> sites;
-  site_lists_[0]->GetSites(&sites);
-  ASSERT_EQ(3u, sites.size());
-  EXPECT_EQ(base::ASCIIToUTF16("YouTube"), sites[0].name);
-  EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"), sites[1].name);
-  EXPECT_EQ(base::string16(), sites[2].name);
+  ASSERT_EQ(3u, sites_.size());
+  EXPECT_EQ(base::ASCIIToUTF16("YouTube"), sites_[0].name);
+  EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"), sites_[1].name);
+  EXPECT_EQ(base::string16(), sites_[2].name);
 
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(example_url));
@@ -479,13 +485,11 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   observer.Wait();
 
   ASSERT_EQ(2u, site_lists_.size());
-  sites.clear();
-  site_lists_[0]->GetSites(&sites);
-  site_lists_[1]->GetSites(&sites);
-  ASSERT_EQ(4u, sites.size());
+  ASSERT_EQ(4u, sites_.size());
+
   // The site lists might be returned in any order, so we put them into a set.
   std::set<std::string> site_names;
-  for (const SupervisedUserSiteList::Site& site : sites)
+  for (const SupervisedUserSiteList::Site& site : sites_)
     site_names.insert(base::UTF16ToUTF8(site.name));
   EXPECT_EQ(1u, site_names.count("YouTube"));
   EXPECT_EQ(1u, site_names.count("Homestar Runner"));
@@ -502,10 +506,8 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   observer.Wait();
 
   ASSERT_EQ(1u, site_lists_.size());
-  sites.clear();
-  site_lists_[0]->GetSites(&sites);
-  ASSERT_EQ(1u, sites.size());
-  EXPECT_EQ(base::ASCIIToUTF16("Moose"), sites[0].name);
+  ASSERT_EQ(1u, sites_.size());
+  EXPECT_EQ(base::ASCIIToUTF16("Moose"), sites_[0].name);
 
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));

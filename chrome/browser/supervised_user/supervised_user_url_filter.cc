@@ -69,7 +69,7 @@ class FilterBuilder {
   void AddHostnameHash(const std::string& hash, int site_id);
 
   // Adds all the sites in |site_list|, with URL patterns and hostname hashes.
-  void AddSiteList(SupervisedUserSiteList* site_list);
+  void AddSiteList(const scoped_refptr<SupervisedUserSiteList>& site_list);
 
   // Finalizes construction of the SupervisedUserURLFilter::Contents and returns
   // them. This method should be called before this object is destroyed.
@@ -120,11 +120,10 @@ void FilterBuilder::AddHostnameHash(const std::string& hash, int site_id) {
                                                  site_id));
 }
 
-void FilterBuilder::AddSiteList(SupervisedUserSiteList* site_list) {
-  std::vector<SupervisedUserSiteList::Site> sites;
-  site_list->GetSites(&sites);
+void FilterBuilder::AddSiteList(
+    const scoped_refptr<SupervisedUserSiteList>& site_list) {
   int site_id = contents_->sites.size();
-  for (const SupervisedUserSiteList::Site& site : sites) {
+  for (const SupervisedUserSiteList::Site& site : site_list->sites()) {
     contents_->sites.push_back(site);
 
     for (const std::string& pattern : site.patterns)
@@ -158,11 +157,11 @@ scoped_ptr<SupervisedUserURLFilter::Contents> CreateWhitelistFromPatterns(
 
 scoped_ptr<SupervisedUserURLFilter::Contents>
 LoadWhitelistsOnBlockingPoolThread(
-    ScopedVector<SupervisedUserSiteList> site_lists) {
+    const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   FilterBuilder builder;
-  for (SupervisedUserSiteList* site_list : site_lists)
+  for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists)
     builder.AddSiteList(site_list);
 
   return builder.Build();
@@ -393,14 +392,13 @@ void SupervisedUserURLFilter::SetDefaultFilteringBehavior(
 }
 
 void SupervisedUserURLFilter::LoadWhitelists(
-    ScopedVector<SupervisedUserSiteList> site_lists) {
+    const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&LoadWhitelistsOnBlockingPoolThread,
-                 base::Passed(&site_lists)),
+      base::Bind(&LoadWhitelistsOnBlockingPoolThread, site_lists),
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
 }
 

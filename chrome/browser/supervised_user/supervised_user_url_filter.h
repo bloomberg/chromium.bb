@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
@@ -128,7 +127,8 @@ class SupervisedUserURLFilter
 
   // Asynchronously loads the specified site lists and updates the
   // filter to recognize each site on them.
-  void LoadWhitelists(ScopedVector<SupervisedUserSiteList> site_lists);
+  void LoadWhitelists(
+      const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists);
 
   // Sets the static blacklist of blocked hosts.
   void SetBlacklist(SupervisedUserBlacklist* blacklist);

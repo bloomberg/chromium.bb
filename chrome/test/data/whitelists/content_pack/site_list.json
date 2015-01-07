@@ -1,20 +1,9 @@
 {
   "version": 1,
-  "categories": {
-    "org.example.entertainment": {
-      "name": "Entertainment",
-      "thumbnails": {
-        "128": "entertainment.jpg"
-      }
-    }
-  },
   "sites": [
     {
       "name": "YouTube",
       "url": "http://www.youtube.com",
-      "categories": [
-        "org.example.entertainment"
-      ],
       "thumbnails": {
         "128": "youtube_128.png"
       },
