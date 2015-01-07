@@ -108,6 +108,8 @@ asynchronousSpellCheckingEnabled initial=false
 hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
+strictMixedContentChecking initial=false
+
 # FIXME: Remove this temporary flag. See crbug.com/366483 for the target
 # milestone.
 allowConnectingInsecureWebSocket initial=false

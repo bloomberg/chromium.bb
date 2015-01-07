@@ -309,7 +309,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
 
     // If we're in strict mode, we'll automagically fail everything, and intentionally skip
     // the client checks in order to prevent degrading the site's security UI.
-    bool strictMode = frame->document()->shouldEnforceStrictMixedContentChecking();
+    bool strictMode = frame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
 
     ContextType contextType = contextTypeFromContext(requestContext);
     if (contextType == ContextTypeBlockableUnlessLax)

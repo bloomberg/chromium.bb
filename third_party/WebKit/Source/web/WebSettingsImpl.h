@@ -149,6 +149,7 @@ public:
     virtual void setSmartInsertDeleteEnabled(bool) override;
     virtual void setSpatialNavigationEnabled(bool) override;
     virtual void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
+    virtual void setStrictMixedContentChecking(bool) override;
     virtual void setSupportDeprecatedTargetDensityDPI(bool) override;
     virtual void setSupportsMultipleWindows(bool) override;
     virtual void setSyncXHRInDocumentsEnabled(bool) override;
