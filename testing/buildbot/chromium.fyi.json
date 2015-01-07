@@ -359,7 +359,7 @@
   },
   "Browser Side Navigation Linux": {
     "gtest_tests": [
-      { "test": "content_unittests", "args": ["--enable-browser-side-navigation"] },
+      { "test": "content_unittests", "args": ["--enable-browser-side-navigation", "--gtest_filter=-ResourceDispatcherHostTest.TransferNavigationHtml:ResourceDispatcherHostTest.TransferNavigationText:ResourceDispatcherHostTest.TransferNavigationWithProcessCrash:ResourceDispatcherHostTest.TransferNavigationWithTwoRedirects:ResourceDispatcherHostTest.TransferTwoNavigationsHtml:RenderFrameHostManagerTest.CancelPendingProperlyDeletesOrSwaps:WebContentsImplTest.CrossSiteNotPreemptedDuringBeforeUnload"] },
       { "test": "content_browsertests", "args": ["--enable-browser-side-navigation"] }
     ]
   }
