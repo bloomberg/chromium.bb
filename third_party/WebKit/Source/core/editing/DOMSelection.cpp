@@ -369,14 +369,13 @@ PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState
     // If you're hitting this, you've added broken multi-range selection support
     ASSERT(rangeCount() == 1);
 
-    if (Node* shadowAncestor = selectionShadowAncestor(m_frame)) {
-        ASSERT(!shadowAncestor->isShadowRoot());
-        ContainerNode* container = shadowAncestor->parentOrShadowHostNode();
-        int offset = shadowAncestor->nodeIndex();
-        return Range::create(shadowAncestor->document(), container, offset, container, offset);
-    }
+    Position anchor = anchorPosition(visibleSelection());
+    if (!anchor.anchorNode()->isInShadowTree())
+        return m_frame->selection().firstRange();
 
-    return m_frame->selection().firstRange();
+    if (!visibleSelection().isBaseFirst())
+        return Range::create(*anchor.document(), focusNode(), focusOffset(), shadowAdjustedNode(anchor), anchorOffset());
+    return Range::create(*anchor.document(), shadowAdjustedNode(anchor), anchorOffset(), focusNode(), focusOffset());
 }
 
 void DOMSelection::removeAllRanges()
