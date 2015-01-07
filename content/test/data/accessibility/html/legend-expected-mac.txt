@@ -1,10 +1,10 @@
-#<skip -- crbug.com/427926>
 AXWebArea
-    AXGroup AXTitleUIElement='AXUnknown'
-        AXUnknown
-            AXStaticText AXValue='Browser Engine's:'
-        AXGroup
-            AXStaticText AXValue='Browser: '
-            AXTextField
-            AXStaticText AXValue='Rendering Engine: '
-            AXTextField
+    AXGroup
+        AXGroup AXTitleUIElement='AXGroup group'
+            AXGroup
+                AXStaticText AXValue='Browser Engine's:'
+            AXGroup
+                AXStaticText AXValue='Browser: '
+                AXTextField
+                AXStaticText AXValue=' Rendering Engine: '
+                AXTextField
