@@ -1677,6 +1677,10 @@ void NavigationControllerImpl::LoadIfNecessary() {
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
   // cached state.
   pending_entry_index_ = last_committed_entry_index_;
+
+  CHECK_NE(-1, pending_entry_index_);
+  entries_[pending_entry_index_]->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
+
   NavigateToPendingEntry(NO_RELOAD);
 }
 
