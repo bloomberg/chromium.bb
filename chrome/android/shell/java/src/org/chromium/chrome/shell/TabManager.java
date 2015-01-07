@@ -202,6 +202,7 @@ public class TabManager extends LinearLayout {
      */
     public void hideTabSwitcher() {
         if (mTabModelWrapper == null) return;
+        if (!isTabSwitcherVisible()) return;
         ViewParent parent = mTabModelWrapper.getParent();
         if (parent != null) {
             assert parent == mContentViewHolder;

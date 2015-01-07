@@ -41,9 +41,9 @@ public class ChromeShellTab extends Tab {
             ContentViewClient contentViewClient, TabManager tabManager) {
         super(false, context, window);
         initialize(0, null, false);
+        mTabManager = tabManager;
         setContentViewClient(contentViewClient);
         loadUrlWithSanitization(url);
-        mTabManager = tabManager;
     }
 
     /**
@@ -112,6 +112,7 @@ public class ChromeShellTab extends Tab {
             extends TabChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadStarted() {
+            mTabManager.hideTabSwitcher();
             mIsLoading = true;
             super.onLoadStarted();
         }
