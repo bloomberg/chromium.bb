@@ -23,7 +23,6 @@
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -132,9 +131,6 @@ void OffTheRecordProfileImpl::Init() {
   DCHECK(profile_->IsGuestSession() ||
          IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
              IncognitoModePrefs::DISABLED);
-
-  // Clear the proxy pref if and only if the data reduction proxy is specified.
-  DataReductionProxyChromeConfigurator::DisableInProxyConfigPref(prefs_);
 
   // TODO(oshima): Remove the need to eagerly initialize the request context
   // getter. chromeos::OnlineAttempt is illegally trying to access this

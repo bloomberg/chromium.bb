@@ -19,11 +19,11 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
@@ -411,16 +411,16 @@ class ProfileIOData {
     data_reduction_proxy_unavailable_callback_ = unavailable_callback;
   }
 
-  DataReductionProxyChromeConfigurator*
-      data_reduction_proxy_chrome_configurator() const {
-    return data_reduction_proxy_chrome_configurator_.get();
+  data_reduction_proxy::DataReductionProxyConfigurator*
+  data_reduction_proxy_configurator() const {
+    return data_reduction_proxy_configurator_.get();
   }
 
-  void set_data_reduction_proxy_chrome_configurator(
-      scoped_ptr<DataReductionProxyChromeConfigurator>
-          data_reduction_proxy_chrome_configurator) const {
-    data_reduction_proxy_chrome_configurator_ =
-        data_reduction_proxy_chrome_configurator.Pass();
+  void set_data_reduction_proxy_configurator(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+          data_reduction_proxy_configurator) const {
+    data_reduction_proxy_configurator_ =
+        data_reduction_proxy_configurator.Pass();
   }
 
   data_reduction_proxy::DataReductionProxyAuthRequestHandler*
@@ -656,8 +656,8 @@ class ProfileIOData {
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
       data_reduction_proxy_statistics_prefs_;
   mutable base::Callback<void(bool)> data_reduction_proxy_unavailable_callback_;
-  mutable scoped_ptr<DataReductionProxyChromeConfigurator>
-      data_reduction_proxy_chrome_configurator_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+      data_reduction_proxy_configurator_;
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
       data_reduction_proxy_auth_request_handler_;
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>

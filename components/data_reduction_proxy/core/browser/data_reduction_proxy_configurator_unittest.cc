@@ -2,60 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace data_reduction_proxy {
+
 class DataReductionProxyConfigTest : public testing::Test {
  public:
   void SetUp() override {
-    PrefRegistrySimple* registry = pref_service_.registry();
-    registry->RegisterDictionaryPref(prefs::kProxy);
+    task_runner_ = new base::TestSimpleTaskRunner();
     net_log_.reset(new net::CapturingNetLog());
     data_reduction_proxy_event_store_.reset(
-        new data_reduction_proxy::DataReductionProxyEventStore(
-            new base::TestSimpleTaskRunner()));
-    config_.reset(new DataReductionProxyChromeConfigurator(
-        &pref_service_,
-        new base::TestSimpleTaskRunner(),
-        net_log_.get(),
-        data_reduction_proxy_event_store_.get()));
+        new data_reduction_proxy::DataReductionProxyEventStore(task_runner_));
+    config_.reset(
+        new DataReductionProxyConfigurator(
+            task_runner_, net_log_.get(),
+            data_reduction_proxy_event_store_.get()));
   }
 
   void CheckProxyConfig(
-      const std::string& expected_mode,
-      const std::string& expected_server,
+      const net::ProxyConfig::ProxyRules::Type& expected_rules_type,
+      const std::string& expected_http_proxies,
+      const std::string& expected_https_proxies,
       const std::string& expected_bypass_list) {
-
-    const base::DictionaryValue* dict =
-        pref_service_.GetDictionary(prefs::kProxy);
-    std::string mode;
-    std::string server;
-    std::string bypass_list;
-    dict->GetString("mode", &mode);
-    ASSERT_EQ(expected_mode, mode);
-    dict->GetString("server", &server);
-    ASSERT_EQ(expected_server, server);
-    dict->GetString("bypass_list", &bypass_list);
-    ASSERT_EQ(expected_bypass_list, bypass_list);
+    task_runner_->RunUntilIdle();
+    const net::ProxyConfig::ProxyRules& rules =
+        config_->GetProxyConfigOnIOThread().proxy_rules();
+    ASSERT_EQ(expected_rules_type, rules.type);
+    if (net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME ==
+        expected_rules_type) {
+      ASSERT_EQ(expected_http_proxies, rules.proxies_for_http.ToPacString());
+      ASSERT_EQ(expected_https_proxies, rules.proxies_for_https.ToPacString());
+      ASSERT_EQ(expected_bypass_list, rules.bypass_rules.ToString());
+    }
   }
 
-  scoped_ptr<DataReductionProxyChromeConfigurator> config_;
-  TestingPrefServiceSimple pref_service_;
+  scoped_ptr<DataReductionProxyConfigurator> config_;
   scoped_ptr<net::NetLog> net_log_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
       data_reduction_proxy_event_store_;
 };
@@ -67,9 +61,9 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestricted) {
                   "http://www.bar.com:80/",
                   "");
   CheckProxyConfig(
-      "fixed_servers",
-      "http=https://www.foo.com:443,http://www.bar.com:80,direct://;",
-      "");
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      "HTTPS www.foo.com:443;PROXY www.bar.com:80;DIRECT",
+      "", "");
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUnrestrictedSSL) {
@@ -79,9 +73,9 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestrictedSSL) {
                   "http://www.bar.com:80/",
                   "http://www.ssl.com:80/");
   CheckProxyConfig(
-      "fixed_servers",
-      "http=https://www.foo.com:443,http://www.bar.com:80,direct://;"
-      "https=http://www.ssl.com:80,direct://;",
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      "HTTPS www.foo.com:443;PROXY www.bar.com:80;DIRECT",
+      "PROXY www.ssl.com:80;DIRECT",
       "");
 }
 
@@ -94,16 +88,15 @@ TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithBypassRule) {
                   "http://www.bar.com:80/",
                   "");
   CheckProxyConfig(
-      "fixed_servers",
-      "http=https://www.foo.com:443,http://www.bar.com:80,direct://;",
-      "<local>, *.goo.com");
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      "HTTPS www.foo.com:443;PROXY www.bar.com:80;DIRECT", "",
+      "<local>;*.goo.com;");
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUnrestrictedWithoutFallback) {
   config_->Enable(false, false, "https://www.foo.com:443/", "", "");
-  CheckProxyConfig("fixed_servers",
-                   "http=https://www.foo.com:443,direct://;",
-                   "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+                   "HTTPS www.foo.com:443;DIRECT", "", "");
 }
 
 TEST_F(DataReductionProxyConfigTest, TestRestricted) {
@@ -112,9 +105,8 @@ TEST_F(DataReductionProxyConfigTest, TestRestricted) {
                   "https://www.foo.com:443/",
                   "http://www.bar.com:80/",
                   "");
-  CheckProxyConfig("fixed_servers",
-                   "http=http://www.bar.com:80,direct://;",
-                   "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+                   "PROXY www.bar.com:80;DIRECT", "", "");
 }
 
 TEST_F(DataReductionProxyConfigTest, TestFallbackRestricted) {
@@ -123,22 +115,8 @@ TEST_F(DataReductionProxyConfigTest, TestFallbackRestricted) {
                   "https://www.foo.com:443/",
                   "http://www.bar.com:80/",
                   "");
-  CheckProxyConfig("fixed_servers",
-                   "http=https://www.foo.com:443,direct://;",
-                   "");
-}
-
-TEST_F(DataReductionProxyConfigTest, TestBothRestricted) {
-  DictionaryPrefUpdate update(&pref_service_, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetString("mode", "system");
-
-  config_->Enable(true,
-                  true,
-                  "https://www.foo.com:443/",
-                  "http://www.bar.com:80/",
-                  "");
-  CheckProxyConfig("system", "", "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+                   "HTTPS www.foo.com:443;DIRECT", "", "");
 }
 
 TEST_F(DataReductionProxyConfigTest, TestDisable) {
@@ -151,28 +129,7 @@ TEST_F(DataReductionProxyConfigTest, TestDisable) {
                   params.fallback_origin().spec(),
                   "");
   config_->Disable();
-  CheckProxyConfig("system", "", "");
-}
-
-TEST_F(DataReductionProxyConfigTest, TestDisableWithUserOverride) {
-  data_reduction_proxy::DataReductionProxyParams params(
-      data_reduction_proxy::DataReductionProxyParams::
-          kAllowAllProxyConfigurations);
-  config_->Enable(false,
-                  false,
-                  params.origin().spec(),
-                  params.fallback_origin().spec(),
-                  "");
-
-  // Override the data reduction proxy.
-  DictionaryPrefUpdate update(&pref_service_, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetString("server", "https://www.baz.com:22/");
-
-  // This should have no effect since proxy server was overridden.
-  config_->Disable();
-
-  CheckProxyConfig("fixed_servers", "https://www.baz.com:22/", "");
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::TYPE_NO_RULES, "", "", "");
 }
 
 TEST_F(DataReductionProxyConfigTest, TestBypassList) {
@@ -200,3 +157,4 @@ TEST_F(DataReductionProxyConfigTest, TestBypassList) {
   }
 }
 
+}  // namespace data_reduction_proxy

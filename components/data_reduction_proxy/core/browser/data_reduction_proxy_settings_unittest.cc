@@ -8,6 +8,7 @@
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -409,7 +410,10 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
 
   scoped_ptr<DataReductionProxyConfigurator> configurator(
-      new TestDataReductionProxyConfig());
+      new TestDataReductionProxyConfig(
+          scoped_refptr<base::TestSimpleTaskRunner>(
+              new base::TestSimpleTaskRunner()), &net_log_,
+              event_store_.get()));
   settings_->SetProxyConfigurator(configurator.get());
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());

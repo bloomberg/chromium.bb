@@ -215,14 +215,14 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     const net::ProxyConfig& data_reduction_proxy_config) {
   int64 content_length = request.received_response_content_length();
 
-  if (data_reduction_proxy_enabled.GetValue() &&
-      !data_reduction_proxy_config.Equals(
-          request.context()->proxy_service()->config())) {
-    RecordBypassedBytes(last_bypass_type_,
-                        DataReductionProxyUsageStats::MANAGED_PROXY_CONFIG,
-                        content_length);
+  // Only record histograms when the data reduction proxy is enabled.
+  if (!data_reduction_proxy_enabled.GetValue())
     return;
-  }
+
+  // TODO(bengr): Add histogram(s) for byte counts of unsupported schemes, e.g.,
+  // ws and wss.
+  if (!request.url().SchemeIsHTTPOrHTTPS())
+    return;
 
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (data_reduction_proxy_params_->WasDataReductionProxyUsed(
@@ -241,16 +241,25 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_enabled.GetValue() &&
-      request.url().SchemeIs(url::kHttpsScheme)) {
+  if (request.url().SchemeIs(url::kHttpsScheme)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::SSL,
                         content_length);
     return;
   }
 
-  if (data_reduction_proxy_enabled.GetValue() &&
-      data_reduction_proxy_params_->IsBypassedByDataReductionProxyLocalRules(
+  // Now that the data reduction proxy is a best effort proxy, if the effective
+  // proxy configuration resolves to anything other than direct:// for a URL,
+  // the data reduction proxy will not be used.
+  DCHECK(data_reduction_proxy_type_info.proxy_servers.first.is_empty());
+  if (!request.proxy_server().IsEmpty()) {
+    RecordBypassedBytes(last_bypass_type_,
+                        DataReductionProxyUsageStats::PROXY_OVERRIDDEN,
+                        content_length);
+    return;
+  }
+
+  if (data_reduction_proxy_params_->IsBypassedByDataReductionProxyLocalRules(
           request, data_reduction_proxy_config)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::LOCAL_BYPASS_RULES,
@@ -292,8 +301,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_enabled.GetValue() &&
-      data_reduction_proxy_params_->AreDataReductionProxiesBypassed(request,
+  if (data_reduction_proxy_params_->AreDataReductionProxiesBypassed(request,
                                                                     NULL)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NETWORK_ERROR,
@@ -369,9 +377,9 @@ void DataReductionProxyUsageStats::RecordBypassedBytes(
           "DataReductionProxy.BypassedBytes.LocalBypassRules",
           content_length);
       break;
-    case DataReductionProxyUsageStats::MANAGED_PROXY_CONFIG:
+    case DataReductionProxyUsageStats::PROXY_OVERRIDDEN:
       UMA_HISTOGRAM_COUNTS(
-          "DataReductionProxy.BypassedBytes.ManagedProxyConfig",
+          "DataReductionProxy.BypassedBytes.ProxyOverridden",
           content_length);
       break;
     case DataReductionProxyUsageStats::AUDIO_VIDEO:

@@ -18,7 +18,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
@@ -36,7 +36,7 @@
 
 using base::FilePath;
 using content::BrowserThread;
-using data_reduction_proxy::DataReductionProxyConfigService;
+using data_reduction_proxy::DataReductionProxyConfigurator;
 using data_reduction_proxy::DataReductionProxyEventStore;
 using data_reduction_proxy::DataReductionProxySettings;
 
@@ -135,29 +135,6 @@ void AwBrowserContext::SetLegacyCacheRemovalDelayForTest(int delay_ms) {
 
 void AwBrowserContext::PreMainMessageLoopRun() {
   cookie_store_ = CreateCookieStore(this);
-  data_reduction_proxy_settings_.reset(
-      new DataReductionProxySettings(
-          new data_reduction_proxy::DataReductionProxyParams(
-              data_reduction_proxy::DataReductionProxyParams::kAllowed)));
-  data_reduction_proxy_event_store_.reset(
-      new DataReductionProxyEventStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
-  scoped_ptr<DataReductionProxyConfigService>
-      data_reduction_proxy_config_service(
-          new DataReductionProxyConfigService(
-              scoped_ptr<net::ProxyConfigService>(
-                  CreateProxyConfigService()).Pass()));
-  if (data_reduction_proxy_settings_.get()) {
-      data_reduction_proxy_configurator_.reset(
-          new data_reduction_proxy::DataReductionProxyConfigTracker(
-              base::Bind(&DataReductionProxyConfigService::UpdateProxyConfig,
-                         base::Unretained(
-                             data_reduction_proxy_config_service.get())),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-    data_reduction_proxy_settings_->SetProxyConfigurator(
-        data_reduction_proxy_configurator_.get());
-  }
-
   FilePath cache_path;
   const FilePath fallback_cache_dir =
       GetPath().Append(FILE_PATH_LITERAL("Cache"));
@@ -175,9 +152,24 @@ void AwBrowserContext::PreMainMessageLoopRun() {
                  << "Using app data directory as a fallback.";
   }
   url_request_context_getter_ =
-      new AwURLRequestContextGetter(cache_path,
-                                    cookie_store_.get(),
-                                    data_reduction_proxy_config_service.Pass());
+      new AwURLRequestContextGetter(
+          cache_path, cookie_store_.get(),
+          make_scoped_ptr(CreateProxyConfigService()).Pass());
+
+  data_reduction_proxy_settings_.reset(
+      new DataReductionProxySettings(
+          new data_reduction_proxy::DataReductionProxyParams(
+              data_reduction_proxy::DataReductionProxyParams::kAllowed)));
+  data_reduction_proxy_event_store_.reset(
+      new DataReductionProxyEventStore(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
+  data_reduction_proxy_configurator_.reset(
+      new data_reduction_proxy::DataReductionProxyConfigurator(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          url_request_context_getter_->GetNetLog(),
+          data_reduction_proxy_event_store_.get()));
+  data_reduction_proxy_settings_->SetProxyConfigurator(
+      data_reduction_proxy_configurator_.get());
 
   visitedlink_master_.reset(
       new visitedlink::VisitedLinkMaster(this, this, false));
@@ -234,6 +226,11 @@ DataReductionProxySettings* AwBrowserContext::GetDataReductionProxySettings() {
 DataReductionProxyEventStore*
     AwBrowserContext::GetDataReductionProxyEventStore() {
   return data_reduction_proxy_event_store_.get();
+}
+
+data_reduction_proxy::DataReductionProxyConfigurator*
+AwBrowserContext::GetDataReductionProxyConfigurator() {
+  return data_reduction_proxy_configurator_.get();
 }
 
 AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {

@@ -148,7 +148,7 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
   if (!on_resolve_proxy_handler_.is_null() &&
       !proxy_config_getter_.is_null()) {
     on_resolve_proxy_handler_.Run(
-        url, load_flags, proxy_config_getter_.Run(), proxy_service.config(),
+        url, load_flags, proxy_config_getter_.Run(),
         proxy_service.proxy_retry_info(), data_reduction_proxy_params_, result);
   }
 }

@@ -29,7 +29,6 @@
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -37,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
@@ -140,8 +140,8 @@ void ProfileImplIOData::Handle::Init(
     scoped_ptr<domain_reliability::DomainReliabilityMonitor>
         domain_reliability_monitor,
     const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
-    scoped_ptr<DataReductionProxyChromeConfigurator>
-        data_reduction_proxy_chrome_configurator,
+    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+        data_reduction_proxy_configurator,
     scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
         data_reduction_proxy_params,
     scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
@@ -182,8 +182,8 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->set_data_reduction_proxy_unavailable_callback(
       data_reduction_proxy_unavailable);
-  io_data_->set_data_reduction_proxy_chrome_configurator(
-      data_reduction_proxy_chrome_configurator.Pass());
+  io_data_->set_data_reduction_proxy_configurator(
+      data_reduction_proxy_configurator.Pass());
   io_data_->set_data_reduction_proxy_params(data_reduction_proxy_params.Pass());
   io_data_->set_data_reduction_proxy_statistics_prefs(
       data_reduction_proxy_statistics_prefs.Pass());
@@ -486,8 +486,9 @@ void ProfileImplIOData::InitializeInternal(
           data_reduction_proxy_params(),
           data_reduction_proxy_auth_request_handler(),
           base::Bind(
-              &DataReductionProxyChromeConfigurator::GetProxyConfigOnIOThread,
-              base::Unretained(data_reduction_proxy_chrome_configurator()))));
+              &data_reduction_proxy::DataReductionProxyConfigurator::
+                  GetProxyConfigOnIOThread,
+              base::Unretained(data_reduction_proxy_configurator()))));
   data_reduction_proxy_network_delegate->InitProxyConfigOverrider(
       base::Bind(data_reduction_proxy::OnResolveProxyHandler));
   data_reduction_proxy_network_delegate->InitStatisticsPrefsAndUMA(

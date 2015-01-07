@@ -25,7 +25,6 @@ class URLRequestJobFactory;
 
 namespace data_reduction_proxy {
 class DataReductionProxyAuthRequestHandler;
-class DataReductionProxyConfigService;
 }
 
 namespace android_webview {
@@ -37,8 +36,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   AwURLRequestContextGetter(
       const base::FilePath& cache_path,
       net::CookieStore* cookie_store,
-      scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
-          config_service);
+      scoped_ptr<net::ProxyConfigService> config_service);
 
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() override;
@@ -76,8 +74,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
-      data_reduction_proxy_config_service_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
       data_reduction_proxy_auth_request_handler_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;

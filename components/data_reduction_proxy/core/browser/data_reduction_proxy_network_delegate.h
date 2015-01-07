@@ -47,15 +47,14 @@ class DataReductionProxyUsageStats;
 class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
  public:
   // Provides an opportunity to interpose on proxy resolution. Called before
-  // ProxyService.ResolveProxy() returns. Two proxy configurations are provided
-  // that specify the data reduction proxy's configuration and the effective
-  // configuration according to the proxy service, respectively. Retry info is
-  // presumed to be from the proxy service.
+  // ProxyService.ResolveProxy() returns. The Data Reduction Proxy's
+  // configuration is provided along with the resolution for this URL, in
+  // |result|, whch may be modified. Retry info is presumed to be from the proxy
+  // service.
   typedef base::Callback<void(
       const GURL& url,
       int load_flags,
       const net::ProxyConfig& data_reduction_proxy_config,
-      const net::ProxyConfig& proxy_service_proxy_config,
       const net::ProxyRetryInfoMap& proxy_retry_info_map,
       const DataReductionProxyParams* params,
       net::ProxyInfo* result)> OnResolveProxyHandler;

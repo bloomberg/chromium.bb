@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
-#include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/proxy/proxy_config.h"
@@ -18,58 +14,29 @@
 #include "net/proxy/proxy_list.h"
 #include "net/proxy/proxy_service.h"
 
-DataReductionProxyChromeConfigurator::DataReductionProxyChromeConfigurator(
-    PrefService* prefs,
+namespace data_reduction_proxy {
+
+DataReductionProxyConfigurator::DataReductionProxyConfigurator(
     scoped_refptr<base::SequencedTaskRunner> network_task_runner,
     net::NetLog* net_log,
     data_reduction_proxy::DataReductionProxyEventStore* event_store)
-    : prefs_(prefs),
-      network_task_runner_(network_task_runner),
+    : network_task_runner_(network_task_runner),
       net_log_(net_log),
       data_reduction_proxy_event_store_(event_store) {
-  DCHECK(prefs);
   DCHECK(network_task_runner.get());
   DCHECK(net_log);
   DCHECK(event_store);
 }
 
-DataReductionProxyChromeConfigurator::~DataReductionProxyChromeConfigurator() {
+DataReductionProxyConfigurator::~DataReductionProxyConfigurator() {
 }
 
-// static
-void DataReductionProxyChromeConfigurator::DisableInProxyConfigPref(
-    PrefService* prefs) {
-  DCHECK(prefs);
-  DictionaryPrefUpdate update(prefs, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
-  std::string mode;
-  dict->GetString("mode", &mode);
-  std::string server;
-  dict->GetString("server", &server);
-  net::ProxyConfig::ProxyRules proxy_rules;
-  proxy_rules.ParseFromString(server);
-  // The data reduction proxy uses MODE_FIXED_SERVERS.
-  if (mode != ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS)
-      || !ContainsDataReductionProxy(proxy_rules)) {
-    return;
-  }
-  dict->SetString("mode", ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
-  dict->SetString("server", "");
-  dict->SetString("bypass_list", "");
-}
-
-void DataReductionProxyChromeConfigurator::Enable(
+void DataReductionProxyConfigurator::Enable(
     bool primary_restricted,
     bool fallback_restricted,
     const std::string& primary_origin,
     const std::string& fallback_origin,
     const std::string& ssl_origin) {
-  DCHECK(prefs_);
-  DictionaryPrefUpdate update(prefs_, prefs::kProxy);
-  // TODO(bengr): Consider relying on the proxy config for all data reduction
-  // proxy configuration.
-  base::DictionaryValue* dict = update.Get();
-
   std::vector<std::string> proxies;
   if (!primary_restricted) {
     std::string trimmed_primary;
@@ -84,11 +51,6 @@ void DataReductionProxyChromeConfigurator::Enable(
       proxies.push_back(trimmed_fallback);
   }
   if (proxies.empty()) {
-    std::string mode;
-    // If already in a disabled mode, do nothing.
-    if (dict->GetString("mode", &mode))
-      if (ProxyModeToString(ProxyPrefs::MODE_SYSTEM) == mode)
-        return;
     Disable();
     return;
   }
@@ -98,10 +60,6 @@ void DataReductionProxyChromeConfigurator::Enable(
 
   std::string server = "http=" + JoinString(proxies, ",") + ",direct://;"
       + (ssl_origin.empty() ? "" : ("https=" + trimmed_ssl + ",direct://;"));
-
-  dict->SetString("server", server);
-  dict->SetString("mode", ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS));
-  dict->SetString("bypass_list", JoinString(bypass_rules_, ", "));
 
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString(server);
@@ -117,29 +75,28 @@ void DataReductionProxyChromeConfigurator::Enable(
   network_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          &DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIOThread,
+          &DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread,
           base::Unretained(this),
           config));
 }
 
-void DataReductionProxyChromeConfigurator::Disable() {
-  DisableInProxyConfigPref(prefs_);
+void DataReductionProxyConfigurator::Disable() {
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
   data_reduction_proxy_event_store_->AddProxyDisabledEvent(net_log_);
   network_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          &DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIOThread,
+          &DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread,
           base::Unretained(this),
           config));
 }
 
-void DataReductionProxyChromeConfigurator::AddHostPatternToBypass(
+void DataReductionProxyConfigurator::AddHostPatternToBypass(
     const std::string& pattern) {
   bypass_rules_.push_back(pattern);
 }
 
-void DataReductionProxyChromeConfigurator::AddURLPatternToBypass(
+void DataReductionProxyConfigurator::AddURLPatternToBypass(
     const std::string& pattern) {
   size_t pos = pattern.find('/');
   if (pattern.find('/', pos + 1) == pos + 1)
@@ -155,7 +112,7 @@ void DataReductionProxyChromeConfigurator::AddURLPatternToBypass(
 }
 
 // static
-bool DataReductionProxyChromeConfigurator::ContainsDataReductionProxy(
+bool DataReductionProxyConfigurator::ContainsDataReductionProxy(
     const net::ProxyConfig::ProxyRules& proxy_rules) {
   data_reduction_proxy::DataReductionProxyParams params(
       data_reduction_proxy::DataReductionProxyParams::
@@ -184,12 +141,14 @@ bool DataReductionProxyChromeConfigurator::ContainsDataReductionProxy(
   return false;
 }
 
-void DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIOThread(
+void DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread(
     const net::ProxyConfig& config) {
   config_ = config;
 }
 
 const net::ProxyConfig&
-DataReductionProxyChromeConfigurator::GetProxyConfigOnIOThread() const {
+DataReductionProxyConfigurator::GetProxyConfigOnIOThread() const {
   return config_;
 }
+
+}  // namespace data_reduction_proxy

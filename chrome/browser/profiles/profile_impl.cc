@@ -44,7 +44,6 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
@@ -84,6 +83,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
@@ -644,7 +644,7 @@ void ProfileImpl::DoFinalInit() {
   base::Callback<void(bool)> data_reduction_proxy_unavailable;
   scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
       data_reduction_proxy_params;
-  scoped_ptr<DataReductionProxyChromeConfigurator> chrome_configurator;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator> configurator;
   scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
       data_reduction_proxy_statistics_prefs;
   scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore> event_store;
@@ -667,9 +667,8 @@ void ProfileImpl::DoFinalInit() {
   // ProfileIOData. Ownership is passed to the latter via ProfileIOData::Handle,
   // which is only destroyed after BrowserContextKeyedServices,
   // including DataReductionProxyChromeSettings.
-  chrome_configurator.reset(
-      new DataReductionProxyChromeConfigurator(
-          prefs_.get(),
+  configurator.reset(
+      new data_reduction_proxy::DataReductionProxyConfigurator(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           net_log,
           event_store.get()));
@@ -679,8 +678,8 @@ void ProfileImpl::DoFinalInit() {
       data_reduction_proxy_event_store = event_store.get();
   // Retain a raw pointer to use for initialization of data reduction proxy
   // settings after ownership is passed.
-  DataReductionProxyChromeConfigurator*
-      data_reduction_proxy_chrome_configurator = chrome_configurator.get();
+  data_reduction_proxy::DataReductionProxyConfigurator*
+      data_reduction_proxy_configurator = configurator.get();
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // On mobile we write data reduction proxy prefs directly to the pref service.
   // On desktop we store data reduction proxy prefs in memory, writing to disk
@@ -712,12 +711,12 @@ void ProfileImpl::DoFinalInit() {
                 predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
                 CreateDomainReliabilityMonitor(local_state),
                 data_reduction_proxy_unavailable,
-                chrome_configurator.Pass(),
+                configurator.Pass(),
                 data_reduction_proxy_params.Pass(),
                 data_reduction_proxy_statistics_prefs.Pass(),
                 event_store.Pass());
   data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(
-      data_reduction_proxy_chrome_configurator,
+      data_reduction_proxy_configurator,
       prefs_.get(),
       g_browser_process->local_state(),
       GetRequestContext(),

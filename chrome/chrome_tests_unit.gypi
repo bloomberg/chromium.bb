@@ -551,7 +551,6 @@
       'browser/net/proxy_policy_handler_unittest.cc',
       'browser/net/quota_policy_channel_id_store_unittest.cc',
       'browser/net/safe_search_util_unittest.cc',
-      'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator_unittest.cc',
       'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
       'browser/net/ssl_config_service_manager_pref_unittest.cc',
       'browser/net/url_info_unittest.cc',

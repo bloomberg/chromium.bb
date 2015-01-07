@@ -94,6 +94,9 @@ class AwBrowserContext : public content::BrowserContext,
   data_reduction_proxy::DataReductionProxyEventStore*
       GetDataReductionProxyEventStore();
 
+  data_reduction_proxy::DataReductionProxyConfigurator*
+      GetDataReductionProxyConfigurator();
+
   AwURLRequestContextGetter* GetAwURLRequestContext();
 
   void CreateUserPrefServiceIfNecessary();

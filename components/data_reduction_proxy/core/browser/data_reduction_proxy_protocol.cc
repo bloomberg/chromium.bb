@@ -144,13 +144,16 @@ bool MaybeBypassProxyAndPrepareToRetry(
 void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
-                           const net::ProxyConfig& proxy_service_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyParams* params,
                            net::ProxyInfo* result) {
+  DCHECK(params);
+  DCHECK(result->is_empty() || result->is_direct() ||
+         !params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
+                                       NULL));
   if (data_reduction_proxy_config.is_valid() &&
       result->proxy_server().is_direct() &&
-      !data_reduction_proxy_config.Equals(proxy_service_proxy_config)) {
+      !url.SchemeIsWSOrWSS()) {
     net::ProxyInfo data_reduction_proxy_info;
     data_reduction_proxy_config.proxy_rules().Apply(
         url, &data_reduction_proxy_info);
@@ -159,12 +162,10 @@ void OnResolveProxyHandler(const GURL& url,
       result->UseProxyList(data_reduction_proxy_info.proxy_list());
   }
 
-  if (url.SchemeIsWSOrWSS() ||
-      ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
-       DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial())) {
+  if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
+      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial()) {
     if (!result->is_empty() &&
         !result->is_direct() &&
-        params &&
         params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
                                      NULL)) {
       result->UseDirect();

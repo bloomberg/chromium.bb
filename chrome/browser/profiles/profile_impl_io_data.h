@@ -25,6 +25,7 @@ class CookieCryptoDelegate;
 }  // namespace content
 
 namespace data_reduction_proxy {
+class DataReductionProxyConfigurator;
 class DataReductionProxyNetworkDelegate;
 }  // namespace data_reduction_proxy
 
@@ -70,8 +71,8 @@ class ProfileImplIOData : public ProfileIOData {
         scoped_ptr<domain_reliability::DomainReliabilityMonitor>
             domain_reliability_monitor,
         const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
-        scoped_ptr<DataReductionProxyChromeConfigurator>
-            data_reduction_proxy_chrome_configurator,
+        scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+            data_reduction_proxy_configurator,
         scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
             data_reduction_proxy_params,
         scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>

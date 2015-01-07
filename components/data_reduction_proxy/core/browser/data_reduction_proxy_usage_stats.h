@@ -94,7 +94,7 @@ class DataReductionProxyUsageStats
     NOT_BYPASSED = 0,         /* Not bypassed. */
     SSL,                      /* Bypass due to SSL. */
     LOCAL_BYPASS_RULES,       /* Bypass due to client-side bypass rules. */
-    MANAGED_PROXY_CONFIG,     /* Bypass due to managed config. */
+    PROXY_OVERRIDDEN,         /* Bypass due to a proxy taking precedence. */
     AUDIO_VIDEO,              /* Audio/Video bypass. */
     TRIGGERING_REQUEST,       /* Triggering request bypass. */
     NETWORK_ERROR,            /* Network error. */

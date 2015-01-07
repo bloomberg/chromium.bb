@@ -1773,8 +1773,6 @@
       'browser/net/safe_search_util.h',
       'browser/net/service_providers_win.cc',
       'browser/net/service_providers_win.h',
-      'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.cc',
-      'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_settings.cc',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.cc',

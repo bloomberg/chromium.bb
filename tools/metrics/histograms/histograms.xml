@@ -58808,7 +58808,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="SSL" label="Bypass due to SSL"/>
   <suffix name="LocalBypassRules"
       label="Bypass due to client-side bypass rules"/>
-  <suffix name="ManagedProxyConfig" label="Bypass due to a managed config"/>
+  <suffix name="ManagedProxyConfig"
+      label="Deprecated 1/9/2014 (M-41). Bypass due to a managed config"/>
+  <suffix name="ProxyOverridden"
+      label="Bypass due to another proxy taking precedence"/>
   <suffix name="Current" label="Bypass due to explicit instruction"/>
   <suffix name="ShortAll" label="Short bypass"/>
   <suffix name="ShortTriggeringRequest"

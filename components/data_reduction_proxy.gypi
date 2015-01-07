@@ -32,8 +32,7 @@
         # Note: sources list duplicated in GN build.
         'data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_config_service.cc',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_config_service.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',

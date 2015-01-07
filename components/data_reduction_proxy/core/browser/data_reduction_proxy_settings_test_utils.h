@@ -27,8 +27,11 @@ class DataReductionProxyStatisticsPrefs;
 
 class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
  public:
-  TestDataReductionProxyConfig();
-  ~TestDataReductionProxyConfig() override {}
+  TestDataReductionProxyConfig(
+      scoped_refptr<base::SequencedTaskRunner> network_task_runner,
+      net::NetLog* net_log,
+      data_reduction_proxy::DataReductionProxyEventStore* event_store);
+  ~TestDataReductionProxyConfig() override;
   void Enable(bool restricted,
               bool fallback_restricted,
               const std::string& primary_origin,

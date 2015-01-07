@@ -13,14 +13,16 @@
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/common/aw_content_client.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -177,12 +179,11 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path, net::CookieStore* cookie_store,
-    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
-        config_service)
+    scoped_ptr<net::ProxyConfigService> config_service)
     : cache_path_(cache_path),
       cookie_store_(cookie_store),
       net_log_(new net::NetLog()) {
-  data_reduction_proxy_config_service_ = config_service.Pass();
+  proxy_config_service_ = config_service.Pass();
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -219,20 +220,25 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
               aw_network_delegate.Pass(),
               data_reduction_proxy_settings->params(),
               data_reduction_proxy_auth_request_handler_.get(),
-              data_reduction_proxy::DataReductionProxyNetworkDelegate::
-                  ProxyConfigGetter());
+              base::Bind(
+                  &data_reduction_proxy::DataReductionProxyConfigurator::
+                      GetProxyConfigOnIOThread,
+                  base::Unretained(
+                      browser_context->GetDataReductionProxyConfigurator())));
+  data_reduction_proxy_network_delegate->InitProxyConfigOverrider(
+      base::Bind(data_reduction_proxy::OnResolveProxyHandler));
 
   builder.set_network_delegate(data_reduction_proxy_network_delegate);
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
-  DCHECK(data_reduction_proxy_config_service_.get());
+  DCHECK(proxy_config_service_.get());
   // Android provides a local HTTP proxy that handles all the proxying.
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
   builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
-          data_reduction_proxy_config_service_.release(),
+          proxy_config_service_.release(),
           net_log_.get()));
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       AwContentBrowserClient::GetAcceptLangsImpl()));
