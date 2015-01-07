@@ -14,7 +14,7 @@ class OnHeap : public GarbageCollected<OnHeap> { };
 
 class MixinFinalizable : public GarbageCollectedMixin {
 public:
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 private:
     RefPtr<OffHeap> m_offHeap; // Requires finalization
     Member<OnHeap> m_onHeap;
@@ -22,7 +22,7 @@ private:
 
 class MixinNotFinalizable : public GarbageCollectedMixin {
 public:
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 private:
     Member<OnHeap> m_onHeap;
 };
@@ -32,7 +32,7 @@ class NeedsFinalizer
     , public MixinFinalizable {
     USING_GARBAGE_COLLECTED_MIXIN(NeedsFinalizer);
 public:
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 private:
     Member<OnHeap> m_obj;
 };
@@ -41,7 +41,7 @@ class HasFinalizer : public GarbageCollectedFinalized<HasFinalizer>,
                      public MixinFinalizable {
     USING_GARBAGE_COLLECTED_MIXIN(HasFinalizer);
 public:
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 private:
     Member<OnHeap> m_obj;
 };
@@ -52,7 +52,7 @@ class NeedsNoFinalization
     , public ScriptWrappable {
     USING_GARBAGE_COLLECTED_MIXIN(NeedsNoFinalization);
 public:
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 private:
     Member<OnHeap> m_obj;
 };

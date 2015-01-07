@@ -140,6 +140,10 @@ const char kBaseClassMustDeclareVirtualTrace[] =
     "[blink-gc] Left-most base class %0 of derived class %1"
     " must define a virtual trace method.";
 
+const char kClassMustDeclareGCMixinTraceMethod[] =
+    "[blink-gc] Class %0 which inherits from GarbageCollectedMixin must"
+    " locally declare and override trace(Visitor*)";
+
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions()
     : enable_oilpan(false)
@@ -847,6 +851,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         getErrorLevel(), kLeftMostBaseMustBePolymorphic);
     diag_base_class_must_declare_virtual_trace_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kBaseClassMustDeclareVirtualTrace);
+    diag_class_must_declare_gc_mixin_trace_method_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(),
+                                    kClassMustDeclareGCMixinTraceMethod);
 
     // Register note messages.
     diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -1005,6 +1012,13 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         CheckDispatch(info);
         if (CXXMethodDecl* newop = info->DeclaresNewOperator())
           ReportClassOverridesNew(info, newop);
+        if (info->IsGCMixinInstance()) {
+          // Require that declared GCMixin implementations
+          // also provide a trace() override.
+          if (info->DeclaresGCMixinMethods()
+              && !info->DeclaresLocalTraceMethod())
+            ReportClassMustDeclareGCMixinTraceMethod(info);
+        }
       }
 
       {
@@ -1655,6 +1669,15 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         << info->record();
   }
 
+  void ReportClassMustDeclareGCMixinTraceMethod(RecordInfo* info) {
+    SourceLocation loc = info->record()->getInnerLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(
+        full_loc, diag_class_must_declare_gc_mixin_trace_method_)
+        << info->record();
+  }
+
   void ReportOverriddenNonVirtualTrace(RecordInfo* info,
                                        CXXMethodDecl* trace,
                                        CXXMethodDecl* overridden) {
@@ -1846,6 +1869,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_class_declares_pure_virtual_trace_;
   unsigned diag_left_most_base_must_be_polymorphic_;
   unsigned diag_base_class_must_declare_virtual_trace_;
+  unsigned diag_class_must_declare_gc_mixin_trace_method_;
 
   unsigned diag_base_requires_tracing_note_;
   unsigned diag_field_requires_tracing_note_;

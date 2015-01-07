@@ -4,4 +4,16 @@
 
 #include "class_requires_trace_method.h"
 
-// Nothing to define.
+namespace blink {
+
+void Mixin2::trace(Visitor* visitor)
+{
+  Mixin::trace(visitor);
+}
+
+void Mixin3::trace(Visitor* visitor)
+{
+  Mixin::trace(visitor);
+}
+
+} // namespace blink

@@ -19,6 +19,8 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       is_non_newable_(kNotComputed),
       is_only_placement_newable_(kNotComputed),
       does_need_finalization_(kNotComputed),
+      has_gc_mixin_methods_(kNotComputed),
+      is_declaring_local_trace_(kNotComputed),
       determined_trace_methods_(false),
       trace_method_(0),
       trace_dispatch_method_(0),
@@ -309,6 +311,48 @@ CXXMethodDecl* RecordInfo::InheritsNonVirtualTrace() {
   return 0;
 }
 
+bool RecordInfo::DeclaresGCMixinMethods() {
+  DetermineTracingMethods();
+  return has_gc_mixin_methods_;
+}
+
+bool RecordInfo::DeclaresLocalTraceMethod() {
+  if (is_declaring_local_trace_ != kNotComputed)
+    return is_declaring_local_trace_;
+  DetermineTracingMethods();
+  is_declaring_local_trace_ = trace_method_ ? kTrue : kFalse;
+  if (is_declaring_local_trace_) {
+    for (auto it = record_->method_begin();
+         it != record_->method_end(); ++it) {
+      if (*it == trace_method_) {
+        is_declaring_local_trace_ = kTrue;
+        break;
+      }
+    }
+  }
+  return is_declaring_local_trace_;
+}
+
+bool RecordInfo::IsGCMixinInstance() {
+  assert(IsGCDerived());
+  if (record_->isAbstract())
+    return false;
+
+  assert(!IsGCMixin());
+
+  // true iff the class derives from GCMixin and
+  // one or more other GC base classes.
+  bool seen_gc_mixin = false;
+  bool seen_gc_derived = false;
+  for (const auto& gc_base : gc_base_names_) {
+    if (Config::IsGCMixinBase(gc_base))
+      seen_gc_mixin = true;
+    else if (Config::IsGCBase(gc_base))
+      seen_gc_derived = true;
+  }
+  return seen_gc_derived && seen_gc_mixin;
+}
+
 // A (non-virtual) class is considered abstract in Blink if it has
 // no public constructors and no create methods.
 bool RecordInfo::IsConsideredAbstract() {
@@ -385,6 +429,8 @@ void RecordInfo::DetermineTracingMethods() {
   CXXMethodDecl* trace = 0;
   CXXMethodDecl* traceAfterDispatch = 0;
   bool isTraceAfterDispatch;
+  bool hasAdjustAndMark = false;
+  bool hasIsHeapObjectAlive = false;
   for (CXXRecordDecl::method_iterator it = record_->method_begin();
        it != record_->method_end();
        ++it) {
@@ -396,8 +442,15 @@ void RecordInfo::DetermineTracingMethods() {
       }
     } else if (it->getNameAsString() == kFinalizeName) {
       finalize_dispatch_method_ = *it;
+    } else if (it->getNameAsString() == kAdjustAndMarkName) {
+      hasAdjustAndMark = true;
+    } else if (it->getNameAsString() == kIsHeapObjectAliveName) {
+      hasIsHeapObjectAlive = true;
     }
   }
+  // Record if class defines the two GCMixin methods.
+  has_gc_mixin_methods_ =
+      hasAdjustAndMark && hasIsHeapObjectAlive ? kTrue : kFalse;
   if (traceAfterDispatch) {
     trace_method_ = traceAfterDispatch;
     trace_dispatch_method_ = trace;

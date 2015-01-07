@@ -25,6 +25,8 @@ const char kRegisterWeakMembersName[] = "registerWeakMembers";
 const char kHeapAllocatorName[] = "HeapAllocator";
 const char kTraceIfNeededName[] = "TraceIfNeeded";
 const char kVisitorDispatcherName[] = "VisitorDispatcher";
+const char kAdjustAndMarkName[] = "adjustAndMark";
+const char kIsHeapObjectAliveName[] = "isHeapObjectAlive";
 
 class Config {
  public:

@@ -142,10 +142,10 @@ using namespace WTF;
 #define GC_PLUGIN_IGNORE(bug)                           \
     __attribute__((annotate("blink_gc_plugin_ignore")))
 
-#define USING_GARBAGE_COLLECTED_MIXIN(type)             \
-    public:                                             \
-    virtual void adjustAndMark(Visitor*) const {}       \
-    virtual bool isAlive(Visitor*) const { return 0; }
+#define USING_GARBAGE_COLLECTED_MIXIN(type)                     \
+public:                                                         \
+    virtual void adjustAndMark(Visitor*) const override { }     \
+    virtual bool isHeapObjectAlive(Visitor*) const override { return 0; }
 
 template<typename T> class GarbageCollected { };
 
@@ -218,8 +218,9 @@ class Visitor : public VisitorHelper<Visitor> {
 };
 
 class GarbageCollectedMixin {
+public:
     virtual void adjustAndMark(Visitor*) const = 0;
-    virtual bool isAlive(Visitor*) const = 0;
+    virtual bool isHeapObjectAlive(Visitor*) const = 0;
     virtual void trace(Visitor*) { }
 };
 
