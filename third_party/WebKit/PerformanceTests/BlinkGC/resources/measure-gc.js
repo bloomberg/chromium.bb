@@ -2,6 +2,8 @@ if (!window.PerfTestRunner)
     console.log("measure-gc.js requires PerformanceTests/resources/runner.js to be loaded.");
 if (!window.internals)
     console.log("measure-gc.js requires window.internals.");
+if (!window.GCController)
+    console.log("measure-gc.js requires GCController.");
 
 (function (PerfTestRunner) {
     PerfTestRunner.measureBlinkGCTime = function(test) {
@@ -10,7 +12,10 @@ if (!window.internals)
         if (!test.warmUpCount)
             test.warmUpCount = 3;
         PerfTestRunner.prepareToMeasureValuesAsync(test);
-        runTest();
+
+        // Force a V8 GC before running Blink GC test to avoid measuring marking from stale V8 wrappers.
+        GCController.collectAll();
+        setTimeout(runTest, 0);
     }
 
     var NumberOfGCRunsPerForceBlinkGC = 5;
