@@ -126,6 +126,7 @@ class ChromotingInstance : public ClientUserInterface,
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
   // PepperVideoRenderer::EventHandler interface.
+  void OnVideoDecodeError() override;
   void OnVideoFirstFrameReceived() override;
   void OnVideoSize(const webrtc::DesktopSize& size,
                       const webrtc::DesktopVector& dpi) override;
@@ -191,6 +192,8 @@ class ChromotingInstance : public ClientUserInterface,
   void HandleAllowMouseLockMessage();
   void HandleSendMouseInputWhenUnfocused();
   void HandleDelegateLargeCursors();
+
+  void Disconnect();
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,

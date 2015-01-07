@@ -265,6 +265,8 @@
       'client/plugin/pepper_video_renderer.h',
       'client/plugin/pepper_video_renderer_2d.cc',
       'client/plugin/pepper_video_renderer_2d.h',
+      'client/plugin/pepper_video_renderer_3d.cc',
+      'client/plugin/pepper_video_renderer_3d.h',
     ],
   }
 }

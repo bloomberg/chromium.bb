@@ -44,6 +44,7 @@
 #include "remoting/client/plugin/pepper_mouse_locker.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_video_renderer_2d.h"
+#include "remoting/client/plugin/pepper_video_renderer_3d.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -249,12 +250,12 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 ChromotingInstance::~ChromotingInstance() {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
+  // Disconnect the client.
+  Disconnect();
+
   // Unregister this instance so that debug log messages will no longer be sent
   // to it. This will stop all logging in all Chromoting instances.
   UnregisterLoggingInstance();
-
-  client_.reset();
-  video_renderer_.reset();
 
   plugin_task_runner_->Quit();
 
@@ -381,6 +382,17 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
     return false;
 
   return input_handler_.HandleInputEvent(event);
+}
+
+void ChromotingInstance::OnVideoDecodeError() {
+  Disconnect();
+
+  // Assume that the decoder failure was caused by the host not encoding video
+  // correctly and report it as a protocol error.
+  // TODO(sergeyu): Consider using a different error code in case the decoder
+  // error was caused by some other problem.
+  OnConnectionState(protocol::ConnectionToHost::FAILED,
+                    protocol::INCOMPATIBLE_PROTOCOL);
 }
 
 void ChromotingInstance::OnVideoFirstFrameReceived() {
@@ -624,10 +636,21 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
-  video_renderer_.reset(new PepperVideoRenderer2D());
-  bool initialized =
-      video_renderer_->Initialize(this, context_, this);
-  CHECK(initialized);
+  video_renderer_.reset(new PepperVideoRenderer3D());
+  if (!video_renderer_->Initialize(this, context_, this))
+    video_renderer_.reset();
+
+  // If we failed to initialize 3D renderer (because there is no hardware
+  // support on this machine) then use the 2D renderer.
+  if (!video_renderer_) {
+    LOG(WARNING)
+        << "Failed to initialize 3D renderer. Using 2D renderer instead.";
+    video_renderer_.reset(new PepperVideoRenderer2D());
+    if (!video_renderer_->Initialize(this, context_, this))
+      video_renderer_.reset();
+  }
+
+  CHECK(video_renderer_);
 
   if (!plugin_view_.is_null())
     video_renderer_->OnViewChanged(plugin_view_);
@@ -680,13 +703,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
 void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
-
-  VLOG(0) << "Disconnecting from host.";
-
-  // Disconnect the input pipeline and teardown the connection.
-  mouse_input_filter_.set_input_stub(NULL);
-  client_.reset();
-  video_renderer_.reset();
+  Disconnect();
 }
 
 void ChromotingInstance::HandleOnIncomingIq(const base::DictionaryValue& data) {
@@ -922,6 +939,17 @@ void ChromotingInstance::HandleSendMouseInputWhenUnfocused() {
 
 void ChromotingInstance::HandleDelegateLargeCursors() {
   cursor_setter_.set_delegate_stub(this);
+}
+
+void ChromotingInstance::Disconnect() {
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  VLOG(0) << "Disconnecting from host.";
+
+  // Disconnect the input pipeline and teardown the connection.
+  mouse_input_filter_.set_input_stub(NULL);
+  client_.reset();
+  video_renderer_.reset();
 }
 
 void ChromotingInstance::PostChromotingMessage(const std::string& method,

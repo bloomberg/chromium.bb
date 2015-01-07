@@ -13,6 +13,11 @@ class DesktopVector;
 class DesktopRegion;
 }  // namespace webrtc
 
+namespace pp {
+class Instance;
+class View;
+}  // namespace pp
+
 namespace remoting {
 
 class ClientContext;
@@ -24,6 +29,9 @@ class PepperVideoRenderer : public VideoRenderer {
    public:
     EventHandler() {}
     virtual ~EventHandler() {}
+
+    // Called if video decoding fails, for any reason.
+    virtual void OnVideoDecodeError() = 0;
 
     // Called when the first frame is received.
     virtual void OnVideoFirstFrameReceived() = 0;
