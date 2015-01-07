@@ -531,6 +531,8 @@
         'browser/api/test/test_api.h',
         'browser/api/usb/usb_api.cc',
         'browser/api/usb/usb_api.h',
+        'browser/api/usb/usb_event_router.cc',
+        'browser/api/usb/usb_event_router.h',
         'browser/api/usb/usb_device_resource.cc',
         'browser/api/usb/usb_device_resource.h',
         'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.cc',

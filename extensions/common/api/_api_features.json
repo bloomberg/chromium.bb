@@ -330,6 +330,16 @@
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
   },
+  "usb.onDeviceAdded": {
+    "channel": "dev",
+    "dependencies": ["permission:usb"],
+    "contexts": ["blessed_extension"]
+  },
+  "usb.onDeviceRemoved": {
+    "channel": "dev",
+    "dependencies": ["permission:usb"],
+    "contexts": ["blessed_extension"]
+  },
   "vpnProvider": {
     "dependencies": ["permission:vpnProvider"],
     "contexts": ["blessed_extension"]

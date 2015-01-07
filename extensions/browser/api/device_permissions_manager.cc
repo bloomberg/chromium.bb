@@ -337,14 +337,17 @@ DevicePermissions::~DevicePermissions() {
 }
 
 scoped_refptr<DevicePermissionEntry> DevicePermissions::FindEntry(
-    scoped_refptr<device::UsbDevice> device) const {
+    scoped_refptr<device::UsbDevice> device,
+    const base::string16& serial_number) const {
   const auto& ephemeral_device_entry = ephemeral_devices_.find(device);
   if (ephemeral_device_entry != ephemeral_devices_.end()) {
     return ephemeral_device_entry->second;
   }
 
-  bool have_serial_number = false;
-  base::string16 serial_number;
+  if (serial_number.empty()) {
+    return nullptr;
+  }
+
   for (const auto& entry : entries_) {
     if (!entry->IsPersistent()) {
       continue;
@@ -354,12 +357,6 @@ scoped_refptr<DevicePermissionEntry> DevicePermissions::FindEntry(
     }
     if (entry->product_id() != device->product_id()) {
       continue;
-    }
-    if (!have_serial_number) {
-      if (!device->GetSerialNumber(&serial_number)) {
-        break;
-      }
-      have_serial_number = true;
     }
     if (entry->serial_number() != serial_number) {
       continue;

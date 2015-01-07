@@ -466,8 +466,11 @@ bool UsbAsyncApiFunction::HasDevicePermission(scoped_refptr<UsbDevice> device) {
   DCHECK(device_permissions_);
 
   // Check the DevicePermissionsManager first so that if an entry is found
-  // it can be stored for later.
-  permission_entry_ = device_permissions_->FindEntry(device);
+  // it can be stored for later. This requires the serial number.
+  base::string16 serial_number;
+  device->GetSerialNumber(&serial_number);
+
+  permission_entry_ = device_permissions_->FindEntry(device, serial_number);
   if (permission_entry_.get()) {
     return true;
   }

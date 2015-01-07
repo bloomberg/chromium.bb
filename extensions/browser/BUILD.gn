@@ -241,6 +241,8 @@ source_set("browser") {
       "api/test/test_api.h",
       "api/usb/usb_api.cc",
       "api/usb/usb_api.h",
+      "api/usb/usb_event_router.cc",
+      "api/usb/usb_event_router.h",
       "api/usb/usb_device_resource.cc",
       "api/usb/usb_device_resource.h",
       "api/virtual_keyboard_private/virtual_keyboard_private_api.cc",

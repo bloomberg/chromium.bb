@@ -24,18 +24,21 @@ class UsbDevice;
 // used to manage and dispatch USB events. It is also responsible for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
+//
+// All functions on this object must be called from a thread with a
+// MessageLoopForIO (for example, BrowserThread::FILE).
 class UsbService : public base::NonThreadSafe {
  public:
   class Observer {
    public:
+    // These events are delivered from the thread on which the UsbService object
+    // was created.
     virtual void OnDeviceAdded(scoped_refptr<UsbDevice> device);
     virtual void OnDeviceRemoved(scoped_refptr<UsbDevice> device);
   };
 
-  // Must be called on a thread with a MessageLoopForIO (for example
-  // BrowserThread::FILE). The UI task runner reference is used to talk to the
-  // PermissionBrokerClient on ChromeOS (UI thread). Returns NULL when
-  // initialization fails.
+  // The UI task runner reference is used to talk to the PermissionBrokerClient
+  // on ChromeOS (UI thread). Returns NULL when initialization fails.
   static UsbService* GetInstance(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
@@ -45,7 +48,7 @@ class UsbService : public base::NonThreadSafe {
 
   // Get all of the devices attached to the system, inserting them into
   // |devices|. Clears |devices| before use. The result will be sorted by id
-  // in increasing order. Must be called on FILE thread.
+  // in increasing order.
   virtual void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) = 0;
 
   void AddObserver(Observer* observer);

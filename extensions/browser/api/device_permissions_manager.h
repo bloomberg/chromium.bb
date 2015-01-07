@@ -102,10 +102,13 @@ class DevicePermissions {
  public:
   virtual ~DevicePermissions();
 
-  // Attempts to find a permission entry matching the given device. This
-  // function must be called from the FILE thread. crbug.com/427985
+  // Attempts to find a permission entry matching the given device. The device
+  // serial number is presented separately so that this function does not need
+  // to call device->GetSerialNumber() which may not be possible on the
+  // current thread.
   scoped_refptr<DevicePermissionEntry> FindEntry(
-      scoped_refptr<device::UsbDevice> device) const;
+      scoped_refptr<device::UsbDevice> device,
+      const base::string16& serial_number) const;
 
   const std::set<scoped_refptr<DevicePermissionEntry>>& entries() const {
     return entries_;

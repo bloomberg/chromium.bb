@@ -328,18 +328,22 @@ UsbService::~UsbService() {
 }
 
 void UsbService::AddObserver(Observer* observer) {
+  DCHECK(CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
 void UsbService::RemoveObserver(Observer* observer) {
+  DCHECK(CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void UsbService::NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
+  DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device));
 }
 
 void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
+  DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
 }
 

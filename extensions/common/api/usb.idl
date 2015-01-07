@@ -350,4 +350,17 @@ namespace usb {
     static void resetDevice(ConnectionHandle handle,
                             ResetDeviceCallback callback);
   };
+
+  interface Events {
+    // Event generated when a device is added to the system. Events are only
+    // broadcast to apps and extensions that have permission to access the
+    // device. Permission may have been granted at install time, when the user
+    // accepted an optional permission (see $(ref:permissions.request)), or
+    // through $(ref:getUserSelectedDevices).
+    static void onDeviceAdded(Device device);
+
+    // Event generated when a device is removed from the system. See
+    // $(ref:onDeviceAdded) for which events are delivered.
+    static void onDeviceRemoved(Device device);
+  };
 };
