@@ -64,17 +64,28 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
       cc::StepsTimingFunction::Create(steps, steps_start_offset)));
 }
 
-void WebTransformAnimationCurveImpl::setTimingFunction(
+void WebTransformAnimationCurveImpl::setLinearTimingFunction() {
+  curve_->SetTimingFunction(nullptr);
+}
+
+void WebTransformAnimationCurveImpl::setCubicBezierTimingFunction(
     TimingFunctionType type) {
   curve_->SetTimingFunction(CreateTimingFunction(type));
 }
 
-void WebTransformAnimationCurveImpl::setTimingFunction(double x1,
-                                                       double y1,
-                                                       double x2,
-                                                       double y2) {
+void WebTransformAnimationCurveImpl::setCubicBezierTimingFunction(double x1,
+                                                                  double y1,
+                                                                  double x2,
+                                                                  double y2) {
   curve_->SetTimingFunction(
       cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2).Pass());
+}
+
+void WebTransformAnimationCurveImpl::setStepsTimingFunction(
+    int number_of_steps,
+    float steps_start_offset) {
+  curve_->SetTimingFunction(cc::StepsTimingFunction::Create(
+                                number_of_steps, steps_start_offset).Pass());
 }
 
 scoped_ptr<cc::AnimationCurve>

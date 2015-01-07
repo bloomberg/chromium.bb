@@ -40,9 +40,14 @@ class WebFloatAnimationCurveImpl : public blink::WebFloatAnimationCurve {
   virtual void add(const blink::WebFloatKeyframe& keyframe,
                    int steps,
                    float steps_start_offset);
-
-  virtual void setTimingFunction(TimingFunctionType type);
-  virtual void setTimingFunction(double x1, double y1, double x2, double y2);
+  virtual void setLinearTimingFunction();
+  virtual void setCubicBezierTimingFunction(TimingFunctionType);
+  virtual void setCubicBezierTimingFunction(double x1,
+                                            double y1,
+                                            double x2,
+                                            double y2);
+  virtual void setStepsTimingFunction(int number_of_steps,
+                                      float steps_start_offset);
 
   virtual float getValue(double time) const;
 
