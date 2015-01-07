@@ -257,8 +257,11 @@ bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitfl
 
 inline bool CSSPropertyParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
 {
-    // Quirks mode and presentation attributes accept unit less values.
-    return (unitflags & (FLength | FAngle | FTime)) && (!value->fValue || isUnitLessLengthParsingEnabledForMode(cssParserMode));
+    // Quirks mode for certain properties and presentation attributes accept unit-less values for certain units.
+    return (unitflags & (FLength | FAngle | FTime))
+        && (!value->fValue // 0 can always be unitless.
+            || isUnitLessLengthParsingEnabledForMode(cssParserMode) // HTML and SVG attribute values can always be unitless.
+            || (cssParserMode == HTMLQuirksMode && (unitflags & FUnitlessQuirk)));
 }
 
 bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode, ReleaseParsedCalcValueCondition releaseCalc)
@@ -391,12 +394,12 @@ static bool isGeneratedImageValue(CSSParserValue* val)
         || id == CSSValueWebkitCrossFade;
 }
 
-bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value)
+bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless)
 {
     int id = value->id;
     if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent)
         return true;
-    return !id && validUnit(value, FLength | FPercent | FNonNeg);
+    return !id && validUnit(value, FLength | FPercent | FNonNeg | unitless);
 }
 
 inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
@@ -493,6 +496,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
 
     bool validPrimitive = false;
+    Units unitless = FUnknown;
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
@@ -572,7 +576,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
-        validPrimitive = validUnit(value, FLength | FNonNeg);
+        unitless = FLength | FNonNeg;
+        if (inShorthand() && m_currentShorthand == CSSPropertyBorderSpacing)
+            unitless = unitless | FUnitlessQuirk;
+        validPrimitive = validUnit(value, unitless);
         break;
     case CSSPropertyOutlineColor:        // <color> | invert | inherit
         // Outline color has "invert" as additional keyword.
@@ -784,12 +791,15 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         }
         break;
 
-    case CSSPropertyWebkitTextStrokeWidth:
-    case CSSPropertyOutlineWidth:        // <border-width> | inherit
     case CSSPropertyBorderTopWidth:     //// <border-width> | inherit
     case CSSPropertyBorderRightWidth:   //   Which is defined as
     case CSSPropertyBorderBottomWidth:  //   thin | medium | thick | <length>
     case CSSPropertyBorderLeftWidth:
+        if (!inShorthand() || m_currentShorthand == CSSPropertyBorderWidth)
+            unitless = FUnitlessQuirk;
+        // fall through
+    case CSSPropertyWebkitTextStrokeWidth:
+    case CSSPropertyOutlineWidth: // <border-width> | inherit
     case CSSPropertyWebkitBorderStartWidth:
     case CSSPropertyWebkitBorderEndWidth:
     case CSSPropertyWebkitBorderBeforeWidth:
@@ -798,7 +808,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
             validPrimitive = true;
         else
-            validPrimitive = validUnit(value, FLength | FNonNeg);
+            validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
     case CSSPropertyLetterSpacing:       // normal | <length> | inherit
@@ -806,7 +816,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueNormal)
             validPrimitive = true;
         else
-            validPrimitive = validUnit(value, FLength);
+            validPrimitive = validUnit(value, FLength | FUnitlessQuirk);
         break;
 
     case CSSPropertyTextIndent:
@@ -817,32 +827,40 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyPaddingRight:        //   Which is defined as
     case CSSPropertyPaddingBottom:       //   <length> | <percentage>
     case CSSPropertyPaddingLeft:         ////
+        unitless = FUnitlessQuirk;
+        // fall through
     case CSSPropertyWebkitPaddingStart:
     case CSSPropertyWebkitPaddingEnd:
     case CSSPropertyWebkitPaddingBefore:
     case CSSPropertyWebkitPaddingAfter:
-        validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
+        validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg | unitless));
         break;
 
     case CSSPropertyMaxWidth:
-    case CSSPropertyWebkitMaxLogicalWidth:
     case CSSPropertyMaxHeight:
+        unitless = FUnitlessQuirk;
+        // fall through
+    case CSSPropertyWebkitMaxLogicalWidth:
     case CSSPropertyWebkitMaxLogicalHeight:
-        validPrimitive = (id == CSSValueNone || validWidthOrHeight(value));
+        validPrimitive = (id == CSSValueNone || validWidthOrHeight(value, unitless));
         break;
 
     case CSSPropertyMinWidth:
-    case CSSPropertyWebkitMinLogicalWidth:
     case CSSPropertyMinHeight:
+        unitless = FUnitlessQuirk;
+        // fall through
+    case CSSPropertyWebkitMinLogicalWidth:
     case CSSPropertyWebkitMinLogicalHeight:
-        validPrimitive = validWidthOrHeight(value);
+        validPrimitive = validWidthOrHeight(value, unitless);
         break;
 
     case CSSPropertyWidth:
-    case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyHeight:
+        unitless = FUnitlessQuirk;
+        // fall through
+    case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
-        validPrimitive = (id == CSSValueAuto || validWidthOrHeight(value));
+        validPrimitive = (id == CSSValueAuto || validWidthOrHeight(value, unitless));
         break;
 
     case CSSPropertyFontSize:
@@ -858,7 +876,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id >= CSSValueBaseline && id <= CSSValueWebkitBaselineMiddle)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FLength | FPercent));
+            validPrimitive = (!id && validUnit(value, FLength | FPercent | FUnitlessQuirk));
         break;
 
     case CSSPropertyBottom:               // <length> | <percentage> | auto | inherit
@@ -869,6 +887,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyMarginRight:         //   Which is defined as
     case CSSPropertyMarginBottom:        //   <length> | <percentage> | auto | inherit
     case CSSPropertyMarginLeft:          ////
+        unitless = FUnitlessQuirk;
+        // fall through
     case CSSPropertyWebkitMarginStart:
     case CSSPropertyWebkitMarginEnd:
     case CSSPropertyWebkitMarginBefore:
@@ -876,7 +896,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FLength | FPercent));
+            validPrimitive = (!id && validUnit(value, FLength | FPercent | unitless));
         break;
 
     case CSSPropertyOrphans: // <integer> | inherit | auto (We've added support for auto for backwards compatibility)
@@ -1321,8 +1341,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = (!id && (value->unit == CSSPrimitiveValue::CSS_PERCENTAGE || value->fValue) && validUnit(value, FInteger | FPercent | FNonNeg));
         break;
 
-    case CSSPropertyWebkitFontSizeDelta:           // <length>
-        validPrimitive = validUnit(value, FLength);
+    case CSSPropertyWebkitFontSizeDelta: // <length>
+        validPrimitive = validUnit(value, FLength | FUnitlessQuirk);
         break;
 
     case CSSPropertyWebkitHighlight:
@@ -2313,7 +2333,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillPositionY(CSSParser
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseFillPositionComponent(CSSParserValueList* valueList, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode parsingMode)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseFillPositionComponent(CSSParserValueList* valueList, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode parsingMode, Units unitless)
 {
     CSSValueID id = valueList->current()->id;
     if (id == CSSValueLeft || id == CSSValueTop || id == CSSValueRight || id == CSSValueBottom || id == CSSValueCenter) {
@@ -2345,7 +2365,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseFillPositionCo
 
         return cssValuePool().createValue(percent, CSSPrimitiveValue::CSS_PERCENTAGE);
     }
-    if (validUnit(valueList->current(), FPercent | FLength)) {
+    if (validUnit(valueList->current(), FPercent | FLength | unitless)) {
         if (!cumulativeFlags) {
             cumulativeFlags |= XFillPosition;
             individualFlag = XFillPosition;
@@ -2522,7 +2542,7 @@ inline bool CSSPropertyParser::isPotentialPositionValue(CSSParserValue* value)
     return isFillPositionKeyword(value->id) || validUnit(value, FPercent | FLength, ReleaseParsedCalcValue);
 }
 
-void CSSPropertyParser::parseFillPosition(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2)
+void CSSPropertyParser::parseFillPosition(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2, Units unitless)
 {
     unsigned numberOfValues = 0;
     for (unsigned i = valueList->currentIndex(); i < valueList->size(); ++i, ++numberOfValues) {
@@ -2536,7 +2556,7 @@ void CSSPropertyParser::parseFillPosition(CSSParserValueList* valueList, RefPtrW
 
     // If we are parsing two values, we can safely call the CSS 2.1 parsing function and return.
     if (numberOfValues <= 2) {
-        parse2ValuesFillPosition(valueList, value1, value2);
+        parse2ValuesFillPosition(valueList, value1, value2, unitless);
         return;
     }
 
@@ -2585,13 +2605,13 @@ void CSSPropertyParser::parseFillPosition(CSSParserValueList* valueList, RefPtrW
         parse4ValuesFillPosition(valueList, value1, value2, parsedValue1.release(), parsedValue2.release());
 }
 
-void CSSPropertyParser::parse2ValuesFillPosition(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2)
+void CSSPropertyParser::parse2ValuesFillPosition(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2, Units unitless)
 {
     // Parse the first value.  We're just making sure that it is one of the valid keywords or a percentage/length.
     unsigned cumulativeFlags = 0;
     FillPositionFlag value1Flag = InvalidFillPosition;
     FillPositionFlag value2Flag = InvalidFillPosition;
-    value1 = parseFillPositionComponent(valueList, cumulativeFlags, value1Flag);
+    value1 = parseFillPositionComponent(valueList, cumulativeFlags, value1Flag, ResolveValuesAsPercent, unitless);
     if (!value1)
         return;
 
@@ -2605,7 +2625,7 @@ void CSSPropertyParser::parse2ValuesFillPosition(CSSParserValueList* valueList, 
         value = 0;
 
     if (value) {
-        value2 = parseFillPositionComponent(valueList, cumulativeFlags, value2Flag);
+        value2 = parseFillPositionComponent(valueList, cumulativeFlags, value2Flag, ResolveValuesAsPercent, unitless);
         if (value2)
             valueList->next();
         else {
@@ -2746,7 +2766,7 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
     for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->current()) {
         RefPtrWillBeRawPtr<CSSValue> currValue = nullptr;
         RefPtrWillBeRawPtr<CSSValue> currValue2 = nullptr;
-
+        Units unitless = FUnknown;
         if (allowComma) {
             if (!isComma(val))
                 return false;
@@ -2796,8 +2816,11 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                     }
                     break;
                 case CSSPropertyBackgroundPosition:
+                    if (!inShorthand())
+                        unitless = FUnitlessQuirk;
+                    // fall-through
                 case CSSPropertyWebkitMaskPosition:
-                    parseFillPosition(m_valueList, currValue, currValue2);
+                    parseFillPosition(m_valueList, currValue, currValue2, unitless);
                     // parseFillPosition advances the m_valueList pointer.
                     break;
                 case CSSPropertyBackgroundPositionX:
@@ -3902,7 +3925,7 @@ bool CSSPropertyParser::parseClipShape(CSSPropertyID propId, bool important)
     int i = 0;
     CSSParserValue* a = args->current();
     while (a) {
-        if (a->id != CSSValueAuto && !validUnit(a, FLength))
+        if (a->id != CSSValueAuto && !validUnit(a, FLength | FUnitlessQuirk))
             return false;
         RefPtrWillBeRawPtr<CSSPrimitiveValue> length = a->id == CSSValueAuto ?
             cssValuePool().createIdentifierValue(CSSValueAuto) :
@@ -4698,7 +4721,7 @@ bool CSSPropertyParser::parseFontSize(bool important)
     if (id >= CSSValueXxSmall && id <= CSSValueLarger)
         validPrimitive = true;
     else
-        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
+        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg | (inShorthand() ? FUnknown : FUnitlessQuirk));
     if (validPrimitive && (!m_valueList->next() || inShorthand()))
         addProperty(CSSPropertyFontSize, parseValidPrimitive(id, value), important);
     return validPrimitive;
@@ -7609,7 +7632,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
 
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         // <length> | <percentage> | inherit when RuntimeEnabledFeatures::css3TextEnabled() returns false
-        if (!hasLengthOrPercentage && validUnit(value, FLength | FPercent)) {
+        if (!hasLengthOrPercentage && validUnit(value, FLength | FPercent | FUnitlessQuirk)) {
             list->append(createPrimitiveNumericValue(value));
             hasLengthOrPercentage = true;
             continue;

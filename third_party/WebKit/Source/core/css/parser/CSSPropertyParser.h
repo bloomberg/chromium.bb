@@ -56,6 +56,23 @@ class StylePropertyShorthand;
 class CSSPropertyParser {
     STACK_ALLOCATED();
 public:
+
+    enum Units {
+        FUnknown = 0x0000,
+        FInteger = 0x0001,
+        FNumber = 0x0002, // Real Numbers
+        FPercent = 0x0004,
+        FLength = 0x0008,
+        FAngle = 0x0010,
+        FTime = 0x0020,
+        FFrequency = 0x0040,
+        FPositiveInteger = 0x0080,
+        FRelative = 0x0100,
+        FResolution = 0x0200,
+        FNonNeg = 0x0400,
+        FUnitlessQuirk = 0x0800
+    };
+
     static bool parseValue(CSSPropertyID, bool important,
         CSSParserValueList*, const CSSParserContext&, bool inViewport,
         WillBeHeapVector<CSSProperty, 256>&, CSSRuleSourceData::Type);
@@ -101,12 +118,12 @@ private:
 
     enum FillPositionFlag { InvalidFillPosition = 0, AmbiguousFillPosition = 1, XFillPosition = 2, YFillPosition = 4 };
     enum FillPositionParsingMode { ResolveValuesAsPercent = 0, ResolveValuesAsKeyword = 1 };
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseFillPositionComponent(CSSParserValueList*, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode = ResolveValuesAsPercent);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseFillPositionComponent(CSSParserValueList*, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode = ResolveValuesAsPercent, Units = FUnknown);
     PassRefPtrWillBeRawPtr<CSSValue> parseFillPositionX(CSSParserValueList*);
     PassRefPtrWillBeRawPtr<CSSValue> parseFillPositionY(CSSParserValueList*);
-    void parse2ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
+    void parse2ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, Units = FUnknown);
     bool isPotentialPositionValue(CSSParserValue*);
-    void parseFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
+    void parseFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, Units = FUnknown);
     void parse3ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
     void parse4ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
 
@@ -263,8 +280,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const String& rawValue, const KURL&);
 
-    bool validWidthOrHeight(CSSParserValue*);
-
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInset>, CSSParserValueList*);
 
     enum SizeParameterType {
@@ -324,25 +339,12 @@ private:
         DoNotReleaseParsedCalcValue
     };
 
-    enum Units {
-        FUnknown = 0x0000,
-        FInteger = 0x0001,
-        FNumber = 0x0002, // Real Numbers
-        FPercent = 0x0004,
-        FLength = 0x0008,
-        FAngle = 0x0010,
-        FTime = 0x0020,
-        FFrequency = 0x0040,
-        FPositiveInteger = 0x0080,
-        FRelative = 0x0100,
-        FResolution = 0x0200,
-        FNonNeg = 0x0400
-    };
-
     friend inline Units operator|(Units a, Units b)
     {
         return static_cast<Units>(static_cast<unsigned>(a) | static_cast<unsigned>(b));
     }
+
+    bool validWidthOrHeight(CSSParserValue*, Units);
 
     bool validCalculationUnit(CSSParserValue*, Units, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 

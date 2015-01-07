@@ -71,7 +71,7 @@ inline bool isInternalPropertyAndValueParsingEnabledForMode(CSSParserMode mode)
 
 inline bool isUnitLessLengthParsingEnabledForMode(CSSParserMode mode)
 {
-    return mode == HTMLQuirksMode || mode == HTMLAttributeMode || mode == SVGAttributeMode;
+    return mode == HTMLAttributeMode || mode == SVGAttributeMode;
 }
 
 inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode)
