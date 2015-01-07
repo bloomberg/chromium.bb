@@ -10,6 +10,9 @@
 
 namespace blink {
 
+// Oilpan: all FrameOwner instances are GCed objects. FrameOwner additionally
+// derives from GarbageCollectedMixin so that Member<FrameOwner> references can
+// be kept (e.g., Frame::m_owner.)
 class FrameOwner : public WillBeGarbageCollectedMixin {
 public:
     virtual ~FrameOwner() { }
