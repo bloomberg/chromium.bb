@@ -60,6 +60,7 @@
       "printing_unittests",
       "remoting_unittests",
       "sandbox_linux_unittests",
+      "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
@@ -209,6 +210,7 @@
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
+      "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
@@ -294,6 +296,7 @@
       "printing_unittests",
       "remoting_unittests",
       "sandbox_linux_unittests",
+      "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
       {

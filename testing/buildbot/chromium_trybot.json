@@ -211,6 +211,7 @@
       ]
     },
     "url_unittests",
+    "skia_unittests",
     {
       "test": "wm_unittests",
       "platforms": ["linux", "win"]

@@ -89,7 +89,8 @@
       "athena_unittests",
       "app_shell_browsertests",
       "app_shell_unittests",
-      "chromevox_tests"
+      "chromevox_tests",
+      "skia_unittests"
     ]
   },
   "Linux ChromiumOS Ozone Tests (1)": {
@@ -149,6 +150,7 @@
         "test": "sandbox_linux_unittests",
         "args": ["--test-launcher-print-test-stdio=always"]
       },
+      "skia_unittests",
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
@@ -250,6 +252,7 @@
       },
       "athena_unittests",
       "gcm_unit_tests",
+      "skia_unittests",
       {
         "test": "interactive_ui_tests",
         "swarming": {

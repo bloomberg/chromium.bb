@@ -105,7 +105,8 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "url_unittests"
+      "url_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -228,7 +229,8 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "url_unittests"
+      "url_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -351,7 +353,8 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "url_unittests"
+      "url_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -475,7 +478,8 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "url_unittests"
+      "url_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {

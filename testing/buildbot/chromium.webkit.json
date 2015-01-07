@@ -86,7 +86,8 @@
       "athena_unittests",
       "app_shell_browsertests",
       "app_shell_unittests",
-      "chromevox_tests"
+      "chromevox_tests",
+      "skia_unittests"
     ]
   },
   "Linux ChromiumOS Tests (2)": {
@@ -174,6 +175,7 @@
       },
       "athena_unittests",
       "gcm_unit_tests",
+      "skia_unittests",
       {
         "test": "interactive_ui_tests",
         "swarming": {

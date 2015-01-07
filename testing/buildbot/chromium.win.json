@@ -86,7 +86,8 @@
       "ui_touch_selection_unittests",
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -196,7 +197,8 @@
       "ui_touch_selection_unittests",
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -314,7 +316,8 @@
       },
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -436,7 +439,8 @@
       },
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
@@ -552,7 +556,8 @@
       },
       "url_unittests",
       "views_unittests",
-      "wm_unittests"
+      "wm_unittests",
+      "skia_unittests"
     ],
     "scripts": [
       {
