@@ -47,9 +47,10 @@ const size_t kMaxNumReferenceFrames = 4;
 const size_t kNumSurfaces = kMaxNumReferenceFrames + kMinSurfacesToEncode +
                             kMinSurfacesToEncode * (kNumInputBuffers - 1);
 
-// An IDR every 128 frames, an I frame every 30 and no B frames.
-const int kIDRPeriod = 128;
-const int kIPeriod = 30;
+// An IDR every 2048 frames, an I frame every 256 and no B frames.
+// We choose IDR period to equal MaxFrameNum so it must be a power of 2.
+const int kIDRPeriod = 2048;
+const int kIPeriod = 256;
 const int kIPPeriod = 1;
 
 const int kDefaultFramerate = 30;
@@ -131,7 +132,7 @@ static unsigned int Log2OfPowerOf2(unsigned int x) {
   DCHECK_EQ(x & (x - 1), 0u);
 
   int log = 0;
-  while (x) {
+  while (x > 1) {
     x >>= 1;
     ++log;
   }
@@ -752,6 +753,9 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     bitrate = 1;
   if (framerate < 1)
     framerate = 1;
+
+  if (bitrate_ == bitrate && framerate_ == framerate)
+    return;
 
   UpdateRates(bitrate, framerate);
 
