@@ -666,7 +666,7 @@ void WebTestProxyBase::ScheduleAnimation() {
 void WebTestProxyBase::AnimateNow() {
   if (animate_scheduled_) {
     animate_scheduled_ = false;
-    web_widget_->animate(0.0);
+    web_widget_->beginFrame(blink::WebBeginFrameArgs(0.0, 0.0, 0.0));
     web_widget_->layout();
     if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
       popup->animate(0.0);
