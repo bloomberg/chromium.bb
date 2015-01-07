@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -52,7 +54,8 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
     : profile_(profile),
       list_controller_(list_controller),
       extension_registry_observer_(this),
-      clock_(clock.Pass()) {
+      clock_(clock.Pass()),
+      update_results_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   RefreshApps();
 }
@@ -101,6 +104,8 @@ void AppSearchProvider::UpdateResults() {
     }
     Add(result.Pass());
   }
+
+  update_results_factory_.InvalidateWeakPtrs();
 }
 
 void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions) {
@@ -132,7 +137,12 @@ void AppSearchProvider::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
   RefreshApps();
-  UpdateResults();
+  if (!update_results_factory_.HasWeakPtrs()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppSearchProvider::UpdateResults,
+                   update_results_factory_.GetWeakPtr()));
+  }
 }
 
 void AppSearchProvider::OnExtensionUninstalled(
@@ -140,7 +150,12 @@ void AppSearchProvider::OnExtensionUninstalled(
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
   RefreshApps();
-  UpdateResults();
+  if (!update_results_factory_.HasWeakPtrs()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppSearchProvider::UpdateResults,
+                   update_results_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace app_list

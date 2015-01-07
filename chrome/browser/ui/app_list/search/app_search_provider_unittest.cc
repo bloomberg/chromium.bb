@@ -107,6 +107,10 @@ TEST_F(AppSearchProviderTest, Uninstall) {
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                base::Bind(&base::DoNothing),
                                NULL);
+
+  // Allow async AppSearchProvider::UpdateResults to run.
+  base::RunLoop().RunUntilIdle();
+
   // Uninstalling an app should update the result list without needing to start
   // a new search.
   EXPECT_TRUE(results().empty());

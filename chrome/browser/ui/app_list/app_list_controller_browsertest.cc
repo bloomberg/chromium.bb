@@ -205,6 +205,9 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   // Now uninstall and ensure this browser test observes it.
   UninstallExtension(extension->id());
 
+  // Allow async AppSearchProvider::UpdateResults to run.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(observed_result_);
   StopWatchingResults();
   service->DismissAppList();

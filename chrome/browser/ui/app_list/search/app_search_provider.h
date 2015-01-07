@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/app_list/search_provider.h"
@@ -70,6 +71,7 @@ class AppSearchProvider : public SearchProvider,
   Apps apps_;
 
   scoped_ptr<base::Clock> clock_;
+  base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);
 };
