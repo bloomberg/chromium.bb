@@ -21,7 +21,8 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     private final long mNativeCardUnmaskPromptViewAndroid;
     private final CardUnmaskPrompt mCardUnmaskPrompt;
 
-    public CardUnmaskBridge(long nativeCardUnmaskPromptViewAndroid, WindowAndroid windowAndroid) {
+    public CardUnmaskBridge(long nativeCardUnmaskPromptViewAndroid, String title,
+            String instructions, WindowAndroid windowAndroid) {
         mNativeCardUnmaskPromptViewAndroid = nativeCardUnmaskPromptViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
@@ -35,19 +36,24 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
                 }
             });
         } else {
-            mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this);
+            mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this, title, instructions);
         }
     }
 
     @CalledByNative
-    private static CardUnmaskBridge create(long nativeUnmaskPrompt,
-            WindowAndroid windowAndroid) {
-        return new CardUnmaskBridge(nativeUnmaskPrompt, windowAndroid);
+    private static CardUnmaskBridge create(long nativeUnmaskPrompt, String title,
+            String instructions, WindowAndroid windowAndroid) {
+        return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions, windowAndroid);
     }
 
     @Override
     public void dismissed() {
         nativePromptDismissed(mNativeCardUnmaskPromptViewAndroid);
+    }
+
+    @Override
+    public boolean checkUserInputValidity(String userResponse) {
+        return nativeCheckUserInputValidity(mNativeCardUnmaskPromptViewAndroid, userResponse);
     }
 
     @Override
@@ -83,11 +89,13 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
      * Indicate that verification failed, allow user to retry.
      */
     @CalledByNative
-    private void verificationFailed() {
-        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.verificationFailed();
+    private void verificationFinished(boolean success) {
+        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.verificationFinished(success);
     }
 
     private native void nativePromptDismissed(long nativeCardUnmaskPromptViewAndroid);
+    private native boolean nativeCheckUserInputValidity(
+            long nativeCardUnmaskPromptViewAndroid, String userResponse);
     private native void nativeOnUserInput(
             long nativeCardUnmaskPromptViewAndroid, String userResponse);
 }

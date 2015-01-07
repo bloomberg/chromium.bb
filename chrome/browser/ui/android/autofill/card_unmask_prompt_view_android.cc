@@ -35,11 +35,25 @@ void CardUnmaskPromptViewAndroid::Show() {
   ui::ViewAndroid* view_android =
       controller_->GetWebContents()->GetNativeView();
 
+  ScopedJavaLocalRef<jstring> dialog_title =
+      base::android::ConvertUTF16ToJavaString(env,
+                                              controller_->GetWindowTitle());
+  ScopedJavaLocalRef<jstring> instructions =
+      base::android::ConvertUTF16ToJavaString(
+          env, controller_->GetInstructionsMessage());
   java_object_.Reset(Java_CardUnmaskBridge_create(
-      env, reinterpret_cast<intptr_t>(this),
+      env, reinterpret_cast<intptr_t>(this), dialog_title.obj(),
+      instructions.obj(),
       view_android->GetWindowAndroid()->GetJavaObject().obj()));
 
   Java_CardUnmaskBridge_show(env, java_object_.obj());
+}
+
+bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(JNIEnv* env,
+                                                         jobject obj,
+                                                         jstring response) {
+  return controller_->InputTextIsValid(
+      base::android::ConvertJavaStringToUTF16(env, response));
 }
 
 void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
@@ -65,12 +79,8 @@ void CardUnmaskPromptViewAndroid::DisableAndWaitForVerification() {
 }
 
 void CardUnmaskPromptViewAndroid::GotVerificationResult(bool success) {
-  if (success) {
-    // TODO(estade): implement.
-  } else {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_CardUnmaskBridge_verificationFailed(env, java_object_.obj());
-  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CardUnmaskBridge_verificationFinished(env, java_object_.obj(), success);
 }
 
 // static

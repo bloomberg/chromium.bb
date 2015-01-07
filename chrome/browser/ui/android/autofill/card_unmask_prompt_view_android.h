@@ -20,6 +20,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
 
   void Show();
 
+  bool CheckUserInputValidity(JNIEnv* env, jobject obj, jstring response);
   void OnUserInput(JNIEnv* env, jobject obj, jstring response);
   void PromptDismissed(JNIEnv* env, jobject obj);
 

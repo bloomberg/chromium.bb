@@ -217,10 +217,7 @@
         Clear
       </message>
 
-      <message desc="The text that explains the purpose of the card unmasking prompt." name="IDS_CARD_UNMASK_PROMPT_CONTENT_TEXT">
-        Enter the three digit verification code from the back of your card
-      </message>
-      <message desc="Placeholder/hint text for the CVC input in the card unmasking prompt." name="IDS_CARD_UNMASK_INPUT_HINT">
+      <message desc="Hint text for an input field containing the user's credit card CVC (card verification code)." name="IDS_CARD_UNMASK_INPUT_HINT">
         CVC
       </message>
 

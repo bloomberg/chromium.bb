@@ -104,9 +104,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWalletCardImport)) {
     // For now, add a fake masked card.
-    suggestions.push_back(Suggestion(
-        "Visa - 1111", "[tap to unlock]", "",
-        POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT));
+    suggestions.push_back(Suggestion("Amex - 8431", "[tap to unlock]", "",
+                                     POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT));
   }
 
   // Add a separator to go between the values and menu items.

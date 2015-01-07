@@ -11,9 +11,9 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/card_unmask_instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/card_unmask_prompt_content_text"
         android:textSize="20sp"
         android:paddingStart="5dp"
         android:paddingEnd="5dp"
