@@ -902,7 +902,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
       .Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
+// Test fails under MSan, http://crbug.com/446950
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_StartSession DISABLED_StartSession
+#else
+#define MAYBE_StartSession StartSession
+#endif
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_StartSession) {
   // Specify startup pages.
   device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
       SessionStartupPref::kPrefValueURLs);
@@ -2082,7 +2089,14 @@ class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
                                    public testing::WithParamInterface<bool> {
 };
 
-IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
+// Test fails under MSan, http://crbug.com/446950
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TermsOfServiceScreen DISABLED_TermsOfServiceScreen
+#else
+#define MAYBE_TermsOfServiceScreen TermsOfServiceScreen
+#endif
+
+IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, MAYBE_TermsOfServiceScreen) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
