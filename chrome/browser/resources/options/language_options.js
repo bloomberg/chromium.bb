@@ -850,7 +850,8 @@ cr.define('options', function() {
       }
 
       chrome.send('coreOptionsUserMetricsAction',
-                  ['Options_Languages_InputMethodCheckbox']);
+                  ['Options_Languages_InputMethodCheckbox' +
+                   (checkbox.checked ? '_Enable' : '_Disable')]);
     },
 
     /**
