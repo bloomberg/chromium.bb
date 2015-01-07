@@ -34,6 +34,10 @@
 #include <errno.h>
 #include <limits.h>
 #include <sys/ptrace.h>
+#include <sys/prctl.h>
+#ifndef PR_SET_PTRACER
+# define PR_SET_PTRACER 0x59616d61
+#endif
 
 #include "test-runner.h"
 
@@ -267,29 +271,65 @@ stderr_reset_color(void)
 
 /* this function is taken from libinput/test/litest.c
  * (rev 028513a0a723e97941c39)
+ *
+ * Returns: 1 if a debugger is confirmed present; 0 if no debugger is
+ * present or if it can't be determined.
  */
 static int
 is_debugger_attached(void)
 {
 	int status;
 	int rc;
-	pid_t pid = fork();
+	pid_t pid;
+	int pipefd[2];
 
-	if (pid == -1)
+	if (pipe(pipefd) == -1) {
+		perror("pipe");
 		return 0;
+	}
 
-	if (pid == 0) {
+	pid = fork();
+	if (pid == -1) {
+		perror("fork");
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return 0;
+	} else if (pid == 0) {
+		char buf;
 		pid_t ppid = getppid();
-		if (ptrace(PTRACE_ATTACH, ppid, NULL, NULL) == 0) {
-			waitpid(ppid, NULL, 0);
-			ptrace(PTRACE_CONT, NULL, NULL);
-			ptrace(PTRACE_DETACH, ppid, NULL, NULL);
-			rc = 0;
-		} else {
-			rc = 1;
-		}
-		_exit(rc);
+
+		/* Wait until parent is ready */
+		close(pipefd[1]);  /* Close unused write end */
+		read(pipefd[0], &buf, 1);
+		close(pipefd[0]);
+		if (buf == '-')
+			_exit(1);
+		if (ptrace(PTRACE_ATTACH, ppid, NULL, NULL) != 0)
+			_exit(1);
+		if (!waitpid(-1, NULL, 0))
+			_exit(1);
+		ptrace(PTRACE_CONT, NULL, NULL);
+		ptrace(PTRACE_DETACH, ppid, NULL, NULL);
+		_exit(0);
 	} else {
+		close(pipefd[0]);
+
+		/* Enable child to ptrace the parent process */
+		rc = prctl(PR_SET_PTRACER, pid);
+		if (rc != 0 && errno != EINVAL) {
+			/* An error prevents us from telling if a debugger is attached.
+			 * Instead of propagating the error, assume no debugger present.
+			 * But note the error to the log as a clue for troubleshooting.
+			 * Then flag the error state to the client by sending '-'.
+			 */
+			perror("prctl");
+			write(pipefd[1], "-", 1);
+		} else {
+			/* Signal to client that parent is ready by passing '+' */
+			write(pipefd[1], "+", 1);
+		}
+		close(pipefd[1]);
+
 		waitpid(pid, &status, 0);
 		rc = WEXITSTATUS(status);
 	}
