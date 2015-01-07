@@ -208,9 +208,14 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
   gfx::Image avatar;
   gfx::Image taskbar_badge_avatar;
   bool is_rectangle;
-  // Only need to update the taskbar overlay here.
-  AvatarMenuButton::GetAvatarImages(browser_view_->browser()->profile(),
-                                    AvatarMenu::ShouldShowAvatarMenu(), &avatar,
-                                    &taskbar_badge_avatar, &is_rectangle);
-  DrawTaskbarDecoration(avatar, taskbar_badge_avatar);
+  // Only need to update the taskbar overlay here.  If GetAvatarImages()
+  // returns false, don't bother trying to update the taskbar decoration since
+  // the returned images are not initialized.  This can happen if the user
+  // deletes the current profile.
+  if (AvatarMenuButton::GetAvatarImages(browser_view_->browser()->profile(),
+                                        AvatarMenu::ShouldShowAvatarMenu(),
+                                        &avatar, &taskbar_badge_avatar,
+                                        &is_rectangle)) {
+    DrawTaskbarDecoration(avatar, taskbar_badge_avatar);
+  }
 }
