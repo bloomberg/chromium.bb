@@ -409,7 +409,7 @@ void LayerAnimator::Step(base::TimeTicks now) {
 
 void LayerAnimator::StopAnimatingInternal(bool abort) {
   scoped_refptr<LayerAnimator> retain(this);
-  while (is_animating()) {
+  while (is_animating() && delegate()) {
     // We're going to attempt to finish the first running animation. Let's
     // ensure that it's valid.
     PurgeDeletedAnimations();
@@ -517,6 +517,8 @@ void LayerAnimator::FinishAnimation(
     sequence->Abort(delegate());
   else
     ProgressAnimationToEnd(sequence);
+  if (!delegate())
+    return;
   ProcessQueue();
   UpdateAnimationState();
 }

@@ -2611,4 +2611,67 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   TerminateContextFactoryForTests();
 }
 
+class LayerOwnerAnimationObserver : public LayerAnimationObserver {
+ public:
+  LayerOwnerAnimationObserver(LayerAnimator* animator)
+      : animator_layer_(new Layer(LAYER_TEXTURED)) {
+    animator_layer_->SetAnimator(animator);
+  }
+
+  ~LayerOwnerAnimationObserver() override {}
+
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
+    ASSERT_TRUE(sequence);
+    animator_layer_.reset();
+  }
+
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override {
+    ASSERT_TRUE(sequence);
+    animator_layer_.reset();
+  }
+
+  LayerAnimationDelegate* animator_layer() {
+    return animator_layer_.get();
+  }
+
+  void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {}
+
+ private:
+  scoped_ptr<Layer> animator_layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerOwnerAnimationObserver);
+};
+
+TEST(LayerAnimatorTest, ObserverDeletesLayerInStopAnimating) {
+  scoped_refptr<LayerAnimator> animator(
+      LayerAnimator::CreateImplicitAnimator());
+  animator->set_disable_timer_for_test(true);
+  LayerOwnerAnimationObserver observer(animator.get());
+  LayerAnimationDelegate* delegate = observer.animator_layer();
+
+  const gfx::Rect start_bounds(0, 0, 50, 50);
+  const gfx::Rect target_bounds(10, 10, 100, 100);
+  const double target_opacity = 1.0;
+
+  delegate->SetOpacityFromAnimation(0.0f);
+  delegate->SetBoundsFromAnimation(start_bounds);
+
+  base::TimeDelta time_delta = base::TimeDelta::FromSeconds(1);
+  LayerAnimationSequence* opacity = new LayerAnimationSequence(
+      LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta));
+  opacity->AddObserver(&observer);
+  animator->ScheduleAnimation(opacity);
+  time_delta = base::TimeDelta::FromSeconds(2);
+  LayerAnimationSequence* move = new LayerAnimationSequence(
+      LayerAnimationElement::CreateBoundsElement(target_bounds, time_delta));
+  animator->ScheduleAnimation(move);
+  EXPECT_TRUE(animator->is_animating());
+  animator->Step(animator->last_step_time() +
+                 base::TimeDelta::FromMilliseconds(500));
+  animator->StopAnimating();
+
+  EXPECT_EQ(nullptr, observer.animator_layer());
+  EXPECT_TRUE(animator->is_animating());
+}
+
 }  // namespace ui
