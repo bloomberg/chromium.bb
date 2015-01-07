@@ -102,8 +102,6 @@ $toc-width: 28%;
 
 // Footer at bottom of articles
 #cc-info {
-  @include display-flex();
-  @include align-items(center);
   font-style: italic;
   //font-size: $small-label-size;
   font-size: 0.8em;
@@ -111,9 +109,6 @@ $toc-width: 28%;
   .cc-logo img {
     width: 90px;
     height: 32px;
-  }
-  .last-updated {
-    @include flex(1);
   }
 }
 
