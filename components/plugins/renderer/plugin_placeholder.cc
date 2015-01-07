@@ -65,6 +65,7 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
                                     render_frame->GetWebkitPreferences(),
                                     html_data,
                                     placeholderDataUrl)),
+      is_blocked_for_background_tab_(false),
       is_blocked_for_prerendering_(false),
       is_blocked_for_power_saver_poster_(false),
       power_saver_mode_(content::RenderFrame::POWER_SAVER_MODE_ESSENTIAL),
@@ -79,10 +80,10 @@ PluginPlaceholder::~PluginPlaceholder() {}
 #if defined(ENABLE_PLUGINS)
 void PluginPlaceholder::DisablePowerSaverForInstance() {
   power_saver_mode_ = content::RenderFrame::POWER_SAVER_MODE_ESSENTIAL;
-  // Load the plugin now if it has been deferred for a Power Saver poster.
-  if (is_blocked_for_prerendering_) {
+  if (is_blocked_for_power_saver_poster_) {
     is_blocked_for_power_saver_poster_ = false;
-    LoadPlugin();
+    if (!LoadingBlocked())
+      LoadPlugin();
   }
 }
 #endif
@@ -203,6 +204,14 @@ void PluginPlaceholder::PluginDestroyed() {
   plugin_ = NULL;
 }
 
+void PluginPlaceholder::WasShown() {
+  if (is_blocked_for_background_tab_) {
+    is_blocked_for_background_tab_ = false;
+    if (!LoadingBlocked())
+      LoadPlugin();
+  }
+}
+
 void PluginPlaceholder::OnDestruct() {
   frame_ = NULL;
 }
@@ -219,9 +228,10 @@ void PluginPlaceholder::OnSetIsPrerendering(bool is_prerendering) {
   // Prerendering can only be enabled prior to a RenderView's first navigation,
   // so no BlockedPlugin should see the notification that enables prerendering.
   DCHECK(!is_prerendering);
-  if (is_blocked_for_prerendering_ && !is_prerendering &&
-      !is_blocked_for_power_saver_poster_) {
-    LoadPlugin();
+  if (is_blocked_for_prerendering_) {
+    is_blocked_for_prerendering_ = false;
+    if (!LoadingBlocked())
+      LoadPlugin();
   }
 }
 
@@ -283,6 +293,12 @@ blink::WebLocalFrame* PluginPlaceholder::GetFrame() { return frame_; }
 
 const blink::WebPluginParams& PluginPlaceholder::GetPluginParams() const {
   return plugin_params_;
+}
+
+bool PluginPlaceholder::LoadingBlocked() const {
+  DCHECK(allow_loading_);
+  return is_blocked_for_background_tab_ || is_blocked_for_power_saver_poster_ ||
+         is_blocked_for_prerendering_;
 }
 
 }  // namespace plugins

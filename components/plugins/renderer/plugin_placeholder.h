@@ -30,6 +30,10 @@ class PluginPlaceholder : public content::RenderFrameObserver,
 
   WebViewPlugin* plugin() { return plugin_; }
 
+  void set_blocked_for_background_tab(bool blocked_for_background_tab) {
+    is_blocked_for_background_tab_ = blocked_for_background_tab;
+  }
+
   void set_blocked_for_prerendering(bool blocked_for_prerendering) {
     is_blocked_for_prerendering_ = blocked_for_prerendering;
   }
@@ -92,6 +96,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   void PluginDestroyed() override;
 
   // RenderFrameObserver methods:
+  void WasShown() override;
   void OnDestruct() override;
 
   // Javascript callbacks:
@@ -106,6 +111,8 @@ class PluginPlaceholder : public content::RenderFrameObserver,
 
   void UpdateMessage();
 
+  bool LoadingBlocked() const;
+
   blink::WebLocalFrame* frame_;
   blink::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;
@@ -114,11 +121,15 @@ class PluginPlaceholder : public content::RenderFrameObserver,
 
   base::string16 message_;
 
+  // True if the plugin load was deferred due to page being a background tab.
+  // Plugin may be automatically loaded when the page is foregrounded.
+  bool is_blocked_for_background_tab_;
+
   // True if the plugin was blocked because the page was being prerendered.
   // Plugin may be automatically be loaded when the page is displayed.
   bool is_blocked_for_prerendering_;
 
-  // True if the plugin load is deferred due to a Power Saver poster.
+  // True if the plugin load was deferred due to a Power Saver poster.
   bool is_blocked_for_power_saver_poster_;
 
   // This is independent of deferred plugin load due to a Power Saver poster.

@@ -794,6 +794,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         bool show_poster = false;
         GURL poster_url;
         bool cross_origin_main_content = false;
+        bool blocked_for_background_tab =
+            render_frame->IsHidden() &&
+            status_value ==
+                ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
         if (render_frame->ShouldThrottleContent(params, frame->document().url(),
                                                 &poster_url,
                                                 &cross_origin_main_content)) {
@@ -814,11 +818,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         bool is_prerendering =
             prerender::PrerenderHelper::IsPrerendering(render_frame);
-        if (is_prerendering || show_poster) {
+        if (blocked_for_background_tab || is_prerendering || show_poster) {
           placeholder = create_blocked_plugin(
               show_poster ? IDR_PLUGIN_POSTER_HTML : IDR_BLOCKED_PLUGIN_HTML,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
               poster_url);
+          placeholder->set_blocked_for_background_tab(
+              blocked_for_background_tab);
           placeholder->set_blocked_for_prerendering(is_prerendering);
           placeholder->set_power_saver_mode(power_saver_mode);
           placeholder->set_allow_loading(true);
