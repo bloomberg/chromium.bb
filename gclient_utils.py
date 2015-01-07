@@ -1141,15 +1141,32 @@ def ParseCodereviewSettingsContent(content):
 def NumLocalCpus():
   """Returns the number of processors.
 
-  Python on OSX 10.6 raises a NotImplementedError exception.
+  multiprocessing.cpu_count() is permitted to raise NotImplementedError, and
+  is known to do this on some Windows systems and OSX 10.6. If we can't get the
+  CPU count, we will fall back to '1'.
   """
+  # Surround the entire thing in try/except; no failure here should stop gclient
+  # from working.
   try:
-    import multiprocessing
-    return multiprocessing.cpu_count()
-  except:  # pylint: disable=W0702
-    # Mac OS 10.6 only
-    # pylint: disable=E1101
-    return int(os.sysconf('SC_NPROCESSORS_ONLN'))
+    # Use multiprocessing to get CPU count. This may raise
+    # NotImplementedError.
+    try:
+      import multiprocessing
+      return multiprocessing.cpu_count()
+    except NotImplementedError:  # pylint: disable=W0702
+      # (UNIX) Query 'os.sysconf'.
+      # pylint: disable=E1101
+      if hasattr(os, 'sysconf') and 'SC_NPROCESSORS_ONLN' in os.sysconf_names:
+        return int(os.sysconf('SC_NPROCESSORS_ONLN'))
+
+      # (Windows) Query 'NUMBER_OF_PROCESSORS' environment variable.
+      if 'NUMBER_OF_PROCESSORS' in os.environ:
+        return int(os.environ['NUMBER_OF_PROCESSORS'])
+  except Exception as e:
+    logging.exception("Exception raised while probing CPU count: %s", e)
+
+  logging.debug('Failed to get CPU count. Defaulting to 1.')
+  return 1
 
 def DefaultDeltaBaseCacheLimit():
   """Return a reasonable default for the git config core.deltaBaseCacheLimit.
