@@ -356,11 +356,13 @@ static int selectionLogic(Vector<ImageCandidate>& imageCandidates, float deviceS
     return i;
 }
 
-static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandidate>& imageCandidates, unsigned winner, Document* document)
+static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandidate>& imageCandidates, unsigned winner, Document* document, bool ignoreSrc)
 {
     if (!document)
         return winner;
     for (unsigned i = imageCandidates.size() - 1; i > winner; --i) {
+        if (ignoreSrc && imageCandidates[i].srcOrigin())
+            continue;
         KURL url = document->completeURL(stripLeadingAndTrailingHTMLSpaces(imageCandidates[i].url()));
         if (memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier()))
             return i;
@@ -389,7 +391,7 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sour
 
     unsigned winner = selectionLogic(imageCandidates, deviceScaleFactor, ignoreSrc);
     ASSERT(winner < imageCandidates.size());
-    winner = avoidDownloadIfHigherDensityResourceIsInCache(imageCandidates, winner, document);
+    winner = avoidDownloadIfHigherDensityResourceIsInCache(imageCandidates, winner, document, ignoreSrc);
 
     float winningDensity = imageCandidates[winner].density();
     // 16. If an entry b in candidates has the same associated ... pixel density as an earlier entry a in candidates,
