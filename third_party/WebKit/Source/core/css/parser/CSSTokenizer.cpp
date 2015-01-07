@@ -421,7 +421,7 @@ CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 {
     String name = consumeName();
     if (consumeIfNext('(')) {
-        if (name == "url") {
+        if (equalIgnoringCase(name, "url")) {
             // The spec is slightly different so as to avoid dropping whitespace
             // tokens, but they wouldn't be used and this is easier.
             consumeUntilNonWhitespace();

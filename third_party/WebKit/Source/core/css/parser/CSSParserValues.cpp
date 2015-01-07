@@ -47,10 +47,9 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
         CSSParserValue value;
         switch (token.type()) {
         case FunctionToken: {
-            if (token.value() == "url" && range.peek(1).type() == RightParenthesisToken) {
-                const CSSParserToken& next = range.consume();
-                range.consume();
-                if (next.type() == BadStringToken) {
+            if (equalIgnoringCase(token.value(), "url")) {
+                const CSSParserToken& next = range.consumeIncludingWhitespaceAndComments();
+                if (next.type() == BadStringToken || range.consume().type() != RightParenthesisToken) {
                     destroyAndClear();
                     return;
                 }
@@ -61,6 +60,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 value.isInt = false;
                 value.unit = CSSPrimitiveValue::CSS_URI;
                 value.string = string;
+                break;
             }
 
             CSSParserFunction* function = new CSSParserFunction;

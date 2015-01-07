@@ -261,20 +261,23 @@ TEST(CSSTokenizerTest, AtKeywordToken)
 TEST(CSSTokenizerTest, UrlToken)
 {
     TEST_TOKENS("url(foo.gif)", url("foo.gif"));
-    TEST_TOKENS("url(https://example.com/cats.png)", url("https://example.com/cats.png"));
-    TEST_TOKENS("url(what-a.crazy^URL~this\\ is!)", url("what-a.crazy^URL~this is!"));
-    TEST_TOKENS("url(123#test)", url("123#test"));
-    TEST_TOKENS("url(escapes\\ \\\"\\'\\)\\()", url("escapes \"')("));
-    TEST_TOKENS("url(   whitespace   )", url("whitespace"));
-    TEST_TOKENS("url( whitespace-eof ", url("whitespace-eof"));
-    TEST_TOKENS("url(eof)", url("eof"));
-    TEST_TOKENS("url(white space),", badUrl, comma);
-    TEST_TOKENS("url(b(ad),", badUrl, comma);
-    TEST_TOKENS("url(ba'd):", badUrl, colon);
-    TEST_TOKENS("url(b\"ad):", badUrl, colon);
-    TEST_TOKENS("url(b\"ad):", badUrl, colon);
-    TEST_TOKENS("url(b\\\rad):", badUrl, colon);
+    TEST_TOKENS("urL(https://example.com/cats.png)", url("https://example.com/cats.png"));
+    TEST_TOKENS("uRl(what-a.crazy^URL~this\\ is!)", url("what-a.crazy^URL~this is!"));
+    TEST_TOKENS("uRL(123#test)", url("123#test"));
+    TEST_TOKENS("Url(escapes\\ \\\"\\'\\)\\()", url("escapes \"')("));
+    TEST_TOKENS("UrL(   whitespace   )", url("whitespace"));
+    TEST_TOKENS("URl( whitespace-eof ", url("whitespace-eof"));
+    TEST_TOKENS("URL(eof", url("eof"));
+    TEST_TOKENS("url(not/*a*/comment)", url("not/*a*/comment"));
+    TEST_TOKENS("urL()", url(""));
+    TEST_TOKENS("uRl(white space),", badUrl, comma);
+    TEST_TOKENS("Url(b(ad),", badUrl, comma);
+    TEST_TOKENS("uRl(ba'd):", badUrl, colon);
+    TEST_TOKENS("urL(b\"ad):", badUrl, colon);
+    TEST_TOKENS("uRl(b\"ad):", badUrl, colon);
+    TEST_TOKENS("Url(b\\\rad):", badUrl, colon);
     TEST_TOKENS("url(b\\\nad):", badUrl, colon);
+    TEST_TOKENS("url(/*'bad')*/", badUrl, delim('*'), delim('/'));
     TEST_TOKENS("url(ba'd\\\\))", badUrl, rightParenthesis);
 }
 

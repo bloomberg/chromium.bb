@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/css/parser/CSSParserValues.h"
 
+#include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css/parser/CSSTokenizer.h"
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -95,6 +97,23 @@ TEST(CSSParserValuesTest, CSSParserValuelistClear)
     list.clearAndLeakValues();
     ASSERT_FALSE(list.size());
     ASSERT_FALSE(list.currentIndex());
+}
+
+TEST(CSSParserValuesTest, CSSParserTokenUrlConversion)
+{
+    Vector<CSSParserToken> tokens;
+    CSSTokenizer::tokenize("url(some) uRL('test') UrL(  \"words\" /**/ ) URl( /**/hi/**/ )", tokens);
+    CSSParserTokenRange range(tokens);
+    CSSParserValueList valueList(range);
+    ASSERT_EQ(valueList.size(), 4u);
+    ASSERT_EQ(valueList.valueAt(0)->unit, CSSPrimitiveValue::CSS_URI);
+    EXPECT_EQ(String(valueList.valueAt(0)->string), "some");
+    ASSERT_EQ(valueList.valueAt(1)->unit, CSSPrimitiveValue::CSS_URI);
+    EXPECT_EQ(String(valueList.valueAt(1)->string), "test");
+    ASSERT_EQ(valueList.valueAt(2)->unit, CSSPrimitiveValue::CSS_URI);
+    EXPECT_EQ(String(valueList.valueAt(2)->string), "words");
+    ASSERT_EQ(valueList.valueAt(3)->unit, CSSPrimitiveValue::CSS_URI);
+    EXPECT_EQ(String(valueList.valueAt(3)->string), "/**/hi/**/");
 }
 
 } // namespace
