@@ -119,6 +119,9 @@ MetricsLog::MetricsLog(const std::string& client_id,
   system_profile->set_build_timestamp(GetBuildTime());
   system_profile->set_app_version(client_->GetVersionString());
   system_profile->set_channel(client_->GetChannel());
+#if defined(SYZYASAN)
+  system_profile->set_is_asan_build(true);
+#endif
 }
 
 MetricsLog::~MetricsLog() {
