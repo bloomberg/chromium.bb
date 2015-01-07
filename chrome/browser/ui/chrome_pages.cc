@@ -350,7 +350,11 @@ void ShowBrowserSignin(Browser* browser, signin_metrics::Source source) {
 
     signin_metrics::LogSigninSource(source);
 
-    if (switches::IsNewAvatarMenu()) {
+    // Since the app launcher is a separate application, it might steal focus
+    // away from Chrome, and accidentally close the avatar bubble. In this case,
+    // fallback to the full-tab signin page.
+    if (switches::IsNewAvatarMenu() &&
+        source != signin_metrics::SOURCE_APP_LAUNCHER) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
           signin::ManageAccountsParams());
