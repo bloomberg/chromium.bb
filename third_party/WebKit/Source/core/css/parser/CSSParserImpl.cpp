@@ -309,7 +309,7 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
         return nullptr; // Parse error; expected ident token in @keyframes header
     }
 
-    const Vector<RefPtrWillBeMember<StyleRuleBase>>& keyframeRules = consumeRuleList(block, KeyframesRuleList);
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& keyframeRules = consumeRuleList(block, KeyframesRuleList);
 
     RefPtrWillBeRawPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
     for (const auto& keyframe : keyframeRules)
