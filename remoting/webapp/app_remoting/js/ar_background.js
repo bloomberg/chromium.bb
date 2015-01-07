@@ -23,14 +23,15 @@ function createWindow(opt_launchData) {
     return;
   }
 
-  var typed_screen = /** @type {{width: number, height: number}} */ (screen);
+  var typed_screen = /** @type {{availWidth: number, availHeight: number}} */
+      (screen);
 
   var windowAttributes = {
     resizable: false,
     frame: 'none',
     bounds: {
-      width: typed_screen.width,
-      height: typed_screen.height
+      width: typed_screen.availWidth,
+      height: typed_screen.availHeight
     }
   };
 
