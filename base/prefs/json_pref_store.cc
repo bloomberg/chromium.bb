@@ -137,6 +137,7 @@ JsonPrefStore::JsonPrefStore(
       initialized_(false),
       filtering_in_progress_(false),
       read_error_(PREF_READ_ERROR_NONE) {
+  DCHECK(!path_.empty());
 }
 
 JsonPrefStore::JsonPrefStore(
@@ -154,6 +155,7 @@ JsonPrefStore::JsonPrefStore(
       initialized_(false),
       filtering_in_progress_(false),
       read_error_(PREF_READ_ERROR_NONE) {
+  DCHECK(!path_.empty());
 }
 
 bool JsonPrefStore::GetValue(const std::string& key,
@@ -258,13 +260,6 @@ PersistentPrefStore::PrefReadError JsonPrefStore::GetReadError() const {
 PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   DCHECK(CalledOnValidThread());
 
-  if (path_.empty()) {
-    scoped_ptr<ReadResult> no_file_result;
-    no_file_result->error = PREF_READ_ERROR_FILE_NOT_SPECIFIED;
-    OnFileRead(no_file_result.Pass());
-    return PREF_READ_ERROR_FILE_NOT_SPECIFIED;
-  }
-
   OnFileRead(ReadPrefsFromDisk(path_, alternate_path_));
   return filtering_in_progress_ ? PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE
                                 : read_error_;
@@ -275,12 +270,6 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
 
   initialized_ = false;
   error_delegate_.reset(error_delegate);
-  if (path_.empty()) {
-    scoped_ptr<ReadResult> no_file_result;
-    no_file_result->error = PREF_READ_ERROR_FILE_NOT_SPECIFIED;
-    OnFileRead(no_file_result.Pass());
-    return;
-  }
 
   // Weakly binds the read task so that it doesn't kick in during shutdown.
   base::PostTaskAndReplyWithResult(
