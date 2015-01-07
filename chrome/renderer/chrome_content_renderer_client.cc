@@ -126,6 +126,10 @@
 #include "extensions/renderer/script_context.h"
 #endif
 
+#if defined(ENABLE_PRINTING)
+#include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
+#endif
+
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
 #endif
@@ -501,13 +505,20 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
 #if defined(ENABLE_EXTENSIONS)
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
   extension_dispatcher_->OnRenderViewCreated(render_view);
 #endif
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
-  new printing::PrintWebViewHelper(render_view);
+  new printing::PrintWebViewHelper(
+      render_view,
+      switches::OutOfProcessPdfEnabled(),
+      command_line->HasSwitch(switches::kDisablePrintPreview),
+      scoped_ptr<printing::PrintWebViewHelper::Delegate>(
+          new ChromePrintWebViewHelperDelegate()));
 #endif
 #if defined(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());
@@ -517,7 +528,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 

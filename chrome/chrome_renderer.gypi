@@ -233,6 +233,8 @@
       'renderer/spellchecker/spelling_engine.h',
     ],
     'chrome_renderer_printing_sources': [
+      'renderer/printing/chrome_print_web_view_helper_delegate.cc',
+      'renderer/printing/chrome_print_web_view_helper_delegate.h',
       'renderer/printing/print_web_view_helper.cc',
       'renderer/printing/print_web_view_helper.h',
       'renderer/printing/print_web_view_helper_android.cc',

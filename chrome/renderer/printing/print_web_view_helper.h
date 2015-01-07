@@ -66,7 +66,25 @@ class PrintWebViewHelper
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<PrintWebViewHelper> {
  public:
-  explicit PrintWebViewHelper(content::RenderView* render_view);
+
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Cancels prerender if it's currently in progress and returns |true| if
+    // the cancellation was done with success.
+    virtual bool CancelPrerender(content::RenderView* render_view,
+                                 int routing_id) = 0;
+
+    // Returns the element to be printed. Returns a null WebElement if
+    // a pdf plugin element can't be extracted from the frame.
+    virtual blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) = 0;
+  };
+
+  PrintWebViewHelper(content::RenderView* render_view,
+                     bool out_of_process_pdf_enabled,
+                     bool print_preview_disabled,
+                     scoped_ptr<Delegate> delegate);
   ~PrintWebViewHelper() override;
 
   // Disable print preview and switch to system dialog printing even if full
@@ -326,6 +344,12 @@ class PrintWebViewHelper
 
   // True, when printing from print preview.
   bool print_for_preview_;
+
+  // Whether the content to print could be nested in an iframe.
+  const bool out_of_process_pdf_enabled_;
+
+  // Used to check the prerendering status.
+  const scoped_ptr<Delegate> delegate_;
 
   // Keeps track of the state of print preview between messages.
   // TODO(vitalybuka): Create PrintPreviewContext when needed and delete after
