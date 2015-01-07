@@ -59,6 +59,9 @@ SharedMemIPCServer::~SharedMemIPCServer() {
     ::CloseHandle(context->pong_event);
     delete context;
   }
+
+  if (client_control_)
+    ::UnmapViewOfFile(client_control_);
 }
 
 bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
