@@ -270,7 +270,6 @@
       'browser/ui/cocoa/bookmarks/bookmark_button_cell.mm',
       'browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h',
       'browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.mm',
-      'browser/ui/cocoa/bookmarks/bookmark_drag_drop_cocoa.h',
       'browser/ui/cocoa/bookmarks/bookmark_drag_drop_cocoa.mm',
       'browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.h',
       'browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.mm',
@@ -2000,7 +1999,6 @@
       'browser/ui/views/bookmarks/bookmark_context_menu.cc',
       'browser/ui/views/bookmarks/bookmark_context_menu.h',
       'browser/ui/views/bookmarks/bookmark_drag_drop_views.cc',
-      'browser/ui/views/bookmarks/bookmark_drag_drop_views.h',
       'browser/ui/views/bookmarks/bookmark_editor_view.cc',
       'browser/ui/views/bookmarks/bookmark_editor_view.h',
       'browser/ui/views/bookmarks/bookmark_menu_controller_observer.h',
@@ -2881,11 +2879,13 @@
               'conditions': [
                 ['mac_views_browser==1', {
                   'sources!': [
+                    'browser/ui/cocoa/bookmarks/bookmark_drag_drop_cocoa.mm',
                     'browser/ui/cocoa/browser_window_factory_cocoa.mm',
                     'browser/ui/cocoa/tab_dialogs_cocoa.mm',
                   ],
                 }, {
                   'sources!': [
+                    'browser/ui/views/bookmarks/bookmark_drag_drop_views.cc',
                     'browser/ui/views/frame/browser_window_factory.cc',
                     'browser/ui/views/tab_dialogs_views.cc',
                   ],

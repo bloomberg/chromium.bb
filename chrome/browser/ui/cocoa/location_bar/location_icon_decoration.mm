@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_drag_drop_cocoa.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#import "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/navigation_controller.h"
@@ -72,7 +73,9 @@ NSImage* LocationIconDecoration::GetDragImage() {
   NSImage* iconImage = favicon ? favicon : GetImage();
 
   NSImage* image =
-      chrome::DragImageForBookmark(iconImage, web_contents->GetTitle());
+      drag_util::DragImageForBookmark(iconImage,
+                                      web_contents->GetTitle(),
+                                      bookmarks::kDefaultBookmarkWidth);
   NSSize imageSize = [image size];
   drag_frame_ = NSMakeRect(0, 0, imageSize.width, imageSize.height);
   return image;

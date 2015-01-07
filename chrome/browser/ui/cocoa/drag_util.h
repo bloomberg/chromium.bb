@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/strings/string16.h"
+
 class GURL;
 class Profile;
 
@@ -20,6 +22,11 @@ GURL GetFileURLFromDropData(id<NSDraggingInfo> info);
 // is supported by the web view. In particular, if the content is a local file
 // URL, this checks if it is of a type that can be shown in the tab contents.
 BOOL IsUnsupportedDropData(Profile* profile, id<NSDraggingInfo> info);
+
+// Returns a drag image for a bookmark.
+NSImage* DragImageForBookmark(NSImage* favicon,
+                              const base::string16& title,
+                              CGFloat title_width);
 
 }  // namespace drag_util
 

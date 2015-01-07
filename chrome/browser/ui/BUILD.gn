@@ -256,9 +256,17 @@ static_library("ui") {
     }
     if (is_mac) {
       if (mac_views_browser) {
-        sources -= [ "cocoa/browser_window_factory_cocoa.mm" ]
+        sources -= [
+          "cocoa/bookmarks/bookmark_drag_drop_cocoa.mm",
+          "cocoa/browser_window_factory_cocoa.mm",
+          "cocoa/tab_dialogs_cocoa.mm",
+        ]
       } else {
-        sources -= [ "views/frame/browser_window_factory.cc" ]
+        sources -= [
+          "views/bookmarks/bookmark_drag_drop_views.cc",
+          "views/frame/browser_window_factory.cc",
+          "views/tab_dialogs_views.cc",
+        ]
       }
     } else {
       sources +=
