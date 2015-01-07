@@ -6,8 +6,8 @@
 vars = {
     'breakpad_rev':
          'fe34e3f9fef1eb425b25a79f0da84e2f277d433b',
-    'chromium_trunk':
-         'http://src.chromium.org/svn/trunk',
+    'clang_rev':
+         '7aa71664f527268776ce5b5bceae01a4bc6a1666',
     'android_tools_rev':
          'ea50cccc11657404ce22cf928062ed1a3927eb39',
     'tools_rev':
@@ -16,22 +16,24 @@ vars = {
          'http://src.chromium.org/native_client/trunk',
     'lcov_rev':
          'b37daf5968200da8ff520ce65c4e5bce4047dd15',
+    'chromium_git':
+         'https://chromium.googlesource.com',
     'gtest_rev':
          '74de57c951aedebc5dfe26a27604353432392b98',
     'gyp_rev':
          '0ff4e1aa19641cda58e3ed98399e0d96e6ccd7c2',
     'lss_rev':
          '2f724fced658cd6182096c615efdf3767b7c57fe',
-    'chromium_git':
-         'https://chromium.googlesource.com',
+    'tools_valgrind_rev':
+         '4989a1b19c3a33c828e385d3a07e83e202e1e651',
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
+    'valgrind_rev':
+         '59886873b4b8258a8e0f098c23e1958e0d0c0a26',
     'buildtools_revision':
          'c27f95bd1d9baaef70c879dea375090dd1496147',
     'validator_snapshots_rev':
          '14247',
-    'chrome_rev':
-         '275800',
     'git_url':
          'https://chromium.googlesource.com'
 }
