@@ -1100,7 +1100,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       if (DeclaresVirtualMethods(left_most))
         return;
       if (left_most_base) {
-        ++it; // Get the base next to the "safe polymorphic base"
+        // Get the base next to the "safe polymorphic base"
+        if (it != left_most->bases_end())
+          ++it;
         if (it != left_most->bases_end()) {
           if (CXXRecordDecl* next_base = it->getType()->getAsCXXRecordDecl()) {
             if (CXXRecordDecl* next_left_most = GetLeftMostBase(next_base)) {

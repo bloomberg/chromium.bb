@@ -18,6 +18,13 @@ class Left : public GarbageCollected<Left>, public B, public A { };
 class DerivedRight : public Right, public Left { };  // Error
 class DerivedLeft : public Left, public Right { };
 
+class C : public GarbageCollected<C> {
+public:
+    virtual void trace(Visitor*);
+};
+
+class IllFormed : public A, public C { }; // Error
+
 }
 
 #endif
