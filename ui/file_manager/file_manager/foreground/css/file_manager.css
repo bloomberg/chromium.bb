@@ -750,6 +750,20 @@ body[type='full-page'] .detail-name .detail-icon {
   height: 30px;
 }
 
+.badge {
+  height: 16px;
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 16px;
+}
+
+.copied .badge {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/copied_badge.png) 1x,
+      url(../images/files/ui/2x/copied_badge.png) 2x);
+}
+
 .imported .badge {
   background-image: -webkit-image-set(
       url(../images/files/ui/drive_badge.png) 1x,
@@ -761,7 +775,8 @@ body[type='full-page'] .detail-name .detail-icon {
   width: 16px;
 }
 
-.imported .filename-label {
+.imported .filename-label,
+.copied .filename-label {
   margin-right: 14px;
 }
 

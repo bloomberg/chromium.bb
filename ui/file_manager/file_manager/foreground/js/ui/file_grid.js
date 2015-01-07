@@ -294,10 +294,22 @@ FileGrid.applyHistoryBadges_ = function(entry, box, history) {
               // a possibly-fragile sibling selector we just
               // plop the imported class on the parent of both.
               box.parentElement.classList.add('imported');
+            } else {
+              history.wasCopied(entry, importer.Destination.GOOGLE_DRIVE)
+                  .then(
+                      function(copied) {
+                        if (copied) {
+                          // TODO(smckay): update badges when history changes
+                          // "box" is currently the sibling of the elemement
+                          // we want to style. So rather than employing
+                          // a possibly-fragile sibling selector we just
+                          // plop the imported class on the parent of both.
+                          box.parentElement.classList.add('copied');
+                        }
+                      });
             }
           });
 };
-
 
 /**
  * Item for the Grid View.

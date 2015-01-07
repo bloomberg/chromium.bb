@@ -163,7 +163,7 @@ function testUpdatesHistoryAfterImport(callback) {
           importedMedia.forEach(
               /** @param {!CopyCapture} */
               function(capture) {
-                importHistory.assertImported(
+                importHistory.assertCopied(
                     capture.source, importer.Destination.GOOGLE_DRIVE);
               });
         }),

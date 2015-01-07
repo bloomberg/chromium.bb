@@ -12,7 +12,10 @@ var FILE_SIZE = 1234;
 var FILE_PATH = 'test/data';
 
 /** @const {string} */
-var GOOGLE_DRIVE = 'Google Drive';
+var DEVICE = importer.Destination.DEVICE;
+
+/** @const {string} */
+var GOOGLE_DRIVE = importer.Destination.GOOGLE_DRIVE;
 
 /**
  * Space Cloud: Your source for interstellar cloud storage.
@@ -32,6 +35,9 @@ var storage;
 /** @type {!Promise.<!importer.PersistentImportHistory>|undefined} */
 var historyProvider;
 
+/** @type {Promise} */
+var testPromise;
+
 // Set up the test components.
 function setUp() {
   testFileEntry = new MockFileEntry(
@@ -49,53 +55,95 @@ function setUp() {
   historyProvider = history.refresh();
 }
 
+function testHistoryWasCopiedFalseForUnknownEntry(callback) {
+  // TestRecordWriter is pre-configured with a Space Cloud entry
+  // but not for this file.
+  testPromise = historyProvider.then(
+      function(history) {
+        history.wasCopied(testFileEntry, SPACE_CAMP).then(assertFalse);
+      });
+
+  reportPromise(testPromise, callback);
+}
+
+function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
+  // TestRecordWriter is pre-configured with this entry.
+  testPromise = historyProvider.then(
+      function(history) {
+        history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
+      });
+
+  reportPromise(testPromise, callback);
+}
+
+function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
+  testPromise = historyProvider.then(
+      function(history) {
+        history.markImported(testFileEntry, SPACE_CAMP).then(
+            function() {
+              history.wasImported(testFileEntry, SPACE_CAMP).then(assertTrue);
+            });
+      });
+
+  reportPromise(testPromise, callback);
+}
+
+function testCopyChangeFiresChangedEvent(callback) {
+  testPromise = historyProvider.then(
+      function(history) {
+        var recorder = new TestCallRecorder();
+        history.addObserver(recorder.callback);
+        history.markCopied(testFileEntry, SPACE_CAMP, 'url1').then(
+            function() {
+              Promise.resolve()
+                  .then(
+                      function() {
+                        recorder.assertCallCount(1);
+                        assertEquals(
+                            importer.ImportHistory.State.COPIED,
+                            recorder.getLastArguments()[0]['state']);
+                      });
+            });
+      });
+
+  reportPromise(testPromise, callback);
+}
+
 function testHistoryWasImportedFalseForUnknownEntry(callback) {
   // TestRecordWriter is pre-configured with a Space Cloud entry
   // but not for this file.
-  historyProvider.then(
+  testPromise = historyProvider.then(
       function(history) {
-        history.wasImported(testFileEntry, SPACE_CAMP).then(
-          function(result) {
-            callback(/* error */ result);
-          },
-          callback.bind(null, true));
-      },
-      callback.bind(null, true))
-  .catch(handleError.bind(null, callback));
+        history.wasImported(testFileEntry, SPACE_CAMP).then(assertFalse);
+      });
+
+  reportPromise(testPromise, callback);
 }
 
 function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
-  historyProvider.then(
+  testPromise = historyProvider.then(
       function(history) {
-        history.wasImported(testFileEntry, GOOGLE_DRIVE).then(
-          function(result) {
-            callback(/* error */ !result);
-          },
-          callback.bind(null, true));
-      },
-      callback.bind(null, true))
-  .catch(handleError.bind(null, callback));
+        history.wasImported(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
+      });
+
+  reportPromise(testPromise, callback);
 }
 
 function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
-  historyProvider.then(
+  testPromise = historyProvider.then(
       function(history) {
         history.markImported(testFileEntry, SPACE_CAMP).then(
             function() {
-              history.wasImported(testFileEntry, SPACE_CAMP).then(
-                  function(result) {
-                    callback(/* error */ !result);
-                  });
-            },
-            callback.bind(null, true));
-      },
-      callback.bind(null, true))
-  .catch(handleError.bind(null, callback));
+              history.wasImported(testFileEntry, SPACE_CAMP).then(assertTrue);
+            });
+      });
+
+  reportPromise(testPromise, callback);
 }
 
-function testHistoryChangeFiresChangedEvent(callback) {
-  historyProvider.then(
+function testImportChangeFiresChangedEvent(callback) {
+  testPromise = historyProvider.then(
       function(history) {
         var recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
@@ -108,53 +156,50 @@ function testHistoryChangeFiresChangedEvent(callback) {
                         assertEquals(
                             importer.ImportHistory.State.IMPORTED,
                             recorder.getLastArguments()[0]['state']);
-                        callback(false);
-                      })
-                  .catch(handleError.bind(null, callback));
-            },
-            callback.bind(null, true));
-      },
-      callback.bind(null, true))
-  .catch(handleError.bind(null, callback));
+                      });
+            });
+      });
+
+  reportPromise(testPromise, callback);
 }
 
 function testHistoryObserverUnsubscribe(callback) {
-  historyProvider.then(
+  testPromise = historyProvider.then(
       function(history) {
         var recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
         history.removeObserver(recorder.callback);
-        history.markImported(testFileEntry, SPACE_CAMP).then(
+
+        var promises = [];
+        promises.push(history.markCopied(testFileEntry, SPACE_CAMP, 'url2'));
+        promises.push(history.markImported(testFileEntry, SPACE_CAMP));
+        Promise.all(promises).then(
             function() {
               Promise.resolve()
                   .then(
                       function() {
                         recorder.assertCallCount(0);
-                        callback(false);
-                      })
-                  .catch(handleError.bind(null, callback));
-            },
-            callback.bind(null, true));
-      },
-      callback.bind(null, true))
-  .catch(handleError.bind(null, callback));
+                      });
+            });
+      });
+
+  reportPromise(testPromise, callback);
 }
 
 function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
-  createRealStorage('recordStorageTest.data')
+  testPromise = createRealStorage('recordStorageTest.data')
       .then(
           function(storage) {
             storage.write(['abc', '123']).then(
                 function() {
                   storage.readAll().then(
                       function(records) {
-                        callback(/* error */ records.length != 1);
-                      },
-                      callback);
+                        assertTrue(records.length != 1);
+                      });
                 });
-            },
-            callback)
-      .catch(handleError.bind(null, callback));
+            });
+
+  reportPromise(testPromise, callback);
 }
 
 function testHistoryLoaderIntegration(callback) {
@@ -171,7 +216,7 @@ function testHistoryLoaderIntegration(callback) {
   /** @type {!TestSyncFileEntryProvider|undefined} */
   var syncFileProvider;
 
-  createFileEntry('historyLoaderTest.data')
+  testPromise = createFileEntry('historyLoaderTest.data')
       .then(
           /**
            * @param  {!FileEntry} fileEntry
@@ -208,6 +253,8 @@ function testHistoryLoaderIntegration(callback) {
           function() {
             syncFileProvider.fireSyncEvent();
           })
+      // TODO(smckay): Add markCopied support once FileWriter issues
+      // are resolved.
       .then(
           /**
            * @return {!Promise.<boolean>} Resolves with true if the
@@ -218,9 +265,10 @@ function testHistoryLoaderIntegration(callback) {
           })
       .then(
           function(wasImported) {
-            callback(/* error */ !wasImported);
-          })
-      .catch(handleError.bind(null, callback));
+            assertTrue(wasImported);
+          });
+
+  reportPromise(testPromise, callback);
 }
 
 /**
@@ -285,8 +333,9 @@ var TestRecordStorage = function() {
   // Pre-populate the store with some "previously written" data <wink>.
   /** @private {!Array.<!Array.<string>>} */
   this.records_ = [
-    [FILE_LAST_MODIFIED + '_' + FILE_SIZE, GOOGLE_DRIVE],
-    ['99999_99999', SPACE_CAMP]
+    [1, FILE_LAST_MODIFIED + '_' + FILE_SIZE, GOOGLE_DRIVE],
+    [0, FILE_LAST_MODIFIED + '_' + FILE_SIZE, 'google-drive', 'url4'],
+    [1, '99999_99999', SPACE_CAMP]
   ];
 
   /**

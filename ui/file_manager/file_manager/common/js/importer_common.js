@@ -29,6 +29,8 @@ importer.ELIGIBLE_VOLUME_TYPES_ = [
  * @enum {string}
  */
 importer.Destination = {
+  // locally copied, but not imported to cloud as of yet.
+  DEVICE: 'device',
   GOOGLE_DRIVE: 'google-drive'
 };
 

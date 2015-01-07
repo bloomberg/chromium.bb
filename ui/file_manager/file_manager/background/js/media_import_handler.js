@@ -204,10 +204,14 @@ importer.MediaImportHandler.ImportTask.prototype.onProgress_ =
 /** @param {!FileEntry} entry */
 importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
     function(entry) {
+  var destinationUrl = this.destination_.toURL() + '/' + entry.name;
   this.historyLoader_.getHistory().then(
       /** @param {!importer.ImportHistory} history */
       function(history) {
-        history.markImported(entry, importer.Destination.GOOGLE_DRIVE);
+        history.markCopied(
+            entry,
+            importer.Destination.GOOGLE_DRIVE,
+            destinationUrl);
       });
 };
 

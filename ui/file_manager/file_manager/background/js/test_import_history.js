@@ -15,14 +15,59 @@ var importer = importer || {};
  * @implements {importer.ImportHistory}
  */
 importer.TestImportHistory = function() {
+  /** @type {!Object.<string, !Object.<!importer.Destination, string>>} */
+  this.copiedPaths = {};
+
   /** @type {!Object.<string, Array.<string>>} */
   this.importedPaths = {};
+
 };
 
 /** @override */
 importer.TestImportHistory.prototype.getHistory =
     function() {
   return Promise.resolve(this);
+};
+
+/**
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ */
+importer.TestImportHistory.prototype.assertCopied =
+    function(entry, destination) {
+  assertTrue(this.wasCopied_(entry, destination));
+};
+
+/**
+ * Fully synchronous version of wasCopied.
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ * @return {boolean}
+ */
+importer.TestImportHistory.prototype.wasCopied_ =
+    function(entry, destination) {
+  var path = entry.fullPath;
+  return path in this.copiedPaths &&
+      this.copiedPaths[path].indexOf(destination) > -1;
+};
+
+/** @override */
+importer.TestImportHistory.prototype.wasCopied =
+    function(entry, destination) {
+  var path = entry.fullPath;
+  return Promise.resolve(this.wasCopied_(entry, destination));
+};
+
+/** @override */
+importer.TestImportHistory.prototype.markCopied =
+    function(entry, destination) {
+  var path = entry.fullPath;
+  if (path in this.copiedPaths) {
+    this.copiedPaths[path].push(destination);
+  } else {
+    this.copiedPaths[path] = [destination];
+  }
+  return Promise.resolve();
 };
 
 /**
