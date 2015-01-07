@@ -9,10 +9,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -161,6 +163,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
   zoom_change_watcher.Wait();
 }
 
+#if !defined(OS_CHROMEOS)
 // Regression test: crbug.com/438979.
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
                        SettingsZoomAfterSigninWorks) {
@@ -171,12 +174,10 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   // backs the signin page. When we subsequently navigate away from the
   // signin page, the HostZoomMap changes, and we need to test that the
   // ZoomController correctly detects this.
-  // TODO(wjmaclean): It would be nice if detecting when the signin page is
-  // fully loaded without needing a hard-coded value.
-  const int kLoadStopsBeforeSigninPageIsFullyLoaded = 3;
-  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
-      browser(), signin_url, kLoadStopsBeforeSigninPageIsFullyLoaded,
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), signin_url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  login_ui_test_utils::WaitUntilUIReady(browser());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(
@@ -205,12 +206,16 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   EXPECT_EQ(settings_url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(zoom_controller, ZoomController::FromWebContents(web_contents));
 
-  // We expect the navigation from the chrome sign in page to the settings
-  // page to invoke a storage partition switch, and thus a different HostZoomMap
-  // for the web_contents.
-  content::HostZoomMap* host_zoom_map_settings =
-      content::HostZoomMap::GetForWebContents(web_contents);
-  EXPECT_NE(host_zoom_map_signin, host_zoom_map_settings);
+  // For the webview based sign-in code, the sign in page uses the default host
+  // zoom map.
+  if (!switches::IsEnableWebviewBasedSignin()) {
+    // We expect the navigation from the chrome sign in page to the settings
+    // page to invoke a storage partition switch, and thus a different
+    // HostZoomMap for the web_contents.
+    content::HostZoomMap* host_zoom_map_settings =
+        content::HostZoomMap::GetForWebContents(web_contents);
+    EXPECT_NE(host_zoom_map_signin, host_zoom_map_settings);
+  }
 
   // If we zoom the new page, it should still generate a ZoomController event.
   double old_zoom_level = zoom_controller->GetZoomLevel();
@@ -226,3 +231,4 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   zoom_controller->SetZoomLevel(new_zoom_level);
   zoom_change_watcher.Wait();
 }
+#endif  // !defined(OS_CHROMEOS)

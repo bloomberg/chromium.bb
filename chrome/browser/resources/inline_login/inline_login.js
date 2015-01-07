@@ -20,47 +20,25 @@ cr.define('inline.login', function() {
    */
   var authReadyFired;
 
-  /**
-   * A listener class for authentication events from GaiaAuthHost.
-   * @constructor
-   * @implements {cr.login.GaiaAuthHost.Listener}
-   */
-  function GaiaAuthHostListener() {}
+  function onResize(e) {
+    chrome.send('switchToFullTab', [e.detail]);
+  }
 
-  /** @override */
-  GaiaAuthHostListener.prototype.onSuccess = function(credentials) {
-    onAuthCompleted(credentials);
-  };
-
-  /** @override */
-  GaiaAuthHostListener.prototype.onReady = function(e) {
-    onAuthReady();
-  };
-
-  /** @override */
-  GaiaAuthHostListener.prototype.onResize = function(url) {
-    chrome.send('switchToFullTab', [url]);
-  };
-
-  /** @override */
-  GaiaAuthHostListener.prototype.onNewWindow = function(e) {
-    window.open(e.targetUrl, '_blank');
-    e.window.discard();
-  };
-
-  /**
-   * Handler of auth host 'ready' event.
-   */
-  function onAuthReady() {
+  function onAuthReady(e) {
     $('contents').classList.toggle('loading', false);
     authReadyFired = true;
   }
 
-  /**
-   * Handler of auth host 'completed' event.
-   * @param {!Object} credentials Credentials of the completed authentication.
-   */
-  function onAuthCompleted(credentials) {
+  function onNewWindow(e) {
+    window.open(e.detail.targetUrl, '_blank');
+    e.window.discard();
+  }
+
+  function onAuthCompleted(e) {
+    completeLogin(e.detail);
+  }
+
+  function completeLogin(credentials) {
     chrome.send('completeLogin', [credentials]);
     $('contents').classList.toggle('loading', true);
   }
@@ -69,10 +47,11 @@ cr.define('inline.login', function() {
    * Initialize the UI.
    */
   function initialize() {
-    authExtHost = new cr.login.GaiaAuthHost(
-        'signin-frame', new GaiaAuthHostListener());
+    authExtHost = new cr.login.GaiaAuthHost('signin-frame');
     authExtHost.addEventListener('ready', onAuthReady);
-
+    authExtHost.addEventListener('newWindow', onNewWindow);
+    authExtHost.addEventListener('resize', onResize);
+    authExtHost.addEventListener('authCompleted', onAuthCompleted);
     chrome.send('initialize');
   }
 
@@ -81,7 +60,9 @@ cr.define('inline.login', function() {
    * @param {Object} data Parameters for auth extension.
    */
   function loadAuthExtension(data) {
-    authExtHost.load(data.authMode, data, onAuthCompleted);
+    // TODO(rogerta): in when using webview, the |completeLogin| argument
+    // is ignored.  See addEventListener() call above.
+    authExtHost.load(data.authMode, data, completeLogin);
     $('contents').classList.toggle('loading',
         data.authMode != cr.login.GaiaAuthHost.AuthMode.DESKTOP ||
         data.constrained == '1');

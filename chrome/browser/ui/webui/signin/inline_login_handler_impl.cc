@@ -240,6 +240,7 @@ InlineLoginHandlerImpl::InlineLoginHandlerImpl()
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
+// This method is not called with webview sign in enabled.
 void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
@@ -293,6 +294,11 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
     SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
     return;
   }
+
+  // This value exists only for webview sign in.
+  bool trusted = false;
+  if (dict->GetBoolean("trusted", &trusted))
+    confirm_untrusted_signin_ = !trusted;
 
   base::string16 email_string16;
   dict->GetString("email", &email_string16);

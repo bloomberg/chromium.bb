@@ -30,6 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -257,9 +258,14 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
   // Verify that our loaded page is using a HostZoomMap different from the
   // one for the default StoragePartition.
   HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents);
-  HostZoomMap* default_profile_host_zoom_map =
-      HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
-  EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
+
+  // For the webview based sign-in code, the sign in page uses the default host
+  // zoom map.
+  if (!switches::IsEnableWebviewBasedSignin()) {
+    HostZoomMap* default_profile_host_zoom_map =
+        HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
+    EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
+  }
 
   double new_zoom_level =
       host_zoom_map->GetZoomLevelForHostAndScheme(test_scheme, test_host) + 0.5;

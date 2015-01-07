@@ -17,6 +17,7 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -26,6 +27,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/base/url_util.h"
@@ -45,11 +47,15 @@ using login_ui_test_utils::WaitUntilUIReady;
 namespace {
 
 struct ContentInfo {
-  ContentInfo(int pid, content::StoragePartition* storage_partition) {
+  ContentInfo(content::WebContents* contents,
+              int pid,
+              content::StoragePartition* storage_partition) {
+    this->contents = contents;
     this->pid = pid;
     this->storage_partition = storage_partition;
   }
 
+  content::WebContents* contents;
   int pid;
   content::StoragePartition* storage_partition;
 };
@@ -64,7 +70,8 @@ ContentInfo NavigateAndGetInfo(
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   content::RenderProcessHost* process = contents->GetRenderProcessHost();
-  return ContentInfo(process->GetID(), process->GetStoragePartition());
+  return ContentInfo(contents, process->GetID(),
+                     process->GetStoragePartition());
 }
 
 // Returns a new WebUI object for the WebContents from |arg0|.
@@ -88,6 +95,12 @@ class MockLoginUIObserver : public LoginUIService::Observer {
 
 const char kFooWebUIURL[] = "chrome://foo/";
 
+bool AddToSet(std::set<content::WebContents*>* set,
+              content::WebContents* web_contents) {
+  set->insert(web_contents);
+  return false;
+}
+
 }  // namespace
 
 class InlineLoginUIBrowserTest : public InProcessBrowserTest {
@@ -102,26 +115,48 @@ class InlineLoginUIBrowserTest : public InProcessBrowserTest {
 #define MAYBE_DifferentStorageId DifferentStorageId
 #endif
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, MAYBE_DifferentStorageId) {
-  GURL test_url = ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(FILE_PATH_LITERAL("title1.html")));
+  if (switches::IsEnableWebviewBasedSignin()) {
+    ContentInfo info = NavigateAndGetInfo(
+        browser(),
+        signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
+        CURRENT_TAB);
+    WaitUntilUIReady(browser());
 
-  ContentInfo info1 =
-      NavigateAndGetInfo(browser(), test_url, CURRENT_TAB);
-  ContentInfo info2 = NavigateAndGetInfo(
-      browser(),
-      signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-      CURRENT_TAB);
-  NavigateAndGetInfo(browser(), test_url, CURRENT_TAB);
-  ContentInfo info3 = NavigateAndGetInfo(
-      browser(),
-      signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
-      NEW_FOREGROUND_TAB);
+    // Make sure storage partition of embedded webview is different from
+    // parent.
+    std::set<content::WebContents*> set;
+    extensions::GuestViewManager* manager =
+        extensions::GuestViewManager::FromBrowserContext(
+            info.contents->GetBrowserContext());
+    manager->ForEachGuest(info.contents, base::Bind(&AddToSet, &set));
+    ASSERT_EQ(1u, set.size());
+    content::WebContents* webview_contents = *set.begin();
+    content::RenderProcessHost* process =
+        webview_contents->GetRenderProcessHost();
+    ASSERT_NE(info.pid, process->GetID());
+    ASSERT_NE(info.storage_partition, process->GetStoragePartition());
+  } else {
+    GURL test_url = ui_test_utils::GetTestUrl(
+        base::FilePath(base::FilePath::kCurrentDirectory),
+        base::FilePath(FILE_PATH_LITERAL("title1.html")));
 
-  // The info for signin should be the same.
-  ASSERT_EQ(info2.storage_partition, info3.storage_partition);
-  // The info for test_url and signin should be different.
-  ASSERT_NE(info1.storage_partition, info2.storage_partition);
+    ContentInfo info1 =
+        NavigateAndGetInfo(browser(), test_url, CURRENT_TAB);
+    ContentInfo info2 = NavigateAndGetInfo(
+        browser(),
+        signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
+        CURRENT_TAB);
+    NavigateAndGetInfo(browser(), test_url, CURRENT_TAB);
+    ContentInfo info3 = NavigateAndGetInfo(
+        browser(),
+        signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
+        NEW_FOREGROUND_TAB);
+
+    // The info for signin should be the same.
+    ASSERT_EQ(info2.storage_partition, info3.storage_partition);
+    // The info for test_url and signin should be different.
+    ASSERT_NE(info1.storage_partition, info2.storage_partition);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, OneProcessLimit) {
@@ -277,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
       base::Bind(&FakeGaia::HandleRequest,
                  base::Unretained(&fake_gaia)));
   fake_gaia.SetFakeMergeSessionParams(
-      "email", "fake-sid-cookie", "fake-lsid-cookie");
+      "email@gmail.com", "fake-sid-cookie", "fake-lsid-cookie");
 
   // Navigates to the Chrome signin page which loads the fake gaia auth page.
   // Since the fake gaia auth page is served over HTTP, thus expects to see an
@@ -293,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
   EXPECT_CALL(observer, OnUntrustedLoginUIShown())
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  ExecuteJsToSigninInSigninFrame(browser(), "email", "password");
+  ExecuteJsToSigninInSigninFrame(browser(), "email@gmail.com", "password");
   run_loop.Run();
   base::MessageLoop::current()->RunUntilIdle();
 }

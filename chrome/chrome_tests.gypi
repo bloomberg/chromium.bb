@@ -433,6 +433,7 @@
       'browser/ui/autofill/test_generated_credit_card_bubble_controller.h',
       'browser/ui/blocked_content/popup_blocker_browsertest.cc',
       'browser/ui/bookmarks/bookmark_browsertest.cc',
+      'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
       'browser/ui/browser_browsertest.cc',
       'browser/ui/browser_close_browsertest.cc',
       'browser/ui/browser_command_controller_browsertest.cc',
@@ -2124,6 +2125,8 @@
             'browser/profiles/profile_list_desktop_browsertest.cc',
             'browser/service_process/service_process_control_browsertest.cc',
             'browser/signin/signin_browsertest.cc',
+            # bookmark sign in promo not used on chromeos
+            'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_extension_browsertest.cc',
             # chromeos does not use the desktop user manager
@@ -2292,6 +2295,7 @@
           'sources!': [
             'browser/policy/cloud/component_cloud_policy_browsertest.cc',
             'browser/prefs/pref_hash_browsertest.cc',
+            'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
           ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {

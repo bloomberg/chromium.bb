@@ -14,6 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "grit/browser_resources.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h"
@@ -54,6 +55,12 @@ void AddToSetIfIsAuthIframe(std::set<content::RenderFrameHost*>* frame_set,
   }
 }
 
+bool AddToSetIfSigninWebview(std::set<content::RenderFrameHost*>* frame_set,
+                             content::WebContents* web_contents) {
+  frame_set->insert(web_contents->GetMainFrame());
+  return false;
+}
+
 } // empty namespace
 
 InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
@@ -88,9 +95,17 @@ content::RenderFrameHost* InlineLoginUI::GetAuthIframe(
     const GURL& parent_origin,
     const std::string& parent_frame_name) {
   std::set<content::RenderFrameHost*> frame_set;
-  web_contents->ForEachFrame(
-      base::Bind(&AddToSetIfIsAuthIframe, &frame_set,
-                 parent_origin, parent_frame_name));
+  if (switches::IsEnableWebviewBasedSignin()) {
+    extensions::GuestViewManager* manager =
+        extensions::GuestViewManager::FromBrowserContext(
+            web_contents->GetBrowserContext());
+    manager->ForEachGuest(web_contents,
+                          base::Bind(&AddToSetIfSigninWebview, &frame_set));
+  } else {
+    web_contents->ForEachFrame(
+        base::Bind(&AddToSetIfIsAuthIframe, &frame_set,
+                   parent_origin, parent_frame_name));
+  }
   DCHECK_GE(1U, frame_set.size());
   if (!frame_set.empty())
     return *frame_set.begin();

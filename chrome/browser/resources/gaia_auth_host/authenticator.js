@@ -12,6 +12,9 @@
 cr.define('cr.login', function() {
   'use strict';
 
+  // TODO(rogerta): should use gaia URL from GaiaUrls::gaia_url() instead
+  // of hardcoding the prod URL here.  As is, this does not work with staging
+  // environments.
   var IDP_ORIGIN = 'https://accounts.google.com/';
   var IDP_PATH = 'ServiceLogin?skipvpage=true&sarp=1&rm=hide';
   var CONTINUE_URL =
@@ -49,16 +52,11 @@ cr.define('cr.login', function() {
    * Initializes the authenticator component.
    * @param {webview|string} webview The webview element or its ID to host IdP
    *     web pages.
-   * @param {Authenticator.Listener=} opt_listener An optional listener for
-   *     authentication events.
    * @constructor
-   * @extends {cr.EventTarget}
    */
-  function Authenticator(webview, opt_listener) {
+  function Authenticator(webview) {
     this.webview_ = typeof webview == 'string' ? $(webview) : webview;
     assert(this.webview_);
-
-    this.listener_ = opt_listener || null;
 
     this.email_ = null;
     this.password_ = null;
@@ -73,53 +71,12 @@ cr.define('cr.login', function() {
     this.continueUrlWithoutParams_ = null;
     this.initialFrameUrl_ = null;
     this.reloadUrl_ = null;
+    this.trusted_ = true;
   }
 
   // TODO(guohui,xiyuan): no need to inherit EventTarget once we deprecate the
   // old event-based signin flow.
   Authenticator.prototype = Object.create(cr.EventTarget.prototype);
-
-  /**
-   * An interface for receiving notifications upon authentication events.
-   * @interface
-   */
-  Authenticator.Listener = function() {};
-
-  /**
-   * Invoked when authentication UI is ready.
-   */
-  Authenticator.Listener.prototype.onReady = function(e) {};
-
-  /**
-   * Invoked when authentication is completed successfully with credential data.
-   * A credential data object looks like this:
-   * <pre>
-   * {@code
-   * {
-   *   email: 'xx@gmail.com',
-   *   password: 'xxxx',  // May be null or empty.
-   *   usingSAML: false,
-   *   chooseWhatToSync: false,
-   *   skipForNow: false,
-   *   sessionIndex: '0'
-   * }
-   * }
-   * </pre>
-   * @param {Object} credentials A credential data object.
-   */
-  Authenticator.Listener.prototype.onSuccess = function(credentials) {};
-
-  /**
-   * Invoked when the requested URL does not fit the container.
-   * @param {string} url Request URL.
-   */
-  Authenticator.Listener.prototype.onResize = function(url) {};
-
-  /**
-   * Invoked when a new window event is fired.
-   * @param {Event} e Event object.
-   */
-  Authenticator.Listener.prototype.onNewWindow = function(e) {};
 
   /**
    * Loads the authenticator component with the given parameters.
@@ -141,6 +98,8 @@ cr.define('cr.login', function() {
     this.webview_.src = this.reloadUrl_;
     this.webview_.addEventListener(
         'newwindow', this.onNewWindow_.bind(this));
+    this.webview_.addEventListener(
+        'loadstop', this.onLoadStop_.bind(this));
     this.webview_.request.onCompleted.addListener(
         this.onRequestCompleted_.bind(this),
         {urls: ['*://*/*', this.continueUrlWithoutParams_ + '*'],
@@ -151,7 +110,7 @@ cr.define('cr.login', function() {
         {urls: [this.idpOrigin_ + '*'], types: ['main_frame']},
         ['responseHeaders']);
     window.addEventListener(
-        'message', this.onMessage_.bind(this), false);
+        'message', this.onMessageFromWebview_.bind(this), false);
   };
 
   /**
@@ -182,12 +141,17 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.onRequestCompleted_ = function(details) {
     var currentUrl = details.url;
+
     if (currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
       if (currentUrl.indexOf('ntp=1') >= 0) {
         this.skipForNow_ = true;
       }
       this.onAuthCompleted_();
       return;
+    }
+
+    if (currentUrl.indexOf('https') != 0) {
+      this.trusted_ = false;
     }
 
     if (this.isConstrainedWindow_) {
@@ -201,21 +165,14 @@ cr.define('cr.login', function() {
           }
         }
       }
-      if (!isEmbeddedPage && this.listener_) {
-        this.listener_.onResize(currentUrl);
+      if (!isEmbeddedPage) {
+        this.dispatchEvent(new CustomEvent('resize', {detail: currentUrl}));
         return;
       }
     }
 
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
       this.webview_.contentWindow.postMessage({}, currentUrl);
-    }
-
-    if (!this.loaded_) {
-      this.loaded_ = true;
-      if (this.listener_) {
-        this.listener_.onReady();
-      }
     }
   };
 
@@ -254,17 +211,17 @@ cr.define('cr.login', function() {
   };
 
   /**
-   * Invoked when an HTML5 message is received.
+   * Invoked when an HTML5 message is received from the webview element.
    * @param {object} e Payload of the received HTML5 message.
    * @private
    */
-  Authenticator.prototype.onMessage_ = function(e) {
-    if (e.origin != this.idpOrigin_) {
+  Authenticator.prototype.onMessageFromWebview_ = function(e) {
+    // The event origin does not have a trailing slash.
+    if (e.origin != this.idpOrigin_.substring(0, this.idpOrigin_ - 1)) {
       return;
     }
 
     var msg = e.data;
-
     if (msg.method == 'attemptLogin') {
       this.email_ = msg.email;
       this.password_ = msg.password;
@@ -277,22 +234,21 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onAuthCompleted_ = function() {
-    if (!this.listener_) {
-      return;
-    }
-
     if (!this.email_ && !this.skipForNow_) {
       this.webview_.src = this.initialFrameUrl_;
       return;
     }
 
-    this.listener_.onSuccess({email: this.email_,
-                              gaiaId: this.gaiaId_,
-                              password: this.password_,
-                              usingSAML: this.authFlow_ == AuthFlow.SAML,
-                              chooseWhatToSync: this.chooseWhatToSync_,
-                              skipForNow: this.skipForNow_,
-                              sessionIndex: this.sessionIndex_ || ''});
+    this.dispatchEvent(
+        new CustomEvent('authCompleted',
+                        {detail: {email: this.email_,
+                                  gaiaId: this.gaiaId_,
+                                  password: this.password_,
+                                  usingSAML: this.authFlow_ == AuthFlow.SAML,
+                                  chooseWhatToSync: this.chooseWhatToSync_,
+                                  skipForNow: this.skipForNow_,
+                                  sessionIndex: this.sessionIndex_ || '',
+                                  trusted: this.trusted_}}));
   };
 
   /**
@@ -300,11 +256,18 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onNewWindow_ = function(e) {
-    if (!this.listener_) {
-      return;
-    }
+    this.dispatchEvent(new CustomEvent('newWindow', {detail: e}));
+  };
 
-    this.listener_.onNewWindow(e);
+  /**
+   * Invoked when the webview finishes loading a page.
+   * @private
+   */
+  Authenticator.prototype.onLoadStop_ = function(e) {
+    if (!this.loaded_) {
+      this.loaded_ = true;
+      this.dispatchEvent(new Event('ready'));
+    }
   };
 
   Authenticator.AuthFlow = AuthFlow;
