@@ -628,7 +628,9 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
                 extraParams->progressBar.valueRectHeight);
         }
 
-        tofill.intersect(irect, tofill);
+        if (!tofill.intersect(irect))
+            tofill.setEmpty();
+
         paint.setColor(edgeColor);
         paint.setStyle(SkPaint::kFill_Style);
         canvas->drawIRect(tofill, paint);

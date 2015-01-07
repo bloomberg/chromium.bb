@@ -710,11 +710,11 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   controller_->ShouldPaintTab(this, &clip);
   if (clip.size().GetArea()) {
     SkRect intersection(mask->getBounds());
-    intersection.intersect(RectToSkRect(clip));
     mask->reset();
+    if (!intersection.intersect(RectToSkRect(clip)))
+       return false;
     mask->addRect(intersection);
   }
-
   return true;
 }
 
