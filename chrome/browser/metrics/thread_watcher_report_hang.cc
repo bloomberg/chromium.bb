@@ -29,11 +29,12 @@ NOINLINE void ReportThreadHang() {
 }
 
 #if !defined(OS_ANDROID) || !defined(NDEBUG)
-// TODO(rtenneti): Enabled crashing, after getting data.
 NOINLINE void StartupHang() {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
+  // TODO(rtenneti): http://crbug.com/440885 enable crashing after fixing false
+  // positive startup hang data.
+  // ReportThreadHang();
 }
 #endif  // OS_ANDROID
 
