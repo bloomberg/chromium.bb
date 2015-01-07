@@ -28,11 +28,16 @@ Per-keyframe steps easing function
 <div id="test2a">MT</div>
 <div id="test2b">CT</div>
 
-Steps easing function combined with a cubic-bezier keyframe
+Cubic-bezier easing function combined with a step keyframe
 (FIXME: the combining of timing functions is not fully supported in CT)
 <br>
 <div id="test3a">MT</div>
 <div id="test3b">CT</div>
+
+Steps easing function combined with a cubic-bezier keyframe
+<br>
+<div id="test4a">MT</div>
+<div id="test4b">CT</div>
 
 <script>
 var transformKeyframes = [
@@ -73,20 +78,39 @@ var player2b = test2b.animate(transformKeyframesEasing, {
         iterations: Infinity
     });
 
-var transformKeyframesCombinedEasing = [
+var transformKeyframesWithStepsKeyframe = [
+    {transform: 'translateX(0px)', easing: 'steps(9)'},
+    {transform: 'translateX(500px)'}
+    ];
+var leftKeyframesWithStepsKeyframe = [
+    {left: '0', easing: 'steps(9)'},
+    {left: '500px'}
+    ];
+var player3a = test3a.animate(leftKeyframesWithStepsKeyframe, {
+        duration: 6000,
+        iterations: Infinity,
+        easing: 'cubic-bezier(.5, -1, .5, 2)'
+    });
+var player3b = test3b.animate(transformKeyframesWithStepsKeyframe, {
+        duration: 6000,
+        iterations: Infinity,
+        easing: 'cubic-bezier(.5, -1, .5, 2)'
+    });
+
+var transformKeyframesWithCubicKeyframe = [
     {transform: 'translateX(0px)', easing: 'cubic-bezier(.5, -1, .5, 2)'},
     {transform: 'translateX(500px)'}
     ];
-var leftKeyframesCombinedEasing = [
+var leftKeyframesWithCubicKeyframe = [
     {left: '0', easing: 'cubic-bezier(.5, -1, .5, 2)'},
     {left: '500px'}
     ];
-var player3a = test3a.animate(leftKeyframesCombinedEasing, {
+var player4a = test4a.animate(leftKeyframesWithCubicKeyframe, {
         duration: 6000,
         iterations: Infinity,
         easing: 'steps(9)'
     });
-var player3b = test3b.animate(transformKeyframesCombinedEasing, {
+var player4b = test4b.animate(transformKeyframesWithCubicKeyframe, {
         duration: 6000,
         iterations: Infinity,
         easing: 'steps(9)'

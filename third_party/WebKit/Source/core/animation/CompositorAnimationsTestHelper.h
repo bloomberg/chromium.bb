@@ -110,6 +110,11 @@ public:
     MOCK_METHOD5_T(add, void(const KeyframeType&, double, double, double, double));
     MOCK_METHOD3_T(add, void(const KeyframeType&, int steps, float stepsStartOffset));
 
+    MOCK_METHOD0(setLinearTimingFunction, void());
+    MOCK_METHOD4(setCubicBezierTimingFunction, void(double, double, double, double));
+    MOCK_METHOD1(setCubicBezierTimingFunction, void(WebCompositorAnimationCurve::TimingFunctionType));
+    MOCK_METHOD2(setStepsTimingFunction, void(int, float));
+
     MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on WebFloatAnimationCurve, but can't hurt to have here.
 
     virtual WebCompositorAnimationCurve::AnimationCurveType type() const { return CurveId; };

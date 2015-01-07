@@ -46,6 +46,11 @@ public:
     // Adds the keyframe with a steps timing function.
     virtual void add(const WebFloatKeyframe&, int steps, float stepsStartOffset) = 0;
 
+    virtual void setLinearTimingFunction() = 0;
+    virtual void setCubicBezierTimingFunction(TimingFunctionType) = 0;
+    virtual void setCubicBezierTimingFunction(double x1, double y1, double x2, double y2) = 0;
+    virtual void setStepsTimingFunction(int numberOfSteps, float stepsStartOffset) = 0;
+
     virtual float getValue(double time) const = 0;
 };
 
