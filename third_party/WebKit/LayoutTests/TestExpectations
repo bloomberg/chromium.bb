@@ -534,6 +534,10 @@ crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
 
+Bug(eae) virtual/antialiasedtext/fast/text/trailing_whitespace_wrapping.html [ ImageOnlyFailure ]
+Bug(eae) virtual/slimmingpaint/fast/text/trailing_whitespace_wrapping.html [ ImageOnlyFailure ]
+Bug(eae) fast/text/trailing_whitespace_wrapping.html [ ImageOnlyFailure ]
+
 # Pixel captures are currently totally broken on Android Nexus4's at the moment.
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
 
