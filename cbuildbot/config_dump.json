@@ -23490,6 +23490,9 @@
         "tests_supported": false,
         "unittests": false,
         "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
         "vm_tests": []
     },
     "mipsel-o32-generic-full": {

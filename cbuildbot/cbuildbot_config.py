@@ -1573,6 +1573,7 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
 _chromium_pfq_important_boards = frozenset([
   'arm-generic_freon',
   'daisy',
+  'mipsel-o32-generic',
   'x86-generic',
   ])
 
@@ -1599,10 +1600,6 @@ _AddFullConfigs()
 
 # These remaining chromium pfq configs have eccentricities that are easier to
 # create manually.
-internal_chromium_pfq.add_config('mipsel-o32-generic-chromium-pfq',
-  _base_configs['mipsel-o32-generic'],
-  delete_keys(['chrome_sdk', 'sync_chrome']),
-)
 
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   _base_configs['amd64-generic'],
@@ -2652,8 +2649,7 @@ _non_testable_brillo_release.add_config('urara-release',
 )
 
 _release.add_config('mipsel-o32-generic-release',
-  non_testable_builder,
-  boards=['mipsel-o32-generic'],
+  _base_configs['mipsel-o32-generic'],
   paygen_skip_delta_payloads=True,
   afdo_use=False,
   hw_tests=[],
