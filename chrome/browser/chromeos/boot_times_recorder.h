@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_BOOT_TIMES_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_BOOT_TIMES_LOADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_BOOT_TIMES_RECORDER_H_
+#define CHROME_BROWSER_CHROMEOS_BOOT_TIMES_RECORDER_H_
 
 #include <set>
 #include <string>
@@ -22,23 +22,14 @@ class PrefService;
 
 namespace chromeos {
 
-// BootTimesLoader loads the bootimes of Chrome OS from the file system.
-// Loading is done asynchronously on the file thread. Once loaded,
-// BootTimesLoader calls back to a method of your choice with the boot times.
-// To use BootTimesLoader, do the following:
-//
-// . In your class define a member field of type chromeos::BootTimesLoader and
-//   base::CancelableTaskTracker.
-// . Define the callback method, something like:
-//   void OnBootTimesLoaded(const BootTimesLoader::BootTimes& boot_times);
-// . When you want the version invoke: loader.GetBootTimes(callback, &tracker_);
-class BootTimesLoader : public content::NotificationObserver,
-                        public LoginEventRecorder::Delegate {
+// BootTimesRecorder is used to record times of boot, login, and logout.
+class BootTimesRecorder : public content::NotificationObserver,
+                          public LoginEventRecorder::Delegate {
  public:
-  BootTimesLoader();
-  virtual ~BootTimesLoader();
+  BootTimesRecorder();
+  virtual ~BootTimesRecorder();
 
-  static BootTimesLoader* Get();
+  static BootTimesRecorder* Get();
 
   // LoginEventRecorder::Delegate override.
   virtual void AddLoginTimeMarker(const std::string& marker_name,
@@ -171,9 +162,9 @@ class BootTimesLoader : public content::NotificationObserver,
 
   bool restart_requested_;
 
-  DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
+  DISALLOW_COPY_AND_ASSIGN(BootTimesRecorder);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_BOOT_TIMES_LOADER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_BOOT_TIMES_RECORDER_H_

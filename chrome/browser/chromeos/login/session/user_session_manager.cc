@@ -27,7 +27,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
@@ -147,7 +147,7 @@ void InitLocaleAndInputMethodsForNewUser(
   StringPrefMember language_preload_engines;
   language_preload_engines.Init(prefs::kLanguagePreloadEngines, prefs);
   language_preload_engines.SetValue(JoinString(input_method_ids, ','));
-  BootTimesLoader::Get()->AddLoginTimeMarker("IMEStarted", false);
+  BootTimesRecorder::Get()->AddLoginTimeMarker("IMEStarted", false);
 
   // Second, we'll set kLanguagePreferredLanguages.
   std::vector<std::string> language_codes;
@@ -754,7 +754,7 @@ void UserSessionManager::PreStartSession() {
 }
 
 void UserSessionManager::StartCrosSession() {
-  BootTimesLoader* btl = BootTimesLoader::Get();
+  BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
   DBusThreadManager::Get()->GetSessionManagerClient()->
       StartSession(user_context_.GetUserID());
@@ -762,7 +762,7 @@ void UserSessionManager::StartCrosSession() {
 }
 
 void UserSessionManager::NotifyUserLoggedIn() {
-  BootTimesLoader* btl = BootTimesLoader::Get();
+  BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_manager->UserLoggedIn(user_context_.GetUserID(),
@@ -881,7 +881,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     return;
   }
 
-  BootTimesLoader* btl = BootTimesLoader::Get();
+  BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   if (user_context_.IsUsingOAuth()) {
@@ -930,7 +930,7 @@ void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
 }
 
 void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
-  BootTimesLoader* btl = BootTimesLoader::Get();
+  BootTimesRecorder* btl = BootTimesRecorder::Get();
 
   // Own TPM device if, for any reason, it has not been done in EULA screen.
   CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
@@ -1424,7 +1424,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     login_host->BeforeSessionStart();
   }
 
-  BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
+  BootTimesRecorder::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   VLOG(1) << "Launching browser...";
   TRACE_EVENT0("login", "LaunchBrowser");
@@ -1452,7 +1452,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   if (login_host)
     login_host->Finalize();
   user_manager::UserManager::Get()->SessionStarted();
-  chromeos::BootTimesLoader::Get()->LoginDone(
+  chromeos::BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
 }
 

@@ -56,7 +56,7 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #endif
 
 using content::NavigationController;
@@ -843,7 +843,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
 #if defined(OS_CHROMEOS)
-    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+    chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-End", false);
 #endif
     return browser;
@@ -860,7 +860,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         base::TimeDelta::FromSeconds(1000),
         100);
 #if defined(OS_CHROMEOS)
-    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+    chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-GotSession", false);
 #endif
     if (synchronous_) {
@@ -896,7 +896,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
 #if defined(OS_CHROMEOS)
-    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+    chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-Start", false);
 #endif
     StartTabCreation();
@@ -932,7 +932,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         browser = browser_;
       } else {
 #if defined(OS_CHROMEOS)
-        chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
             "SessionRestore-CreateRestoredBrowser-Start", false);
 #endif
         // Show the first window if none are visible.
@@ -947,7 +947,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
             show_state,
             (*i)->app_name);
 #if defined(OS_CHROMEOS)
-        chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
             "SessionRestore-CreateRestoredBrowser-End", false);
 #endif
       }
@@ -987,7 +987,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (last_browser && !urls_to_open_.empty())
       AppendURLsToBrowser(last_browser, urls_to_open_);
 #if defined(OS_CHROMEOS)
-    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+    chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-End", false);
 #endif
     if (browser_to_activate)
@@ -1271,7 +1271,7 @@ Browser* SessionRestore::RestoreSession(
     uint32 behavior,
     const std::vector<GURL>& urls_to_open) {
 #if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
       "SessionRestore-Start", false);
 #endif
   DCHECK(profile);

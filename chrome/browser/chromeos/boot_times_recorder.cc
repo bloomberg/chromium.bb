@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 
 #include <vector>
 
@@ -128,11 +128,11 @@ static const base::FilePath::CharType kLoginTimes[] = FPL("login-times");
 // Name of file collecting logout times.
 static const char kLogoutTimes[] = "logout-times";
 
-static base::LazyInstance<BootTimesLoader> g_boot_times_loader =
+static base::LazyInstance<BootTimesRecorder> g_boot_times_recorder =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-BootTimesLoader::Stats BootTimesLoader::Stats::GetCurrentStats() {
+BootTimesRecorder::Stats BootTimesRecorder::Stats::GetCurrentStats() {
   const base::FilePath kProcUptime(FPL("/proc/uptime"));
   const base::FilePath kDiskStat(FPL("/sys/block/sda/stat"));
   Stats stats;
@@ -144,7 +144,7 @@ BootTimesLoader::Stats BootTimesLoader::Stats::GetCurrentStats() {
   return stats;
 }
 
-std::string BootTimesLoader::Stats::SerializeToString() const {
+std::string BootTimesRecorder::Stats::SerializeToString() const {
   if (uptime_.empty() && disk_.empty())
     return std::string();
   base::DictionaryValue dictionary;
@@ -153,7 +153,7 @@ std::string BootTimesLoader::Stats::SerializeToString() const {
 
   std::string result;
   if (!base::JSONWriter::Write(&dictionary, &result)) {
-    LOG(WARNING) << "BootTimesLoader::Stats::SerializeToString(): failed.";
+    LOG(WARNING) << "BootTimesRecorder::Stats::SerializeToString(): failed.";
     return std::string();
   }
 
@@ -161,7 +161,7 @@ std::string BootTimesLoader::Stats::SerializeToString() const {
 }
 
 // static
-BootTimesLoader::Stats BootTimesLoader::Stats::DeserializeFromString(
+BootTimesRecorder::Stats BootTimesRecorder::Stats::DeserializeFromString(
     const std::string& source) {
   if (source.empty())
     return Stats();
@@ -169,7 +169,7 @@ BootTimesLoader::Stats BootTimesLoader::Stats::DeserializeFromString(
   scoped_ptr<base::Value> value(base::JSONReader::Read(source));
   base::DictionaryValue* dictionary;
   if (!value || !value->GetAsDictionary(&dictionary)) {
-    LOG(ERROR) << "BootTimesLoader::Stats::DeserializeFromString(): not a "
+    LOG(ERROR) << "BootTimesRecorder::Stats::DeserializeFromString(): not a "
                   "dictionary: '" << source << "'";
     return Stats();
   }
@@ -178,7 +178,7 @@ BootTimesLoader::Stats BootTimesLoader::Stats::DeserializeFromString(
   if (!dictionary->GetString(kUptime, &result.uptime_) ||
       !dictionary->GetString(kDisk, &result.disk_)) {
     LOG(ERROR)
-        << "BootTimesLoader::Stats::DeserializeFromString(): format error: '"
+        << "BootTimesRecorder::Stats::DeserializeFromString(): format error: '"
         << source << "'";
     return Stats();
   }
@@ -186,7 +186,7 @@ BootTimesLoader::Stats BootTimesLoader::Stats::DeserializeFromString(
   return result;
 }
 
-bool BootTimesLoader::Stats::UptimeDouble(double* result) const {
+bool BootTimesRecorder::Stats::UptimeDouble(double* result) const {
   std::string uptime = uptime_;
   const size_t space_at = uptime.find_first_of(' ');
   if (space_at == std::string::npos)
@@ -200,26 +200,26 @@ bool BootTimesLoader::Stats::UptimeDouble(double* result) const {
   return false;
 }
 
-void BootTimesLoader::Stats::RecordStats(const std::string& name) const {
+void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
-      base::Bind(&BootTimesLoader::Stats::RecordStatsImpl,
+      base::Bind(&BootTimesRecorder::Stats::RecordStatsImpl,
                  base::Owned(new Stats(*this)),
                  name));
 }
 
-void BootTimesLoader::Stats::RecordStatsWithCallback(
+void BootTimesRecorder::Stats::RecordStatsWithCallback(
     const std::string& name,
     const base::Closure& callback) const {
   BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
-      base::Bind(&BootTimesLoader::Stats::RecordStatsImpl,
+      base::Bind(&BootTimesRecorder::Stats::RecordStatsImpl,
                  base::Owned(new Stats(*this)),
                  name),
       callback);
 }
 
-void BootTimesLoader::Stats::RecordStatsImpl(
+void BootTimesRecorder::Stats::RecordStatsImpl(
     const base::FilePath::StringType& name) const {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
@@ -234,7 +234,7 @@ void BootTimesLoader::Stats::RecordStatsImpl(
   AppendFile(disk_output, disk_.data(), disk_.size());
 }
 
-BootTimesLoader::BootTimesLoader()
+BootTimesRecorder::BootTimesRecorder()
     : have_registered_(false),
       login_done_(false),
       restart_requested_(false) {
@@ -242,20 +242,19 @@ BootTimesLoader::BootTimesLoader()
   logout_time_markers_.reserve(30);
 }
 
-BootTimesLoader::~BootTimesLoader() {
+BootTimesRecorder::~BootTimesRecorder() {
 }
 
 // static
-BootTimesLoader* BootTimesLoader::Get() {
-  return g_boot_times_loader.Pointer();
+BootTimesRecorder* BootTimesRecorder::Get() {
+  return g_boot_times_recorder.Pointer();
 }
 
 // static
-void BootTimesLoader::WriteTimes(
-    const std::string base_name,
-    const std::string uma_name,
-    const std::string uma_prefix,
-    std::vector<TimeMarker> login_times) {
+void BootTimesRecorder::WriteTimes(const std::string base_name,
+                                   const std::string uma_name,
+                                   const std::string uma_prefix,
+                                   std::vector<TimeMarker> login_times) {
   const int kMinTimeMillis = 1;
   const int kMaxTimeMillis = 30000;
   const int kNumBuckets = 100;
@@ -310,7 +309,7 @@ void BootTimesLoader::WriteTimes(
   base::WriteFile(log_path.Append(base_name), output.data(), output.size());
 }
 
-void BootTimesLoader::LoginDone(bool is_user_new) {
+void BootTimesRecorder::LoginDone(bool is_user_new) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (login_done_)
     return;
@@ -345,7 +344,7 @@ void BootTimesLoader::LoginDone(bool is_user_new) {
       base::TimeDelta::FromMilliseconds(kLoginTimeWriteDelayMs));
 }
 
-void BootTimesLoader::WriteLogoutTimes() {
+void BootTimesRecorder::WriteLogoutTimes() {
   // Either we're on the browser thread, or (more likely) Chrome is in the
   // process of shutting down and we're on the main thread but the message loop
   // has already been terminated.
@@ -359,12 +358,12 @@ void BootTimesLoader::WriteLogoutTimes() {
 }
 
 // static
-void BootTimesLoader::ClearLogoutStartedLastPreference() {
+void BootTimesRecorder::ClearLogoutStartedLastPreference() {
   PrefService* local_state = g_browser_process->local_state();
   local_state->ClearPref(prefs::kLogoutStartedLast);
 }
 
-void BootTimesLoader::OnChromeProcessStart() {
+void BootTimesRecorder::OnChromeProcessStart() {
   PrefService* local_state = g_browser_process->local_state();
   const std::string logout_started_last_str =
       local_state->GetString(prefs::kLogoutStartedLast);
@@ -396,28 +395,28 @@ void BootTimesLoader::OnChromeProcessStart() {
   const char kLogoutStarted[] = "logout-started";
   logout_started_last_stats.RecordStatsWithCallback(
       kLogoutStarted,
-      base::Bind(&BootTimesLoader::ClearLogoutStartedLastPreference));
+      base::Bind(&BootTimesRecorder::ClearLogoutStartedLastPreference));
 }
 
-void BootTimesLoader::OnLogoutStarted(PrefService* state) {
+void BootTimesRecorder::OnLogoutStarted(PrefService* state) {
   const std::string uptime = Stats::GetCurrentStats().SerializeToString();
   if (!uptime.empty())
     state->SetString(prefs::kLogoutStartedLast, uptime);
 }
 
-void BootTimesLoader::RecordCurrentStats(const std::string& name) {
+void BootTimesRecorder::RecordCurrentStats(const std::string& name) {
   Stats::GetCurrentStats().RecordStats(name);
 }
 
-void BootTimesLoader::SaveChromeMainStats() {
+void BootTimesRecorder::SaveChromeMainStats() {
   chrome_main_stats_ = Stats::GetCurrentStats();
 }
 
-void BootTimesLoader::RecordChromeMainStats() {
+void BootTimesRecorder::RecordChromeMainStats() {
   chrome_main_stats_.RecordStats(kChromeMain);
 }
 
-void BootTimesLoader::RecordLoginAttempted() {
+void BootTimesRecorder::RecordLoginAttempted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (login_done_)
     return;
@@ -439,20 +438,19 @@ void BootTimesLoader::RecordLoginAttempted() {
   }
 }
 
-void BootTimesLoader::AddLoginTimeMarker(
-    const std::string& marker_name, bool send_to_uma) {
+void BootTimesRecorder::AddLoginTimeMarker(const std::string& marker_name,
+                                           bool send_to_uma) {
   AddMarker(&login_time_markers_, TimeMarker(marker_name, send_to_uma));
 }
 
-void BootTimesLoader::AddLogoutTimeMarker(
-    const std::string& marker_name, bool send_to_uma) {
+void BootTimesRecorder::AddLogoutTimeMarker(const std::string& marker_name,
+                                            bool send_to_uma) {
   AddMarker(&logout_time_markers_, TimeMarker(marker_name, send_to_uma));
 }
 
 // static
-void BootTimesLoader::AddMarker(std::vector<TimeMarker>* vector,
-                                TimeMarker marker)
-{
+void BootTimesRecorder::AddMarker(std::vector<TimeMarker>* vector,
+                                  TimeMarker marker) {
   // The marker vectors can only be safely manipulated on the main thread.
   // If we're late in the process of shutting down (eg. as can be the case at
   // logout), then we have to assume we're on the main thread already.
@@ -462,28 +460,27 @@ void BootTimesLoader::AddMarker(std::vector<TimeMarker>* vector,
   } else {
     // Add the marker on the UI thread.
     // Note that it's safe to use an unretained pointer to the vector because
-    // BootTimesLoader's lifetime exceeds that of the UI thread message loop.
+    // BootTimesRecorder's lifetime exceeds that of the UI thread message loop.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&BootTimesLoader::AddMarker,
+        base::Bind(&BootTimesRecorder::AddMarker,
                    base::Unretained(vector),
                    marker));
   }
 }
 
-void BootTimesLoader::RecordAuthenticationSuccess() {
+void BootTimesRecorder::RecordAuthenticationSuccess() {
   AddLoginTimeMarker("Authenticate", true);
   RecordCurrentStats(kLoginSuccess);
 }
 
-void BootTimesLoader::RecordAuthenticationFailure() {
+void BootTimesRecorder::RecordAuthenticationFailure() {
   // Do nothing for now.
 }
 
-void BootTimesLoader::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void BootTimesRecorder::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_LOAD_START: {
       NavigationController* tab =

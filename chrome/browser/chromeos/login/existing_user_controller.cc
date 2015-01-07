@@ -23,7 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -464,7 +464,7 @@ void ExistingUserController::PerformLogin(
       ->GetUserFlow(user_context.GetUserID())
       ->SetHost(host_);
 
-  BootTimesLoader::Get()->RecordLoginAttempted();
+  BootTimesRecorder::Get()->RecordLoginAttempted();
 
   // Use the same LoginPerformer for subsequent login as it has state
   // such as Authenticator instance.

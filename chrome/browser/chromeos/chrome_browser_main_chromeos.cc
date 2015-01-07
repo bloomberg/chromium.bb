@@ -29,7 +29,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
@@ -269,8 +269,8 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // To be precise, logout (browser shutdown) is not yet done, but the
   // remaining work is negligible, hence we say LogoutDone here.
-  BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutDone", false);
-  BootTimesLoader::Get()->WriteLogoutTimes();
+  BootTimesRecorder::Get()->AddLogoutTimeMarker("LogoutDone", false);
+  BootTimesRecorder::Get()->WriteLogoutTimes();
 }
 
 // content::BrowserMainParts and ChromeBrowserMainExtraParts overrides ---------
@@ -376,8 +376,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- immediately before Profile creation().
 
   // Now that the file thread exists we can record our stats.
-  BootTimesLoader::Get()->RecordChromeMainStats();
-  LoginEventRecorder::Get()->SetDelegate(BootTimesLoader::Get());
+  BootTimesRecorder::Get()->RecordChromeMainStats();
+  LoginEventRecorder::Get()->SetDelegate(BootTimesRecorder::Get());
 
   // Trigger prefetching of ownership status.
   DeviceSettingsService::Get()->Load();
@@ -549,7 +549,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  BootTimesLoader::Get()->OnChromeProcessStart();
+  BootTimesRecorder::Get()->OnChromeProcessStart();
 
   // Initialize the network portal detector for Chrome OS. The network
   // portal detector starts to listen for notifications from
@@ -679,7 +679,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
-  BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
+  BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   g_browser_process->platform_part()->oom_priority_manager()->Stop();
 

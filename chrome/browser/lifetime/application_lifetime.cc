@@ -41,7 +41,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -135,7 +135,7 @@ void CloseAllBrowsers() {
   }
 
 #if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
+  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker(
       "StartedClosingWindows", false);
 #endif
   scoped_refptr<BrowserCloseManager> browser_close_manager =
@@ -146,11 +146,12 @@ void CloseAllBrowsers() {
 void AttemptUserExit() {
 #if defined(OS_CHROMEOS)
   StartShutdownTracing();
-  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutStarted", false);
+  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("LogoutStarted",
+                                                          false);
 
   PrefService* state = g_browser_process->local_state();
   if (state) {
-    chromeos::BootTimesLoader::Get()->OnLogoutStarted(state);
+    chromeos::BootTimesRecorder::Get()->OnLogoutStarted(state);
 
     // Login screen should show up in owner's locale.
     std::string owner_locale = state->GetString(prefs::kOwnerLocale);
@@ -201,7 +202,7 @@ void AttemptRestart() {
   pref_service->SetBoolean(prefs::kWasRestarted, true);
 
 #if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->set_restart_requested();
+  chromeos::BootTimesRecorder::Get()->set_restart_requested();
 
   DCHECK(!g_send_stop_request_to_session_manager);
   // Make sure we don't send stop request to the session manager.

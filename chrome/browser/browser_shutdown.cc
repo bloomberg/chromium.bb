@@ -43,7 +43,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -140,7 +140,7 @@ base::FilePath GetShutdownMsPath() {
 
 bool ShutdownPreThreadsStop() {
 #if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
+  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker(
       "BrowserShutdownStarted", false);
 #endif
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -203,7 +203,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
   ProfileManager::NukeDeletedProfilesFromDisk();
 
 #if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("BrowserDeleted",
+  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted",
                                                         true);
 #endif
 

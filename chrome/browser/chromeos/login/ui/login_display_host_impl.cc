@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -621,7 +621,7 @@ void LoginDisplayHostImpl::StartSignInScreen(
     TRACE_EVENT_ASYNC_BEGIN0("ui", "ShowLoginWebUI", kShowLoginWebUIid);
     TRACE_EVENT_ASYNC_STEP_INTO0(
         "ui", "ShowLoginWebUI", kShowLoginWebUIid, "StartSignInScreen");
-    BootTimesLoader::Get()->RecordCurrentStats("login-start-signin-screen");
+    BootTimesRecorder::Get()->RecordCurrentStats("login-start-signin-screen");
     LoadURL(GURL(kLoginURL));
   }
 
@@ -674,7 +674,7 @@ void LoginDisplayHostImpl::StartSignInScreen(
                                "ShowLoginWebUI",
                                kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
-  BootTimesLoader::Get()->RecordCurrentStats(
+  BootTimesRecorder::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
 }
 

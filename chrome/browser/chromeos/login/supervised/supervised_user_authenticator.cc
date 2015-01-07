@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -52,7 +52,7 @@ void TriggerResolveWithLoginTimeMarker(
     scoped_refptr<SupervisedUserAuthenticator> resolver,
     bool success,
     cryptohome::MountError return_code) {
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(marker_name, false);
+  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(marker_name, false);
   TriggerResolve(attempt, resolver, success, return_code);
 }
 
@@ -62,7 +62,7 @@ void Mount(SupervisedUserAuthenticator::AuthAttempt* attempt,
            int flags,
            const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeMount-LMU-Start", false);
 
   Key key(attempt->password);
@@ -87,7 +87,7 @@ void AddKey(SupervisedUserAuthenticator::AuthAttempt* attempt,
             const std::string& plain_text_master_key,
             const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeAddKey-LMU-Start", false);
 
   Key user_key(attempt->password);
