@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/common/blob/blob_data.h"
 #include "url/gurl.h"
@@ -143,29 +144,30 @@ void BlobStorageContext::AppendBlobDataItem(
   // 4) The Blob items are expanded.
   // TODO(michaeln): Would be nice to avoid copying Data items when expanding.
 
-  DCHECK(item.length() > 0);
+  uint64 length = item.length();
+  DCHECK_GT(length, 0u);
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
+                       memory_usage_ / 1024);
   switch (item.type()) {
     case BlobData::Item::TYPE_BYTES:
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Bytes", length);
       DCHECK(!item.offset());
-      exceeded_memory = !AppendBytesItem(target_blob_data,
-                                         item.bytes(),
-                                         static_cast<int64>(item.length()));
+      exceeded_memory = !AppendBytesItem(target_blob_data, item.bytes(),
+                                         static_cast<int64>(length));
       break;
     case BlobData::Item::TYPE_FILE:
-      AppendFileItem(target_blob_data,
-                     item.path(),
-                     item.offset(),
-                     item.length(),
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File", length);
+      AppendFileItem(target_blob_data, item.path(), item.offset(), length,
                      item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_FILE_FILESYSTEM:
-      AppendFileSystemFileItem(target_blob_data,
-                               item.filesystem_url(),
-                               item.offset(),
-                               item.length(),
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem", length);
+      AppendFileSystemFileItem(target_blob_data, item.filesystem_url(),
+                               item.offset(), length,
                                item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_BLOB: {
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob", length);
       scoped_ptr<BlobDataHandle> src = GetBlobDataFromUUID(item.blob_uuid());
       if (src)
         exceeded_memory = !ExpandStorageItems(target_blob_data,
@@ -178,6 +180,8 @@ void BlobStorageContext::AppendBlobDataItem(
       NOTREACHED();
       break;
   }
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeAfterAppend",
+                       memory_usage_ / 1024);
 
   // If we're using too much memory, drop this blob's data.
   // TODO(michaeln): Blob memory storage does not yet spill over to disk,
@@ -198,6 +202,9 @@ void BlobStorageContext::FinishBuildingBlob(
     return;
   found->second.data->set_content_type(content_type);
   found->second.flags &= ~BEING_BUILT;
+  UMA_HISTOGRAM_BOOLEAN(
+      "Storage.Blob.ExceededMemory",
+      (found->second.flags & EXCEEDED_MEMORY) == EXCEEDED_MEMORY);
 }
 
 void BlobStorageContext::CancelBuildingBlob(const std::string& uuid) {

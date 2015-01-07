@@ -36270,6 +36270,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.ExceededMemory" enum="Boolean">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    True if a created blob exceeded the internal in-memory storage memory limit
+    for blobs.
+  </summary>
+</histogram>
+
+<histogram name="Storage.Blob.StorageSizeAfterAppend" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the total in-memory storage size of blobs before a blob item is
+    appended.  Can be subtracted by Storage.Blob.StorageSizeBeforeAppend to find
+    the true distribution of blob storage sizes.
+  </summary>
+</histogram>
+
+<histogram name="Storage.Blob.StorageSizeBeforeAppend" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the total in-memory storage size of blobs before a blob item is
+    appended.  Can be subtracted from Storage.Blob.StorageSizeAfterAppend to
+    find the true distribution of blob storage sizes.
+  </summary>
+</histogram>
+
+<histogram name="Storage.BlobItemSize" units="KB">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The size in KB of items (or parts of items) appended to blobs.
+  </summary>
+</histogram>
+
 <histogram name="Suggestions.FailedRequestErrorCode" enum="NetErrorCodes">
   <owner>mathp@chromium.org</owner>
   <summary>
@@ -62229,6 +62262,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="TimeDuration" label="Duration is in clock time."/>
   <suffix name="TimeTicksDuration" label="Duration is in TimeTicks time."/>
   <affected-histogram name="StartupTimeBomb.Alarm"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Storage.BlobAppendableItems" separator=".">
+  <suffix name="Bytes" label="Appending bytes."/>
+  <suffix name="File" label="Appending a file."/>
+  <suffix name="FileSystem" label="Appending a filesystem object."/>
+  <suffix name="Blob" label="Appending a blob."/>
+  <affected-histogram name="Storage.BlobItemSize"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyzygyStartupTime">
