@@ -8,17 +8,14 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.EmptyTabObserver;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.shell.R;
 import org.chromium.chrome.shell.TabManager;
+import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Test suite for the accessibility tab switcher.
@@ -61,26 +58,6 @@ public class AccessibilityTabSwitcherTest extends ChromeShellTestBase {
         }));
     }
 
-    private static class TestObserver extends EmptyTabObserver implements Criteria {
-        private boolean mTabLoadStarted;
-        private boolean mTabLoadStopped;
-
-        @Override
-        public void onLoadStarted(Tab tab) {
-            mTabLoadStarted = true;
-        }
-
-        @Override
-        public void onLoadStopped(Tab tab) {
-            mTabLoadStopped = true;
-        }
-
-        @Override
-        public boolean isSatisfied() {
-            return mTabLoadStarted && mTabLoadStopped;
-        }
-    }
-
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanEnterAndLeaveSwitcher() throws Exception {
@@ -118,14 +95,8 @@ public class AccessibilityTabSwitcherTest extends ChromeShellTestBase {
         toggleTabSwitcher(false);
 
         // Load another URL.
-        final TestObserver observer = new TestObserver();
-        getActivity().getActiveTab().addObserver(observer);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().getActiveTab().loadUrl(new LoadUrlParams(PAGE_2_HTML));
-            }
-        });
+        final TabLoadObserver observer =
+                new TabLoadObserver(getActivity().getActiveTab(), PAGE_2_HTML);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
 
         // Bring the tab switcher forward and check the title.

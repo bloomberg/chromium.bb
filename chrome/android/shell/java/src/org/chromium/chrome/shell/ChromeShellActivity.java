@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.app.ContentApplication;
@@ -433,6 +434,11 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
     @Override
     public int getMenuThemeResourceId() {
         return R.style.OverflowMenuTheme;
+    }
+
+    @VisibleForTesting
+    public TabModelSelector getTabModelSelector() {
+        return mTabManager.getTabModelSelector();
     }
 
     @VisibleForTesting

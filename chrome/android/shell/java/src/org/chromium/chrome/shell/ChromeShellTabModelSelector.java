@@ -86,7 +86,7 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
             }
         };
         ChromeShellTab tab = new ChromeShellTab(
-                mContext, loadUrlParams.getUrl(), mWindow, client, mTabManager);
+                mContext, loadUrlParams, mWindow, client, mTabManager);
         int index = mOrderController.determineInsertionIndex(type, tab);
         TabModel tabModel = getCurrentModel();
         tabModel.addTab(tab, index, type);

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelWrapper;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -172,6 +173,11 @@ public class TabManager extends LinearLayout {
         return tab;
     }
 
+    void openNewTab(
+            LoadUrlParams params, TabLaunchType launchType, Tab parentTab, boolean incognito) {
+        mTabModelSelector.openNewTab(params, launchType, parentTab, incognito);
+    }
+
     private boolean isContentViewRenderViewInitialized() {
         return mContentViewRenderView != null && mContentViewRenderView.isInitialized();
     }
@@ -264,5 +270,12 @@ public class TabManager extends LinearLayout {
             return tab;
         }
         return createTab(url, TabLaunchType.FROM_KEYBOARD);
+    }
+
+    /**
+     * Returns the TabModelSelector containing the tabs.
+     */
+    public TabModelSelector getTabModelSelector() {
+        return mTabModelSelector;
     }
 }

@@ -33,17 +33,17 @@ public class ChromeShellTab extends Tab {
 
     /**
      * @param context           The Context the view is running in.
-     * @param url               The URL to start this tab with.
+     * @param params            Parameters for the page the tab should immediately load.
      * @param window            The WindowAndroid should represent this tab.
      * @param contentViewClient The client for the {@link ContentViewCore}s of this Tab.
      */
-    public ChromeShellTab(Context context, String url, WindowAndroid window,
+    public ChromeShellTab(Context context, LoadUrlParams params, WindowAndroid window,
             ContentViewClient contentViewClient, TabManager tabManager) {
         super(false, context, window);
         initialize(0, null, false);
         mTabManager = tabManager;
         setContentViewClient(contentViewClient);
-        loadUrlWithSanitization(url);
+        loadUrl(params);
     }
 
     /**
@@ -147,5 +147,11 @@ public class ChromeShellTab extends Tab {
             super.webContentsCreated(
                     sourceWebContents, openerRenderFrameId, frameName, targetUrl, newWebContents);
         }
+    }
+
+    @Override
+    protected void openNewTab(
+            LoadUrlParams params, TabLaunchType launchType, Tab parentTab, boolean incognito) {
+        mTabManager.openNewTab(params, launchType, parentTab, incognito);
     }
 }
