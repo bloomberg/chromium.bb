@@ -1866,6 +1866,9 @@ def CMDupload(parser, args):
     # TODO(ukai): is it ok for gerrit case?
     base_branch = args[0]
   else:
+    if cl.GetBranch() is None:
+      DieWithError('Can\'t upload from detached HEAD state. Get on a branch!')
+
     # Default to diffing against common ancestor of upstream branch
     base_branch = cl.GetCommonAncestorWithUpstream()
     args = [base_branch, 'HEAD']
