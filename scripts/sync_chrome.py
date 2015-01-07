@@ -30,6 +30,7 @@ def GetParser():
                       action='store_true', default=False)
   parser.add_argument('--gclient', help=commandline.argparse.SUPPRESS,
                       default='gclient')
+  parser.add_argument('--gclient_template', help='Template gclient input file')
   parser.add_argument('chrome_root', help='Directory to sync chrome in')
 
   return parser
@@ -49,7 +50,8 @@ def main(argv):
 
   # Sync new Chrome.
   gclient.WriteConfigFile(options.gclient, options.chrome_root,
-                          options.internal, options.version)
+                          options.internal, options.version,
+                          options.gclient_template)
   sync_fn = functools.partial(
       gclient.Sync, options.gclient, options.chrome_root, reset=options.reset)
 

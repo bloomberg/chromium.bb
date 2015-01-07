@@ -36,6 +36,48 @@ def FindGclientCheckoutRoot(path):
   return None
 
 
+def _LoadGclientFile(path):
+  """Load a gclient file and return the solutions defined by the gclient file.
+
+  Args:
+    path: The gclient file to load.
+
+  Returns:
+    A list of solutions defined by the gclient file or an empty list if no
+    solutions exists.
+  """
+  global_scope = {}
+  # Similar to depot_tools, we use execfile() to evaluate the gclient file,
+  # which is essentially a Python script, and then extract the solutions
+  # defined by the gclient file from the 'solutions' variable in the global
+  # scope.
+  execfile(path, global_scope)
+  return global_scope.get('solutions', [])
+
+
+def _FindOrAddSolution(solutions, name):
+  """Find a solution of the specified name from the given list of solutions.
+
+  If no solution with the specified name is found, a solution with the
+  specified name is appended to the given list of solutions. This function thus
+  always returns a solution.
+
+  Args:
+    solutions: The list of solutions to search from.
+    name: The solution name to search for.
+
+  Returns:
+    The solution with the specified name.
+  """
+  for solution in solutions:
+    if solution['name'] == name:
+      return solution
+
+  solution = {'name': name}
+  solutions.append(solution)
+  return solution
+
+
 def _GetGclientURLs(internal, rev):
   """Get the URLs and deps_file values to use in gclient file.
 
@@ -71,32 +113,36 @@ def _GetGclientURLs(internal, rev):
   return results
 
 
-def _GetGclientSolutions(internal, rev):
+def _GetGclientSolutions(internal, rev, template):
   """Get the solutions array to write to the gclient file.
 
   See WriteConfigFile below.
   """
   urls = _GetGclientURLs(internal, rev)
-  solutions = []
+  solutions = _LoadGclientFile(template) if template is not None else []
   for (name, url, deps_file) in urls:
-    solution = {
-        'name': name,
-        'url': url,
-        'custom_deps': {},
-        'custom_vars': {},
-    }
+    solution = _FindOrAddSolution(solutions, name)
+    # Always override 'url' and 'deps_file' of a solution as we need to specify
+    # the revision information.
+    solution['url'] = url
     if deps_file:
       solution['deps_file'] = deps_file
-    solutions.append(solution)
+
+    # Use 'custom_deps' and 'custom_vars' of a solution when specified by the
+    # template gclient file.
+    solution.setdefault('custom_deps', {})
+    solution.setdefault('custom_vars', {})
+
   return solutions
 
 
-def _GetGclientSpec(internal, rev):
+def _GetGclientSpec(internal, rev, template):
   """Return a formatted gclient spec.
 
   See WriteConfigFile below.
   """
-  solutions = _GetGclientSolutions(internal=internal, rev=rev)
+  solutions = _GetGclientSolutions(internal=internal, rev=rev,
+                                   template=template)
   result = 'solutions = %s\n' % pprint.pformat(solutions)
 
   # Horrible hack, I will go to hell for this.  The bots need to have a git
@@ -107,7 +153,7 @@ def _GetGclientSpec(internal, rev):
 
   return result
 
-def WriteConfigFile(gclient, cwd, internal, rev):
+def WriteConfigFile(gclient, cwd, internal, rev, template=None):
   """Initialize the specified directory as a gclient checkout.
 
   For gclient documentation, see:
@@ -121,8 +167,13 @@ def WriteConfigFile(gclient, cwd, internal, rev):
         - If None, use the latest from trunk.
         - If this is a sha1, use the specified revision.
         - Otherwise, treat this as a chrome version string.
+    template: An optional file to provide a template of gclient solutions.
+              _GetGclientSolutions iterates through the solutions specified
+              by the template and performs appropriate modifications such as
+              filling information like url and revision and adding extra
+              solutions.
   """
-  spec = _GetGclientSpec(internal=internal, rev=rev)
+  spec = _GetGclientSpec(internal=internal, rev=rev, template=template)
   cmd = [gclient, 'config', '--spec', spec]
   cros_build_lib.RunCommand(cmd, cwd=cwd)
 
