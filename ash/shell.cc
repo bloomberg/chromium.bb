@@ -694,6 +694,12 @@ Shell::~Shell() {
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
 
+// Destroy the virtual keyboard controller before the maximize mode controller
+// since the latters destructor triggers events that the former is listening
+// to but no longer cares about.
+#if defined(OS_CHROMEOS)
+  virtual_keyboard_controller_.reset();
+#endif
   // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
   maximize_mode_controller_->Shutdown();
@@ -793,9 +799,6 @@ Shell::~Shell() {
   display_manager_->CreateScreenForShutdown();
   display_controller_->Shutdown();
   display_controller_.reset();
-#if defined(OS_CHROMEOS)
-  virtual_keyboard_controller_.reset();
-#endif
   screen_position_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();

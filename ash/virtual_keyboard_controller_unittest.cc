@@ -4,10 +4,13 @@
 
 #include "ash/virtual_keyboard_controller.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/command_line.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
@@ -39,6 +42,14 @@ class VirtualKeyboardControllerTest : public AshTestBase {
     manager->OnKeyboardDevicesUpdated(keyboard_devices);
   }
 
+  // Sets the event blocker on the maximized window controller.
+  void SetEventBlocker(
+      scoped_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
+    Shell::GetInstance()
+        ->maximize_mode_controller()
+        ->event_blocker_ = blocker.Pass();
+  }
+
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kDisableSmartVirtualKeyboard);
@@ -63,6 +74,36 @@ TEST_F(VirtualKeyboardControllerTest, EnabledDuringMaximizeMode) {
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(false);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+}
+
+// Mock event blocker that enables the internal keyboard when it's destructor
+// is called.
+class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
+ public:
+  MockEventBlocker() {}
+  ~MockEventBlocker() override {
+    std::vector<ui::KeyboardDevice> keyboards;
+    keyboards.push_back(ui::KeyboardDevice(
+        1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
+    ui::DeviceHotplugEventObserver* manager =
+        ui::DeviceDataManager::GetInstance();
+    manager->OnKeyboardDevicesUpdated(keyboards);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEventBlocker);
+};
+
+// Tests that reenabling keyboard devices while shutting down does not
+// cause the Virtual Keyboard Controller to crash. See crbug.com/446204.
+TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
+  // Toggle maximized mode on.
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+  scoped_ptr<ScopedDisableInternalMouseAndKeyboard>
+      blocker(new MockEventBlocker);
+  SetEventBlocker(blocker.Pass());
 }
 
 class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,

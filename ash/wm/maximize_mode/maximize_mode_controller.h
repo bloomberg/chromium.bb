@@ -35,6 +35,7 @@ class MaximizeModeWindowManager;
 class MaximizeModeWindowManagerTest;
 namespace test {
 class MultiUserWindowManagerChromeOSTest;
+class VirtualKeyboardControllerTest;
 }
 
 // MaximizeModeController listens to accelerometer events and automatically
@@ -135,6 +136,7 @@ class ASH_EXPORT MaximizeModeController
   friend class MaximizeModeControllerTest;
   friend class MaximizeModeWindowManagerTest;
   friend class test::MultiUserWindowManagerChromeOSTest;
+  friend class test::VirtualKeyboardControllerTest;
 
   // Set the TickClock. This is only to be used by tests that need to
   // artificially and deterministically control the current time.
