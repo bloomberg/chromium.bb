@@ -289,6 +289,7 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_resource_safe");
   AddExtensionString("GL_CHROMIUM_strict_attribs");
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
+  AddExtensionString("GL_CHROMIUM_trace_marker");
   AddExtensionString("GL_EXT_debug_marker");
 
   if (feature_flags_.enable_subscribe_uniform) {

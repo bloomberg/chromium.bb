@@ -191,7 +191,8 @@ GLHelperHolder::CreateContext3D() {
           url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
           limits, nullptr));
   if (context->InitializeOnCurrentThread()) {
-    context->pushGroupMarkerEXT(
+    context->traceBeginCHROMIUM(
+        "gpu_toplevel",
         base::StringPrintf("CmdBufferImageTransportFactory-%p",
                            context.get()).c_str());
   } else {

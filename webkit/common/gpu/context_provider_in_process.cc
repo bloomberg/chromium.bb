@@ -102,7 +102,8 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
-  context3d_->pushGroupMarkerEXT(unique_context_name.c_str());
+  context3d_->traceBeginCHROMIUM("gpu_toplevel",
+                                 unique_context_name.c_str());
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
   return true;

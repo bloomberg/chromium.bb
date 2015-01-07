@@ -493,6 +493,9 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   virtual void uniformValuebufferCHROMIUM(WGC3Dint location,
                                           WGC3Denum target,
                                           WGC3Denum subscription);
+  virtual void traceBeginCHROMIUM(const WGC3Dchar* category_name,
+                                  const WGC3Dchar* trace_name);
+  virtual void traceEndCHROMIUM();
 
   virtual void insertEventMarkerEXT(const WGC3Dchar* marker);
   virtual void pushGroupMarkerEXT(const WGC3Dchar* marker);

@@ -885,6 +885,11 @@ DELEGATE_TO_GL_3(uniformValuebufferCHROMIUM,
                  WGC3Dint,
                  WGC3Denum,
                  WGC3Denum);
+DELEGATE_TO_GL_2(traceBeginCHROMIUM,
+                 TraceBeginCHROMIUM,
+                 const WGC3Dchar*,
+                 const WGC3Dchar*);
+DELEGATE_TO_GL(traceEndCHROMIUM, TraceEndCHROMIUM);
 
 void WebGraphicsContext3DImpl::insertEventMarkerEXT(
     const WGC3Dchar* marker) {

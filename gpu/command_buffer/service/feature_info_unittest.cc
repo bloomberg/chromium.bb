@@ -235,6 +235,7 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_strict_attribs"));
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_ANGLE_translated_shader_source"));
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_trace_marker"));
 
   // Check a couple of random extensions that should not be there.
   EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_OES_texture_npot")));
