@@ -28,12 +28,6 @@ remoting.initGlobalObjects = function() {
   console.log(remoting.getExtensionInfo());
   l10n.localize();
 
-  // Create global objects.
-  remoting.ClientPlugin.factory = new remoting.DefaultClientPluginFactory();
-  remoting.SessionConnector.factory =
-      new remoting.DefaultSessionConnectorFactory();
-  remoting.settings = new remoting.Settings();
-
   if (base.isAppsV2()) {
     remoting.fullscreen = new remoting.FullscreenAppsV2();
   } else {
@@ -101,19 +95,18 @@ remoting.getExtensionInfo = function() {
  * the more intuitive way to end a Me2Me session, and re-connecting is easy.
  */
 remoting.promptClose = function() {
-  if (!remoting.clientSession ||
-      remoting.clientSession.getMode() == remoting.ClientSession.Mode.ME2ME) {
-    return null;
-  }
-  switch (remoting.currentMode) {
-    case remoting.AppMode.CLIENT_CONNECTING:
-    case remoting.AppMode.HOST_WAITING_FOR_CODE:
-    case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
-    case remoting.AppMode.HOST_SHARED:
-    case remoting.AppMode.IN_SESSION:
-      return chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
-    default:
-      return null;
+  if (remoting.clientSession &&
+      remoting.clientSession.getMode() == remoting.ClientSession.Mode.IT2ME) {
+    switch (remoting.currentMode) {
+      case remoting.AppMode.CLIENT_CONNECTING:
+      case remoting.AppMode.HOST_WAITING_FOR_CODE:
+      case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
+      case remoting.AppMode.HOST_SHARED:
+      case remoting.AppMode.IN_SESSION:
+        return chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
+      default:
+        return null;
+    }
   }
 };
 

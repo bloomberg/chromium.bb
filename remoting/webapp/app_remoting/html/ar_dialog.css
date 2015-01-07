@@ -1,0 +1,19 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#idle-dialog {
+  position: absolute;
+  top: 100px;
+  width: 100%;
+}
+
+#idle-dialog .kd-modaldialog,
+#auth-dialog .kd-modaldialog {
+  /*
+   * kd-modaldialog uses outline, which doesn't affect the bounding box, and so
+   * doesn't work well when adjusting the window shape.
+   */
+  border: 1px solid gray;
+}

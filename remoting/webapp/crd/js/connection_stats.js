@@ -48,6 +48,14 @@ remoting.ConnectionStats.prototype.toggle = function() {
 };
 
 /**
+ * Show or hide the connection stats div.
+ * @param {boolean} show
+ */
+remoting.ConnectionStats.prototype.show = function(show) {
+  this.statsElement_.hidden = !show;
+};
+
+/**
  * If the stats panel is visible, add its bounding rectangle to the specified
  * region.
  * @param {Array.<{left: number, top: number, width: number, height: number}>}

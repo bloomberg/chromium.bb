@@ -44,7 +44,16 @@ remoting.Application.prototype.setDelegate = function(appDelegate) {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.start = function() {
-  this.delegate_.init();
+  // Create global objects.
+  remoting.ClientPlugin.factory = new remoting.DefaultClientPluginFactory();
+  remoting.SessionConnector.factory =
+      new remoting.DefaultSessionConnectorFactory();
+
+  // TODO(garykac): This should be owned properly rather than living in the
+  // global 'remoting' namespace.
+  remoting.settings = new remoting.Settings();
+
+  this.delegate_.init(this.getSessionConnector());
 };
 
 /**
@@ -155,9 +164,10 @@ remoting.Application.Delegate = function() {};
  * Initialize the application and register all event handlers. After this
  * is called, the app is running and waiting for user events.
  *
+ * @param {remoting.SessionConnector} connector
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.init = function() {};
+remoting.Application.Delegate.prototype.init = function(connector) {};
 
 /**
  * @return {string} The default remap keys for the current platform.

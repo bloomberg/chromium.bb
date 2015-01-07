@@ -1,0 +1,22 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#privacy-info {
+  margin-top: 12px;
+}
+
+a.disabled {
+  color: #888;
+  pointer-events: none;
+}
+
+.information-box > p {
+  text-align: left;
+  margin-top: 8px;
+}
+
+.information-box > p:first-child {
+  margin-top: 0;
+}

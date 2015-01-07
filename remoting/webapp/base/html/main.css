@@ -561,12 +561,20 @@ button {
   margin-top: 12px;
 }
 
+.checkbox-label.disabled {
+  color: #888;
+}
+
 .checkbox-label input[type=checkbox] {
   float: __MSG_@@bidi_start_edge__;
   margin-__MSG_@@bidi_start_edge__: -20px;
   margin-__MSG_@@bidi_end_edge__: 0;
   width: 20px;
   margin-top: 2px;
+}
+
+.checkbox-indent {
+  margin-left: 18px;
 }
 
 #current-email {

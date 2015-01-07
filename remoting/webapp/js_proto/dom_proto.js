@@ -21,6 +21,9 @@ Document.prototype.execCommand = function(command) {};
 /** @return {void} Nothing. */
 Document.prototype.webkitCancelFullScreen = function() {};
 
+/** @return {void} Nothing. */
+Document.prototype.exitPointerLock = function() {};
+
 /** @type {boolean} */
 Document.prototype.webkitIsFullScreen;
 
@@ -36,6 +39,9 @@ Element.ALLOW_KEYBOARD_INPUT;
 /** @param {number} flags
 /** @return {void} Nothing. */
 Element.prototype.webkitRequestFullScreen = function(flags) {};
+
+/** @return {void} Nothing. */
+Element.prototype.requestPointerLock = function() {};
 
 /** @type {boolean} */
 Element.prototype.hidden;
@@ -121,6 +127,11 @@ MutationRecord.prototype.type;
 
 /** @type {{getRandomValues: function((Uint16Array|Uint8Array)):void}} */
 Window.prototype.crypto;
+
+/**
+ * @param {function():void} callback
+ */
+Window.prototype.requestAnimationFrame = function(callback) {};
 
 
 /**
@@ -232,6 +243,16 @@ Promise.resolve = function (value) {};
  * @type {DataTransfer}
  */
 Event.prototype.dataTransfer = null;
+
+/**
+ * @type {number}
+ */
+Event.prototype.movementX = 0;
+
+/**
+ * @type {number}
+ */
+Event.prototype.movementY = 0;
 
 /**
  * @param {string} type

@@ -52,6 +52,19 @@ remoting.SessionConnector.prototype.connectMe2Me =
 remoting.SessionConnector.prototype.retryConnectMe2Me = function(host) {};
 
 /**
+ * Initiate a Me2App connection.
+ *
+ * @param {remoting.Host} host The Me2Me host to which to connect.
+ * @param {function(string, string, string,
+ *                  function(string, string): void): void}
+ *     fetchThirdPartyToken Function to obtain a token from a third party
+ *     authentication server.
+ * @return {void} Nothing.
+ */
+remoting.SessionConnector.prototype.connectMe2App =
+    function(host, fetchThirdPartyToken) {};
+
+/**
  * Update the pairing info so that the reconnect function will work correctly.
  *
  * @param {string} clientId The paired client id.

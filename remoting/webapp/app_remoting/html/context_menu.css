@@ -1,0 +1,125 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#context-menu {
+  position: fixed;
+  bottom: 0;  /* The vertical position is controlled by context_menu_dom.js */
+  left: -48px;
+  background-color: #c4c4c4;
+  border: 1px solid #a6a6a6;
+  z-index: 101;
+  transition-property: left;
+  transition-duration: 0.3s;
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+  opacity: 0.8;
+}
+
+#context-menu:hover,
+#context-menu.opened,
+#context-menu.menu-opened {
+  left: 0;
+  opacity: 1;
+}
+
+.no-gaps {
+  font-size: 0;
+}
+
+.context-menu-icon {
+  margin-top: 2px;
+}
+
+.context-menu-icon:hover,
+.context-menu-stub:hover {
+  background-color: #d5d5d5;
+}
+
+#context-menu.opened .context-menu-stub,
+.context-menu-icon:active {
+  background-color: #a6a6a6;
+}
+
+.context-menu-stub {
+  display: inline-block;
+  width: 12px;
+  height: 50px;
+  background: url("drag.webp");
+  cursor: move;
+}
+
+.etched {
+  position: relative;
+}
+
+.etched:after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#context-menu ul {
+  visibility: hidden;
+  position: absolute;
+  left: 24px;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  background: white;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 0 0 6px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 102;
+}
+
+#context-menu ul.menu-align-bottom {
+  bottom: 24px;
+}
+
+#context-menu ul:not(.menu-align-bottom) {
+  top: 24px;
+}
+
+#context-menu ul.opened {
+  visibility: visible;
+}
+
+#context-menu li {
+  padding: 6px 44px 6px 30px;
+  white-space: nowrap;
+}
+
+#context-menu li:hover {
+  background-color: #EEE;
+}
+
+#context-menu li.selected {
+  background-image: url('tick.webp');
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+#context-menu li.menu-group-header {
+  pointer-events: none;
+  font-style: italic;
+  color: gray;
+}
+
+#context-menu li.menu-group-item {
+  margin-left: 16px;
+}
+
+.context-menu-screen {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}

@@ -256,6 +256,25 @@ remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
 };
 
 /**
+ * Initiate a Me2App connection.
+ *
+ * @param {remoting.Host} host The Me2Me host to which to connect.
+ * @param {function(string, string, string,
+ *                  function(string, string): void): void}
+ *     fetchThirdPartyToken Function to obtain a token from a third party
+ *     authenticaiton server.
+ * @return {void} Nothing.
+ */
+remoting.SessionConnectorImpl.prototype.connectMe2App =
+    function(host, fetchThirdPartyToken) {
+  this.connectionMode_ = remoting.ClientSession.Mode.APP_REMOTING;
+  this.logHostOfflineErrors_ = true;
+  this.connectMe2MeInternal_(
+      host.hostId, host.jabberId, host.publicKey, host.hostName,
+      function() {}, fetchThirdPartyToken, '', '');
+};
+
+/**
  * Update the pairing info so that the reconnect function will work correctly.
  *
  * @param {string} clientId The paired client id.

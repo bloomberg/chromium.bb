@@ -164,6 +164,8 @@ remoting.ServerLogEntry.VALUE_MODE_IT2ME_ = 'it2me';
 /** @private */
 remoting.ServerLogEntry.VALUE_MODE_ME2ME_ = 'me2me';
 /** @private */
+remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING_ = 'lgapp';
+/** @private */
 remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_ = 'unknown';
 
 /**
@@ -471,6 +473,8 @@ remoting.ServerLogEntry.getModeField = function(mode) {
       return remoting.ServerLogEntry.VALUE_MODE_IT2ME_;
     case remoting.ClientSession.Mode.ME2ME:
       return remoting.ServerLogEntry.VALUE_MODE_ME2ME_;
+    case remoting.ClientSession.Mode.APP_REMOTING:
+      return remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING_;
     default:
       return remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_;
   }

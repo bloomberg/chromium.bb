@@ -340,7 +340,8 @@ remoting.ClientSession.ConnectionError.fromString = function(error) {
 /** @enum {number} */
 remoting.ClientSession.Mode = {
   IT2ME: 0,
-  ME2ME: 1
+  ME2ME: 1,
+  APP_REMOTING: 2
 };
 
 /**
@@ -552,7 +553,8 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
           remoting.ClientPlugin.Feature.INJECT_KEY_EVENT)) {
     var sendKeysElement = document.getElementById('send-keys-menu');
     sendKeysElement.hidden = true;
-  } else if (this.mode_ != remoting.ClientSession.Mode.ME2ME) {
+  } else if (this.mode_ != remoting.ClientSession.Mode.ME2ME &&
+      this.mode_ != remoting.ClientSession.Mode.APP_REMOTING) {
     var sendCadElement = document.getElementById('send-ctrl-alt-del');
     sendCadElement.hidden = true;
   }

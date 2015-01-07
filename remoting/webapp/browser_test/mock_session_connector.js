@@ -37,6 +37,19 @@ remoting.MockSessionConnector.prototype.connectMe2Me =
   this.connect_();
 };
 
+remoting.MockSessionConnector.prototype.retryConnectMe2Me =
+    function(host, fetchPin, fetchThirdPartyToken,
+             clientPairingId, clientPairedSecret) {
+  this.mode_ = remoting.ClientSession.Mode.ME2ME;
+  this.connect_();
+};
+
+remoting.MockSessionConnector.prototype.connectMe2App =
+    function(host, fetchThirdPartyToken) {
+  this.mode_ = remoting.ClientSession.Mode.ME2APP;
+  this.connect_();
+};
+
 remoting.MockSessionConnector.prototype.updatePairingInfo =
     function(clientId, sharedSecret) {
 };
