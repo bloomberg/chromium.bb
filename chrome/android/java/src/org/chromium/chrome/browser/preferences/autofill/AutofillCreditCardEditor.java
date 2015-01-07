@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * Provides the Java-ui for editing a Credit Card autofill entry.
@@ -113,7 +114,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
                 android.R.layout.simple_spinner_item);
 
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat formatter = new SimpleDateFormat("MMMM (MM)");
+        SimpleDateFormat formatter = new SimpleDateFormat("MMMM (MM)", Locale.getDefault());
 
         for (int month = 0; month < 12; month++) {
             calendar.set(Calendar.MONTH, month);

@@ -14,6 +14,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 
+import java.util.Locale;
+
 /**
  * A helper class that emphasizes the various components of a URL. Useful in the
  * Omnibox and Origin Info dialog where different parts of the URL should appear
@@ -287,7 +289,8 @@ public class OmniboxUrlEmphasizer {
 
         int startSchemeIndex = emphasizeResponse.schemeStart;
         int endSchemeIndex = emphasizeResponse.schemeStart + emphasizeResponse.schemeLength;
-        String scheme = url.subSequence(startSchemeIndex, endSchemeIndex).toString().toLowerCase();
+        String scheme = url.subSequence(startSchemeIndex, endSchemeIndex).toString().toLowerCase(
+                Locale.US);
 
         if (scheme.equals("http") || scheme.equals("https")) {
             return emphasizeResponse.hostStart + emphasizeResponse.hostLength;
