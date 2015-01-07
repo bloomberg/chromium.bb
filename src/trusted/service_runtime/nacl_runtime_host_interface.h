@@ -24,10 +24,6 @@ struct NaClRuntimeHostInterfaceVtbl {
 
   int                           (*StartupInitializationComplete)(
       struct NaClRuntimeHostInterface *self);
-
-  int                           (*ReportExitStatus)(
-      struct NaClRuntimeHostInterface *self,
-      int                             exit_status);
 };
 
 /*

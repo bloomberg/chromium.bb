@@ -567,8 +567,6 @@ done:
 }
 
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
-  int rv = 0;
-
   NaClXMutexLock(&nap->mu);
   /*
    * If several threads are exiting/reporting signals at once, we should
@@ -580,25 +578,13 @@ int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
     return 0;
   }
 
-  if (NULL != nap->runtime_host_interface) {
-    /* TODO(halyavin) update NaCl plugin to accept full exit_status value */
-    if (NACL_ABI_WIFEXITED(exit_status)) {
-    rv = (*NACL_VTBL(NaClRuntimeHostInterface, nap->runtime_host_interface)->
-          ReportExitStatus)(nap->runtime_host_interface,
-                            NACL_ABI_WEXITSTATUS(exit_status));
-    }
-    /*
-     * Due to cross-repository checkins, the Cr-side might not yet
-     * implement this RPC.  We return whether shutdown was reported.
-     */
-  }
   nap->exit_status = exit_status;
   nap->running = 0;
   NaClXCondVarSignal(&nap->cv);
 
   NaClXMutexUnlock(&nap->mu);
 
-  return rv;
+  return 0;
 }
 
 uintptr_t NaClGetInitialStackTop(struct NaClApp *nap) {

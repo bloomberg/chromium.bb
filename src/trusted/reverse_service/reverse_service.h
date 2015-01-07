@@ -53,10 +53,6 @@ class ReverseInterface : public RefCountBase {
                                  struct NaClFileInfo* info) = 0;
   virtual void ReportCrash() = 0;
 
-  // The low-order 8 bits of the |exit_status| should be reported to
-  // any interested parties.
-  virtual void ReportExitStatus(int exit_status) = 0;
-
   // Quota checking for files that were sent to the untrusted module.
   // TODO(sehr): remove the stub interface once the plugin provides one.
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,

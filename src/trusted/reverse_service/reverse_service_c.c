@@ -139,28 +139,6 @@ static void NaClReverseServiceModuleInitDoneRpc(
   (*done_cls->Run)(done_cls);
 }
 
-static void NaClReverseServiceModuleExitRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  int                       exit_status = in_args[0]->u.ival;
-  UNREFERENCED_PARAMETER(out_args);
-
-  NaClLog(4,
-          ("Entered ModuleExitRpc: service 0x%08"NACL_PRIxPTR
-           ", exit_status 0x%d\n"),
-          (uintptr_t) nrsp, exit_status);
-  NaClLog(4, "ModuleExitRpc: invoking ReportExitStatus\n");
-  (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-   ReportExitStatus)(nrsp->iface, exit_status);
-  NaClLog(4, "Leaving ModuleExitRpc\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
 /*
  * Manifest name service, internal APIs.
  *
@@ -377,7 +355,6 @@ void NaClReverseThreadIfExit(struct NaClThreadInterface   *vself,
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, NaClReverseServiceAddChannelRpc, },
   { NACL_REVERSE_CONTROL_INIT_DONE, NaClReverseServiceModuleInitDoneRpc, },
-  { NACL_REVERSE_CONTROL_REPORT_STATUS, NaClReverseServiceModuleExitRpc, },
   { NACL_MANIFEST_LOOKUP, NaClReverseServiceManifestLookupRpc, },
   { NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE, NaClReverseServiceRequestQuotaForWriteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
@@ -542,14 +519,6 @@ void NaClReverseInterfaceReportCrash(
           (uintptr_t) self);
 }
 
-void NaClReverseInterfaceReportExitStatus(
-    struct NaClReverseInterface   *self,
-    int                           exit_status) {
-  NaClLog(3,
-          "NaClReverseInterfaceReportExitStatus(0x%08"NACL_PRIxPTR", 0x%x)\n",
-          (uintptr_t) self, exit_status);
-}
-
 int64_t NaClReverseInterfaceRequestQuotaForWrite(
     struct NaClReverseInterface   *self,
     char const                    *file_id,
@@ -569,6 +538,5 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
   NaClReverseInterfaceStartupInitializationComplete,
   NaClReverseInterfaceOpenManifestEntry,
   NaClReverseInterfaceReportCrash,
-  NaClReverseInterfaceReportExitStatus,
   NaClReverseInterfaceRequestQuotaForWrite,
 };

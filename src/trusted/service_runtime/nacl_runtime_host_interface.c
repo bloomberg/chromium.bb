@@ -44,20 +44,9 @@ int NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented(
   return -NACL_ABI_EINVAL;
 }
 
-int NaClRuntimeHostInterfaceReportExitStatusNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    int                             exit_status) {
-  NaClLog(LOG_ERROR,
-          ("NaClRuntimeHostInterfaceReportExitStatus(0x%08"NACL_PRIxPTR
-           ", 0x%x)\n"),
-          (uintptr_t) self, exit_status);
-  return -NACL_ABI_EINVAL;
-}
-
 struct NaClRuntimeHostInterfaceVtbl const kNaClRuntimeHostInterfaceVtbl = {
   {
     NaClRuntimeHostInterfaceDtor,
   },
   NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented,
-  NaClRuntimeHostInterfaceReportExitStatusNotImplemented,
 };

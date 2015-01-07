@@ -48,10 +48,6 @@ class ReverseEmulate : public nacl::ReverseInterface {
                                  struct NaClFileInfo* info);
   virtual void ReportCrash();
 
-  // The low-order 8 bits of the |exit_status| should be reported to
-  // any interested parties.
-  virtual void ReportExitStatus(int exit_status);
-
   // Request quota for a write to a file.
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,
                                        int64_t offset,
@@ -234,14 +230,6 @@ bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,
 
 void ReverseEmulate::ReportCrash() {
   NaClLog(1, "ReverseEmulate::ReportCrash\n");
-  nacl::MutexLocker take(&g_exit_mu);
-  g_exited = true;
-  NaClXCondVarBroadcast(&g_exit_cv);
-}
-
-void ReverseEmulate::ReportExitStatus(int exit_status) {
-  NaClLog(1, "ReverseEmulate::ReportExitStatus (exit_status=%d)\n",
-          exit_status);
   nacl::MutexLocker take(&g_exit_mu);
   g_exited = true;
   NaClXCondVarBroadcast(&g_exit_cv);

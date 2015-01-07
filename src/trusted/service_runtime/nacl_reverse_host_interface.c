@@ -85,43 +85,9 @@ int NaClReverseHostInterfaceStartupInitializationComplete(
   return status;
 }
 
-int NaClReverseHostInterfaceReportExitStatus(
-    struct NaClRuntimeHostInterface *vself,
-    int                             exit_status) {
-  struct NaClReverseHostInterface *self =
-      (struct NaClReverseHostInterface *) vself;
-  NaClSrpcError           rpc_result;
-  int                     status = 0;
-
-  NaClLog(3,
-          "NaClReverseHostInterfaceReportExitStatus:"
-          " self 0x%08"NACL_PRIxPTR", exit_status 0x%x)\n",
-          (uintptr_t) self, exit_status);
-
-  NaClXMutexLock(&self->server->mu);
-  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
-      self->server->reverse_channel_initialization_state) {
-    rpc_result = NaClSrpcInvokeBySignature(&self->server->reverse_channel,
-                                           NACL_REVERSE_CONTROL_REPORT_STATUS,
-                                           exit_status);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(LOG_FATAL, "NaClReverseHostInterfaceReportExitStatus:"
-              " RPC failed, result %d\n",
-              rpc_result);
-    }
-  } else {
-    NaClLog(4, "NaClReverseHostInterfaceReportExitStatus: no reverse channel"
-            ", no plugin to talk to.\n");
-    status = -NACL_ABI_ENODEV;
-  }
-  NaClXMutexUnlock(&self->server->mu);
-  return status;
-}
-
 struct NaClRuntimeHostInterfaceVtbl const kNaClReverseHostInterfaceVtbl = {
   {
     NaClReverseHostInterfaceDtor,
   },
   NaClReverseHostInterfaceStartupInitializationComplete,
-  NaClReverseHostInterfaceReportExitStatus,
 };

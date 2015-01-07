@@ -72,17 +72,6 @@ void ReportCrash(NaClReverseInterface* self) {
   }
 }
 
-void ReportExitStatus(NaClReverseInterface* self,
-                      int exit_status) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "ReportExitStatus, no reverse_interface.\n");
-  } else {
-    wrapper->iface->ReportExitStatus(exit_status);
-  }
-}
-
 int64_t RequestQuotaForWrite(NaClReverseInterface* self,
                              char const* file_id,
                              int64_t offset,
@@ -115,7 +104,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   StartupInitializationComplete,
   OpenManifestEntry,
   ReportCrash,
-  ReportExitStatus,
   RequestQuotaForWrite,
 };
 

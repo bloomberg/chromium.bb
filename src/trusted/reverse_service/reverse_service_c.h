@@ -121,14 +121,6 @@ struct NaClReverseInterfaceVtbl {
       struct NaClReverseInterface   *self);
 
   /*
-   * The low-order 8 bits of the |exit_status| should be reported to
-   * any interested parties.
-   */
-  void                          (*ReportExitStatus)(
-      struct NaClReverseInterface   *self,
-      int                           exit_status);
-
-  /*
    * Quota checking for files that were sent to the untrusted module.
    * TODO(sehr): remove the stub interface once the plugin provides one.
    */
