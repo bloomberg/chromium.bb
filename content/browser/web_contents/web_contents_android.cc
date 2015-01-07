@@ -271,14 +271,10 @@ void WebContentsAndroid::OnShow(JNIEnv* env, jobject obj) {
 
 void WebContentsAndroid::ReleaseMediaPlayers(JNIEnv* env, jobject jobj) {
 #if defined(ENABLE_BROWSER_CDMS)
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  if (!rvhi || !rvhi->GetMainFrame())
-    return;
-
   BrowserMediaPlayerManager* manager =
-      rvhi->media_web_contents_observer()->GetMediaPlayerManager(
-          rvhi->GetMainFrame());
+      static_cast<WebContentsImpl*>(web_contents_)->
+          media_web_contents_observer()->GetMediaPlayerManager(
+              web_contents_->GetMainFrame());
   if (manager)
     manager->ReleaseAllMediaPlayers();
 #endif // defined(ENABLE_BROWSER_CDMS)

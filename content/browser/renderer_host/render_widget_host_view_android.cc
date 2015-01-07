@@ -1359,7 +1359,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (host_ && host_->IsRenderView()) {
     RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
         RenderViewHost::From(host_));
-    rvhi->media_web_contents_observer()->OnFrameInfoUpdated();
+    WebContentsImpl* web_contents_impl =
+        static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvhi));
+    if (web_contents_impl)
+      web_contents_impl->media_web_contents_observer()->OnFrameInfoUpdated();
   }
 #endif  // defined(VIDEO_HOLE)
 }

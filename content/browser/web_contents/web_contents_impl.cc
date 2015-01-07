@@ -103,6 +103,10 @@
 #include "ui/gfx/screen.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(ENABLE_BROWSER_CDMS)
+#include "content/browser/media/media_web_contents_observer.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -338,6 +342,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
                  base::Unretained(this)));
+#if defined(ENABLE_BROWSER_CDMS)
+  media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
+#endif
 }
 
 WebContentsImpl::~WebContentsImpl() {

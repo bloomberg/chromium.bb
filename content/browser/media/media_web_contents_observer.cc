@@ -21,8 +21,8 @@
 namespace content {
 
 MediaWebContentsObserver::MediaWebContentsObserver(
-    RenderViewHost* render_view_host)
-    : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)) {
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
 }
 
 MediaWebContentsObserver::~MediaWebContentsObserver() {

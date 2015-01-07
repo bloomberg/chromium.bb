@@ -12,7 +12,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/media_web_contents_observer.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/base/android/media_player_android.h"
@@ -50,10 +50,10 @@ static void SetSurfacePeer(scoped_refptr<gfx::SurfaceTexture> surface_texture,
     return;
   }
 
-  RenderViewHostImpl* view =
-      static_cast<RenderViewHostImpl*>(frame->GetRenderViewHost());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
   BrowserMediaPlayerManager* player_manager =
-      view->media_web_contents_observer()->GetMediaPlayerManager(frame);
+      web_contents->media_web_contents_observer()->GetMediaPlayerManager(frame);
   if (!player_manager) {
     DVLOG(1) << "Cannot find the media player manager for frame " << frame;
     return;

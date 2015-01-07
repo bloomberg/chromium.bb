@@ -290,12 +290,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int route_id);
 
-#if defined(ENABLE_BROWSER_CDMS)
-  MediaWebContentsObserver* media_web_contents_observer() {
-    return media_web_contents_observer_.get();
-  }
-#endif
-
   int main_frame_routing_id() const {
     return main_frame_routing_id_;
   }
@@ -456,11 +450,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Set to true if we requested the on screen keyboard to be displayed.
   bool virtual_keyboard_requested_;
-
-#if defined(ENABLE_BROWSER_CDMS)
-  // Manages all the media player and CDM managers and forwards IPCs to them.
-  scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;
-#endif
 
   // True if the current focused element is editable.
   bool is_focused_element_editable_;

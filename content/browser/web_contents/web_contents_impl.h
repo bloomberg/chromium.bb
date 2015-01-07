@@ -55,6 +55,7 @@ class GeolocationServiceContext;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class ManifestManagerHost;
+class MediaWebContentsObserver;
 class PluginContentOriginWhitelist;
 class PowerSaveBlocker;
 class RenderViewHost;
@@ -666,6 +667,12 @@ class CONTENT_EXPORT WebContentsImpl
     return video_power_save_blocker_;
   }
 
+#if defined(ENABLE_BROWSER_CDMS)
+  MediaWebContentsObserver* media_web_contents_observer() {
+    return media_web_contents_observer_.get();
+  }
+#endif
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1225,6 +1232,11 @@ class CONTENT_EXPORT WebContentsImpl
   scoped_ptr<WebContentsAudioMuter> audio_muter_;
 
   bool virtual_keyboard_requested_;
+
+#if defined(ENABLE_BROWSER_CDMS)
+  // Manages all the media player and CDM managers and forwards IPCs to them.
+  scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;
+#endif
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 

@@ -90,10 +90,6 @@
 #include "base/win/win_util.h"
 #endif
 
-#if defined(ENABLE_BROWSER_CDMS)
-#include "content/browser/media/media_web_contents_observer.h"
-#endif
-
 using base::TimeDelta;
 using blink::WebConsoleMessage;
 using blink::WebDragOperation;
@@ -217,9 +213,6 @@ RenderViewHostImpl::RenderViewHostImpl(
                    !is_hidden(),
                    has_active_audio));
   }
-#if defined(ENABLE_BROWSER_CDMS)
-  media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
-#endif
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
