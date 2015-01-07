@@ -299,7 +299,7 @@ void InterstitialPageImpl::Hide() {
   controller_->delegate()->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = controller_->GetVisibleEntry();
-  if (!new_navigation_ && should_revert_web_contents_title_) {
+  if (entry && !new_navigation_ && should_revert_web_contents_title_) {
     entry->SetTitle(original_web_contents_title_);
     controller_->delegate()->NotifyNavigationStateChanged(
         INVALIDATE_TYPE_TITLE);
@@ -395,15 +395,12 @@ void InterstitialPageImpl::UpdateTitle(
   DCHECK(render_view_host == render_view_host_);
   NavigationEntry* entry = controller_->GetVisibleEntry();
   if (!entry) {
-    // Crash reports from the field indicate this can be NULL.
-    // This is unexpected as InterstitialPages constructed with the
-    // new_navigation flag set to true create a transient navigation entry
-    // (that is returned as the active entry). And the only case so far of
-    // interstitial created with that flag set to false is with the
-    // SafeBrowsingBlockingPage, when the resource triggering the interstitial
-    // is a sub-resource, meaning the main page has already been loaded and a
-    // navigation entry should have been created.
-    NOTREACHED();
+    // There may be no visible entry if no URL has committed (e.g., after
+    // window.open("")).  InterstitialPages with the new_navigation flag create
+    // a transient NavigationEntry and thus have a visible entry.  However,
+    // interstitials can still be created when there is no visible entry.  For
+    // example, the opener window may inject content into the initial blank
+    // page, which might trigger a SafeBrowsingBlockingPage.
     return;
   }
 
