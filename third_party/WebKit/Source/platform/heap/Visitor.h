@@ -842,17 +842,33 @@ struct TypenameStringTrait {
 };
 #endif
 
-// s_gcInfoTable is a map used to encode a GCInfo* into a 15 bit integer.
-const size_t gcInfoIndexMax = 1 << 15;
-extern PLATFORM_EXPORT int s_gcInfoIndex;
+// s_gcInfoTable holds the per-class GCInfo descriptors; each heap
+// object header keeps its index into this table.
 extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
+
+class GCInfoTable {
+public:
+    PLATFORM_EXPORT static size_t allocateGCInfoSlot();
+
+    static void init();
+    static void shutdown();
+
+    // The (max + 1) GCInfo index supported.
+    static const size_t maxIndex = 1 << 15;
+
+private:
+    static void resize(size_t);
+
+    static int s_gcInfoIndex;
+    static size_t s_gcInfoTableSize;
+};
 
 // This macro should be used when returning a unique 15 bit integer
 // for a given gcInfo.
 #define RETURN_GCINFO_INDEX() \
-    static const size_t gcInfoIndex = atomicIncrement(&s_gcInfoIndex); \
+    static const size_t gcInfoIndex = GCInfoTable::allocateGCInfoSlot(); \
     ASSERT(gcInfoIndex >= 1); \
-    ASSERT(gcInfoIndex < gcInfoIndexMax); \
+    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);  \
     ASSERT(s_gcInfoTable); \
     s_gcInfoTable[gcInfoIndex] = &gcInfo; \
     return gcInfoIndex;

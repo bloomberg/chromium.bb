@@ -36,12 +36,62 @@
 
 namespace blink {
 
-// gcInfoIndex should start from 1.
-// Since atomicIncrement(&s_gcInfoIndex) (which is defined in
-// RETURN_GCINFO_INDEX) returns an incremented value of s_gcInfoIndex,
-// the initial value of s_gcInfoIndex should be set to 0.
-int s_gcInfoIndex = 0;
+// GCInfo indices start from 1 for heap objects, with 0 being treated
+// specially as the index for freelist entries and large heap objects.
+int GCInfoTable::s_gcInfoIndex = 0;
+
+size_t GCInfoTable::s_gcInfoTableSize = 0;
 GCInfo const** s_gcInfoTable = nullptr;
+
+size_t GCInfoTable::allocateGCInfoSlot()
+{
+    // FIXME: if multiple threads attempt to allocate the initial object
+    // for a given type, there'll be a write race on updating the 'static'
+    // holding its index. Duplicate GCInfo slots might be written for the
+    // object, which is benign, but verify that the index update race is
+    // acceptable.
+    int index = atomicIncrement(&s_gcInfoIndex);
+    size_t gcInfoIndex = static_cast<size_t>(index);
+    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
+    if (gcInfoIndex >= s_gcInfoTableSize)
+        resize(gcInfoIndex);
+
+    return gcInfoIndex;
+}
+
+void GCInfoTable::resize(size_t index)
+{
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    MutexLocker locker(mutex);
+
+    // Keep a lock while expanding the shared table; check
+    // if another thread have already resized.
+    if (index < s_gcInfoTableSize)
+        return;
+
+    // (Light) experimentation suggests that Blink doesn't need
+    // more than this while handling content on popular web properties.
+    const size_t initialSize = 512;
+
+    size_t newSize = s_gcInfoTableSize ? 2 * s_gcInfoTableSize : initialSize;
+    ASSERT(newSize < GCInfoTable::maxIndex);
+    s_gcInfoTable = reinterpret_cast<GCInfo const**>(realloc(s_gcInfoTable, newSize * sizeof(GCInfo)));
+    ASSERT(s_gcInfoTable);
+    memset(reinterpret_cast<uint8_t*>(s_gcInfoTable) + s_gcInfoTableSize * sizeof(GCInfo), 0, (newSize - s_gcInfoTableSize) * sizeof(GCInfo));
+    s_gcInfoTableSize = newSize;
+}
+
+void GCInfoTable::init()
+{
+    RELEASE_ASSERT(!s_gcInfoTable);
+    resize(0);
+}
+
+void GCInfoTable::shutdown()
+{
+    free(s_gcInfoTable);
+    s_gcInfoTable = nullptr;
+}
 
 int Visitor::m_traceDepth = 0;
 

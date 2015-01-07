@@ -151,7 +151,7 @@ public:
         static_assert(sizeof(HeapObjectHeader) == 8, "size of HeapObjectHeader must be 8 byte aligned");
 #endif
 
-        ASSERT(gcInfoIndex < gcInfoIndexMax);
+        ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
         ASSERT(size < nonLargeObjectSizeMax);
         ASSERT(!(size & allocationMask));
         m_encoded = (gcInfoIndex << headerGCInfoIndexShift) | size | (gcInfoIndex ? 0 : headerFreedBitMask);
@@ -921,7 +921,7 @@ public:
     static const GCInfo* gcInfo(size_t gcInfoIndex)
     {
         ASSERT(gcInfoIndex >= 1);
-        ASSERT(gcInfoIndex < gcInfoIndexMax);
+        ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
         ASSERT(s_gcInfoTable);
         const GCInfo* info = s_gcInfoTable[gcInfoIndex];
         ASSERT(info);
