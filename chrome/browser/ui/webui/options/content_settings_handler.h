@@ -126,6 +126,12 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds just the MIDI SysEx exception table.
   void UpdateMIDISysExExceptionsView();
 
+  // Modifies the zoom level exceptions list to display correct chrome
+  // signin page entry. When the legacy (non-WebView-based) signin page
+  // goes away, this function can be removed.
+  void AdjustZoomLevelsListForSigninPageIfNecessary(
+      content::HostZoomMap::ZoomLevelVector* zoom_levels);
+
   // Clobbers and rebuilds just the zoom levels exception table.
   void UpdateZoomLevelsExceptionsView();
 
@@ -224,6 +230,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
   MediaSettingsInfo media_settings_;
   scoped_ptr<content::HostZoomMap::Subscription> host_zoom_map_subscription_;
+  scoped_ptr<content::HostZoomMap::Subscription>
+      signin_host_zoom_map_subscription_;
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
