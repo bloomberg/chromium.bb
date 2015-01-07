@@ -2535,9 +2535,14 @@ void WebContentsImpl::DidStartNavigationToPendingEntry(
 
 void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                                      const OpenURLParams& params) {
+  // OpenURL can blow away the source RFH. Use the process/frame routing ID as a
+  // weak pointer of sorts.
+  const int32_t process_id = render_frame_host->GetProcess()->GetID();
+  const int32_t frame_id = render_frame_host->GetRoutingID();
+
   WebContents* new_contents = OpenURL(params);
 
-  if (new_contents) {
+  if (new_contents && RenderFrameHost::FromID(process_id, frame_id)) {
     // Notify observers.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidOpenRequestedURL(new_contents,
