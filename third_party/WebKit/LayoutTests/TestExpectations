@@ -14,6 +14,7 @@ crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/event-view-toString.h
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ Failure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ Failure ]
+crbug.com/443780 virtual/slimmingpaint/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
 
 crbug.com/441639 virtual/slimmingpaint/fast/overflow/paged-x-with-column-gap.html [ ImageOnlyFailure ]
 crbug.com/441639 [ Mac Win ] virtual/slimmingpaint/fast/overflow/paged-x-div-with-column-gap.html [ ImageOnlyFailure ]
