@@ -267,10 +267,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
-  if (!CreateInputBuffers())
-    return false;
-
-  if (!SetupOutputFormat())
+  if (!SetupFormats())
     return false;
 
   // Subscribe to the resolution change event.
@@ -283,6 +280,9 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       video_profile_ <= media::H264PROFILE_MAX) {
     decoder_h264_parser_.reset(new media::H264Parser());
   }
+
+  if (!CreateInputBuffers())
+    return false;
 
   if (!decoder_thread_.Start()) {
     LOG(ERROR) << "Initialize(): decoder thread failed to start";
@@ -1629,6 +1629,12 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
     }
   }
 
+  // Make sure we are still getting the format we set on initialization.
+  if (format->fmt.pix_mp.pixelformat != output_format_fourcc_) {
+    LOG(ERROR) << "Unexpected format from G_FMT on output";
+    return false;
+  }
+
   return true;
 }
 
@@ -1653,24 +1659,6 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   DCHECK_EQ(decoder_state_, kUninitialized);
   DCHECK(!input_streamon_);
   DCHECK(input_buffer_map_.empty());
-
-  __u32 pixelformat = V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_);
-  if (!pixelformat) {
-    NOTREACHED();
-    return false;
-  }
-
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type                              = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  format.fmt.pix_mp.pixelformat            = pixelformat;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
-    format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor4k;
-  else
-    format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor1080p;
-  format.fmt.pix_mp.num_planes             = 1;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
@@ -1709,10 +1697,37 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   return true;
 }
 
-bool V4L2VideoDecodeAccelerator::SetupOutputFormat() {
-  // We have to set up the format for output beforehand, because the driver may
-  // not allow changing it once we start streaming; whether it can support our
-  // chosen output format or not may depend on the input format.
+bool V4L2VideoDecodeAccelerator::SetupFormats() {
+  // We always run this as we prepare to initialize.
+  DCHECK_EQ(decoder_state_, kUninitialized);
+  DCHECK(!input_streamon_);
+  DCHECK(!output_streamon_);
+
+  __u32 input_format_fourcc =
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_);
+  if (!input_format_fourcc) {
+    NOTREACHED();
+    return false;
+  }
+
+  size_t input_size;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
+    input_size = kInputBufferMaxSizeFor4k;
+  else
+    input_size = kInputBufferMaxSizeFor1080p;
+
+  struct v4l2_format format;
+  memset(&format, 0, sizeof(format));
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  format.fmt.pix_mp.pixelformat = input_format_fourcc;
+  format.fmt.pix_mp.plane_fmt[0].sizeimage = input_size;
+  format.fmt.pix_mp.num_planes = 1;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+
+  // We have to set up the format for output, because the driver may not allow
+  // changing it once we start streaming; whether it can support our chosen
+  // output format or not may depend on the input format.
   struct v4l2_fmtdesc fmtdesc;
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -1731,7 +1746,6 @@ bool V4L2VideoDecodeAccelerator::SetupOutputFormat() {
 
   // Just set the fourcc for output; resolution, etc., will come from the
   // driver once it extracts it from the stream.
-  struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   format.fmt.pix_mp.pixelformat = output_format_fourcc_;
