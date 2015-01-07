@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/test_util.h"
@@ -50,6 +51,60 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
   GURL url_;
 };
 
+class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
+ public:
+  FakeMultipartUploadRequest(
+      RequestSender* sender,
+      const std::string& title,
+      const std::string& parent_resource_id,
+      const std::string& content_type,
+      int64 content_length,
+      const base::Time& modified_date,
+      const base::Time& last_viewed_by_me_date,
+      const base::FilePath& local_file_path,
+      const FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback,
+      const GURL& url,
+      std::string* upload_content_type,
+      std::string* upload_content_data)
+      : MultipartUploadRequestBase(sender,
+                                   title,
+                                   parent_resource_id,
+                                   content_type,
+                                   content_length,
+                                   modified_date,
+                                   last_viewed_by_me_date,
+                                   local_file_path,
+                                   callback,
+                                   progress_callback),
+        url_(url),
+        upload_content_type_(upload_content_type),
+        upload_content_data_(upload_content_data) {}
+
+  ~FakeMultipartUploadRequest() override {}
+
+  bool GetContentData(std::string* content_type,
+                      std::string* content_data) override {
+    const bool result =
+        MultipartUploadRequestBase::GetContentData(content_type, content_data);
+    *upload_content_type_ = *content_type;
+    *upload_content_data_ = *content_data;
+    return result;
+  }
+
+  base::SequencedTaskRunner* blocking_task_runner() const {
+    return MultipartUploadRequestBase::blocking_task_runner();
+  }
+
+ protected:
+  GURL GetURL() const override { return url_; }
+
+ private:
+  const GURL url_;
+  std::string* const upload_content_type_;
+  std::string* const upload_content_data_;
+};
+
 }  // namespace
 
 class BaseRequestsTest : public testing::Test {
@@ -88,6 +143,8 @@ class BaseRequestsTest : public testing::Test {
   net::HttpStatusCode response_code_;
   std::string response_body_;
 };
+
+typedef BaseRequestsTest MultipartUploadRequestBaseTest;
 
 TEST_F(BaseRequestsTest, ParseValidJson) {
   scoped_ptr<base::Value> json(ParseJson(kValidJsonString));
@@ -135,4 +192,42 @@ TEST_F(BaseRequestsTest, UrlFetchRequestBaseResponseCodeOverride) {
   EXPECT_EQ(HTTP_SERVICE_UNAVAILABLE, error);
 }
 
-}  // namespace google_apis
+TEST_F(MultipartUploadRequestBaseTest, Basic) {
+  response_code_ = net::HTTP_OK;
+  response_body_ = "{\"kind\": \"drive#file\", \"id\": \"file_id\"}";
+  scoped_ptr<google_apis::FileResource> file;
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  base::RunLoop run_loop;
+  const base::FilePath source_path =
+      google_apis::test_util::GetTestFilePath("chromeos/file_manager/text.txt");
+  std::string upload_content_type;
+  std::string upload_content_data;
+  scoped_ptr<FakeMultipartUploadRequest> request(new FakeMultipartUploadRequest(
+      sender_.get(), "test.txt", "parent_id", "text/plain", 10, base::Time(),
+      base::Time(), source_path,
+      test_util::CreateQuitCallback(
+          &run_loop, test_util::CreateCopyResultCallback(&error, &file)),
+      ProgressCallback(), test_server_.base_url(), &upload_content_type,
+      &upload_content_data));
+  request->SetBoundaryForTesting("TESTBOUNDARY");
+  sender_->StartRequestWithRetry(request.release());
+  run_loop.Run();
+  EXPECT_EQ("multipart/related; boundary=TESTBOUNDARY", upload_content_type);
+  EXPECT_EQ(
+      "--TESTBOUNDARY\n"
+      "Content-Type: application/json\n"
+      "\n"
+      "{\"parents\":[{\"id\":\"parent_id\",\"kind\":\"drive#fileLink\"}],"
+      "\"title\":\"test.txt\"}\n"
+      "--TESTBOUNDARY\n"
+      "Content-Type: text/plain\n"
+      "\n"
+      "This is a sample file. I like chocolate and chips.\n"
+      "\n"
+      "--TESTBOUNDARY--",
+      upload_content_data);
+  ASSERT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ("file_id", file->file_id());
+}
+
+}  // Namespace google_apis

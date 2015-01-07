@@ -27,7 +27,14 @@ class Value;
 
 namespace google_apis {
 
+class FileResource;
 class RequestSender;
+
+// Callback used for requests that the server returns FileResource data
+// formatted into JSON value.
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<FileResource> entry)>
+    FileResourceCallback;
 
 // Callback used for DownloadFileRequest and ResumeUploadRequestBase.
 typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
@@ -426,6 +433,86 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
   const int64 content_length_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequestBase);
+};
+
+//=========================== MultipartUploadRequestBase=======================
+
+// This class provides base implementation for performing the request for
+// uploading a file by multipart body.
+class MultipartUploadRequestBase : public UrlFetchRequestBase {
+ public:
+  // Set boundary. Only tests can use this method.
+  void SetBoundaryForTesting(const std::string& boundary);
+
+ protected:
+  // |callback| will be called with the file resource.upload URL.
+  // |content_type| and |content_length| should be the attributes of the
+  // uploading file. Other parameters are optional and can be empty or null
+  // depending on Upload URL provided by the subclasses.
+  MultipartUploadRequestBase(
+      RequestSender* sender,
+      const std::string& title,
+      const std::string& parent_resource_id,
+      const std::string& content_type,
+      int64 content_length,
+      const base::Time& modified_date,
+      const base::Time& last_viewed_by_me_date,
+      const base::FilePath& local_file_path,
+      const FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback);
+  ~MultipartUploadRequestBase() override;
+
+  // Overridden from AuthenticatedRequestInterface.
+  void Start(const std::string& access_token,
+             const std::string& custom_user_agent,
+             const ReAuthenticateCallback& callback) override;
+
+  // Overridden from UrlFetchRequestBase.
+  bool GetContentData(std::string* upload_content_type,
+                      std::string* upload_content) override;
+  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void RunCallbackOnPrematureFailure(GDataErrorCode code) override;
+
+  // content::UrlFetcherDelegate overrides.
+  void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                int64 current,
+                                int64 total) override;
+
+  // Parses the response value and invokes |callback_| with |FileResource|.
+  void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
+
+  // Whether to the request has modified date information or not.
+  bool has_modified_date() const { return has_modified_date_; }
+
+ private:
+  // Continues to rest part of |Start| method after determining boundary string
+  // of multipart/related.
+  void OnPrepareUploadContent(const std::string& access_token,
+                              const std::string& custom_user_agent,
+                              const ReAuthenticateCallback& callback,
+                              std::string* upload_content_type,
+                              std::string* upload_content_data,
+                              bool result);
+
+  const std::string metadata_json_;
+  const std::string content_type_;
+  const base::FilePath local_path_;
+  const bool has_modified_date_;
+  const FileResourceCallback callback_;
+  const ProgressCallback progress_callback_;
+
+  // Boundary of multipart body.
+  std::string boundary_;
+
+  // Upload content of multipart body.
+  std::string upload_content_type_;
+  std::string upload_content_data_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<MultipartUploadRequestBase> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultipartUploadRequestBase);
 };
 
 //============================ DownloadFileRequest ===========================

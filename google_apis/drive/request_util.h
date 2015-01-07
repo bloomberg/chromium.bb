@@ -6,16 +6,25 @@
 #define GOOGLE_APIS_DRIVE_REQUEST_UTIL_H_
 
 #include <string>
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace google_apis {
 namespace util {
 
 // If-Match header which matches to all etags.
 extern const char kIfMatchAllHeader[];
+extern const char kContentTypeApplicationJson[];
 
 // Returns If-Match header string for |etag|.
 // If |etag| is empty, the returned header should match any etag.
 std::string GenerateIfMatchHeader(const std::string& etag);
+
+// Creates a Parent value which can be used as a part of request body.
+scoped_ptr<base::DictionaryValue> CreateParentValue(const std::string& file_id);
 
 }  // namespace util
 }  // namespace google_apis

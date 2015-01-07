@@ -19,9 +19,6 @@
 namespace google_apis {
 namespace {
 
-const char kContentTypeApplicationJson[] = "application/json";
-const char kParentLinkKind[] = "drive#fileLink";
-
 // Parses the JSON value to FileResource instance and runs |callback| on the
 // UI thread once parsing is done.
 // This is customized version of ParseJsonAndRun defined above to adapt the
@@ -46,15 +43,6 @@ void ParseFileResourceWithUploadRangeAndRun(
   }
 
   callback.Run(response, file_resource.Pass());
-}
-
-// Creates a Parents value which can be used as a part of request body.
-scoped_ptr<base::DictionaryValue> CreateParentValue(
-    const std::string& file_id) {
-  scoped_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
-  parent->SetString("kind", kParentLinkKind);
-  parent->SetString("id", file_id);
-  return parent.Pass();
 }
 
 }  // namespace
@@ -134,7 +122,7 @@ net::URLFetcher::RequestType FilesInsertRequest::GetRequestType() const {
 
 bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
                                         std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
 
   base::DictionaryValue root;
 
@@ -210,7 +198,7 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
       parents_.empty())
     return false;
 
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
 
   base::DictionaryValue root;
   if (!title_.empty())
@@ -267,7 +255,7 @@ bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
   if (parents_.empty() && title_.empty())
     return false;
 
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
 
   base::DictionaryValue root;
 
@@ -492,7 +480,7 @@ GURL ChildrenInsertRequest::GetURL() const {
 
 bool ChildrenInsertRequest::GetContentData(std::string* upload_content_type,
                                            std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
 
   base::DictionaryValue root;
   root.SetString("id", id_);
@@ -557,14 +545,14 @@ InitiateUploadNewFileRequest::GetRequestType() const {
 bool InitiateUploadNewFileRequest::GetContentData(
     std::string* upload_content_type,
     std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
 
   base::DictionaryValue root;
   root.SetString("title", title_);
 
   // Fill parent link.
   scoped_ptr<base::ListValue> parents(new base::ListValue);
-  parents->Append(CreateParentValue(parent_resource_id_).release());
+  parents->Append(util::CreateParentValue(parent_resource_id_).release());
   root.Set("parents", parents.release());
 
   if (!modified_date_.is_null())
@@ -627,7 +615,7 @@ bool InitiateUploadExistingFileRequest::GetContentData(
   base::DictionaryValue root;
   if (!parent_resource_id_.empty()) {
     scoped_ptr<base::ListValue> parents(new base::ListValue);
-    parents->Append(CreateParentValue(parent_resource_id_).release());
+    parents->Append(util::CreateParentValue(parent_resource_id_).release());
     root.Set("parents", parents.release());
   }
 
@@ -645,7 +633,7 @@ bool InitiateUploadExistingFileRequest::GetContentData(
   if (root.empty())
     return false;
 
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
   base::JSONWriter::Write(&root, upload_content);
   DVLOG(1) << "InitiateUploadExistingFile data: " << *upload_content_type
            << ", [" << *upload_content << "]";
@@ -762,7 +750,7 @@ PermissionsInsertRequest::GetRequestType() const {
 
 bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
                                               std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
+  *upload_content_type = util::kContentTypeApplicationJson;
 
   base::DictionaryValue root;
   switch (type_) {

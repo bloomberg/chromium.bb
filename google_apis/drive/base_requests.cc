@@ -4,18 +4,28 @@
 
 #include "google_apis/drive/base_requests.h"
 
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/request_sender.h"
+#include "google_apis/drive/request_util.h"
 #include "google_apis/drive/task_util.h"
+#include "google_apis/drive/time_util.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
+#include "net/base/upload_element_reader.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -42,6 +52,20 @@ const char kUploadResponseLocation[] = "location";
 // Template for upload data range of both GData WAPI and Drive API v2.
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseRange[] = "range";
+
+// The prefix of multipart/related mime type.
+const char kMultipartMimeTypePrefix[] = "multipart/related; boundary=";
+
+// Template for multipart request body.
+const char kMessageFormatBeforeFile[] =
+    "--%s\nContent-Type: %s\n\n%s\n--%s\nContent-Type: %s\n\n";
+const char kMessageFormatAfterFile[] = "\n--%s--";
+
+// The predetermined boundary string for multipart/related.
+// TODO(hirono): Generates the boundary string randomly and ensure the string
+// does not appears in the content parts.
+const char kBoundaryForPrototype[] =
+    "LJx6AFbwBL94CmojDJBcmXpl1WfnvCUOenZqWrpI1Ua3l7xv8Y";
 
 // Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
 // the calling thread when finished with either success or failure.
@@ -78,6 +102,69 @@ std::string GetResponseHeadersAsString(const URLFetcher* url_fetcher) {
 
 bool IsSuccessfulResponseCode(int response_code) {
   return 200 <= response_code && response_code <= 299;
+}
+
+// Creates metadata JSON string for multipart uploading.
+// All the values are optional. If the value is empty or null, the value does
+// not appear in the metadata.
+std::string CreateMultipartUploadMetadataJson(
+    const std::string& title,
+    const std::string& parent_resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date) {
+  base::DictionaryValue root;
+  if (!title.empty())
+    root.SetString("title", title);
+
+  // Fill parent link.
+  if (!parent_resource_id.empty()) {
+    scoped_ptr<base::ListValue> parents(new base::ListValue);
+    parents->Append(
+        google_apis::util::CreateParentValue(parent_resource_id).release());
+    root.Set("parents", parents.release());
+  }
+
+  if (!modified_date.is_null())
+    root.SetString("modifiedDate",
+                   google_apis::util::FormatTimeAsString(modified_date));
+
+  if (!last_viewed_by_me_date.is_null()) {
+    root.SetString("lastViewedByMeDate", google_apis::util::FormatTimeAsString(
+                                             last_viewed_by_me_date));
+  }
+
+  std::string json_string;
+  base::JSONWriter::Write(&root, &json_string);
+  return json_string;
+}
+
+// Obtains the multipart body for the metadata string and file contents. If
+// predetermined_boundary is empty, the function generates the boundary string.
+// TODO(hirono): Generates the boundary string randomly and ensure the string
+// does not appears in the content parts.
+bool GetMultipartContent(const std::string& predetermined_boundary,
+                         const std::string& metadata_json,
+                         const std::string& content_type,
+                         const base::FilePath& path,
+                         std::string* upload_content_type,
+                         std::string* upload_content_data) {
+  std::string file_content;
+  if (!ReadFileToString(path, &file_content))
+    return false;
+
+  const std::string boundary = predetermined_boundary.empty()
+                                   ? kBoundaryForPrototype
+                                   : predetermined_boundary;
+
+  *upload_content_type = kMultipartMimeTypePrefix + boundary;
+  const std::string body_before_file = base::StringPrintf(
+      kMessageFormatBeforeFile, boundary.c_str(), "application/json",
+      metadata_json.c_str(), boundary.c_str(), content_type.c_str());
+  const std::string body_after_file =
+      base::StringPrintf(kMessageFormatAfterFile, boundary.c_str());
+  *upload_content_data = body_before_file + file_content + body_after_file;
+
+  return true;
 }
 
 }  // namespace
@@ -681,6 +768,125 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
       std::string(kUploadContentRange) + "*/" +
       base::Int64ToString(content_length_));
   return headers;
+}
+
+//========================= MultipartUploadRequestBase ========================
+
+MultipartUploadRequestBase::MultipartUploadRequestBase(
+    RequestSender* sender,
+    const std::string& title,
+    const std::string& parent_resource_id,
+    const std::string& content_type,
+    int64 content_length,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const base::FilePath& local_file_path,
+    const FileResourceCallback& callback,
+    const ProgressCallback& progress_callback)
+    : UrlFetchRequestBase(sender),
+      metadata_json_(CreateMultipartUploadMetadataJson(title,
+                                                       parent_resource_id,
+                                                       modified_date,
+                                                       last_viewed_by_me_date)),
+      content_type_(content_type),
+      local_path_(local_file_path),
+      has_modified_date_(!modified_date.is_null()),
+      callback_(callback),
+      progress_callback_(progress_callback),
+      weak_ptr_factory_(this) {
+  DCHECK(!content_type.empty());
+  DCHECK_GE(content_length, 0);
+  DCHECK(!local_file_path.empty());
+  DCHECK(!callback.is_null());
+}
+
+MultipartUploadRequestBase::~MultipartUploadRequestBase() {
+}
+
+void MultipartUploadRequestBase::Start(const std::string& access_token,
+                                       const std::string& custom_user_agent,
+                                       const ReAuthenticateCallback& callback) {
+  // If the request is cancelled, the request instance will be deleted in
+  // |UrlFetchRequestBase::Cancel| and OnPrepareUploadContent won't be called.
+  std::string* const upload_content_type = new std::string();
+  std::string* const upload_content_data = new std::string();
+  PostTaskAndReplyWithResult(
+      blocking_task_runner(), FROM_HERE,
+      base::Bind(&GetMultipartContent, boundary_, metadata_json_, content_type_,
+                 local_path_, base::Unretained(upload_content_type),
+                 base::Unretained(upload_content_data)),
+      base::Bind(&MultipartUploadRequestBase::OnPrepareUploadContent,
+                 weak_ptr_factory_.GetWeakPtr(), access_token,
+                 custom_user_agent, callback, base::Owned(upload_content_type),
+                 base::Owned(upload_content_data)));
+}
+
+void MultipartUploadRequestBase::OnPrepareUploadContent(
+    const std::string& access_token,
+    const std::string& custom_user_agent,
+    const ReAuthenticateCallback& callback,
+    std::string* upload_content_type,
+    std::string* upload_content_data,
+    bool result) {
+  if (!result) {
+    RunCallbackOnPrematureFailure(GDATA_FILE_ERROR);
+    return;
+  }
+  upload_content_type_.swap(*upload_content_type);
+  upload_content_data_.swap(*upload_content_data);
+  UrlFetchRequestBase::Start(access_token, custom_user_agent, callback);
+}
+
+void MultipartUploadRequestBase::SetBoundaryForTesting(
+    const std::string& boundary) {
+  boundary_ = boundary;
+}
+
+bool MultipartUploadRequestBase::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content_data) {
+  // TODO(hirono): Pass stream instead of actual data to reduce memory usage.
+  upload_content_type->swap(upload_content_type_);
+  upload_content_data->swap(upload_content_data_);
+  return true;
+}
+
+void MultipartUploadRequestBase::ProcessURLFetchResults(
+    const URLFetcher* source) {
+  // The upload is successfully done. Parse the response which should be
+  // the entry's metadata.
+  const GDataErrorCode code = GetErrorCode();
+  if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
+    ParseJsonOnBlockingPool(
+        blocking_task_runner(), response_writer()->data(),
+        base::Bind(&MultipartUploadRequestBase::OnDataParsed,
+                   weak_ptr_factory_.GetWeakPtr(), code));
+  } else {
+    OnDataParsed(code, scoped_ptr<base::Value>());
+  }
+}
+
+void MultipartUploadRequestBase::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
+  callback_.Run(code, scoped_ptr<FileResource>());
+}
+
+void MultipartUploadRequestBase::OnURLFetchUploadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
+  if (!progress_callback_.is_null())
+    progress_callback_.Run(current, total);
+}
+
+void MultipartUploadRequestBase::OnDataParsed(GDataErrorCode code,
+                                              scoped_ptr<base::Value> value) {
+  DCHECK(CalledOnValidThread());
+  if (value)
+    callback_.Run(code, google_apis::FileResource::CreateFrom(*value));
+  else
+    callback_.Run(GDATA_PARSE_ERROR, scoped_ptr<FileResource>());
+  OnProcessURLFetchResultsComplete();
 }
 
 //============================ DownloadFileRequestBase =========================

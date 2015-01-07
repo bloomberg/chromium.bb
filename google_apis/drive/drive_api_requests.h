@@ -20,12 +20,6 @@
 
 namespace google_apis {
 
-// Callback used for requests that the server returns FileResource data
-// formatted into JSON value.
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<FileResource> entry)>
-    FileResourceCallback;
-
 // Callback used for requests that the server returns FileList data
 // formatted into JSON value.
 typedef base::Callback<void(GDataErrorCode error,
