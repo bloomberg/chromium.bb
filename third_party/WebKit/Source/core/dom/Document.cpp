@@ -77,6 +77,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MainThreadTaskRunner.h"
+#include "core/dom/Microtask.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
@@ -4629,6 +4630,9 @@ void Document::finishedParsing()
     ASSERT(!scriptableDocumentParser() || !m_parser->isParsing());
     ASSERT(!scriptableDocumentParser() || m_readyState != Loading);
     setParsingState(InDOMContentLoaded);
+
+    // FIXME: DOMContentLoaded is dispatched synchronously, but this should be dispatched in a queued task,
+    // See https://crbug.com/425790
     if (!m_documentTiming.domContentLoadedEventStart)
         m_documentTiming.domContentLoadedEventStart = monotonicallyIncreasingTime();
     dispatchEvent(Event::createBubble(EventTypeNames::DOMContentLoaded));
@@ -4636,10 +4640,15 @@ void Document::finishedParsing()
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
     setParsingState(FinishedParsing);
 
-    // The loader's finishedParsing() method may invoke script that causes this object to
+    // The microtask checkpoint or the loader's finishedParsing() method may invoke script that causes this object to
     // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).
     // Keep it alive until we are done.
     RefPtrWillBeRawPtr<Document> protect(this);
+
+    // Ensure Custom Element callbacks are drained before DOMContentLoaded.
+    // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in a
+    // queued task, which will do a checkpoint anyway. https://crbug.com/425790
+    Microtask::performCheckpoint();
 
     if (RefPtrWillBeRawPtr<LocalFrame> frame = this->frame()) {
         // Don't update the render tree if we haven't requested the main resource yet to avoid
