@@ -192,7 +192,13 @@ void CALayerStorageProvider::SwapBuffers(
     [context_ retain];
   }
 
-  // Allocate a CALayer to use to draw the content, if needed.
+  // If we create a new layer, always force it to draw immediately. This is
+  // especially important at tab-switch, where we don't want to wait for a
+  // vsync to un-block the browser (which is waiting for the frame to come in).
+  bool force_immediate_draw = false;
+
+  // Allocate a CALayer to use to draw the content and make it current to the
+  // CAContext, if needed.
   if (!layer_) {
     layer_.reset([[ImageTransportLayer alloc] initWithStorageProvider:this]);
     gfx::Size dip_size(gfx::ToFlooredSize(gfx::ScaleSize(
@@ -200,18 +206,17 @@ void CALayerStorageProvider::SwapBuffers(
     [layer_ setContentsScale:fbo_scale_factor_];
     [layer_ setFrame:CGRectMake(0, 0, dip_size.width(), dip_size.height())];
 
-    // Make the CALayer current to the CAContext and display its contents
-    // immediately.
     [context_ setLayer:layer_];
+    force_immediate_draw = true;
   }
 
   // Replacing the CAContext's CALayer will sometimes results in an immediate
-  // draw. If that happens, early-out.
+  // draw.
   if (!has_pending_draw_)
     return;
 
   // Tell CoreAnimation to draw our frame.
-  if (gpu_vsync_disabled_ || throttling_disabled_) {
+  if (gpu_vsync_disabled_ || throttling_disabled_ || force_immediate_draw) {
     DrawImmediatelyAndUnblockBrowser();
   } else {
     if (![layer_ isAsynchronous])
