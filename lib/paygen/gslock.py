@@ -132,13 +132,32 @@ class Lock(object):
         self._generation = 0
         raise LockProbeError('Unable to detect generation')
     except gs.GSContextPreconditionFailed:
-      # We could use Cat here to find who owns the lock, but it's another GS
-      # round trip for data that mostly doesn't matter. Also this behavior
-      # was triggering BigStore errors.
+      # Find the lock contents. Either use this for error reporting, or to find
+      # out if we already own it.
+      contents = 'Unknown'
+      try:
+        contents = self._ctx.Cat(self._gs_path)
+      except gs.GSContextException:
+        pass
+
+      # If we thought we were creating the file it's possible for us to already
+      # own it because the Copy command above can retry. If the first attempt
+      # works but returns a retryable error, it will fail with
+      # GSContextPreconditionFailed on the second attempt.
+      if self._generation == 0 and contents == self._contents:
+        # If the lock contains our contents, we own it, but don't know the
+        # generation.
+        try:
+          stat_results = self._ctx.Stat(self._gs_path)
+          self._generation = stat_results.generation
+          return
+        except gs.GSNoSuchKey:
+          # If we can't look up stats.... we didn't get the lock.
+          pass
 
       # We didn't get the lock, raise the expected exception.
       self._generation = 0
-      raise LockNotAcquired()
+      raise LockNotAcquired('Lock: %s held by: %s' % (self._gs_path, contents))
 
   def Acquire(self):
     """Attempt to acquire the lock.
