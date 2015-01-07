@@ -209,6 +209,15 @@
 // --------------------------------------------------------------------------
 // Bad private keys (PKCS8)
 // --------------------------------------------------------------------------
+  
+  // The private key is exactly equal to the order, and the public key is
+  // private key * order.
+  {
+    "crv": "P-256",
+    "key_format": "pkcs8",
+    "key": "3066020100301306072A8648CE3D020106082A8648CE3D030107044C304A0201010420FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551A12303210000FFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551",
+    "error": "DataError"
+  },
 
   // The private key is exactly equal to the order, and the public key is
   // omitted.
