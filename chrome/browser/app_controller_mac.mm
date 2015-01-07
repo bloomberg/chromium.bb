@@ -1235,7 +1235,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         const extensions::Extension* extension = registry->GetExtensionById(
             web_app::GetExtensionIdFromApplicationName(browser->app_name()),
             extensions::ExtensionRegistry::ENABLED);
-        if (extension->is_hosted_app())
+        if (extension && extension->is_hosted_app())
           continue;
       }
       browserWindows.insert(browser->window()->GetNativeWindow());
