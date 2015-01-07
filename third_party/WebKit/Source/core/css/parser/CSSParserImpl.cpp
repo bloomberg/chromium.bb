@@ -187,7 +187,11 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
         return nullptr; // Parse error, unrecognised at-rule without block
     }
 
-    range.consumeBlock();
+    CSSParserTokenRange block = range.consumeBlock();
+    if (allowedRules <= RegularRules && equalIgnoringCase(name, "viewport")) {
+        allowedRules = RegularRules;
+        return consumeViewportRule(prelude, block);
+    }
     return nullptr; // Parse error, unrecognised at-rule with block
 }
 
@@ -249,6 +253,22 @@ void CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
     m_styleSheet->parserAddNamespace(namespacePrefix, uri);
     if (namespacePrefix.isNull())
         m_defaultNamespace = uri;
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
+{
+    // Allow @viewport rules from UA stylesheets even if the feature is disabled.
+    if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
+        return nullptr;
+
+    prelude.consumeWhitespaceAndComments();
+    if (!prelude.atEnd())
+        return nullptr; // Parser error; @viewport prelude should be empty
+    consumeDeclarationList(block, CSSRuleSourceData::VIEWPORT_RULE);
+    RefPtrWillBeRawPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
+    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
+    m_parsedProperties.clear();
+    return rule.release();
 }
 
 PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
