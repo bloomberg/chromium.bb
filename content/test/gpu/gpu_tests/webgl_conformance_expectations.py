@@ -31,9 +31,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # in Win Debug bots.
     self.Skip('conformance/textures/texture-copying-feedback-loops.html',
         ['Win'], bug=421695)
-    # Flaky on Win
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win'], bug=369349)
 
     self.Fail('conformance/rendering/framebuffer-switch.html',
         ['win'], bug=428849)
