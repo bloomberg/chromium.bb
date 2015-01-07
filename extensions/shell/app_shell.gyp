@@ -24,6 +24,7 @@
         '<(DEPTH)/components/components.gyp:user_prefs',
         '<(DEPTH)/components/components.gyp:web_cache_renderer',
         '<(DEPTH)/content/content.gyp:content',
+        '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/content/content.gyp:content_gpu',
         '<(DEPTH)/content/content.gyp:content_ppapi_plugin',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_lib',
@@ -44,6 +45,9 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/content/content.gyp:content_browser',
       ],
       'include_dirs': [
         '../..',

@@ -19,6 +19,7 @@
         '../../components/components.gyp:omnibox',
         '../../components/components.gyp:pdf_renderer',
         '../../components/components.gyp:search_engines',
+        '../../extensions/shell/app_shell.gyp:app_shell_lib',
         '../../pdf/pdf.gyp:pdf',
         '../../skia/skia.gyp:skia',
         '../../ui/app_list/app_list.gyp:app_list',
