@@ -11,13 +11,17 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
+#if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#endif
 #include "media/filters/file_data_source.h"
 #include "media/filters/opus_audio_decoder.h"
 #include "media/filters/renderer_impl.h"
+#if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
+#endif
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -208,9 +212,12 @@ void PipelineIntegrationTestBase::CreateDemuxer(const std::string& filename) {
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
       base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
                  base::Unretained(this));
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
   demuxer_ = scoped_ptr<Demuxer>(
       new FFmpegDemuxer(message_loop_.message_loop_proxy(), data_source_.get(),
                         encrypted_media_init_data_cb, new MediaLog()));
+#endif
 }
 
 scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
@@ -219,8 +226,11 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   video_decoders.push_back(
       new VpxVideoDecoder(message_loop_.message_loop_proxy()));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
   video_decoders.push_back(
       new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
+#endif
 
   // Disable frame dropping if hashing is enabled.
   scoped_ptr<VideoRenderer> video_renderer(
@@ -234,8 +244,12 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   }
 
   ScopedVector<AudioDecoder> audio_decoders;
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(
       new FFmpegAudioDecoder(message_loop_.message_loop_proxy(), LogCB()));
+#endif
+
   audio_decoders.push_back(
       new OpusAudioDecoder(message_loop_.message_loop_proxy()));
 

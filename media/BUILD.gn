@@ -13,6 +13,12 @@ import("//media/media_options.gni")
 # NOT for exporting.
 config("media_config") {
   defines = [ "MEDIA_IMPLEMENTATION" ]
+  if (!media_use_libvpx) {
+    defines += [ "MEDIA_DISABLE_LIBVPX" ]
+  }
+  if (!media_use_ffmpeg) {
+    defines += [ "MEDIA_DISABLE_FFMPEG" ]
+  }
   if (cpu_arch == "arm" && arm_use_neon) {
     defines += [ "USE_NEON" ]
   }
@@ -31,6 +37,9 @@ config("media_dependent_config") {
   defines = []
   if (!media_use_libvpx) {
     defines += [ "MEDIA_DISABLE_LIBVPX" ]
+  }
+  if (!media_use_ffmpeg) {
+    defines += [ "MEDIA_DISABLE_FFMPEG" ]
   }
   if (is_win) {
     ldflags = [

@@ -7,23 +7,29 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "media/filters/audio_renderer_impl.h"
+#if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#endif
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
 #include "media/filters/renderer_impl.h"
 #include "media/filters/video_renderer_impl.h"
+#if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
+#endif
 
 namespace media {
 
+#if !defined(MEDIA_DISABLE_FFMPEG)
 // TODO(xhwang): We are abusing CreateMediaSourceErrorEvent() in a lot of places
 // that are not MediaSource related. Fix this in a separate CL.
 static void LogError(const scoped_refptr<MediaLog>& media_log,
                      const std::string& error) {
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
 }
+#endif
 
 DefaultRendererFactory::DefaultRendererFactory(
     const scoped_refptr<MediaLog>& media_log,
@@ -46,8 +52,11 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   // Create our audio decoders and renderer.
   ScopedVector<AudioDecoder> audio_decoders;
 
+#if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(new FFmpegAudioDecoder(
       media_task_runner, base::Bind(&LogError, media_log_)));
+#endif
+
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
@@ -68,9 +77,11 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new VpxVideoDecoder(media_task_runner));
-#endif  // !defined(MEDIA_DISABLE_LIBVPX)
+#endif
 
+#if !defined(MEDIA_DISABLE_FFMPEG)
   video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
+#endif
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       media_task_runner, video_decoders.Pass(), true, media_log_));

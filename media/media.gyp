@@ -645,12 +645,23 @@
             'filters/in_memory_url_protocol.cc',
             'filters/in_memory_url_protocol.h',
           ],
+          'defines': [
+            'MEDIA_DISABLE_FFMPEG',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              'MEDIA_DISABLE_FFMPEG',
+            ],
+          },
         }],
         ['media_use_libvpx==1', {
           'dependencies': [
             '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }, {  # media_use_libvpx==0
+          'defines': [
+            'MEDIA_DISABLE_LIBVPX',
+          ],
           'direct_dependent_settings': {
             'defines': [
               'MEDIA_DISABLE_LIBVPX',
