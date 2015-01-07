@@ -18,10 +18,10 @@ class AppWindowRegistryUtil {
   static extensions::AppWindow* GetAppWindowForNativeWindowAnyProfile(
       gfx::NativeWindow window);
 
-  // Returns true if the number of app windows registered across all browser
-  // contexts is non-zero. |window_type_mask| is a bitwise OR filter of
+  // Returns true if the number of visible app windows registered across all
+  // browser contexts is non-zero. |window_type_mask| is a bitwise OR filter of
   // AppWindow::WindowType, or 0 for any window type.
-  static bool IsAppWindowRegisteredInAnyProfile(int window_type_mask);
+  static bool IsAppWindowVisibleInAnyProfile(int window_type_mask);
 
   // Close all app windows in all profiles.
   static void CloseAllAppWindows();

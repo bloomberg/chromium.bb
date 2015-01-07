@@ -17,8 +17,8 @@ bool VerifyASHSwitchForApps(gfx::NativeWindow parent_window,
   DCHECK(win_restart_command_id == IDC_WIN_DESKTOP_RESTART ||
       win_restart_command_id == IDC_WIN8_METRO_RESTART ||
       win_restart_command_id == IDC_WIN_CHROMEOS_RESTART);
-  if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
-           extensions::AppWindow::WINDOW_TYPE_DEFAULT)) {
+  if (!AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(
+          extensions::AppWindow::WINDOW_TYPE_DEFAULT)) {
     return true;
   }
 

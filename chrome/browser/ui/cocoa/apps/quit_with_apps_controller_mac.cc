@@ -151,7 +151,7 @@ bool QuitWithAppsController::ShouldQuit() {
 
     // Quit immediately if there are no packaged app windows or hosted apps open
     // or the confirmation has been suppressed. Ignore panels.
-    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
+    if (!AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(
             extensions::AppWindow::WINDOW_TYPE_DEFAULT) &&
         !hosted_apps_open) {
       return true;
@@ -159,7 +159,7 @@ bool QuitWithAppsController::ShouldQuit() {
   } else {
     // Quit immediately if there are no windows or the confirmation has been
     // suppressed.
-    if (!AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
+    if (!AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(
             extensions::AppWindow::WINDOW_TYPE_DEFAULT))
       return true;
   }

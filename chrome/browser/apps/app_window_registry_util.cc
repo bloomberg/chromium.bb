@@ -41,7 +41,7 @@ AppWindow* AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
 }
 
 // static
-bool AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
+bool AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(
     int window_type_mask) {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -57,12 +57,10 @@ bool AppWindowRegistryUtil::IsAppWindowRegisteredInAnyProfile(
     if (app_windows.empty())
       continue;
 
-    if (window_type_mask == 0)
-      return true;
-
-    for (AppWindowList::const_iterator j = app_windows.begin();
-         j != app_windows.end(); ++j) {
-      if ((*j)->window_type() & window_type_mask)
+    for (const AppWindow* window : app_windows) {
+      if (!window->is_hidden() &&
+          (window_type_mask == 0 ||
+           (window->window_type() & window_type_mask)))
         return true;
     }
   }
