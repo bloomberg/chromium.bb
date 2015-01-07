@@ -98,7 +98,7 @@ MediaKeys::~MediaKeys()
     WTF_LOG(Media, "MediaKeys(%p)::~MediaKeys", this);
 }
 
-MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String& sessionType)
+MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String& sessionType, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "MediaKeys(%p)::createSession", this);
 
@@ -108,8 +108,15 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String
     // 1. If sessionType is not supported by the content decryption module
     //    corresponding to the keySystem, throw a DOMException whose name is
     //    "NotSupportedError".
-    // FIXME: Check whether sessionType is actually supported by the CDM.
     ASSERT(MediaKeySession::isValidSessionType(sessionType));
+    // FIXME: Check whether sessionType is actually supported by the CDM.
+    // (http://crbug.com/384152)
+    // FIXME: Enable "persistent-release-message" session type once support
+    // added to CDMs.
+    if (sessionType == "persistent-release-message") {
+        exceptionState.throwDOMException(NotSupportedError, "'persistent-release-message' is not supported.");
+        return nullptr;
+    }
 
     // 2. Let session be a new MediaKeySession object, and initialize it as
     //    follows:
