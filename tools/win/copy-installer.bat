@@ -49,18 +49,8 @@ EXIT 1
 SET FROM=%FROM%\%OUTPUT%\%BUILDTYPE%%ARCH%
 SET TO=\%OUTPUT%\%BUILDTYPE%%ARCH%
 
-REM Figure out what files to copy based on the component type (shared/static).
-IF EXIST "%FROM%\base.dll" (
-SET TOCOPY=setup.exe chrome.7z *.dll
-SET ARCHIVETODELETE=chrome.packed.7z
-SET INSTALLER=setup.exe
-) ELSE (
-SET TOCOPY=mini_installer.exe mini_installer.exe.pdb
-SET INSTALLER=mini_installer.exe
-)
-
-SET TOCOPY=%TOCOPY% *.dll.pdb chrome.exe.pdb setup.exe.pdb^
-           delegate_execute.exe.pdb
+SET TOCOPY=mini_installer.exe *.dll.pdb chrome.exe.pdb mini_installer.exe.pdb^
+           setup.exe.pdb delegate_execute.exe.pdb
 
 CALL :_copyfiles
 
@@ -71,17 +61,7 @@ SET TOCOPY=*.pdb
 CALL :_copyfiles
 )
 
-REM Keeping the old chrome.packed.7z around could cause the new setup.exe to
-REM use it instead of the new chrome.7z, delete it to save developers from
-REM debugging nightmares!
-IF NOT "%ARCHIVETODELETE%"=="" (
-IF EXIST "%TO%\%ARCHIVETODELETE%" (
-ECHO Deleting old/deprecated %ARCHIVETODELETE%
-del /Q "%TO%\%ARCHIVETODELETE%"
-)
-)
-
-ECHO Ready to run/debug %TO%\%INSTALLER%.
+ECHO Ready to run/debug %TO%\mini_installer.exe.
 GOTO :EOF
 
 REM All labels henceforth are subroutines intended to be invoked by CALL.
