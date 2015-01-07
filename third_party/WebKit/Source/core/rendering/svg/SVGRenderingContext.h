@@ -55,7 +55,6 @@ public:
         : m_renderingFlags(0)
         , m_object(nullptr)
         , m_paintInfo(nullptr)
-        , m_savedContext(nullptr)
         , m_filter(nullptr)
         , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
@@ -67,7 +66,6 @@ public:
         : m_renderingFlags(0)
         , m_object(nullptr)
         , m_paintInfo(nullptr)
-        , m_savedContext(nullptr)
         , m_filter(nullptr)
         , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
@@ -99,7 +97,6 @@ private:
     int m_renderingFlags;
     RawPtrWillBeMember<RenderObject> m_object;
     PaintInfo* m_paintInfo;
-    GraphicsContext* m_savedContext;
     IntRect m_savedPaintRect;
     RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;
     RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
