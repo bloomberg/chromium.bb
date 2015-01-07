@@ -59,7 +59,8 @@ function testExifEncodeAndDecode() {
     }
   };
 
-  var encoder = ImageEncoder.encodeMetadata(metadata, canvas);
+  var encoder = ImageEncoder.encodeMetadata(metadata, canvas, 1,
+      new Date(2015, 0, 7, 15, 30, 6));
 
   // Assert that ExifEncoder is returned.
   assertTrue(encoder instanceof ExifEncoder);
@@ -102,8 +103,8 @@ function testExifEncodeAndDecode() {
   assertEquals('Chrome OS Gallery App\0',
       parsedMetadata.ifd.image[0x131].value);
 
-  // TODO(yawano): Datetime should be updated.
-  assertEquals(undefined, parsedMetadata.ifd.image[0x132]); // Datetime
+  // Datetime should be updated.
+  assertEquals('2015:01:07 15:30:06\0', parsedMetadata.ifd.image[0x132].value);
 
   // Thumbnail image
   assert(parsedMetadata.thumbnailTransform);

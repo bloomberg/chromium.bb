@@ -31,9 +31,12 @@ ImageEncoder.registerMetadataEncoder(ExifEncoder, 'image/jpeg');
 ExifEncoder.SOFTWARE = 'Chrome OS Gallery App\0';
 
 /**
+ * @param {!HTMLCanvasElement} canvas
+ * @param {Date=} opt_modificationDateTime
  * @override
  */
-ExifEncoder.prototype.setImageData = function(canvas) {
+ExifEncoder.prototype.setImageData =
+    function(canvas, opt_modificationDateTime) {
   var image = this.ifd_.image;
   if (!image)
     image = this.ifd_.image = {};
@@ -62,6 +65,26 @@ ExifEncoder.prototype.setImageData = function(canvas) {
   var softwareTag = ExifEncoder.findOrCreateTag(image, Exif.Tag.SOFTWARE, 2);
   softwareTag.value = ExifEncoder.SOFTWARE;
   softwareTag.componentCount = ExifEncoder.SOFTWARE.length;
+
+  // Update modification date time.
+  var padNumWithZero = function(num, length) {
+    var str = num.toString();
+    while (str.length < length) {
+      str = '0' + str;
+    }
+    return str;
+  };
+
+  var modificationDateTime = opt_modificationDateTime || new Date();
+  var dateTimeTag = ExifEncoder.findOrCreateTag(image, Exif.Tag.DATETIME, 2);
+  dateTimeTag.value =
+      padNumWithZero(modificationDateTime.getFullYear(), 4) + ':' +
+      padNumWithZero(modificationDateTime.getMonth() + 1, 2) + ':' +
+      padNumWithZero(modificationDateTime.getDate(), 2) + ' ' +
+      padNumWithZero(modificationDateTime.getHours(), 2) + ':' +
+      padNumWithZero(modificationDateTime.getMinutes(), 2) + ':' +
+      padNumWithZero(modificationDateTime.getSeconds(), 2) + '\0';
+  dateTimeTag.componentCount = 20;
 };
 
 /**

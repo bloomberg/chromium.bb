@@ -46,11 +46,13 @@ ImageEncoder.createMetadataEncoder = function(metadata) {
  * @param {!Object} metadata Original metadata.
  * @param {!HTMLCanvasElement} canvas Canvas to use for metadata.
  * @param {number} thumbnailQuality Encoding quality of a thumbnail.
+ * @param {Date=} opt_modificationDateTime Modification date time of an image.
  * @return {!ImageEncoder.MetadataEncoder} Encoder with encoded metadata.
  */
-ImageEncoder.encodeMetadata = function(metadata, canvas, thumbnailQuality) {
+ImageEncoder.encodeMetadata = function(
+    metadata, canvas, thumbnailQuality, opt_modificationDateTime) {
   var encoder = ImageEncoder.createMetadataEncoder(metadata);
-  encoder.setImageData(canvas);
+  encoder.setImageData(canvas, opt_modificationDateTime);
   encoder.setThumbnailData(ImageEncoder.createThumbnail(canvas),
       thumbnailQuality);
   return encoder;
@@ -215,10 +217,13 @@ ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
 };
 
 /**
- * @param {!HTMLCanvasElement} canvas Canvas or or anything with
- *                                          width and height properties.
+ * Sets an image data.
+ * @param {!HTMLCanvasElement} canvas Canvas or anything with width and height
+ *     properties.
+ * @param {Date=} opt_modificationDateTime Modification date time of an image.
  */
-ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {
+ImageEncoder.MetadataEncoder.prototype.setImageData =
+    function(canvas, opt_modificationDateTime) {
   this.metadata_.width = canvas.width;
   this.metadata_.height = canvas.height;
 };
