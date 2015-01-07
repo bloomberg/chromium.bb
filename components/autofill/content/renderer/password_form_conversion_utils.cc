@@ -197,11 +197,18 @@ void GetPasswordForm(const WebFormElement& form,
 
   if (!username_element.isNull()) {
     password_form->username_element = username_element.nameForAutofill();
-    blink::WebString username_value = username_element.value();
+    base::string16 username_value = username_element.value();
     if (user_modified_elements != nullptr) {
       auto username_iterator = user_modified_elements->find(username_element);
-      if (username_iterator != user_modified_elements->end())
-        username_value = username_iterator->second;
+      if (username_iterator != user_modified_elements->end()) {
+        base::string16 typed_username_value = username_iterator->second;
+        if (!StartsWith(username_value, typed_username_value, false)) {
+          // We check that |username_value| was not obtained by autofilling
+          // |typed_username_value|. In case when it was, |typed_username_value|
+          // is incomplete, so we should leave autofilled value.
+          username_value = typed_username_value;
+        }
+      }
     }
     password_form->username_value = username_value;
   }

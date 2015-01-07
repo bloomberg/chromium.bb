@@ -1661,6 +1661,27 @@ TEST_F(PasswordAutofillAgentTest,
   ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
 }
 
+// The user starts typing username then it is autofilled.
+// PasswordAutofillAgent should remember the username that was autofilled,
+// not last typed.
+TEST_F(PasswordAutofillAgentTest, RememberAutofilledUsername) {
+  SimulateInputChangeForElement("Te", true, GetMainFrame(), username_element_,
+                                true);
+  // Simulate that the username was changed by autofilling.
+  username_element_.setValue(WebString("temp"));
+  SimulateInputChangeForElement("random", true, GetMainFrame(),
+                                password_element_, true);
+
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  // Observe that the PasswordAutofillAgent still remembered the last typed
+  // username and password and sent that to the browser.
+  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
+}
+
 TEST_F(PasswordAutofillAgentTest, FormFillDataMustHaveUsername) {
   ClearUsernameAndPasswordFields();
 
