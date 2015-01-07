@@ -358,7 +358,7 @@ def GenerateClasspathFile(target_list, target_dicts, toplevel_dir,
       entry_element.set('path', path)
 
   AddElements('lib', GetJavaJars(target_list, target_dicts, toplevel_dir))
-  AddElements('src', GetJavaSourceDirs(target_list, target_dicts))
+  AddElements('src', GetJavaSourceDirs(target_list, target_dicts, toplevel_dir))
   # Include the standard JRE container and a dummy out folder
   AddElements('con', ['org.eclipse.jdt.launching.JRE_CONTAINER'])
   # Include a dummy out folder so that Eclipse doesn't use the default /bin
@@ -381,7 +381,7 @@ def GetJavaJars(target_list, target_dicts, toplevel_dir):
             yield os.path.join(os.path.dirname(target_name), input_)
 
 
-def GetJavaSourceDirs(target_list, target_dicts):
+def GetJavaSourceDirs(target_list, target_dicts, toplevel_dir):
   '''Generates a sequence of all likely java package root directories.'''
   for target_name in target_list:
     target = target_dicts[target_name]
@@ -399,7 +399,7 @@ def GetJavaSourceDirs(target_list, target_dicts):
           parent_search = dir_
           while os.path.basename(parent_search) not in ['src', 'java']:
             parent_search, _ = os.path.split(parent_search)
-            if not parent_search:
+            if not parent_search or parent_search == toplevel_dir:
               # Didn't find a known root, just return the original path
               yield dir_
               break
