@@ -442,12 +442,17 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
     auto releasedMailboxInfo = m_mailboxes.end();
     auto firstMailbox = m_mailboxes.begin();
 
-    while (releasedMailboxInfo != firstMailbox) {
+    while (true) {
         --releasedMailboxInfo;
         if (nameEquals(releasedMailboxInfo->m_mailbox, mailbox)) {
             break;
         }
-        ASSERT(releasedMailboxInfo != firstMailbox); // Reached last entry without finding a match, should never happen.
+        if (releasedMailboxInfo == firstMailbox) {
+            // Reached last entry without finding a match, should never happen.
+            // FIXME: This used to be an ASSERT, and was (temporarily?) changed to a
+            // CRASH to facilitate the investigation of crbug.com/443898.
+            CRASH();
+        }
     }
 
     if (!contextLost) {
