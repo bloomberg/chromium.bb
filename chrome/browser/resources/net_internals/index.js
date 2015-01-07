@@ -49,10 +49,6 @@
 <include src="chromeos_view.js">
 <include src="bandwidth_view.js">
 <include src="sdch_view.js">
-<include src="cros_log_visualizer_view.js">
-<include src="cros_log_entry.js">
-<include src="cros_log_visualizer.js" >
-<include src="cros_log_marker.js" >
 
 document.addEventListener('DOMContentLoaded', function() {
   MainView.getInstance();  // from main.js

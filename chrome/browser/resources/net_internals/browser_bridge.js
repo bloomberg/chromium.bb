@@ -77,11 +77,6 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.dataReductionProxyInfo =
         new PollableDataHelper('onDataReductionProxyInfoChanged',
                                this.sendGetDataReductionProxyInfo.bind(this));
-    if (cr.isChromeOS) {
-      this.pollableDataHelpers_.systemLog =
-          new PollableDataHelper('onSystemLogChanged',
-                               this.getSystemLog.bind(this, 'syslog'));
-    }
 
     // Setting this to true will cause messages from the browser to be ignored,
     // and no messages will be sent to the browser, either.  Intended for use
@@ -224,14 +219,6 @@ var BrowserBridge = (function() {
       this.send('setLogLevel', ['' + logLevel]);
     },
 
-    refreshSystemLogs: function() {
-      this.send('refreshSystemLogs');
-    },
-
-    getSystemLog: function(log_key, cellId) {
-      this.send('getSystemLog', [log_key, cellId]);
-    },
-
     importONCFile: function(fileContent, passcode) {
       this.send('importONCFile', [fileContent, passcode]);
     },
@@ -364,10 +351,6 @@ var BrowserBridge = (function() {
     receivedDataReductionProxyInfo: function(dataReductionProxyInfo) {
       this.pollableDataHelpers_.dataReductionProxyInfo.update(
           dataReductionProxyInfo);
-    },
-
-    getSystemLogCallback: function(systemLog) {
-      this.pollableDataHelpers_.systemLog.update(systemLog);
     },
 
     //--------------------------------------------------------------------------
@@ -639,19 +622,6 @@ var BrowserBridge = (function() {
     addDataReductionProxyInfoObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.dataReductionProxyInfo.addObserver(
           observer, ignoreWhenUnchanged);
-    },
-
-    /**
-     * Adds a listener of system log information. |observer| will be called
-     * back when data is received, through:
-     *
-     *   observer.onSystemLogChanged(systemLogInfo)
-     */
-    addSystemLogObserver: function(observer, ignoreWhenUnchanged) {
-      if (this.pollableDataHelpers_.systemLog) {
-        this.pollableDataHelpers_.systemLog.addObserver(
-            observer, ignoreWhenUnchanged);
-      }
     },
 
     /**

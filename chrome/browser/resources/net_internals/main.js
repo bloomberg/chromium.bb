@@ -198,15 +198,12 @@ var MainView = (function() {
       addTab(HttpCacheView);
       addTab(ModulesView);
       addTab(TestView);
-      addTab(CrosLogVisualizerView);
       addTab(HSTSView);
       addTab(BandwidthView);
       addTab(PrerenderView);
       addTab(CrosView);
 
       this.tabSwitcher_.showMenuItem(CrosView.TAB_ID, cr.isChromeOS);
-      this.tabSwitcher_.showMenuItem(CrosLogVisualizerView.TAB_ID,
-                                     cr.isChromeOS);
     },
 
     /**
