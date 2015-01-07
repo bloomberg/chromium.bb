@@ -4,20 +4,16 @@
 # SEE http://code.google.com/p/chromium/wiki/UsingGit
 # FOR HOW TO ROLL DEPS
 vars = {
+    'mingw_rev':
+         '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
     'breakpad_rev':
          'fe34e3f9fef1eb425b25a79f0da84e2f277d433b',
+    'gnu_binutils_rev':
+         'f4003433b61b25666565690caf3d7a7a1a4ec436',
+    'nsis_rev':
+         '21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
     'clang_rev':
          '7aa71664f527268776ce5b5bceae01a4bc6a1666',
-    'android_tools_rev':
-         'ea50cccc11657404ce22cf928062ed1a3927eb39',
-    'tools_rev':
-         '13800',
-    'native_client_trunk':
-         'http://src.chromium.org/native_client/trunk',
-    'lcov_rev':
-         'b37daf5968200da8ff520ce65c4e5bce4047dd15',
-    'chromium_git':
-         'https://chromium.googlesource.com',
     'gtest_rev':
          '74de57c951aedebc5dfe26a27604353432392b98',
     'gyp_rev':
@@ -30,12 +26,22 @@ vars = {
          'https://chromium.googlesource.com/chromium/blink.git',
     'valgrind_rev':
          '59886873b4b8258a8e0f098c23e1958e0d0c0a26',
-    'buildtools_revision':
-         'c27f95bd1d9baaef70c879dea375090dd1496147',
-    'validator_snapshots_rev':
-         '14247',
     'git_url':
-         'https://chromium.googlesource.com'
+         'https://chromium.googlesource.com',
+    'android_tools_rev':
+         'ea50cccc11657404ce22cf928062ed1a3927eb39',
+    'ragel_rev':
+         'da42bb33f1b67c2d70b38ec1d2edf5263271b635',
+    'validator_snapshots_rev':
+         '88fa8d87fae94975f8f0e9716e2c29c1e6494cb5',
+    'chromium_git':
+         'https://chromium.googlesource.com',
+    'third_party_rev':
+         '7e4c04567bd393069233676fc648333885e18da9',
+    'lcov_rev':
+         'b37daf5968200da8ff520ce65c4e5bce4047dd15',
+    'buildtools_revision':
+         'c27f95bd1d9baaef70c879dea375090dd1496147'
 }
 
 deps = {
