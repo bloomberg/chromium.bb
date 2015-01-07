@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -12,6 +11,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -41,7 +41,7 @@ public class NotificationUIManager {
          * @param notificationBuilder The NotificationBuilder which is about to be shown.
          * @param origin The origin which is displaying the notification.
          */
-        void onBeforeDisplayNotification(Notification.Builder notificationBuilder,
+        void onBeforeDisplayNotification(NotificationCompat.Builder notificationBuilder,
                                          String origin);
     }
 
@@ -162,10 +162,10 @@ public class NotificationUIManager {
             icon = getIconGenerator().generateIconForUrl(origin);
         }
 
-        Notification.Builder notificationBuilder = new Notification.Builder(mAppContext)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mAppContext)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setStyle(new Notification.BigTextStyle().bigText(body))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
                 .setLargeIcon(icon)
                 .setSmallIcon(R.drawable.notification_badge)
                 .setContentIntent(getPendingIntent(
