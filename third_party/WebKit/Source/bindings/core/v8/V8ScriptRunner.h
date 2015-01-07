@@ -56,8 +56,8 @@ public:
     static v8::Local<v8::Object> instantiateObject(v8::Isolate*, v8::Handle<v8::Function>, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
     static v8::Local<v8::Object> instantiateObjectInDocument(v8::Isolate*, v8::Handle<v8::Function>, ExecutionContext*, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
 
-    static unsigned tagForParserCache();
-    static unsigned tagForCodeCache();
+    static unsigned tagForParserCache(Resource*);
+    static unsigned tagForCodeCache(Resource*);
 };
 
 } // namespace blink

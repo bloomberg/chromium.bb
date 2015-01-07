@@ -65,7 +65,10 @@ public:
     void suppressStreaming();
     bool streamingSuppressed() const { return m_streamingSuppressed; }
 
-    unsigned cachedDataType() const;
+    v8::ScriptCompiler::CompileOptions compileOptions() const
+    {
+        return m_compileOptions;
+    }
 
     void addClient(ScriptResourceClient* client)
     {

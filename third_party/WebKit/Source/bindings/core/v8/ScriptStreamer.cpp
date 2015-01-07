@@ -157,7 +157,7 @@ private:
         // BOM can only occur at the beginning of the data.
         ASSERT(lengthOfBOM == 0 || m_dataPosition == 0);
 
-        if (m_streamer->resource()->cachedMetadata(V8ScriptRunner::tagForCodeCache())) {
+        if (m_streamer->resource()->cachedMetadata(V8ScriptRunner::tagForCodeCache(m_streamer->resource()))) {
             // The resource has a code cache, so it's unnecessary to stream and
             // parse the code. Cancel the streaming and resume the non-streaming
             // code path.
@@ -290,17 +290,6 @@ void ScriptStreamer::suppressStreaming()
     // It can be that the parsing task has already finished (e.g., if there was
     // a parse error).
     m_streamingSuppressed = true;
-}
-
-unsigned ScriptStreamer::cachedDataType() const
-{
-    if (m_compileOptions == v8::ScriptCompiler::kProduceParserCache) {
-        return V8ScriptRunner::tagForParserCache();
-    }
-    if (m_compileOptions == v8::ScriptCompiler::kProduceCodeCache) {
-        return V8ScriptRunner::tagForCodeCache();
-    }
-    return 0;
 }
 
 void ScriptStreamer::notifyAppendData(ScriptResource* resource)
