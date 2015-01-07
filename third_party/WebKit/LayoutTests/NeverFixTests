@@ -146,6 +146,9 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ Snowleopard Debug ] inspector/elements/styles/pseudo-elements.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger/dom-breakpoints.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger/event-listener-breakpoints.html [ WontFix ]
+[ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/trailing_whitespace_wrapping.html [ WontFix ]
+[ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/trailing_whitespace_wrapping.html [ WontFix ]
+[ SnowLeopard Debug ] fast/text/trailing_whitespace_wrapping.html [ WontFix ]
 
 # Subpixel font scaling requires DirectWrite on windows (which isn't supported
 # on XP) and antialiasing on mac (which isn't enabled tests).
