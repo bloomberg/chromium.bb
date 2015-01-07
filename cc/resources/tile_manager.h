@@ -196,7 +196,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
       const TileVector& tiles_that_need_to_be_rasterized);
 
   void AssignGpuMemoryToTiles(TileVector* tiles_that_need_to_be_rasterized,
-                              size_t scheduled_raser_task_limit);
+                              size_t scheduled_raser_task_limit,
+                              bool required_for_draw_only);
 
   void SynchronouslyRasterizeTiles(
       const GlobalStateThatImpactsTilePriority& state);

@@ -364,7 +364,7 @@ void TileManager::PrepareTiles(
 
     TileVector tiles_that_need_to_be_rasterized;
     AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                           scheduled_raster_task_limit_);
+                           scheduled_raster_task_limit_, false);
 
     // Schedule tile tasks.
     ScheduleTasks(tiles_that_need_to_be_rasterized);
@@ -375,7 +375,7 @@ void TileManager::PrepareTiles(
     if (global_state_.hard_memory_limit_in_bytes == 0) {
       TileVector tiles_that_need_to_be_rasterized;
       AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                             scheduled_raster_task_limit_);
+                             scheduled_raster_task_limit_, false);
       DCHECK(tiles_that_need_to_be_rasterized.empty());
     }
 
@@ -407,7 +407,7 @@ void TileManager::SynchronouslyRasterizeTiles(
 
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                         std::numeric_limits<size_t>::max());
+                         std::numeric_limits<size_t>::max(), true);
 
   // We must reduce the amount of unused resources before calling
   // RunTasks to prevent usage from rising above limits.
@@ -555,7 +555,8 @@ bool TileManager::TilePriorityViolatesMemoryPolicy(
 
 void TileManager::AssignGpuMemoryToTiles(
     TileVector* tiles_that_need_to_be_rasterized,
-    size_t scheduled_raster_task_limit) {
+    size_t scheduled_raster_task_limit,
+    bool required_for_draw_only) {
   TRACE_EVENT_BEGIN0("cc", "TileManager::AssignGpuMemoryToTiles");
 
   // Maintain the list of released resources that can potentially be re-used
@@ -584,6 +585,15 @@ void TileManager::AssignGpuMemoryToTiles(
 
   while (!raster_priority_queue_.IsEmpty()) {
     Tile* tile = raster_priority_queue_.Top();
+
+    // TODO(vmpstr): Remove this when the iterator returns the correct tiles
+    // to draw for GPU rasterization.
+    if (required_for_draw_only) {
+      if (!tile->required_for_draw()) {
+        raster_priority_queue_.Pop();
+        continue;
+      }
+    }
     TilePriority priority = tile->combined_priority();
 
     if (TilePriorityViolatesMemoryPolicy(priority)) {
@@ -941,7 +951,7 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // where top-priority tiles are initialized.
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized,
-                         scheduled_raster_task_limit_);
+                         scheduled_raster_task_limit_, false);
 
   // |tiles_that_need_to_be_rasterized| will be empty when we reach a
   // steady memory state. Keep scheduling tasks until we reach this state.
