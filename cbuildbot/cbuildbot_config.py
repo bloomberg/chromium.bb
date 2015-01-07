@@ -2457,7 +2457,6 @@ _release.add_config('fox_wtm2-release',
 _release.add_config('link-release',
   boards=['link'],
   useflags=append_useflags(['highdpi']),
-  important=True,
 )
 
 _release.add_config('quawks-release',
@@ -2743,6 +2742,7 @@ _AddGroupConfig('sandybridge', 'parrot', (
 
 # ivybridge chipset boards
 _AddGroupConfig('ivybridge', 'stout', (), (
+    'link',
     'parrot_ivb',
 ))
 
@@ -2771,6 +2771,19 @@ _AddGroupConfig('beltino-b', 'monroe', (
     'tricky',
     'zako',
 ))
+
+_AddGroupConfig('beltino-freon', 'mccloud_freon', (
+    'monroe_freon',
+    'panther_freon',
+    'tricky_freon',
+    ),
+    important=False,
+)
+
+_AddGroupConfig('beltino-freon-b', 'zako_freon', (
+    ),
+    important=False,
+)
 
 # rambi-based boards
 _AddGroupConfig('rambi-a', 'rambi', (
@@ -2831,11 +2844,7 @@ _AddGroupConfig('auron-b', 'lulu', (
 _AddGroupConfig('veyron', 'veyron_pinky', (
     'veyron_jerry',
     'veyron_mighty',
-    ),
-    important=False,
-)
-
-_AddGroupConfig('veyron-b', 'veyron_speedy', (
+    'veyron_speedy'
     ),
     important=False,
 )
