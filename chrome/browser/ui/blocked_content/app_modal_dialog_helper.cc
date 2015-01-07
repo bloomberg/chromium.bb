@@ -20,15 +20,16 @@ AppModalDialogHelper::AppModalDialogHelper(content::WebContents* dialog_host)
       chrome::GetHostDesktopTypeForNativeView(dialog_host->GetNativeView());
   Browser* active_browser =
       BrowserList::GetInstance(desktop_type)->GetLastActive();
-  content::WebContents* active_web_contents =
-      active_browser->tab_strip_model()->GetActiveWebContents();
-  if (active_browser->is_type_popup() &&
-      active_web_contents &&
-      active_web_contents->GetOpener() == dialog_host) {
-    // It's indeed a popup from the dialog opening WebContents. Store it, so
-    // we can focus it later.
-    popup_ = active_web_contents;
-    Observe(popup_);
+  if (active_browser) {
+    content::WebContents* active_web_contents =
+        active_browser->tab_strip_model()->GetActiveWebContents();
+    if (active_browser->is_type_popup() && active_web_contents &&
+        active_web_contents->GetOpener() == dialog_host) {
+      // It's indeed a popup from the dialog opening WebContents. Store it, so
+      // we can focus it later.
+      popup_ = active_web_contents;
+      Observe(popup_);
+    }
   }
 }
 
