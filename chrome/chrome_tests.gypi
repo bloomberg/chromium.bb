@@ -88,6 +88,7 @@
       'browser/chrome_plugin_browsertest.cc',
       'browser/chrome_security_exploit_browsertest.cc',
       'browser/chrome_service_worker_browsertest.cc',
+      'browser/chrome_site_per_process_browsertest.cc',
       'browser/chrome_switches_browsertest.cc',
       'browser/collected_cookies_browsertest.cc',
       'browser/content_settings/content_settings_browsertest.cc',

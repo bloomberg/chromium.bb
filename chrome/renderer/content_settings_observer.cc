@@ -115,9 +115,12 @@ static bool IsHostInDomain(const std::string& host, const std::string& domain) {
 }
 
 GURL GetOriginOrURL(const WebFrame* frame) {
-  WebString top_origin = frame->top()->document().securityOrigin().toString();
-  // The the |top_origin| is unique ("null") e.g., for file:// URLs. Use the
+  WebString top_origin = frame->top()->securityOrigin().toString();
+  // The |top_origin| is unique ("null") e.g., for file:// URLs. Use the
   // document URL as the primary URL in those cases.
+  // TODO(alexmos): This is broken for --site-per-process, since top() can be a
+  // WebRemoteFrame which does not have a document(), and the WebRemoteFrame's
+  // URL is not replicated.
   if (top_origin == "null")
     return frame->top()->document().url();
   return GURL(top_origin);
@@ -271,23 +274,23 @@ bool ContentSettingsObserver::allowDatabase(const WebString& name,
                                             const WebString& display_name,
                                             unsigned long estimated_size) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->document().securityOrigin().isUnique() ||
-      frame->top()->document().securityOrigin().isUnique())
+  if (frame->securityOrigin().isUnique() ||
+      frame->top()->securityOrigin().isUnique())
     return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDatabase(
-      routing_id(), GURL(frame->document().securityOrigin().toString()),
-      GURL(frame->top()->document().securityOrigin().toString()),
-      name, display_name, &result));
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()), name, display_name,
+      &result));
   return result;
 }
 
 void ContentSettingsObserver::requestFileSystemAccessAsync(
     const WebPermissionCallbacks& callbacks) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->document().securityOrigin().isUnique() ||
-      frame->top()->document().securityOrigin().isUnique()) {
+  if (frame->securityOrigin().isUnique() ||
+      frame->top()->securityOrigin().isUnique()) {
     WebPermissionCallbacks permissionCallbacks(callbacks);
     permissionCallbacks.doDeny();
     return;
@@ -301,10 +304,9 @@ void ContentSettingsObserver::requestFileSystemAccessAsync(
   DCHECK(insert_result.second);
 
   Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
-      routing_id(),
-      current_request_id_,
-      GURL(frame->document().securityOrigin().toString()),
-      GURL(frame->top()->document().securityOrigin().toString())));
+      routing_id(), current_request_id_,
+      GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString())));
 }
 
 bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
@@ -333,15 +335,14 @@ bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
 bool ContentSettingsObserver::allowIndexedDB(const WebString& name,
                                              const WebSecurityOrigin& origin) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->document().securityOrigin().isUnique() ||
-      frame->top()->document().securityOrigin().isUnique())
+  if (frame->securityOrigin().isUnique() ||
+      frame->top()->securityOrigin().isUnique())
     return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id(), GURL(frame->document().securityOrigin().toString()),
-      GURL(frame->top()->document().securityOrigin().toString()),
-      name, &result));
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()), name, &result));
   return result;
 }
 
@@ -399,8 +400,8 @@ bool ContentSettingsObserver::allowScriptFromSource(
 
 bool ContentSettingsObserver::allowStorage(bool local) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->document().securityOrigin().isUnique() ||
-      frame->top()->document().securityOrigin().isUnique())
+  if (frame->securityOrigin().isUnique() ||
+      frame->top()->securityOrigin().isUnique())
     return false;
   bool result = false;
 
@@ -412,9 +413,8 @@ bool ContentSettingsObserver::allowStorage(bool local) {
     return permissions->second;
 
   Send(new ChromeViewHostMsg_AllowDOMStorage(
-      routing_id(), GURL(frame->document().securityOrigin().toString()),
-      GURL(frame->top()->document().securityOrigin().toString()),
-      local, &result));
+      routing_id(), GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString()), local, &result));
   cached_storage_permissions_[key] = result;
   return result;
 }

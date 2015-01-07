@@ -259,6 +259,26 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
 
 }  // namespace
 
+bool NavigateIframeToURL(WebContents* web_contents,
+                         std::string iframe_id,
+                         const GURL& url) {
+  // TODO(creis): This should wait for LOAD_STOP, but cross-site subframe
+  // navigations generate extra DidStartLoading and DidStopLoading messages.
+  // Until we replace swappedout:// with frame proxies, we need to listen for
+  // something else.  For now, we trigger NEW_SUBFRAME navigations and listen
+  // for commit.  See https://crbug.com/436250.
+  std::string script = base::StringPrintf(
+      "setTimeout(\""
+      "var iframes = document.getElementById('%s');iframes.src='%s';"
+      "\",0)",
+      iframe_id.c_str(), url.spec().c_str());
+  WindowedNotificationObserver load_observer(
+      NOTIFICATION_NAV_ENTRY_COMMITTED,
+      Source<NavigationController>(&web_contents->GetController()));
+  bool result = ExecuteScript(web_contents, script);
+  load_observer.Wait();
+  return result;
+}
 
 GURL GetFileUrlWithQuery(const base::FilePath& path,
                          const std::string& query_string) {

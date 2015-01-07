@@ -19,10 +19,6 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
   // TODO(creis): This won't be necessary when we can wait for LOAD_STOP.
   void StartFrameAtDataURL();
 
-  bool NavigateIframeToURL(Shell* window,
-                           const GURL& url,
-                           std::string iframe_id);
-
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 };

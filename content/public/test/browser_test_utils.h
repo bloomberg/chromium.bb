@@ -56,6 +56,13 @@ class MessageLoopRunner;
 class RenderViewHost;
 class WebContents;
 
+// Navigate a frame with ID |iframe_id| to |url|, blocking until the navigation
+// finishes.  Uses a renderer-initiated navigation from script code in the
+// main frame.
+bool NavigateIframeToURL(WebContents* web_contents,
+                         std::string iframe_id,
+                         const GURL& url);
+
 // Generate a URL for a file path including a query string.
 GURL GetFileUrlWithQuery(const base::FilePath& path,
                          const std::string& query_string);
