@@ -377,6 +377,7 @@
       'browser/resources/pdf/pdf_extension_test.cc',
       'browser/safe_json_parser_browsertest.cc',
       'browser/search/suggestions/image_fetcher_impl_browsertest.cc',
+      'browser/search/hotword_installer_browsertest.cc',
       'browser/service_process/service_process_control_browsertest.cc',
       'browser/services/gcm/fake_gcm_profile_service.cc',
       'browser/services/gcm/fake_gcm_profile_service.h',

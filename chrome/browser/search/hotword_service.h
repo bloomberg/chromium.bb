@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -25,7 +26,6 @@ class Profile;
 
 namespace extensions {
 class Extension;
-class WebstoreStandaloneInstaller;
 }  // namespace extensions
 
 namespace hotword_internal {
@@ -41,6 +41,22 @@ extern const char kHotwordTrainingEnabled[];
 class HotwordService : public extensions::ExtensionRegistryObserver,
                        public KeyedService {
  public:
+  // A simple subclass to allow for aborting an install during shutdown.
+  // HotwordWebstoreInstaller class is public for testing.
+  class HotwordWebstoreInstaller : public extensions::WebstoreStartupInstaller {
+   public:
+    HotwordWebstoreInstaller(const std::string& webstore_item_id,
+                             Profile* profile,
+                             const Callback& callback)
+        : extensions::WebstoreStartupInstaller(webstore_item_id,
+                                               profile,
+                                               false,
+                                               callback) {}
+    void Shutdown();
+   protected:
+    ~HotwordWebstoreInstaller() override {}
+  };
+
   // Returns true if the hotword supports the current system language.
   static bool DoesHotwordSupportLanguage(Profile* profile);
 
@@ -57,6 +73,9 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
+
+  // Overriden from KeyedService
+  void Shutdown() override;
 
   // Checks for whether all the necessary files have downloaded to allow for
   // using the extension.
@@ -155,6 +174,10 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Turn off the currently enabled version of hotwording if one exists.
   void DisableHotwordPreferences();
 
+ protected:
+  // Used in test subclasses.
+  scoped_refptr<HotwordWebstoreInstaller> installer_;
+
  private:
   class HotwordUserSessionStateObserver;
 
@@ -181,8 +204,6 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
-
-  scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
 
   scoped_ptr<HotwordAudioHistoryHandler> audio_history_handler_;
 

@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -305,6 +304,10 @@ class HotwordService::HotwordUserSessionStateObserver {
 };
 #endif
 
+void HotwordService::HotwordWebstoreInstaller::Shutdown() {
+  AbortInstall();
+}
+
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile),
       extension_registry_observer_(this),
@@ -397,6 +400,11 @@ HotwordService::~HotwordService() {
 #endif
 }
 
+void HotwordService::Shutdown() {
+  if (installer_.get())
+    installer_->Shutdown();
+}
+
 void HotwordService::ShowHotwordNotification() {
   // Check for enabled here in case always-on was enabled during the delay.
   if (!IsServiceAvailable() || IsAlwaysOnEnabled())
@@ -474,10 +482,9 @@ void HotwordService::InstalledFromWebstoreCallback(
 }
 
 void HotwordService::InstallHotwordExtensionFromWebstore(int num_tries) {
-  installer_ = new extensions::WebstoreStartupInstaller(
+  installer_ = new HotwordWebstoreInstaller(
       ReinstalledExtensionId(),
       profile_,
-      false,
       base::Bind(&HotwordService::InstalledFromWebstoreCallback,
                  weak_factory_.GetWeakPtr(),
                  num_tries - 1));
