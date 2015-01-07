@@ -127,6 +127,13 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
       DiagnosticsEngine::Note, kNoteProtectedNonVirtualDtor);
 }
 
+bool FindBadConstructsConsumer::VisitDecl(clang::Decl* decl) {
+  clang::TagDecl* tag_decl = dyn_cast<clang::TagDecl>(decl);
+  if (tag_decl && tag_decl->isCompleteDefinition())
+    CheckTag(tag_decl);
+  return true;
+}
+
 void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
                                                  CXXRecordDecl* record) {
   bool implementation_file = InImplementationFile(record_location);

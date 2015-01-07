@@ -12,12 +12,14 @@ struct Options {
       : check_base_classes(false),
         check_weak_ptr_factory_order(false),
         check_enum_last_value(false),
-        strict_virtual_specifiers(false) {}
+        strict_virtual_specifiers(false),
+        with_ast_visitor(false) {}
 
   bool check_base_classes;
   bool check_weak_ptr_factory_order;
   bool check_enum_last_value;
   bool strict_virtual_specifiers;
+  bool with_ast_visitor;
 };
 
 }  // namespace chrome_checker

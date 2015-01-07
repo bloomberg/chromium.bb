@@ -4,6 +4,7 @@
 
 #include "FindBadConstructsAction.h"
 
+#include "clang/AST/ASTConsumer.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 
 #include "FindBadConstructsConsumer.h"
@@ -12,12 +13,31 @@ using namespace clang;
 
 namespace chrome_checker {
 
+namespace {
+
+class PluginConsumer : public ASTConsumer {
+ public:
+  PluginConsumer(CompilerInstance* instance, const Options& options)
+      : visitor_(*instance, options) {}
+
+  void HandleTranslationUnit(clang::ASTContext& context) override {
+    visitor_.TraverseDecl(context.getTranslationUnitDecl());
+  }
+
+ private:
+  FindBadConstructsConsumer visitor_;
+};
+
+}  // namespace
+
 FindBadConstructsAction::FindBadConstructsAction() {
 }
 
 std::unique_ptr<ASTConsumer> FindBadConstructsAction::CreateASTConsumer(
     CompilerInstance& instance,
     llvm::StringRef ref) {
+  if (options_.with_ast_visitor)
+    return llvm::make_unique<PluginConsumer>(&instance, options_);
   return llvm::make_unique<FindBadConstructsConsumer>(instance, options_);
 }
 
@@ -38,6 +58,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.check_enum_last_value = true;
     } else if (args[i] == "strict-virtual-specifiers") {
       options_.strict_virtual_specifiers = true;
+    } else if (args[i] == "with-ast-visitor") {
+      options_.with_ast_visitor = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";

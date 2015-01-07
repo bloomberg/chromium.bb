@@ -33,6 +33,9 @@ do_testcase() {
     flags="${flags} -isysroot $(xcrun --show-sdk-path) -stdlib=libstdc++"
   fi
 
+  flags="${flags} -Xclang -plugin-arg-find-bad-constructs \
+      -Xclang with-ast-visitor"
+
   local output="$("${CLANG_PATH}" -fsyntax-only -Wno-c++11-extensions \
       -Wno-inconsistent-missing-override \
       -Xclang -load -Xclang "${PLUGIN_PATH}" \

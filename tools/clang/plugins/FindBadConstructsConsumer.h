@@ -21,6 +21,7 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/Attr.h"
 #include "clang/AST/CXXInheritance.h"
+#include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/TypeLoc.h"
 #include "clang/Basic/SourceManager.h"
 
@@ -30,10 +31,15 @@
 namespace chrome_checker {
 
 // Searches for constructs that we know we don't want in the Chromium code base.
-class FindBadConstructsConsumer : public ChromeClassTester {
+class FindBadConstructsConsumer
+    : public clang::RecursiveASTVisitor<FindBadConstructsConsumer>,
+      public ChromeClassTester {
  public:
   FindBadConstructsConsumer(clang::CompilerInstance& instance,
                             const Options& options);
+
+  // RecursiveASTVisitor:
+  bool VisitDecl(clang::Decl* decl);
 
   // ChromeClassTester overrides:
   void CheckChromeClass(clang::SourceLocation record_location,
