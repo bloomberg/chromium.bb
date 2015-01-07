@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_constants.h"
 
 namespace password_manager {
 
@@ -38,6 +39,8 @@ TEST(AffiliationUtilsTest, ValidWebFacetURIs) {
     ASSERT_TRUE(facet_uri.IsValidWebFacetURI());
     EXPECT_EQ(std::string(test_case.expected_canonical_facet_uri),
               facet_uri.canonical_spec());
+    EXPECT_EQ(url::kHttpsScheme, facet_uri.scheme());
+    EXPECT_EQ("", facet_uri.android_package_name());
   }
 }
 
@@ -70,27 +73,35 @@ TEST(AffiliationUtilsTest, ValidAndroidFacetURIs) {
   struct {
     const char* valid_facet_uri;
     const char* expected_canonical_facet_uri;
+    const char* expected_package_name;
   } kTestCases[] = {
       {"android://"
        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
        "@com.example.android",
        "android://"
        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
-       "@com.example.android"},
+       "@com.example.android",
+       "com.example.android"},
       {"ANDROID://"
        "hash@abcdefghijklmnopqrstuvwxyz_0123456789.ABCDEFGHIJKLMNOPQRSTUVWXYZ",
        "android://"
-       "hash@abcdefghijklmnopqrstuvwxyz_0123456789.ABCDEFGHIJKLMNOPQRSTUVWXYZ"},
+       "hash@abcdefghijklmnopqrstuvwxyz_0123456789.ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+       "abcdefghijklmnopqrstuvwxyz_0123456789.ABCDEFGHIJKLMNOPQRSTUVWXYZ"},
       {"android://needpadding@com.example.android",
-       "android://needpadding=@com.example.android"},
+       "android://needpadding=@com.example.android",
+       "com.example.android"},
       {"android://needtounescape%3D%3D@com.%65xample.android",
-       "android://needtounescape==@com.example.android"},
+       "android://needtounescape==@com.example.android",
+       "com.example.android"},
       {"ANDROID://hash@com.example.android",
-       "android://hash@com.example.android"},
+       "android://hash@com.example.android",
+       "com.example.android"},
       {"android://hash@com.example.android/",
-       "android://hash@com.example.android"},
+       "android://hash@com.example.android",
+       "com.example.android"},
       {"android://hash:@com.example.android",
-       "android://hash@com.example.android"}};
+       "android://hash@com.example.android",
+       "com.example.android"}};
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message("URI = ") << test_case.valid_facet_uri);
     FacetURI facet_uri =
@@ -98,6 +109,9 @@ TEST(AffiliationUtilsTest, ValidAndroidFacetURIs) {
     ASSERT_TRUE(facet_uri.IsValidAndroidFacetURI());
     EXPECT_EQ(test_case.expected_canonical_facet_uri,
               facet_uri.canonical_spec());
+    EXPECT_EQ("android", facet_uri.scheme());
+    EXPECT_EQ(test_case.expected_package_name,
+              facet_uri.android_package_name());
   }
 }
 
@@ -135,6 +149,7 @@ TEST(AffiliationUtilsTest, InvalidAndroidFacetURIs) {
     SCOPED_TRACE(testing::Message("URI = ") << uri);
     FacetURI facet_uri = FacetURI::FromPotentiallyInvalidSpec(uri);
     EXPECT_FALSE(facet_uri.IsValidAndroidFacetURI());
+    EXPECT_EQ("", facet_uri.android_package_name());
   }
 }
 

@@ -48,6 +48,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "url/url_parse.h"
 
 namespace password_manager {
 
@@ -103,6 +104,15 @@ class FacetURI {
     return is_valid_;
   }
 
+  // Returns the canonical scheme of the encapsulated facet URI, provided it is
+  // valid, or the empty string otherwise.
+  std::string scheme() const;
+
+  // Returns the canonical package name that the encapsulated facet URI
+  // references, provided it is a valid Android facet URI, or the empty string
+  // otherwise.
+  std::string android_package_name() const;
+
   // Returns the text of the encapsulated canonical URI, which must be valid.
   const std::string& canonical_spec() const {
     DCHECK(is_valid_);
@@ -119,6 +129,9 @@ class FacetURI {
   // The text of the encapsulated canonical URI, valid if and only if
   // |is_valid_| is true.
   std::string canonical_spec_;
+
+  // Identified components of the canonical spec.
+  url::Parsed parsed_;
 };
 
 // A collection of facets affiliated with each other, i.e. an equivalence class.

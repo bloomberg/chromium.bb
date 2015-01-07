@@ -30,15 +30,6 @@ base::StringPiece ComponentString(const std::string& uri,
   return base::StringPiece(uri.c_str() + component.begin, component.len);
 }
 
-// Extracts the scheme of an unparsed |uri| as a StringPiece, or returns the
-// empty string on failure.
-base::StringPiece ExtractScheme(const std::string& uri) {
-  url::Component scheme_component;
-  if (url::ExtractScheme(uri.c_str(), uri.size(), &scheme_component))
-    return ComponentString(uri, scheme_component);
-  return base::StringPiece();
-}
-
 // Returns true if the passed ASCII |input| string contains nothing else than
 // alphanumeric characters and those in |other_characters|.
 bool ContainsOnlyAlphanumericAnd(const base::StringPiece& input,
@@ -236,15 +227,31 @@ bool FacetURI::operator>(const FacetURI& other) const {
 }
 
 bool FacetURI::IsValidWebFacetURI() const {
-  return is_valid_ && ExtractScheme(canonical_spec_) == url::kHttpsScheme;
+  return scheme() == url::kHttpsScheme;
 }
 
 bool FacetURI::IsValidAndroidFacetURI() const {
-  return is_valid_ && ExtractScheme(canonical_spec_) == kAndroidAppScheme;
+  return scheme() == kAndroidAppScheme;
+}
+
+std::string FacetURI::scheme() const {
+  return is_valid()
+             ? ComponentString(canonical_spec_, parsed_.scheme).as_string()
+             : "";
+}
+
+std::string FacetURI::android_package_name() const {
+  if (!IsValidAndroidFacetURI())
+    return "";
+  return ComponentString(canonical_spec_, parsed_.host).as_string();
 }
 
 FacetURI::FacetURI(const std::string& canonical_spec, bool is_valid)
     : is_valid_(is_valid), canonical_spec_(canonical_spec) {
+  // TODO(engedy): Refactor code in order to avoid to avoid parsing the URL
+  // twice.
+  url::ParseStandardURL(canonical_spec_.c_str(), canonical_spec_.size(),
+                        &parsed_);
 }
 
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
