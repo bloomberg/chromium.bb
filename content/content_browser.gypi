@@ -1956,5 +1956,10 @@
         'browser/media/media_web_contents_observer.h',
       ],
     }],
+    ['OS == "linux" and use_openssl==1', {
+      'dependencies': [
+        '../third_party/boringssl/boringssl.gyp:boringssl',
+      ],
+    }],
   ],
 }

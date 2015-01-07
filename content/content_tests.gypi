@@ -1025,6 +1025,11 @@
             '../ui/ozone/ozone.gyp:ozone_base',
           ],
         }],
+        ['OS == "mac" and use_openssl==1', {
+          'dependencies': [
+            '../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
+        }],
       ],
     },
   ],

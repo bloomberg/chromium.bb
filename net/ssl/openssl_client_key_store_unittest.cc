@@ -27,7 +27,7 @@ class OpenSSLClientKeyStoreTest : public ::testing::Test {
     : store_(OpenSSLClientKeyStore::GetInstance()) {
   }
 
-  virtual ~OpenSSLClientKeyStoreTest() {
+  ~OpenSSLClientKeyStoreTest() override {
     if (store_)
       store_->Flush();
   }

@@ -94,9 +94,7 @@ class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
     key_store_ = OpenSSLClientKeyStore::GetInstance();
   }
 
-  virtual ~SSLClientSocketOpenSSLClientAuthTest() {
-    key_store_->Flush();
-  }
+  ~SSLClientSocketOpenSSLClientAuthTest() override { key_store_->Flush(); }
 
  protected:
   scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
