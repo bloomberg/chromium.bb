@@ -18,6 +18,8 @@ namespace blink {
 
 class StyleRule;
 class StyleRuleBase;
+class StyleRuleKeyframe;
+class StyleRuleKeyframes;
 class StyleRuleViewport;
 class StyleSheetContents;
 class ImmutableStylePropertySet;
@@ -64,6 +66,8 @@ private:
 
     void consumeNamespaceRule(CSSParserTokenRange prelude); // This modifies m_styleSheet directly!
     PassRefPtrWillBeRawPtr<StyleRuleViewport> consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
+    PassRefPtrWillBeRawPtr<StyleRuleKeyframes> consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block);
+    PassRefPtrWillBeRawPtr<StyleRuleKeyframe> consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
 
     // FIXME: We should use a CSSRule::Type here
