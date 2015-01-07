@@ -3,6 +3,8 @@
   [ { "GUID": "123",
       "Type": "VPN",
       "Name": "testopenvpn",
+      "IPAddressConfigType": "Static",
+      "NameServersConfigType": "Static",
       "StaticIPConfig": {
           "Gateway":"1.1.1.1",
           "IPAddress": "127.0.0.1",

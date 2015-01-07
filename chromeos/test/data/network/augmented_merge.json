@@ -13,7 +13,12 @@
       "IPAddress": "124.124.124.124",
       "NameServers": [ "1.1.1.5", "1.1.1.6" ],
       "RoutingPrefix": 25,
-      "Type": "IPv4",
+      "Type": "IPv4"
+   },
+   "IPAddressConfigType": {
+     "DevicePolicy": "Static",
+     "Effective": "UserPolicy",
+     "UserSetting": "Static"
    },
    "StaticIPConfig": {
       "IPAddress": {

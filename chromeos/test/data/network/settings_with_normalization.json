@@ -1,4 +1,24 @@
 {
+    "irrelevant-staticipconfig": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "StaticIPConfig": {
+            "Gateway":"1.1.1.1",
+            "IPAddress": "127.0.0.1"
+        }
+    },
+    "irrelevant-staticipconfig-normalized": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
     "ethernet-and-vpn": {
         "Recommended": [],
         "GUID": "guid",

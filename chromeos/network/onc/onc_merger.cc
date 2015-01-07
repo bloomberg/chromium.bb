@@ -369,7 +369,9 @@ class MergeToAugmented : public MergeToEffective {
       // This field is not part of the provided ONCSignature, thus it cannot be
       // controlled by policy. Return the plain active value instead of an
       // augmented dictionary.
-      return make_scoped_ptr(values.active_setting->DeepCopy());
+      if (values.active_setting)
+        return make_scoped_ptr(values.active_setting->DeepCopy());
+      return nullptr;
     }
 
     // This field is part of the provided ONCSignature, thus it can be

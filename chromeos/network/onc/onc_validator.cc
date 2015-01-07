@@ -522,7 +522,15 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
       ::onc::network_type::kEthernet, ::onc::network_type::kVPN,
       ::onc::network_type::kWiFi, ::onc::network_type::kCellular};
   const std::vector<const char*> valid_types(toVector(kValidTypes));
+  const char* const kValidIPConfigTypes[] = {kIPConfigTypeDHCP,
+                                             kIPConfigTypeStatic};
+  const std::vector<const char*> valid_ipconfig_types(
+      toVector(kValidIPConfigTypes));
   if (FieldExistsAndHasNoValidValue(*result, kType, valid_types) ||
+      FieldExistsAndHasNoValidValue(*result, kIPAddressConfigType,
+                                    valid_ipconfig_types) ||
+      FieldExistsAndHasNoValidValue(*result, kNameServersConfigType,
+                                    valid_ipconfig_types) ||
       FieldExistsAndIsEmpty(*result, kGUID)) {
     return false;
   }
@@ -537,6 +545,18 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
   if (!remove) {
     all_required_exist &=
         RequireField(*result, kName) && RequireField(*result, kType);
+
+    std::string ip_address_config_type, name_servers_config_type;
+    result->GetStringWithoutPathExpansion(kIPAddressConfigType,
+                                          &ip_address_config_type);
+    result->GetStringWithoutPathExpansion(kNameServersConfigType,
+                                          &name_servers_config_type);
+    if (ip_address_config_type == kIPConfigTypeStatic ||
+        name_servers_config_type == kIPConfigTypeStatic) {
+      // TODO(pneubeck): Add ValidateStaticIPConfig and confirm that the
+      // correct properties are provided based on the config type.
+      all_required_exist &= RequireField(*result, kStaticIPConfig);
+    }
 
     std::string type;
     result->GetStringWithoutPathExpansion(kType, &type);

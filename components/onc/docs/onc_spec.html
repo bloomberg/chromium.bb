@@ -251,6 +251,44 @@
       string.
     </dd>
 
+    <dt class="field">IPAddressConfigType</dt>
+    <dd>
+      <span class="field_meta">
+        (optional if <span class="field">Remove</span> is
+        <span class="value">false</span>, otherwise ignored. Defaults to
+        <span class="value">DHCP</span> if
+        <span class="field">NameServersConfigType</span> is specified)
+        <span class="type">string</span>
+      </span>
+      <span class="rule">
+        <span class="rule_id"></span>
+        Allowed values are <span class="value">DHCP</span> and
+        <span class="value">Static</span>.
+      </span>
+      Determines whether the IP Address configuration is statically configured,
+      see <span class="field">StaticIPConfig</span>, or automatically configured
+      using DHCP.
+    </dd>
+
+    <dt class="field">NameServersConfigType</dt>
+    <dd>
+      <span class="field_meta">
+        (optional if <span class="field">Remove</span> is
+        <span class="value">false</span>, otherwise ignored. Defaults to
+        <span class="value">DHCP</span> if
+        <span class="field">IPAddressConfigType</span> is specified)
+        <span class="type">string</span>
+      </span>
+      <span class="rule">
+        <span class="rule_id"></span>
+        Allowed values are <span class="value">DHCP</span> and
+        <span class="value">Static</span>.
+      </span>
+      Determines whether the NameServers configuration is statically configured,
+      see <span class="field">StaticIPConfig</span>, or automatically configured
+      using DHCP.
+    </dd>
+
     <dt class="field">IPConfigs</dt>
     <dd>
       <span class="field_meta">
@@ -263,12 +301,19 @@
     <dt class="field">StaticIPConfig</dt>
     <dd>
       <span class="field_meta">
-        (optional if <span class="field">Remove</span> is
-        <span class="value">false</span>, otherwise ignored)
+        (required if <span class="field">IPAddressConfigType</span> or
+        <span class="field">NameServersConfigType</span> is set to
+        <span class="value">Static</span>)
         <span class="type">IPConfig</span>
       </span>
       Each property set in this IPConfig object overrides the respective
       parameter received over DHCP.
+      If <span class="field">IPAddressConfigType</span> is set to
+      <span class="value">Static</span>, <span class="field">IPAddress</span>
+      and <span class="field">Gateway</span> are required.
+      If <span class="field">NameServersConfigType</span> is set to
+      <span class="value">Static</span>, <span class="field">NameServers</span>
+      is required.
     </dd>
 
     <dt class="field">SavedIPConfig</dt>
@@ -533,7 +578,7 @@
     <dt class="field">IPAddress</dt>
     <dd>
       <span class="field_meta">
-        (required)
+        (optional)
         <span class="type">string</span>
       </span>
       Describes the IPv4 or IPv6 address of a connection, depending on the value
@@ -559,7 +604,8 @@
     <dt class="field">Gateway</dt>
     <dd>
       <span class="field_meta">
-        (optional)
+        (required if <span class="field">IPAddress</span> is set. Otherwise
+        ignored.)
         <span class="type">string</span>
       </span>
       Describes the gateway address to use for the configuration. Must match

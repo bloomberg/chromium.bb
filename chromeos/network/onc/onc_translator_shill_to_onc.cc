@@ -486,11 +486,30 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
                                 *saved_ipconfig);
   }
 
+  // Translate the StaticIPConfig object and set the IP config types.
   const base::DictionaryValue* static_ipconfig = nullptr;
   if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
-        shill::kStaticIPConfigProperty, &static_ipconfig)) {
-    TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig,
-                                *static_ipconfig);
+          shill::kStaticIPConfigProperty, &static_ipconfig)) {
+    std::string ip_address;
+    if (static_ipconfig->GetStringWithoutPathExpansion(shill::kAddressProperty,
+                                                       &ip_address) &&
+        !ip_address.empty()) {
+      onc_object_->SetStringWithoutPathExpansion(
+          ::onc::network_config::kIPAddressConfigType,
+          ::onc::network_config::kIPConfigTypeStatic);
+    }
+    const base::ListValue* name_servers = nullptr;
+    if (static_ipconfig->GetListWithoutPathExpansion(
+            shill::kNameServersProperty, &name_servers) &&
+        !name_servers->empty()) {
+      onc_object_->SetStringWithoutPathExpansion(
+          ::onc::network_config::kNameServersConfigType,
+          ::onc::network_config::kIPConfigTypeStatic);
+    }
+    if (!ip_address.empty() || (name_servers && !name_servers->empty())) {
+      TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig,
+                                  *static_ipconfig);
+    }
   }
 }
 

@@ -1,0 +1,12 @@
+{
+    "GUID": "{b3e26c32-4289-41ea-b2a4-d0554acb1f67}",
+    "IPAddressConfigType": "DHCP",
+    "Name": "Wifi With DHCP",
+    "Type": "WiFi",
+    "WiFi": {
+        "AutoConnect": true,
+        "Passphrase": "some passphrase",
+        "SSID": "WifiWithDHCP",
+        "Security": "WPA-PSK"
+    }
+}

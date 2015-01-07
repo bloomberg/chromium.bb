@@ -13,6 +13,23 @@
 namespace chromeos {
 namespace onc {
 
+// Validate that an irrelevant StaticIPConfig dictionary will be removed.
+TEST(ONCNormalizerTest, RemoveStaticIPConfig) {
+  Normalizer normalizer(true);
+  scoped_ptr<const base::DictionaryValue> data(
+      test_utils::ReadTestDictionary("settings_with_normalization.json"));
+
+  const base::DictionaryValue* original = NULL;
+  const base::DictionaryValue* expected_normalized = NULL;
+  data->GetDictionary("irrelevant-staticipconfig", &original);
+  data->GetDictionary("irrelevant-staticipconfig-normalized",
+                      &expected_normalized);
+
+  scoped_ptr<base::DictionaryValue> actual_normalized =
+      normalizer.NormalizeObject(&kNetworkConfigurationSignature, *original);
+  EXPECT_TRUE(test_utils::Equals(expected_normalized, actual_normalized.get()));
+}
+
 // This test case is about validating valid ONC objects.
 TEST(ONCNormalizerTest, NormalizeNetworkConfigurationEthernetAndVPN) {
   Normalizer normalizer(true);

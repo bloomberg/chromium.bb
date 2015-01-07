@@ -3,7 +3,9 @@
     "Authentication":"None"
   },
   "GUID":"guid",
+  "IPAddressConfigType":"Static",
   "Name":"",
+  "NameServersConfigType":"Static",
   "StaticIPConfig":{
     "Gateway":"1.1.1.7",
     "IPAddress":"125.125.125.125",

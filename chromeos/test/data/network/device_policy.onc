@@ -1,6 +1,7 @@
 { "GUID": "123",
   "Type": "VPN",
   "Name": "testopenvpn",
+  "IPAddressConfigType": "Static",
   "StaticIPConfig": {
     "Type": "IPv4",
     "IPAddress": "127.0.0.1"

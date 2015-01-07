@@ -11,6 +11,7 @@
   "ProxySettings": {
     "Type": "Direct"
   },
+  "IPAddressConfigType": "Static",
   "StaticIPConfig": {
     "Type": "IPv4",
     "IPAddress": "1.2.3.4",

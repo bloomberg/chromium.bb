@@ -50,6 +50,7 @@ INSTANTIATE_TEST_CASE_P(
                        "shill_wifi_clientcert.json"),
         std::make_pair("valid_wifi_clientref.onc", "shill_wifi_clientref.json"),
         std::make_pair("valid_l2tpipsec.onc", "shill_l2tpipsec.json"),
+        std::make_pair("wifi_dhcp.onc", "shill_wifi_dhcp.json"),
         std::make_pair("l2tpipsec_clientcert_with_cert_pems.onc",
                        "shill_l2tpipsec_clientcert.json"),
         std::make_pair("valid_openvpn_with_cert_pems.onc",
