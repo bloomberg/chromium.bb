@@ -21,29 +21,28 @@ class TegraV4L2Device : public V4L2Device {
   explicit TegraV4L2Device(Type type);
   virtual ~TegraV4L2Device();
 
-  int Ioctl(int flags, void* arg) override;
-  bool Poll(bool poll_device, bool* event_pending) override;
-  bool SetDevicePollInterrupt() override;
-  bool ClearDevicePollInterrupt() override;
-  void* Mmap(void* addr,
-             unsigned int len,
-             int prot,
-             int flags,
-             unsigned int offset) override;
-  void Munmap(void* addr, unsigned int len) override;
-  bool Initialize() override;
-  bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) override;
-  EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
-                             EGLContext egl_context,
-                             GLuint texture_id,
-                             gfx::Size frame_buffer_size,
-                             unsigned int buffer_index,
-                             uint32_t v4l2_pixfmt,
-                             size_t num_v4l2_planes);
-  EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                             EGLImageKHR egl_image) override;
-  GLenum GetTextureTarget() override;
-  uint32 PreferredInputFormat() override;
+  virtual int Ioctl(int flags, void* arg) override;
+  virtual bool Poll(bool poll_device, bool* event_pending) override;
+  virtual bool SetDevicePollInterrupt() override;
+  virtual bool ClearDevicePollInterrupt() override;
+  virtual void* Mmap(void* addr,
+                     unsigned int len,
+                     int prot,
+                     int flags,
+                     unsigned int offset) override;
+  virtual void Munmap(void* addr, unsigned int len) override;
+  virtual bool Initialize() override;
+  virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                                     EGLContext egl_context,
+                                     GLuint texture_id,
+                                     gfx::Size frame_buffer_size,
+                                     unsigned int buffer_index,
+                                     size_t planes_count) override;
+  virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
+                                     EGLImageKHR egl_image) override;
+  virtual GLenum GetTextureTarget() override;
+  virtual uint32 PreferredInputFormat() override;
+  virtual uint32 PreferredOutputFormat() override;
 
  private:
   const Type type_;

@@ -100,8 +100,7 @@ enum VideoFormat {
   YV12J,
   NV12,
   YV24,
-  ARGB,
-  FORMAT_MAX = ARGB,
+  FORMAT_MAX = YV24,
 };
 
 // See media/base/video_decoder_config.h for descriptions.

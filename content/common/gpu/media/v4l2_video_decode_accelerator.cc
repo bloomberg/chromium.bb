@@ -188,7 +188,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       egl_display_(egl_display),
       egl_context_(egl_context),
       video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
-      output_format_fourcc_(0),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
@@ -227,9 +226,6 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       break;
     case media::VP8PROFILE_ANY:
       DVLOG(2) << "Initialize(): profile VP8PROFILE_ANY";
-      break;
-    case media::VP9PROFILE_ANY:
-      DVLOG(2) << "Initialize(): profile VP9PROFILE_ANY";
       break;
     default:
       DLOG(ERROR) << "Initialize(): unsupported profile=" << profile;
@@ -270,8 +266,21 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
-  if (!SetupFormats())
+  if (!CreateInputBuffers())
     return false;
+
+  // Output format has to be setup before streaming starts.
+  struct v4l2_format format;
+  memset(&format, 0, sizeof(format));
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  uint32 output_format_fourcc = device_->PreferredOutputFormat();
+  if (output_format_fourcc == 0) {
+    // TODO(posciak): We should enumerate available output formats, as well as
+    // take into account formats that the client is ready to accept.
+    return false;
+  }
+  format.fmt.pix_mp.pixelformat = output_format_fourcc;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   // Subscribe to the resolution change event.
   struct v4l2_event_subscription sub;
@@ -279,13 +288,11 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   sub.type = V4L2_EVENT_RESOLUTION_CHANGE;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_SUBSCRIBE_EVENT, &sub);
 
+  // Initialize format-specific bits.
   if (video_profile_ >= media::H264PROFILE_MIN &&
       video_profile_ <= media::H264PROFILE_MAX) {
     decoder_h264_parser_.reset(new media::H264Parser());
   }
-
-  if (!CreateInputBuffers())
-    return false;
 
   if (!decoder_thread_.Start()) {
     LOG(ERROR) << "Initialize(): decoder thread failed to start";
@@ -356,7 +363,6 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
                                                     buffers[i].texture_id(),
                                                     frame_buffer_size_,
                                                     i,
-                                                    output_format_fourcc_,
                                                     output_planes_count_);
     if (egl_image == EGL_NO_IMAGE_KHR) {
       LOG(ERROR) << "AssignPictureBuffers(): could not create EGLImageKHR";
@@ -682,8 +688,8 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
     return false;
   } else {
     DCHECK_GE(video_profile_, media::VP8PROFILE_MIN);
-    DCHECK_LE(video_profile_, media::VP9PROFILE_MAX);
-    // For VP8/9, we can just dump the entire buffer.  No fragmentation needed,
+    DCHECK_LE(video_profile_, media::VP8PROFILE_MAX);
+    // For VP8, we can just dump the entire buffer.  No fragmentation needed,
     // and we never return a partial frame.
     *endpos = size;
     decoder_partial_frame_pending_ = false;
@@ -1077,7 +1083,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
     DCHECK_NE(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_NE(output_record.picture_id, -1);
     output_record.at_device = false;
-    if (dqbuf.m.planes[0].bytesused == 0) {
+    if (dqbuf.m.planes[0].bytesused + dqbuf.m.planes[1].bytesused == 0) {
       // This is an empty output buffer returned as part of a flush.
       free_output_buffers_.push(dqbuf.index);
     } else {
@@ -1632,12 +1638,6 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
     }
   }
 
-  // Make sure we are still getting the format we set on initialization.
-  if (format->fmt.pix_mp.pixelformat != output_format_fourcc_) {
-    LOG(ERROR) << "Unexpected format from G_FMT on output";
-    return false;
-  }
-
   return true;
 }
 
@@ -1662,6 +1662,24 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   DCHECK_EQ(decoder_state_, kUninitialized);
   DCHECK(!input_streamon_);
   DCHECK(input_buffer_map_.empty());
+
+  __u32 pixelformat = V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_);
+  if (!pixelformat) {
+    NOTREACHED();
+    return false;
+  }
+
+  struct v4l2_format format;
+  memset(&format, 0, sizeof(format));
+  format.type                              = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  format.fmt.pix_mp.pixelformat            = pixelformat;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
+    format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor4k;
+  else
+    format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor1080p;
+  format.fmt.pix_mp.num_planes             = 1;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
@@ -1696,63 +1714,6 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
     input_buffer_map_[i].address = address;
     input_buffer_map_[i].length = buffer.m.planes[0].length;
   }
-
-  return true;
-}
-
-bool V4L2VideoDecodeAccelerator::SetupFormats() {
-  // We always run this as we prepare to initialize.
-  DCHECK_EQ(decoder_state_, kUninitialized);
-  DCHECK(!input_streamon_);
-  DCHECK(!output_streamon_);
-
-  __u32 input_format_fourcc =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_);
-  if (!input_format_fourcc) {
-    NOTREACHED();
-    return false;
-  }
-
-  size_t input_size;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
-    input_size = kInputBufferMaxSizeFor4k;
-  else
-    input_size = kInputBufferMaxSizeFor1080p;
-
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  format.fmt.pix_mp.pixelformat = input_format_fourcc;
-  format.fmt.pix_mp.plane_fmt[0].sizeimage = input_size;
-  format.fmt.pix_mp.num_planes = 1;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
-
-  // We have to set up the format for output, because the driver may not allow
-  // changing it once we start streaming; whether it can support our chosen
-  // output format or not may depend on the input format.
-  struct v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-    if (device_->CanCreateEGLImageFrom(fmtdesc.pixelformat)) {
-      output_format_fourcc_ = fmtdesc.pixelformat;
-      break;
-    }
-    ++fmtdesc.index;
-  }
-
-  if (output_format_fourcc_ == 0) {
-    LOG(ERROR) << "Could not find a usable output format";
-    return false;
-  }
-
-  // Just set the fourcc for output; resolution, etc., will come from the
-  // driver once it extracts it from the stream.
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = output_format_fourcc_;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   return true;
 }

@@ -275,9 +275,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
 
-  // Set input and output formats before starting decode.
-  bool SetupFormats();
-
   //
   // Methods run on child thread.
   //
@@ -401,8 +398,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   std::vector<OutputRecord> output_buffer_map_;
   // Required size of DPB for decoding.
   int output_dpb_size_;
-
-  // Number of planes (i.e. separate memory buffers) for output.
+  // Stores the number of planes (i.e. separate memory buffers) for output.
   size_t output_planes_count_;
 
   // Pictures that are ready but not sent to PictureReady yet.
@@ -438,8 +434,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // The codec we'll be decoding for.
   media::VideoCodecProfile video_profile_;
-  // Chosen output format.
-  uint32_t output_format_fourcc_;
 
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2VideoDecodeAccelerator> weak_this_factory_;

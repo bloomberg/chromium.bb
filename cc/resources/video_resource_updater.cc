@@ -149,7 +149,6 @@ bool VideoResourceUpdater::VerifyFrame(
 #if defined(VIDEO_HOLE)
     case media::VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
-    case media::VideoFrame::ARGB:
       return true;
 
     // Unacceptable inputs. ¯\(°_o)/¯

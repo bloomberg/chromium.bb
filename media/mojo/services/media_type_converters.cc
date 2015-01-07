@@ -141,7 +141,6 @@ ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12J, VIDEO_FORMAT_YV12J);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::NV12, VIDEO_FORMAT_NV12);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV24, VIDEO_FORMAT_YV24);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::ARGB, VIDEO_FORMAT_ARGB);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
                    VideoFrame::FORMAT_MAX,
                    VIDEO_FORMAT_FORMAT_MAX);

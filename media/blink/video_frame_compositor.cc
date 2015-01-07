@@ -24,7 +24,6 @@ static bool IsOpaque(const scoped_refptr<VideoFrame>& frame) {
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)
     case VideoFrame::NATIVE_TEXTURE:
-    case VideoFrame::ARGB:
       break;
   }
   return false;
