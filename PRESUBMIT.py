@@ -1403,6 +1403,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
   results.extend(_CheckForCopyrightedCode(input_api, output_api))
+  results.extend(_CheckForWindowsLineEndings(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1586,6 +1587,40 @@ def _CheckForIPCRules(input_api, output_api):
         _IPC_ENUM_TRAITS_DEPRECATED, problems)]
   else:
     return []
+
+
+def _CheckForWindowsLineEndings(input_api, output_api):
+  """Check source code and known ascii text files for Windows style line
+  endings.
+  """
+  known_text_files = r'.*\.(txt|html|htm|mhtml|py)$'
+
+  file_inclusion_pattern = (
+    known_text_files,
+    r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  )
+
+  filter = lambda f: input_api.FilterSourceFile(
+    f, white_list=file_inclusion_pattern, black_list=None)
+  files = [f.LocalPath() for f in
+           input_api.AffectedSourceFiles(filter)]
+
+  problems = []
+
+  for file in files:
+    fp = open(file, 'r')
+    for line in fp:
+      if line.endswith('\r\n'):
+        problems.append(file)
+        break
+    fp.close()
+
+  if problems:
+    return [output_api.PresubmitPromptWarning('Are you sure that you want '
+        'these files to contain Windows style line endings?\n' +
+        '\n'.join(problems))]
+
+  return []
 
 
 def CheckChangeOnUpload(input_api, output_api):
