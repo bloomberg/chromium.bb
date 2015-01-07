@@ -245,6 +245,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns horizontal bits per pixel for given |plane| and |format|.
   static int PlaneHorizontalBitsPerPixel(Format format, size_t plane);
 
+  // Returns bits per pixel for given |plane| and |format|.
+  static int PlaneBitsPerPixel(Format format, size_t plane);
+
   // Returns the number of bytes per row for the given plane, format, and width.
   // The width may be aligned to format requirements.
   static size_t RowBytes(size_t plane, Format format, int width);

@@ -82,15 +82,18 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   gfx::Size coded_size;
   gfx::Size visible_size;
   media::VideoFrame::Format frame_format = media::VideoFrame::UNKNOWN;
-  int bytesperline = 0;
-  int sizeimage = 0;
+  size_t bytesperline = 0;
+  // Total bytes in the frame.
+  size_t sizeimage = 0;
 
-  if (V4L2_TYPE_IS_MULTIPLANAR(format.type) &&
-      format.fmt.pix_mp.num_planes > 0) {
+  if (V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
+    DCHECK_GT(format.fmt.pix_mp.num_planes, 0);
     bytesperline =
         base::checked_cast<int>(format.fmt.pix_mp.plane_fmt[0].bytesperline);
-    sizeimage =
-        base::checked_cast<int>(format.fmt.pix_mp.plane_fmt[0].sizeimage);
+    for (size_t i = 0; i < format.fmt.pix_mp.num_planes; ++i) {
+      sizeimage +=
+          base::checked_cast<int>(format.fmt.pix_mp.plane_fmt[i].sizeimage);
+    }
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
                          base::checked_cast<int>(format.fmt.pix_mp.height));
     frame_format =
@@ -104,38 +107,53 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
         V4L2Device::V4L2PixFmtToVideoFrameFormat(format.fmt.pix.pixelformat);
   }
 
-  int horiz_bpp =
+  // V4L2 does not provide per-plane bytesperline (bpl) when different
+  // components are sharing one physical plane buffer. In this case, it only
+  // provides bpl for the first component in the plane. So we can't depend on it
+  // for calculating height, because bpl may vary within one physical plane
+  // buffer. For example, YUV420 contains 3 components in one physical plane,
+  // with Y at 8 bits per pixel, and Cb/Cr at 4 bits per pixel per component,
+  // but we only get 8 pits per pixel from bytesperline in physical plane 0.
+  // So we need to get total frame bpp from elsewhere to calculate coded height.
+
+  // We need bits per pixel for one component only to calculate
+  // coded_width from bytesperline.
+  int plane_horiz_bits_per_pixel =
       media::VideoFrame::PlaneHorizontalBitsPerPixel(frame_format, 0);
-  DVLOG(3) << __func__ << ": bytesperline=" << bytesperline
-           << ", sizeimage=" << sizeimage
-           << ", visible_size=" << visible_size.ToString() << ", frame_format="
-           << media::VideoFrame::FormatToString(frame_format)
-           << ", horiz_bpp=" << horiz_bpp;
-  if (sizeimage == 0 || bytesperline == 0 || horiz_bpp == 0 ||
-      (bytesperline * 8) % horiz_bpp != 0) {
+
+  // Adding up bpp for each component will give us total bpp for all components.
+  int total_bpp = 0;
+  for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame_format); ++i)
+    total_bpp += media::VideoFrame::PlaneBitsPerPixel(frame_format, i);
+
+  if (sizeimage == 0 || bytesperline == 0 || plane_horiz_bits_per_pixel == 0 ||
+      total_bpp == 0 || (bytesperline * 8) % plane_horiz_bits_per_pixel != 0) {
     LOG(ERROR) << "Invalid format provided";
     return coded_size;
   }
 
-  // Round up sizeimage to full bytesperlines. sizeimage does not have to be
-  // a multiple of bytesperline, as in V4L2 terms it's just a byte size of
-  // the buffer, unrelated to its payload.
-  sizeimage = ((sizeimage + bytesperline - 1) / bytesperline) * bytesperline;
+  // Coded width can be calculated by taking the first component's bytesperline,
+  // which in V4L2 always applies to the first component in physical plane
+  // buffer.
+  int coded_width = bytesperline * 8 / plane_horiz_bits_per_pixel;
+  // Sizeimage is coded_width * coded_height * total_bpp.
+  int coded_height = sizeimage * 8 / coded_width / total_bpp;
 
-  coded_size.SetSize(bytesperline * 8 / horiz_bpp, sizeimage / bytesperline);
+  coded_size.SetSize(coded_width, coded_height);
+  // It's possible the driver gave us a slightly larger sizeimage than what
+  // would be calculated from coded size. This is technically not allowed, but
+  // some drivers (Exynos) like to have some additional alignment that is not a
+  // multiple of bytesperline. The best thing we can do is to compensate by
+  // aligning to next full row.
+  if (sizeimage > media::VideoFrame::AllocationSize(frame_format, coded_size))
+    coded_size.SetSize(coded_width, coded_height + 1);
   DVLOG(3) << "coded_size=" << coded_size.ToString();
 
   // Sanity checks. Calculated coded size has to contain given visible size
-  // and fulfill buffer byte size requirements for each plane.
+  // and fulfill buffer byte size requirements.
   DCHECK(gfx::Rect(coded_size).Contains(gfx::Rect(visible_size)));
-
-  if (V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
-    for (size_t i = 0; i < format.fmt.pix_mp.num_planes; ++i) {
-      DCHECK_EQ(format.fmt.pix_mp.plane_fmt[i].bytesperline,
-                base::checked_cast<__u32>(media::VideoFrame::RowBytes(
-                    i, frame_format, coded_size.width())));
-    }
-  }
+  DCHECK_LE(sizeimage,
+            media::VideoFrame::AllocationSize(frame_format, coded_size));
 
   return coded_size;
 }

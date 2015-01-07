@@ -578,9 +578,16 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
 int VideoFrame::PlaneHorizontalBitsPerPixel(Format format, size_t plane) {
   DCHECK(IsValidPlane(plane, format));
   const int bits_per_element = 8 * BytesPerElement(format, plane);
-  const int pixels_per_element = SampleSize(format, plane).GetArea();
+  const int pixels_per_element = SampleSize(format, plane).width();
   DCHECK(bits_per_element % pixels_per_element == 0);
   return bits_per_element / pixels_per_element;
+}
+
+// static
+int VideoFrame::PlaneBitsPerPixel(Format format, size_t plane) {
+  DCHECK(IsValidPlane(plane, format));
+  return PlaneHorizontalBitsPerPixel(format, plane) /
+      SampleSize(format, plane).height();
 }
 
 // Release data allocated by AllocateYUV().
