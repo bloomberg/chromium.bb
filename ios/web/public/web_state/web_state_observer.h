@@ -13,6 +13,8 @@ struct LoadCommittedDetails;
 class WebState;
 class WebStateImpl;
 
+enum class PageLoadCompletionStatus : bool { SUCCESS = 0, FAILURE = 1 };
+
 // An observer API implemented by classes which are interested in various page
 // load events from WebState.
 class WebStateObserver {
@@ -28,7 +30,7 @@ class WebStateObserver {
       const LoadCommittedDetails& load_details) {}
 
   // Called when the current page is loaded.
-  virtual void PageLoaded() {}
+  virtual void PageLoaded(PageLoadCompletionStatus load_completion_status) {}
 
   // Called on URL hash change events.
   virtual void URLHashChanged() {}

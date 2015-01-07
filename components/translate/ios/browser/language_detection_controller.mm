@@ -127,8 +127,10 @@ void LanguageDetectionController::OnTextRetrieved(
 
 // web::WebStateObserver implementation:
 
-void LanguageDetectionController::PageLoaded() {
-  StartLanguageDetection();
+void LanguageDetectionController::PageLoaded(
+    web::PageLoadCompletionStatus load_completion_status) {
+  if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS)
+    StartLanguageDetection();
 }
 
 void LanguageDetectionController::URLHashChanged() {

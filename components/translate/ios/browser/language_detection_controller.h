@@ -76,7 +76,8 @@ class LanguageDetectionController : public web::WebStateObserver {
                        const base::string16& text);
 
   // web::WebStateObserver implementation:
-  void PageLoaded() override;
+  void PageLoaded(
+      web::PageLoadCompletionStatus load_completion_status) override;
   void URLHashChanged() override;
   void HistoryStateChanged() override;
   void WebStateDestroyed() override;
