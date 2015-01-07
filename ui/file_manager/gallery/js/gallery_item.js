@@ -112,14 +112,6 @@ Gallery.Item.prototype.getFetchedMedia = function() {
 };
 
 /**
- * Sets the metadata.
- * @param {!Object} metadata New metadata.
- */
-Gallery.Item.prototype.setMetadata = function(metadata) {
-  this.metadata_ = Object.preventExtensions(metadata);
-};
-
-/**
  * @return {string} File name.
  */
 Gallery.Item.prototype.getFileName = function() {
@@ -231,30 +223,45 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
  * Writes the new item content to either the existing or a new file.
  *
  * @param {!VolumeManager} volumeManager Volume manager instance.
- * @param {string} fallbackDir Fallback directory in case the current directory
- *     is read only.
+ * @param {DirectoryEntry} fallbackDir Fallback directory in case the current
+ *     directory is read only.
  * @param {boolean} overwrite Whether to overwrite the image to the item or not.
  * @param {!HTMLCanvasElement} canvas Source canvas.
- * @param {!ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
  * @param {function(boolean)=} opt_callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    volumeManager, fallbackDir, overwrite, canvas, metadataEncoder,
-    opt_callback) {
+    volumeManager, fallbackDir, overwrite, canvas, opt_callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
 
-  var onSuccess = function(entry, locationInfo) {
+  var onSuccess = function(entry) {
+    var locationInfo = volumeManager.getLocationInfo(entry);
+    if (!locationInfo) {
+      // Reuse old location info if it fails to obtain location info.
+      locationInfo = this.locationInfo_;
+    }
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
     ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
 
     this.entry_ = entry;
     this.locationInfo_ = locationInfo;
 
-    this.metadataCache_.clear([this.entry_], 'fetchedMedia');
-    if (opt_callback)
-      opt_callback(true);
+    // Updates the metadata.
+    this.metadataCache_.clear([this.entry_], '*');
+    this.metadataCache_.getLatest(
+        [this.entry_],
+        Gallery.METADATA_TYPE,
+        function(metadataList) {
+          if (metadataList.length === 1) {
+            this.metadata_ = metadataList[0];
+            if (opt_callback)
+              opt_callback(true);
+          } else {
+            if (opt_callback)
+              opt_callback(false);
+          }
+        }.bind(this));
   }.bind(this);
 
   var onError = function(error) {
@@ -266,15 +273,19 @@ Gallery.Item.prototype.saveToFile = function(
 
   var doSave = function(newFile, fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
-      function writeContent() {
+      var writeContent = function() {
         fileWriter.onwriteend = onSuccess.bind(null, fileEntry);
+        // TODO(hirono): Remove the quality 1 for thumbanils. The code path is
+        // no longer used.
+        var metadataEncoder = ImageEncoder.encodeMetadata(
+            this.metadata_, canvas, 1 /* quality */);
         // Contrary to what one might think 1.0 is not a good default. Opening
         // and saving an typical photo taken with consumer camera increases its
         // file size by 50-100%. Experiments show that 0.9 is much better. It
         // shrinks some photos a bit, keeps others about the same size, but does
         // not visibly lower the quality.
         fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder, 0.9));
-      }
+      }.bind(this);
       fileWriter.onerror = function(error) {
         onError(error);
         // Disable all callbacks on the first error.
@@ -287,18 +298,12 @@ Gallery.Item.prototype.saveToFile = function(
         fileWriter.onwriteend = writeContent;
         fileWriter.truncate(0);
       }
-    }, onError);
-  };
+    }.bind(this), onError);
+  }.bind(this);
 
   var getFile = function(dir, newFile) {
     dir.getFile(name, {create: newFile, exclusive: newFile},
         function(fileEntry) {
-          var locationInfo = volumeManager.getLocationInfo(fileEntry);
-          // If the volume is gone, then abort the saving operation.
-          if (!locationInfo) {
-            onError('NotFound');
-            return;
-          }
           doSave(newFile, fileEntry);
         }.bind(this), onError);
   }.bind(this);

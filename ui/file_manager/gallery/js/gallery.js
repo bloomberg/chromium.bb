@@ -71,47 +71,27 @@ GalleryDataModel.prototype.saveItem = function(
   var oldEntry = item.getEntry();
   var oldMetadata = item.getMetadata();
   var oldLocationInfo = item.getLocationInfo();
-  var metadataEncoder = ImageEncoder.encodeMetadata(
-      item.getMetadata(), canvas, 1 /* quality */);
-  var newMetadata = ContentProvider.ConvertContentMetadata(
-      metadataEncoder.getMetadata(),
-      MetadataCache.cloneMetadata(item.getMetadata()));
-  if (newMetadata.filesystem)
-    newMetadata.filesystem.modificationTime = new Date();
-  if (newMetadata.external)
-    newMetadata.external.present = true;
-
   return new Promise(function(fulfill, reject) {
     item.saveToFile(
         volumeManager,
         this.fallbackSaveDirectory,
         overwrite,
         canvas,
-        metadataEncoder,
         function(success) {
           if (!success) {
             reject('Failed to save the image.');
             return;
           }
 
-          // The item's entry is updated to the latest entry. Update metadata.
-          item.setMetadata(newMetadata);
-
           // Current entry is updated.
           // Dispatch an event.
           var event = new Event('content');
           event.item = item;
           event.oldEntry = oldEntry;
-          event.metadata = newMetadata;
+          event.metadata = item.getMetadata();
           this.dispatchEvent(event);
 
-          if (util.isSameEntry(oldEntry, item.getEntry())) {
-            // Need an update of metdataCache.
-            this.metadataCache_.set(
-                item.getEntry(),
-                Gallery.METADATA_TYPE,
-                newMetadata);
-          } else {
+          if (!util.isSameEntry(oldEntry, item.getEntry())) {
             // New entry is added and the item now tracks it.
             // Add another item for the old entry.
             var anotherItem = new Gallery.Item(
