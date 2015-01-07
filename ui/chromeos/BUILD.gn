@@ -55,13 +55,13 @@ component("ui_chromeos") {
 
 test("ui_chromeos_unittests") {
   sources = [
-    "../chromeos/ime/candidate_view_unittest.cc",
-    "../chromeos/ime/candidate_window_view_unittest.cc",
-    "../chromeos/ime/input_method_menu_item_unittest.cc",
-    "../chromeos/ime/input_method_menu_manager_unittest.cc",
-    "../chromeos/network/network_state_notifier_unittest.cc",
-    "../chromeos/touch_exploration_controller_unittest.cc",
+    "ime/candidate_view_unittest.cc",
+    "ime/candidate_window_view_unittest.cc",
+    "ime/input_method_menu_item_unittest.cc",
+    "ime/input_method_menu_manager_unittest.cc",
+    "network/network_state_notifier_unittest.cc",
     "run_all_unittests.cc",
+    "touch_exploration_controller_unittest.cc",
   ]
   deps = [
     ":ui_chromeos",
