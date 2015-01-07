@@ -13361,6 +13361,25 @@
         ],
         "usepkg_build_packages": false
     },
+    "falco-full-compile-paladin": {
+        "board_replace": true,
+        "boards": [
+            "falco"
+        ],
+        "chrome_binhost_only": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "falco-full-compile-paladin",
+        "overlays": "both",
+        "unittests": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "falco-no-vmtest-pre-cq": {
         "archive": false,
         "boards": [
@@ -25659,6 +25678,27 @@
             "-chrome_internal"
         ],
         "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "nyan-full-compile-paladin": {
+        "board_replace": true,
+        "boards": [
+            "nyan"
+        ],
+        "chrome_binhost_only": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "nyan-full-compile-paladin",
+        "overlays": "both",
+        "tests_supported": false,
+        "unittests": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan-full-group": {
