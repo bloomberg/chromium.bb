@@ -5,7 +5,10 @@
 # This file contains common system config stuff for the Android build.
 
 if (is_android) {
-  declare_args() {
+  # HACK make these variables instead of declare_args so they don't conflict
+  # with whatever build NaCl is embedded into.
+  # TODO(ncbray) don't use this file when embedding into another build.
+  #declare_args() {
     # Absolute directory containing the Android source code.
     android_src = ""
 
@@ -13,7 +16,7 @@ if (is_android) {
     # system, using the 'android' gyp backend. The WebView code is still built
     # when this is unset, but builds using the normal chromium build system.
     is_android_webview_build = false
-  }
+  #}
 
   if (is_android_webview_build) {
     assert(android_src != "",
