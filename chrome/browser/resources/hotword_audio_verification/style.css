@@ -69,7 +69,7 @@ div.intro-text {
 
 a {
   -webkit-app-region: no-drag;
-  color: rgb(66, 133, 244);
+  color: rgb(51, 103, 214);
   text-decoration: none;
 }
 
@@ -260,7 +260,7 @@ div.buttonbar {
 }
 
 .buttonbar button.primary {
-  color: rgb(66, 133, 244);
+  color: rgb(51, 103, 214);
 }
 
 .buttonbar .left {
@@ -313,7 +313,7 @@ div.buttonbar {
 }
 
 .buttonbar .message.error .text {
-  color: rgb(219, 68, 55);
+  color: rgb(213, 0, 0);
 }
 
 .close {
