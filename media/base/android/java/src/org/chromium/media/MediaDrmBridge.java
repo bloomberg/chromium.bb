@@ -7,7 +7,6 @@ package org.chromium.media;
 import android.media.MediaCrypto;
 import android.media.MediaDrm;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -35,14 +34,9 @@ import java.util.UUID;
 public class MediaDrmBridge {
     // Implementation Notes:
     // - A media crypto session (mMediaCryptoSession) is opened after MediaDrm
-    //   is created. This session will be added to mSessionIds.
-    //   a) In multiple session mode, this session will only be used to create
-    //      the MediaCrypto object. It's associated mime type is always null and
-    //      it's session ID is always INVALID_SESSION_ID.
-    //   b) In single session mode, this session will be used to create the
-    //      MediaCrypto object and will be used to call getKeyRequest() and
-    //      manage all keys.  The session ID will always be the lastest session
-    //      ID passed by the caller.
+    //   is created. This session will be added to mSessionIds and will only be
+    //   used to create the MediaCrypto object. Its associated mime type is
+    //   always null and its session ID is always INVALID_SESSION_ID.
     // - Each createSession() call creates a new session. All sessions are
     //   managed in mSessionIds.
     // - Whenever NotProvisionedException is thrown, we will clean up the
@@ -72,18 +66,11 @@ public class MediaDrmBridge {
     private UUID mSchemeUUID;
     private Handler mHandler;
 
-    // In this mode, we only open one session, i.e. mMediaCryptoSession.
-    private boolean mSingleSessionMode;
-
     // A session only for the purpose of creating a MediaCrypto object.
     // This session is opened when createSession() is called for the first
-    // time.
-    // - In multiple session mode, all following createSession() calls
-    // should create a new session and use it to call getKeyRequest(). No
-    // getKeyRequest() should ever be called on this media crypto session.
-    // - In single session mode, all createSession() calls use the same
-    // media crypto session. When createSession() is called with a new
-    // initData, previously added keys may not be available anymore.
+    // time. All following createSession() calls will create a new session and
+    // use it to call getKeyRequest(). No getKeyRequest() should ever be called
+    // on |mMediaCryptoSession|.
     private ByteBuffer mMediaCryptoSession;
     private MediaCrypto mMediaCrypto;
 
@@ -161,13 +148,12 @@ public class MediaDrmBridge {
         return null;
     }
 
-    private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge, boolean singleSessionMode)
+    private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge)
             throws android.media.UnsupportedSchemeException {
         mSchemeUUID = schemeUUID;
         mMediaDrm = new MediaDrm(schemeUUID);
         mNativeMediaDrmBridge = nativeMediaDrmBridge;
         mHandler = new Handler();
-        mSingleSessionMode = singleSessionMode;
         mSessionIds = new HashMap<ByteBuffer, Integer>();
         mSessionMimeTypes = new HashMap<ByteBuffer, String>();
         mPendingCreateSessionDataQueue = new ArrayDeque<PendingCreateSessionData>();
@@ -176,9 +162,7 @@ public class MediaDrmBridge {
 
         mMediaDrm.setOnEventListener(new MediaDrmListener());
         mMediaDrm.setPropertyString(PRIVACY_MODE, ENABLE);
-        if (!mSingleSessionMode) {
-            mMediaDrm.setPropertyString(SESSION_SHARING, ENABLE);
-        }
+        mMediaDrm.setPropertyString(SESSION_SHARING, ENABLE);
 
         // We could open a MediaCrypto session here to support faster start of
         // clear lead (no need to wait for createSession()). But on
@@ -300,17 +284,9 @@ public class MediaDrmBridge {
             return null;
         }
 
-        boolean singleSessionMode = false;
-        if (Build.VERSION.RELEASE.equals("4.4")) {
-            singleSessionMode = true;
-        }
-        Log.d(TAG, "MediaDrmBridge uses "
-                + (singleSessionMode ? "single" : "multiple") + "-session mode.");
-
         MediaDrmBridge mediaDrmBridge = null;
         try {
-            mediaDrmBridge = new MediaDrmBridge(
-                cryptoScheme, nativeMediaDrmBridge, singleSessionMode);
+            mediaDrmBridge = new MediaDrmBridge(cryptoScheme, nativeMediaDrmBridge);
             Log.d(TAG, "MediaDrmBridge successfully created.");
         } catch (android.media.UnsupportedSchemeException e) {
             Log.e(TAG, "Unsupported DRM scheme", e);
@@ -475,8 +451,6 @@ public class MediaDrmBridge {
 
     /**
      * Create a session with |sessionId|, |initData| and |mime|.
-     * In multiple session mode, a new session will be open. In single session
-     * mode, the mMediaCryptoSession will be used.
      *
      * @param sessionId ID for the session to be created.
      * @param initData Data needed to generate the key request.
@@ -507,24 +481,14 @@ public class MediaDrmBridge {
             assert mMediaCrypto != null;
             assert mSessionIds.containsKey(mMediaCryptoSession);
 
-            if (mSingleSessionMode) {
-                session = mMediaCryptoSession;
-                if (mSessionMimeTypes.get(session) != null
-                        && !mSessionMimeTypes.get(session).equals(mime)) {
-                    Log.e(TAG, "Only one mime type is supported in single session mode.");
-                    onSessionError(sessionId);
-                    return;
-                }
-            } else {
-                session = openSession();
-                if (session == null) {
-                    Log.e(TAG, "Cannot open session in createSession().");
-                    onSessionError(sessionId);
-                    return;
-                }
-                newSessionOpened = true;
-                assert !mSessionIds.containsKey(session);
+            session = openSession();
+            if (session == null) {
+                Log.e(TAG, "Cannot open session in createSession().");
+                onSessionError(sessionId);
+                return;
             }
+            newSessionOpened = true;
+            assert !mSessionIds.containsKey(session);
 
             MediaDrm.KeyRequest request = null;
             request = getKeyRequest(session, initData, mime);
@@ -557,7 +521,7 @@ public class MediaDrmBridge {
 
     /**
      * Returns whether |sessionId| is a valid key session, excluding the media
-     * crypto session in multi-session mode.
+     * crypto session.
      *
      * @param sessionId Crypto session Id.
      */
@@ -568,11 +532,6 @@ public class MediaDrmBridge {
             return false;
         }
         assert mSessionIds.containsKey(mMediaCryptoSession);
-
-        if (mSingleSessionMode) {
-            return mMediaCryptoSession.equals(session);
-        }
-
         return !session.equals(mMediaCryptoSession) && mSessionIds.containsKey(session);
     }
 
@@ -598,13 +557,10 @@ public class MediaDrmBridge {
 
         mMediaDrm.removeKeys(session.array());
 
-        // We don't close the media crypto session in single session mode.
-        if (!mSingleSessionMode) {
-            Log.d(TAG, "Session " + sessionId + "closed.");
-            closeSession(session);
-            mSessionIds.remove(session);
-            onSessionClosed(sessionId);
-        }
+        Log.d(TAG, "Session " + sessionId + "closed.");
+        closeSession(session);
+        mSessionIds.remove(session);
+        onSessionClosed(sessionId);
     }
 
     /**

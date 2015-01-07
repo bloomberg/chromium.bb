@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+#include "base/sys_info.h"
 #include "jni/MediaDrmBridge_jni.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -254,7 +255,19 @@ static bool IsKeySystemSupportedWithTypeImpl(
 
 // static
 bool MediaDrmBridge::IsAvailable() {
-  return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 19)
+    return false;
+
+  int32 os_major_version = 0;
+  int32 os_minor_version = 0;
+  int32 os_bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                               &os_minor_version,
+                                               &os_bugfix_version);
+  if (os_major_version == 4 && os_minor_version == 4 && os_bugfix_version == 0)
+    return false;
+
+  return true;
 }
 
 // static
