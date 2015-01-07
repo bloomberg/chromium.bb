@@ -1198,12 +1198,16 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
         "RenderWidget::OnHandleInputEvent ack throttled",
         TRACE_EVENT_SCOPE_THREAD);
       if (pending_input_event_ack_) {
+        TRACE_EVENT_ASYNC_END0("input", "RenderWidget::ThrottledInputEventAck",
+                               pending_input_event_ack_.get());
         // As two different kinds of events could cause us to postpone an ack
         // we send it now, if we have one pending. The Browser should never
         // send us the same kind of event we are delaying the ack for.
         Send(pending_input_event_ack_.release());
       }
       pending_input_event_ack_ = response.Pass();
+      TRACE_EVENT_ASYNC_BEGIN0("input", "RenderWidget::ThrottledInputEventAck",
+                               pending_input_event_ack_.get());
       if (compositor_)
         compositor_->NotifyInputThrottledUntilCommit();
     } else {
@@ -1260,8 +1264,11 @@ void RenderWidget::ClearFocus() {
 }
 
 void RenderWidget::FlushPendingInputEventAck() {
-  if (pending_input_event_ack_)
+  if (pending_input_event_ack_) {
+    TRACE_EVENT_ASYNC_END0("input", "RenderWidget::ThrottledInputEventAck",
+                           pending_input_event_ack_.get());
     Send(pending_input_event_ack_.release());
+  }
   total_input_handling_time_this_frame_ = base::TimeDelta();
 }
 
