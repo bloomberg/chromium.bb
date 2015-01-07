@@ -92,6 +92,13 @@ public interface TabObserver {
     void onSSLStateUpdated(Tab tab);
 
     /**
+     * Called when the ContentView of a {@link Tab} crashes.
+     * @param tab The notifying {@link Tab}.
+     * @param sadTabShown Whether or not the sad tab was shown
+     */
+    void onCrash(Tab tab, boolean sadTabShown);
+
+    /**
      * Called when the WebContents of a {@link Tab} have been swapped.
      * @param tab The notifying {@link Tab}.
      * @param didStartLoad Whether WebContentsObserver::DidStartProvisionalLoadForFrame() has
