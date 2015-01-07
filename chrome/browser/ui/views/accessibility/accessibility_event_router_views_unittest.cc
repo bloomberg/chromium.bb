@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
@@ -22,22 +21,11 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/test/test_views_delegate.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-#if defined(OS_WIN)
-#include "ui/base/win/scoped_ole_initializer.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/aura/test/aura_test_helper.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/wm/core/default_activation_client.h"
-#endif
 
 using base::ASCIIToUTF16;
 
@@ -98,56 +86,25 @@ class ViewWithNameAndRole : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ViewWithNameAndRole);
 };
 
-class AccessibilityEventRouterViewsTest
-    : public testing::Test {
+class AccessibilityEventRouterViewsTest : public views::ViewsTestBase {
  public:
-  AccessibilityEventRouterViewsTest() : control_event_count_(0) {
-  }
+  AccessibilityEventRouterViewsTest() : control_event_count_(0) {}
 
   void SetUp() override {
-#if defined(OS_WIN)
-    ole_initializer_.reset(new ui::ScopedOleInitializer());
-#endif
-    views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
-#if defined(USE_AURA)
-    // The ContextFactory must exist before any Compositors are created.
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory =
-        ui::InitializeContextFactoryForTests(enable_pixel_output);
-
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp(context_factory);
-    new wm::DefaultActivationClient(aura_test_helper_->root_window());
-#endif  // USE_AURA
+    set_views_delegate(new AccessibilityViewsDelegate);
+    views::ViewsTestBase::SetUp();
     EnableAccessibilityAndListenToFocusNotifications();
   }
 
   void TearDown() override {
     ClearCallback();
-#if defined(USE_AURA)
-    aura_test_helper_->TearDown();
-    ui::TerminateContextFactoryForTests();
-#endif
-    delete views::ViewsDelegate::views_delegate;
-
-    // The Widget's FocusManager is deleted using DeleteSoon - this
-    // forces it to be deleted now, so we don't have any memory leaks
-    // when this method exits.
-    base::MessageLoop::current()->RunUntilIdle();
-
-#if defined(OS_WIN)
-    ole_initializer_.reset();
-#endif
+    views::ViewsTestBase::TearDown();
   }
 
   views::Widget* CreateWindowWithContents(views::View* contents) {
-    gfx::NativeWindow context = NULL;
-#if defined(USE_AURA)
-    context = aura_test_helper_->root_window();
-#endif
     views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
         new AccessibilityWindowDelegate(contents),
-        context,
+        GetContext(),
         gfx::Rect(0, 0, 500, 500));
 
     // Create a profile and associate it with this window.
@@ -182,18 +139,11 @@ class AccessibilityEventRouterViewsTest
     last_control_context_ = info->context();
   }
 
-  base::MessageLoopForUI message_loop_;
   int control_event_count_;
   std::string last_control_type_;
   std::string last_control_name_;
   std::string last_control_context_;
   TestingProfile profile_;
-#if defined(OS_WIN)
-  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
-#endif
-#if defined(USE_AURA)
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-#endif
 };
 
 TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
