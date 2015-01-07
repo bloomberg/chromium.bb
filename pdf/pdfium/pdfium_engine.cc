@@ -2050,12 +2050,20 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   }
   if (text_length <= 0)
     return;
+
   unsigned short* data =
       reinterpret_cast<unsigned short*>(WriteInto(&page_text, text_length + 1));
-  FPDFText_GetText(pages_[current_page]->GetTextPage(),
-                   character_to_start_searching_from,
-                   text_length,
-                   data);
+  // |written| includes the trailing terminator, so get rid of the trailing
+  // NUL character by calling resize().
+  int written = FPDFText_GetText(pages_[current_page]->GetTextPage(),
+                                 character_to_start_searching_from,
+                                 text_length,
+                                 data);
+  if (written < 1)
+    page_text.resize(0);
+  else
+    page_text.resize(written - 1);
+
   std::vector<PDFEngine::Client::SearchStringResult> results;
   client_->SearchString(
       page_text.c_str(), term.c_str(), case_sensitive, &results);

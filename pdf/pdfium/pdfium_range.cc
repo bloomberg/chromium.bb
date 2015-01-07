@@ -59,20 +59,24 @@ std::vector<pp::Rect> PDFiumRange::GetScreenRects(const pp::Point& offset,
 base::string16 PDFiumRange::GetText() {
   int index = char_index_;
   int count = char_count_;
-  if (!count)
-    return base::string16();
+  base::string16 rv;
   if (count < 0) {
     count *= -1;
     index -= count - 1;
   }
 
-  base::string16 rv;
-  unsigned short* data =
-      reinterpret_cast<unsigned short*>(WriteInto(&rv, count + 1));
-  if (data) {
+  if (count > 0) {
+    unsigned short* data =
+        reinterpret_cast<unsigned short*>(WriteInto(&rv, count + 1));
+    // |written| includes the trailing terminator, so get rid of the trailing
+    // NUL character by calling resize().
     int written = FPDFText_GetText(page_->GetTextPage(), index, count, data);
-    rv.reserve(written);
+    if (written < 1)
+      rv.resize(0);
+    else
+      rv.resize(written - 1);
   }
+
   return rv;
 }
 
