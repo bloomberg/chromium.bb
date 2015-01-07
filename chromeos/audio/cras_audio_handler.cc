@@ -366,9 +366,7 @@ void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
 }
 
 void CrasAudioHandler::SetInputMute(bool mute_on) {
-  if (!SetInputMuteInternal(mute_on))
-    return;
-
+  SetInputMuteInternal(mute_on);
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnInputMuteChanged());
 }
 
@@ -431,7 +429,6 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_input_(false),
       has_alternative_output_(false),
       output_mute_locked_(false),
-      input_mute_locked_(false),
       log_errors_(false),
       weak_ptr_factory_(this) {
   if (!audio_pref_handler.get())
@@ -606,17 +603,8 @@ void CrasAudioHandler::ApplyAudioPolicy() {
       SetOutputMuteInternal(audio_pref_handler_->GetMuteValue(*device));
   }
 
-  input_mute_locked_ = false;
-  if (audio_pref_handler_->GetAudioCaptureAllowedValue()) {
-    VLOG(1) << "Audio input allowed by policy, sets input id="
-            << "0x" << std::hex << active_input_node_id_ << " mute=false";
-    SetInputMuteInternal(false);
-  } else {
-    VLOG(0) << "Audio input NOT allowed by policy, sets input id="
-            << "0x" << std::hex << active_input_node_id_ << " mute=true";
-    SetInputMuteInternal(true);
-    input_mute_locked_ = true;
-  }
+  // Policy for audio input is handled by kAudioCaptureAllowed in the Chrome
+  // media system.
 }
 
 void CrasAudioHandler::SetOutputNodeVolume(uint64 node_id, int volume) {
@@ -678,14 +666,10 @@ void CrasAudioHandler::SetInputNodeGainPercent(uint64 node_id,
   }
 }
 
-bool CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
-  if (input_mute_locked_)
-    return false;
-
+void CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
   input_mute_on_ = mute_on;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetInputMute(mute_on);
-  return true;
 }
 
 void CrasAudioHandler::GetNodes() {

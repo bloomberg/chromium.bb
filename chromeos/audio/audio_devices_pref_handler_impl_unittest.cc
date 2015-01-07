@@ -62,8 +62,6 @@ const AudioDevice kOutputDeviceWithSpecialCharacters(
               false,
               0));
 
-const char kAudioCaptureAllowedPref[] = "audio_capture_allowed";
-
 class AudioDevicesPrefHandlerTest : public testing::Test {
  public:
   AudioDevicesPrefHandlerTest() {}
@@ -71,10 +69,8 @@ class AudioDevicesPrefHandlerTest : public testing::Test {
 
   void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSimple());
-    AudioDevicesPrefHandlerImpl::RegisterPrefs(pref_service_->registry(),
-                                               kAudioCaptureAllowedPref);
-    audio_pref_handler_ = new AudioDevicesPrefHandlerImpl(
-        pref_service_.get(), kAudioCaptureAllowedPref);
+    AudioDevicesPrefHandlerImpl::RegisterPrefs(pref_service_->registry());
+    audio_pref_handler_ = new AudioDevicesPrefHandlerImpl(pref_service_.get());
   }
 
   void TearDown() override { audio_pref_handler_ = NULL; }
@@ -102,9 +98,6 @@ TEST_F(AudioDevicesPrefHandlerTest, PrefsRegistered) {
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioOutputAllowed));
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioVolumePercent));
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioMute));
-
-  // The optional pref is also registered.
-  EXPECT_TRUE(pref_service_->FindPreference(kAudioCaptureAllowedPref));
 }
 
 TEST_F(AudioDevicesPrefHandlerTest, TestBasicInputOutputDevices) {

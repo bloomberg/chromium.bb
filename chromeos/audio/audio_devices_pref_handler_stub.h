@@ -27,7 +27,6 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerStub
   void SetVolumeGainValue(const AudioDevice& device, double value) override;
   bool GetMuteValue(const AudioDevice& device) override;
   void SetMuteValue(const AudioDevice& device, bool mute_on) override;
-  bool GetAudioCaptureAllowedValue() override;
   bool GetAudioOutputAllowedValue() override;
   void AddAudioPrefObserver(AudioPrefObserver* observer) override;
   void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;

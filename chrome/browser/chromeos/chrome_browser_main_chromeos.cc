@@ -350,8 +350,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO));
 
-  CrasAudioHandler::Initialize(new AudioDevicesPrefHandlerImpl(
-      g_browser_process->local_state(), prefs::kAudioCaptureAllowed));
+  CrasAudioHandler::Initialize(
+      new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   // Start loading machine statistics here. StatisticsProvider::Shutdown()
   // will ensure that loading is aborted on early exit.

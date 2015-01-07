@@ -45,10 +45,6 @@ void AudioDevicesPrefHandlerStub::SetMuteValue(const AudioDevice& device,
   audio_device_mute_map_[device.id] = mute_on;
 }
 
-bool AudioDevicesPrefHandlerStub::GetAudioCaptureAllowedValue() {
-  return true;
-}
-
 bool AudioDevicesPrefHandlerStub::GetAudioOutputAllowedValue() {
   return true;
 }

@@ -246,9 +246,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   void SetInputNodeGainPercent(uint64 node_id, int gain_percent);
 
-  // Sets input mute state to |mute_on| internally, returns true if input mute
-  // is set.
-  bool SetInputMuteInternal(bool mute_on);
+  // Sets input mute state to |mute_on| internally.
+  void SetInputMuteInternal(bool mute_on);
 
   // Calling dbus to get nodes data.
   void GetNodes();
@@ -316,7 +315,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool has_alternative_output_;
 
   bool output_mute_locked_;
-  bool input_mute_locked_;
 
   // Failures are not logged at startup, since CRAS may not be running yet.
   bool log_errors_;

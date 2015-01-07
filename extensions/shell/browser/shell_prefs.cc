@@ -27,7 +27,7 @@ namespace {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 #if defined(OS_CHROMEOS)
-  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry, "");
+  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
 #endif
 }
 

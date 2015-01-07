@@ -1824,15 +1824,6 @@
     ]
   },
 
-  "AudioCaptureAllowed": {
-    "os": ["chromeos"],
-    "test_policy": { "AudioCaptureAllowed": true },
-    "pref_mappings": [
-      { "pref": "hardware.audio_capture_enabled",
-        "local_state": true }
-    ]
-  },
-
   "ShowLogoutButtonInTray": {
     "os": ["chromeos"],
     "test_policy": { "ShowLogoutButtonInTray": true },

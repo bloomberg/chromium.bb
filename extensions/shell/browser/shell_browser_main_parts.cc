@@ -144,7 +144,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Initialize(
-      new chromeos::AudioDevicesPrefHandlerImpl(local_state_.get(), ""));
+      new chromeos::AudioDevicesPrefHandlerImpl(local_state_.get()));
   audio_controller_.reset(new ShellAudioController());
 #endif
 

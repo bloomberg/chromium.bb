@@ -23,8 +23,8 @@ namespace chromeos {
 class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
     : public AudioDevicesPrefHandler {
  public:
-  AudioDevicesPrefHandlerImpl(PrefService* local_state,
-                              const std::string& audio_capture_allowed_pref);
+  // |local_state| is the device-wide preference service.
+  explicit AudioDevicesPrefHandlerImpl(PrefService* local_state);
 
   // Overridden from AudioDevicesPrefHandler.
   virtual double GetOutputVolumeValue(const AudioDevice* device) override;
@@ -35,15 +35,13 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   virtual bool GetMuteValue(const AudioDevice& device) override;
   virtual void SetMuteValue(const AudioDevice& device, bool mute_on) override;
 
-  virtual bool GetAudioCaptureAllowedValue() override;
   virtual bool GetAudioOutputAllowedValue() override;
 
   virtual void AddAudioPrefObserver(AudioPrefObserver* observer) override;
   virtual void RemoveAudioPrefObserver(AudioPrefObserver* observer) override;
 
   // Registers volume and mute preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry,
-                            const std::string& audio_capture_allowed_pref);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
   virtual ~AudioDevicesPrefHandlerImpl();
@@ -77,10 +75,6 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   scoped_ptr<base::DictionaryValue> device_volume_settings_;
 
   PrefService* local_state_;  // not owned
-
-  // The name of the preferences to check if audio capture is allowed or the
-  // empty string if audio capture is always allowed.
-  const std::string audio_capture_allowed_pref_;
 
   PrefChangeRegistrar pref_change_registrar_;
   ObserverList<AudioPrefObserver> observers_;

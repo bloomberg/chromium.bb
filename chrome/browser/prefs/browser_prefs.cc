@@ -324,8 +324,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_CHROMEOS)
   ChromeOSMetricsProvider::RegisterPrefs(registry);
-  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(
-      registry, prefs::kAudioCaptureAllowed);
+  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
   chromeos::DataPromoNotification::RegisterPrefs(registry);
   chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);

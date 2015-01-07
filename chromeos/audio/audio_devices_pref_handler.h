@@ -39,9 +39,6 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandler
   // Sets the audio mute value to prefs for a device.
   virtual void SetMuteValue(const AudioDevice& device, bool mute_on) = 0;
 
-  // Reads the audio capture allowed value from prefs, which can be used to
-  // disable audio capture via policy.
-  virtual bool GetAudioCaptureAllowedValue() = 0;
   // Reads the audio output allowed value from prefs.
   virtual bool GetAudioOutputAllowedValue() = 0;
 

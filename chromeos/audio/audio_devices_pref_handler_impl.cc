@@ -85,14 +85,6 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
   SaveDevicesMutePref();
 }
 
-
-bool AudioDevicesPrefHandlerImpl::GetAudioCaptureAllowedValue() {
-  if (audio_capture_allowed_pref_.empty())
-    return true;
-
-  return local_state_->GetBoolean(audio_capture_allowed_pref_);
-}
-
 bool AudioDevicesPrefHandlerImpl::GetAudioOutputAllowedValue() {
   return local_state_->GetBoolean(prefs::kAudioOutputAllowed);
 }
@@ -135,12 +127,10 @@ double AudioDevicesPrefHandlerImpl::GetDeviceDefaultOutputVolume(
 }
 
 AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
-    PrefService* local_state,
-    const std::string& audio_capture_allowed_pref)
+    PrefService* local_state)
     : device_mute_settings_(new base::DictionaryValue()),
       device_volume_settings_(new base::DictionaryValue()),
-      local_state_(local_state),
-      audio_capture_allowed_pref_(audio_capture_allowed_pref) {
+      local_state_(local_state) {
   InitializePrefObservers();
 
   UpdateDevicesMutePref();
@@ -156,9 +146,6 @@ void AudioDevicesPrefHandlerImpl::InitializePrefObservers() {
       base::Bind(&AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange,
                  base::Unretained(this));
   pref_change_registrar_.Add(prefs::kAudioOutputAllowed, callback);
-
-  if (!audio_capture_allowed_pref_.empty())
-    pref_change_registrar_.Add(audio_capture_allowed_pref_, callback);
 }
 
 void AudioDevicesPrefHandlerImpl::UpdateDevicesMutePref() {
@@ -220,22 +207,14 @@ void AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange() {
 }
 
 // static
-void AudioDevicesPrefHandlerImpl::RegisterPrefs(
-    PrefRegistrySimple* registry,
-    const std::string& audio_capture_allowed_pref) {
+void AudioDevicesPrefHandlerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kAudioDevicesVolumePercent);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesMute);
 
   // Register the prefs backing the audio muting policies.
+  // Policy for audio input is handled by kAudioCaptureAllowed in the Chrome
+  // media system.
   registry->RegisterBooleanPref(prefs::kAudioOutputAllowed, true);
-
-  // This pref has moved to the media subsystem but we should verify it is there
-  // before we use it.
-  // NOTE: This registers the pref in the device-wide local state pref registry.
-  // In Chrome the media subsystem also registers kAudioCaptureAllowed in the
-  // per-user profile pref registry.
-  if (!audio_capture_allowed_pref.empty())
-    registry->RegisterBooleanPref(audio_capture_allowed_pref, true);
 
   // Register the legacy audio prefs for migration.
   registry->RegisterDoublePref(prefs::kAudioVolumePercent,
