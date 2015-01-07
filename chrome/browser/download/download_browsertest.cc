@@ -2957,7 +2957,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
 }
 
 // Test that the entire download pipeline handles unicode correctly.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_CrazyFilenames) {
+// Disabled on Windows due to flaky timeouts: crbug.com/446695
+#if defined(OS_WIN)
+#define MAYBE_DownloadTest_CrazyFilenames DISABLED_DownloadTest_CrazyFilenames
+#else
+#define MAYBE_DownloadTest_CrazyFilenames DownloadTest_CrazyFilenames
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
   const wchar_t* kCrazyFilenames[] = {
     L"a_file_name.zip",
     L"\u89c6\u9891\u76f4\u64ad\u56fe\u7247.zip",  // chinese chars
