@@ -231,7 +231,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
     // If we're looping and the offset (virtualReadIndex) is past the end of the loop, wrap back to
     // the beginning of the loop. For other cases, nothing needs to be done.
     if (loop() && m_virtualReadIndex >= virtualEndFrame)
-        m_virtualReadIndex = m_loopStart * buffer()->sampleRate();
+        m_virtualReadIndex = (m_loopStart < 0) ? 0 : (m_loopStart * buffer()->sampleRate());
 
     double pitchRate = totalPitchRate();
 
@@ -247,6 +247,10 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
 
     const float** sourceChannels = m_sourceChannels.get();
     float** destinationChannels = m_destinationChannels.get();
+
+    ASSERT(virtualReadIndex >= 0);
+    ASSERT(virtualDeltaFrames >= 0);
+    ASSERT(virtualEndFrame >= 0);
 
     // Optimize for the very common case of playing back with pitchRate == 1.
     // We can avoid the linear interpolation.
