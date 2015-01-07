@@ -37,7 +37,7 @@ TEST_F(SandboxedPagesManifestTest, SandboxedPages) {
 
   const char kSandboxedCSP[] = "sandbox allow-scripts allow-forms allow-popups";
   const char kDefaultCSP[] =
-      "script-src 'self' chrome-extension-resource:; object-src 'self'";
+      "script-src 'self' chrome-extension-resource:; object-src 'self';";
   const char kCustomSandboxedCSP[] =
       "sandbox; script-src: https://www.google.com";
 

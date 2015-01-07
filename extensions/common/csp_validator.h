@@ -43,8 +43,13 @@ enum Options {
 // case for extensions. Platform apps disallow it.
 //
 // |options| is a bitmask of Options.
-bool ContentSecurityPolicyIsSecure(
-    const std::string& policy, int options);
+//
+// If |warnings| is not NULL, any validation errors are appended to |warnings|.
+// Returns the sanitized policy.
+std::string SanitizeContentSecurityPolicy(
+    const std::string& policy,
+    int options,
+    std::vector<InstallWarning>* warnings);
 
 // Checks whether the given |policy| enforces a unique origin sandbox as
 // defined by http://www.whatwg.org/specs/web-apps/current-work/multipage/

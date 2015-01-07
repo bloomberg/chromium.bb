@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/csp_validator.h"
+#include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 
@@ -18,12 +19,12 @@ namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
 using csp_validator::ContentSecurityPolicyIsLegal;
-using csp_validator::ContentSecurityPolicyIsSecure;
+using csp_validator::SanitizeContentSecurityPolicy;
 
 namespace {
 
 const char kDefaultContentSecurityPolicy[] =
-    "script-src 'self' chrome-extension-resource:; object-src 'self'";
+    "script-src 'self' chrome-extension-resource:; object-src 'self';";
 
 #define PLATFORM_APP_LOCAL_CSP_SOURCES \
     "'self' data: chrome-extension-resource:"
@@ -31,18 +32,18 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
     // Platform apps can only use local resources by default.
     "default-src 'self' chrome-extension-resource:;"
     // For remote resources, they can fetch them via XMLHttpRequest.
-    "connect-src *;"
+    " connect-src *;"
     // And serve them via data: or same-origin (blob:, filesystem:) URLs
-    "style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
-    "img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-    "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-    "font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+    " style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
+    " img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+    " frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+    " font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
     // Media can be loaded from remote resources since:
     // 1. <video> and <audio> have good fallback behavior when offline or under
     //    spotty connectivity.
     // 2. Fetching via XHR and serving via blob: URLs currently does not allow
     //    streaming or partial buffering.
-    "media-src *;";
+    " media-src *;";
 
 int GetValidatorOptions(Extension* extension) {
   int options = csp_validator::OPTIONS_NONE;
@@ -108,8 +109,10 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
           kDefaultPlatformAppContentSecurityPolicy :
           kDefaultContentSecurityPolicy;
 
-      CHECK(ContentSecurityPolicyIsSecure(content_security_policy,
-                                          GetValidatorOptions(extension)));
+      CHECK_EQ(content_security_policy,
+               SanitizeContentSecurityPolicy(content_security_policy,
+                                             GetValidatorOptions(extension),
+                                             NULL));
       extension->SetManifestData(keys::kContentSecurityPolicy,
                                  new CSPInfo(content_security_policy));
     }
@@ -125,11 +128,14 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
     return false;
   }
-  if (extension->manifest_version() >= 2 &&
-      !ContentSecurityPolicyIsSecure(content_security_policy,
-                                     GetValidatorOptions(extension))) {
-    *error = base::ASCIIToUTF16(errors::kInsecureContentSecurityPolicy);
-    return false;
+  std::string sanitized_csp;
+  if (extension->manifest_version() >= 2) {
+    std::vector<InstallWarning> warnings;
+    content_security_policy =
+        SanitizeContentSecurityPolicy(content_security_policy,
+                                      GetValidatorOptions(extension),
+                                      &warnings);
+    extension->AddInstallWarnings(warnings);
   }
 
   extension->SetManifestData(keys::kContentSecurityPolicy,

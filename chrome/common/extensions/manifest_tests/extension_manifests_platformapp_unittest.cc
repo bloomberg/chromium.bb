@@ -89,14 +89,15 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   EXPECT_EQ(0U, extension->install_warnings().size())
       << "Unexpected warning " << extension->install_warnings()[0].message;
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_EQ("default-src 'self' https://www.google.com",
+  EXPECT_EQ("default-src 'self' https://www.google.com;",
             CSPInfo::GetResourceContentSecurityPolicy(extension.get(),
                                                       std::string()));
 
   // But even whitelisted ones must specify a secure policy.
-  LoadAndExpectError(
+  LoadAndExpectWarning(
       "init_platform_app_csp_insecure.json",
-      errors::kInsecureContentSecurityPolicy);
+      ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,
+                                     "http://www.google.com", "default-src"));
 }
 
 TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {

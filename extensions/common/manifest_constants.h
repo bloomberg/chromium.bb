@@ -279,6 +279,8 @@ extern const char kInvalidContentPackSites[];
 extern const char kInvalidContentScript[];
 extern const char kInvalidContentScriptsList[];
 extern const char kInvalidContentSecurityPolicy[];
+extern const char kInvalidCSPInsecureValue[];
+extern const char kInvalidCSPMissingSecureSrc[];
 extern const char kInvalidCss[];
 extern const char kInvalidCssList[];
 extern const char kInvalidDefaultLocale[];
