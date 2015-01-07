@@ -45,6 +45,25 @@ namespace blink {
 
 HashMap<String, RefPtr<SkTypeface> >* FontCache::s_sideloadedFonts = 0;
 
+// Cached system font metrics.
+AtomicString* FontCache::s_menuFontFamilyName = 0;
+int32_t FontCache::s_menuFontHeight = 0;
+AtomicString* FontCache::s_smallCaptionFontFamilyName = 0;
+int32_t FontCache::s_smallCaptionFontHeight = 0;
+AtomicString* FontCache::s_statusFontFamilyName = 0;
+int32_t FontCache::s_statusFontHeight = 0;
+
+namespace {
+
+int32_t ensureMinimumFontHeightIfNeeded(int32_t fontHeight)
+{
+    // Adjustment for codepage 936 to make the fonts more legible in Simplified Chinese.
+    // Please refer to RenderThemeChromiumFontProviderWin.cpp for more information.
+    return (fontHeight < 12.0f) && (GetACP() == 936) ? 12.0f : fontHeight;
+}
+
+} // namespace
+
 // static
 void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
 {
@@ -53,6 +72,27 @@ void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
     SkString name;
     typeface->getFamilyName(&name);
     s_sideloadedFonts->set(name.c_str(), adoptRef(typeface));
+}
+
+// static
+void FontCache::setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight)
+{
+    s_menuFontFamilyName = new AtomicString(familyName);
+    s_menuFontHeight = ensureMinimumFontHeightIfNeeded(fontHeight);
+}
+
+// static
+void FontCache::setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight)
+{
+    s_smallCaptionFontFamilyName = new AtomicString(familyName);
+    s_smallCaptionFontHeight = ensureMinimumFontHeightIfNeeded(fontHeight);
+}
+
+// static
+void FontCache::setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight)
+{
+    s_statusFontFamilyName = new AtomicString(familyName);
+    s_statusFontHeight = ensureMinimumFontHeightIfNeeded(fontHeight);
 }
 
 FontCache::FontCache()

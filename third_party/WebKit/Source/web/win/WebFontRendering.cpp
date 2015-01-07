@@ -39,4 +39,23 @@ void WebFontRendering::addSideloadedFontForTesting(SkTypeface* typeface)
     blink::FontCache::addSideloadedFontForTesting(typeface);
 }
 
+// static
+void WebFontRendering::setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight)
+{
+    blink::FontCache::setMenuFontMetrics(familyName, fontHeight);
+}
+
+// static
+void WebFontRendering::setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight)
+{
+    blink::FontCache::setSmallCaptionFontMetrics(familyName, fontHeight);
+}
+
+// static
+void WebFontRendering::setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight)
+{
+    blink::FontCache::setStatusFontMetrics(familyName, fontHeight);
+}
+
+
 } // namespace blink

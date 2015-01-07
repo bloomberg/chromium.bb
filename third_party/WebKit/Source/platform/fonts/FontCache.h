@@ -110,6 +110,16 @@ public:
     static void setDeviceScaleFactor(float deviceScaleFactor) { s_deviceScaleFactor = deviceScaleFactor; }
     static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }
     static void addSideloadedFontForTesting(SkTypeface*);
+    // Functions to cache and retrieve the system font metrics.
+    static void setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight);
+    static void setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight);
+    static void setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight);
+    static int32_t menuFontHeight() { return s_menuFontHeight; }
+    static const AtomicString& menuFontFamily() { return *s_smallCaptionFontFamilyName; }
+    static int32_t smallCaptionFontHeight() { return s_smallCaptionFontHeight; }
+    static const AtomicString& smallCaptionFontFamily() { return *s_smallCaptionFontFamilyName; }
+    static int32_t statusFontHeight() { return s_statusFontHeight; }
+    static const AtomicString& statusFontFamily() { return *s_statusFontFamilyName; }
 #endif
 
     typedef uint32_t FontFileKey;
@@ -165,6 +175,13 @@ private:
     static float s_deviceScaleFactor;
     static bool s_useSubpixelPositioning;
     static HashMap<String, RefPtr<SkTypeface> >* s_sideloadedFonts;
+    // The system font metrics cache.
+    static AtomicString* s_menuFontFamilyName;
+    static int32_t s_menuFontHeight;
+    static AtomicString* s_smallCaptionFontFamilyName;
+    static int32_t s_smallCaptionFontHeight;
+    static AtomicString* s_statusFontFamilyName;
+    static int32_t s_statusFontHeight;
 #endif
 
 #if OS(MACOSX) || OS(ANDROID)

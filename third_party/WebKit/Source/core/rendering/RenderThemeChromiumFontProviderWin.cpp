@@ -27,6 +27,7 @@
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
 
 #include "core/CSSValueKeywords.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/win/HWndDC.h"
 #include "platform/win/SystemInfo.h"
@@ -107,24 +108,39 @@ void RenderThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontSt
 
     switch (systemFontID) {
     case CSSValueSmallCaption: {
-        NONCLIENTMETRICS metrics;
-        getNonClientMetrics(&metrics);
-        fontSize = systemFontSize(metrics.lfSmCaptionFont);
-        fontFamily = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
+        fontSize = FontCache::smallCaptionFontHeight();
+        if (fontSize) {
+            fontFamily = FontCache::smallCaptionFontFamily();
+        } else {
+            NONCLIENTMETRICS metrics;
+            getNonClientMetrics(&metrics);
+            fontSize = systemFontSize(metrics.lfSmCaptionFont);
+            fontFamily = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
+        }
         break;
     }
     case CSSValueMenu: {
-        NONCLIENTMETRICS metrics;
-        getNonClientMetrics(&metrics);
-        fontSize = systemFontSize(metrics.lfMenuFont);
-        fontFamily = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
+        fontSize = FontCache::menuFontHeight();
+        if (fontSize) {
+            fontFamily = FontCache::menuFontFamily();
+        } else {
+            NONCLIENTMETRICS metrics;
+            getNonClientMetrics(&metrics);
+            fontSize = systemFontSize(metrics.lfMenuFont);
+            fontFamily = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
+        }
         break;
     }
     case CSSValueStatusBar: {
-        NONCLIENTMETRICS metrics;
-        getNonClientMetrics(&metrics);
-        fontSize = systemFontSize(metrics.lfStatusFont);
-        fontFamily = metrics.lfStatusFont.lfFaceName;
+        fontSize = FontCache::statusFontHeight();
+        if (fontSize) {
+            fontFamily = FontCache::statusFontFamily();
+        } else {
+            NONCLIENTMETRICS metrics;
+            getNonClientMetrics(&metrics);
+            fontSize = systemFontSize(metrics.lfStatusFont);
+            fontFamily = metrics.lfStatusFont.lfFaceName;
+        }
         break;
     }
     case CSSValueWebkitMiniControl:

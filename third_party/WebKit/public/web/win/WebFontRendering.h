@@ -19,6 +19,9 @@ public:
     BLINK_EXPORT static void setDeviceScaleFactor(float);
     BLINK_EXPORT static void setUseSubpixelPositioning(bool);
     BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);
+    BLINK_EXPORT static void setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight);
+    BLINK_EXPORT static void setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight);
+    BLINK_EXPORT static void setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight);
 };
 
 } // namespace blink
