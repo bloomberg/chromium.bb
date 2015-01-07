@@ -99,6 +99,9 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsButtonStateMixed();
 
   // Bound methods.
+  v8::Handle<v8::Object> AriaControlsElementAtIndex(unsigned index);
+  v8::Handle<v8::Object> AriaFlowToElementAtIndex(unsigned index);
+  v8::Handle<v8::Object> AriaOwnsElementAtIndex(unsigned index);
   std::string AllAttributes();
   std::string AttributesOfChildren();
   int LineForIndex(int index);
