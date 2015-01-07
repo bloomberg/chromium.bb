@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace aura {
 class WindowTreeHost;
@@ -23,12 +24,12 @@ class Size;
 
 namespace chromecast {
 
-class CastContentWindow {
+class CastContentWindow : public content::WebContentsObserver {
  public:
   CastContentWindow();
 
   // Removes the window from the screen.
-  ~CastContentWindow();
+  ~CastContentWindow() override;
 
   // Create a window with the given size for |web_contents|.
   void CreateWindowTree(const gfx::Size& initial_size,
@@ -37,6 +38,9 @@ class CastContentWindow {
   scoped_ptr<content::WebContents> CreateWebContents(
       const gfx::Size& initial_size,
       content::BrowserContext* browser_context);
+
+  // content::WebContentsObserver implementation:
+  void DidFirstVisuallyNonEmptyPaint() override;
 
  private:
 #if defined(USE_AURA)
