@@ -19,6 +19,14 @@
 - (void)notificationSwipeStarted;
 - (void)notificationSwipeMoved:(CGFloat)amount;
 - (void)notificationSwipeEnded:(BOOL)ended complete:(BOOL)isComplete;
+
+// This setter for |boundsAnimation_| also cleans up the state of the previous
+// |boundsAnimation_|.
+- (void)setBoundsAnimation:(NSViewAnimation*)animation;
+
+// Constructs an NSViewAnimation from |dictionary|, which should be a view
+// animation dictionary.
+- (NSViewAnimation*)animationWithDictionary:(NSDictionary*)dictionary;
 @end
 
 // Window Subclass /////////////////////////////////////////////////////////////
@@ -129,11 +137,7 @@
 }
 
 - (void)close {
-  if (boundsAnimation_) {
-    [boundsAnimation_ stopAnimation];
-    [boundsAnimation_ setDelegate:nil];
-    boundsAnimation_.reset();
-  }
+  [self setBoundsAnimation:nil];
   if (trackingArea_.get())
     [[[self window] contentView] removeTrackingArea:trackingArea_.get()];
   [super close];
@@ -181,10 +185,20 @@
   }
 }
 
+- (void)setBoundsAnimation:(NSViewAnimation*)animation {
+  [boundsAnimation_ stopAnimation];
+  [boundsAnimation_ setDelegate:nil];
+  boundsAnimation_.reset([animation retain]);
+}
+
+- (NSViewAnimation*)animationWithDictionary:(NSDictionary*)dictionary {
+  return [[[NSViewAnimation alloc]
+      initWithViewAnimations:@[ dictionary ]] autorelease];
+}
+
 - (void)animationDidEnd:(NSAnimation*)animation {
-  if (animation != boundsAnimation_.get())
-    return;
-  boundsAnimation_.reset();
+  DCHECK_EQ(animation, boundsAnimation_.get());
+  [self setBoundsAnimation:nil];
 
   [popupCollection_ onPopupAnimationEnded:[self notificationID]];
 
@@ -194,7 +208,8 @@
 
 - (void)animationDidStop:(NSAnimation*)animation {
   // We can arrive here if animation was stopped in [self close] call.
-  boundsAnimation_.reset();
+  DCHECK_EQ(animation, boundsAnimation_.get());
+  [self setBoundsAnimation:nil];
 
   [popupCollection_ onPopupAnimationEnded:[self notificationID]];
 }
@@ -213,9 +228,8 @@
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds],
     NSViewAnimationEffectKey : NSViewAnimationFadeInEffect
   };
-  DCHECK(!boundsAnimation_);
-  boundsAnimation_.reset([[NSViewAnimation alloc]
-      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  NSViewAnimation* animation = [self animationWithDictionary:animationDict];
+  [self setBoundsAnimation:animation];
   [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
   [boundsAnimation_ setDelegate:self];
   [boundsAnimation_ startAnimation];
@@ -238,9 +252,8 @@
     NSViewAnimationTargetKey : [self window],
     NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect
   };
-  DCHECK(!boundsAnimation_);
-  boundsAnimation_.reset([[NSViewAnimation alloc]
-      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  NSViewAnimation* animation = [self animationWithDictionary:animationDict];
+  [self setBoundsAnimation:animation];
   [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
   [boundsAnimation_ setDelegate:self];
   [boundsAnimation_ startAnimation];
@@ -263,9 +276,8 @@
     NSViewAnimationTargetKey :   [self window],
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds]
   };
-  DCHECK(!boundsAnimation_);
-  boundsAnimation_.reset([[NSViewAnimation alloc]
-      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  NSViewAnimation* animation = [self animationWithDictionary:animationDict];
+  [self setBoundsAnimation:animation];
   [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
   [boundsAnimation_ setDelegate:self];
   [boundsAnimation_ startAnimation];
