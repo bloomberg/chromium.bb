@@ -66,7 +66,7 @@ bool ExtensionCommandsGlobalRegistry::IsRegistered(
          IsAcceleratorRegistered(accelerator);
 }
 
-void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
+void ExtensionCommandsGlobalRegistry::AddExtensionKeybindings(
     const extensions::Extension* extension,
     const std::string& command_name) {
   // This object only handles named commands, not browser/page actions.
@@ -79,7 +79,7 @@ void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
   extensions::CommandMap commands;
   if (!command_service->GetNamedCommands(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
+          extensions::CommandService::ACTIVE,
           extensions::CommandService::GLOBAL,
           &commands))
     return;

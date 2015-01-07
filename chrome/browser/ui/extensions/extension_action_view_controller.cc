@@ -221,10 +221,10 @@ bool ExtensionActionViewController::GetExtensionCommand(
   CommandService* command_service = CommandService::Get(browser_->profile());
   if (extension_action_->action_type() == ActionInfo::TYPE_PAGE) {
     return command_service->GetPageActionCommand(
-        extension_->id(), CommandService::ACTIVE_ONLY, command, NULL);
+        extension_->id(), CommandService::ACTIVE, command, NULL);
   }
   return command_service->GetBrowserActionCommand(
-      extension_->id(), CommandService::ACTIVE_ONLY, command, NULL);
+      extension_->id(), CommandService::ACTIVE, command, NULL);
 }
 
 bool ExtensionActionViewController::ShowPopupWithUrl(

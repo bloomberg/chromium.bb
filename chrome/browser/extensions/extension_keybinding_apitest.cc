@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,6 +40,26 @@ const char kId[] = "pgoakhfeplldmjheffidklpoklkppipp";
 // Default keybinding to use for emulating user-defined shortcut overrides. The
 // test extensions use Alt+Shift+F and Alt+Shift+H.
 const char kAltShiftG[] = "Alt+Shift+G";
+
+// Color name of named command for overwrite_bookmark_shortcut test extension.
+const char kOverwriteBookmarkShortcutCommandColor[] = "green";
+
+#if defined(OS_MACOSX)
+const char kBookmarkKeybinding[] = "Command+D";
+#else
+const char kBookmarkKeybinding[] = "Ctrl+D";
+#endif  // defined(OS_MACOSX)
+
+bool SendBookmarkKeyPressSync(Browser* browser) {
+  return ui_test_utils::SendKeyPressSync(
+      browser, ui::VKEY_D,
+#if defined(OS_MACOSX)
+      false, false, false, true
+#else
+      true, false, false, false
+#endif
+      );
+}
 
 // Named command for media key overwrite test.
 const char kMediaKeyTestCommand[] = "test_mediakeys_update";
@@ -235,13 +258,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
 
   // Activate the bookmark shortcut (Ctrl+D) to make the page green (should not
   // work without requesting via chrome_settings_overrides).
-#if defined(OS_MACOSX)
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_D, false, false, false, true));
-#else
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_D, true, false, false, false));
-#endif
+  ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
 
   // The page should still be blue.
   result = false;
@@ -268,6 +285,67 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(result);
 }
 
+// This test validates that an extension can remove the Chrome bookmark shortcut
+// if it has requested to do so.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, RemoveBookmarkShortcut) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // This functionality requires a feature flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
+
+  ASSERT_TRUE(RunExtensionTest("keybinding/remove_bookmark_shortcut"))
+      << message_;
+
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+}
+
+// This test validates that an extension cannot remove the Chrome bookmark
+// shortcut without being given permission with a feature flag.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       RemoveBookmarkShortcutWithoutPermission) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  EXPECT_TRUE(RunExtensionTestIgnoreManifestWarnings(
+      "keybinding/remove_bookmark_shortcut"));
+
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+}
+
+// This test validates that an extension that removes the Chrome bookmark
+// shortcut continues to remove the bookmark shortcut with a user-assigned
+// Ctrl+D shortcut (i.e. it does not trigger the overwrite functionality).
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       RemoveBookmarkShortcutWithUserKeyBinding) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // This functionality requires a feature flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
+
+  ASSERT_TRUE(RunExtensionTest("keybinding/remove_bookmark_shortcut"))
+      << message_;
+
+  // Check that the shortcut is removed.
+  CommandService* command_service = CommandService::Get(browser()->profile());
+  const Extension* extension = GetSingleLoadedExtension();
+  // Simulate the user setting a keybinding to Ctrl+D.
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent,
+      kBookmarkKeybinding);
+
+  // Force the command enable state to be recalculated.
+  browser()->command_controller()->ExtensionStateChanged();
+
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+}
+
 // This test validates that an extension can override the Chrome bookmark
 // shortcut if it has requested to do so.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
@@ -291,24 +369,54 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
   // Activate the shortcut (Ctrl+D) to make the page green.
   {
     ResultCatcher catcher;
-#if defined(OS_MACOSX)
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_D, false, false, false, true));
-#else
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_D, true, false, false, false));
-#endif
+    ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       tab,
-      "setInterval(function() {"
-      "  if (document.body.bgColor == 'green') {"
+      std::string("setInterval(function() {") +
+      "  if (document.body.bgColor == '" +
+      kOverwriteBookmarkShortcutCommandColor  + "') {" +
       "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
+}
+
+// This test validates that an extension that requests to override the Chrome
+// bookmark shortcut, but does not get the keybinding, does not remove the
+// bookmark UI.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       OverwriteBookmarkShortcutWithoutKeybinding) {
+  // This functionality requires a feature flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui", "1");
+
+  ASSERT_TRUE(test_server()->Start());
+
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+
+  ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
+      << message_;
+
+  const Extension* extension = GetSingleLoadedExtension();
+  CommandService* command_service = CommandService::Get(browser()->profile());
+  CommandMap commands;
+  // Verify the expected command is present.
+  EXPECT_TRUE(command_service->GetNamedCommands(
+      extension->id(), CommandService::SUGGESTED, CommandService::ANY_SCOPE,
+      &commands));
+  EXPECT_EQ(1u, commands.count(kOverwriteBookmarkShortcutCommandColor));
+
+  // Simulate the user removing the Ctrl+D keybinding from the command.
+  command_service->RemoveKeybindingPrefs(
+      extension->id(), kOverwriteBookmarkShortcutCommandColor);
+
+  // Force the command enable state to be recalculated.
+  browser()->command_controller()->ExtensionStateChanged();
+
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
 }
 
 // This test validates that an extension override of the Chrome bookmark
@@ -335,13 +443,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 
   // Activate the shortcut (Ctrl+D) which should be handled by the page and make
   // the background color magenta.
-#if defined(OS_MACOSX)
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_D, false, false, false, true));
-#else
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_D, true, false, false, false));
-#endif
+  ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -373,13 +475,9 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 
   const Extension* extension = GetSingleLoadedExtension();
   // Simulate the user setting the keybinding to Ctrl+D.
-#if defined(OS_MACOSX)
-  const char hotkey[] = "Command+D";
-#else
-  const char hotkey[] = "Ctrl+D";
-#endif  // defined(OS_MACOSX)
   command_service->UpdateKeybindingPrefs(
-      extension->id(), manifest_values::kBrowserActionCommandEvent, hotkey);
+      extension->id(), manifest_values::kBrowserActionCommandEvent,
+      kBookmarkKeybinding);
 
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL(
@@ -390,13 +488,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 
   // Activate the shortcut (Ctrl+D) which should be handled by the extension and
   // make the background color red.
-#if defined(OS_MACOSX)
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_D, false, false, false, true));
-#else
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_D, true, false, false, false));
-#endif
+  ASSERT_TRUE(SendBookmarkKeyPressSync(browser()));
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

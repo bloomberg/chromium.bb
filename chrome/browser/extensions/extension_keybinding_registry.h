@@ -70,10 +70,10 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   bool IsAcceleratorRegistered(const ui::Accelerator& accelerator) const;
 
  protected:
-  // Add extension keybinding for the events defined by the |extension|.
+  // Add extension keybindings for the events defined by the |extension|.
   // |command_name| is optional, but if not blank then only the command
   // specified will be added.
-  virtual void AddExtensionKeybinding(
+  virtual void AddExtensionKeybindings(
       const Extension* extension,
       const std::string& command_name) = 0;
   // Remove extension bindings for |extension|. |command_name| is optional,

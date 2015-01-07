@@ -575,6 +575,7 @@
       'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
       'browser/ui/views/autofill/password_generation_popup_view_tester_views.cc',
       'browser/ui/views/autofill/password_generation_popup_view_tester_views.h',
+      'browser/ui/views/extensions/bookmark_override_browsertest.cc',
       'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
       'browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc',
       'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',

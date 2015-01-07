@@ -32,7 +32,7 @@ ExtensionKeybindingRegistryViews::~ExtensionKeybindingRegistryViews() {
   focus_manager_->UnregisterAccelerators(this);
 }
 
-void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
+void ExtensionKeybindingRegistryViews::AddExtensionKeybindings(
     const extensions::Extension* extension,
     const std::string& command_name) {
   // This object only handles named commands, not browser/page actions.
@@ -46,7 +46,7 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
   extensions::CommandMap commands;
   if (!command_service->GetNamedCommands(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
+          extensions::CommandService::ACTIVE,
           extensions::CommandService::REGULAR,
           &commands))
     return;

@@ -332,13 +332,13 @@ bool InstalledBubbleContent::GetKeybinding(extensions::Command* command) {
   if (type_ == ExtensionInstalledBubble::BROWSER_ACTION) {
     return command_service->GetBrowserActionCommand(
         extension_id_,
-        extensions::CommandService::ACTIVE_ONLY,
+        extensions::CommandService::ACTIVE,
         command,
         NULL);
   } else if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
     return command_service->GetPageActionCommand(
         extension_id_,
-        extensions::CommandService::ACTIVE_ONLY,
+        extensions::CommandService::ACTIVE,
         command,
         NULL);
   } else {

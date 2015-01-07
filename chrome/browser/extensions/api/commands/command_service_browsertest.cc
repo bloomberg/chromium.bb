@@ -12,6 +12,10 @@
 #include "extensions/common/manifest_constants.h"
 
 namespace {
+const char kBasicBrowserActionKeybinding[] = "Ctrl+Shift+F";
+const char kBasicNamedKeybinding[] = "Ctrl+Shift+Y";
+const char kBasicAlternateKeybinding[] = "Ctrl+Shift+G";
+const char kBasicNamedCommand[] = "toggle-feature";
 
 // Get another command platform, whcih is used for simulating a command has been
 // assigned with a shortcut on another platform.
@@ -117,6 +121,300 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest,
   // Removal of keybinding preference should be platform-specific, so the key on
   // another platform should always remained.
   EXPECT_TRUE(bindings->HasKey(anotherPlatformKey));
+}
+
+IN_PROC_BROWSER_TEST_F(CommandServiceTest,
+                       GetExtensionActionCommandQueryAll) {
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("basics");
+  const Extension* extension = InstallExtension(extension_dir, 1);
+  ASSERT_TRUE(extension);
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  {
+    Command command;
+    bool active = false;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::ALL, &command, &active));
+
+    EXPECT_EQ(kBasicBrowserActionKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_TRUE(active);
+  }
+
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent,
+      kBasicAlternateKeybinding);
+
+  {
+    Command command;
+    bool active = false;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::ALL, &command, &active));
+
+    EXPECT_EQ(kBasicAlternateKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_TRUE(active);
+  }
+
+  command_service->RemoveKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent);
+
+  {
+    Command command;
+    bool active = true;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::ALL, &command, &active));
+
+    EXPECT_EQ(kBasicBrowserActionKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_FALSE(active);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CommandServiceTest,
+                       GetExtensionActionCommandQueryActive) {
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("basics");
+  const Extension* extension = InstallExtension(extension_dir, 1);
+  ASSERT_TRUE(extension);
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  {
+    Command command;
+    bool active = false;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::ACTIVE, &command, &active));
+
+    EXPECT_EQ(kBasicBrowserActionKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_TRUE(active);
+  }
+
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent,
+      kBasicAlternateKeybinding);
+
+  {
+    Command command;
+    bool active = false;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::ACTIVE, &command, &active));
+
+    EXPECT_EQ(kBasicAlternateKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_TRUE(active);
+  }
+
+  command_service->RemoveKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent);
+
+  {
+    Command command;
+    bool active = false;
+    EXPECT_FALSE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::ACTIVE, &command, &active));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CommandServiceTest,
+                       GetExtensionActionCommandQuerySuggested) {
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("basics");
+  const Extension* extension = InstallExtension(extension_dir, 1);
+  ASSERT_TRUE(extension);
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  {
+    Command command;
+    bool active = false;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::SUGGESTED, &command, &active));
+
+    EXPECT_EQ(kBasicBrowserActionKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_TRUE(active);
+  }
+
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent,
+      kBasicAlternateKeybinding);
+
+  {
+    Command command;
+    bool active = true;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::SUGGESTED, &command, &active));
+
+    EXPECT_EQ(kBasicBrowserActionKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_FALSE(active);
+  }
+
+  command_service->RemoveKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent);
+
+  {
+    Command command;
+    bool active = true;
+    EXPECT_TRUE(command_service->GetBrowserActionCommand(
+        extension->id(), CommandService::SUGGESTED, &command, &active));
+
+    EXPECT_EQ(kBasicBrowserActionKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+    EXPECT_FALSE(active);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CommandServiceTest,
+                       GetNamedCommandsQueryAll) {
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("basics");
+  const Extension* extension = InstallExtension(extension_dir, 1);
+  ASSERT_TRUE(extension);
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::ALL, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicNamedKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), kBasicNamedCommand, kBasicAlternateKeybinding);
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::ALL, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicAlternateKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+
+  command_service->RemoveKeybindingPrefs(extension->id(), kBasicNamedCommand);
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::ALL, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicNamedKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CommandServiceTest, GetNamedCommandsQueryActive) {
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("basics");
+  const Extension* extension = InstallExtension(extension_dir, 1);
+  ASSERT_TRUE(extension);
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::ACTIVE, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicNamedKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), kBasicNamedCommand, kBasicAlternateKeybinding);
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::ACTIVE, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicAlternateKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+
+  command_service->RemoveKeybindingPrefs(extension->id(), kBasicNamedCommand);
+
+  {
+    CommandMap command_map;
+    command_service->GetNamedCommands(
+        extension->id(), CommandService::ACTIVE, CommandService::ANY_SCOPE,
+        &command_map);
+    EXPECT_EQ(0u, command_map.count(kBasicNamedCommand));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CommandServiceTest,
+                       GetNamedCommandsQuerySuggested) {
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("basics");
+  const Extension* extension = InstallExtension(extension_dir, 1);
+  ASSERT_TRUE(extension);
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::SUGGESTED, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicNamedKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), kBasicNamedCommand, kBasicAlternateKeybinding);
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::SUGGESTED, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicNamedKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
+
+  command_service->RemoveKeybindingPrefs(extension->id(), kBasicNamedCommand);
+
+  {
+    CommandMap command_map;
+    EXPECT_TRUE(command_service->GetNamedCommands(
+        extension->id(), CommandService::SUGGESTED, CommandService::ANY_SCOPE,
+        &command_map));
+
+    ASSERT_EQ(1u, command_map.count(kBasicNamedCommand));
+    Command command = command_map[kBasicNamedCommand];
+    EXPECT_EQ(kBasicNamedKeybinding,
+              Command::AcceleratorToString(command.accelerator()));
+  }
 }
 
 }  // namespace extensions

@@ -155,10 +155,9 @@ bool GetBookmarkOverrideCommand(
        ++i) {
     extensions::Command prospective_command;
     extensions::CommandService::ExtensionCommandType prospective_command_type;
-    if (command_service->GetBoundExtensionCommand((*i)->id(),
-                                                  bookmark_page_accelerator,
-                                                  &prospective_command,
-                                                  &prospective_command_type)) {
+    if (command_service->GetSuggestedExtensionCommand(
+            (*i)->id(), bookmark_page_accelerator, &prospective_command,
+            &prospective_command_type)) {
       *extension = i->get();
       *command = prospective_command;
       *command_type = prospective_command_type;

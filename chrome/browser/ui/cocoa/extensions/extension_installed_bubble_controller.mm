@@ -353,7 +353,7 @@ class ExtensionLoadedNotificationObserver
     if (extensions::CommandsInfo::GetPageActionCommand(extension_) &&
         command_service->GetPageActionCommand(
             extension_->id(),
-            extensions::CommandService::ACTIVE_ONLY,
+            extensions::CommandService::ACTIVE,
             command,
             NULL)) {
       return true;
@@ -370,7 +370,7 @@ class ExtensionLoadedNotificationObserver
     if (extensions::CommandsInfo::GetBrowserActionCommand(extension_) &&
         command_service->GetBrowserActionCommand(
             extension_->id(),
-            extensions::CommandService::ACTIVE_ONLY,
+            extensions::CommandService::ACTIVE,
             command,
             NULL)) {
       return true;

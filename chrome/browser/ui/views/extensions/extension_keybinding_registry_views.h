@@ -43,8 +43,8 @@ class ExtensionKeybindingRegistryViews
 
  private:
   // Overridden from ExtensionKeybindingRegistry:
-  void AddExtensionKeybinding(const extensions::Extension* extension,
-                              const std::string& command_name) override;
+  void AddExtensionKeybindings(const extensions::Extension* extension,
+                               const std::string& command_name) override;
   void RemoveExtensionKeybindingImpl(const ui::Accelerator& accelerator,
                                      const std::string& command_name) override;
 

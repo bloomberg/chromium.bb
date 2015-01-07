@@ -70,8 +70,8 @@ class ExtensionCommandsGlobalRegistry
   }
 
   // Overridden from ExtensionKeybindingRegistry:
-  void AddExtensionKeybinding(const Extension* extension,
-                              const std::string& command_name) override;
+  void AddExtensionKeybindings(const Extension* extension,
+                               const std::string& command_name) override;
   void RemoveExtensionKeybindingImpl(const ui::Accelerator& accelerator,
                                      const std::string& command_name) override;
 

@@ -80,7 +80,7 @@ void ExtensionKeybindingRegistry::Init() {
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions())
     if (ExtensionMatchesFilter(extension.get()))
-      AddExtensionKeybinding(extension.get(), std::string());
+      AddExtensionKeybindings(extension.get(), std::string());
 }
 
 bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
@@ -167,7 +167,7 @@ void ExtensionKeybindingRegistry::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   if (ExtensionMatchesFilter(extension))
-    AddExtensionKeybinding(extension, std::string());
+    AddExtensionKeybindings(extension, std::string());
 }
 
 void ExtensionKeybindingRegistry::OnExtensionUnloaded(
@@ -199,7 +199,7 @@ void ExtensionKeybindingRegistry::Observe(
 
       if (ExtensionMatchesFilter(extension)) {
         if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
-          AddExtensionKeybinding(extension, payload->second);
+          AddExtensionKeybindings(extension, payload->second);
         else
           RemoveExtensionKeybinding(extension, payload->second);
       }

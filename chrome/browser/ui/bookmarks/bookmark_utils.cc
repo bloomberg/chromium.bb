@@ -48,7 +48,7 @@ namespace {
 enum BookmarkShortcutDisposition {
   BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED,
   BOOKMARK_SHORTCUT_DISPOSITION_REMOVED,
-  BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN
+  BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDE_REQUESTED
 };
 
 // Iterator that iterates through a set of BookmarkNodes returning the URLs
@@ -179,8 +179,8 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
        i != extension_set.end();
        ++i) {
     // Use the overridden disposition if any extension wants it.
-    if (command_service->OverridesBookmarkShortcut(i->get()))
-      return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN;
+    if (command_service->RequestsBookmarkShortcutOverride(i->get()))
+      return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDE_REQUESTED;
 
     if (!removed &&
         extensions::CommandService::RemovesBookmarkShortcut(i->get())) {

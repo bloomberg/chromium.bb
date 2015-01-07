@@ -80,7 +80,7 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
   return true;
 }
 
-void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
+void ExtensionKeybindingRegistryCocoa::AddExtensionKeybindings(
     const extensions::Extension* extension,
     const std::string& command_name) {
   extensions::CommandService* command_service =
@@ -88,7 +88,7 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
   extensions::CommandMap commands;
   command_service->GetNamedCommands(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
+          extensions::CommandService::ACTIVE,
           extensions::CommandService::REGULAR,
           &commands);
 
@@ -102,30 +102,36 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
                    iter->second.command_name());
   }
 
-  // Mac implemenetation behaves like GTK with regards to what is kept in the
-  // event_targets_ map, because both GTK and Mac need to keep track of Browser
-  // and Page actions, as well as Script Badges.
-  extensions::Command browser_action;
-  if (command_service->GetBrowserActionCommand(
-          extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
-          &browser_action,
-          NULL)) {
-    AddEventTarget(browser_action.accelerator(),
-                   extension->id(),
-                   browser_action.command_name());
+  // The Mac implementation keeps track of browser and page actions in the
+  // event_targets_ map.
+  if (command_name.empty() ||
+      command_name == extensions::manifest_values::kBrowserActionCommandEvent) {
+    // Add the browser action (if any).
+    extensions::Command browser_action;
+    if (command_service->GetBrowserActionCommand(
+            extension->id(),
+            extensions::CommandService::ACTIVE,
+            &browser_action,
+            NULL)) {
+      AddEventTarget(browser_action.accelerator(),
+                     extension->id(),
+                     browser_action.command_name());
+    }
   }
 
-  // Add the Page Action (if any).
-  extensions::Command page_action;
-  if (command_service->GetPageActionCommand(
-          extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
-          &page_action,
-          NULL)) {
-    AddEventTarget(page_action.accelerator(),
-                   extension->id(),
-                   page_action.command_name());
+  if (command_name.empty() ||
+      command_name == extensions::manifest_values::kPageActionCommandEvent) {
+    // Add the page action (if any).
+    extensions::Command page_action;
+    if (command_service->GetPageActionCommand(
+            extension->id(),
+            extensions::CommandService::ACTIVE,
+            &page_action,
+            NULL)) {
+      AddEventTarget(page_action.accelerator(),
+                     extension->id(),
+                     page_action.command_name());
+    }
   }
 }
 
