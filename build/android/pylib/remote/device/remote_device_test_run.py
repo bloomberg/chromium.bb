@@ -37,13 +37,16 @@ class RemoteDeviceTestRun(test_run.TestRun):
     self._test_id = ''
     self._results = ''
     self._test_run_id = ''
+    self._current_status = ''
 
   #override
   def RunTests(self):
     """Run the test."""
     if self._env.trigger:
-      test_start_res = appurify_sanitized.api.tests_run(
-          self._env.token, self._env.device, self._app_id, self._test_id)
+      with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                              logging.WARNING):
+        test_start_res = appurify_sanitized.api.tests_run(
+            self._env.token, self._env.device, self._app_id, self._test_id)
       remote_device_helper.TestHttpResponse(
         test_start_res, 'Unable to run test.')
       self._test_run_id = test_start_res.json()['response']['test_run_id']
@@ -68,10 +71,12 @@ class RemoteDeviceTestRun(test_run.TestRun):
   #override
   def TearDown(self):
     """Tear down the test run."""
-    if (self._GetTestStatus(self._test_run_id) != self.COMPLETE
-        and self._env.collect):
-      test_abort_res = appurify_sanitized.api.tests_abort(
-          self._env.token, self._test_run_id, reason='Test runner exiting.')
+    if (self._env.collect
+        and self._GetTestStatus(self._test_run_id) != self.COMPLETE):
+      with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                              logging.WARNING):
+        test_abort_res = appurify_sanitized.api.tests_abort(
+            self._env.token, self._test_run_id, reason='Test runner exiting.')
       remote_device_helper.TestHttpResponse(test_abort_res,
                                             'Unable to abort test.')
 
@@ -103,7 +108,9 @@ class RemoteDeviceTestRun(test_run.TestRun):
     Args:
       test_name: Test to find the ID of.
     """
-    test_list_res = appurify_sanitized.api.tests_list(self._env.token)
+    with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                            logging.WARNING):
+      test_list_res = appurify_sanitized.api.tests_list(self._env.token)
     remote_device_helper.TestHttpResponse(test_list_res,
                                           'Unable to get tests list.')
     for test in test_list_res.json()['response']:
@@ -122,8 +129,10 @@ class RemoteDeviceTestRun(test_run.TestRun):
       logging.info('Downloading results to %s.' % results_path)
       if not os.path.exists(os.path.basename(results_path)):
         os.makedirs(os.path.basename(results_path))
-      appurify_sanitized.utils.wget(self._results['results']['url'],
-                                    results_path)
+        with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                                logging.WARNING):
+          appurify_sanitized.utils.wget(self._results['results']['url'],
+                                        results_path)
 
   def _GetTestStatus(self, test_run_id):
     """Checks the state of the test, and sets self._results
@@ -132,12 +141,16 @@ class RemoteDeviceTestRun(test_run.TestRun):
       test_run_id: Id of test on on remote service.
     """
 
-    test_check_res = appurify_sanitized.api.tests_check_result(self._env.token,
-                                                     test_run_id)
+    with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                            logging.WARNING):
+      test_check_res = appurify_sanitized.api.tests_check_result(
+          self._env.token, test_run_id)
     remote_device_helper.TestHttpResponse(test_check_res,
                                           'Unable to get test status.')
     self._results = test_check_res.json()['response']
-    logging.info('Test status: %s' % self._results['detailed_status'])
+    if self._results['detailed_status'] != self._current_status:
+      logging.info('Test status: %s', self._results['detailed_status'])
+      self._current_status = self._results['detailed_status']
     return self._results['status']
 
   def _AmInstrumentTestSetup(self, app_path, test_path, runner_package):
@@ -170,11 +183,13 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
   def _UploadAppToDevice(self, app_path):
     """Upload app to device."""
-    logging.info('Upload %s to remote service.' % app_path)
+    logging.info('Uploading %s to remote service.', app_path)
     apk_name = os.path.basename(app_path)
     with open(app_path, 'rb') as apk_src:
-      upload_results = appurify_sanitized.api.apps_upload(
-          self._env.token, apk_src, 'raw', name=apk_name)
+      with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                              logging.WARNING):
+        upload_results = appurify_sanitized.api.apps_upload(
+            self._env.token, apk_src, 'raw', name=apk_name)
       remote_device_helper.TestHttpResponse(
           upload_results, 'Unable to upload %s.' % app_path)
       return upload_results.json()['response']['app_id']
@@ -186,8 +201,10 @@ class RemoteDeviceTestRun(test_run.TestRun):
     """
     logging.info('Uploading %s to remote service.' % test_path)
     with open(test_path, 'rb') as test_src:
-      upload_results = appurify_sanitized.api.tests_upload(
-          self._env.token, test_src, 'raw', test_type)
+      with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                              logging.WARNING):
+        upload_results = appurify_sanitized.api.tests_upload(
+            self._env.token, test_src, 'raw', test_type)
       remote_device_helper.TestHttpResponse(upload_results,
           'Unable to upload %s.' % test_path)
       return upload_results.json()['response']['test_id']
@@ -204,7 +221,9 @@ class RemoteDeviceTestRun(test_run.TestRun):
       config.write(''.join('%s\n' % l for l in config_data))
       config.flush()
       config.seek(0)
-      config_response = appurify_sanitized.api.config_upload(
-          self._env.token, config, self._test_id)
+      with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
+                                              logging.WARNING):
+        config_response = appurify_sanitized.api.config_upload(
+            self._env.token, config, self._test_id)
       remote_device_helper.TestHttpResponse(
           config_response, 'Unable to upload test config.')

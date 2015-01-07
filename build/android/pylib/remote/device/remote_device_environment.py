@@ -6,6 +6,7 @@
 
 import logging
 import os
+import random
 import sys
 
 from pylib import constants
@@ -60,6 +61,8 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._runner_package = args.runner_package
     self._runner_type = args.runner_type
     self._device = ''
+    self._verbose_count = args.verbose_count
+
     if not args.trigger and not args.collect:
       self._trigger = True
       self._collect = True
@@ -96,8 +99,10 @@ class RemoteDeviceEnvironment(environment.Environment):
   def _GetAccessToken(self):
     """Generates access token for remote device service."""
     logging.info('Generating remote service access token')
-    access_token_results = appurify_sanitized.api.access_token_generate(
-        self._api_key, self._api_secret)
+    with appurify_sanitized.SanitizeLogging(self._verbose_count,
+                                            logging.WARNING):
+      access_token_results = appurify_sanitized.api.access_token_generate(
+          self._api_key, self._api_secret)
     remote_device_helper.TestHttpResponse(access_token_results,
                                           'Unable to generate access token.')
     self._access_token = access_token_results.json()['response']['access_token']
@@ -105,22 +110,34 @@ class RemoteDeviceEnvironment(environment.Environment):
   def _RevokeAccessToken(self):
     """Destroys access token for remote device service."""
     logging.info('Revoking remote service access token')
-    revoke_token_results = appurify_sanitized.api.access_token_revoke(
-        self._access_token)
+    with appurify_sanitized.SanitizeLogging(self._verbose_count,
+                                            logging.WARNING):
+      revoke_token_results = appurify_sanitized.api.access_token_revoke(
+          self._access_token)
     remote_device_helper.TestHttpResponse(revoke_token_results,
                                           'Unable to revoke access token.')
 
   def _SelectDevice(self):
     """Select which device to use."""
-    logging.info('Finding %s with %s to run tests on.' %
-        (self._remote_device, self._remote_device_os))
-    dev_list_res = appurify_sanitized.api.devices_list(self._access_token)
+    logging.info('Finding device to run tests on.')
+    with appurify_sanitized.SanitizeLogging(self._verbose_count,
+                                            logging.WARNING):
+      dev_list_res = appurify_sanitized.api.devices_list(self._access_token)
     remote_device_helper.TestHttpResponse(dev_list_res,
                                           'Unable to generate access token.')
     device_list = dev_list_res.json()['response']
+    random.shuffle(device_list)
     for device in device_list:
-      if (device['name'] == self._remote_device
-          and device['os_version'] == self._remote_device_os):
+      if device['os_name'] != 'Android':
+        continue
+      if self._remote_device and device['name'] != self._remote_device:
+        continue
+      if (self._remote_device_os
+          and device['os_version'] != self._remote_device_os):
+        continue
+      if device['available_devices_count'] > 0:
+        logging.info('Found device: %s %s',
+                     device['name'], device['os_version'])
         return device['device_type_id']
     self._NoDeviceFound(device_list)
 
@@ -139,8 +156,7 @@ class RemoteDeviceEnvironment(environment.Environment):
 
   def _NoDeviceFound(self, device_list):
     self._PrintAvailableDevices(device_list)
-    raise remote_device_helper.RemoteDeviceError('No device found: %s %s' %
-        (self._remote_device, self._remote_device_os))
+    raise remote_device_helper.RemoteDeviceError('No device found.')
 
   @property
   def device(self):
@@ -169,3 +185,7 @@ class RemoteDeviceEnvironment(environment.Environment):
   @property
   def collect(self):
     return self._collect
+
+  @property
+  def verbose_count(self):
+    return self._verbose_count

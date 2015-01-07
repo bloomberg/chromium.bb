@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import logging
 import os
 import sys
@@ -25,3 +26,15 @@ while new_handler:
 
 api = appurify.api
 utils = appurify.utils
+
+# This is not thread safe. If multiple threads are ever supported with appurify
+# this may cause logging messages to go missing.
+@contextlib.contextmanager
+def SanitizeLogging(verbose_count, level):
+  if verbose_count < 2:
+    logging.disable(level)
+    yield True
+    logging.disable(logging.NOTSET)
+  else:
+    yield False
+
