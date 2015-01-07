@@ -215,7 +215,7 @@ PassOwnPtr<CompileFn> bind(const A&... args)
 PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptResource* resource, v8::Handle<v8::String> code)
 {
     static const int minimalCodeLength = 1024;
-    static const int mediumCodeLength = 30000;
+    static const int mediumCodeLength = 300000;
 
     if (cacheOptions == V8CacheOptionsNone
         || !resource
