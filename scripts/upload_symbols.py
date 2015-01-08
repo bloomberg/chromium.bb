@@ -476,6 +476,10 @@ def SymbolFinder(tempdir, paths):
   Returns:
     Yield every viable sym file.
   """
+  cache_dir = commandline.GetCacheDir()
+  common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
+  tar_cache = cache.TarballCache(common_path)
+
   for p in paths:
     # Pylint is confused about members of ParseResult.
 
@@ -486,9 +490,6 @@ def SymbolFinder(tempdir, paths):
       for p in ctx.LS(p):
         cros_build_lib.Info('processing files inside %s', p)
         o = urlparse.urlparse(p)
-        cache_dir = commandline.GetCacheDir()
-        common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
-        tar_cache = cache.TarballCache(common_path)
         key = ('%s%s' % (o.netloc, o.path)).split('/')  # pylint: disable=E1101
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
