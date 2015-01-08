@@ -596,7 +596,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
       shill::kGatewayProperty, "0.0.0.1");
   ipconfig_v4_dictionary.SetIntegerWithoutPathExpansion(
-      shill::kPrefixlenProperty, 0);
+      shill::kPrefixlenProperty, 1);
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
       shill::kMethodProperty, shill::kTypeIPv4);
   ip_configs->AddIPConfig("ipconfig_v4_path", ipconfig_v4_dictionary);

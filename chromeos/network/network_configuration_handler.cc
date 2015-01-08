@@ -20,6 +20,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -258,6 +259,11 @@ void NetworkConfigurationHandler::SetProperties(
                  source, callback),
       base::Bind(&NetworkConfigurationHandler::SetPropertiesErrorCallback,
                  AsWeakPtr(), service_path, error_callback));
+
+  // If we set the StaticIPConfig property, request an IP config refresh
+  // after calling SetProperties.
+  if (properties.HasKey(shill::kStaticIPConfigProperty))
+    RequestRefreshIPConfigs(service_path);
 }
 
 void NetworkConfigurationHandler::ClearProperties(
@@ -374,8 +380,10 @@ NetworkConfigurationHandler::~NetworkConfigurationHandler() {
 }
 
 void NetworkConfigurationHandler::Init(
-    NetworkStateHandler* network_state_handler) {
+    NetworkStateHandler* network_state_handler,
+    NetworkDeviceHandler* network_device_handler) {
   network_state_handler_ = network_state_handler;
+  network_device_handler_ = network_device_handler;
 }
 
 void NetworkConfigurationHandler::RunCreateNetworkCallback(
@@ -492,11 +500,25 @@ void NetworkConfigurationHandler::ClearPropertiesErrorCallback(
   network_state_handler_->RequestUpdateForNetwork(service_path);
 }
 
+void NetworkConfigurationHandler::RequestRefreshIPConfigs(
+    const std::string& service_path) {
+  if (!network_device_handler_)
+    return;
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkState(service_path);
+  if (!network_state || network_state->device_path().empty())
+    return;
+  network_device_handler_->RequestRefreshIPConfigs(
+      network_state->device_path(), base::Bind(&base::DoNothing),
+      network_handler::ErrorCallback());
+}
+
 // static
 NetworkConfigurationHandler* NetworkConfigurationHandler::InitializeForTest(
-    NetworkStateHandler* network_state_handler) {
+    NetworkStateHandler* network_state_handler,
+    NetworkDeviceHandler* network_device_handler) {
   NetworkConfigurationHandler* handler = new NetworkConfigurationHandler();
-  handler->Init(network_state_handler);
+  handler->Init(network_state_handler, network_device_handler);
   return handler;
 }
 

@@ -244,7 +244,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     network_profile_handler_.reset(new TestNetworkProfileHandler());
     network_configuration_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
-            NULL /* no NetworkStateHandler */));
+            NULL /* no NetworkStateHandler */,
+            NULL /* no NetworkDeviceHandler */));
     managed_network_configuration_handler_.reset(
         new ManagedNetworkConfigurationHandlerImpl());
     managed_network_configuration_handler_->Init(

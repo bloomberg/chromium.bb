@@ -270,13 +270,18 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty("stub_wifi1",
                                       shill::kDeviceProperty,
                                       base::StringValue(kWifiDevicePath));
-    profile_test->AddService(kUser1ProfilePath, "stub_wifi1");
+    base::DictionaryValue static_ipconfig;
+    static_ipconfig.SetStringWithoutPathExpansion(shill::kAddressProperty,
+                                                  "1.2.3.4");
+    service_test_->SetServiceProperty(
+        "stub_wifi1", shill::kStaticIPConfigProperty, static_ipconfig);
     base::ListValue frequencies1;
     frequencies1.AppendInteger(2400);
     service_test_->SetServiceProperty(
         "stub_wifi1", shill::kWifiFrequencyListProperty, frequencies1);
     service_test_->SetServiceProperty(
         "stub_wifi1", shill::kWifiFrequency, base::FundamentalValue(2400));
+    profile_test->AddService(kUser1ProfilePath, "stub_wifi1");
 
     AddService("stub_wifi2", "wifi2_PSK", shill::kTypeWifi, shill::kStateIdle);
     service_test_->SetServiceProperty("stub_wifi2",

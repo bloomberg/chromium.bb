@@ -121,7 +121,8 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
 
   // Construct and initialize an instance for testing.
   static NetworkConfigurationHandler* InitializeForTest(
-      NetworkStateHandler* network_state_handler);
+      NetworkStateHandler* network_state_handler,
+      NetworkDeviceHandler* network_device_handler);
 
  protected:
   friend class ClientCertResolverTest;
@@ -131,7 +132,8 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   class ProfileEntryDeleter;
 
   NetworkConfigurationHandler();
-  void Init(NetworkStateHandler* network_state_handler);
+  void Init(NetworkStateHandler* network_state_handler,
+            NetworkDeviceHandler* network_device_handler);
 
   void RunCreateNetworkCallback(
       const std::string& profile_path,
@@ -182,8 +184,12 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const std::string& dbus_error_name,
       const std::string& dbus_error_message);
 
-  // Unowned associated NetworkStateHandler* (global or test instance).
+  // Signals the device handler to request an IP config refresh.
+  void RequestRefreshIPConfigs(const std::string& service_path);
+
+  // Unowned associated Network*Handlers (global or test instance).
   NetworkStateHandler* network_state_handler_;
+  NetworkDeviceHandler* network_device_handler_;
 
   // Map of in-progress deleter instances. Owned by this class.
   std::map<std::string, ProfileEntryDeleter*> profile_entry_deleters_;

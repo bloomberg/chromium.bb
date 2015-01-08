@@ -198,7 +198,8 @@ class NetworkConfigurationHandlerTest : public testing::Test {
 
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_configuration_handler_.reset(new NetworkConfigurationHandler());
-    network_configuration_handler_->Init(network_state_handler_.get());
+    network_configuration_handler_->Init(network_state_handler_.get(),
+                                         NULL /* network_device_handler */);
     message_loop_.RunUntilIdle();
   }
 
@@ -490,7 +491,8 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     network_state_handler_->AddObserver(test_observer_.get(), FROM_HERE);
 
     network_configuration_handler_.reset(new NetworkConfigurationHandler());
-    network_configuration_handler_->Init(network_state_handler_.get());
+    network_configuration_handler_->Init(network_state_handler_.get(),
+                                         NULL /* network_device_handler */);
 
     message_loop_.RunUntilIdle();
     test_observer_->ClearPropertyUpdates();

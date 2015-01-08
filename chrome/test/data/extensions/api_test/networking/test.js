@@ -285,14 +285,19 @@ var availableTests = [
         assertEq({ "Connectable": true,
                    "ConnectionState": "Connected",
                    "GUID": "stub_wifi1_guid",
-                   "MacAddress": "00:11:22:AA:BB:CC",
+                   "IPAddressConfigType": "Static",
                    "IPConfigs": [{
                      "Gateway": "0.0.0.1",
                      "IPAddress": "0.0.0.0",
                      "RoutingPrefix": 0,
                      "Type": "IPv4"
                    }],
+                   "MacAddress": "00:11:22:AA:BB:CC",
                    "Name": "wifi1",
+                   "StaticIPConfig": {
+                     "IPAddress": "1.2.3.4",
+                     "Type": "IPv4"
+                   },
                    "Type": "WiFi",
                    "WiFi": {
                      "Frequency": 2400,
@@ -384,6 +389,10 @@ var availableTests = [
             Priority: 1,
             WiFi: {
               AutoConnect: true
+            },
+            IPAddressConfigType: 'Static',
+            StaticIPConfig: {
+              IPAddress: '1.2.3.4'
             }
           };
           chrome.networkingPrivate.setProperties(
@@ -393,13 +402,16 @@ var availableTests = [
                 chrome.networkingPrivate.getProperties(
                     network_guid,
                     callbackPass(function(result) {
+                      // Ensure that the GUID doesn't change.
+                      assertEq(network_guid, result.GUID);
                       // Ensure that the properties were set.
                       assertEq(1, result['Priority']);
                       assertTrue('WiFi' in result);
                       assertTrue('AutoConnect' in result['WiFi']);
                       assertEq(true, result['WiFi']['AutoConnect']);
-                      // Ensure that the GUID doesn't change.
-                      assertEq(network_guid, result.GUID);
+                      assertTrue('StaticIPConfig' in result);
+                      assertEq('1.2.3.4',
+                               result['StaticIPConfig']['IPAddress']);
                       done();
                     }));
               }));
@@ -425,7 +437,6 @@ var availableTests = [
                 chrome.networkingPrivate.getProperties(
                     network_guid,
                     callbackPass(function(result) {
-                      console.log('Result: ' + JSON.stringify(result));
                       // Ensure that the properties were set.
                       assertEq(1, result['Priority']);
                       assertTrue('VPN' in result);

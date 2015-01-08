@@ -198,9 +198,11 @@ void LocalTranslator::TranslateVPN() {
 
 void LocalTranslator::TranslateWiFi() {
   std::string security;
-  onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSecurity, &security);
-  TranslateWithTableAndSet(security, kWiFiSecurityTable,
-                           shill::kSecurityProperty);
+  if (onc_object_->GetStringWithoutPathExpansion(
+          ::onc::wifi::kSecurity, &security)) {
+    TranslateWithTableAndSet(security, kWiFiSecurityTable,
+                             shill::kSecurityProperty);
+  }
 
   std::string ssid;
   onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid);
@@ -336,7 +338,7 @@ void LocalTranslator::TranslateWithTableAndSet(
   // occurs, we should check here. Otherwise the failure will only show up much
   // later in Shill.
   LOG(ERROR) << "Value '" << onc_value
-             << "' cannot be translated to Shill property "
+             << "' cannot be translated to Shill property: "
              << shill_property_name;
 }
 

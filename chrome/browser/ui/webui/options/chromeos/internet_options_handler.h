@@ -102,10 +102,6 @@ class InternetOptionsHandler
 
   // Additional callbacks to set network state properties.
   void SetPropertiesCallback(const base::ListValue* args);
-  void SetIPConfigCallback(const base::ListValue* args);
-  void SetIPConfigProperties(const base::ListValue* args,
-                             const std::string& service_path,
-                             const base::DictionaryValue& shill_properties);
 
   // Gets the native window for hosting dialogs, etc.
   gfx::NativeWindow GetNativeWindow() const;
