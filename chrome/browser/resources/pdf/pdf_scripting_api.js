@@ -6,21 +6,20 @@
  * Create a new PDFScriptingAPI. This provides a scripting interface to
  * the PDF viewer so that it can be customized by things like print preview.
  * @param {Window} window the window of the page containing the pdf viewer.
- * @param {string} extensionUrl the url of the PDF extension.
+ * @param {Object} plugin the plugin element containing the pdf viewer.
  */
-function PDFScriptingAPI(window, extensionUrl) {
-  this.extensionUrl_ = extensionUrl;
-  this.messageQueue_ = [];
+function PDFScriptingAPI(window, plugin) {
+  this.loaded_ = false;
+  this.pendingScriptingMessages_ = [];
+  this.setPlugin(plugin);
+
   window.addEventListener('message', function(event) {
-    if (event.origin != this.extensionUrl_) {
+    if (event.origin != 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai') {
       console.error('Received message that was not from the extension: ' +
                     event);
       return;
     }
     switch (event.data.type) {
-      case 'readyToReceive':
-        this.setDestinationWindow(event.source);
-        break;
       case 'viewport':
         if (this.viewportChangedCallback_)
           this.viewportChangedCallback_(event.data.pageX,
@@ -30,6 +29,7 @@ function PDFScriptingAPI(window, extensionUrl) {
                                         event.data.viewportHeight);
         break;
       case 'documentLoaded':
+        this.loaded_ = true;
         if (this.loadCallback_)
           this.loadCallback_();
         break;
@@ -46,31 +46,36 @@ function PDFScriptingAPI(window, extensionUrl) {
 PDFScriptingAPI.prototype = {
   /**
    * @private
-   * Send a message to the extension. If we try to send messages prior to the
-   * extension being ready to receive messages (i.e. before it has finished
-   * loading) we queue up the messages and flush them later.
+   * Send a message to the extension. If messages try to get sent before there
+   * is a plugin element set, then we queue them up and send them later (this
+   * can happen in print preview).
    * @param {Object} message The message to send.
    */
   sendMessage_: function(message) {
-    if (!this.pdfWindow_) {
-      this.messageQueue_.push(message);
-      return;
-    }
-
-    this.pdfWindow_.postMessage(message, this.extensionUrl_);
+    if (this.plugin_)
+      this.plugin_.postMessage(message, '*');
+    else
+      this.pendingScriptingMessages_.push(message);
   },
 
-  /**
-   * Sets the destination window containing the PDF viewer. This will be called
-   * when a 'readyToReceive' message is received from the PDF viewer or it can
-   * be called during tests. It then flushes any pending messages to the window.
-   * @param {Window} pdfWindow the window containing the PDF viewer.
-   */
-  setDestinationWindow: function(pdfWindow) {
-    this.pdfWindow_ = pdfWindow;
-    while (this.messageQueue_.length != 0) {
-      this.pdfWindow_.postMessage(this.messageQueue_.shift(),
-                                  this.extensionUrl_);
+ /**
+  * Sets the plugin element containing the PDF viewer. The element will usually
+  * be passed into the PDFScriptingAPI constructor but may also be set later.
+  * @param {Object} plugin the plugin element containing the PDF viewer.
+  */
+  setPlugin: function(plugin) {
+    this.plugin_ = plugin;
+
+    // Send an initialization message to the plugin indicating the window to
+    // respond to.
+    if (this.plugin_) {
+      this.sendMessage_({
+        type: 'setParentWindow'
+      });
+
+      // Now we can flush pending messages
+      while (this.pendingScriptingMessages_.length > 0)
+        this.sendMessage_(this.pendingScriptingMessages_.shift());
     }
   },
 
@@ -84,11 +89,13 @@ PDFScriptingAPI.prototype = {
 
   /**
    * Sets the callback which will be run when the PDF document has finished
-   * loading.
+   * loading. If the document is already loaded, it will be run immediately.
    * @param {Function} callback the callback to be called.
    */
   setLoadCallback: function(callback) {
     this.loadCallback_ = callback;
+    if (this.loaded_ && callback)
+      callback();
   },
 
   /**
@@ -165,11 +172,14 @@ PDFScriptingAPI.prototype = {
  * @return {HTMLIFrameElement} the iframe element containing the PDF viewer.
  */
 function PDFCreateOutOfProcessPlugin(src) {
-  var EXTENSION_URL = 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai';
   var iframe = window.document.createElement('iframe');
-  iframe.setAttribute('src', EXTENSION_URL + '/index.html?' + src);
-  var client = new PDFScriptingAPI(window, EXTENSION_URL);
-
+  iframe.setAttribute(
+      'src',
+      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?' + src);
+  var client = new PDFScriptingAPI(window);
+  iframe.onload = function() {
+    client.setPlugin(iframe.contentWindow);
+  };
   // Add the functions to the iframe so that they can be called directly.
   iframe.setViewportChangedCallback =
       client.setViewportChangedCallback.bind(client);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var scriptingAPI;
+
 /**
  * These tests require that the PDF plugin be available to run correctly.
  */
@@ -21,9 +23,7 @@ var tests = [
   },
 
   function testAccessibility() {
-    var client = new PDFScriptingAPI(window, window.location.origin);
-    client.setDestinationWindow(window);
-    client.getAccessibilityJSON(chrome.test.callbackPass(function(json) {
+    scriptingAPI.getAccessibilityJSON(chrome.test.callbackPass(function(json) {
       var dict = JSON.parse(json);
       chrome.test.assertEq(true, dict.copyable);
       chrome.test.assertEq(true, dict.loaded);
@@ -32,9 +32,7 @@ var tests = [
   },
 
   function testAccessibilityWithPage() {
-    var client = new PDFScriptingAPI(window, window.location.origin);
-    client.setDestinationWindow(window);
-    client.getAccessibilityJSON(chrome.test.callbackPass(function(json) {
+    scriptingAPI.getAccessibilityJSON(chrome.test.callbackPass(function(json) {
       var dict = JSON.parse(json);
       chrome.test.assertEq(612, dict.width);
       chrome.test.assertEq(792, dict.height);
@@ -50,10 +48,7 @@ var tests = [
   }
 ];
 
-if (viewer.loaded) {
+var scriptingAPI = new PDFScriptingAPI(window, window);
+scriptingAPI.setLoadCallback(function() {
   chrome.test.runTests(tests);
-} else {
-  window.addEventListener('pdfload', function() {
-    chrome.test.runTests(tests);
-  });
-}
+});
