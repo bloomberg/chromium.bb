@@ -190,8 +190,6 @@ public:
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 
-    void completed();
-
     void checkTimerFired(Timer<FrameLoader>*);
     void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
 
@@ -204,7 +202,6 @@ private:
 
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
     void scrollToFragmentWithParentBoundary(const KURL&);
-
 
     void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 

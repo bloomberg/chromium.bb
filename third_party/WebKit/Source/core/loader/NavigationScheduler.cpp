@@ -132,7 +132,7 @@ public:
         clearUserGesture();
     }
 
-    virtual bool shouldStartTimer(LocalFrame* frame) override { return frame->loader().allAncestorsAreComplete(); }
+    virtual bool shouldStartTimer(LocalFrame* frame) override { return frame->document()->loadEventFinished(); }
 
     virtual void fire(LocalFrame* frame) override
     {

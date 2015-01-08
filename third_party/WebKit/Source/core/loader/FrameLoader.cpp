@@ -510,12 +510,17 @@ void FrameLoader::checkCompleted()
 
     m_frame->navigationScheduler().startTimer();
 
-    completed();
-    if (m_frame->page())
-        checkLoadComplete();
-
+    // Retry restoring scroll offset since finishing the load event disables content
+    // size clamping.
+    restoreScrollPositionAndViewState();
     if (m_frame->view())
         m_frame->view()->handleLoadCompleted();
+
+    Frame* parent = m_frame->tree().parent();
+    if (parent && parent->isLocalFrame())
+        toLocalFrame(parent)->loader().checkCompleted();
+    if (m_frame->page())
+        checkLoadComplete();
 }
 
 void FrameLoader::checkTimerFired(Timer<FrameLoader>*)
@@ -618,20 +623,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     checkCompleted();
 
     m_frame->localDOMWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
-}
-
-void FrameLoader::completed()
-{
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-
-    for (Frame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame)) {
-        if (descendant->isLocalFrame())
-            toLocalFrame(descendant)->navigationScheduler().startTimer();
-    }
-
-    Frame* parent = m_frame->tree().parent();
-    if (parent && parent->isLocalFrame())
-        toLocalFrame(parent)->loader().checkCompleted();
 }
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
@@ -1034,11 +1025,6 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         return false;
     if (!m_frame->document()->loadEventFinished())
         return false;
-
-    // Retry restoring scroll offset since finishing the load event disables content
-    // size clamping.
-    restoreScrollPositionAndViewState();
-
     if (!m_stateMachine.committedFirstRealDocumentLoad())
         return true;
 
