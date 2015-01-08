@@ -25,6 +25,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -786,6 +787,8 @@ struct FakeNetworkState {
   int signal_strength;
   const char* connection_status;
   int expected_state;
+  const char* address;
+  const char* gateway;
 };
 
 // List of fake networks - primarily used to make sure that signal strength
@@ -794,33 +797,36 @@ struct FakeNetworkState {
 // network, so we use 1 below.
 static const FakeNetworkState kFakeNetworks[] = {
   { "offline", "/device/wifi", shill::kTypeWifi, 35,
-    shill::kStateOffline, em::NetworkState::OFFLINE },
+    shill::kStateOffline, em::NetworkState::OFFLINE, "", "" },
   { "ethernet", "/device/ethernet", shill::kTypeEthernet, 0,
-    shill::kStateOnline, em::NetworkState::ONLINE },
+    shill::kStateOnline, em::NetworkState::ONLINE,
+    "192.168.0.1", "8.8.8.8" },
   { "wifi", "/device/wifi", shill::kTypeWifi, 23, shill::kStatePortal,
-    em::NetworkState::PORTAL },
+    em::NetworkState::PORTAL, "", "" },
   { "idle", "/device/cellular1", shill::kTypeCellular, 0, shill::kStateIdle,
-    em::NetworkState::IDLE },
+    em::NetworkState::IDLE, "", "" },
   { "carrier", "/device/cellular1", shill::kTypeCellular, 0,
-    shill::kStateCarrier, em::NetworkState::CARRIER },
+    shill::kStateCarrier, em::NetworkState::CARRIER, "", "" },
   { "association", "/device/cellular1", shill::kTypeCellular, 0,
-    shill::kStateAssociation, em::NetworkState::ASSOCIATION },
+    shill::kStateAssociation, em::NetworkState::ASSOCIATION, "", "" },
   { "config", "/device/cellular1", shill::kTypeCellular, 0,
-    shill::kStateConfiguration, em::NetworkState::CONFIGURATION },
+    shill::kStateConfiguration, em::NetworkState::CONFIGURATION, "", "" },
   { "ready", "/device/cellular1", shill::kTypeCellular, 0, shill::kStateReady,
-    em::NetworkState::READY },
+    em::NetworkState::READY, "", "" },
   { "disconnect", "/device/wifi", shill::kTypeWifi, 1,
-    shill::kStateDisconnect, em::NetworkState::DISCONNECT },
+    shill::kStateDisconnect, em::NetworkState::DISCONNECT, "", "" },
   { "failure", "/device/wifi", shill::kTypeWifi, 1, shill::kStateFailure,
-    em::NetworkState::FAILURE },
+    em::NetworkState::FAILURE, "", "" },
   { "activation-failure", "/device/cellular1", shill::kTypeCellular, 0,
-    shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE },
-  { "unknown", "", shill::kTypeWifi, 1, "unknown", em::NetworkState::UNKNOWN },
+    shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE,
+    "", "" },
+  { "unknown", "", shill::kTypeWifi, 1, "unknown", em::NetworkState::UNKNOWN,
+    "", "" },
 };
 
 static const FakeNetworkState kUnconfiguredNetwork = {
   "unconfigured", "/device/unconfigured", shill::kTypeWifi, 35,
-  shill::kStateOffline, em::NetworkState::OFFLINE
+  shill::kStateOffline, em::NetworkState::OFFLINE, "", ""
 };
 
 class DeviceStatusCollectorNetworkInterfacesTest
@@ -881,6 +887,22 @@ class DeviceStatusCollectorNetworkInterfacesTest
       service_client->SetServiceProperty(
           fake_network.name, shill::kProfileProperty,
           base::StringValue(fake_network.name));
+      if (strlen(fake_network.address) > 0) {
+        // Set the IP config.
+        base::DictionaryValue ip_config_properties;
+        ip_config_properties.SetStringWithoutPathExpansion(
+            shill::kAddressProperty, fake_network.address);
+        ip_config_properties.SetStringWithoutPathExpansion(
+            shill::kGatewayProperty, fake_network.gateway);
+        chromeos::ShillIPConfigClient::TestInterface* ip_config_test =
+            chromeos::DBusThreadManager::Get()->GetShillIPConfigClient()->
+            GetTestInterface();
+        const std::string kIPConfigPath = "test_ip_config";
+        ip_config_test->AddIPConfig(kIPConfigPath, ip_config_properties);
+        service_client->SetServiceProperty(
+            fake_network.name, shill::kIPConfigProperty,
+            base::StringValue(kIPConfigPath));
+      }
     }
 
     // Now add an unconfigured network - it should not show up in the
@@ -979,6 +1001,14 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
       if (proto_state.has_device_path() == (strlen(state.device_path) > 0) &&
           proto_state.signal_strength() == state.signal_strength &&
           proto_state.connection_state() == state.expected_state) {
+        if (proto_state.has_ip_address())
+          EXPECT_EQ(proto_state.ip_address(), state.address);
+        else
+          EXPECT_EQ(0U, strlen(state.address));
+        if (proto_state.has_gateway())
+          EXPECT_EQ(proto_state.gateway(), state.gateway);
+        else
+          EXPECT_EQ(0U, strlen(state.gateway));
         found_match = true;
         break;
       }
