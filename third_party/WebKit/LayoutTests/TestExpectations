@@ -207,11 +207,6 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
-crbug.com/382491 virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-crbug.com/382491 virtual/slimmingpaint/fast/borders/table-borders.html [ NeedsRebaseline ]
-crbug.com/382491 virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed-iframe.html [ NeedsRebaseline ]
-crbug.com/382491 virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed.html [ NeedsRebaseline ]
-
 # V8 Allowed eval in contexts after navigation, which changed the error of the test.
 crbug.com/439458 http/tests/security/xss-eval.html [ NeedsManualRebaseline ]
 
