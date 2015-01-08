@@ -790,14 +790,9 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
         return;
 
     LayoutRectOutsets outsets(boxShadow->rectOutsetsIncludingOriginal());
-    LayoutRectOutsets logicalOutsets(outsets.logicalOutsets(writingMode));
-    if (isFlippedLinesWritingMode(writingMode)) {
-        // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite shadow that applies, since
-        // the line is "upside down" in terms of block coordinates.
-        LayoutUnit oldLogicalTop = logicalOutsets.top();
-        logicalOutsets.setTop(logicalOutsets.bottom());
-        logicalOutsets.setBottom(oldLogicalTop);
-    }
+    // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite shadow that applies, since
+    // the line is "upside down" in terms of block coordinates.
+    LayoutRectOutsets logicalOutsets(outsets.logicalOutsetsWithFlippedLines(writingMode));
 
     LayoutRect shadowBounds(logicalFrameRect().toLayoutRect());
     shadowBounds.expand(logicalOutsets);
@@ -814,29 +809,18 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
     if (!style->hasBorderImageOutsets())
         return;
 
-    LayoutRectOutsets borderOutsets = style->borderImageOutsets();
-
-    LayoutUnit borderOutsetLogicalTop = borderOutsets.logicalTop(style->writingMode());
-    LayoutUnit borderOutsetLogicalBottom = borderOutsets.logicalBottom(style->writingMode());
-    LayoutUnit borderOutsetLogicalLeft = borderOutsets.logicalLeft(style->writingMode());
-    LayoutUnit borderOutsetLogicalRight = borderOutsets.logicalRight(style->writingMode());
-
     // Similar to how glyph overflow works, if our lines are flipped, then it's actually the opposite border that applies, since
     // the line is "upside down" in terms of block coordinates. vertical-rl and horizontal-bt are the flipped line modes.
-    LayoutUnit outsetLogicalTop = style->isFlippedLinesWritingMode() ? borderOutsetLogicalBottom : borderOutsetLogicalTop;
-    LayoutUnit outsetLogicalBottom = style->isFlippedLinesWritingMode() ? borderOutsetLogicalTop : borderOutsetLogicalBottom;
+    LayoutRectOutsets logicalOutsets = style->borderImageOutsets().logicalOutsetsWithFlippedLines(style->writingMode());
 
-    LayoutUnit logicalTopVisualOverflow = std::min(pixelSnappedLogicalTop() - outsetLogicalTop, logicalVisualOverflow.y());
-    LayoutUnit logicalBottomVisualOverflow = std::max(pixelSnappedLogicalBottom() + outsetLogicalBottom, logicalVisualOverflow.maxY());
+    if (!includeLogicalLeftEdge())
+        logicalOutsets.setLeft(LayoutUnit());
+    if (!includeLogicalRightEdge())
+        logicalOutsets.setRight(LayoutUnit());
 
-    LayoutUnit outsetLogicalLeft = includeLogicalLeftEdge() ? borderOutsetLogicalLeft : LayoutUnit();
-    LayoutUnit outsetLogicalRight = includeLogicalRightEdge() ? borderOutsetLogicalRight : LayoutUnit();
-
-    LayoutUnit logicalLeftVisualOverflow = std::min(pixelSnappedLogicalLeft() - outsetLogicalLeft, logicalVisualOverflow.x());
-    LayoutUnit logicalRightVisualOverflow = std::max(pixelSnappedLogicalRight() + outsetLogicalRight, logicalVisualOverflow.maxX());
-
-    logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow,
-                                       logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
+    LayoutRect borderOutsetBounds(logicalFrameRect());
+    borderOutsetBounds.expand(logicalOutsets);
+    logicalVisualOverflow.unite(borderOutsetBounds);
 }
 
 inline void InlineFlowBox::addOutlineVisualOverflow(LayoutRect& logicalVisualOverflow)
