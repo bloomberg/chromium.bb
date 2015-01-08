@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "skia/ext/skia_utils_ios.h"
+
+#import <ImageIO/ImageIO.h>
 #import <UIKit/UIKit.h>
 
 #include "base/base64.h"
-#include "skia/ext/skia_utils_ios.mm"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

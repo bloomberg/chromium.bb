@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/skia_utils_mac.mm"
+#include "skia/ext/skia_utils_mac.h"
+
+#import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace {
 
