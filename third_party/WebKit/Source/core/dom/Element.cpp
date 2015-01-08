@@ -1387,8 +1387,13 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     ASSERT(!hasRareData() || !elementRareData()->hasPseudoElements());
 
-    if (containsFullScreenElement())
+    if (Fullscreen::isActiveFullScreenElement(*this)) {
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
+        if (insertionPoint->isElementNode()) {
+            toElement(insertionPoint)->setContainsFullScreenElement(false);
+            toElement(insertionPoint)->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
+        }
+    }
 
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document()))
         fullscreen->elementRemoved(*this);
