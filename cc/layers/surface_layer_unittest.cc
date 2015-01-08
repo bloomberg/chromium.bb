@@ -172,7 +172,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void DidCommit() override {
+  void DidCommitAndDrawFrame() override {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(&SurfaceLayerSwapPromise::ChangeTree,
                               base::Unretained(this)));
