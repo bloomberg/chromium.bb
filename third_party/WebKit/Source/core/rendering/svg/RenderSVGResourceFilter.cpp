@@ -114,6 +114,8 @@ PassRefPtrWillBeRawPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitive
 
 static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
 {
+    // FIXME: Create a new GraphicsContext here to replace the existing context instead
+    // of nesting recordings.
     context->beginRecording(filterData->boundaries);
 }
 

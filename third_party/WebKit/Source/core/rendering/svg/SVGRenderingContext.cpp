@@ -109,7 +109,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
         ClipPathOperation* clipPathOperation = style->clipPath();
         if (clipPathOperation && clipPathOperation->type() == ClipPathOperation::SHAPE) {
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
-            m_paintInfo->context->clipPath(clipPath->path(object->objectBoundingBox()), clipPath->windRule());
+            m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*m_paintInfo->context, object->displayItemClient(), clipPath->path(object->objectBoundingBox()), clipPath->windRule()));
         }
     }
 

@@ -67,6 +67,8 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case FloatClipSelection: return "FloatClipSelection";
     case FloatClipSelfOutline: return "FloatClipSelfOutline";
     case EndFloatClip: return "EndFloatClip";
+    case BeginClipPath: return "BeginClipPath";
+    case EndClipPath: return "EndClipPath";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";
