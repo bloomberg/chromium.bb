@@ -574,7 +574,28 @@ hooks = [
     'action': [
         'python',
         'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
-        '--linux-only'],
+        '--linux-only',
+        '--arch=amd64'],
+  },
+  {
+    # Same as above, but for 32-bit Linux.
+    'name': 'sysroot',
+    'pattern': '.',
+    'action': [
+        'python',
+        'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
+        '--linux-only',
+        '--arch=i386'],
+  },
+  {
+    # Same as above, but for ARM Linux.
+    'name': 'sysroot',
+    'pattern': '.',
+    'action': [
+        'python',
+        'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
+        '--linux-only',
+        '--arch=arm'],
   },
   {
     # Update the Windows toolchain if necessary.
