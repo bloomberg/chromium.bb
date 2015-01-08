@@ -765,6 +765,7 @@ TEST(PermissionsTest, PermissionMessages) {
 
   // Platform apps.
   skip.insert(APIPermission::kBrowser);
+  skip.insert(APIPermission::kHid);
   skip.insert(APIPermission::kFileSystem);
   skip.insert(APIPermission::kFileSystemProvider);
   skip.insert(APIPermission::kFileSystemRetainEntries);
