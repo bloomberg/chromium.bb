@@ -105,7 +105,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
 
     RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
     if (consoleMessage->source() != ConsoleAPIMessageSource) {
-        if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(messageURL))
+        if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), messageURL))
             reportedCallStack = consoleMessage->callStack();
     } else {
         if (!frame().host() || (consoleMessage->scriptArguments() && !consoleMessage->scriptArguments()->argumentCount()))
@@ -114,7 +114,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
         if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
 
-        if (frame().chromeClient().shouldReportDetailedMessageForSource(messageURL))
+        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), messageURL))
             reportedCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
     }
 

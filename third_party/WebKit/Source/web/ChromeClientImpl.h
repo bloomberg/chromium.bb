@@ -92,7 +92,7 @@ public:
     virtual void setMenubarVisible(bool) override;
     virtual bool menubarVisible() override;
     virtual void setResizable(bool) override;
-    virtual bool shouldReportDetailedMessageForSource(const WTF::String&) override;
+    virtual bool shouldReportDetailedMessageForSource(LocalFrame&, const WTF::String&) override;
     virtual void addMessageToConsole(
         LocalFrame*, MessageSource, MessageLevel,
         const WTF::String& message, unsigned lineNumber,

@@ -361,10 +361,10 @@ void ChromeClientImpl::setResizable(bool value)
     m_windowFeatures.resizable = value;
 }
 
-bool ChromeClientImpl::shouldReportDetailedMessageForSource(const String& url)
+bool ChromeClientImpl::shouldReportDetailedMessageForSource(LocalFrame& localFrame, const String& url)
 {
-    WebLocalFrameImpl* webframe = m_webView->mainFrameImpl();
-    return webframe->client() && webframe->client()->shouldReportDetailedMessageForSource(url);
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(localFrame.localFrameRoot());
+    return webframe && webframe->client() && webframe->client()->shouldReportDetailedMessageForSource(url);
 }
 
 void ChromeClientImpl::addMessageToConsole(LocalFrame* localFrame, MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace)
