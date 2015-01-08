@@ -44,6 +44,7 @@ struct TestPreferences {
     bool should_respect_image_orientation;
     bool asynchronous_spell_checking_enabled;
     bool web_security_enabled;
+    bool strict_mixed_content_checking;
 
     TestPreferences();
     void Reset();

@@ -50,6 +50,7 @@ void TestPreferences::Reset() {
   should_respect_image_orientation = false;
   asynchronous_spell_checking_enabled = false;
   web_security_enabled = true;
+  strict_mixed_content_checking = false;
 }
 
 }  // namespace content

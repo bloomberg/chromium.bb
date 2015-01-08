@@ -431,6 +431,11 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 // cookies on cross-site requests.
 const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 
+// Blocks all insecure requests from secure contexts, and prevents the user
+// from overriding that decision.
+const char kEnableStrictMixedContentChecking[] =
+    "enable-strict-mixed-content-checking";
+
 // Enable support for sync events in ServiceWorkers.
 const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
 

@@ -132,6 +132,7 @@ WebPreferences::WebPreferences()
       text_blobs_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
+      strict_mixed_content_checking(false),
       password_echo_enabled(false),
       should_print_backgrounds(false),
       should_clear_document_background(true),
