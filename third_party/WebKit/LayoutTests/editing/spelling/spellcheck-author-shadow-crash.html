@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<p>Please run within DRT or enable continuous spell checking and unified text checker</p>
+<input>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+if (window.internals) {
+    internals.setContinuousSpellCheckingEnabled(true);
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+}
+var input = document.querySelector('input');
+var shadowRoot = input.createShadowRoot();
+shadowRoot.appendChild(document.createElement('div'));
+input.contentEditable = true;
+// Focus to invoke spell checking.
+input.focus();
+document.body.textContent = 'PASS if not crashed';
+</script>
+</body>
+</html>

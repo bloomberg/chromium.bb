@@ -140,6 +140,8 @@ void SpellChecker::didBeginEditing(Element* element)
             HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
             parent = textControl;
             element = textControl->innerEditorElement();
+            if (!element)
+                return;
             isTextField = isHTMLInputElement(*textControl) && toHTMLInputElement(*textControl).isTextField();
         }
 
