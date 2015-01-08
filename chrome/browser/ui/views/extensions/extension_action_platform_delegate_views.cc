@@ -151,8 +151,10 @@ void ExtensionActionPlatformDelegateViews::Observe(
       content::Details<std::pair<const std::string, const std::string> >(
           details).ptr();
   if (controller_->extension()->id() == payload->first &&
-      payload->second ==
-          extensions::manifest_values::kBrowserActionCommandEvent) {
+      (payload->second ==
+       extensions::manifest_values::kBrowserActionCommandEvent ||
+       payload->second ==
+       extensions::manifest_values::kPageActionCommandEvent)) {
     if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
       RegisterCommand();
     else

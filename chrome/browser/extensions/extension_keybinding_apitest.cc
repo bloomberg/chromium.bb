@@ -129,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   // Test that there are two browser actions in the toolbar.
   ASSERT_EQ(2, GetBrowserActionsBar().NumberOfBrowserActions());
 
-  ui_test_utils::NavigateToURL(browser(),
-      test_server()->GetURL("files/extensions/test_file.txt"));
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
 
   // activeTab shouldn't have been granted yet.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
     // Load a page, the extension will detect the navigation and request to show
     // the page action icon.
     ResultCatcher catcher;
-    ui_test_utils::NavigateToURL(browser(),
-        test_server()->GetURL("files/extensions/test_file.txt"));
+    ui_test_utils::NavigateToURL(
+        browser(), test_server()->GetURL("files/extensions/test_file.txt"));
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -216,6 +216,42 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
   ASSERT_TRUE(result);
 }
 
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+  // Simulate the user setting the keybinding to Alt+Shift+G.
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kPageActionCommandEvent, kAltShiftG);
+
+  {
+    // Load a page. The extension will detect the navigation and request to show
+    // the page action icon.
+    ResultCatcher catcher;
+    ui_test_utils::NavigateToURL(
+        browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  // Activate the shortcut to make the page red.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_G, false, true, true, false));
+
+  // Verify the command worked (the page action turns the page red).
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      std::string("setInterval(function() {") +
+      "  if (document.body.bgColor == 'red') {" +
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+}
+
 // This test validates that the getAll query API function returns registered
 // commands as well as synthesized ones and that inactive commands (like the
 // synthesized ones are in nature) have no shortcuts.
@@ -233,8 +269,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
 
   ASSERT_TRUE(RunExtensionTest("keybinding/dont_overwrite_system")) << message_;
 
-  ui_test_utils::NavigateToURL(browser(),
-      test_server()->GetURL("files/extensions/test_file.txt"));
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
@@ -360,8 +396,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
   ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
       << message_;
 
-  ui_test_utils::NavigateToURL(browser(),
-      test_server()->GetURL("files/extensions/test_file.txt"));
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
@@ -434,7 +470,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
       << message_;
 
-  ui_test_utils::NavigateToURL(browser(),
+  ui_test_utils::NavigateToURL(
+      browser(),
       test_server()->GetURL(
           "files/extensions/test_file_with_ctrl-d_keybinding.html"));
 
@@ -479,7 +516,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
       extension->id(), manifest_values::kBrowserActionCommandEvent,
       kBookmarkKeybinding);
 
-  ui_test_utils::NavigateToURL(browser(),
+  ui_test_utils::NavigateToURL(
+      browser(),
       test_server()->GetURL(
           "files/extensions/test_file_with_ctrl-d_keybinding.html"));
 
