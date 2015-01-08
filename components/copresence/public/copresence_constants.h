@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_H_
 #define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_H_
 
+#include <google/protobuf/repeated_field.h>
+
 #include <string>
 #include <vector>
 
@@ -20,6 +22,7 @@ class AudioBusRefCounted;
 namespace copresence {
 
 class Directive;
+class SubscribedMessage;
 
 // Audio constants. Currently used from the AudioPlayer/AudioRecorder.
 // TODO(rkc): Make these values configurable then remove them from here.
@@ -71,6 +74,10 @@ using SamplesCallback =
 
 // Callback to pass a list of directives back to CopresenceState.
 using DirectivesCallback = base::Callback<void(const std::vector<Directive>&)>;
+
+// Callback to pass around a list of SubscribedMessages.
+using MessagesCallback = base::Callback<void(
+    const google::protobuf::RepeatedPtrField<SubscribedMessage>&)>;
 
 }  // namespace copresence
 

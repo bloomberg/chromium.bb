@@ -31,12 +31,11 @@
 #include "components/copresence/rpc/http_post.h"
 #include "net/http/http_status_code.h"
 
+using google::protobuf::MessageLite;
+
 // TODO(ckehoe): Return error messages for bad requests.
 
 namespace copresence {
-
-using google::protobuf::MessageLite;
-using google::protobuf::RepeatedPtrField;
 
 const char RpcHandler::kReportRequestRpcName[] = "report";
 
@@ -169,11 +168,13 @@ RpcHandler::RpcHandler(CopresenceDelegate* delegate,
                        CopresenceStateImpl* state,
                        DirectiveHandler* directive_handler,
                        GCMHandler* gcm_handler,
+                       const MessagesCallback& new_messages_callback,
                        const PostCallback& server_post_callback)
     : delegate_(delegate),
       state_(state),
       directive_handler_(directive_handler),
       gcm_handler_(gcm_handler),
+      new_messages_callback_(new_messages_callback),
       server_post_callback_(server_post_callback),
       invalid_audio_token_cache_(
           base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),
@@ -488,7 +489,7 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
   if (response.has_update_signals_response()) {
     const UpdateSignalsResponse& update_response =
         response.update_signals_response();
-    DispatchMessages(update_response.message());
+    new_messages_callback_.Run(update_response.message());
 
     for (const Directive& directive : update_response.directive())
       directive_handler_->AddDirective(directive);
@@ -546,31 +547,6 @@ void RpcHandler::AddPlayingTokens(ReportRequest* request) {
     AddTokenToRequest(AudioToken(audible_token, true), request);
   if (!inaudible_token.empty())
     AddTokenToRequest(AudioToken(inaudible_token, false), request);
-}
-
-void RpcHandler::DispatchMessages(
-    const RepeatedPtrField<SubscribedMessage>& messages) {
-  if (messages.size() == 0)
-    return;
-
-  // Index the messages by subscription id.
-  std::map<std::string, std::vector<Message>> messages_by_subscription;
-  DVLOG(3) << "Dispatching " << messages.size() << " messages";
-  for (const SubscribedMessage& message : messages) {
-    for (const std::string& subscription_id : message.subscription_id()) {
-      messages_by_subscription[subscription_id].push_back(
-          message.published_message());
-    }
-  }
-
-  // Send the messages for each subscription.
-  for (const auto& map_entry : messages_by_subscription) {
-    // TODO(ckehoe): Once we have the app ID from the server, we need to pass
-    // it in here and get rid of the app id registry from the main API class.
-    const std::string& subscription = map_entry.first;
-    const std::vector<Message>& messages = map_entry.second;
-    delegate_->HandleMessages(std::string(), subscription, messages);
-  }
 }
 
 // TODO(ckehoe): Pass in the version string and

@@ -38,7 +38,7 @@ class CopresenceDelegate {
   virtual void HandleMessages(
       const std::string& app_id,
       const std::string& subscription_id,
-      const std::vector<Message>& message) = 0;
+      const std::vector<Message>& messages) = 0;
 
   virtual void HandleStatusUpdate(CopresenceStatus status) = 0;
 

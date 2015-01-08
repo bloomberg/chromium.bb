@@ -21,6 +21,7 @@ namespace copresence {
 
 // TimedMap is a map with the added functionality of clearing any
 // key/value pair after its specified lifetime is over.
+// TODO(ckehoe): Why is this interface so different from std::map?
 template <typename KeyType, typename ValueType>
 class TimedMap {
  public:
@@ -50,6 +51,17 @@ class TimedMap {
     ClearExpiredTokens();
     auto elt = map_.find(key);
     return elt == map_.end() ? kEmptyValue : elt->second;
+  }
+
+  ValueType* GetMutableValue(const KeyType& key) {
+    ClearExpiredTokens();
+    auto elt = map_.find(key);
+    return elt == map_.end() ? nullptr : &(elt->second);
+  }
+
+  // TODO(ckehoe): Add a unit test for this.
+  size_t Erase(const KeyType& key) {
+    return map_.erase(key);
   }
 
   void set_clock_for_testing(scoped_ptr<base::TickClock> clock) {

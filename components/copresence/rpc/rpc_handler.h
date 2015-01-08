@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/copresence/proto/enums.pb.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/copresence_delegate.h"
 #include "components/copresence/timed_map.h"
 
@@ -71,6 +72,7 @@ class RpcHandler {
              CopresenceStateImpl* state,
              DirectiveHandler* directive_handler,
              GCMHandler* gcm_handler,
+             const MessagesCallback& new_messages_callback,
              const PostCallback& server_post_callback = PostCallback());
 
   virtual ~RpcHandler();
@@ -136,10 +138,6 @@ class RpcHandler {
   // us when we're already playing valid tokens.
   void AddPlayingTokens(ReportRequest* request);
 
-  void DispatchMessages(
-      const google::protobuf::RepeatedPtrField<SubscribedMessage>&
-      subscribed_messages);
-
   RequestHeader* CreateRequestHeader(const std::string& client_name,
                                      const std::string& device_id) const;
 
@@ -167,6 +165,7 @@ class RpcHandler {
   DirectiveHandler* const directive_handler_;
   GCMHandler* const gcm_handler_;
 
+  MessagesCallback new_messages_callback_;
   PostCallback server_post_callback_;
 
   ScopedVector<PendingRequest> pending_requests_queue_;

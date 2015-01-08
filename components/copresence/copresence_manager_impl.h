@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_COPRESENCE_COPRESENCE_MANAGER_IMPL_H_
 #define COMPONENTS_COPRESENCE_COPRESENCE_MANAGER_IMPL_H_
 
+#include <google/protobuf/repeated_field.h>
+
 #include <string>
 #include <vector>
 
@@ -13,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/public/copresence_manager.h"
+#include "components/copresence/timed_map.h"
 
 namespace base {
 class Timer;
@@ -28,12 +31,13 @@ class DirectiveHandler;
 class GCMHandler;
 class ReportRequest;
 class RpcHandler;
+class SubscribedMessage;
 class WhispernetClient;
 
 // The implementation for CopresenceManager. Responsible primarily for
 // client-side initialization. The RpcHandler handles all the details
 // of interacting with the server.
-// TODO(rkc): Add tests for this class.
+// TODO(ckehoe, rkc): Add tests for this class.
 class CopresenceManagerImpl : public CopresenceManager {
  public:
   // The delegate is owned by the caller, and must outlive the manager.
@@ -49,19 +53,25 @@ class CopresenceManagerImpl : public CopresenceManager {
                             const StatusCallback& callback) override;
 
  private:
+  // Complete initialization when Whispernet is available.
   void WhispernetInitComplete(bool success);
 
   // Handle tokens decoded by Whispernet.
   // TODO(ckehoe): Replace AudioToken with ReceivedToken.
   void ReceivedTokens(const std::vector<AudioToken>& tokens);
 
-  // This function will be called every kPollTimerIntervalMs milliseconds
+  // Verifies that we can hear the audio we're playing.
+  // This gets called every kAudioCheckIntervalMs milliseconds.
+  void AudioCheck();
+
+  // This gets called every kPollTimerIntervalMs milliseconds
   // to poll the server for new messages.
   void PollForMessages();
 
-  // Verify that we can hear the audio we're playing
-  // every kAudioCheckIntervalMs milliseconds.
-  void AudioCheck();
+  // Send SubscribedMessages to the appropriate clients.
+  void DispatchMessages(
+      const google::protobuf::RepeatedPtrField<SubscribedMessage>&
+      subscribed_messages);
 
   // Belongs to the caller.
   CopresenceDelegate* const delegate_;
@@ -81,6 +91,9 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   scoped_ptr<base::Timer> poll_timer_;
   scoped_ptr<base::Timer> audio_check_timer_;
+
+  TimedMap<std::string, google::protobuf::RepeatedPtrField<SubscribedMessage>>
+  queued_messages_by_token_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceManagerImpl);
 };

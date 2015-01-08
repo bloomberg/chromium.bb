@@ -111,6 +111,7 @@ message SubscribedMessage {
   repeated string subscription_id = 1;
   optional Message published_message = 2;
   optional Debug debug = 3;
+  repeated TokenObservation required_token = 5;
 }
 message Message {
   optional MessageType type = 2;

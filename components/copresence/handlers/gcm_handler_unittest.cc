@@ -14,6 +14,8 @@
 
 using gcm::GCMClient;
 
+namespace copresence {
+
 namespace {
 
 // TODO(ckehoe): Move this to a central place.
@@ -23,17 +25,21 @@ std::string ToUrlSafe(std::string token) {
   return token;
 }
 
+using google::protobuf::RepeatedPtrField;
+void IgnoreMessages(
+    const RepeatedPtrField<SubscribedMessage>& /* messages */) {}
+
 }  // namespace
 
-
-namespace copresence {
 
 class GCMHandlerTest : public testing::Test {
  public:
   GCMHandlerTest()
     : driver_(new gcm::FakeGCMDriver),
       directive_handler_(new FakeDirectiveHandler),
-      gcm_handler_(driver_.get(), directive_handler_.get()) {
+      gcm_handler_(driver_.get(),
+                   directive_handler_.get(),
+                   base::Bind(&IgnoreMessages)) {
   }
 
  protected:

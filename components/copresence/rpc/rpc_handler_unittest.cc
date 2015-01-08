@@ -36,14 +36,8 @@ namespace {
 
 const char kChromeVersion[] = "Chrome Version String";
 
-void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
-                             const std::string& message_string,
-                             SubscribedMessage* message_proto) {
-  message_proto->mutable_published_message()->set_payload(message_string);
-  for (const std::string& subscription_id : subscription_ids) {
-    message_proto->add_subscription_id(subscription_id);
-  }
-}
+void IgnoreMessages(
+    const RepeatedPtrField<SubscribedMessage>& /* messages */) {}
 
 }  // namespace
 
@@ -58,6 +52,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
                      state_.get(),
                      &directive_handler_,
                      nullptr,
+                     base::Bind(&IgnoreMessages),
                      base::Bind(&RpcHandlerTest::CaptureHttpPost,
                                 base::Unretained(this))),
         status_(SUCCESS) {}
@@ -67,13 +62,12 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   void HandleMessages(const std::string& /* app_id */,
                       const std::string& subscription_id,
                       const std::vector<Message>& messages) override {
-    // app_id is unused for now, pending a server fix.
-    for (const Message& message : messages) {
-      messages_by_subscription_[subscription_id].push_back(message.payload());
-    }
+    NOTREACHED();
   }
 
-  void HandleStatusUpdate(CopresenceStatus /* status */) override {}
+  void HandleStatusUpdate(CopresenceStatus /* status */) override {
+    NOTREACHED();
+  }
 
   net::URLRequestContextGetter* GetRequestContext() const override {
     return nullptr;
@@ -167,7 +161,6 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   std::string api_key_;
   std::string auth_token_;
   ScopedVector<MessageLite> request_protos_;
-  std::map<std::string, std::vector<std::string>> messages_by_subscription_;
 
  private:
   void CaptureHttpPost(
@@ -320,13 +313,6 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
   SendReportResponse(net::HTTP_BAD_REQUEST, response.Pass());
   EXPECT_EQ(FAIL, status_);
 
-  // Construct test subscriptions.
-  std::vector<std::string> subscription_1(1, "Subscription 1");
-  std::vector<std::string> subscription_2(1, "Subscription 2");
-  std::vector<std::string> both_subscriptions;
-  both_subscriptions.push_back("Subscription 1");
-  both_subscriptions.push_back("Subscription 2");
-
   // Construct a test ReportResponse.
   response.reset(new ReportResponse);
   response->mutable_header()->mutable_status()->set_code(OK);
@@ -336,27 +322,14 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
   Token* invalid_token = update_response->add_token();
   invalid_token->set_id("bad token");
   invalid_token->set_status(INVALID);
-  CreateSubscribedMessage(
-      subscription_1, "Message A", update_response->add_message());
-  CreateSubscribedMessage(
-      subscription_2, "Message B", update_response->add_message());
-  CreateSubscribedMessage(
-      both_subscriptions, "Message C", update_response->add_message());
   update_response->add_directive()->set_subscription_id("Subscription 1");
   update_response->add_directive()->set_subscription_id("Subscription 2");
 
-  // Process it.
-  messages_by_subscription_.clear();
+  // Check processing.
   status_ = FAIL;
   SendReportResponse(net::HTTP_OK, response.Pass());
-
-  // Check processing.
   EXPECT_EQ(SUCCESS, status_);
   EXPECT_TRUE(TokenIsInvalid("bad token"));
-  EXPECT_THAT(messages_by_subscription_["Subscription 1"],
-              ElementsAre("Message A", "Message C"));
-  EXPECT_THAT(messages_by_subscription_["Subscription 2"],
-              ElementsAre("Message B", "Message C"));
   EXPECT_THAT(directive_handler_.added_directives(),
               ElementsAre("Subscription 1", "Subscription 2"));
 }

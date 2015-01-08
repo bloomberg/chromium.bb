@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "components/copresence/handlers/gcm_handler.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 
@@ -37,7 +38,8 @@ class GCMHandlerImpl final : public GCMHandler,
   // |gcm_driver| is required, but may disappear if we get a ShutdownHandler()
   // call first. |directive_handler| must outlive us. The caller owns both.
   GCMHandlerImpl(gcm::GCMDriver* gcm_driver,
-                 DirectiveHandler* directive_handler);
+                 DirectiveHandler* directive_handler,
+                 const MessagesCallback& new_messages_callback);
   ~GCMHandlerImpl() override;
 
   // GCMHandler override.
@@ -65,6 +67,7 @@ class GCMHandlerImpl final : public GCMHandler,
 
   gcm::GCMDriver* driver_;
   DirectiveHandler* const directive_handler_;
+  MessagesCallback new_messages_callback_;
 
   std::string gcm_id_;
   std::vector<RegistrationCallback> pending_id_requests_;

@@ -43,9 +43,11 @@ const char GCMHandlerImpl::kGcmMessageKey[] = "PUSH_MESSAGE";
 // Public functions.
 
 GCMHandlerImpl::GCMHandlerImpl(gcm::GCMDriver* gcm_driver,
-                               DirectiveHandler* directive_handler)
+                               DirectiveHandler* directive_handler,
+                               const MessagesCallback& new_messages_callback)
     : driver_(gcm_driver),
       directive_handler_(directive_handler),
+      new_messages_callback_(new_messages_callback),
       registration_callback_(base::Bind(&GCMHandlerImpl::RegistrationComplete,
                                         base::Unretained(this))) {
   DCHECK(driver_);
@@ -105,12 +107,13 @@ void GCMHandlerImpl::OnMessage(const std::string& app_id,
 
   DVLOG(3) << "Processing " << push_message.report().directive_size()
            << " directive(s) from GCM message";
-  for (const Directive& directive : push_message.report().directive())
+  for (const Directive& directive : push_message.report().directive()) {
+    // TODO(ckehoe): Use a callback here so GCMHandler
+    // is decoupled from DirectiveHandler.
     directive_handler_->AddDirective(directive);
+  }
 
-  int message_count = push_message.report().subscribed_message_size();
-  LOG_IF(WARNING, message_count > 0)
-      << "Discarding " << message_count << " copresence messages sent via GCM";
+  new_messages_callback_.Run(push_message.report().subscribed_message());
 }
 
 void GCMHandlerImpl::OnMessagesDeleted(const std::string& app_id) {
