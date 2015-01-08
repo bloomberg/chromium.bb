@@ -1044,6 +1044,7 @@
         "vm_tests": []
     },
     "auron-b-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1054,6 +1055,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1101,6 +1103,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1563,6 +1566,7 @@
         "vm_tests": []
     },
     "auron-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1856,6 +1860,7 @@
         ]
     },
     "auron-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1866,6 +1871,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1913,6 +1919,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1963,6 +1970,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -2249,6 +2257,7 @@
         "vm_tests": []
     },
     "auron_paine-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -2739,6 +2748,7 @@
         "vm_tests": []
     },
     "auron_yuna-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -3330,6 +3340,7 @@
         ]
     },
     "bayleybay-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4007,6 +4018,7 @@
         "usepkg_build_packages": false
     },
     "beltino-a-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4017,6 +4029,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4068,6 +4081,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4270,6 +4284,7 @@
         "usepkg_build_packages": false
     },
     "beltino-b-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4280,6 +4295,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4331,6 +4347,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4381,6 +4398,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -4669,6 +4687,7 @@
         ]
     },
     "beltino-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -5147,6 +5166,7 @@
         ]
     },
     "bobcat-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -5700,6 +5720,7 @@
         ]
     },
     "butterfly-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -6299,6 +6320,7 @@
         ]
     },
     "candy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -6821,6 +6843,7 @@
         "vm_tests": []
     },
     "cid-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -7412,6 +7435,7 @@
         ]
     },
     "clapper-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -7965,6 +7989,7 @@
         ]
     },
     "cranky-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -8717,6 +8742,7 @@
         "vm_tests": []
     },
     "daisy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -9003,6 +9029,7 @@
         "vm_tests": []
     },
     "daisy-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -9013,6 +9040,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -9063,6 +9091,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -9114,6 +9143,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -9450,6 +9480,7 @@
         "vm_tests": []
     },
     "daisy_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -9990,6 +10021,7 @@
         "vm_tests": []
     },
     "daisy_skate-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -10586,6 +10618,7 @@
         "vm_tests": []
     },
     "daisy_spring-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -11084,6 +11117,7 @@
         "vm_tests": []
     },
     "daisy_winter-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -12218,6 +12252,7 @@
         ]
     },
     "enguarde-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -12817,6 +12852,7 @@
         ]
     },
     "expresso-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -13422,6 +13458,7 @@
         ]
     },
     "falco-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -13919,6 +13956,7 @@
         ]
     },
     "falco_li-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -14416,6 +14454,7 @@
         ]
     },
     "fox_wtm2-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -15163,6 +15202,7 @@
         ]
     },
     "glimmer-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -15762,6 +15802,7 @@
         ]
     },
     "gnawty-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -16260,6 +16301,7 @@
         "vm_tests": []
     },
     "guado-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -16731,6 +16773,7 @@
         "usepkg_build_packages": false
     },
     "ivybridge-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -16741,6 +16784,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -16792,6 +16836,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -17257,6 +17302,7 @@
         "vm_tests": []
     },
     "jecht-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -17550,6 +17596,7 @@
         ]
     },
     "jecht-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -17560,6 +17607,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -17607,6 +17655,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -17657,6 +17706,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -18566,6 +18616,7 @@
         ]
     },
     "kip-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -19637,6 +19688,7 @@
         ]
     },
     "leon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -20241,6 +20293,7 @@
         ]
     },
     "link-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -20762,6 +20815,7 @@
         "vm_tests": []
     },
     "link_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -21253,6 +21307,7 @@
         "vm_tests": []
     },
     "lulu-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -21928,6 +21983,7 @@
         ]
     },
     "lumpy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -22564,6 +22620,7 @@
         ]
     },
     "mccloud-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -23062,6 +23119,7 @@
         "vm_tests": []
     },
     "mccloud_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -24699,6 +24757,7 @@
         ]
     },
     "monroe-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -25197,6 +25256,7 @@
         "vm_tests": []
     },
     "monroe_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -25849,6 +25909,7 @@
         "vm_tests": []
     },
     "nyan-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -26134,6 +26195,7 @@
         "vm_tests": []
     },
     "nyan-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -26144,6 +26206,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -26193,6 +26256,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -26244,6 +26308,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -26295,6 +26360,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -26600,6 +26666,7 @@
         "vm_tests": []
     },
     "nyan_big-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -27098,6 +27165,7 @@
         "vm_tests": []
     },
     "nyan_blaze-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -27596,6 +27664,7 @@
         "vm_tests": []
     },
     "nyan_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -28094,6 +28163,7 @@
         "vm_tests": []
     },
     "nyan_kitty-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -28616,6 +28686,7 @@
         ]
     },
     "panther-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -29180,6 +29251,7 @@
         "vm_tests": []
     },
     "panther_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -30224,6 +30296,7 @@
         ]
     },
     "parrot-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -30522,6 +30595,7 @@
         ]
     },
     "parrot-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -30532,6 +30606,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -30584,6 +30659,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -30876,6 +30952,7 @@
         ]
     },
     "parrot_ivb-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -31473,6 +31550,7 @@
         ]
     },
     "parry-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -31898,6 +31976,7 @@
         "vm_tests": []
     },
     "peach-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -31908,6 +31987,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -31957,6 +32037,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -32258,6 +32339,7 @@
         "vm_tests": []
     },
     "peach_pi-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -32797,6 +32879,7 @@
         "vm_tests": []
     },
     "peach_pit-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -33322,6 +33405,7 @@
         ]
     },
     "peppy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -33822,6 +33906,7 @@
         "vm_tests": []
     },
     "peppy_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -34317,6 +34402,7 @@
         "usepkg_build_packages": false
     },
     "pineview-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -34327,6 +34413,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -34378,6 +34465,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -34428,6 +34516,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -34478,6 +34567,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -34523,6 +34613,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35111,6 +35202,7 @@
         ]
     },
     "quawks-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35587,6 +35679,7 @@
         "usepkg_build_packages": false
     },
     "rambi-a-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35597,6 +35690,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35648,6 +35742,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35698,6 +35793,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35748,6 +35844,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35979,6 +36076,7 @@
         "usepkg_build_packages": false
     },
     "rambi-b-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -35989,6 +36087,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36040,6 +36139,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36090,6 +36190,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36140,6 +36241,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36371,6 +36473,7 @@
         "usepkg_build_packages": false
     },
     "rambi-c-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36381,6 +36484,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36432,6 +36536,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36482,6 +36587,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36532,6 +36638,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36747,6 +36854,7 @@
         "usepkg_build_packages": false
     },
     "rambi-d-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36757,6 +36865,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -36808,6 +36917,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -37151,6 +37261,7 @@
         ]
     },
     "rambi-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -37655,6 +37766,7 @@
         "vm_tests": []
     },
     "rush-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -38206,6 +38318,7 @@
         "vm_tests": []
     },
     "rush_ryu-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -38847,6 +38960,7 @@
         "vm_tests": []
     },
     "samus-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39316,6 +39430,7 @@
         "usepkg_build_packages": false
     },
     "sandybridge-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39326,6 +39441,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39378,6 +39494,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39429,6 +39546,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39479,6 +39597,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39934,6 +40053,7 @@
         ]
     },
     "slippy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40231,6 +40351,7 @@
         ]
     },
     "slippy-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40241,6 +40362,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40292,6 +40414,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40342,6 +40465,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40392,6 +40516,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40443,6 +40568,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -40837,6 +40963,7 @@
         ]
     },
     "squawks-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -41907,6 +42034,7 @@
         ]
     },
     "stout-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -42444,6 +42572,7 @@
         ]
     },
     "stumpy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -43546,6 +43675,7 @@
         ]
     },
     "swanky-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -44084,6 +44214,7 @@
         "vm_tests": []
     },
     "tidus-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -44621,6 +44752,7 @@
         ]
     },
     "tricky-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -45119,6 +45251,7 @@
         "vm_tests": []
     },
     "tricky_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -45984,6 +46117,7 @@
         "vm_tests": []
     },
     "veyron-b-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -45994,6 +46128,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -46200,6 +46335,7 @@
         "vm_tests": []
     },
     "veyron-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -46210,6 +46346,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -46259,6 +46396,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -46310,6 +46448,7 @@
                 "vm_tests": []
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -46573,6 +46712,7 @@
         "vm_tests": []
     },
     "veyron_jerry-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -47071,6 +47211,7 @@
         "vm_tests": []
     },
     "veyron_mighty-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -47571,6 +47712,7 @@
         "vm_tests": []
     },
     "veyron_pinky-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -48069,6 +48211,7 @@
         "vm_tests": []
     },
     "veyron_speedy-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -48569,6 +48712,7 @@
         "vm_tests": []
     },
     "whirlwind-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -49152,6 +49296,7 @@
         ]
     },
     "winky-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -49689,6 +49834,7 @@
         ]
     },
     "wolf-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -50369,6 +50515,7 @@
         ]
     },
     "x86-alex-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -50666,6 +50813,7 @@
         ]
     },
     "x86-alex-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -50676,6 +50824,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -50727,6 +50876,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -51014,6 +51164,7 @@
         ]
     },
     "x86-alex_he-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -51877,6 +52028,7 @@
         ]
     },
     "x86-mario-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -52513,6 +52665,7 @@
         ]
     },
     "x86-zgb-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -52810,6 +52963,7 @@
         ]
     },
     "x86-zgb-release-group": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -52820,6 +52974,7 @@
         "build_type": "canary",
         "child_configs": [
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -52871,6 +53026,7 @@
                 ]
             },
             {
+                "afdo_use": true,
                 "archive_build_debug": true,
                 "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
                 "binhost_bucket": "gs://chromeos-dev-installer",
@@ -53158,6 +53314,7 @@
         ]
     },
     "x86-zgb_he-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -53751,6 +53908,7 @@
         ]
     },
     "zako-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -54249,6 +54407,7 @@
         "vm_tests": []
     },
     "zako_freon-release": {
+        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
