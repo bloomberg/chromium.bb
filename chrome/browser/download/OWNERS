@@ -6,5 +6,5 @@ rdsmith@chromium.org
 
 per-file *_file_picker_chromeos.*=achuith@chromium.org
 
-per-file download_dir_policy_handler*=dconnelly@chromium.org
+per-file download_dir_policy_handler*=atwilson@chromium.org
 per-file download_dir_policy_handler*=mnissler@chromium.org

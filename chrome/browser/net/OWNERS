@@ -15,7 +15,7 @@ wtc@chromium.org
 # On extended leave.
 willchan@chromium.org
 
-per-file disk_cache_dir_policy_handler*=dconnelly@chromium.org
+per-file disk_cache_dir_policy_handler*=atwilson@chromium.org
 per-file disk_cache_dir_policy_handler*=mnissler@chromium.org
+per-file proxy_policy_handler*=atwilson@chromium.org
 per-file proxy_policy_handler*=mnissler@chromium.org
-per-file proxy_policy_handler*=dconnelly@chromium.org

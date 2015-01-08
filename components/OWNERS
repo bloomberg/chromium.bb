@@ -162,7 +162,6 @@ per-file policy*=mnissler@chromium.org
 per-file policy*=bartfab@chromium.org
 per-file policy*=atwilson@chromium.org
 per-file policy*=pneubeck@chromium.org
-per-file policy*=dconnelly@chromium.org
 
 per-file proximity_auth*=isherman@chromium.org
 per-file proximity_auth*=tbarzic@chromium.org
