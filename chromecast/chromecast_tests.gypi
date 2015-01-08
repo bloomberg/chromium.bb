@@ -46,6 +46,13 @@
         ],
       },
       'conditions': [
+        ['disable_display==0', {
+          'dependencies': [
+            '../gpu/gpu.gyp:gpu_unittests',
+          ],
+        }],
+      ],
+      'conditions': [
         ['OS!="android"', {
           'dependencies': [
             'cast_shell_browser_test',

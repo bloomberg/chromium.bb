@@ -129,6 +129,10 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
   // to retrieve media data chunks while running in a https page. This pref
   // should be disabled once all the content providers are no longer doing that.
   prefs->allow_running_insecure_content = true;
+#if defined(DISABLE_DISPLAY)
+  prefs->images_enabled = false;
+  prefs->loads_images_automatically = false;
+#endif  // defined(DISABLE_DISPLAY)
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {

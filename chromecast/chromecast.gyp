@@ -8,6 +8,7 @@
         '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
+    'disable_display%': 0,
   },
   'includes': [
     'chromecast_tests.gypi',
@@ -15,6 +16,11 @@
   'target_defaults': {
     'include_dirs': [
       '..',  # Root of Chromium checkout
+    ],
+    'conditions': [
+      ['disable_display==1', {
+        'defines': ['DISABLE_DISPLAY'],
+      }],
     ],
   },
   'targets': [
