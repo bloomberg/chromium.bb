@@ -1572,13 +1572,6 @@ crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style
 crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ]
 crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
-crbug.com/133097 [ Mac ] compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] compositing/geometry/fixed-position-iframe-composited-page-scale.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] compositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] compositing/geometry/fixed-position-composited-page-scale.html [ NeedsRebaseline ]
-
 # Rebaseline after ES6 classes are in.
 crbug.com/442340 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
 crbug.com/442340 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
