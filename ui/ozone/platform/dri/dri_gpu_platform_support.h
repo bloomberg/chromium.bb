@@ -8,6 +8,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "ipc/message_filter.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 
@@ -82,6 +83,7 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
 
   scoped_ptr<NativeDisplayDelegateDri> ndd_;
   ScopedVector<GpuPlatformSupport> handlers_;
+  scoped_refptr<IPC::MessageFilter> filter_;
 };
 
 }  // namespace ui

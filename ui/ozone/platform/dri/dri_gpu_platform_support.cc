@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 
+#include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -16,6 +18,111 @@
 
 namespace ui {
 
+namespace {
+
+void MessageProcessedOnMain(
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    const base::Closure& io_thread_task) {
+  io_thread_task_runner->PostTask(FROM_HERE, io_thread_task);
+}
+
+class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
+ public:
+  DriGpuPlatformSupportMessageFilter(DriWindowDelegateManager* window_manager,
+                                     IPC::Listener* main_thread_listener)
+      : window_manager_(window_manager),
+        main_thread_listener_(main_thread_listener),
+        main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        pending_main_thread_operations_(0) {}
+
+  void OnFilterAdded(IPC::Sender* sender) override {
+    io_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  }
+
+  // This code is meant to be very temporary and only as a special case to fix
+  // cursor movement jank resulting from slowdowns on the gpu main thread.
+  // It handles cursor movement on IO thread when display config is stable
+  // and returns it to main thread during transitions.
+  bool OnMessageReceived(const IPC::Message& message) override {
+    // If this message affects the state needed to set cursor, handle it on
+    // the main thread. If a cursor move message arrives but we haven't
+    // processed the previous main thread message, keep processing on main
+    // until nothing is pending.
+    bool process_move_on_main = pending_main_thread_operations_ &&
+                                MessageAffectsCursorPosition(message.type());
+    if (MessageAffectsCursorState(message.type()) || process_move_on_main) {
+      pending_main_thread_operations_++;
+
+      base::Closure main_thread_message_handler =
+          base::Bind(base::IgnoreResult(&IPC::Listener::OnMessageReceived),
+                     base::Unretained(main_thread_listener_), message);
+      main_thread_task_runner_->PostTask(FROM_HERE,
+                                         main_thread_message_handler);
+
+      // This is an echo from the main thread to decrement pending ops.
+      // When the main thread is done with the task, it posts back to IO to
+      // signal completion.
+      base::Closure io_thread_task = base::Bind(
+          &DriGpuPlatformSupportMessageFilter::DecrementPendingOperationsOnIO,
+          this);
+
+      base::Closure message_processed_callback = base::Bind(
+          &MessageProcessedOnMain, io_thread_task_runner_, io_thread_task);
+      main_thread_task_runner_->PostTask(FROM_HERE, message_processed_callback);
+
+      return true;
+    }
+
+    // Otherwise, we are in a steady state and it's safe to move cursor on IO.
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(DriGpuPlatformSupportMessageFilter, message)
+    IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorMove, OnCursorMove)
+    IPC_MESSAGE_UNHANDLED(handled = false);
+    IPC_END_MESSAGE_MAP()
+
+    return handled;
+  }
+
+ protected:
+  ~DriGpuPlatformSupportMessageFilter() override {}
+
+  void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location) {
+    window_manager_->GetWindowDelegate(widget)->MoveCursor(location);
+  }
+
+  void DecrementPendingOperationsOnIO() { pending_main_thread_operations_--; }
+
+  bool MessageAffectsCursorState(uint32 message_type) {
+    switch (message_type) {
+      case OzoneGpuMsg_CreateWindowDelegate::ID:
+      case OzoneGpuMsg_DestroyWindowDelegate::ID:
+      case OzoneGpuMsg_WindowBoundsChanged::ID:
+      case OzoneGpuMsg_ConfigureNativeDisplay::ID:
+      case OzoneGpuMsg_DisableNativeDisplay::ID:
+      case OzoneGpuMsg_CursorSet::ID:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool MessageAffectsCursorPosition(uint32 message_type) {
+    switch (message_type) {
+      case OzoneGpuMsg_CursorMove::ID:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  DriWindowDelegateManager* window_manager_;
+  IPC::Listener* main_thread_listener_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+  int32 pending_main_thread_operations_;
+};
+}
+
 DriGpuPlatformSupport::DriGpuPlatformSupport(
     DriWrapper* drm,
     DriWindowDelegateManager* window_manager,
@@ -26,6 +133,7 @@ DriGpuPlatformSupport::DriGpuPlatformSupport(
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
+  filter_ = new DriGpuPlatformSupportMessageFilter(window_manager, this);
 }
 
 DriGpuPlatformSupport::~DriGpuPlatformSupport() {
@@ -203,7 +311,7 @@ void DriGpuPlatformSupport::RelinquishGpuResources(
 }
 
 IPC::MessageFilter* DriGpuPlatformSupport::GetMessageFilter() {
-  return nullptr;
+  return filter_.get();
 }
 
 }  // namespace ui
