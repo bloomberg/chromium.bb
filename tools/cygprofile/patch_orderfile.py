@@ -63,11 +63,14 @@ def binary_search (search_addr, start, end):
 f = open (orderfile)
 lines = f.readlines()
 profiled_list = []
+prefixes = ['.text.', '.text.startup.', '.text.hot.', '.text.unlikely.']
 for line in lines:
-  if (line.strip() == ''):
+  for prefix in prefixes:
+    line = line.replace(prefix, '')
+  functionName = line.split('.clone.')[0].strip()
+  if (functionName == ''):
     continue
-  functionName = line.replace('.text.', '').split('.clone.')[0].strip()
-  profiled_list.append (functionName)
+  profiled_list.append(functionName)
 
 # Symbol names are not unique.  Since the order file uses symbol names, the
 # patched order file pulls in all symbols with the same name.  Multiple function
@@ -108,11 +111,11 @@ total_size = 0
 for addr in addresses:
   (functions, size) = binary_search (addr, 0, len(uniqueAddrs))
   total_size = total_size + size
-  prefixes = ['.text.', '.text.startup.', '.text.hot.', '.text.unlikely.']
   for function in functions:
     for prefix in prefixes:
       print prefix + function
 
 # The following is needed otherwise Gold only applies a partial sort.
-print '.text.*'
+print '.text'    # gets methods not in a section, such as assembly
+print '.text.*'  # gets everything else
 sys.stderr.write ("total_size: " + str(total_size) + "\n")
