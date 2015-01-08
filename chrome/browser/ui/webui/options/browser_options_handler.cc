@@ -1678,25 +1678,32 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
   Profile* profile = Profile::FromWebUI(web_ui());
 
   bool is_search_provider_google = false;
-  if (template_url_service_) {
+  // The check for default search provider is only valid if the
+  // |template_url_service_| has loaded already.
+  if (template_url_service_ && template_url_service_->loaded()) {
     const TemplateURL* default_url =
         template_url_service_->GetDefaultSearchProvider();
     if (default_url && default_url->HasGoogleBaseURLs(
             template_url_service_->search_terms_data())) {
       is_search_provider_google = true;
+    } else {
+      // If the user has chosen a default search provide other than Google, turn
+      // off hotwording since other providers don't provide that functionality.
+      HotwordService* hotword_service =
+        HotwordServiceFactory::GetForProfile(profile);
+      if (hotword_service)
+        hotword_service->DisableHotwordPreferences();
     }
   }
 
+  // |is_search_provider_google| may be false because |template_url_service_|
+  // does not exist yet or because the user selected a different search
+  // provider. In either case it does not make sense to show the hotwording
+  // options.
   if (!is_search_provider_google) {
-    // If the user has chosen a default search provide other than Google, turn
-    // off hotwording since other providers don't provide that functionality.
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.setAllHotwordSectionsVisible",
         base::FundamentalValue(false));
-    HotwordService* hotword_service =
-        HotwordServiceFactory::GetForProfile(profile);
-    if (hotword_service)
-      hotword_service->DisableHotwordPreferences();
     return;
   }
 
