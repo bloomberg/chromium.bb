@@ -538,9 +538,7 @@ class SimpleBuilder(Builder):
     # that make sense when read in order.  Also keep in mind that, since we
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
-    stage_list = []
-    if builder_run.options.chrome_sdk and config.chrome_sdk:
-      stage_list.append([chrome_stages.ChromeSDKStage, board])
+    stage_list = [[chrome_stages.ChromeSDKStage, board]]
 
     if config.vm_test_runs > 1:
       # Run the VMTests multiple times to see if they fail.

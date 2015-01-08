@@ -129,13 +129,16 @@ class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
                      generic_stages.ArchivingStageMixin):
   """Run through the simple chrome workflow."""
 
+  option_name = 'chrome_sdk'
+  config_name = 'chrome_sdk'
+
   def __init__(self, *args, **kwargs):
     super(ChromeSDKStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,
         'build', self._current_board, 'var', 'db', 'pkg')
-    if self._run.config.chrome_sdk_build_chrome:
+    if self._run.options.chrome_root:
       self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
       self.out_board_dir = os.path.join(
           self.chrome_src, 'out_%s' % self._current_board)
