@@ -40,7 +40,6 @@
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8IDBObjectStore.h"
 #include "bindings/modules/v8/V8IDBRequest.h"
-#include "bindings/modules/v8/V8IDBTransaction.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -145,8 +144,6 @@ static v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creat
         return toV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
         return toV8(impl->idbObjectStore(), creationContext, isolate);
-    case IDBAny::IDBTransactionType:
-        return toV8(impl->idbTransaction(), creationContext, isolate);
     case IDBAny::BufferType:
         return deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
     case IDBAny::StringType:

@@ -104,12 +104,6 @@ IDBObjectStore* IDBAny::idbObjectStore() const
     return m_idbObjectStore.get();
 }
 
-IDBTransaction* IDBAny::idbTransaction() const
-{
-    ASSERT(m_type == IDBTransactionType);
-    return m_idbTransaction.get();
-}
-
 const IDBKey* IDBAny::key() const
 {
     ASSERT(m_type == KeyType || m_type == BufferKeyAndKeyPathType);
@@ -174,13 +168,6 @@ IDBAny::IDBAny(IDBIndex* value)
 {
 }
 
-IDBAny::IDBAny(IDBTransaction* value)
-    : m_type(IDBTransactionType)
-    , m_idbTransaction(value)
-    , m_integer(0)
-{
-}
-
 IDBAny::IDBAny(IDBObjectStore* value)
     : m_type(IDBObjectStoreType)
     , m_idbObjectStore(value)
@@ -240,7 +227,6 @@ void IDBAny::trace(Visitor* visitor)
     visitor->trace(m_idbDatabase);
     visitor->trace(m_idbIndex);
     visitor->trace(m_idbObjectStore);
-    visitor->trace(m_idbTransaction);
     visitor->trace(m_idbKey);
 }
 
