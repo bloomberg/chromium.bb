@@ -467,9 +467,28 @@ fs_output_configure_for_mode(struct fs_output *fsout,
 					&surf_x, &surf_y,
 					&surf_width, &surf_height);
 
+	/* The actual output mode is in physical units.  We need to
+	 * transform the surface size to physical unit size by flipping ans
+	 * possibly scaling it.
+	 */
+	switch (fsout->output->transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		mode.width = surf_height * fsout->output->native_scale;
+		mode.height = surf_width * fsout->output->native_scale;
+		break;
+
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	default:
+		mode.width = surf_width * fsout->output->native_scale;
+		mode.height = surf_height * fsout->output->native_scale;
+	}
 	mode.flags = 0;
-	mode.width = surf_width * fsout->output->native_scale;
-	mode.height = surf_height * fsout->output->native_scale;
 	mode.refresh = fsout->pending.framerate;
 
 	ret = weston_output_mode_switch_to_temporary(fsout->output, &mode,
