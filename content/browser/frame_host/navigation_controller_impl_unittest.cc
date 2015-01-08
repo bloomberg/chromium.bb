@@ -3312,8 +3312,6 @@ TEST_F(NavigationControllerTest, LazyReload) {
   const GURL url("http://foo");
   NavigateAndCommit(url);
   ASSERT_FALSE(controller.NeedsReload());
-  EXPECT_NE(ui::PAGE_TRANSITION_RELOAD,
-            controller.GetLastCommittedEntry()->GetTransitionType());
 
   // Request a reload to happen when the controller becomes active (e.g. after
   // the renderer gets killed in background on Android).
@@ -3323,8 +3321,6 @@ TEST_F(NavigationControllerTest, LazyReload) {
   // Set the controller as active, triggering the requested reload.
   controller.SetActive(true);
   ASSERT_FALSE(controller.NeedsReload());
-  EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
-            controller.GetPendingEntry()->GetTransitionType());
 }
 
 // Tests a subframe navigation while a toplevel navigation is pending.
