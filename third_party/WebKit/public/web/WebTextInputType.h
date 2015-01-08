@@ -71,6 +71,9 @@ enum WebTextInputType {
 // Separate on/off flags are defined so that the input mechanism can choose
 // an appropriate default based on other things (like InputType and direct
 // knowledge of the actual input system) if there are no overrides.
+//
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
+// GENERATED_JAVA_PREFIX_TO_STRIP: WebTextInputFlag
 enum WebTextInputFlags {
     WebTextInputFlagNone = 0,
     WebTextInputFlagAutocompleteOn = 1 << 0,

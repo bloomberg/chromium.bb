@@ -83,6 +83,9 @@ public:
     // TODO(hbono): Issue 18064: remove the KeyDown type since it isn't
     // used in Chrome any longer.
 
+    // A Java counterpart will be generated for this enum.
+    // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
+    // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebInputEventType
     enum Type {
         Undefined = -1,
         TypeFirst = Undefined,
@@ -140,6 +143,9 @@ public:
         TypeLast = TouchTypeLast
     };
 
+    // A Java counterpart will be generated for this enum.
+    // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
+    // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebInputEventModifier
     enum Modifiers {
         // modifiers for all events:
         ShiftKey         = 1 << 0,
