@@ -14,6 +14,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/parser/CSSSelectorParser.h"
 #include "core/css/parser/CSSTokenizer.h"
+#include "core/css/parser/MediaQueryParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/UseCounter.h"
@@ -201,6 +202,8 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
     ASSERT(allowedRules <= RegularRules);
     allowedRules = RegularRules;
 
+    if (equalIgnoringCase(name, "media"))
+        return consumeMediaRule(prelude, block);
     if (equalIgnoringCase(name, "viewport"))
         return consumeViewportRule(prelude, block);
     if (equalIgnoringCase(name, "-webkit-keyframes"))
@@ -271,6 +274,12 @@ void CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
     m_styleSheet->parserAddNamespace(namespacePrefix, uri);
     if (namespacePrefix.isNull())
         m_defaultNamespace = uri;
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleMedia> CSSParserImpl::consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
+{
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules = consumeRuleList(block, RegularRuleList);
+    return StyleRuleMedia::create(MediaQueryParser::parseMediaQuerySet(prelude), rules);
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block)

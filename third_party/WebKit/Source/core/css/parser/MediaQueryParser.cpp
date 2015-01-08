@@ -18,7 +18,12 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const
     // or better yet, replace the MediaQueryParser with a generic thread-safe CSS parser.
     Vector<CSSParserToken> tokens;
     CSSTokenizer::tokenize(queryString, tokens);
-    return MediaQueryParser(MediaQuerySetParser).parseImpl(CSSParserTokenRange(tokens));
+    return parseMediaQuerySet(tokens);
+}
+
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range)
+{
+    return MediaQueryParser(MediaQuerySetParser).parseImpl(range);
 }
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(CSSParserTokenRange range)

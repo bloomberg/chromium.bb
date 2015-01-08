@@ -20,6 +20,7 @@ class StyleRule;
 class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleRuleKeyframes;
+class StyleRuleMedia;
 class StyleRuleViewport;
 class StyleSheetContents;
 class ImmutableStylePropertySet;
@@ -66,6 +67,7 @@ private:
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType&);
 
     void consumeNamespaceRule(CSSParserTokenRange prelude); // This modifies m_styleSheet directly!
+    PassRefPtrWillBeRawPtr<StyleRuleMedia> consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleViewport> consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleKeyframes> consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRuleKeyframe> consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
