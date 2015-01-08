@@ -76,6 +76,7 @@ class CopresenceService final : public BrowserContextKeyedAPI,
   net::URLRequestContextGetter* GetRequestContext() const override;
   const std::string GetPlatformVersionString() const override;
   const std::string GetAPIKey(const std::string& app_id) const override;
+  const std::string GetProjectId(const std::string& app_id) const override;
   copresence::WhispernetClient* GetWhispernetClient() override;
   gcm::GCMDriver* GetGCMDriver() override;
 

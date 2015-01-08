@@ -100,6 +100,10 @@
     // app.content_security_policy whitelist).
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "copresence" : {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "current_locale": {
     "channel": "stable",
     "extension_types": "all"

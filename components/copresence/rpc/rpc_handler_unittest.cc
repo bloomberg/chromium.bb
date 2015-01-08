@@ -81,6 +81,10 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return app_id + " API Key";
   }
 
+  const std::string GetProjectId(const std::string& app_id) const override {
+    return app_id + " Project ID";
+  }
+
   WhispernetClient* GetWhispernetClient() override {
     return whispernet_client_.get();
   }
@@ -276,6 +280,8 @@ TEST_F(RpcHandlerTest, CreateRequestHeader) {
             report->header().framework_version().version_name());
   EXPECT_EQ("CreateRequestHeader App",
             report->header().client_version().client());
+  EXPECT_EQ("CreateRequestHeader App Project ID",
+            report->header().client_version().project_id());
   EXPECT_EQ("CreateRequestHeader Device ID",
             report->header().registered_device_id());
   EXPECT_EQ(CHROME_PLATFORM_TYPE,

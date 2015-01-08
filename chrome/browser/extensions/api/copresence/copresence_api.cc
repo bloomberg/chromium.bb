@@ -11,6 +11,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/copresence.h"
+#include "chrome/common/extensions/manifest_handlers/copresence_manifest.h"
 #include "components/copresence/copresence_manager_impl.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
@@ -18,6 +19,9 @@
 #include "components/copresence/public/whispernet_client.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
@@ -145,11 +149,21 @@ const std::string CopresenceService::GetPlatformVersionString() const {
   return chrome::VersionInfo().CreateVersionString();
 }
 
-const std::string CopresenceService::GetAPIKey(const std::string& app_id)
-    const {
+const std::string
+CopresenceService::GetAPIKey(const std::string& app_id) const {
   // This won't be const if we use map[]
   const auto& key = api_keys_by_app_.find(app_id);
   return key == api_keys_by_app_.end() ? std::string() : key->second;
+}
+
+const std::string
+CopresenceService::GetProjectId(const std::string& app_id) const {
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+      ->GetExtensionById(app_id, ExtensionRegistry::ENABLED);
+  DCHECK(extension) << "Invalid extension ID";
+  CopresenceManifestData* manifest_data = static_cast<CopresenceManifestData*>(
+      extension->GetManifestData(manifest_keys::kCopresence));
+  return manifest_data ? manifest_data->project_id : std::string();
 }
 
 copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
