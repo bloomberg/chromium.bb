@@ -64,8 +64,10 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
                       mojo::CdmException exception,
                       uint32_t system_code,
                       const mojo::String& error_message) final;
-  void OnSessionKeysChange(const mojo::String& session_id,
-                           bool has_additional_usable_key) final;
+  void OnSessionKeysChange(
+      const mojo::String& session_id,
+      bool has_additional_usable_key,
+      mojo::Array<mojo::CdmKeyInformationPtr> keys_info) final;
   void OnSessionExpirationUpdate(const mojo::String& session_id,
                                  int64_t new_expiry_time_usec) final;
 

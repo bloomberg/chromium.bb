@@ -13,6 +13,7 @@
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/key_systems.h"
@@ -392,7 +393,8 @@ void PpapiDecryptor::OnSessionMessage(const std::string& web_session_id,
 }
 
 void PpapiDecryptor::OnSessionKeysChange(const std::string& web_session_id,
-                                         bool has_additional_usable_key) {
+                                         bool has_additional_usable_key,
+                                         media::CdmKeysInfo keys_info) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
   // TODO(jrummell): Handling resume playback should be done in the media
@@ -400,7 +402,8 @@ void PpapiDecryptor::OnSessionKeysChange(const std::string& web_session_id,
   if (has_additional_usable_key)
     AttemptToResumePlayback();
 
-  session_keys_change_cb_.Run(web_session_id, has_additional_usable_key);
+  session_keys_change_cb_.Run(web_session_id, has_additional_usable_key,
+                              keys_info.Pass());
 }
 
 void PpapiDecryptor::OnSessionExpirationUpdate(

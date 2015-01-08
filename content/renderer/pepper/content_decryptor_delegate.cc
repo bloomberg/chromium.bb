@@ -13,6 +13,7 @@
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
 #include "media/base/data_buffer.h"
@@ -779,8 +780,10 @@ void ContentDecryptorDelegate::OnSessionKeysChange(
   StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
   DCHECK(web_session_id_string);
 
+  // TODO(jrummell): Pass key information through Pepper.
   session_keys_change_cb_.Run(web_session_id_string->value(),
-                              PP_ToBool(has_additional_usable_key));
+                              PP_ToBool(has_additional_usable_key),
+                              media::CdmKeysInfo());
 }
 
 void ContentDecryptorDelegate::OnSessionExpirationChange(

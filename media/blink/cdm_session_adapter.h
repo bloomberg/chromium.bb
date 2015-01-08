@@ -104,7 +104,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
   void OnSessionKeysChange(const std::string& web_session_id,
-                           bool has_additional_usable_key);
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const std::string& web_session_id,
                                  const base::Time& new_expiry_time);
   void OnSessionClosed(const std::string& web_session_id);

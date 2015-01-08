@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/mojo/services/media_type_converters.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
@@ -142,9 +144,18 @@ void MojoCdm::OnSessionError(const mojo::String& session_id,
                         system_code, error_message);
 }
 
-void MojoCdm::OnSessionKeysChange(const mojo::String& session_id,
-                                  bool has_additional_usable_key) {
-  session_keys_change_cb_.Run(session_id, has_additional_usable_key);
+void MojoCdm::OnSessionKeysChange(
+    const mojo::String& session_id,
+    bool has_additional_usable_key,
+    mojo::Array<mojo::CdmKeyInformationPtr> keys_info) {
+  media::CdmKeysInfo key_data;
+  key_data.reserve(keys_info.size());
+  for (size_t i = 0; i < keys_info.size(); ++i) {
+    key_data.push_back(
+        keys_info[i].To<scoped_ptr<media::CdmKeyInformation>>().release());
+  }
+  session_keys_change_cb_.Run(session_id, has_additional_usable_key,
+                              key_data.Pass());
 }
 
 void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "media/base/cdm_factory.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
@@ -127,7 +128,9 @@ void CdmSessionAdapter::OnSessionMessage(const std::string& web_session_id,
 }
 
 void CdmSessionAdapter::OnSessionKeysChange(const std::string& web_session_id,
-                                            bool has_additional_usable_key) {
+                                            bool has_additional_usable_key,
+                                            CdmKeysInfo keys_info) {
+  // TODO(jrummell): Pass |keys_info| on.
   WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << web_session_id;

@@ -93,7 +93,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                         const std::vector<uint8>& message,
                         const GURL& destination_url);
   void OnSessionKeysChange(const std::string& web_session_id,
-                           bool has_additional_usable_key);
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info);
   void OnSessionClosed(const std::string& web_session_id);
 
   // Handle the success/failure of a promise. These methods are responsible for

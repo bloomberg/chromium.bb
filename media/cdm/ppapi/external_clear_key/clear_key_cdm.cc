@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/cdm_callback_promise.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/cdm/json_web_key.h"
@@ -687,11 +688,13 @@ void ClearKeyCdm::OnSessionMessage(const std::string& web_session_id,
 }
 
 void ClearKeyCdm::OnSessionKeysChange(const std::string& web_session_id,
-                                      bool has_additional_usable_key) {
+                                      bool has_additional_usable_key,
+                                      CdmKeysInfo keys_info) {
   // Ignore the message when we are waiting to update the loadable session.
   if (web_session_id == session_id_for_emulated_loadsession_)
     return;
 
+  // TODO(jrummell): Pass |keys_info| on.
   host_->OnSessionUsableKeysChange(web_session_id.data(),
                                    web_session_id.length(),
                                    has_additional_usable_key);

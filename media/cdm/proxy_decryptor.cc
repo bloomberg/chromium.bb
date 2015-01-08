@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_factory.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
@@ -226,7 +227,8 @@ void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
 }
 
 void ProxyDecryptor::OnSessionKeysChange(const std::string& web_session_id,
-                                         bool has_additional_usable_key) {
+                                         bool has_additional_usable_key,
+                                         CdmKeysInfo keys_info) {
   // EME v0.1b doesn't support this event.
 }
 

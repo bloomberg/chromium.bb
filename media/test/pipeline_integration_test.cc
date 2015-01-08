@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_context.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/media_keys.h"
@@ -152,7 +153,8 @@ class FakeEncryptedMedia {
     virtual void OnSessionClosed(const std::string& web_session_id) = 0;
 
     virtual void OnSessionKeysChange(const std::string& web_session_id,
-                                     bool has_additional_usable_key) = 0;
+                                     bool has_additional_usable_key,
+                                     CdmKeysInfo keys_info) = 0;
 
     // Errors are not expected unless overridden.
     virtual void OnSessionError(const std::string& web_session_id,
@@ -191,8 +193,10 @@ class FakeEncryptedMedia {
   }
 
   void OnSessionKeysChange(const std::string& web_session_id,
-                           bool has_additional_usable_key) {
-    app_->OnSessionKeysChange(web_session_id, has_additional_usable_key);
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info) {
+    app_->OnSessionKeysChange(web_session_id, has_additional_usable_key,
+                              keys_info.Pass());
   }
 
   void OnSessionError(const std::string& web_session_id,
@@ -287,7 +291,8 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   void OnSessionKeysChange(const std::string& web_session_id,
-                           bool has_additional_usable_key) override {
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info) override {
     EXPECT_EQ(current_session_id_, web_session_id);
     EXPECT_EQ(has_additional_usable_key, true);
   }
@@ -413,7 +418,8 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
   }
 
   void OnSessionKeysChange(const std::string& web_session_id,
-                           bool has_additional_usable_key) override {
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_EQ(has_additional_usable_key, true);
   }

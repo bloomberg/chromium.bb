@@ -5,8 +5,10 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 
 #include "base/bind.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
+#include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "mojo/common/common_type_converters.h"
 
@@ -14,7 +16,6 @@ namespace media {
 
 typedef MojoCdmPromise<> SimpleMojoCdmPromise;
 typedef MojoCdmPromise<std::string> NewSessionMojoCdmPromise;
-typedef MojoCdmPromise<std::vector<std::vector<uint8_t>>> KeyIdsMojoCdmPromise;
 
 MojoCdmService::MojoCdmService(const mojo::String& key_system)
     : weak_factory_(this) {
@@ -111,8 +112,13 @@ void MojoCdmService::OnSessionMessage(const std::string& session_id,
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
-                                         bool has_additional_usable_key) {
-  client()->OnSessionKeysChange(session_id, has_additional_usable_key);
+                                         bool has_additional_usable_key,
+                                         CdmKeysInfo keys_info) {
+  mojo::Array<mojo::CdmKeyInformationPtr> keys_data;
+  for (const auto& key : keys_info)
+    keys_data.push_back(mojo::CdmKeyInformation::From(*key));
+  client()->OnSessionKeysChange(session_id, has_additional_usable_key,
+                                keys_data.Pass());
 }
 
 void MojoCdmService::OnSessionExpirationUpdate(

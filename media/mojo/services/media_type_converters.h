@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 
 namespace media {
@@ -15,6 +16,7 @@ class VideoDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
 struct SubsampleEntry;
+struct CdmKeyInformation;
 }
 
 namespace mojo {
@@ -67,6 +69,17 @@ struct TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig> {
 template <>
 struct TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr> {
   static media::VideoDecoderConfig Convert(const VideoDecoderConfigPtr& input);
+};
+
+template <>
+struct TypeConverter<CdmKeyInformationPtr, media::CdmKeyInformation> {
+  static CdmKeyInformationPtr Convert(const media::CdmKeyInformation& input);
+};
+template <>
+struct TypeConverter<scoped_ptr<media::CdmKeyInformation>,
+                     CdmKeyInformationPtr> {
+  static scoped_ptr<media::CdmKeyInformation> Convert(
+      const CdmKeyInformationPtr& input);
 };
 
 }  // namespace mojo

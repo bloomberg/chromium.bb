@@ -13,6 +13,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -330,9 +331,22 @@ void AesDecryptor::UpdateSession(const std::string& web_session_id,
 
   promise->resolve();
 
+  // Create the list of all available keys for this session.
+  CdmKeysInfo keys_info;
+  base::AutoLock auto_lock(key_map_lock_);
+  for (const auto& item : key_map_) {
+    if (item.second->Contains(web_session_id)) {
+      scoped_ptr<CdmKeyInformation> key_info(new CdmKeyInformation);
+      key_info->key_id.assign(item.first.begin(), item.first.end());
+      key_info->status = CdmKeyInformation::USABLE;
+      key_info->system_code = 0;
+      keys_info.push_back(key_info.release());
+    }
+  }
+
   // Assume that at least 1 new key has been successfully added and thus
-  // sending true.
-  session_keys_change_cb_.Run(web_session_id, true);
+  // sending true for |has_additional_usable_key|.
+  session_keys_change_cb_.Run(web_session_id, true, keys_info.Pass());
 }
 
 void AesDecryptor::CloseSession(const std::string& web_session_id,

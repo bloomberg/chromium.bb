@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "media/base/cdm_callback_promise.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/mock_filters.h"
@@ -23,6 +24,7 @@ using ::testing::IsNull;
 using ::testing::NotNull;
 using ::testing::SaveArg;
 using ::testing::StrNe;
+using ::testing::Unused;
 
 MATCHER(IsEmpty, "") { return arg.empty(); }
 MATCHER(IsNotEmpty, "") { return !arg.empty(); }
@@ -306,6 +308,17 @@ class AesDecryptorTest : public testing::Test {
     decryptor_.RemoveSession(session_id, CreatePromise(RESOLVED));
   }
 
+  MOCK_METHOD2(OnSessionKeysChangeCalled,
+               void(const std::string& web_session_id,
+                    bool has_additional_usable_key));
+
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key,
+                           CdmKeysInfo keys_info) {
+    keys_info_.swap(keys_info);
+    OnSessionKeysChangeCalled(web_session_id, has_additional_usable_key);
+  }
+
   // Updates the session specified by |session_id| with |key|. |result|
   // tests that the update succeeds or generates an error.
   void UpdateSessionAndExpect(std::string session_id,
@@ -314,15 +327,23 @@ class AesDecryptorTest : public testing::Test {
     DCHECK(!key.empty());
 
     if (expected_result == RESOLVED) {
-      EXPECT_CALL(*this, OnSessionKeysChange(session_id, true));
+      EXPECT_CALL(*this, OnSessionKeysChangeCalled(session_id, true));
     } else {
-      EXPECT_CALL(*this, OnSessionKeysChange(_, _)).Times(0);
+      EXPECT_CALL(*this, OnSessionKeysChangeCalled(_, _)).Times(0);
     }
 
     decryptor_.UpdateSession(session_id,
                              reinterpret_cast<const uint8*>(key.c_str()),
                              key.length(),
                              CreatePromise(expected_result));
+  }
+
+  bool KeysInfoContains(std::vector<uint8> expected) {
+    for (const auto& key_id : keys_info_) {
+      if (key_id->key_id == expected)
+        return true;
+    }
+    return false;
   }
 
   MOCK_METHOD2(BufferDecrypted, void(Decryptor::Status,
@@ -388,14 +409,12 @@ class AesDecryptorTest : public testing::Test {
                void(const std::string& web_session_id,
                     const std::vector<uint8>& message,
                     const GURL& destination_url));
-  MOCK_METHOD2(OnSessionKeysChange,
-               void(const std::string& web_session_id,
-                    bool has_additional_usable_key));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& web_session_id));
 
   AesDecryptor decryptor_;
   AesDecryptor::DecryptCB decrypt_cb_;
   std::string web_session_id_;
+  CdmKeysInfo keys_info_;
 
   // Constants for testing.
   const std::vector<uint8> original_data_;
@@ -837,6 +856,25 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "}";
   UpdateSessionAndExpect(session_id, kJwksWithEmptyKeyId, REJECTED);
   CloseSession(session_id);
+}
+
+TEST_F(AesDecryptorTest, GetKeyIds) {
+  std::vector<uint8> key_id1(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8> key_id2(kKeyId2, kKeyId2 + arraysize(kKeyId2));
+
+  std::string session_id = CreateSession(key_id_);
+  EXPECT_FALSE(KeysInfoContains(key_id1));
+  EXPECT_FALSE(KeysInfoContains(key_id2));
+
+  // Add 1 key, verify it is returned.
+  UpdateSessionAndExpect(session_id, kKeyAsJWK, RESOLVED);
+  EXPECT_TRUE(KeysInfoContains(key_id1));
+  EXPECT_FALSE(KeysInfoContains(key_id2));
+
+  // Add second key, verify both IDs returned.
+  UpdateSessionAndExpect(session_id, kKey2AsJWK, RESOLVED);
+  EXPECT_TRUE(KeysInfoContains(key_id1));
+  EXPECT_TRUE(KeysInfoContains(key_id2));
 }
 
 }  // namespace media

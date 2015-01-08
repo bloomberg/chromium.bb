@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "media/base/media_export.h"
 #include "url/gurl.h"
 
@@ -21,12 +22,14 @@ class Time;
 namespace media {
 
 class CdmContext;
+struct CdmKeyInformation;
 
 template <typename... T>
 class CdmPromiseTemplate;
 
 typedef CdmPromiseTemplate<std::string> NewSessionCdmPromise;
 typedef CdmPromiseTemplate<> SimpleCdmPromise;
+typedef ScopedVector<CdmKeyInformation> CdmKeysInfo;
 
 // Performs media key operations.
 //
@@ -137,8 +140,8 @@ typedef base::Callback<void(const std::string& web_session_id,
                             const std::string& error_message)> SessionErrorCB;
 
 typedef base::Callback<void(const std::string& web_session_id,
-                            bool has_additional_usable_key)>
-    SessionKeysChangeCB;
+                            bool has_additional_usable_key,
+                            CdmKeysInfo keys_info)> SessionKeysChangeCB;
 
 typedef base::Callback<void(const std::string& web_session_id,
                             const base::Time& new_expiry_time)>
