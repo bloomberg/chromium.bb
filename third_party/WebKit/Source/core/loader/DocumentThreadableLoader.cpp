@@ -99,10 +99,9 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     // Save any CORS simple headers on the request here. If this request redirects cross-origin, we cancel the old request
     // create a new one, and copy these headers.
     const HTTPHeaderMap& headerMap = request.httpHeaderFields();
-    HTTPHeaderMap::const_iterator end = headerMap.end();
-    for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
-        if (FetchUtils::isSimpleHeader(it->key, it->value))
-            m_simpleRequestHeaders.add(it->key, it->value);
+    for (const auto& header : headerMap) {
+        if (FetchUtils::isSimpleHeader(header.key, header.value))
+            m_simpleRequestHeaders.add(header.key, header.value);
     }
 
     // If the fetch request will be handled by the ServiceWorker, the
@@ -319,10 +318,8 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
             request.clearHTTPOrigin();
             request.clearHTTPUserAgent();
             // Add any CORS simple request headers which we previously saved from the original request.
-            HTTPHeaderMap::const_iterator end = m_simpleRequestHeaders.end();
-            for (HTTPHeaderMap::const_iterator it = m_simpleRequestHeaders.begin(); it != end; ++it) {
-                request.setHTTPHeaderField(it->key, it->value);
-            }
+            for (const auto& header : m_simpleRequestHeaders)
+                request.setHTTPHeaderField(header.key, header.value);
             makeCrossOriginAccessRequest(request);
             return;
         }

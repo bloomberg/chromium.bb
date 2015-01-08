@@ -822,12 +822,11 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     for (; !elemStack.isEmpty(); elemStack.removeLast()) {
         Element* element = elemStack.last();
         AttributeCollection attributes = element->attributes();
-        AttributeCollection::iterator end = attributes.end();
-        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-            if (it->localName() == xmlnsAtom)
-                m_defaultNamespaceURI = it->value();
-            else if (it->prefix() == xmlnsAtom)
-                m_prefixToNamespaceMap.set(it->localName(), it->value());
+        for (auto& attribute : attributes) {
+            if (attribute.localName() == xmlnsAtom)
+                m_defaultNamespaceURI = attribute.value();
+            else if (attribute.prefix() == xmlnsAtom)
+                m_prefixToNamespaceMap.set(attribute.localName(), attribute.value());
         }
     }
 

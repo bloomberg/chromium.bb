@@ -575,14 +575,11 @@ void ImageLoader::elementDidMoveToNewDocument()
 void ImageLoader::sourceImageChanged()
 {
 #if ENABLE(OILPAN)
-    PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover> >::iterator end = m_clients.end();
-    for (PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover> >::iterator it = m_clients.begin(); it != end; ++it) {
-        it->key->notifyImageSourceChanged();
-    }
+    for (auto& client : m_clients)
+        client.key->notifyImageSourceChanged();
 #else
-    HashSet<ImageLoaderClient*>::iterator end = m_clients.end();
-    for (HashSet<ImageLoaderClient*>::iterator it = m_clients.begin(); it != end; ++it) {
-        ImageLoaderClient* handle = *it;
+    for (auto& client : m_clients) {
+        ImageLoaderClient* handle = client;
         handle->notifyImageSourceChanged();
     }
 #endif

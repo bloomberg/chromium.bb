@@ -1246,9 +1246,8 @@ bool FrameLoader::dispatchNavigationTransitionData()
     if (elementData.isEmpty() || !validateTransitionNavigationMode())
         return false;
 
-    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
-    for (; iter != elementData.end(); ++iter)
-        client()->dispatchAddNavigationTransitionData(*iter);
+    for (auto& element : elementData)
+        client()->dispatchAddNavigationTransitionData(element);
 
     return true;
 }

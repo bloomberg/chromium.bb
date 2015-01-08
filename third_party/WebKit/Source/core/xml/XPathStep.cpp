@@ -384,9 +384,8 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         }
 
         AttributeCollection attributes = contextElement->attributes();
-        AttributeCollection::iterator end = attributes.end();
-        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-            RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(it->name());
+        for (auto& attribute : attributes) {
+            RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(attribute.name());
             if (nodeMatches(evaluationContext, attr.get(), AttributeAxis, nodeTest()))
                 nodes.append(attr.release());
         }

@@ -235,9 +235,8 @@ void NodeSet::traversalSort() const
 
         Element* element = toElement(&n);
         AttributeCollection attributes = element->attributes();
-        AttributeCollection::iterator end = attributes.end();
-        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-            RefPtrWillBeRawPtr<Attr> attr = element->attrIfExists(it->name());
+        for (auto& attribute : attributes) {
+            RefPtrWillBeRawPtr<Attr> attr = element->attrIfExists(attribute.name());
             if (attr && nodes.contains(attr.get()))
                 sortedNodes.append(attr);
         }
