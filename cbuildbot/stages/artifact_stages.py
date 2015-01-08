@@ -25,7 +25,6 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
-from chromite.scripts import cros_generate_breakpad_symbols
 
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -440,24 +439,9 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   def UploadDebugTarball(self):
     """Generate and upload the debug tarball."""
-    try:
-      filename = commands.GenerateDebugTarball(
-          self._build_root, self._current_board, self.archive_path,
-          self._run.config.archive_build_debug)
-    except cros_build_lib.RunCommandError:
-      # TODO(yjhong): Remove this after crbug.com/339934 is fixed.
-      debug_root = cros_build_lib.FromChrootPath(
-          cros_generate_breakpad_symbols.FindDebugDir(self._current_board))
-      logging.warning('Failed to generate the debug tarball. Listing the '
-                      'files in %s:', debug_root)
-      for subpath in [os.path.join('bin'),
-                      os.path.join('usr', 'bin'),
-                      os.path.join('usr', 'sbin')]:
-        logging.warning(osutils.StatFilesInDirectory(
-            os.path.join(debug_root, subpath),
-            recursive=True, to_string=True))
-      raise
-
+    filename = commands.GenerateDebugTarball(
+        self._build_root, self._current_board, self.archive_path,
+        self._run.config.archive_build_debug)
     self.UploadArtifact(filename, archive=False)
     cros_build_lib.Info('Announcing availability of debug tarball now.')
     self.board_runattrs.SetParallel('debug_tarball_generated', True)
