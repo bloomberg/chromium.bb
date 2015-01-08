@@ -368,16 +368,17 @@ void ContentDecryptorDelegate::SetServerCertificate(
       pp_instance_, promise_id, certificate_array);
 }
 
-void ContentDecryptorDelegate::CreateSession(
+void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
+    MediaKeys::SessionType session_type,
     const std::string& init_data_type,
     const uint8* init_data,
     int init_data_length,
-    MediaKeys::SessionType session_type,
     scoped_ptr<NewSessionCdmPromise> promise) {
   uint32_t promise_id = SavePromise(promise.Pass());
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
+  // TODO(jrummell): Update pepper to rename method.
   plugin_decryption_interface_->CreateSession(
       pp_instance_,
       promise_id,

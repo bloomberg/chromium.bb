@@ -103,11 +103,11 @@ void PpapiDecryptor::SetServerCertificate(
       certificate_data, certificate_data_length, promise.Pass());
 }
 
-void PpapiDecryptor::CreateSession(
+void PpapiDecryptor::CreateSessionAndGenerateRequest(
+    SessionType session_type,
     const std::string& init_data_type,
     const uint8* init_data,
     int init_data_length,
-    SessionType session_type,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
@@ -117,11 +117,9 @@ void PpapiDecryptor::CreateSession(
     return;
   }
 
-  CdmDelegate()->CreateSession(init_data_type,
-                               init_data,
-                               init_data_length,
-                               session_type,
-                               promise.Pass());
+  CdmDelegate()->CreateSessionAndGenerateRequest(session_type, init_data_type,
+                                                 init_data, init_data_length,
+                                                 promise.Pass());
 }
 
 void PpapiDecryptor::LoadSession(

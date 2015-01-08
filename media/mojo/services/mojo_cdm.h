@@ -36,11 +36,12 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
   void SetServerCertificate(const uint8_t* certificate_data,
                             int certificate_data_length,
                             scoped_ptr<SimpleCdmPromise> promise) final;
-  void CreateSession(const std::string& init_data_type,
-                     const uint8_t* init_data,
-                     int init_data_length,
-                     SessionType session_type,
-                     scoped_ptr<NewSessionCdmPromise> promise) final;
+  void CreateSessionAndGenerateRequest(
+      SessionType session_type,
+      const std::string& init_data_type,
+      const uint8_t* init_data,
+      int init_data_length,
+      scoped_ptr<NewSessionCdmPromise> promise) final;
   void LoadSession(const std::string& session_id,
                    scoped_ptr<NewSessionCdmPromise> promise) final;
   void UpdateSession(const std::string& session_id,

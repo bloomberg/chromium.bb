@@ -58,11 +58,11 @@ void ProxyMediaKeys::SetServerCertificate(
   promise->reject(NOT_SUPPORTED_ERROR, 0, "Not yet implemented.");
 }
 
-void ProxyMediaKeys::CreateSession(
+void ProxyMediaKeys::CreateSessionAndGenerateRequest(
+    SessionType session_type,
     const std::string& init_data_type,
     const uint8* init_data,
     int init_data_length,
-    SessionType session_type,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   // TODO(xhwang): Move these checks up to blink and DCHECK here.
   // See http://crbug.com/342510

@@ -296,9 +296,9 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
                                 const std::vector<uint8>& init_data,
                                 AesDecryptor* decryptor) override {
     if (current_session_id_.empty()) {
-      decryptor->CreateSession(init_data_type, kInitData, arraysize(kInitData),
-                               MediaKeys::TEMPORARY_SESSION,
-                               CreateSessionPromise(RESOLVED));
+      decryptor->CreateSessionAndGenerateRequest(
+          MediaKeys::TEMPORARY_SESSION, init_data_type, kInitData,
+          arraysize(kInitData), CreateSessionPromise(RESOLVED));
       EXPECT_FALSE(current_session_id_.empty());
     }
 
@@ -342,9 +342,10 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     prev_init_data_ = init_data;
     ++num_distint_need_key_calls_;
 
-    decryptor->CreateSession(init_data_type, vector_as_array(&init_data),
-                             init_data.size(), MediaKeys::TEMPORARY_SESSION,
-                             CreateSessionPromise(RESOLVED));
+    decryptor->CreateSessionAndGenerateRequest(
+        MediaKeys::TEMPORARY_SESSION, init_data_type,
+        vector_as_array(&init_data), init_data.size(),
+        CreateSessionPromise(RESOLVED));
 
     std::vector<uint8> key_id;
     std::vector<uint8> key;

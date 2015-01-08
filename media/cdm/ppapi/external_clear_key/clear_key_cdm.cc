@@ -254,11 +254,10 @@ void ClearKeyCdm::CreateSession(uint32 promise_id,
           base::Bind(&ClearKeyCdm::OnPromiseFailed,
                      base::Unretained(this),
                      promise_id)));
-  decryptor_.CreateSession(std::string(init_data_type, init_data_type_size),
-                           init_data,
-                           init_data_size,
-                           ConvertSessionType(session_type),
-                           promise.Pass());
+  decryptor_.CreateSessionAndGenerateRequest(
+      ConvertSessionType(session_type),
+      std::string(init_data_type, init_data_type_size), init_data,
+      init_data_size, promise.Pass());
 
   if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
     StartFileIOTest();
@@ -292,11 +291,9 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
           base::Bind(&ClearKeyCdm::OnPromiseFailed,
                      base::Unretained(this),
                      promise_id)));
-  decryptor_.CreateSession(std::string(kLoadableSessionContentType),
-                           NULL,
-                           0,
-                           MediaKeys::TEMPORARY_SESSION,
-                           promise.Pass());
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, std::string(kLoadableSessionContentType),
+      NULL, 0, promise.Pass());
 }
 
 void ClearKeyCdm::UpdateSession(uint32 promise_id,

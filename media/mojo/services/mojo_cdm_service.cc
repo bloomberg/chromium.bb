@@ -45,18 +45,18 @@ void MojoCdmService::SetServerCertificate(
       scoped_ptr<SimpleCdmPromise>(new SimpleMojoCdmPromise(callback)));
 }
 
-void MojoCdmService::CreateSession(
+void MojoCdmService::CreateSessionAndGenerateRequest(
+    mojo::ContentDecryptionModule::SessionType session_type,
     const mojo::String& init_data_type,
     mojo::Array<uint8_t> init_data,
-    mojo::ContentDecryptionModule::SessionType session_type,
     const mojo::Callback<void(mojo::CdmPromiseResultPtr, mojo::String)>&
         callback) {
   const std::vector<uint8_t>& init_data_vector = init_data.storage();
-  cdm_->CreateSession(
+  cdm_->CreateSessionAndGenerateRequest(
+      static_cast<MediaKeys::SessionType>(session_type),
       init_data_type.To<std::string>(),
       init_data_vector.empty() ? nullptr : &init_data_vector[0],
       init_data_vector.size(),
-      static_cast<MediaKeys::SessionType>(session_type),
       scoped_ptr<NewSessionCdmPromise>(new NewSessionMojoCdmPromise(callback)));
 }
 

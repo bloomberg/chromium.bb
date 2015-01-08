@@ -283,11 +283,9 @@ class AesDecryptorTest : public testing::Test {
     EXPECT_CALL(*this,
                 OnSessionMessage(
                     IsNotEmpty(), IsJSONDictionary(), GURL::EmptyGURL()));
-    decryptor_.CreateSession(std::string(),
-                             &key_id[0],
-                             key_id.size(),
-                             MediaKeys::TEMPORARY_SESSION,
-                             CreateSessionPromise(RESOLVED));
+    decryptor_.CreateSessionAndGenerateRequest(
+        MediaKeys::TEMPORARY_SESSION, std::string(), &key_id[0], key_id.size(),
+        CreateSessionPromise(RESOLVED));
     // This expects the promise to be called synchronously, which is the case
     // for AesDecryptor.
     return web_session_id_;
@@ -412,37 +410,29 @@ class AesDecryptorTest : public testing::Test {
 TEST_F(AesDecryptorTest, CreateSessionWithNullInitData) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSession(std::string(),
-                           NULL,
-                           0,
-                           MediaKeys::TEMPORARY_SESSION,
-                           CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                             std::string(), NULL, 0,
+                                             CreateSessionPromise(RESOLVED));
 }
 
 TEST_F(AesDecryptorTest, MultipleCreateSession) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSession(std::string(),
-                           NULL,
-                           0,
-                           MediaKeys::TEMPORARY_SESSION,
-                           CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                             std::string(), NULL, 0,
+                                             CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSession(std::string(),
-                           NULL,
-                           0,
-                           MediaKeys::TEMPORARY_SESSION,
-                           CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                             std::string(), NULL, 0,
+                                             CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSession(std::string(),
-                           NULL,
-                           0,
-                           MediaKeys::TEMPORARY_SESSION,
-                           CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                             std::string(), NULL, 0,
+                                             CreateSessionPromise(RESOLVED));
 }
 
 TEST_F(AesDecryptorTest, NormalDecryption) {

@@ -245,11 +245,12 @@ void AesDecryptor::SetServerCertificate(const uint8* certificate_data,
       NOT_SUPPORTED_ERROR, 0, "SetServerCertificate() is not supported.");
 }
 
-void AesDecryptor::CreateSession(const std::string& init_data_type,
-                                 const uint8* init_data,
-                                 int init_data_length,
-                                 SessionType session_type,
-                                 scoped_ptr<NewSessionCdmPromise> promise) {
+void AesDecryptor::CreateSessionAndGenerateRequest(
+    SessionType session_type,
+    const std::string& init_data_type,
+    const uint8* init_data,
+    int init_data_length,
+    scoped_ptr<NewSessionCdmPromise> promise) {
   std::string web_session_id(base::UintToString(next_web_session_id_++));
   valid_sessions_.insert(web_session_id);
 

@@ -26,11 +26,12 @@ class MojoCdmService
   void SetServerCertificate(
       mojo::Array<uint8_t> certificate_data,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) final;
-  void CreateSession(const mojo::String& init_data_type,
-                     mojo::Array<uint8_t> init_data,
-                     mojo::ContentDecryptionModule::SessionType session_type,
-                     const mojo::Callback<void(mojo::CdmPromiseResultPtr,
-                                               mojo::String)>& callback) final;
+  void CreateSessionAndGenerateRequest(
+      mojo::ContentDecryptionModule::SessionType session_type,
+      const mojo::String& init_data_type,
+      mojo::Array<uint8_t> init_data,
+      const mojo::Callback<void(mojo::CdmPromiseResultPtr, mojo::String)>&
+          callback) final;
   void LoadSession(const mojo::String& session_id,
                    const mojo::Callback<void(mojo::CdmPromiseResultPtr,
                                              mojo::String)>& callback) final;

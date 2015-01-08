@@ -115,11 +115,9 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
           ? MediaKeys::PERSISTENT_SESSION
           : MediaKeys::TEMPORARY_SESSION;
 
-  media_keys_->CreateSession(init_data_type,
-                             init_data_vector_data,
-                             init_data_vector.size(),
-                             session_type,
-                             promise.Pass());
+  media_keys_->CreateSessionAndGenerateRequest(
+      session_type, init_data_type, init_data_vector_data,
+      init_data_vector.size(), promise.Pass());
   return true;
 }
 

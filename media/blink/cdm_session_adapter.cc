@@ -76,11 +76,9 @@ void CdmSessionAdapter::InitializeNewSession(
     int init_data_length,
     MediaKeys::SessionType session_type,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  media_keys_->CreateSession(init_data_type,
-                             init_data,
-                             init_data_length,
-                             session_type,
-                             promise.Pass());
+  media_keys_->CreateSessionAndGenerateRequest(session_type, init_data_type,
+                                               init_data, init_data_length,
+                                               promise.Pass());
 }
 
 void CdmSessionAdapter::LoadSession(

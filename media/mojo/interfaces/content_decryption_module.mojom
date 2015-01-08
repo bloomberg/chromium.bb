@@ -49,9 +49,9 @@ interface ContentDecryptionModule {
   // Creates a session with the |init_data_type|, |init_data| and |session_type|
   // provided. If |result.success| is false, the output |session_id| will be
   // null.
-  CreateSession(string init_data_type,
-                array<uint8> init_data,
-                SessionType session_type)
+  CreateSessionAndGenerateRequest(SessionType session_type,
+                                  string init_data_type,
+                                  array<uint8> init_data)
       => (CdmPromiseResult result, string? session_id);
 
   // Loads the session associated with |session_id|. Combinations of
