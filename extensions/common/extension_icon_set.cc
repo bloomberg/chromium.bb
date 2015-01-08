@@ -4,6 +4,7 @@
 
 #include "extensions/common/extension_icon_set.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 
@@ -68,4 +69,10 @@ int ExtensionIconSet::GetIconSizeFromPath(const std::string& path) const {
   }
 
   return 0;
+}
+
+void ExtensionIconSet::GetPaths(std::set<base::FilePath>* paths) const {
+  CHECK(paths);
+  for (auto iter : map())
+    paths->insert(base::FilePath::FromUTF8Unsafe(iter.second));
 }

@@ -167,9 +167,4 @@ bool TestExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
   return true;
 }
 
-std::set<base::FilePath> TestExtensionsClient::GetBrowserImagePaths(
-    const Extension* extension) {
-  return std::set<base::FilePath>();
-}
-
 }  // namespace extensions

@@ -70,17 +70,6 @@ SimpleFeature* CreateFeature() {
   return feature;
 }
 
-// Add the image paths contained in the |icon_set| to |image_paths|.
-void AddPathsFromIconSet(const ExtensionIconSet& icon_set,
-                         std::set<base::FilePath>* image_paths) {
-  // TODO(viettrungluu): These |FilePath::FromUTF8Unsafe()| indicate that we're
-  // doing something wrong.
-  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
-       iter != icon_set.map().end(); ++iter) {
-    image_paths->insert(base::FilePath::FromUTF8Unsafe(iter->second));
-  }
-}
-
 }  // namespace
 
 static base::LazyInstance<ChromeExtensionsClient> g_client =
@@ -356,9 +345,8 @@ bool ChromeExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
 
 std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
     const Extension* extension) {
-  std::set<base::FilePath> image_paths;
-
-  AddPathsFromIconSet(extensions::IconsInfo::GetIcons(extension), &image_paths);
+  std::set<base::FilePath> image_paths =
+      ExtensionsClient::GetBrowserImagePaths(extension);
 
   // Theme images
   const base::DictionaryValue* theme_images =
@@ -375,12 +363,12 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
   const extensions::ActionInfo* page_action =
       extensions::ActionInfo::GetPageActionInfo(extension);
   if (page_action && !page_action->default_icon.empty())
-    AddPathsFromIconSet(page_action->default_icon, &image_paths);
+    page_action->default_icon.GetPaths(&image_paths);
 
   const extensions::ActionInfo* browser_action =
       extensions::ActionInfo::GetBrowserActionInfo(extension);
   if (browser_action && !browser_action->default_icon.empty())
-    AddPathsFromIconSet(browser_action->default_icon, &image_paths);
+    browser_action->default_icon.GetPaths(&image_paths);
 
   return image_paths;
 }

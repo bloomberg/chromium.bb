@@ -6,7 +6,12 @@
 #define EXTENSIONS_COMMON_EXTENSION_ICON_SET_H_
 
 #include <map>
+#include <set>
 #include <string>
+
+namespace base {
+class FilePath;
+}
 
 // Represents the set of icons for an extension.
 class ExtensionIconSet {
@@ -44,6 +49,12 @@ class ExtensionIconSet {
 
   // Returns icon size if the set contains the specified path or 0 if not found.
   int GetIconSizeFromPath(const std::string& path) const;
+
+  // Add the paths of all icons in this set into |paths|, handling the
+  // conversion of (string) -> (base::FilePath). Note that these paths are not
+  // validated in any way, so they may be invalid paths or reference
+  // nonexistent files.
+  void GetPaths(std::set<base::FilePath>* paths) const;
 
  private:
   IconMap map_;

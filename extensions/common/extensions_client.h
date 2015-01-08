@@ -127,8 +127,13 @@ class ExtensionsClient {
   // or WebUI, such as icons or theme images. This set of paths is used by the
   // extension unpacker to determine which assets should be transcoded safely
   // within the utility sandbox.
+  //
+  // The default implementation returns the images used as icons for the
+  // extension itself, so implementors of ExtensionsClient overriding this may
+  // want to call the base class version and then add additional paths to that
+  // result.
   virtual std::set<base::FilePath> GetBrowserImagePaths(
-      const Extension* extension) = 0;
+      const Extension* extension);
 
   // Return the extensions client.
   static ExtensionsClient* Get();

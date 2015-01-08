@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/common/extensions_client.h"
+
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "extensions/common/extensions_client.h"
+#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 
 namespace extensions {
 
@@ -17,6 +20,13 @@ ExtensionsClient* g_client = NULL;
 ExtensionsClient* ExtensionsClient::Get() {
   DCHECK(g_client);
   return g_client;
+}
+
+std::set<base::FilePath> ExtensionsClient::GetBrowserImagePaths(
+    const Extension* extension) {
+  std::set<base::FilePath> paths;
+  extensions::IconsInfo::GetIcons(extension).GetPaths(&paths);
+  return paths;
 }
 
 void ExtensionsClient::Set(ExtensionsClient* client) {

@@ -222,9 +222,4 @@ bool ShellExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
   return true;
 }
 
-std::set<base::FilePath> ShellExtensionsClient::GetBrowserImagePaths(
-    const Extension* extension) {
-  return std::set<base::FilePath>();
-}
-
 }  // namespace extensions
