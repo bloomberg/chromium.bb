@@ -1867,7 +1867,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame)
 {
     Frame* oldFrame = toCoreFrame(oldWebFrame);
-    OwnPtr<FrameOwner> tempOwner = adoptPtr(new PlaceholderFrameOwner());
+    OwnPtrWillBePersistent<FrameOwner> tempOwner = adoptPtrWillBeNoop(new PlaceholderFrameOwner());
     m_frame = LocalFrame::create(&m_frameLoaderClientImpl, oldFrame->host(), tempOwner.get());
     m_frame->setOwner(oldFrame->owner());
     m_frame->tree().setName(oldFrame->tree().name());
