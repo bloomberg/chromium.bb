@@ -4707,6 +4707,12 @@ bool CSSPropertyParser::parseLineHeight(bool important)
         validPrimitive = true;
     else
         validPrimitive = (!id && validUnit(value, FNumber | FLength | FPercent | FNonNeg));
+    // The line-height property can accept both percents and numbers but additive opertaions are
+    // not permitted on them in calc() expressions.
+    if (m_parsedCalculation && m_parsedCalculation->category() == CalcPercentNumber) {
+        validPrimitive = false;
+        m_parsedCalculation.release();
+    }
     if (validPrimitive && (!m_valueList->next() || inShorthand()))
         addProperty(CSSPropertyLineHeight, parseValidPrimitive(id, value), important);
     return validPrimitive;
