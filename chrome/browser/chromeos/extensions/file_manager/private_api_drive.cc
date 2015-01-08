@@ -100,9 +100,10 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
       new bool(file_specific_info.is_hosted_document()));
   properties->content_mime_type.reset(
       new std::string(file_specific_info.content_mime_type()));
-
   properties->is_pinned.reset(
       new bool(file_specific_info.cache_state().is_pinned()));
+  properties->is_dirty.reset(
+      new bool(file_specific_info.cache_state().is_dirty()));
   properties->is_present.reset(
       new bool(file_specific_info.cache_state().is_present()));
 

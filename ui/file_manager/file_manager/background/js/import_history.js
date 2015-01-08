@@ -381,8 +381,10 @@ importer.PersistentImportHistory.prototype.markCopied =
           }.bind(this))
       .then(this.notifyObservers_.bind(
           this,
+          importer.ImportHistory.State.COPIED,
           entry,
-          importer.ImportHistory.State.COPIED));
+          destination,
+          url));
 };
 
 /** @override */
@@ -404,8 +406,9 @@ importer.PersistentImportHistory.prototype.markImported =
           }.bind(this))
       .then(this.notifyObservers_.bind(
           this,
+          importer.ImportHistory.State.IMPORTED,
           entry,
-          importer.ImportHistory.State.IMPORTED));
+          destination));
 };
 
 /** @override */
@@ -426,17 +429,25 @@ importer.PersistentImportHistory.prototype.removeObserver =
 };
 
 /**
- * @param {!FileEntry} subject
- * @param {!importer.ImportHistory.State} newState
+ * @param {!importer.ImportHistory.State} state
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ * @param {string=} opt_url
  * @private
  */
 importer.PersistentImportHistory.prototype.notifyObservers_ =
-    function(subject, newState) {
+    function(state, entry, destination, opt_url) {
   this.observers_.forEach(
+      /**
+       * @param {!importer.ImportHistory.Observer} observer
+       * @this {importer.PersistentImportHistory}
+       */
       function(observer) {
         observer({
-          state: newState,
-          entry: subject
+          state: state,
+          entry: entry,
+          destination: destination,
+          destinationUrl: opt_url
         });
       }.bind(this));
 };
@@ -559,6 +570,7 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
           function(fileEntry) {
             var storage = new importer.FileEntryRecordStorage(fileEntry);
             var history = new importer.PersistentImportHistory(storage);
+            new importer.DriveSyncWatcher(history);
             return history.refresh().then(
                 /**
                  * @return {!importer.ImportHistory}
@@ -960,4 +972,62 @@ importer.PromisingFileEntry.prototype.file = function() {
  */
 importer.PromisingFileEntry.prototype.getMetadata = function() {
   return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
+};
+
+/**
+ * This class makes the "drive" badges appear by way of marking entries as
+ * imported in history when a previously imported file is fully synced to drive.
+ *
+ * @constructor
+ * @struct
+ *
+ * @param {!importer.ImportHistory} history
+ */
+importer.DriveSyncWatcher = function(history) {
+  /** @private {!importer.ImportHistory} */
+  this.history_ = history;
+
+  this.history_.addObserver(
+      this.onHistoryChanged_.bind(this));
+};
+
+/**
+ * @param {!importer.ImportHistory.ChangedEvent} event
+ * @private
+ */
+importer.DriveSyncWatcher.prototype.onHistoryChanged_ =
+    function(event) {
+  if (event.state === importer.ImportHistory.State.COPIED) {
+    // Check sync status incase the file synced *before* it was able
+    // to mark be marked as copied.
+    this.checkSyncStatus_(
+        event.entry,
+        event.destination,
+        event.destinationUrl);
+  }
+};
+
+/**
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ * @param {string} url
+ * @private
+ */
+importer.DriveSyncWatcher.prototype.checkSyncStatus_ =
+    function(entry, destination, url) {
+  // TODO(smckay): User Metadata Cache...once it is available
+  // in the background.
+  chrome.fileManagerPrivate.getEntryProperties(
+      [url],
+      /**
+       * @param {!Array.<Object>} propertiesList
+       * @this {importer.DriveSyncWatcher}
+       */
+      function(propertiesList) {
+        console.assert(propertiesList.length === 1);
+        var data = propertiesList[0];
+        if (!data['isDirty']) {
+          this.history_.markImported(entry, destination);
+        }
+      }.bind(this));
 };
