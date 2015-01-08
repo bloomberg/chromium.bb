@@ -59,6 +59,7 @@ public:
     virtual bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const = 0;
 
     virtual bool isVideoElement() const { return false; }
+    virtual bool isCanvasElement() const { return false; }
 
     // Adjusts the source and destination rectangles for cases where the actual
     // source image is a subregion of the image returned by getSourceImageForCanvas.

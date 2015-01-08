@@ -1508,6 +1508,14 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     if (imageSource->isVideoElement())
         canvas()->buffer()->willDrawVideo();
 
+    // FIXME: crbug.com/447218
+    // We make the destination canvas fall out of display list mode by calling
+    // willAccessPixels. This is to prevent run-away memory consumption caused by SkSurface
+    // copyOnWrite when the source canvas is animated and consumed at a rate higher than the
+    // presentation frame rate of the destination canvas.
+    if (imageSource->isCanvasElement())
+        canvas()->buffer()->willAccessPixels();
+
     CompositeOperator op = state().m_globalComposite;
     if (rectContainsTransformedRect(dstRect, clipBounds)) {
         drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);
