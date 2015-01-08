@@ -79,20 +79,20 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
   EXPECT_EQ(0U, event.GetPointerCount());
 
   TouchEvent press0 = TouchWithType(ET_TOUCH_PRESSED, ids[0]);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
   EXPECT_EQ(1U, event.GetPointerCount());
 
   EXPECT_EQ(ids[0], event.GetPointerId(0));
 
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
   EXPECT_EQ(2U, event.GetPointerCount());
 
   EXPECT_EQ(ids[0], event.GetPointerId(0));
   EXPECT_EQ(ids[1], event.GetPointerId(1));
 
   TouchEvent press2 = TouchWithType(ET_TOUCH_PRESSED, ids[2]);
-  event.OnTouch(press2);
+  EXPECT_TRUE(event.OnTouch(press2));
   EXPECT_EQ(3U, event.GetPointerCount());
 
   EXPECT_EQ(ids[0], event.GetPointerId(0));
@@ -100,7 +100,7 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
   EXPECT_EQ(ids[2], event.GetPointerId(2));
 
   TouchEvent release1 = TouchWithType(ET_TOUCH_RELEASED, ids[1]);
-  event.OnTouch(release1);
+  EXPECT_TRUE(event.OnTouch(release1));
   event.CleanupRemovedTouchPoints(release1);
   EXPECT_EQ(2U, event.GetPointerCount());
 
@@ -116,14 +116,14 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
   EXPECT_EQ(test::ToString(event), test::ToString(*clone));
 
   TouchEvent release0 = TouchWithType(ET_TOUCH_RELEASED, ids[0]);
-  event.OnTouch(release0);
+  EXPECT_TRUE(event.OnTouch(release0));
   event.CleanupRemovedTouchPoints(release0);
   EXPECT_EQ(1U, event.GetPointerCount());
 
   EXPECT_EQ(ids[2], event.GetPointerId(0));
 
   TouchEvent release2 = TouchWithType(ET_TOUCH_RELEASED, ids[2]);
-  event.OnTouch(release2);
+  EXPECT_TRUE(event.OnTouch(release2));
   event.CleanupRemovedTouchPoints(release2);
   EXPECT_EQ(0U, event.GetPointerCount());
 }
@@ -137,29 +137,29 @@ TEST(MotionEventAuraTest, GetActionIndexAfterRemoval) {
   EXPECT_EQ(0U, event.GetPointerCount());
 
   TouchEvent press0 = TouchWithType(ET_TOUCH_PRESSED, ids[0]);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
   EXPECT_EQ(1, event.GetActionIndex());
   TouchEvent press2 = TouchWithType(ET_TOUCH_PRESSED, ids[2]);
-  event.OnTouch(press2);
+  EXPECT_TRUE(event.OnTouch(press2));
   EXPECT_EQ(2, event.GetActionIndex());
   EXPECT_EQ(3U, event.GetPointerCount());
 
   TouchEvent release1 = TouchWithType(ET_TOUCH_RELEASED, ids[1]);
-  event.OnTouch(release1);
+  EXPECT_TRUE(event.OnTouch(release1));
   EXPECT_EQ(1, event.GetActionIndex());
   event.CleanupRemovedTouchPoints(release1);
   EXPECT_EQ(2U, event.GetPointerCount());
 
   TouchEvent release2 = TouchWithType(ET_TOUCH_RELEASED, ids[0]);
-  event.OnTouch(release2);
+  EXPECT_TRUE(event.OnTouch(release2));
   EXPECT_EQ(0, event.GetActionIndex());
   event.CleanupRemovedTouchPoints(release2);
   EXPECT_EQ(1U, event.GetPointerCount());
 
   TouchEvent release0 = TouchWithType(ET_TOUCH_RELEASED, ids[2]);
-  event.OnTouch(release0);
+  EXPECT_TRUE(event.OnTouch(release0));
   event.CleanupRemovedTouchPoints(release0);
   EXPECT_EQ(0U, event.GetPointerCount());
 }
@@ -183,7 +183,7 @@ TEST(MotionEventAuraTest, PointerLocations) {
   raw_y = y + kRawOffsetY;
   TouchEvent press0 =
       TouchWithPosition(ET_TOUCH_PRESSED, ids[0], x, y, raw_x, raw_y);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
 
   EXPECT_EQ(1U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(x, event.GetX(0));
@@ -197,7 +197,7 @@ TEST(MotionEventAuraTest, PointerLocations) {
   raw_y = y + kRawOffsetY;
   TouchEvent press1 =
       TouchWithPosition(ET_TOUCH_PRESSED, ids[1], x, y, raw_x, raw_y);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
 
   EXPECT_EQ(2U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(x, event.GetX(1));
@@ -222,7 +222,7 @@ TEST(MotionEventAuraTest, PointerLocations) {
   raw_y = y + kRawOffsetY;
   TouchEvent move1 =
       TouchWithPosition(ET_TOUCH_MOVED, ids[1], x, y, raw_x, raw_y);
-  event.OnTouch(move1);
+  EXPECT_TRUE(event.OnTouch(move1));
 
   EXPECT_FLOAT_EQ(x, event.GetX(1));
   EXPECT_FLOAT_EQ(y, event.GetY(1));
@@ -235,7 +235,7 @@ TEST(MotionEventAuraTest, PointerLocations) {
   raw_y = y + kRawOffsetY;
   TouchEvent move0 =
       TouchWithPosition(ET_TOUCH_MOVED, ids[0], x, y, raw_x, raw_y);
-  event.OnTouch(move0);
+  EXPECT_TRUE(event.OnTouch(move0));
 
   EXPECT_FLOAT_EQ(x, event.GetX(0));
   EXPECT_FLOAT_EQ(y, event.GetY(0));
@@ -260,7 +260,7 @@ TEST(MotionEventAuraTest, TapParams) {
   pressure = 0.123f;
   TouchEvent press0 = TouchWithTapParams(
       ET_TOUCH_PRESSED, ids[0], radius_x, radius_y, rotation_angle, pressure);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
 
   EXPECT_EQ(1U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMajor(0) / 2);
@@ -274,7 +274,7 @@ TEST(MotionEventAuraTest, TapParams) {
   pressure = 0.456f;
   TouchEvent press1 = TouchWithTapParams(
       ET_TOUCH_PRESSED, ids[1], radius_x, radius_y, rotation_angle, pressure);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
 
   EXPECT_EQ(2U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(1) / 2);
@@ -299,7 +299,8 @@ TEST(MotionEventAuraTest, TapParams) {
   pressure = 0.654f;
   TouchEvent move1 = TouchWithTapParams(
       ET_TOUCH_MOVED, ids[1], radius_x, radius_y, rotation_angle, pressure);
-  event.OnTouch(move1);
+  move1.set_location(gfx::Point(20, 21));
+  EXPECT_TRUE(event.OnTouch(move1));
 
   EXPECT_EQ(2U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(1) / 2);
@@ -316,17 +317,18 @@ TEST(MotionEventAuraTest, Timestamps) {
 
   TouchEvent press0 = TouchWithTime(
       ui::ET_TOUCH_PRESSED, ids[0], times_in_ms[0]);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
   EXPECT_EQ(MsToTicks(times_in_ms[0]), event.GetEventTime());
 
   TouchEvent press1 = TouchWithTime(
       ui::ET_TOUCH_PRESSED, ids[1], times_in_ms[1]);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
   EXPECT_EQ(MsToTicks(times_in_ms[1]), event.GetEventTime());
 
   TouchEvent move0 = TouchWithTime(
       ui::ET_TOUCH_MOVED, ids[0], times_in_ms[2]);
-  event.OnTouch(move0);
+  move0.set_location(gfx::PointF(12, 21));
+  EXPECT_TRUE(event.OnTouch(move0));
   EXPECT_EQ(MsToTicks(times_in_ms[2]), event.GetEventTime());
 
   // Test cloning of timestamp information.
@@ -340,12 +342,12 @@ TEST(MotionEventAuraTest, CachedAction) {
   MotionEventAura event;
 
   TouchEvent press0 = TouchWithType(ET_TOUCH_PRESSED, ids[0]);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
   EXPECT_EQ(MotionEvent::ACTION_DOWN, event.GetAction());
   EXPECT_EQ(1U, event.GetPointerCount());
 
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
   EXPECT_EQ(MotionEvent::ACTION_POINTER_DOWN, event.GetAction());
   EXPECT_EQ(1, event.GetActionIndex());
   EXPECT_EQ(2U, event.GetPointerCount());
@@ -356,19 +358,20 @@ TEST(MotionEventAuraTest, CachedAction) {
   EXPECT_EQ(1, clone->GetActionIndex());
 
   TouchEvent move0 = TouchWithType(ET_TOUCH_MOVED, ids[0]);
-  event.OnTouch(move0);
+  move0.set_location(gfx::PointF(10, 12));
+  EXPECT_TRUE(event.OnTouch(move0));
   EXPECT_EQ(MotionEvent::ACTION_MOVE, event.GetAction());
   EXPECT_EQ(2U, event.GetPointerCount());
 
   TouchEvent release0 = TouchWithType(ET_TOUCH_RELEASED, ids[0]);
-  event.OnTouch(release0);
+  EXPECT_TRUE(event.OnTouch(release0));
   EXPECT_EQ(MotionEvent::ACTION_POINTER_UP, event.GetAction());
   EXPECT_EQ(2U, event.GetPointerCount());
   event.CleanupRemovedTouchPoints(release0);
   EXPECT_EQ(1U, event.GetPointerCount());
 
   TouchEvent release1 = TouchWithType(ET_TOUCH_RELEASED, ids[1]);
-  event.OnTouch(release1);
+  EXPECT_TRUE(event.OnTouch(release1));
   EXPECT_EQ(MotionEvent::ACTION_UP, event.GetAction());
   EXPECT_EQ(1U, event.GetPointerCount());
   event.CleanupRemovedTouchPoints(release1);
@@ -380,12 +383,12 @@ TEST(MotionEventAuraTest, Cancel) {
   MotionEventAura event;
 
   TouchEvent press0 = TouchWithType(ET_TOUCH_PRESSED, ids[0]);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
   EXPECT_EQ(MotionEvent::ACTION_DOWN, event.GetAction());
   EXPECT_EQ(1U, event.GetPointerCount());
 
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
   EXPECT_EQ(MotionEvent::ACTION_POINTER_DOWN, event.GetAction());
   EXPECT_EQ(1, event.GetActionIndex());
   EXPECT_EQ(2U, event.GetPointerCount());
@@ -401,7 +404,7 @@ TEST(MotionEventAuraTest, ToolType) {
   // For now, all pointers have an unknown tool type.
   // TODO(jdduke): Expand this test when ui::TouchEvent identifies the source
   // touch type, crbug.com/404128.
-  event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, 7));
+  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, 7)));
   ASSERT_EQ(1U, event.GetPointerCount());
   EXPECT_EQ(MotionEvent::TOOL_TYPE_UNKNOWN, event.GetToolType(0));
 }
@@ -412,13 +415,39 @@ TEST(MotionEventAuraTest, Flags) {
 
   TouchEvent press0 = TouchWithType(ET_TOUCH_PRESSED, ids[0]);
   press0.set_flags(EF_CONTROL_DOWN);
-  event.OnTouch(press0);
+  EXPECT_TRUE(event.OnTouch(press0));
   EXPECT_EQ(EF_CONTROL_DOWN, event.GetFlags());
 
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
   press1.set_flags(EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN);
-  event.OnTouch(press1);
+  EXPECT_TRUE(event.OnTouch(press1));
   EXPECT_EQ(EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN, event.GetFlags());
+}
+
+// Once crbug.com/446852 is fixed, we should ignore redundant presses.
+TEST(MotionEventAuraTest, DoesntIgnoreRedundantPresses) {
+  int id = 7;
+  MotionEventAura event;
+  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, id)));
+  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, id)));
+}
+
+TEST(MotionEventAuraTest, IgnoresEventsWithoutPress) {
+  int id = 7;
+  MotionEventAura event;
+  EXPECT_FALSE(event.OnTouch(TouchWithType(ET_TOUCH_MOVED, id)));
+}
+
+TEST(MotionEventAuraTest, IgnoresStationaryMoves) {
+  int id = 7;
+  MotionEventAura event;
+  EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, id)));
+  TouchEvent move0 = TouchWithPosition(ET_TOUCH_PRESSED, id, 10, 20, 10, 20);
+  EXPECT_TRUE(event.OnTouch(move0));
+
+  TouchEvent move1 = TouchWithPosition(ET_TOUCH_MOVED, id, 11, 21, 11, 21);
+  EXPECT_TRUE(event.OnTouch(move1));
+  EXPECT_FALSE(event.OnTouch(move1));
 }
 
 }  // namespace ui

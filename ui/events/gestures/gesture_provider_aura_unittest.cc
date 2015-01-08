@@ -37,8 +37,11 @@ TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {
 
   time += base::TimeDelta::FromMilliseconds(10);
   TouchEvent press2(ET_TOUCH_PRESSED, gfx::PointF(30, 40), 0, time);
-  // Redundant press with same id is ignored.
-  EXPECT_FALSE(provider()->OnTouchEvent(&press2));
+  // TODO(tdresser): this redundant press with same id should be
+  // ignored; however, there is at least one case where we need to
+  // allow a touch press from a currently used touch id. See
+  // crbug.com/373125 for details.
+  EXPECT_TRUE(provider()->OnTouchEvent(&press2));
 }
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraMoveOrReleaseEvents) {

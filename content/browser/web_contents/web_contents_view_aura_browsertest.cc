@@ -1060,7 +1060,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     }
 
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, location, 0, timestamp);
-    details = dispatcher->OnEventFromSource(&press);
+    details = dispatcher->OnEventFromSource(&release);
     ASSERT_FALSE(details.dispatcher_destroyed);
     WaitAFrame();
 

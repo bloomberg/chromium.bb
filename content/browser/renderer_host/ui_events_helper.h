@@ -48,12 +48,6 @@ CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
 blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
     const ui::GestureEvent& event);
 
-// Updates the WebTouchEvent based on the TouchEvent. It returns the updated
-// WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
-// updated.
-blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
-    const ui::TouchEvent& event,
-    blink::WebTouchEvent* web_event);
-}
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_UI_EVENTS_HELPER_H_

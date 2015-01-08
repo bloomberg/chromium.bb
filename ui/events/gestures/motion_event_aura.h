@@ -25,7 +25,8 @@ class EVENTS_EXPORT MotionEventAura : public MotionEventGeneric {
   int GetId() const override;
   int GetSourceDeviceId(size_t pointer_index) const override;
 
-  void OnTouch(const TouchEvent& touch);
+  // Returns true iff the touch was valid.
+  bool OnTouch(const TouchEvent& touch);
 
   // We can't cleanup removed touch points immediately upon receipt of a
   // TouchCancel or TouchRelease, as the MotionEvent needs to be able to report

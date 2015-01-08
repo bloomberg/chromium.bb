@@ -31,6 +31,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/base/touch/touch_editing_controller.h"
+#include "ui/events/gestures/motion_event_aura.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -362,6 +363,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   aura::Window* window() { return window_; }
   SkColorType PreferredReadbackFormat() override;
   DelegatedFrameHost* GetDelegatedFrameHost() const override;
+  const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -518,10 +520,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
 
-  // The touch-event. Its touch-points are updated as necessary. A new
-  // touch-point is added from an ET_TOUCH_PRESSED event, and a touch-point is
-  // removed from the list on an ET_TOUCH_RELEASED event.
-  blink::WebTouchEvent touch_event_;
+  // Stores the current state of the active pointers targeting this
+  // object.
+  ui::MotionEventAura pointer_state_;
 
   // The current text input type.
   ui::TextInputType text_input_type_;

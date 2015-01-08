@@ -2550,10 +2550,12 @@ TEST_F(GestureRecognizerTest, PressDoesNotCrash) {
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(55, 45), 7, tes.Now());
   DispatchEventUsingWindowDispatcher(&press2);
 
-  // This new press should not generate a tap-down.
-  EXPECT_FALSE(delegate->begin());
+  // FIXME(tdresser): this should not generate a tap down; however,
+  // there is at least one case where we need to allow a touch press
+  // from a currently used touch id. See crbug.com/373125 for details.
+  EXPECT_TRUE(delegate->begin());
   EXPECT_FALSE(delegate->tap_down());
-  EXPECT_FALSE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->scroll_begin());
 }
 

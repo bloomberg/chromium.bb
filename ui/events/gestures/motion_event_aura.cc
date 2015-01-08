@@ -69,7 +69,29 @@ MotionEventAura::MotionEventAura() {
 MotionEventAura::~MotionEventAura() {
 }
 
-void MotionEventAura::OnTouch(const TouchEvent& touch) {
+bool MotionEventAura::OnTouch(const TouchEvent& touch) {
+  int index = FindPointerIndexOfId(touch.touch_id());
+  bool pointer_id_is_active = index != -1;
+
+  if (touch.type() == ET_TOUCH_PRESSED && pointer_id_is_active) {
+    // Ignore touch press events if we already believe the pointer is down.
+
+    // TODO(tdresser): this should return false (or NOTREACHED());
+    // however, there is at least one case where we need to allow a
+    // touch press from a currently used touch id. See
+    // crbug.com/446852 for details.
+  } else if (touch.type() != ET_TOUCH_PRESSED && !pointer_id_is_active) {
+    // We could have an active touch stream transfered to us, resulting in touch
+    // move or touch up events without associated touch down events. Ignore
+    // them.
+    return false;
+  }
+
+  if (touch.type() == ET_TOUCH_MOVED && touch.x() == GetX(index) &&
+      touch.y() == GetY(index)) {
+    return false;
+  }
+
   switch (touch.type()) {
     case ET_TOUCH_PRESSED:
       AddTouch(touch);
@@ -86,12 +108,13 @@ void MotionEventAura::OnTouch(const TouchEvent& touch) {
       break;
     default:
       NOTREACHED();
-      break;
+      return false;
   }
 
   UpdateCachedAction(touch);
   set_flags(touch.flags());
   set_event_time(touch.time_stamp() + base::TimeTicks());
+  return true;
 }
 
 int MotionEventAura::GetId() const {

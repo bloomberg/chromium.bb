@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/compositor_resize_lock_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -229,22 +230,6 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
   return TRUE;
 }
 #endif
-
-void UpdateWebTouchEventAfterDispatch(blink::WebTouchEvent* event,
-                                      blink::WebTouchPoint* point) {
-  if (point->state != blink::WebTouchPoint::StateReleased &&
-      point->state != blink::WebTouchPoint::StateCancelled)
-    return;
-
-  const unsigned new_length = event->touchesLength - 1;
-  // Work around a gcc 4.9 bug. crbug.com/392872
-  if (new_length >= event->touchesLengthCap)
-    return;
-
-  for (unsigned i = point - event->touches; i < new_length; ++i)
-    event->touches[i] = event->touches[i + 1];
-  event->touchesLength = new_length;
-}
 
 bool CanRendererHandleEvent(const ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
@@ -2055,13 +2040,14 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
     return;
 
   // Update the touch event first.
-  blink::WebTouchPoint* point =
-      UpdateWebTouchEventFromUIEvent(*event, &touch_event_);
-
-  if (!point) {
+  if (!pointer_state_.OnTouch(*event)) {
     event->StopPropagation();
     return;
   }
+
+  blink::WebTouchEvent touch_event = CreateWebTouchEventFromMotionEvent(
+      pointer_state_, event->may_cause_scrolling());
+  pointer_state_.CleanupRemovedTouchPoints(*event);
 
   // Forward the touch event only if a touch point was updated, and
   // there's a touch-event handler in the page, and no other
@@ -2073,9 +2059,8 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   // currently awaiting dispatch in the touch queue.
   if (host_->ShouldForwardTouchEvent()) {
     event->DisableSynchronousHandling();
-    host_->ForwardTouchEventWithLatencyInfo(touch_event_, *event->latency());
+    host_->ForwardTouchEventWithLatencyInfo(touch_event, *event->latency());
   }
-  UpdateWebTouchEventAfterDispatch(&touch_event_, point);
 }
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {

@@ -32,38 +32,6 @@ ui::EventType WebTouchPointStateToEventType(
   }
 }
 
-blink::WebTouchPoint::State TouchPointStateFromEvent(
-    const ui::TouchEvent& event) {
-  switch (event.type()) {
-    case ui::ET_TOUCH_PRESSED:
-      return blink::WebTouchPoint::StatePressed;
-    case ui::ET_TOUCH_RELEASED:
-      return blink::WebTouchPoint::StateReleased;
-    case ui::ET_TOUCH_MOVED:
-      return blink::WebTouchPoint::StateMoved;
-    case ui::ET_TOUCH_CANCELLED:
-      return blink::WebTouchPoint::StateCancelled;
-    default:
-      return blink::WebTouchPoint::StateUndefined;
-  }
-}
-
-blink::WebInputEvent::Type TouchEventTypeFromEvent(
-    const ui::TouchEvent& event) {
-  switch (event.type()) {
-    case ui::ET_TOUCH_PRESSED:
-      return blink::WebInputEvent::TouchStart;
-    case ui::ET_TOUCH_RELEASED:
-      return blink::WebInputEvent::TouchEnd;
-    case ui::ET_TOUCH_MOVED:
-      return blink::WebInputEvent::TouchMove;
-    case ui::ET_TOUCH_CANCELLED:
-      return blink::WebInputEvent::TouchCancel;
-    default:
-      return blink::WebInputEvent::Undefined;
-  }
-}
-
 }  // namespace
 
 namespace content {
@@ -127,73 +95,6 @@ blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
                                event.location_f(),
                                event.root_location_f(),
                                event.flags());
-}
-
-blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
-    const ui::TouchEvent& event,
-    blink::WebTouchEvent* web_event) {
-  blink::WebTouchPoint* point = NULL;
-  switch (event.type()) {
-    case ui::ET_TOUCH_PRESSED:
-      // Add a new touch point.
-      if (web_event->touchesLength < blink::WebTouchEvent::touchesLengthCap) {
-        point = &web_event->touches[web_event->touchesLength++];
-        point->id = event.touch_id();
-      }
-      break;
-    case ui::ET_TOUCH_RELEASED:
-    case ui::ET_TOUCH_CANCELLED:
-    case ui::ET_TOUCH_MOVED: {
-      // The touch point should have been added to the event from an earlier
-      // _PRESSED event. So find that.
-      // At the moment, only a maximum of 4 touch-points are allowed. So a
-      // simple loop should be sufficient.
-      for (unsigned i = 0; i < web_event->touchesLength; ++i) {
-        point = web_event->touches + i;
-        if (point->id == event.touch_id())
-          break;
-        point = NULL;
-      }
-      break;
-    }
-    default:
-      DLOG(WARNING) << "Unknown touch event " << event.type();
-      break;
-  }
-
-  if (!point)
-    return NULL;
-
-  // The spec requires the radii values to be positive (and 1 when unknown).
-  point->radiusX = std::max(1.f, event.radius_x());
-  point->radiusY = std::max(1.f, event.radius_y());
-  point->rotationAngle = event.rotation_angle();
-  point->force = event.force();
-
-  // Update the location and state of the point.
-  point->state = TouchPointStateFromEvent(event);
-  point->position.x = event.x();
-  point->position.y = event.y();
-
-  const gfx::PointF& root_point = event.root_location_f();
-  point->screenPosition.x = root_point.x();
-  point->screenPosition.y = root_point.y();
-
-  // Mark the rest of the points as stationary.
-  for (unsigned i = 0; i < web_event->touchesLength; ++i) {
-    blink::WebTouchPoint* iter = web_event->touches + i;
-    if (iter != point)
-      iter->state = blink::WebTouchPoint::StateStationary;
-  }
-
-  // Update the type of the touch event.
-  WebTouchEventTraits::ResetType(TouchEventTypeFromEvent(event),
-                                 event.time_stamp().InSecondsF(),
-                                 web_event);
-  web_event->causesScrollingIfUncanceled = event.may_cause_scrolling();
-  web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
-
-  return point;
 }
 
 }  // namespace content

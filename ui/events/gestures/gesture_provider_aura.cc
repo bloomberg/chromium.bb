@@ -27,31 +27,11 @@ GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
 GestureProviderAura::~GestureProviderAura() {}
 
 bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
-  DCHECK(event);
+  if (!pointer_state_.OnTouch(*event))
+    return false;
+
   last_unique_touch_event_id_ = event->unique_event_id();
-  int index = pointer_state_.FindPointerIndexOfId(event->touch_id());
-  bool pointer_id_is_active = index != -1;
-
-  if (event->type() == ET_TOUCH_PRESSED && pointer_id_is_active) {
-    // Ignore touch press events if we already believe the pointer is down.
-    return false;
-  } else if (event->type() != ET_TOUCH_PRESSED && !pointer_id_is_active) {
-    // We could have an active touch stream transfered to us, resulting in touch
-    // move or touch up events without associated touch down events. Ignore
-    // them.
-    return false;
-  }
-
-  // If this is a touchmove event, and it isn't different from the last
-  // event, ignore it.
-  if (event->type() == ET_TOUCH_MOVED &&
-      event->x() == pointer_state_.GetX(index) &&
-      event->y() == pointer_state_.GetY(index)) {
-    return false;
-  }
-
   last_touch_event_latency_info_ = *event->latency();
-  pointer_state_.OnTouch(*event);
 
   auto result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
   if (!result.succeeded)
