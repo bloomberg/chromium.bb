@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/background/background_mode_manager.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -15,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_application_list_model.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -62,8 +63,10 @@ using extensions::Extension;
 using extensions::UpdatedExtensionPermissionsInfo;
 
 namespace {
+
 const int kInvalidExtensionIndex = -1;
-}
+
+}  // namespace
 
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
     Profile* profile,

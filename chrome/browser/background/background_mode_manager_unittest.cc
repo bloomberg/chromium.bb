@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -22,6 +23,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -33,25 +35,30 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+using testing::_;
+using testing::AtMost;
+using testing::Exactly;
+using testing::InSequence;
+using testing::Mock;
+using testing::StrictMock;
+
 namespace {
 
 // Helper class that tracks state transitions in BackgroundModeManager and
-// exposes them via getters.
-class SimpleTestBackgroundModeManager : public BackgroundModeManager {
+// exposes them via getters (or gmock for EnableLaunchOnStartup).
+class TestBackgroundModeManager : public StrictMock<BackgroundModeManager> {
  public:
-  SimpleTestBackgroundModeManager(base::CommandLine* command_line,
-                                  ProfileInfoCache* cache)
-      : BackgroundModeManager(command_line, cache),
+  TestBackgroundModeManager(base::CommandLine* command_line,
+                            ProfileInfoCache* cache)
+      : StrictMock<BackgroundModeManager>(command_line, cache),
         have_status_tray_(false),
-        launch_on_startup_(false),
         has_shown_balloon_(false) {
     ResumeBackgroundMode();
   }
 
-  void EnableLaunchOnStartup(bool launch) override {
-    launch_on_startup_ = launch;
-  }
+  MOCK_METHOD1(EnableLaunchOnStartup, void(bool should_launch));
 
+  // TODO: Use strict-mocking rather than keeping state through overrides below.
   void DisplayAppInstalledNotification(
       const extensions::Extension* extension) override {
     has_shown_balloon_ = true;
@@ -60,17 +67,15 @@ class SimpleTestBackgroundModeManager : public BackgroundModeManager {
   void RemoveStatusTrayIcon() override { have_status_tray_ = false; }
 
   bool HaveStatusTray() const { return have_status_tray_; }
-  bool IsLaunchOnStartup() const { return launch_on_startup_; }
   bool HasShownBalloon() const { return has_shown_balloon_; }
   void SetHasShownBalloon(bool value) { has_shown_balloon_ = value; }
 
  private:
-  // Flags to track whether we are launching on startup/have a status tray.
+  // Flags to track whether we have a status tray/have shown the balloon.
   bool have_status_tray_;
-  bool launch_on_startup_;
   bool has_shown_balloon_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleTestBackgroundModeManager);
+  DISALLOW_COPY_AND_ASSIGN(TestBackgroundModeManager);
 };
 
 class TestStatusIcon : public StatusIcon {
@@ -87,30 +92,44 @@ class TestStatusIcon : public StatusIcon {
   DISALLOW_COPY_AND_ASSIGN(TestStatusIcon);
 };
 
-} // namespace
+void AssertBackgroundModeActive(const TestBackgroundModeManager& manager) {
+  EXPECT_TRUE(chrome::WillKeepAlive());
+  EXPECT_TRUE(manager.HaveStatusTray());
+}
+
+void AssertBackgroundModeInactive(const TestBackgroundModeManager& manager) {
+  EXPECT_FALSE(chrome::WillKeepAlive());
+  EXPECT_FALSE(manager.HaveStatusTray());
+}
+
+}  // namespace
 
 // More complex test helper that exposes APIs for fine grained control of
 // things like the number of background applications. This allows writing
 // smaller tests that don't have to install/uninstall extensions.
-class TestBackgroundModeManager : public SimpleTestBackgroundModeManager {
+class AdvancedTestBackgroundModeManager : public TestBackgroundModeManager {
  public:
-  TestBackgroundModeManager(base::CommandLine* command_line,
-                            ProfileInfoCache* cache,
-                            bool enabled)
-      : SimpleTestBackgroundModeManager(command_line, cache),
-        enabled_(enabled),
-        app_count_(0),
-        profile_app_count_(0) {
-    ResumeBackgroundMode();
-  }
+  AdvancedTestBackgroundModeManager(base::CommandLine* command_line,
+                                    ProfileInfoCache* cache,
+                                    bool enabled)
+      : TestBackgroundModeManager(command_line, cache), enabled_(enabled) {}
 
-  int GetBackgroundAppCount() const override { return app_count_; }
-  int GetBackgroundAppCountForProfile(Profile* const profile) const override {
-    return profile_app_count_;
+  int GetBackgroundAppCount() const override {
+    int app_count = 0;
+    for (const auto& profile_count_pair : profile_app_counts_)
+      app_count += profile_count_pair.second;
+    return app_count;
   }
-  void SetBackgroundAppCount(int count) { app_count_ = count; }
-  void SetBackgroundAppCountForProfile(int count) {
-    profile_app_count_ = count;
+  int GetBackgroundAppCountForProfile(Profile* const profile) const override {
+    auto it = profile_app_counts_.find(profile);
+    if (it == profile_app_counts_.end()) {
+      ADD_FAILURE();
+      return 0;
+    }
+    return it->second;
+  }
+  void SetBackgroundAppCountForProfile(Profile* profile, int count) {
+    profile_app_counts_[profile] = count;
   }
   void SetEnabled(bool enabled) {
     enabled_ = enabled;
@@ -120,47 +139,21 @@ class TestBackgroundModeManager : public SimpleTestBackgroundModeManager {
 
  private:
   bool enabled_;
-  int app_count_;
-  int profile_app_count_;
+  std::map<Profile*, int> profile_app_counts_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestBackgroundModeManager);
+  DISALLOW_COPY_AND_ASSIGN(AdvancedTestBackgroundModeManager);
 };
-
-namespace {
-
-void AssertBackgroundModeActive(
-    const TestBackgroundModeManager& manager) {
-  EXPECT_TRUE(chrome::WillKeepAlive());
-  EXPECT_TRUE(manager.HaveStatusTray());
-  EXPECT_TRUE(manager.IsLaunchOnStartup());
-}
-
-void AssertBackgroundModeInactive(
-    const TestBackgroundModeManager& manager) {
-  EXPECT_FALSE(chrome::WillKeepAlive());
-  EXPECT_FALSE(manager.HaveStatusTray());
-  EXPECT_FALSE(manager.IsLaunchOnStartup());
-}
-
-void AssertBackgroundModeSuspended(
-    const TestBackgroundModeManager& manager) {
-  EXPECT_FALSE(chrome::WillKeepAlive());
-  EXPECT_FALSE(manager.HaveStatusTray());
-  EXPECT_TRUE(manager.IsLaunchOnStartup());
-}
-
-} // namespace
 
 class BackgroundModeManagerTest : public testing::Test {
  public:
   BackgroundModeManagerTest() {}
   ~BackgroundModeManagerTest() override {}
+
   void SetUp() override {
     command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
     profile_manager_ = CreateTestingProfileManager();
     profile_ = profile_manager_->CreateTestingProfile("p1");
   }
-  scoped_ptr<base::CommandLine> command_line_;
 
  protected:
   scoped_refptr<extensions::Extension> CreateExtension(
@@ -182,6 +175,8 @@ class BackgroundModeManagerTest : public testing::Test {
     return false;
   }
 
+  scoped_ptr<base::CommandLine> command_line_;
+
   scoped_ptr<TestingProfileManager> profile_manager_;
   // Test profile used by all tests - this is owned by profile_manager_.
   TestingProfile* profile_;
@@ -202,8 +197,10 @@ class BackgroundModeManagerWithExtensionsTest
  public:
   BackgroundModeManagerWithExtensionsTest() {}
   ~BackgroundModeManagerWithExtensionsTest() override {}
+
   void SetUp() override {
     BackgroundModeManagerTest::SetUp();
+
     // Aura clears notifications from the message center at shutdown.
     message_center::MessageCenter::Initialize();
 
@@ -221,7 +218,7 @@ class BackgroundModeManagerWithExtensionsTest
 #endif
 
     // Create our test BackgroundModeManager.
-    manager_.reset(new SimpleTestBackgroundModeManager(
+    manager_.reset(new TestBackgroundModeManager(
         command_line_.get(), profile_manager_->profile_info_cache()));
     manager_->RegisterProfile(profile_);
   }
@@ -236,14 +233,19 @@ class BackgroundModeManagerWithExtensionsTest
     // We have to destroy the profiles now because we created them with real
     // thread state. This causes a lot of machinery to spin up that stops
     // working when we tear down our thread state at the end of the test.
+    // Deleting our testing profile may have the side-effect of disabling
+    // background mode if it was enabled for that profile (explicitly note that
+    // here to satisfy StrictMock requirements.
+    EXPECT_CALL(*manager_, EnableLaunchOnStartup(false)).Times(AtMost(1));
     profile_manager_->DeleteAllTestingProfiles();
+    Mock::VerifyAndClearExpectations(manager_.get());
 
     // We're getting ready to shutdown the message loop. Clear everything out!
     base::MessageLoop::current()->RunUntilIdle();
     // Matching the call to IncrementKeepAliveCount in SetUp().
     chrome::DecrementKeepAliveCount();
 
-    // SimpleTestBackgroundModeManager has dependencies on the infrastructure.
+    // TestBackgroundModeManager has dependencies on the infrastructure.
     // It should get cleared first.
     manager_.reset();
 
@@ -264,8 +266,6 @@ class BackgroundModeManagerWithExtensionsTest
   }
 
  protected:
-  scoped_ptr<SimpleTestBackgroundModeManager> manager_;
-
   void AddEphemeralApp(const extensions::Extension* extension,
                        ExtensionService* service) {
     extensions::ExtensionPrefs* prefs =
@@ -279,6 +279,8 @@ class BackgroundModeManagerWithExtensionsTest
 
     service->AddExtension(extension);
   }
+
+  scoped_ptr<TestBackgroundModeManager> manager_;
 
  private:
   // Required for extension service.
@@ -296,24 +298,28 @@ class BackgroundModeManagerWithExtensionsTest
 
 
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
   // Mimic app load.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 
   manager.SuspendBackgroundMode();
-  AssertBackgroundModeSuspended(manager);
+  AssertBackgroundModeInactive(manager);
   manager.ResumeBackgroundMode();
 
   // Mimic app unload.
-  manager.SetBackgroundAppCount(0);
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
+  manager.SetBackgroundAppCountForProfile(profile_, 0);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 
   manager.SuspendBackgroundMode();
@@ -321,18 +327,22 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
 
   // Mimic app load while suspended, e.g. from sync. This should enable and
   // resume background mode.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 }
 
 // App installs while background mode is disabled should do nothing.
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
-  // Turn off background mode.
+
+  // Turn off background mode (shouldn't explicitly disable launch-on-startup as
+  // the app-count is zero and launch-on-startup shouldn't be considered on).
   manager.SetEnabled(false);
   manager.DisableBackgroundMode();
   AssertBackgroundModeInactive(manager);
@@ -340,15 +350,16 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   // Status tray icons will not be created, launch on startup status will not
   // be modified.
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
   AssertBackgroundModeInactive(manager);
 
-  manager.SetBackgroundAppCount(0);
+  manager.SetBackgroundAppCountForProfile(profile_, 0);
   manager.OnApplicationListChanged(profile_);
   AssertBackgroundModeInactive(manager);
 
-  // Re-enable background mode.
+  // Re-enable background mode (shouldn't actually enable launch-on-startup as
+  // the app-count is zero).
   manager.SetEnabled(true);
   manager.EnableBackgroundMode();
   AssertBackgroundModeInactive(manager);
@@ -358,79 +369,99 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
 // App installs while disabled should do nothing until background mode is
 // enabled..
 TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
 
   // Install app, should show status tray icon.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
   // OnBackgroundAppInstalled does not actually add an app to the
   // BackgroundApplicationListModel which would result in another
   // call to CreateStatusTray.
-  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
   AssertBackgroundModeActive(manager);
+  Mock::VerifyAndClearExpectations(&manager);
 
   // Turn off background mode - should hide status tray icon.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   manager.SetEnabled(false);
   manager.DisableBackgroundMode();
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 
   // Turn back on background mode - again, no status tray icon
   // will show up since we didn't actually add anything to the list.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.SetEnabled(true);
   manager.EnableBackgroundMode();
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 
   // Uninstall app, should hide status tray icon again.
-  manager.SetBackgroundAppCount(0);
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
+  manager.SetBackgroundAppCountForProfile(profile_, 0);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 }
 
 TEST_F(BackgroundModeManagerTest, MultiProfile) {
   TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
   // Install app, should show status tray icon.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 
-  // Install app for other profile, hsould show other status tray icon.
+  // Install app for other profile, should show other status tray icon.
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(2);
+  manager.SetBackgroundAppCountForProfile(profile2, 2);
   manager.OnApplicationListChanged(profile2);
   AssertBackgroundModeActive(manager);
 
   // Should hide both status tray icons.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   manager.SetEnabled(false);
   manager.DisableBackgroundMode();
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 
   // Turn back on background mode - should show both status tray icons.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.SetEnabled(true);
   manager.EnableBackgroundMode();
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
 
-  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 0);
+  manager.OnApplicationListChanged(profile_);
+  manager.SetBackgroundAppCountForProfile(profile2, 1);
   manager.OnApplicationListChanged(profile2);
   // There is still one background app alive
   AssertBackgroundModeActive(manager);
+  // Verify the implicit expectations of no calls on this StrictMock.
+  Mock::VerifyAndClearExpectations(&manager);
 
-  manager.SetBackgroundAppCount(0);
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
+  manager.SetBackgroundAppCountForProfile(profile2, 0);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeInactive(manager);
 }
 
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   manager.RegisterProfile(profile2);
@@ -443,28 +474,30 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(1));
 
   // Install app, should show status tray icon.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
-  manager.SetBackgroundAppCountForProfile(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
 
   // Install app for other profile.
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
-  manager.SetBackgroundAppCountForProfile(1);
+  manager.SetBackgroundAppCountForProfile(profile2, 1);
   manager.OnApplicationListChanged(profile2);
 
   EXPECT_TRUE(cache->GetBackgroundStatusOfProfileAtIndex(0));
   EXPECT_TRUE(cache->GetBackgroundStatusOfProfileAtIndex(1));
 
-  manager.SetBackgroundAppCountForProfile(0);
+  manager.SetBackgroundAppCountForProfile(profile_, 0);
   manager.OnApplicationListChanged(profile_);
 
   size_t p1_index = cache->GetIndexOfProfileWithPath(profile_->GetPath());
   EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(p1_index));
 
-  manager.SetBackgroundAppCountForProfile(0);
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
+  manager.SetBackgroundAppCountForProfile(profile2, 0);
   manager.OnApplicationListChanged(profile2);
+  Mock::VerifyAndClearExpectations(&manager);
 
   size_t p2_index = cache->GetIndexOfProfileWithPath(profile_->GetPath());
   EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(p2_index));
@@ -475,16 +508,19 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
 }
 
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
   // Install app, should show status tray icon.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
-  manager.SetBackgroundAppCountForProfile(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
+
+  // Background mode should remain active for the remainder of this test.
 
   manager.OnProfileNameChanged(
       profile_->GetPath(),
@@ -515,34 +551,40 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
 TEST_F(BackgroundModeManagerTest, DeleteBackgroundProfile) {
   // Tests whether deleting the only profile when it is a BG profile works
   // or not (http://crbug.com/346214).
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
   // Install app, should show status tray icon.
+  EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(Exactly(1));
   manager.OnBackgroundAppInstalled(NULL);
-  manager.SetBackgroundAppCount(1);
-  manager.SetBackgroundAppCountForProfile(1);
+  manager.SetBackgroundAppCountForProfile(profile_, 1);
   manager.OnApplicationListChanged(profile_);
+  Mock::VerifyAndClearExpectations(&manager);
 
   manager.OnProfileNameChanged(
       profile_->GetPath(),
       manager.GetBackgroundModeData(profile_)->name());
 
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   EXPECT_TRUE(chrome::WillKeepAlive());
-  manager.SetBackgroundAppCount(0);
-  manager.SetBackgroundAppCountForProfile(0);
+  manager.SetBackgroundAppCountForProfile(profile_, 0);
   manager.OnProfileWillBeRemoved(profile_->GetPath());
+  Mock::VerifyAndClearExpectations(&manager);
   EXPECT_FALSE(chrome::WillKeepAlive());
 }
 
 TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_TRUE(manager.ShouldBeInBackgroundMode());
+
+  // No enable-launch-on-startup calls expected yet.
+  Mock::VerifyAndClearExpectations(&manager);
+  EXPECT_CALL(manager, EnableLaunchOnStartup(false)).Times(Exactly(1));
   manager.SetEnabled(false);
   EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
 }
@@ -550,7 +592,7 @@ TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
 TEST_F(BackgroundModeManagerTest,
        BackgroundModeDisabledPreventsKeepAliveOnStartup) {
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
-  TestBackgroundModeManager manager(
+  AdvancedTestBackgroundModeManager manager(
       command_line_.get(), profile_manager_->profile_info_cache(), false);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
@@ -603,10 +645,12 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->Init();
 
+  EXPECT_CALL(*manager_, EnableLaunchOnStartup(true)).Times(Exactly(1));
   service->AddComponentExtension(component_extension.get());
   service->AddComponentExtension(component_extension_with_options.get());
   service->AddExtension(regular_extension.get());
   service->AddExtension(regular_extension_with_options.get());
+  Mock::VerifyAndClearExpectations(manager_.get());
 
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
   scoped_ptr<StatusIconMenuModel> submenu(new StatusIconMenuModel(NULL));
@@ -680,10 +724,12 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service1->Init();
 
+  EXPECT_CALL(*manager_, EnableLaunchOnStartup(true)).Times(Exactly(1));
   service1->AddComponentExtension(component_extension.get());
   service1->AddComponentExtension(component_extension_with_options.get());
   service1->AddExtension(regular_extension.get());
   service1->AddExtension(regular_extension_with_options.get());
+  Mock::VerifyAndClearExpectations(manager_.get());
 
   static_cast<extensions::TestExtensionSystem*>(
       extensions::ExtensionSystem::Get(profile2))
@@ -843,15 +889,18 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(!service->is_ready());
+  ASSERT_FALSE(service->is_ready());
   service->Init();
-  DCHECK(service->is_ready());
+
+  ASSERT_TRUE(service->is_ready());
   manager_->status_icon_ = new TestStatusIcon();
   manager_->UpdateStatusTrayIconContextMenu();
 
   // Adding a background extension should show the balloon.
   EXPECT_FALSE(manager_->HasShownBalloon());
+  EXPECT_CALL(*manager_, EnableLaunchOnStartup(true)).Times(Exactly(1));
   service->AddExtension(bg_ext.get());
+  Mock::VerifyAndClearExpectations(manager_.get());
   EXPECT_TRUE(manager_->HasShownBalloon());
 
   // Adding an extension without background should not show the balloon.
@@ -860,7 +909,14 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
   EXPECT_FALSE(manager_->HasShownBalloon());
 
   // Upgrading an extension that has background should not reshow the balloon.
+  {
+    // TODO: Fix crbug.com/438376 and remove these checks.
+    InSequence expected_call_sequence;
+    EXPECT_CALL(*manager_, EnableLaunchOnStartup(false)).Times(Exactly(1));
+    EXPECT_CALL(*manager_, EnableLaunchOnStartup(true)).Times(Exactly(1));
+  }
   service->AddExtension(upgraded_bg_ext.get());
+  Mock::VerifyAndClearExpectations(manager_.get());
   EXPECT_FALSE(manager_->HasShownBalloon());
 
   // Upgrading an extension that didn't have background to one that does should
@@ -875,6 +931,6 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
 
   // Promoting the ephemeral app to a regular installed app should now show
   // the balloon.
-  service->PromoteEphemeralApp(ephemeral_app.get(), false /*from sync*/);
+  service->PromoteEphemeralApp(ephemeral_app.get(), false /* from sync */);
   EXPECT_TRUE(manager_->HasShownBalloon());
 }

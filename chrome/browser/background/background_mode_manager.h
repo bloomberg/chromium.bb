@@ -84,7 +84,7 @@ class BackgroundModeManager
   friend class AppBackgroundPageApiTest;
   friend class BackgroundModeManagerTest;
   friend class BackgroundModeManagerWithExtensionsTest;
-  friend class TestBackgroundModeManager;
+  friend class AdvancedTestBackgroundModeManager;
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppLoadUnload);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
@@ -229,7 +229,7 @@ class BackgroundModeManager
       bool* is_being_reloaded);
 
   // Called to make sure that our launch-on-startup mode is properly set.
-  // (virtual so we can override for tests).
+  // (virtual so it can be mocked in tests).
   virtual void EnableLaunchOnStartup(bool should_launch);
 
   // Invoked when a background app is installed so we can display a
@@ -275,8 +275,7 @@ class BackgroundModeManager
 
   // Returns the BackgroundModeData associated with this profile. If it does
   // not exist, returns NULL.
-  BackgroundModeManager::BackgroundModeData* GetBackgroundModeData(
-      Profile* const profile) const;
+  BackgroundModeData* GetBackgroundModeData(Profile* const profile) const;
 
   // Returns the iterator associated with a particular profile name.
   // This should not be used to iterate over the background mode data. It is
@@ -306,8 +305,7 @@ class BackgroundModeManager
 
   // Finds the BackgroundModeData associated with the last active profile,
   // if the profile isn't locked. Returns NULL otherwise.
-  BackgroundModeManager::BackgroundModeData*
-      GetBackgroundModeDataForLastProfile() const;
+  BackgroundModeData* GetBackgroundModeDataForLastProfile() const;
 
   // Reference to the profile info cache. It is used to update the background
   // app status of profiles when they open/close background apps.
