@@ -68,3 +68,6 @@ toolchain_build/src/
 pnacl/build/
 pnacl/git/
 pnacl/src/
+
+# Ignore the hermetic cygwin used on windows toolchain builds.
+cygwin/
