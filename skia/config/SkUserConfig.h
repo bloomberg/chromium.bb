@@ -291,6 +291,14 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_LAYER_HOISTING
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_DRAWDATA
+#   define SK_SUPPORT_LEGACY_DRAWDATA
+#endif
+
+#ifndef SK_SUPPORT_LEGACY_CANVAS_VIRTUAL
+#   define SK_SUPPORT_LEGACY_CANVAS_VIRTUAL
+#endif
+
 // If this goes well, we can have Skia respect DYNAMIC_ANNOTATIONS_ENABLED directly.
 #if DYNAMIC_ANNOTATIONS_ENABLED
 #    define SK_DYNAMIC_ANNOTATIONS_ENABLED 1
