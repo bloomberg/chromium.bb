@@ -972,16 +972,15 @@ bool ResourceMetadataStorage::CheckValidity() {
     }
 
     if (IsIdEntryKey(it->key())) {
-      const auto mapping_it =
-          local_id_to_resource_id_map.find(it->key().ToString());
+      const auto result = local_id_to_resource_id_map.insert(std::make_pair(
+          it->value().ToString(),
+          GetResourceIdFromIdEntryKey(it->key().ToString())));
       // Check that no local ID is associated with more than one resource ID.
-      if (mapping_it != local_id_to_resource_id_map.end()) {
+      if (!result.second) {
         DLOG(ERROR) << "Broken ID entry.";
         RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_ID_ENTRY);
         return false;
       }
-      local_id_to_resource_id_map[it->value().ToString()] =
-          GetResourceIdFromIdEntryKey(it->key());
       continue;
     }
 
