@@ -59,6 +59,10 @@ void ProxyInfo::UseProxyList(const ProxyList& proxy_list) {
   proxy_list_ = proxy_list;
 }
 
+void ProxyInfo::OverrideProxyList(const ProxyList& proxy_list) {
+  proxy_list_ = proxy_list;
+}
+
 std::string ProxyInfo::ToPacString() const {
   return proxy_list_.ToPacString();
 }

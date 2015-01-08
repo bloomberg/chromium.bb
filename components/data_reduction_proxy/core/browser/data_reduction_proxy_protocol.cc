@@ -153,13 +153,14 @@ void OnResolveProxyHandler(const GURL& url,
                                        NULL));
   if (data_reduction_proxy_config.is_valid() &&
       result->proxy_server().is_direct() &&
+      result->proxy_list().size() == 1 &&
       !url.SchemeIsWSOrWSS()) {
     net::ProxyInfo data_reduction_proxy_info;
     data_reduction_proxy_config.proxy_rules().Apply(
         url, &data_reduction_proxy_info);
     data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
     if (!data_reduction_proxy_info.proxy_server().is_direct())
-      result->UseProxyList(data_reduction_proxy_info.proxy_list());
+      result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
   }
 
   if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&

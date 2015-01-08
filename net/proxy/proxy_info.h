@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
@@ -46,8 +47,12 @@ class NET_EXPORT ProxyInfo {
   // Parses from the given PAC result.
   void UsePacString(const std::string& pac_string);
 
-  // Use the proxies from the given list.
+  // Uses the proxies from the given list.
   void UseProxyList(const ProxyList& proxy_list);
+
+  // Uses the proxies from the given list, but does not otherwise reset the
+  // proxy configuration.
+  void OverrideProxyList(const ProxyList& proxy_list);
 
   // Returns true if this proxy info specifies a direct connection.
   bool is_direct() const {
@@ -146,6 +151,7 @@ class NET_EXPORT ProxyInfo {
 
  private:
   friend class ProxyService;
+  FRIEND_TEST_ALL_PREFIXES(ProxyInfoTest, UseVsOverrideProxyList);
 
   const ProxyRetryInfoMap& proxy_retry_info() const {
     return proxy_retry_info_;
