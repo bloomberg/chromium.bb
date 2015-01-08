@@ -203,3 +203,32 @@ function setIsVisible(element, isVisible) {
 function arrayContains(array, item) {
   return array.indexOf(item) != -1;
 }
+
+/**
+ * @param {!goog.array.ArrayLike<!{locale: string, value: string}>}
+ *     localizedStrings An array of strings with corresponding locales.
+ * @param {string} locale Locale to look the string up for.
+ * @return {string} A string for the requested {@code locale}. An empty string
+ *     if there's no string for the specified locale found.
+ */
+function getStringForLocale(localizedStrings, locale) {
+  locale = locale.toLowerCase();
+  for (var i = 0; i < localizedStrings.length; i++) {
+    if (localizedStrings[i].locale.toLowerCase() == locale)
+      return localizedStrings[i].value;
+  }
+  return '';
+}
+
+/**
+ * @param {!goog.array.ArrayLike<!{locale: string, value: string}>}
+ *     localizedStrings An array of strings with corresponding locales.
+ * @return {string} A string for the current locale. An empty string if there's
+ *     no string for the current locale found.
+ */
+function getStringForCurrentLocale(localizedStrings) {
+  // First try to find an exact match and then look for the language only.
+  return getStringForLocale(localizedStrings, navigator.language) ||
+         getStringForLocale(localizedStrings,
+                            navigator.language.split('-')[0]);
+}

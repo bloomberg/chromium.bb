@@ -217,10 +217,13 @@ cr.define('print_preview', function() {
         'NA_LEDGER': 'Tabloid'
       };
       for (var i = 0, media; media = mediaSize.option[i]; i++) {
-        media.custom_display_name =
-            media.custom_display_name ||
-            mediaDisplayNames[media.name] ||
-            media.name;
+        // No need to patch capabilities with localized names provided.
+        if (!media.custom_display_name_localized) {
+          media.custom_display_name =
+              media.custom_display_name ||
+              mediaDisplayNames[media.name] ||
+              media.name;
+        }
       }
     }
     return capabilities;

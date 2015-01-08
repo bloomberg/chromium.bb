@@ -888,3 +888,50 @@ TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
 
   testDone();
 });
+
+// Test custom localized paper names.
+TEST_F('PrintPreviewWebUITest', 'TestCustomPaperNames', function() {
+  this.setInitialSettings();
+  this.setLocalDestinations();
+
+  var customLocalizedMediaName = 'Vendor defined localized media name';
+  var customMediaName = 'Vendor defined media name';
+
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.media_size = {
+    option: [
+      { name: 'CUSTOM',
+        width_microns: 15900,
+        height_microns: 79400,
+        is_default: true,
+        custom_display_name_localized: [
+          { locale: navigator.language,
+            value: customLocalizedMediaName
+          }
+        ]
+      },
+      { name: 'CUSTOM',
+        width_microns: 15900,
+        height_microns: 79400,
+        custom_display_name: customMediaName
+      }
+    ]
+  };
+
+  this.setCapabilities(device);
+
+  this.expandMoreSettings();
+
+  checkSectionVisible($('media-size-settings'), true);
+  var mediaSelect = $('media-size-settings').querySelector('.settings-select');
+  // Check the default media item.
+  expectEquals(
+      customLocalizedMediaName,
+      mediaSelect.options[mediaSelect.selectedIndex].text);
+  // Check the other media item.
+  expectEquals(
+      customMediaName,
+      mediaSelect.options[mediaSelect.selectedIndex == 0 ? 1 : 0].text);
+
+  this.waitForAnimationToEnd('more-settings');
+});

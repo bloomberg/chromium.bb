@@ -79,28 +79,7 @@ cr.define('print_preview', function() {
         select.innerHTML = '';
         this.ticketItem_.capability.option.forEach(function(option, index) {
           var selectOption = document.createElement('option');
-          var displayName = option.custom_display_name;
-          if (!displayName && option.custom_display_name_localized) {
-            var getLocaleToCompare =
-                /** @type {function(string, boolean=): string} */
-                (function(locale, opt_languageOnly) {
-              var code = opt_languageOnly ? locale.split('-')[0] : locale;
-              return code.toLowerCase();
-            });
-            var getItemForLocale = function(items, locale, languageOnly) {
-              locale = getLocaleToCompare(locale, languageOnly);
-              for (var i = 0; i < items.length; i++) {
-                if (getLocaleToCompare(items[i].locale) == locale)
-                  return items[i].value;
-              }
-              return '';
-            };
-            var items = option.custom_display_name_localized;
-            displayName =
-                getItemForLocale(items, navigator.language, false) ||
-                getItemForLocale(items, navigator.language, true);
-          }
-          selectOption.text = displayName ||
+          selectOption.text = this.getCustomDisplayName_(option) ||
                               this.getDefaultDisplayName_(option);
           selectOption.value = JSON.stringify(option);
           select.appendChild(selectOption);
@@ -118,6 +97,20 @@ cr.define('print_preview', function() {
       }
       select.selectedIndex = indexToSelect;
       this.onSelectChange_();
+    },
+
+    /**
+     * @param {!Object} option Option to get the custom display name for.
+     * @return {string} Custom display name for the option.
+     * @private
+     */
+    getCustomDisplayName_: function(option) {
+      var displayName = option.custom_display_name;
+      if (!displayName && option.custom_display_name_localized) {
+        displayName =
+            getStringForCurrentLocale(option.custom_display_name_localized);
+      }
+      return displayName;
     },
 
     /**
