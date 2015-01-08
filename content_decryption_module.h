@@ -1031,6 +1031,21 @@ class Host_7 {
   virtual void OnSessionClosed(const char* session_id,
                                uint32_t session_id_size) = 0;
 
+  // Called by the CDM when an error occurs in session |session_id|
+  // unrelated to one of the ContentDecryptionModule calls that accept a
+  // |promise_id|. |error| must be specified, |error_message| and
+  // |system_code| are optional. Length parameters should not include null
+  // termination.
+  // Note:
+  // - This method is only for supporting prefixed EME API.
+  // - This method will be ignored by unprefixed EME. All errors reported
+  //   in this method should probably also be reported by one of other methods.
+  virtual void OnLegacySessionError(
+      const char* session_id, uint32_t session_id_length,
+      Error error,
+      uint32_t system_code,
+      const char* error_message, uint32_t error_message_length) = 0;
+
   // The following are optional methods that may not be implemented on all
   // platforms.
 
