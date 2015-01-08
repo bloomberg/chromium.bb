@@ -1362,11 +1362,6 @@ int KernelProxy::poll(struct pollfd* fds, nfds_t nfds, int timeout) {
 
 // Socket Functions
 int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
-  if (NULL == addr || NULL == len) {
-    errno = EFAULT;
-    return -1;
-  }
-
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
   if (error) {

@@ -50,12 +50,14 @@ TEST_F(SocketTest, Accept) {
   struct sockaddr addr = {};
   socklen_t len = 0;
 
-  EXPECT_LT(ki_accept(123, NULL, &len), 0);
-  EXPECT_EQ(errno, EFAULT);
-  EXPECT_LT(ki_accept(123, &addr, NULL), 0);
-  EXPECT_EQ(errno, EFAULT);
-  EXPECT_LT(ki_accept(123, NULL, NULL), 0);
-  EXPECT_EQ(errno, EFAULT);
+  // accept() should allow NULL args for addr and len
+  // https://code.google.com/p/chromium/issues/detail?id=442164
+  // EXPECT_LT(ki_accept(123, NULL, &len), 0);
+  // EXPECT_EQ(errno, EFAULT);
+  // EXPECT_LT(ki_accept(123, &addr, NULL), 0);
+  // EXPECT_EQ(errno, EFAULT);
+  // EXPECT_LT(ki_accept(123, NULL, NULL), 0);
+  // EXPECT_EQ(errno, EFAULT);
   EXPECT_LT(ki_accept(-1, &addr, &len), 0);
   EXPECT_EQ(errno, EBADF);
   EXPECT_LT(ki_accept(0, &addr, &len), 0);

@@ -453,9 +453,11 @@ Error TcpNode::Accept(const HandleAttr& attr,
   emitter_->ClearEvents_Locked(POLLIN);
 
   // Set the out paramaters
-  PP_Resource remote_addr = TCPInterface()->GetRemoteAddress(*out_sock);
-  *len = ResourceToSockAddr(remote_addr, *len, addr);
-  filesystem_->ppapi()->ReleaseResource(remote_addr);
+  if (addr && len) {
+    PP_Resource remote_addr = TCPInterface()->GetRemoteAddress(*out_sock);
+    *len = ResourceToSockAddr(remote_addr, *len, addr);
+    filesystem_->ppapi()->ReleaseResource(remote_addr);
+  }
 
   QueueAccept();
   return 0;

@@ -608,6 +608,29 @@ TEST_F(SocketTestUDP, Sockopt_BUFSIZE) {
     << "failed with: " << strerror(errno);
 }
 
+TEST_F(SocketTestTCP, AcceptNoParams) {
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+  int server_sock = sock1_;
+
+  // Bind and Listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, ki_listen(server_sock, 10));
+
+  // Connect to listening socket
+  int client_sock = sock2_;
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  addrlen = sizeof(addr);
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno);
+
+  // Accept without addr and len should succeed
+  int new_socket = ki_accept(server_sock, NULL, NULL);
+  ASSERT_GT(new_socket, -1);
+
+  ASSERT_EQ(0, ki_close(new_socket));
+}
+
 TEST_F(SocketTestTCP, Listen) {
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
