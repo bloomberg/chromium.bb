@@ -198,10 +198,9 @@ public:
         HeapPointersOnStack
     };
 
-    // When profiling we would like to identify forced GC requests.
     enum GCType {
-        NormalGC,
-        ForcedGC
+        GCWithSweep, // Sweeping is completed in Heap::collectGarbage().
+        GCWithoutSweep, // Lazy sweeping is scheduled.
     };
 
     // See setGCState() for possible state transitions.
@@ -211,8 +210,10 @@ public:
         GCScheduledForTesting,
         StoppingOtherThreads,
         GCRunning,
-        SweepScheduled,
+        EagerSweepScheduled,
+        LazySweepScheduled,
         Sweeping,
+        SweepingAndNextGCScheduled,
     };
 
     // The NoAllocationScope class is used in debug mode to catch unwanted
@@ -323,22 +324,17 @@ public:
     bool shouldForceConservativeGC();
     void scheduleGCOrForceConservativeGCIfNeeded();
 
-    // If you specify ForcedGC, you can force a precise GC at the end of the
-    // current event loop. This is used for layout tests that trigger GCs and
-    // check if objects are dead at a given point in time. That only reliably
-    // works when we get precise GCs with no conservative stack scanning.
-    void scheduleGC(GCType gcType = NormalGC)
-    {
-        setGCState(gcType == NormalGC ? GCScheduled : GCScheduledForTesting);
-    }
+    void scheduleGC();
     void setGCState(GCState);
     GCState gcState() const;
     bool isInGC() const { return gcState() == GCRunning; }
+    bool isSweepingInProgress() const
+    {
+        return gcState() == Sweeping || gcState() == SweepingAndNextGCScheduled;
+    }
 
     void preGC();
-    void postGC();
-
-    void performPendingSweep();
+    void postGC(GCType);
 
     // Support for disallowing allocation. Mainly used for sanity
     // checks asserts.
@@ -350,8 +346,8 @@ public:
     // made consistent for sweeping.
     void makeConsistentForSweeping();
 
-    // Is this thread currently sweeping?
     bool sweepForbidden() const { return m_sweepForbidden; }
+    void completeSweep();
 
     void prepareRegionTree();
     void flushHeapDoesNotContainCacheIfNeeded();
@@ -545,6 +541,7 @@ public:
 
     size_t objectPayloadSizeForTesting();
 
+    void postGCProcessing();
     void prepareHeapForTermination();
 
     // Request to call a pref-finalizer of the target object before the object
@@ -638,6 +635,7 @@ private:
     bool m_didV8GCAfterLastGC;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
+    size_t m_allocatedObjectSizeBeforeSweeping;
     ThreadHeap* m_heaps[NumberOfHeaps];
 
     Vector<OwnPtr<CleanupTask>> m_cleanupTasks;

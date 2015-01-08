@@ -2371,7 +2371,7 @@ Iterator* Internals::iterator(ScriptState* scriptState, ExceptionState& exceptio
 
 void Internals::forceBlinkGCWithoutV8GC()
 {
-    ThreadState::current()->scheduleGC(ThreadState::ForcedGC);
+    ThreadState::current()->scheduleGC();
 }
 
 } // namespace blink

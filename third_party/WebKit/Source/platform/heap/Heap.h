@@ -68,6 +68,7 @@ const size_t objectStartBitMapSize = (blinkPageSize + ((8 * allocationGranularit
 const size_t reservedForObjectBitMap = ((objectStartBitMapSize + allocationMask) & ~allocationMask);
 const size_t maxHeapObjectSizeLog2 = 27;
 const size_t maxHeapObjectSize = 1 << maxHeapObjectSizeLog2;
+const size_t largeObjectSizeThreshold = blinkPageSize / 2;
 
 const uint8_t freelistZapValue = 42;
 const uint8_t finalizedZapValue = 24;
@@ -726,12 +727,7 @@ public:
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
 
-    void sweep();
-    void postSweepProcessing();
-
     void clearFreeLists();
-    void markUnmarkedObjectsDead();
-
     void makeConsistentForSweeping();
 #if ENABLE(ASSERT)
     bool isConsistentForSweeping();
@@ -755,6 +751,8 @@ public:
     inline static size_t allocationSizeFromSize(size_t);
 
     void prepareHeapForTermination();
+    void prepareForSweep();
+    void completeSweep();
 
     void freePage(HeapPage*);
     void freeLargeObject(LargeObject*);
@@ -762,6 +760,7 @@ public:
     void promptlyFreeObject(HeapObjectHeader*);
     bool expandObject(HeapObjectHeader*, size_t);
     void shrinkObject(HeapObjectHeader*, size_t);
+    void decreasePromptlyFreedSize(size_t size) { m_promptlyFreedSize -= size; }
 
 private:
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
@@ -771,6 +770,8 @@ private:
     inline void setAllocationPoint(Address, size_t);
     void updateRemainingAllocationSize();
     Address allocateFromFreeList(size_t, size_t gcInfoIndex);
+    Address lazySweepPages(size_t, size_t gcInfoIndex);
+    bool lazySweepLargeObjects(size_t);
 
     void allocatePage();
     Address allocateLargeObject(size_t, size_t gcInfoIndex);
@@ -780,12 +781,10 @@ private:
 
 #if ENABLE(ASSERT)
     bool pagesToBeSweptContains(Address);
-    bool pagesAllocatedDuringSweepingContains(Address);
 #endif
 
-    void sweepNormalPages();
-    void sweepLargePages();
     bool coalesce();
+    void markUnmarkedObjectsDead();
 
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
@@ -793,12 +792,8 @@ private:
 
     HeapPage* m_firstPage;
     LargeObject* m_firstLargeObject;
-
-    HeapPage* m_firstPageAllocatedDuringSweeping;
-    HeapPage* m_lastPageAllocatedDuringSweeping;
-
-    LargeObject* m_firstLargeObjectAllocatedDuringSweeping;
-    LargeObject* m_lastLargeObjectAllocatedDuringSweeping;
+    HeapPage* m_firstUnsweptPage;
+    LargeObject* m_firstUnsweptLargeObject;
 
     ThreadState* m_threadState;
 
@@ -871,7 +866,7 @@ public:
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
 
-    static void collectGarbage(ThreadState::StackState, ThreadState::GCType = ThreadState::ForcedGC);
+    static void collectGarbage(ThreadState::StackState, ThreadState::GCType = ThreadState::GCWithSweep);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
 
@@ -881,7 +876,7 @@ public:
     static void setForcePreciseGCForTesting();
 
     static void preGC();
-    static void postGC();
+    static void postGC(ThreadState::GCType);
 
     // Conservatively checks whether an address is a pointer in any of the
     // thread heaps.  If so marks the object pointed to as live.

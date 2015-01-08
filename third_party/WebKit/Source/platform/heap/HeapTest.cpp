@@ -210,7 +210,7 @@ public:
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
         if (LIKELY(m_parkedAllThreads)) {
-            Heap::postGC();
+            Heap::postGC(ThreadState::GCWithSweep);
             ThreadState::resumeThreads();
         }
     }
@@ -1779,6 +1779,48 @@ TEST(HeapTest, SimpleFinalization)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 }
+
+// FIXME: Lazy sweeping is disabled in non-oilpan builds.
+#if ENABLE(OILPAN)
+TEST(HeapTest, LazySweepingPages)
+{
+    clearOutOldGarbage();
+
+    SimpleFinalizedObject::s_destructorCalls = 0;
+    EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+    for (int i = 0; i < 1000; i++)
+        SimpleFinalizedObject::create();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep);
+    EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+    for (int i = 0; i < 10000; i++)
+        SimpleFinalizedObject::create();
+    EXPECT_EQ(1000, SimpleFinalizedObject::s_destructorCalls);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep);
+    EXPECT_EQ(11000, SimpleFinalizedObject::s_destructorCalls);
+}
+
+TEST(HeapTest, LazySweepingLargeObjects)
+{
+    clearOutOldGarbage();
+
+    LargeHeapObject::s_destructorCalls = 0;
+    EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
+    for (int i = 0; i < 10; i++)
+        LargeHeapObject::create();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep);
+    for (int i = 0; i < 10; i++) {
+        LargeHeapObject::create();
+        EXPECT_EQ(i + 1, LargeHeapObject::s_destructorCalls);
+    }
+    LargeHeapObject::create();
+    LargeHeapObject::create();
+    EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep);
+    EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep);
+    EXPECT_EQ(22, LargeHeapObject::s_destructorCalls);
+}
+#endif
 
 TEST(HeapTest, Finalization)
 {
