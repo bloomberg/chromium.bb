@@ -719,6 +719,21 @@ void TextIterator::handleTextBox()
             } else {
                 nextTextBox = m_textBox->nextTextBox();
             }
+
+            // FIXME: Based on the outcome of crbug.com/446502 it's possible we can
+            //   remove this block. The reason we new it now is because BIDI and
+            //   FirstLetter seem to have different ideas of where things can split.
+            //   FirstLetter takes the punctuation + first letter, and BIDI will
+            //   split out the punctuation and possibly reorder it.
+            if (nextTextBox && nextTextBox->renderer() != renderer) {
+                if (runStart < runEnd && static_cast<unsigned>(m_positionEndOffset) < textBoxEnd)
+                    return;
+
+                m_textBox = nextTextBox;
+                if (renderer->containsReversedText())
+                    ++m_sortedTextBoxesPosition;
+                continue;
+            }
             ASSERT(!nextTextBox || nextTextBox->renderer() == renderer);
 
             if (runStart < runEnd) {
