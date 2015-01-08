@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/browser_cdm.h"
+#include "media/cdm/player_tracker_impl.h"
 
 namespace chromecast {
 namespace media {
@@ -43,13 +44,11 @@ class BrowserCdmCast : public ::media::BrowserCdm {
       const std::string& key_id) const = 0;
 
  protected:
-  // Notifies all listeners a new key was added on the next message loop cycle.
-  void NotifyKeyAdded() const;
+  // Notifies all listeners a new key was added.
+  void NotifyKeyAdded();
 
  private:
-  uint32_t next_registration_id_;
-  std::map<uint32_t, base::Closure> new_key_callbacks_;
-  std::map<uint32_t, base::Closure> cdm_unset_callbacks_;
+  ::media::PlayerTrackerImpl player_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCdmCast);
 };
