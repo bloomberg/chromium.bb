@@ -7,6 +7,8 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_layer_tiling_set.h"
+#include "cc/resources/tile.h"
+#include "cc/resources/tile_priority.h"
 
 namespace cc {
 
@@ -23,6 +25,55 @@ class CC_EXPORT TilingSetRasterQueue {
   bool IsEmpty() const;
 
  private:
+  class TilingIterator {
+   public:
+    TilingIterator();
+    explicit TilingIterator(PictureLayerTiling* tiling,
+                            TilingData* tiling_data);
+    ~TilingIterator();
+
+    operator bool() const { return !!current_tile_; }
+    const Tile* operator*() const { return current_tile_; }
+    Tile* operator*() { return current_tile_; }
+    TilePriority::PriorityBin type() const {
+      switch (phase_) {
+        case VISIBLE_RECT:
+          return TilePriority::NOW;
+        case SKEWPORT_RECT:
+        case SOON_BORDER_RECT:
+          return TilePriority::SOON;
+        case EVENTUALLY_RECT:
+          return TilePriority::EVENTUALLY;
+      }
+      NOTREACHED();
+      return TilePriority::EVENTUALLY;
+    }
+
+    TilingIterator& operator++();
+
+   private:
+    enum Phase {
+      VISIBLE_RECT,
+      SKEWPORT_RECT,
+      SOON_BORDER_RECT,
+      EVENTUALLY_RECT
+    };
+
+    void AdvancePhase();
+    bool TileNeedsRaster(Tile* tile) const {
+      return tile->NeedsRaster() && !tiling_->IsTileOccluded(tile);
+    }
+
+    PictureLayerTiling* tiling_;
+    TilingData* tiling_data_;
+
+    Phase phase_;
+
+    Tile* current_tile_;
+    TilingData::Iterator visible_iterator_;
+    TilingData::SpiralDifferenceIterator spiral_iterator_;
+  };
+
   enum IteratorType { LOW_RES, HIGH_RES, NUM_ITERATORS };
 
   void AdvanceToNextStage();
@@ -38,7 +89,7 @@ class CC_EXPORT TilingSetRasterQueue {
 
   // One low res stage, and three high res stages.
   IterationStage stages_[4];
-  PictureLayerTiling::TilingRasterTileIterator iterators_[NUM_ITERATORS];
+  TilingIterator iterators_[NUM_ITERATORS];
 };
 
 }  // namespace cc

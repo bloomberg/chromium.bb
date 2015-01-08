@@ -128,73 +128,6 @@ class PictureLayerTilingPerfTest : public testing::Test {
                            true);
   }
 
-  void RunRasterIteratorConstructTest(const std::string& test_name,
-                                      const gfx::Rect& viewport) {
-    LayerTreeSettings defaults;
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-            viewport.size());
-    picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, pile, &picture_layer_tiling_client_,
-        defaults.max_tiles_for_interest_area,
-        defaults.skewport_target_time_in_seconds,
-        defaults.skewport_extrapolation_limit_in_content_pixels);
-    picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                    Occlusion());
-
-    timer_.Reset();
-    do {
-      PictureLayerTiling::TilingRasterTileIterator it(
-          picture_layer_tiling_.get());
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    perf_test::PrintResult("tiling_raster_tile_iterator_construct",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
-  }
-
-  void RunRasterIteratorConstructAndIterateTest(const std::string& test_name,
-                                                int num_tiles,
-                                                const gfx::Rect& viewport) {
-    gfx::Size bounds(10000, 10000);
-    LayerTreeSettings defaults;
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(bounds);
-    picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, pile, &picture_layer_tiling_client_,
-        defaults.max_tiles_for_interest_area,
-        defaults.skewport_target_time_in_seconds,
-        defaults.skewport_extrapolation_limit_in_content_pixels);
-    picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                    Occlusion());
-
-    timer_.Reset();
-    do {
-      int count = num_tiles;
-      PictureLayerTiling::TilingRasterTileIterator it(
-          picture_layer_tiling_.get());
-      while (count--) {
-        ASSERT_TRUE(it) << "count: " << count;
-        ASSERT_TRUE(*it != NULL) << "count: " << count;
-        ++it;
-      }
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    perf_test::PrintResult("tiling_raster_tile_iterator_construct_and_iterate",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
-  }
-
  private:
   FakePictureLayerTilingClient picture_layer_tiling_client_;
   scoped_ptr<PictureLayerTiling> picture_layer_tiling_;
@@ -239,25 +172,5 @@ TEST_F(PictureLayerTilingPerfTest, ComputeTilePriorityRects) {
   RunComputeTilePriorityRectsScrollingTest("perspective", transform);
 }
 
-TEST_F(PictureLayerTilingPerfTest, TilingRasterTileIteratorConstruct) {
-  RunRasterIteratorConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
-  RunRasterIteratorConstructTest("50_0_100x100", gfx::Rect(50, 0, 100, 100));
-  RunRasterIteratorConstructTest("100_0_100x100", gfx::Rect(100, 0, 100, 100));
-  RunRasterIteratorConstructTest("150_0_100x100", gfx::Rect(150, 0, 100, 100));
-}
-
-TEST_F(PictureLayerTilingPerfTest,
-       TilingRasterTileIteratorConstructAndIterate) {
-  RunRasterIteratorConstructAndIterateTest(
-      "32_100x100", 32, gfx::Rect(0, 0, 100, 100));
-  RunRasterIteratorConstructAndIterateTest(
-      "32_500x500", 32, gfx::Rect(0, 0, 500, 500));
-  RunRasterIteratorConstructAndIterateTest(
-      "64_100x100", 64, gfx::Rect(0, 0, 100, 100));
-  RunRasterIteratorConstructAndIterateTest(
-      "64_500x500", 64, gfx::Rect(0, 0, 500, 500));
-}
-
 }  // namespace
-
 }  // namespace cc

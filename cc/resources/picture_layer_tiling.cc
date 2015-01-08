@@ -790,13 +790,14 @@ bool PictureLayerTiling::IsTileRequiredForDrawIfVisible(
 }
 
 void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
-  UpdateTilePriority(tile);
+  WhichTree tree = client_->GetTree();
+  WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
+
+  UpdateTilePriorityForTree(tile, tree);
 
   const PictureLayerTiling* twin_tiling =
       client_->GetPendingOrActiveTwinTiling(this);
   if (!tile->is_shared() || !twin_tiling) {
-    WhichTree tree = client_->GetTree();
-    WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
     tile->SetPriority(twin_tree, TilePriority());
     tile->set_is_occluded(twin_tree, false);
     if (twin_tree == PENDING_TREE)
@@ -806,16 +807,16 @@ void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
     return;
   }
 
-  twin_tiling->UpdateTilePriority(tile);
+  twin_tiling->UpdateTilePriorityForTree(tile, twin_tree);
 }
 
-void PictureLayerTiling::UpdateTilePriority(Tile* tile) const {
+void PictureLayerTiling::UpdateTilePriorityForTree(Tile* tile,
+                                                   WhichTree tree) const {
   // TODO(vmpstr): This code should return the priority instead of setting it on
   // the tile. This should be a part of the change to move tile priority from
   // tiles into iterators.
   TilePriority::PriorityBin max_tile_priority_bin =
       client_->GetMaxTilePriorityBin();
-  WhichTree tree = client_->GetTree();
 
   DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
   gfx::Rect tile_bounds =
@@ -1031,138 +1032,6 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   if (cache)
     cache->previous_result = result;
   return result;
-}
-
-PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator()
-    : tiling_(NULL), current_tile_(NULL) {}
-
-PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
-    PictureLayerTiling* tiling)
-    : tiling_(tiling), phase_(VISIBLE_RECT), current_tile_(NULL) {
-  if (!tiling_->has_visible_rect_tiles_) {
-    AdvancePhase();
-    return;
-  }
-
-  visible_iterator_ = TilingData::Iterator(&tiling_->tiling_data_,
-                                           tiling_->current_visible_rect_,
-                                           false /* include_borders */);
-  if (!visible_iterator_) {
-    AdvancePhase();
-    return;
-  }
-
-  current_tile_ =
-      tiling_->TileAt(visible_iterator_.index_x(), visible_iterator_.index_y());
-  if (!current_tile_ || !TileNeedsRaster(current_tile_)) {
-    ++(*this);
-    return;
-  }
-  tiling_->UpdateTileAndTwinPriority(current_tile_);
-}
-
-PictureLayerTiling::TilingRasterTileIterator::~TilingRasterTileIterator() {}
-
-void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
-  DCHECK_LT(phase_, EVENTUALLY_RECT);
-
-  do {
-    phase_ = static_cast<Phase>(phase_ + 1);
-    switch (phase_) {
-      case VISIBLE_RECT:
-        NOTREACHED();
-        return;
-      case SKEWPORT_RECT:
-        if (!tiling_->has_skewport_rect_tiles_)
-          continue;
-
-        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-            &tiling_->tiling_data_,
-            tiling_->current_skewport_rect_,
-            tiling_->current_visible_rect_,
-            tiling_->current_visible_rect_);
-        break;
-      case SOON_BORDER_RECT:
-        if (!tiling_->has_soon_border_rect_tiles_)
-          continue;
-
-        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-            &tiling_->tiling_data_,
-            tiling_->current_soon_border_rect_,
-            tiling_->current_skewport_rect_,
-            tiling_->current_visible_rect_);
-        break;
-      case EVENTUALLY_RECT:
-        if (!tiling_->has_eventually_rect_tiles_) {
-          current_tile_ = NULL;
-          return;
-        }
-
-        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-            &tiling_->tiling_data_,
-            tiling_->current_eventually_rect_,
-            tiling_->current_skewport_rect_,
-            tiling_->current_soon_border_rect_);
-        break;
-    }
-
-    while (spiral_iterator_) {
-      current_tile_ = tiling_->TileAt(spiral_iterator_.index_x(),
-                                      spiral_iterator_.index_y());
-      if (current_tile_ && TileNeedsRaster(current_tile_))
-        break;
-      ++spiral_iterator_;
-    }
-
-    if (!spiral_iterator_ && phase_ == EVENTUALLY_RECT) {
-      current_tile_ = NULL;
-      break;
-    }
-  } while (!spiral_iterator_);
-
-  if (current_tile_)
-    tiling_->UpdateTileAndTwinPriority(current_tile_);
-}
-
-PictureLayerTiling::TilingRasterTileIterator&
-PictureLayerTiling::TilingRasterTileIterator::
-operator++() {
-  current_tile_ = NULL;
-  while (!current_tile_ || !TileNeedsRaster(current_tile_)) {
-    std::pair<int, int> next_index;
-    switch (phase_) {
-      case VISIBLE_RECT:
-        ++visible_iterator_;
-        if (!visible_iterator_) {
-          AdvancePhase();
-          return *this;
-        }
-        next_index = visible_iterator_.index();
-        break;
-      case SKEWPORT_RECT:
-      case SOON_BORDER_RECT:
-        ++spiral_iterator_;
-        if (!spiral_iterator_) {
-          AdvancePhase();
-          return *this;
-        }
-        next_index = spiral_iterator_.index();
-        break;
-      case EVENTUALLY_RECT:
-        ++spiral_iterator_;
-        if (!spiral_iterator_) {
-          current_tile_ = NULL;
-          return *this;
-        }
-        next_index = spiral_iterator_.index();
-        break;
-    }
-    current_tile_ = tiling_->TileAt(next_index.first, next_index.second);
-  }
-
-  if (current_tile_)
-    tiling_->UpdateTileAndTwinPriority(current_tile_);
-  return *this;
 }
 
 }  // namespace cc

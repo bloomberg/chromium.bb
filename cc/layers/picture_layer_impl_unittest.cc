@@ -1613,10 +1613,10 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   int num_visible = 0;
   int num_offscreen = 0;
 
-  for (PictureLayerTiling::TilingRasterTileIterator iter(
-           pending_layer_->HighResTiling());
-       iter; ++iter) {
-    const Tile* tile = *iter;
+  scoped_ptr<TilingSetRasterQueue> queue =
+      pending_layer_->CreateRasterQueue(false);
+  for (; !queue->IsEmpty(); queue->Pop()) {
+    const Tile* tile = queue->Top();
     DCHECK(tile);
     if (tile->priority(PENDING_TREE).distance_to_visible == 0.f) {
       EXPECT_TRUE(tile->required_for_activation());

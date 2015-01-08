@@ -58,53 +58,6 @@ class CC_EXPORT PictureLayerTiling {
  public:
   static const int kBorderTexels = 1;
 
-  class CC_EXPORT TilingRasterTileIterator {
-   public:
-    TilingRasterTileIterator();
-    explicit TilingRasterTileIterator(PictureLayerTiling* tiling);
-    ~TilingRasterTileIterator();
-
-    operator bool() const { return !!current_tile_; }
-    const Tile* operator*() const { return current_tile_; }
-    Tile* operator*() { return current_tile_; }
-    TilePriority::PriorityBin get_type() const {
-      switch (phase_) {
-        case VISIBLE_RECT:
-          return TilePriority::NOW;
-        case SKEWPORT_RECT:
-        case SOON_BORDER_RECT:
-          return TilePriority::SOON;
-        case EVENTUALLY_RECT:
-          return TilePriority::EVENTUALLY;
-      }
-      NOTREACHED();
-      return TilePriority::EVENTUALLY;
-    }
-
-    TilingRasterTileIterator& operator++();
-
-   private:
-    enum Phase {
-      VISIBLE_RECT,
-      SKEWPORT_RECT,
-      SOON_BORDER_RECT,
-      EVENTUALLY_RECT
-    };
-
-    void AdvancePhase();
-    bool TileNeedsRaster(Tile* tile) const {
-      return tile->NeedsRaster() && !tiling_->IsTileOccluded(tile);
-    }
-
-    PictureLayerTiling* tiling_;
-
-    Phase phase_;
-
-    Tile* current_tile_;
-    TilingData::Iterator visible_iterator_;
-    TilingData::SpiralDifferenceIterator spiral_iterator_;
-  };
-
   ~PictureLayerTiling();
 
   // Create a tiling with no tiles. CreateTile() must be called to add some.
@@ -181,6 +134,27 @@ class CC_EXPORT PictureLayerTiling {
   bool IsTileOccluded(const Tile* tile) const;
   bool IsTileRequiredForActivationIfVisible(const Tile* tile) const;
   bool IsTileRequiredForDrawIfVisible(const Tile* tile) const;
+
+  void UpdateTileAndTwinPriority(Tile* tile) const;
+  bool has_visible_rect_tiles() const { return has_visible_rect_tiles_; }
+  bool has_skewport_rect_tiles() const { return has_skewport_rect_tiles_; }
+  bool has_soon_border_rect_tiles() const {
+    return has_soon_border_rect_tiles_;
+  }
+  bool has_eventually_rect_tiles() const { return has_eventually_rect_tiles_; }
+
+  const gfx::Rect& current_visible_rect() const {
+    return current_visible_rect_;
+  }
+  const gfx::Rect& current_skewport_rect() const {
+    return current_skewport_rect_;
+  }
+  const gfx::Rect& current_soon_border_rect() const {
+    return current_soon_border_rect_;
+  }
+  const gfx::Rect& current_eventually_rect() const {
+    return current_eventually_rect_;
+  }
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
@@ -259,7 +233,7 @@ class CC_EXPORT PictureLayerTiling {
 
  protected:
   friend class CoverageIterator;
-  friend class TilingRasterTileIterator;
+  friend class TilingSetRasterQueue;
   friend class TilingSetEvictionQueue;
 
   typedef std::pair<int, int> TileMapKey;
@@ -296,8 +270,7 @@ class CC_EXPORT PictureLayerTiling {
                                const gfx::Rect& eventually_rect,
                                const Occlusion& occlusion_in_layer_space);
 
-  void UpdateTileAndTwinPriority(Tile* tile) const;
-  void UpdateTilePriority(Tile* tile) const;
+  void UpdateTilePriorityForTree(Tile* tile, WhichTree tree) const;
   bool NeedsUpdateForFrameAtTimeAndViewport(
       double frame_time_in_seconds,
       const gfx::Rect& viewport_in_layer_space) {
