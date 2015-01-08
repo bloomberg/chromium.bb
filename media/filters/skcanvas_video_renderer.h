@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "media/base/media_export.h"
 #include "media/base/video_rotation.h"
+#include "media/filters/context_3d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"
@@ -30,6 +31,8 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
 
   // Paints |video_frame| on |canvas|, scaling and rotating the result to fit
   // dimensions specified by |dest_rect|.
+  // If the format of |video_frame| is VideoFrame::NATIVE_TEXTURE and |canvas|
+  // is ganeshed, |context_3d| must be provided.
   //
   // Black will be painted on |canvas| if |video_frame| is null.
   void Paint(const scoped_refptr<VideoFrame>& video_frame,
@@ -37,10 +40,23 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
              const gfx::RectF& dest_rect,
              uint8 alpha,
              SkXfermode::Mode mode,
-             VideoRotation video_rotation);
+             VideoRotation video_rotation,
+             const Context3D& context_3d);
 
   // Copy |video_frame| on |canvas|.
   void Copy(const scoped_refptr<VideoFrame>&, SkCanvas* canvas);
+
+  // Copy the contents of texture of |video_frame| to texture |texture|.
+  // |level|, |internal_format|, |type| specify target texture |texture|.
+  // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
+  static void CopyVideoFrameTextureToGLTexture(gpu::gles2::GLES2Interface* gl,
+                                               VideoFrame* video_frame,
+                                               unsigned int texture,
+                                               unsigned int level,
+                                               unsigned int internal_format,
+                                               unsigned int type,
+                                               bool premultiply_alpha,
+                                               bool flip_y);
 
  private:
   void ResetLastFrame();

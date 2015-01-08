@@ -33,8 +33,6 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
@@ -316,11 +314,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void ContentDecryptionModuleAttached(
       blink::WebContentDecryptionModuleResult result,
       bool success);
-
-  bool EnsureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap,
-                                   const blink::WebSize& size,
-                                   GrSurfaceOrigin origin,
-                                   GrPixelConfig config);
 
   bool IsHLSStream() const;
 

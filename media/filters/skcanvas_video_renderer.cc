@@ -4,13 +4,17 @@
 
 #include "media/filters/skcanvas_video_renderer.h"
 
-#include "base/logging.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
+#include "skia/ext/refptr.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 // Skia internal format depends on a platform. On Android it is ABGR, on others
@@ -214,6 +218,79 @@ void ConvertVideoFrameToRGBPixels(
   }
 }
 
+bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
+                                    const gfx::Size& size) {
+  return bitmap->getTexture() && bitmap->width() == size.width() &&
+         bitmap->height() == size.height();
+}
+
+bool AllocateSkBitmapTexture(GrContext* gr,
+                             SkBitmap* bitmap,
+                             const gfx::Size& size) {
+  DCHECK(gr);
+  GrTextureDesc desc;
+  // Use kRGBA_8888_GrPixelConfig, not kSkia8888_GrPixelConfig, to avoid
+  // RGBA to BGRA conversion.
+  desc.fConfig = kRGBA_8888_GrPixelConfig;
+  desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+  desc.fSampleCnt = 0;
+  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fWidth = size.width();
+  desc.fHeight = size.height();
+  skia::RefPtr<GrTexture> texture = skia::AdoptRef(
+      gr->refScratchTexture(desc, GrContext::kExact_ScratchTexMatch));
+  if (!texture.get())
+    return false;
+
+  SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
+  SkGrPixelRef* pixel_ref = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
+  if (!pixel_ref)
+    return false;
+  bitmap->setInfo(info);
+  bitmap->setPixelRef(pixel_ref)->unref();
+  return true;
+}
+
+bool CopyVideoFrameTextureToSkBitmapTexture(VideoFrame* video_frame,
+                                            SkBitmap* bitmap,
+                                            const Context3D& context_3d) {
+  // Check if we could reuse existing texture based bitmap.
+  // Otherwise, release existing texture based bitmap and allocate
+  // a new one based on video size.
+  if (!IsSkBitmapProperlySizedTexture(bitmap,
+                                      video_frame->visible_rect().size())) {
+    if (!AllocateSkBitmapTexture(context_3d.gr_context, bitmap,
+                                 video_frame->visible_rect().size())) {
+      return false;
+    }
+  }
+
+  unsigned texture_id =
+      static_cast<unsigned>((bitmap->getTexture())->getTextureHandle());
+  // If CopyVideoFrameTextureToGLTexture() changes the state of the
+  // |texture_id|, it's needed to invalidate the state cached in skia,
+  // but currently the state isn't changed.
+  SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
+      context_3d.gl, video_frame, texture_id, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      true, false);
+  return true;
+}
+
+class SyncPointClientImpl : public VideoFrame::SyncPointClient {
+ public:
+  explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
+  ~SyncPointClientImpl() override {}
+  uint32 InsertSyncPoint() override { return gl_->InsertSyncPointCHROMIUM(); }
+  void WaitSyncPoint(uint32 sync_point) override {
+    gl_->WaitSyncPointCHROMIUM(sync_point);
+  }
+
+ private:
+  gpu::gles2::GLES2Interface* gl_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SyncPointClientImpl);
+};
+
 }  // anonymous namespace
 
 // Generates an RGB image from a VideoFrame. Convert YUV to RGB plain on GPU.
@@ -306,7 +383,7 @@ SkCanvasVideoRenderer::SkCanvasVideoRenderer()
           base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
           this,
           &SkCanvasVideoRenderer::ResetLastFrame),
-      accelerated_generator_(NULL),
+      accelerated_generator_(nullptr),
       accelerated_last_frame_timestamp_(media::kNoTimestamp()),
       accelerated_frame_deleting_timer_(
           FROM_HERE,
@@ -323,7 +400,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
                                   const gfx::RectF& dest_rect,
                                   uint8 alpha,
                                   SkXfermode::Mode mode,
-                                  VideoRotation video_rotation) {
+                                  VideoRotation video_rotation,
+                                  const Context3D& context_3d) {
   if (alpha == 0) {
     return;
   }
@@ -343,16 +421,30 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     return;
   }
 
-  SkBitmap* target_frame = NULL;
+  SkBitmap* target_frame = nullptr;
   if (canvas->getGrContext()) {
     if (accelerated_last_frame_.isNull() ||
         video_frame->timestamp() != accelerated_last_frame_timestamp_) {
-      accelerated_generator_ = new VideoImageGenerator(video_frame);
+      if (video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
+        DCHECK(context_3d.gl);
+        DCHECK(context_3d.gr_context);
+        // Draw HW Video on HW Canvas.
+        DCHECK(!accelerated_generator_);
+        if (!CopyVideoFrameTextureToSkBitmapTexture(
+                video_frame.get(), &accelerated_last_frame_, context_3d)) {
+          NOTREACHED();
+          return;
+        }
+      } else {
+        // Draw SW Video on HW Canvas.
+        accelerated_generator_ = new VideoImageGenerator(video_frame);
 
-      // Note: This takes ownership of |accelerated_generator_|.
-      if (!SkInstallDiscardablePixelRef(accelerated_generator_,
-                                        &accelerated_last_frame_)) {
-        NOTREACHED();
+        // Note: This takes ownership of |accelerated_generator_|.
+        if (!SkInstallDiscardablePixelRef(accelerated_generator_,
+                                          &accelerated_last_frame_)) {
+          NOTREACHED();
+          return;
+        }
       }
       DCHECK(video_frame->visible_rect().width() ==
                  accelerated_last_frame_.width() &&
@@ -360,13 +452,13 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
                  accelerated_last_frame_.height());
 
       accelerated_last_frame_timestamp_ = video_frame->timestamp();
-    } else {
+    } else if (accelerated_generator_) {
       accelerated_generator_->set_frame(video_frame);
     }
     target_frame = &accelerated_last_frame_;
     accelerated_frame_deleting_timer_.Reset();
   } else {
-    // Check if we should convert and update |last_frame_|.
+    // Draw both SW and HW Video on SW Canvas.
     if (last_frame_.isNull() ||
         video_frame->timestamp() != last_frame_timestamp_) {
       // Check if |bitmap| needs to be (re)allocated.
@@ -434,18 +526,53 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   canvas->flush();
   // SkCanvas::flush() causes the generator to generate SkImage, so delete
   // |video_frame| not to be outlived.
-  if (canvas->getGrContext())
-    accelerated_generator_->set_frame(NULL);
+  if (canvas->getGrContext() && accelerated_generator_)
+    accelerated_generator_->set_frame(nullptr);
 }
 
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
                                  SkCanvas* canvas) {
-  Paint(video_frame,
-        canvas,
-        video_frame->visible_rect(),
-        0xff,
-        SkXfermode::kSrc_Mode,
-        media::VIDEO_ROTATION_0);
+  Paint(video_frame, canvas, video_frame->visible_rect(), 0xff,
+        SkXfermode::kSrc_Mode, media::VIDEO_ROTATION_0, Context3D());
+}
+
+// static
+void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
+    gpu::gles2::GLES2Interface* gl,
+    VideoFrame* video_frame,
+    unsigned int texture,
+    unsigned int level,
+    unsigned int internal_format,
+    unsigned int type,
+    bool premultiply_alpha,
+    bool flip_y) {
+  DCHECK(video_frame && video_frame->format() == VideoFrame::NATIVE_TEXTURE);
+  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  DCHECK(mailbox_holder->texture_target == GL_TEXTURE_2D ||
+         mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES);
+
+  gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
+  uint32 source_texture = gl->CreateAndConsumeTextureCHROMIUM(
+      mailbox_holder->texture_target, mailbox_holder->mailbox.name);
+
+  // The video is stored in a unmultiplied format, so premultiply
+  // if necessary.
+  gl->PixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, premultiply_alpha);
+  // Application itself needs to take care of setting the right |flip_y|
+  // value down to get the expected result.
+  // "flip_y == true" means to reverse the video orientation while
+  // "flip_y == false" means to keep the intrinsic orientation.
+  gl->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
+  gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture, level,
+                          internal_format, type);
+  gl->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
+  gl->PixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, false);
+
+  gl->DeleteTextures(1, &source_texture);
+  gl->Flush();
+
+  SyncPointClientImpl client(gl);
+  video_frame->UpdateReleaseSyncPoint(&client);
 }
 
 void SkCanvasVideoRenderer::ResetLastFrame() {

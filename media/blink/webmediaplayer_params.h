@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
+#include "media/filters/context_3d.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -28,22 +29,22 @@ class MediaLog;
 class MEDIA_EXPORT WebMediaPlayerParams {
  public:
   typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
+  typedef base::Callback<Context3D()> Context3DCB;
 
-  // |defer_load_cb|, |audio_renderer_sink|, and |compositor_task_runner| may be
-  // null.
+  // |defer_load_cb|, |audio_renderer_sink|, |compositor_task_runner|, and
+  // |context_3d_cb| may be null.
   WebMediaPlayerParams(
       const DeferLoadCB& defer_load_cb,
       const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<MediaLog>& media_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      const Context3DCB& context_3d,
       blink::WebContentDecryptionModule* initial_cdm);
 
   ~WebMediaPlayerParams();
 
-  base::Callback<void(const base::Closure&)> defer_load_cb() const {
-    return defer_load_cb_;
-  }
+  DeferLoadCB defer_load_cb() const { return defer_load_cb_; }
 
   const scoped_refptr<AudioRendererSink>& audio_renderer_sink() const {
     return audio_renderer_sink_;
@@ -66,12 +67,15 @@ class MEDIA_EXPORT WebMediaPlayerParams {
     return initial_cdm_;
   }
 
+  Context3DCB context_3d_cb() const { return context_3d_cb_; }
+
  private:
-  base::Callback<void(const base::Closure&)> defer_load_cb_;
+  DeferLoadCB defer_load_cb_;
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   scoped_refptr<MediaLog> media_log_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  Context3DCB context_3d_cb_;
   blink::WebContentDecryptionModule* initial_cdm_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);

@@ -419,6 +419,7 @@
         'filters/blocking_url_protocol.h',
         'filters/chunk_demuxer.cc',
         'filters/chunk_demuxer.h',
+        'filters/context_3d.h',
         'filters/decoder_selector.cc',
         'filters/decoder_selector.h',
         'filters/decoder_stream.cc',

@@ -1,7 +1,8 @@
 include_rules = [
+  "+cc/blink/web_layer_impl.h",
   "+cc/layers/video_frame_provider.h",
   "+cc/layers/video_layer.h",
-  "+cc/blink/web_layer_impl.h",
+  "+gpu/blink",
   "+media",
   "+net/base",
   "+net/http",

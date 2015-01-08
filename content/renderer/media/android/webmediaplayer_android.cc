@@ -57,6 +57,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/image/image.h"
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
@@ -82,6 +84,40 @@ void OnReleaseTexture(
   GLES2Interface* gl = factories->ContextGL();
   gl->WaitSyncPointCHROMIUM(release_sync_point);
   gl->DeleteTextures(1, &texture_id);
+}
+
+bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
+                                    const gfx::Size& size) {
+  return bitmap->getTexture() && bitmap->width() == size.width() &&
+         bitmap->height() == size.height();
+}
+
+bool AllocateSkBitmapTexture(GrContext* gr,
+                             SkBitmap* bitmap,
+                             const gfx::Size& size) {
+  DCHECK(gr);
+  GrTextureDesc desc;
+  // Use kRGBA_8888_GrPixelConfig, not kSkia8888_GrPixelConfig, to avoid
+  // RGBA to BGRA conversion.
+  desc.fConfig = kRGBA_8888_GrPixelConfig;
+  // kRenderTarget_GrTextureFlagBit avoids a copy before readback in skia.
+  desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+  desc.fSampleCnt = 0;
+  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fWidth = size.width();
+  desc.fHeight = size.height();
+  skia::RefPtr<GrTexture> texture = skia::AdoptRef(
+      gr->refScratchTexture(desc, GrContext::kExact_ScratchTexMatch));
+  if (!texture.get())
+    return false;
+
+  SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
+  SkGrPixelRef* pixel_ref = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
+  if (!pixel_ref)
+    return false;
+  bitmap->setInfo(info);
+  bitmap->setPixelRef(pixel_ref)->unref();
+  return true;
 }
 
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
@@ -540,39 +576,6 @@ bool WebMediaPlayerAndroid::didLoadingProgress() {
   return ret;
 }
 
-bool WebMediaPlayerAndroid::EnsureTextureBackedSkBitmap(GrContext* gr,
-                                                        SkBitmap& bitmap,
-                                                        const WebSize& size,
-                                                        GrSurfaceOrigin origin,
-                                                        GrPixelConfig config) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (!bitmap.getTexture() || bitmap.width() != size.width
-      || bitmap.height() != size.height) {
-    if (!gr)
-      return false;
-    GrTextureDesc desc;
-    desc.fConfig = config;
-    desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
-    desc.fSampleCnt = 0;
-    desc.fOrigin = origin;
-    desc.fWidth = size.width;
-    desc.fHeight = size.height;
-    skia::RefPtr<GrTexture> texture;
-    texture = skia::AdoptRef(gr->createUncachedTexture(desc, 0, 0));
-    if (!texture.get())
-      return false;
-
-    SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
-    SkGrPixelRef* pixelRef = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
-    if (!pixelRef)
-      return false;
-    bitmap.setInfo(info);
-    bitmap.setPixelRef(pixelRef)->unref();
-  }
-
-  return true;
-}
-
 void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   const blink::WebRect& rect,
                                   unsigned char alpha,
@@ -593,9 +596,11 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   // here. Check if we could reuse existing texture based bitmap.
   // Otherwise, release existing texture based bitmap and allocate
   // a new one based on video size.
-  if (!EnsureTextureBackedSkBitmap(provider->grContext(), bitmap_,
-      naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig)) {
-    return;
+  if (!IsSkBitmapProperlySizedTexture(&bitmap_, naturalSize())) {
+    if (!AllocateSkBitmapTexture(provider->grContext(), &bitmap_,
+                                 naturalSize())) {
+      return;
+    }
   }
 
   unsigned textureId = static_cast<unsigned>(

@@ -11,17 +11,19 @@
 namespace media {
 
 WebMediaPlayerParams::WebMediaPlayerParams(
-    const base::Callback<void(const base::Closure&)>& defer_load_cb,
+    const DeferLoadCB& defer_load_cb,
     const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
     const scoped_refptr<MediaLog>& media_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+    const Context3DCB& context_3d_cb,
     blink::WebContentDecryptionModule* initial_cdm)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(media_log),
       media_task_runner_(media_task_runner),
       compositor_task_runner_(compositor_task_runner),
+      context_3d_cb_(context_3d_cb),
       initial_cdm_(initial_cdm) {
 }
 

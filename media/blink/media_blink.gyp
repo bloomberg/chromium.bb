@@ -12,6 +12,7 @@
         '../../base/base.gyp:base',
         '../../cc/cc.gyp:cc',
         '../../cc/blink/cc_blink.gyp:cc_blink',
+        '../../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../net/net.gyp:net',
         '../../third_party/WebKit/public/blink.gyp:blink',

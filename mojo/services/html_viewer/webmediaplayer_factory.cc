@@ -99,10 +99,10 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
                                           GetAudioHardwareConfig()));
   }
 
-  media::WebMediaPlayerParams params(media::WebMediaPlayerParams::DeferLoadCB(),
-                                     CreateAudioRendererSink(), media_log,
-                                     GetMediaThreadTaskRunner(),
-                                     compositor_task_runner_, initial_cdm);
+  media::WebMediaPlayerParams params(
+      media::WebMediaPlayerParams::DeferLoadCB(), CreateAudioRendererSink(),
+      media_log, GetMediaThreadTaskRunner(), compositor_task_runner_,
+      media::WebMediaPlayerParams::Context3DCB(), initial_cdm);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
   scoped_ptr<media::CdmFactory> cdm_factory(new media::DefaultCdmFactory());

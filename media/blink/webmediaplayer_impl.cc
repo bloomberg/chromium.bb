@@ -22,8 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
-#include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -39,7 +38,6 @@
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webinbandtexttrack_impl.h"
 #include "media/blink/webmediaplayer_delegate.h"
-#include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"
@@ -80,23 +78,6 @@ namespace {
 // the norms, we think 1/16x to 16x is a safe and useful range for now.
 const double kMinRate = 0.0625;
 const double kMaxRate = 16.0;
-
-class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
- public:
-  explicit SyncPointClientImpl(
-      blink::WebGraphicsContext3D* web_graphics_context)
-      : web_graphics_context_(web_graphics_context) {}
-  ~SyncPointClientImpl() override {}
-  uint32 InsertSyncPoint() override {
-    return web_graphics_context_->insertSyncPoint();
-  }
-  void WaitSyncPoint(uint32 sync_point) override {
-    web_graphics_context_->waitSyncPoint(sync_point);
-  }
-
- private:
-  blink::WebGraphicsContext3D* web_graphics_context_;
-};
 
 }  // namespace
 
@@ -153,6 +134,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
+      context_3d_cb_(params.context_3d_cb()),
       supports_save_(true),
       chunk_demuxer_(NULL),
       compositor_task_runner_(params.compositor_task_runner()),
@@ -538,13 +520,18 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
       GetCurrentFrameFromCompositor();
 
   gfx::Rect gfx_rect(rect);
-
-  skcanvas_video_renderer_.Paint(video_frame,
-                                 canvas,
-                                 gfx_rect,
-                                 alpha,
-                                 mode,
-                                 pipeline_metadata_.video_rotation);
+  Context3D context_3d;
+  if (video_frame.get() &&
+      video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
+    if (!context_3d_cb_.is_null()) {
+      context_3d = context_3d_cb_.Run();
+    }
+    // GPU Process crashed.
+    if (!context_3d.gl)
+      return;
+  }
+  skcanvas_video_renderer_.Paint(video_frame, canvas, gfx_rect, alpha, mode,
+                                 pipeline_metadata_.video_rotation, context_3d);
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
@@ -604,43 +591,19 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   scoped_refptr<VideoFrame> video_frame =
       GetCurrentFrameFromCompositor();
 
-  if (!video_frame.get())
+  if (!video_frame.get() ||
+      video_frame->format() != VideoFrame::NATIVE_TEXTURE) {
     return false;
-  if (video_frame->format() != VideoFrame::NATIVE_TEXTURE)
-    return false;
+  }
 
-  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
-  if (mailbox_holder->texture_target != GL_TEXTURE_2D)
-    return false;
-
-  web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
-  uint32 source_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
-      GL_TEXTURE_2D, mailbox_holder->mailbox.name);
-
-  // The video is stored in a unmultiplied format, so premultiply
-  // if necessary.
-  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-                                    premultiply_alpha);
-  // Application itself needs to take care of setting the right flip_y
-  // value down to get the expected result.
-  // flip_y==true means to reverse the video orientation while
-  // flip_y==false means to keep the intrinsic orientation.
-  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D,
-                                            source_texture,
-                                            texture,
-                                            level,
-                                            internal_format,
-                                            type);
-  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
-  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-                                    false);
-
-  web_graphics_context->deleteTexture(source_texture);
-  web_graphics_context->flush();
-
-  SyncPointClientImpl client(web_graphics_context);
-  video_frame->UpdateReleaseSyncPoint(&client);
+  // TODO(dshwang): need more elegant way to convert WebGraphicsContext3D to
+  // GLES2Interface.
+  gpu::gles2::GLES2Interface* gl =
+      static_cast<gpu_blink::WebGraphicsContext3DImpl*>(web_graphics_context)
+          ->GetGLInterface();
+  SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
+      gl, video_frame.get(), texture, level, internal_format, type,
+      premultiply_alpha, flip_y);
   return true;
 }
 

@@ -2,6 +2,7 @@
 include_rules = [
   "+gpu",
   "+jni",
+  "+skia/ext",
   "+third_party/ffmpeg",
   "+third_party/libvpx",
   "+third_party/libyuv",

@@ -153,6 +153,8 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
+#else
+#include "webkit/common/gpu/context_provider_web_context.h"
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -473,6 +475,16 @@ CommonNavigationParams MakeCommonNavigationParams(
   params.transition = extra_data->transition_type();
   return params;
 }
+
+#if !defined(OS_ANDROID)
+media::Context3D GetSharedMainThreadContext3D() {
+  cc::ContextProvider* provider =
+      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+  if (!provider)
+    return media::Context3D();
+  return media::Context3D(provider->ContextGL(), provider->GrContext());
+}
+#endif
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
@@ -1802,7 +1814,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->GetAudioRendererMixerManager()->CreateInput(
           render_view_->routing_id_, routing_id_),
       media_log, render_thread->GetMediaThreadTaskRunner(),
-      render_thread->compositor_message_loop_proxy(), initial_cdm);
+      render_thread->compositor_message_loop_proxy(),
+      base::Bind(&GetSharedMainThreadContext3D), initial_cdm);
 
 #if defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::CdmFactory> cdm_factory(

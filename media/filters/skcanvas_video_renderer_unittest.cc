@@ -197,12 +197,8 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
 SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
 
 void SkCanvasVideoRendererTest::PaintWithoutFrame(SkCanvas* canvas) {
-  renderer_.Paint(NULL,
-                  canvas,
-                  kNaturalRect,
-                  0xFF,
-                  SkXfermode::kSrcOver_Mode,
-                  VIDEO_ROTATION_0);
+  renderer_.Paint(nullptr, canvas, kNaturalRect, 0xFF,
+                  SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_0, Context3D());
 }
 
 void SkCanvasVideoRendererTest::Paint(
@@ -237,7 +233,8 @@ void SkCanvasVideoRendererTest::PaintRotated(
       media::FillYUV(video_frame.get(), 29, 255, 107);
       break;
   }
-  renderer_.Paint(video_frame, canvas, dest_rect, 0xFF, mode, video_rotation);
+  renderer_.Paint(video_frame, canvas, dest_rect, 0xFF, mode, video_rotation,
+                  Context3D());
 }
 
 void SkCanvasVideoRendererTest::Copy(

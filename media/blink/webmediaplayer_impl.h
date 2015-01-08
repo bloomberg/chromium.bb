@@ -23,15 +23,16 @@
 #include "media/blink/buffered_data_source_host_impl.h"
 #include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/video_frame_compositor.h"
+#include "media/blink/webmediaplayer_params.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "url/gurl.h"
 
 namespace blink {
+class WebGraphicsContext3D;
 class WebLocalFrame;
 }
 
@@ -52,7 +53,6 @@ class MediaLog;
 class VideoFrameCompositor;
 class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
-class WebMediaPlayerParams;
 class WebTextTrackImpl;
 
 // The canonical implementation of blink::WebMediaPlayer that's backed by
@@ -278,7 +278,8 @@ class MEDIA_EXPORT WebMediaPlayerImpl
 
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
-  base::Callback<void(const base::Closure&)> defer_load_cb_;
+  WebMediaPlayerParams::DeferLoadCB defer_load_cb_;
+  WebMediaPlayerParams::Context3DCB context_3d_cb_;
 
   // Routes audio playback to either AudioRendererSink or WebAudio.
   scoped_refptr<WebAudioSourceProviderImpl> audio_source_provider_;
