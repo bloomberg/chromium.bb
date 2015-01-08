@@ -13,11 +13,13 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/drive/event_logger.h"
+#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -471,6 +473,40 @@ bool FileManagerPrivateOpenInspectorFunction::RunSync() {
       return false;
   }
   return true;
+}
+
+FileManagerPrivateGetMimeTypeFunction::FileManagerPrivateGetMimeTypeFunction() {
+}
+
+FileManagerPrivateGetMimeTypeFunction::
+    ~FileManagerPrivateGetMimeTypeFunction() {
+}
+
+bool FileManagerPrivateGetMimeTypeFunction::RunAsync() {
+  using extensions::api::file_manager_private::GetMimeType::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // Convert file url to local path.
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          GetProfile(), render_view_host());
+
+  const GURL file_url(params->file_url);
+  storage::FileSystemURL file_system_url(
+      file_system_context->CrackURL(file_url));
+
+  app_file_handler_util::GetMimeTypeForLocalPath(
+      GetProfile(), file_system_url.path(),
+      base::Bind(&FileManagerPrivateGetMimeTypeFunction::OnGetMimeType, this));
+
+  return true;
+}
+
+void FileManagerPrivateGetMimeTypeFunction::OnGetMimeType(
+    const std::string& mimeType) {
+  SetResult(new base::StringValue(mimeType));
+  SendResponse(true);
 }
 
 }  // namespace extensions

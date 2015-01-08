@@ -482,6 +482,9 @@ callback ExecuteTaskCallback = void(TaskResult result);
 // |tasks| The list of matched file URL patterns for this task.
 callback GetFileTasksCallback = void(FileTask[] tasks);
 
+// |result| Mime type of the file.
+callback GetMimeTypeCallback = void(DOMString result);
+
 // |result| Hash containing the string assets.
 callback GetStringsCallback = void(object result);
 
@@ -589,6 +592,12 @@ interface Functions {
   // |callback|
   static void getFileTasks(DOMString[] fileUrls,
                            GetFileTasksCallback callback);
+
+  // Gets the MIME type of a file.
+  // |fileUrl| File url
+  // |callback|
+  static void getMimeType(DOMString fileUrl,
+                          GetMimeTypeCallback callback);
 
   // Gets localized strings and initialization data.
   // |callback|

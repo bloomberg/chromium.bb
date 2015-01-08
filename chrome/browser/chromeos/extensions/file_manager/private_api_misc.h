@@ -176,6 +176,24 @@ class FileManagerPrivateOpenInspectorFunction
   virtual bool RunSync() override;
 };
 
+// Implements the chrome.fileManagerPrivate.getMimeType method.
+class FileManagerPrivateGetMimeTypeFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getMimeType",
+                             FILEMANAGERPRIVATE_GETMIMETYPE)
+
+  FileManagerPrivateGetMimeTypeFunction();
+
+ protected:
+  virtual ~FileManagerPrivateGetMimeTypeFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() override;
+
+  void OnGetMimeType(const std::string& mimeType);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
