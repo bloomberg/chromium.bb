@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -116,6 +117,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install/crx_installer_error.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
@@ -367,8 +369,8 @@ bool DoesInstallSuccessReferToId(const std::string& id,
 bool DoesInstallFailureReferToId(const std::string& id,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  return content::Details<const base::string16>(details)->
-      find(base::UTF8ToUTF16(id)) != base::string16::npos;
+  return content::Details<const extensions::CrxInstallerError>(details)->
+      message().find(base::UTF8ToUTF16(id)) != base::string16::npos;
 }
 
 scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
@@ -633,11 +635,20 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         base::HexEncode(account_id.c_str(), account_id.size()));
   }
 
+  base::FilePath GetCacheCRXFilePath(const std::string& account_id,
+                                     const std::string& id,
+                                     const std::string& version,
+                                     const base::FilePath& path) {
+    return path.Append(
+        base::StringPrintf("%s-%s.crx", id.c_str(), version.c_str()));
+  }
+
   base::FilePath GetCacheCRXFile(const std::string& account_id,
                                  const std::string& id,
                                  const std::string& version) {
-    return GetExtensionCacheDirectoryForAccountID(account_id)
-        .Append(base::StringPrintf("%s-%s.crx", id.c_str(), version.c_str()));
+    return GetCacheCRXFilePath(
+        account_id, id, version,
+        GetExtensionCacheDirectoryForAccountID(account_id));
   }
 
   // Returns a profile which can be used for testing.
@@ -1122,6 +1133,119 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
       broker->extension_loader()->GetExternalCacheForTesting();
   ASSERT_TRUE(cache);
   EXPECT_FALSE(cache->GetExtension(kGoodExtensionID, NULL, NULL));
+}
+
+static void OnPutExtension(scoped_ptr<base::RunLoop>* run_loop,
+                    const base::FilePath& file_path,
+                    bool file_ownership_passed) {
+  ASSERT_TRUE(*run_loop);
+  (*run_loop)->Quit();
+}
+
+static void OnExtensionCacheImplInitialized(
+    scoped_ptr<base::RunLoop>* run_loop) {
+  ASSERT_TRUE(*run_loop);
+  (*run_loop)->Quit();
+}
+
+static void CreateFile(const base::FilePath& file,
+                size_t size,
+                const base::Time& timestamp) {
+  std::string data(size, 0);
+  EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
+  EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
+  // Make it possible to force-install a hosted app and an extension.
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  TestingUpdateManifestProvider testing_update_manifest_provider(
+      kRelativeUpdateURL);
+  testing_update_manifest_provider.AddUpdate(
+      kHostedAppID,
+      kHostedAppVersion,
+      embedded_test_server()->GetURL(std::string("/") + kHostedAppCRXPath));
+  testing_update_manifest_provider.AddUpdate(
+      kGoodExtensionID,
+      kGoodExtensionVersion,
+      embedded_test_server()->GetURL(std::string("/") + kGoodExtensionCRXPath));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&TestingUpdateManifestProvider::HandleRequest,
+                 base::Unretained(&testing_update_manifest_provider)));
+
+  // Create and initialize local cache.
+  base::ScopedTempDir cache_dir;
+  EXPECT_TRUE(cache_dir.CreateUniqueTempDir());
+  const base::FilePath impl_path = cache_dir.path();
+  EXPECT_TRUE(base::CreateDirectory(impl_path));
+  CreateFile(impl_path.Append(
+                 extensions::LocalExtensionCache::kCacheReadyFlagFileName),
+             0, base::Time::Now());
+  extensions::ExtensionCacheImpl cache_impl(impl_path);
+  scoped_ptr<base::RunLoop> run_loop;
+  run_loop.reset(new base::RunLoop);
+  cache_impl.Start(base::Bind(&OnExtensionCacheImplInitialized, &run_loop));
+  run_loop->Run();
+
+  // Put extension in the local cache.
+  base::ScopedTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath temp_path = temp_dir.path();
+  EXPECT_TRUE(base::CreateDirectory(temp_path));
+  const base::FilePath temp_file = GetCacheCRXFilePath(
+      kAccountId1, kGoodExtensionID, kGoodExtensionVersion, temp_path);
+  base::FilePath test_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath), temp_file));
+  cache_impl.AllowCaching(kGoodExtensionID);
+  run_loop.reset(new base::RunLoop);
+  cache_impl.PutExtension(kGoodExtensionID, temp_file, kGoodExtensionVersion,
+                          base::Bind(&OnPutExtension, &run_loop));
+  run_loop->Run();
+
+  // Verify that the extension file was added to the local cache.
+  const base::FilePath local_file = GetCacheCRXFilePath(
+      kAccountId1, kGoodExtensionID, kGoodExtensionVersion, impl_path);
+  EXPECT_TRUE(PathExists(local_file));
+
+  // Specify policy to force-install the hosted app and the extension.
+  em::StringList* forcelist = device_local_account_policy_.payload()
+      .mutable_extensioninstallforcelist()->mutable_value();
+  forcelist->add_entries(base::StringPrintf(
+      "%s;%s",
+      kHostedAppID,
+      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
+  forcelist->add_entries(base::StringPrintf(
+      "%s;%s",
+      kGoodExtensionID,
+      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
+
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+
+  // Start listening for app/extension installation results.
+  content::WindowedNotificationObserver hosted_app_observer(
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
+  content::WindowedNotificationObserver extension_observer(
+      extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+
+  // Wait for the hosted app installation to succeed and the extension
+  // installation to fail (because hosted apps are whitelisted for use in
+  // device-local accounts and extensions are not).
+  hosted_app_observer.Wait();
+  extension_observer.Wait();
+
+  // Verify that the extension was kept in the local cache.
+  EXPECT_TRUE(cache_impl.GetExtension(kGoodExtensionID, NULL, NULL));
+
+  // Verify that the extension file was kept in the local cache.
+  EXPECT_TRUE(PathExists(local_file));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {

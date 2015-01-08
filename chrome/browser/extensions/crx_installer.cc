@@ -325,6 +325,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
 
   if (!extensions_enabled_) {
     return CrxInstallerError(
+        CrxInstallerError::ERROR_DECLINED,
         l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_NOT_ENABLED));
   }
 
@@ -488,26 +489,32 @@ void CrxInstaller::CheckInstall() {
           service->GetExtensionById(i->extension_id, true);
       if (imported_module &&
           !SharedModuleInfo::IsSharedModule(imported_module)) {
-        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
-            base::UTF8ToUTF16(imported_module->name()))));
+        ReportFailureFromUIThread(CrxInstallerError(
+            CrxInstallerError::ERROR_DECLINED,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
+                base::UTF8ToUTF16(imported_module->name()))));
         return;
       } else if (imported_module && (version_required.IsValid() &&
                                      imported_module->version()->CompareTo(
                                          version_required) < 0)) {
-        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALL_DEPENDENCY_OLD_VERSION,
-            base::UTF8ToUTF16(imported_module->name()),
-            base::ASCIIToUTF16(i->minimum_version),
-            base::ASCIIToUTF16(imported_module->version()->GetString()))));
+        ReportFailureFromUIThread(CrxInstallerError(
+            CrxInstallerError::ERROR_DECLINED,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_INSTALL_DEPENDENCY_OLD_VERSION,
+                base::UTF8ToUTF16(imported_module->name()),
+                base::ASCIIToUTF16(i->minimum_version),
+                base::ASCIIToUTF16(imported_module->version()->GetString()))));
         return;
       } else if (imported_module &&
                  !SharedModuleInfo::IsExportAllowedByWhitelist(
                      imported_module, extension()->id())) {
-        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED,
-            base::UTF8ToUTF16(extension()->name()),
-            base::UTF8ToUTF16(imported_module->name()))));
+        ReportFailureFromUIThread(CrxInstallerError(
+            CrxInstallerError::ERROR_DECLINED,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED,
+                base::UTF8ToUTF16(extension()->name()),
+                base::UTF8ToUTF16(imported_module->name()))));
         return;
       }
     }
@@ -528,8 +535,10 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
   // Check for requirement errors.
   if (!install_checker_.requirement_errors().empty()) {
     if (error_on_unsupported_requirements_) {
-      ReportFailureFromUIThread(CrxInstallerError(base::UTF8ToUTF16(
-          JoinString(install_checker_.requirement_errors(), ' '))));
+      ReportFailureFromUIThread(
+          CrxInstallerError(CrxInstallerError::ERROR_DECLINED,
+                            base::UTF8ToUTF16(JoinString(
+                                install_checker_.requirement_errors(), ' '))));
       return;
     }
     install_flags_ |= kInstallFlagHasRequirementErrors;
@@ -546,6 +555,7 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
     // User tried to install a blacklisted extension. Show an error and
     // refuse to install it.
     ReportFailureFromUIThread(extensions::CrxInstallerError(
+        CrxInstallerError::ERROR_DECLINED,
         l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLACKLISTED,
                                    base::UTF8ToUTF16(extension()->name()))));
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
@@ -566,7 +576,8 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
     if (extension()->from_webstore() && client_)
       client_->install_ui()->SetSkipPostInstallUI(true);
     ReportFailureFromUIThread(
-        CrxInstallerError(base::UTF8ToUTF16(install_checker_.policy_error())));
+        CrxInstallerError(CrxInstallerError::ERROR_DECLINED,
+                          base::UTF8ToUTF16(install_checker_.policy_error())));
     return;
   }
 
@@ -587,8 +598,8 @@ void CrxInstaller::ConfirmInstall() {
 #endif
     if (!in_kiosk_mode) {
       ReportFailureFromUIThread(CrxInstallerError(
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY)));
+          CrxInstallerError::ERROR_DECLINED,
+          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY)));
       return;
     }
   }
@@ -679,11 +690,11 @@ void CrxInstaller::CompleteInstall() {
   if (!current_version_.empty()) {
     Version current_version(current_version_);
     if (current_version.CompareTo(*(extension()->version())) > 0) {
-      ReportFailureFromFileThread(
-          CrxInstallerError(
-              l10n_util::GetStringUTF16(extension()->is_app() ?
-                  IDS_APP_CANT_DOWNGRADE_VERSION :
-                  IDS_EXTENSION_CANT_DOWNGRADE_VERSION)));
+      ReportFailureFromFileThread(CrxInstallerError(
+          CrxInstallerError::ERROR_DECLINED,
+          l10n_util::GetStringUTF16(
+              extension()->is_app() ? IDS_APP_CANT_DOWNGRADE_VERSION
+                                    : IDS_EXTENSION_CANT_DOWNGRADE_VERSION)));
       return;
     }
   }
@@ -759,8 +770,8 @@ void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
   content::NotificationService* service =
       content::NotificationService::current();
   service->Notify(extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                  content::Source<CrxInstaller>(this),
-                  content::Details<const base::string16>(&error.message()));
+      content::Source<CrxInstaller>(this),
+      content::Details<const extensions::CrxInstallerError>(&error));
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.

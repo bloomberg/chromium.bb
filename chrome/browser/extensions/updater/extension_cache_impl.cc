@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/install/crx_installer_error.h"
 
 namespace extensions {
 namespace {
@@ -47,6 +48,23 @@ ExtensionCacheImpl::ExtensionCacheImpl()
   notification_registrar_.Add(
       this,
       extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      content::NotificationService::AllBrowserContextsAndSources());
+  cache_->Init(true, base::Bind(&ExtensionCacheImpl::OnCacheInitialized,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+ExtensionCacheImpl::ExtensionCacheImpl(const base::FilePath& local_cache_dir)
+    : cache_(new LocalExtensionCache(
+          base::FilePath(local_cache_dir),
+          kMaxCacheSize,
+          base::TimeDelta::FromDays(kMaxCacheAgeDays),
+          content::BrowserThread::GetBlockingPool()
+              ->GetSequencedTaskRunnerWithShutdownBehavior(
+                  content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))),
+      weak_ptr_factory_(this) {
+  notification_registrar_.Add(
+      this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());
   cache_->Init(true, base::Bind(&ExtensionCacheImpl::OnCacheInitialized,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -121,9 +139,13 @@ void ExtensionCacheImpl::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       extensions::CrxInstaller* installer =
           content::Source<extensions::CrxInstaller>(source).ptr();
-      // TODO(dpolukhin): remove extension from cache only if installation
-      // failed due to file corruption.
-      cache_->RemoveExtension(installer->expected_id());
+      const extensions::CrxInstallerError* error =
+          content::Details<const extensions::CrxInstallerError>(details).ptr();
+      if (error->type() == extensions::CrxInstallerError::ERROR_DECLINED) {
+        DVLOG(2) << "Extension install was declined, file kept";
+      } else {
+        cache_->RemoveExtension(installer->expected_id());
+      }
       break;
     }
 

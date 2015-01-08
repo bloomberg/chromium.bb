@@ -13,7 +13,11 @@ namespace extensions {
 class CrxInstallerError {
  public:
   // Typed errors that need to be handled specially by clients.
-  enum Type { ERROR_NONE, ERROR_OFF_STORE, ERROR_OTHER };
+  // ERROR_OFF_STORE for disallowed off-store installations.
+  // ERROR_DECLINED for situations when a .crx file seems to be OK, but there
+  // are some policy restrictions or unmet dependencies that prevent it from
+  // being installed.
+  enum Type { ERROR_NONE, ERROR_OFF_STORE, ERROR_DECLINED, ERROR_OTHER };
 
   CrxInstallerError() : type_(ERROR_NONE) {}
 

@@ -29,6 +29,7 @@ class ExtensionCacheImpl : public ExtensionCache,
                            public content::NotificationObserver {
  public:
   ExtensionCacheImpl();
+  explicit ExtensionCacheImpl(const base::FilePath& local_cache_dir);
   virtual ~ExtensionCacheImpl();
 
   // Implementation of ExtensionCache.
