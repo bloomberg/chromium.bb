@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -65,6 +66,41 @@ using extensions::UpdatedExtensionPermissionsInfo;
 namespace {
 
 const int kInvalidExtensionIndex = -1;
+
+// Records histogram about which auto-launch pattern (if any) was used to launch
+// the current process based on |command_line|.
+void RecordAutoLaunchState(const base::CommandLine& command_line) {
+  enum AutoLaunchState {
+    AUTO_LAUNCH_NONE = 0,
+    AUTO_LAUNCH_BACKGROUND = 1,
+    AUTO_LAUNCH_FOREGROUND = 2,
+    AUTO_LAUNCH_FOREGROUND_USELESS = 3,
+    AUTO_LAUNCH_NUM_STATES
+  } auto_launch_state = AUTO_LAUNCH_NONE;
+
+  if (command_line.HasSwitch(switches::kNoStartupWindow))
+    auto_launch_state = AUTO_LAUNCH_BACKGROUND;
+
+  if (command_line.HasSwitch(switches::kAutoLaunchAtStartup)) {
+    // The only purpose of kAutoLaunchAtStartup is to override a background
+    // auto-launch from kNoStartupWindow into a foreground auto-launch. It's a
+    // meaningless switch on its own.
+    if (auto_launch_state == AUTO_LAUNCH_BACKGROUND) {
+      auto_launch_state = AUTO_LAUNCH_FOREGROUND;
+    } else {
+      auto_launch_state = AUTO_LAUNCH_FOREGROUND_USELESS;
+    }
+  }
+
+  // Observe the AutoLaunchStates in the wild. According to the platform-
+  // specific implementations of EnableLaunchOnStartup(), we'd expect only Mac
+  // and Windows to have any sort of AutoLaunchState and only Windows should use
+  // FOREGROUND if at all (it was only used by a deprecated experiment and a
+  // master pref which may not be used much). Tighten up auto-launch settings
+  // based on the result of usage in the wild.
+  UMA_HISTOGRAM_ENUMERATION("BackgroundMode.OnStartup.AutoLaunchState",
+                            auto_launch_state, AUTO_LAUNCH_NUM_STATES);
+}
 
 }  // namespace
 
@@ -206,8 +242,9 @@ bool BackgroundModeManager::BackgroundModeData::BackgroundModeDataCompare(
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, public
-BackgroundModeManager::BackgroundModeManager(base::CommandLine* command_line,
-                                             ProfileInfoCache* profile_cache)
+BackgroundModeManager::BackgroundModeManager(
+    const base::CommandLine& command_line,
+    ProfileInfoCache* profile_cache)
     : profile_cache_(profile_cache),
       status_tray_(NULL),
       status_icon_(NULL),
@@ -226,6 +263,10 @@ BackgroundModeManager::BackgroundModeManager(base::CommandLine* command_line,
   // are deleted and their names change.
   profile_cache_->AddObserver(this);
 
+  RecordAutoLaunchState(command_line);
+  UMA_HISTOGRAM_BOOLEAN("BackgroundMode.OnStartup.IsBackgroundModePrefEnabled",
+                        IsBackgroundModePrefEnabled());
+
   // Listen for the background mode preference changing.
   if (g_browser_process->local_state()) {  // Skip for unit tests
     pref_registrar_.Init(g_browser_process->local_state());
@@ -239,7 +280,7 @@ BackgroundModeManager::BackgroundModeManager(base::CommandLine* command_line,
   // by the --no-startup-window flag. We want to stay alive until we load
   // extensions, at which point we should either run in background mode (if
   // there are background apps) or exit if there are none.
-  if (command_line->HasSwitch(switches::kNoStartupWindow)) {
+  if (command_line.HasSwitch(switches::kNoStartupWindow)) {
     keep_alive_for_startup_ = true;
     chrome::IncrementKeepAliveCount();
   } else {
@@ -251,7 +292,7 @@ BackgroundModeManager::BackgroundModeManager(base::CommandLine* command_line,
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
   // in the background until the user explicitly terminates it.
-  if (command_line->HasSwitch(switches::kKeepAliveForTest))
+  if (command_line.HasSwitch(switches::kKeepAliveForTest))
     keep_alive_for_test_ = true;
 
   if (ShouldBeInBackgroundMode())
@@ -291,7 +332,6 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif
   registry->RegisterBooleanPref(prefs::kBackgroundModeEnabled, true);
 }
-
 
 void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // We don't want to register multiple times for one profile.

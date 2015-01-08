@@ -54,7 +54,7 @@ class BackgroundModeManager
       public ProfileInfoCacheObserver,
       public StatusIconMenuModel::Delegate {
  public:
-  BackgroundModeManager(base::CommandLine* command_line,
+  BackgroundModeManager(const base::CommandLine& command_line,
                         ProfileInfoCache* profile_cache);
   ~BackgroundModeManager() override;
 

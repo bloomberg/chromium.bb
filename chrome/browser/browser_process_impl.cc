@@ -1060,7 +1060,7 @@ void BrowserProcessImpl::CreateBackgroundModeManager() {
 #if defined(ENABLE_BACKGROUND)
   DCHECK(background_mode_manager_.get() == NULL);
   background_mode_manager_.reset(
-      new BackgroundModeManager(base::CommandLine::ForCurrentProcess(),
+      new BackgroundModeManager(*base::CommandLine::ForCurrentProcess(),
                                 &profile_manager()->GetProfileInfoCache()));
 #endif
 }

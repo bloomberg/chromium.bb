@@ -48,7 +48,7 @@ namespace {
 // exposes them via getters (or gmock for EnableLaunchOnStartup).
 class TestBackgroundModeManager : public StrictMock<BackgroundModeManager> {
  public:
-  TestBackgroundModeManager(base::CommandLine* command_line,
+  TestBackgroundModeManager(const base::CommandLine& command_line,
                             ProfileInfoCache* cache)
       : StrictMock<BackgroundModeManager>(command_line, cache),
         have_status_tray_(false),
@@ -109,7 +109,7 @@ void AssertBackgroundModeInactive(const TestBackgroundModeManager& manager) {
 // smaller tests that don't have to install/uninstall extensions.
 class AdvancedTestBackgroundModeManager : public TestBackgroundModeManager {
  public:
-  AdvancedTestBackgroundModeManager(base::CommandLine* command_line,
+  AdvancedTestBackgroundModeManager(const base::CommandLine& command_line,
                                     ProfileInfoCache* cache,
                                     bool enabled)
       : TestBackgroundModeManager(command_line, cache), enabled_(enabled) {}
@@ -219,7 +219,7 @@ class BackgroundModeManagerWithExtensionsTest
 
     // Create our test BackgroundModeManager.
     manager_.reset(new TestBackgroundModeManager(
-        command_line_.get(), profile_manager_->profile_info_cache()));
+        *command_line_, profile_manager_->profile_info_cache()));
     manager_->RegisterProfile(profile_);
   }
 
@@ -299,7 +299,7 @@ class BackgroundModeManagerWithExtensionsTest
 
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -338,7 +338,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
 // App installs while background mode is disabled should do nothing.
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
 
   // Turn off background mode (shouldn't explicitly disable launch-on-startup as
@@ -370,7 +370,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
 // enabled..
 TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
 
   // Install app, should show status tray icon.
@@ -410,7 +410,7 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
 TEST_F(BackgroundModeManagerTest, MultiProfile) {
   TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
@@ -462,7 +462,7 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
@@ -509,7 +509,7 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
 
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -552,7 +552,7 @@ TEST_F(BackgroundModeManagerTest, DeleteBackgroundProfile) {
   // Tests whether deleting the only profile when it is a BG profile works
   // or not (http://crbug.com/346214).
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -578,7 +578,7 @@ TEST_F(BackgroundModeManagerTest, DeleteBackgroundProfile) {
 TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), true);
+      *command_line_, profile_manager_->profile_info_cache(), true);
   manager.RegisterProfile(profile_);
   EXPECT_TRUE(manager.ShouldBeInBackgroundMode());
 
@@ -593,7 +593,7 @@ TEST_F(BackgroundModeManagerTest,
        BackgroundModeDisabledPreventsKeepAliveOnStartup) {
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
   AdvancedTestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_->profile_info_cache(), false);
+      *command_line_, profile_manager_->profile_info_cache(), false);
   manager.RegisterProfile(profile_);
   EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
 }
