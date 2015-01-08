@@ -50,7 +50,7 @@ static const int kMaxReorderQueueSize = 16;
 // Build an |image_config| dictionary for VideoToolbox initialization.
 static base::ScopedCFTypeRef<CFMutableDictionaryRef>
 BuildImageConfig(CMVideoDimensions coded_dimensions) {
-  // TODO(sandersd): RGBA option for 4:4:4 video.
+  // TODO(sandersd): Does it save some work or memory to use 4:2:0?
   int32_t pixel_format = kCVPixelFormatType_422YpCbCr8;
 
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
@@ -247,9 +247,13 @@ bool VTVideoDecodeAccelerator::Initialize(
   if (!InitializeVideoToolbox())
     return false;
 
-  // Only H.264 is supported.
-  if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
+  // Only H.264 with 4:2:0 chroma sampling is supported.
+  if (profile < media::H264PROFILE_MIN ||
+      profile > media::H264PROFILE_MAX ||
+      profile == media::H264PROFILE_HIGH422PROFILE ||
+      profile == media::H264PROFILE_HIGH444PREDICTIVEPROFILE) {
     return false;
+  }
 
   // Spawn a thread to handle parsing and calling VideoToolbox.
   if (!decoder_thread_.Start())
