@@ -145,7 +145,7 @@ struct FrameReceiverConfig {
   // The target frame rate.  For audio, this is normally 100 (i.e., frames have
   // a duration of 10ms each).  For video, this is normally 30, but any frame
   // rate is supported.
-  int max_frame_rate;  // TODO(miu): Rename to target_frame_rate.
+  int target_frame_rate;
 
   // Codec used for the compression of signal data.
   // TODO(miu): Merge the AudioCodec and VideoCodec enums into one so this union

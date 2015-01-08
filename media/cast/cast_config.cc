@@ -67,7 +67,7 @@ FrameReceiverConfig::FrameReceiverConfig()
       rtp_payload_type(0),
       frequency(0),
       channels(0),
-      max_frame_rate(0),
+      target_frame_rate(0),
       codec(CODEC_UNKNOWN) {}
 
 FrameReceiverConfig::~FrameReceiverConfig() {}

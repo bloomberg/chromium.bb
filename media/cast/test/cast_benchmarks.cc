@@ -256,7 +256,7 @@ class RunOneBenchmark {
         audio_sender_config_.rtp_payload_type;
     audio_receiver_config_.frequency = audio_sender_config_.frequency;
     audio_receiver_config_.channels = kAudioChannels;
-    audio_receiver_config_.max_frame_rate = 100;
+    audio_receiver_config_.target_frame_rate = 100;
     audio_receiver_config_.codec = audio_sender_config_.codec;
     audio_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
 
@@ -292,7 +292,7 @@ class RunOneBenchmark {
     video_receiver_config_.codec = video_sender_config_.codec;
     video_receiver_config_.frequency = kVideoFrequency;
     video_receiver_config_.channels = 1;
-    video_receiver_config_.max_frame_rate = 100;
+    video_receiver_config_.target_frame_rate = 100;
     video_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
   }
 

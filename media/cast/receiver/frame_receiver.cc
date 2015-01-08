@@ -34,13 +34,13 @@ FrameReceiver::FrameReceiver(
       target_playout_delay_(
           base::TimeDelta::FromMilliseconds(config.rtp_max_delay_ms)),
       expected_frame_duration_(
-          base::TimeDelta::FromSeconds(1) / config.max_frame_rate),
+          base::TimeDelta::FromSeconds(1) / config.target_frame_rate),
       reports_are_scheduled_(false),
       framer_(cast_environment->Clock(),
               this,
               config.incoming_ssrc,
               true,
-              config.rtp_max_delay_ms * config.max_frame_rate / 1000),
+              config.rtp_max_delay_ms * config.target_frame_rate / 1000),
       rtcp_(RtcpCastMessageCallback(),
             RtcpRttCallback(),
             RtcpLogMessageCallback(),
@@ -54,7 +54,7 @@ FrameReceiver::FrameReceiver(
       weak_factory_(this) {
   transport_->AddValidSsrc(config.incoming_ssrc);
   DCHECK_GT(config.rtp_max_delay_ms, 0);
-  DCHECK_GT(config.max_frame_rate, 0);
+  DCHECK_GT(config.target_frame_rate, 0);
   decryptor_.Initialize(config.aes_key, config.aes_iv_mask);
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));

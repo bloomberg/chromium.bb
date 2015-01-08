@@ -194,7 +194,7 @@ class NaivePlayer : public InProcessReceiver,
         // Maximum age is the duration of 3 video frames.  3 was chosen
         // arbitrarily, but seems to work well.
         max_frame_age_(base::TimeDelta::FromSeconds(1) * 3 /
-                           video_config.max_frame_rate),
+                           video_config.target_frame_rate),
 #if defined(USE_X11)
         render_(0, 0, window_width, window_height, "Cast_receiver"),
 #endif  // defined(USE_X11)

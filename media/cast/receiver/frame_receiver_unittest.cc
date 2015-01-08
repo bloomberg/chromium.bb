@@ -105,7 +105,7 @@ class FrameReceiverTest : public ::testing::Test {
     config_.rtp_max_delay_ms = kPlayoutDelayMillis;
     // Note: Frame rate must divide 1000 without remainder so the test code
     // doesn't have to account for rounding errors.
-    config_.max_frame_rate = 25;
+    config_.target_frame_rate = 25;
 
     receiver_.reset(new FrameReceiver(
         cast_environment_, config_, VIDEO_EVENT, &mock_transport_));
@@ -217,9 +217,9 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
       .WillRepeatedly(testing::Return());
 
   const uint32 rtp_advance_per_frame =
-      config_.frequency / config_.max_frame_rate;
+      config_.frequency / config_.target_frame_rate;
   const base::TimeDelta time_advance_per_frame =
-      base::TimeDelta::FromSeconds(1) / config_.max_frame_rate;
+      base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
 
   // Feed and process lip sync in receiver.
   FeedLipSyncInfoIntoReceiver();
@@ -320,9 +320,9 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
       .WillRepeatedly(testing::Return());
 
   const uint32 rtp_advance_per_frame =
-      config_.frequency / config_.max_frame_rate;
+      config_.frequency / config_.target_frame_rate;
   const base::TimeDelta time_advance_per_frame =
-      base::TimeDelta::FromSeconds(1) / config_.max_frame_rate;
+      base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
 
   // Feed and process lip sync in receiver.
   FeedLipSyncInfoIntoReceiver();
