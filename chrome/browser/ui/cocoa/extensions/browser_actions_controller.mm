@@ -458,6 +458,9 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
          selector:@selector(actionButtonDragging:)
              name:kBrowserActionButtonDraggingNotification
            object:newButton];
+
+  [containerView_ setMaxWidth:
+      toolbarActionsBar_->IconCountToWidth([self buttonCount])];
 }
 
 - (void)redraw {
@@ -511,6 +514,9 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
   [button removeFromSuperview];
   [button onRemoved];
   [buttons_ removeObject:button];
+
+  [containerView_ setMaxWidth:
+      toolbarActionsBar_->IconCountToWidth([self buttonCount])];
 }
 
 - (void)removeAllViews {
@@ -529,8 +535,6 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
   BOOL animate = !toolbarActionsBar_->suppress_animation() &&
       ![containerView_ isAnimating];
   [self updateContainerVisibility];
-  [containerView_ setMaxWidth:
-      toolbarActionsBar_->IconCountToWidth([self buttonCount])];
   [containerView_ resizeToWidth:width
                         animate:animate];
   NSRect frame = animate ? [containerView_ animationEndFrame] :
