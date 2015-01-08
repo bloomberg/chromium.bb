@@ -11,9 +11,18 @@ using blink::WebFontRendering;
 namespace content {
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
-  // TODO(ananta)
-  // Add code to update the Webkit font cache with the system font metrics
-  // information.
+  const RendererPreferences& prefs = renderer_preferences_;
+
+  // Cache the system font metrics in blink.
+  blink::WebFontRendering::setMenuFontMetrics(
+      prefs.menu_font_family_name.c_str(), prefs.menu_font_height);
+
+  blink::WebFontRendering::setSmallCaptionFontMetrics(
+      prefs.small_caption_font_family_name.c_str(),
+      prefs.small_caption_font_height);
+
+  blink::WebFontRendering::setStatusFontMetrics(
+      prefs.status_font_family_name.c_str(), prefs.status_font_height);
 }
 
 }  // namespace content
