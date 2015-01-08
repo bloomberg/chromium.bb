@@ -332,6 +332,7 @@ void EventPath::trace(Visitor* visitor)
     visitor->trace(m_node);
     visitor->trace(m_event);
     visitor->trace(m_treeScopeEventContexts);
+    visitor->trace(m_windowEventContext);
 }
 
 } // namespace

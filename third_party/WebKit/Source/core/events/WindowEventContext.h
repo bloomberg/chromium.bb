@@ -38,13 +38,15 @@ class Event;
 class Node;
 class NodeEventContext;
 
-class WindowEventContext {
+class WindowEventContext : public NoBaseWillBeGarbageCollected<WindowEventContext> {
 public:
     WindowEventContext(Event&, const NodeEventContext& topNodeEventContext);
 
     LocalDOMWindow* window() const;
     EventTarget* target() const;
     bool handleLocalEvents(Event&);
+
+    void trace(Visitor*);
 
 private:
     RefPtrWillBeMember<LocalDOMWindow> m_window;

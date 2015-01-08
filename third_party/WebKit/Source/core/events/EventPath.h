@@ -98,7 +98,7 @@ private:
     RawPtrWillBeMember<Node> m_node;
     RawPtrWillBeMember<Event> m_event;
     WillBeHeapVector<RefPtrWillBeMember<TreeScopeEventContext>> m_treeScopeEventContexts;
-    OwnPtrWillBeRawPtr<WindowEventContext> m_windowEventContext;
+    OwnPtrWillBeMember<WindowEventContext> m_windowEventContext;
 };
 
 } // namespace
