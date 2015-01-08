@@ -21,8 +21,8 @@ UNKNOWN_TYPE | CreditCardInformation.BillingAddressEntry.OtherStates_Selected | 
 ADDRESS_HOME_ZIP | CreditCardInformation.BillingAddressEntry.PostalCode | Zip/Postal Code |  | MyWalletInformation.UseMyWalletFunds_1-default
 ADDRESS_HOME_COUNTRY | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected | Country Code | 1 | MyWalletInformation.UseMyWalletFunds_1-default
 PHONE_HOME_WHOLE_NUMBER | CreditCardInformation.BillingPhoneNumberEntry.Number | Phone (with area code) |  | MyWalletInformation.UseMyWalletFunds_1-default
-UNKNOWN_TYPE | TripInsurance.QuoteID | Reimburses non-refundable, prepaid expenses up to the cost of your ticket(s) if you cancel your tripCovers emergency medical / dental and emergency medical transportation while travelingHelps with trip interruption, lost or damaged baggage, baggage delay, and additional travel delay costs Terms, conditions and exclusions apply, learn more. | 657566350481481886 | MyWalletInformation.UseMyWalletFunds_1-default
-UNKNOWN_TYPE | TripInsurance.QuoteID | Yes, add trip protection for a total of $21.00. No, I choose not to protect my purchase. | 657566350481481887 | MyWalletInformation.UseMyWalletFunds_1-default
+UNKNOWN_TYPE | TripInsurance.QuoteID | Yes, add trip protection for a total of $21.00. | 657566350481481886 | MyWalletInformation.UseMyWalletFunds_1-default
+UNKNOWN_TYPE | TripInsurance.QuoteID | No, I choose not to protect my purchase. | 657566350481481887 | MyWalletInformation.UseMyWalletFunds_1-default
 CREDIT_CARD_NUMBER | AncillaryCreditCardInformation.BillingCreditCardEntry.CardNumber | Card Number |  | MyWalletInformation.UseMyWalletFunds_1-cc
 CREDIT_CARD_EXP_MONTH | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-cc

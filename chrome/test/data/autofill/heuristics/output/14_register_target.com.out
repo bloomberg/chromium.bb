@@ -4,5 +4,5 @@ EMAIL_ADDRESS | emailCheck | Re-enter email address:* |  | userName_1-default
 UNKNOWN_TYPE | password | Create a password:* |  | userName_1-default
 UNKNOWN_TYPE | passwordCheck | Re-enter password:* |  | userName_1-default
 UNKNOWN_TYPE | subscribeEmail | Yes, please send me e-mails about special offers, exclusives and promotions from Target. | 1 | userName_1-default
-UNKNOWN_TYPE | ageCheck |  | yes | userName_1-default
-UNKNOWN_TYPE | ageCheck | Yes No | no | userName_1-default
+UNKNOWN_TYPE | ageCheck | Yes | yes | userName_1-default
+UNKNOWN_TYPE | ageCheck | No | no | userName_1-default

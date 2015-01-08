@@ -5,6 +5,6 @@ ADDRESS_HOME_CITY | city | City*: |  | name_1-default
 ADDRESS_HOME_STATE | state | State*: |  | name_1-default
 ADDRESS_HOME_ZIP | zip | Zip Code*: |  | name_1-default
 PHONE_HOME_WHOLE_NUMBER | voice | Phone Number*: |  | name_1-default
-UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | (3-5 business days) | std-us | name_1-default
-UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | (2 business days) | second | name_1-default
-UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | Standard Shipping Two-Day Shipping One-Day Shipping | next | name_1-default
+UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | Standard Shipping | std-us | name_1-default
+UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | Two-Day Shipping | second | name_1-default
+UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | One-Day Shipping | next | name_1-default

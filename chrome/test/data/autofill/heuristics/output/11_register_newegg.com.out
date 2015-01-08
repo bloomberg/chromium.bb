@@ -19,8 +19,8 @@ PHONE_HOME_CITY_CODE | BDayPhone_tel1 | Daytime Phone |  | LoginName_1-default
 PHONE_HOME_NUMBER | BDayPhone_tel2 | Exchange |  | LoginName_1-default
 PHONE_HOME_NUMBER | BDayPhone_tel3 | Last four digits |  | LoginName_1-default
 UNKNOWN_TYPE | BDayPhone_ext1 | Ext |  | LoginName_1-default
-UNKNOWN_TYPE | same | Is this your shipping address?* | 1 | LoginName_1-default
-UNKNOWN_TYPE | same | Yes No | 0 | LoginName_1-default
+UNKNOWN_TYPE | same | Yes | 1 | LoginName_1-default
+UNKNOWN_TYPE | same | No | 0 | LoginName_1-default
 NAME_FIRST | SFirstName | First Name* |  | LoginName_1-default
 NAME_MIDDLE_INITIAL | SMI | MI |  | LoginName_1-default
 NAME_LAST | SLastName | Last Name* |  | LoginName_1-default

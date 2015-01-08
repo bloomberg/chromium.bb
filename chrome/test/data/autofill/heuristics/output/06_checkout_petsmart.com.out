@@ -9,5 +9,5 @@ UNKNOWN_TYPE | altBillState | • Other State/Province: |  | billCountry_1-defau
 ADDRESS_HOME_ZIP | billZip | • Zip/Postal Code: |  | billCountry_1-default
 PHONE_HOME_WHOLE_NUMBER | billPhone | • Telephone: |  | billCountry_1-default
 EMAIL_ADDRESS | guestEmail | • Email Address: |  | billCountry_1-default
-UNKNOWN_TYPE | shipOptions | Enter Addresses | useShip | billCountry_1-default
-UNKNOWN_TYPE | shipOptions | Ship to the above billing address Ship to a different address | provideNew | billCountry_1-default
+UNKNOWN_TYPE | shipOptions | Ship to the above billing address | useShip | billCountry_1-default
+UNKNOWN_TYPE | shipOptions | Ship to a different address | provideNew | billCountry_1-default

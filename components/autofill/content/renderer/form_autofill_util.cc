@@ -710,7 +710,7 @@ bool ExtractFieldsFromControlElements(
     ExtractMask extract_mask,
     ScopedVector<FormFieldData>* form_fields,
     std::vector<bool>* fields_extracted,
-    std::map<base::string16, FormFieldData*>* name_map) {
+    std::map<WebFormControlElement, FormFieldData*>* element_map) {
   for (size_t i = 0; i < control_elements.size(); ++i) {
     const WebFormControlElement& control_element = control_elements[i];
 
@@ -727,10 +727,7 @@ bool ExtractFieldsFromControlElements(
     FormFieldData* form_field = new FormFieldData;
     WebFormControlElementToFormField(control_element, extract_mask, form_field);
     form_fields->push_back(form_field);
-    // TODO(jhawkins): A label element is mapped to a form control element's id.
-    // field->name() will contain the id only if the name does not exist.  Add
-    // an id() method to WebFormControlElement and use that here.
-    (*name_map)[form_field->name] = form_field;
+    (*element_map)[control_element] = form_field;
     (*fields_extracted)[i] = true;
   }
 
@@ -742,11 +739,13 @@ bool ExtractFieldsFromControlElements(
 }
 
 // For each label element, get the corresponding form control element, use the
-// form control element's name as a key into the <name, FormFieldData> map to
-// find the previously created FormFieldData and set the FormFieldData's label
-// to the label.firstChild().nodeValue() of the label element.
-void MatchLabelsAndFields(const WebElementCollection& labels,
-                          std::map<base::string16, FormFieldData*>* name_map) {
+// form control element's name as a key into the
+// <WebFormControlElement, FormFieldData> map to find the previously created
+// FormFieldData and set the FormFieldData's label to the
+// label.firstChild().nodeValue() of the label element.
+void MatchLabelsAndFields(
+    const WebElementCollection& labels,
+    std::map<WebFormControlElement, FormFieldData*>* element_map) {
   CR_DEFINE_STATIC_LOCAL(WebString, kFor, ("for"));
   CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));
 
@@ -755,30 +754,48 @@ void MatchLabelsAndFields(const WebElementCollection& labels,
     WebLabelElement label = item.to<WebLabelElement>();
     WebFormControlElement field_element =
         label.correspondingControl().to<WebFormControlElement>();
+    FormFieldData* field_data = nullptr;
 
-    base::string16 element_name;
     if (field_element.isNull()) {
       // Sometimes site authors will incorrectly specify the corresponding
       // field element's name rather than its id, so we compensate here.
-      element_name = label.getAttribute(kFor);
+      base::string16 element_name = label.getAttribute(kFor);
+      if (element_name.empty())
+        continue;
+      // Look through the list for elements with this name. There can actually
+      // be more than one. In this case, the label may not be particularly
+      // useful, so just discard it.
+      for (const auto& iter : *element_map) {
+        if (iter.second->name == element_name) {
+          if (field_data) {
+            field_data = nullptr;
+            break;
+          } else {
+            field_data = iter.second;
+          }
+        }
+      }
     } else if (!field_element.isFormControlElement() ||
                field_element.formControlType() == kHidden) {
       continue;
     } else {
-      element_name = field_element.nameForAutofill();
+      // Typical case: look up |field_data| in |element_map|.
+      auto iter = element_map->find(field_element);
+      if (iter == element_map->end())
+        continue;
+      field_data = iter->second;
     }
 
-    auto iter = name_map->find(element_name);
-    if (iter == name_map->end())
+    if (!field_data)
       continue;
 
     base::string16 label_text = FindChildText(label);
 
     // Concatenate labels because some sites might have multiple label
     // candidates.
-    if (!iter->second->label.empty() && !label_text.empty())
-      iter->second->label += base::ASCIIToUTF16(" ");
-    iter->second->label += label_text;
+    if (!field_data->label.empty() && !label_text.empty())
+      field_data->label += base::ASCIIToUTF16(" ");
+    field_data->label += label_text;
   }
 }
 
@@ -806,22 +823,19 @@ bool FormOrFieldsetsToFormData(
     DCHECK(form_control_element);
 
   // A map from a FormFieldData's name to the FormFieldData itself.
-  std::map<base::string16, FormFieldData*> name_map;
+  std::map<WebFormControlElement, FormFieldData*> element_map;
 
-  // The extracted FormFields.  We use pointers so we can store them in
-  // |name_map|.
+  // The extracted FormFields. We use pointers so we can store them in
+  // |element_map|.
   ScopedVector<FormFieldData> form_fields;
 
   // A vector of bools that indicate whether each field in the form meets the
   // requirements and thus will be in the resulting |form|.
   std::vector<bool> fields_extracted(control_elements.size(), false);
 
-  if (!ExtractFieldsFromControlElements(control_elements,
-                                        requirements,
-                                        extract_mask,
-                                        &form_fields,
-                                        &fields_extracted,
-                                        &name_map)) {
+  if (!ExtractFieldsFromControlElements(control_elements, requirements,
+                                        extract_mask, &form_fields,
+                                        &fields_extracted, &element_map)) {
     return false;
   }
 
@@ -834,14 +848,14 @@ bool FormOrFieldsetsToFormData(
     WebElementCollection labels =
         form_element->getElementsByHTMLTagName(kLabel);
     DCHECK(!labels.isNull());
-    MatchLabelsAndFields(labels, &name_map);
+    MatchLabelsAndFields(labels, &element_map);
   } else {
     // Same as the if block, but for all the labels in fieldsets.
     for (size_t i = 0; i < fieldsets.size(); ++i) {
       WebElementCollection labels =
           fieldsets[i].getElementsByHTMLTagName(kLabel);
       DCHECK(!labels.isNull());
-      MatchLabelsAndFields(labels, &name_map);
+      MatchLabelsAndFields(labels, &element_map);
     }
   }
 
