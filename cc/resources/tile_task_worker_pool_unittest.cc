@@ -122,7 +122,7 @@ class TileTaskWorkerPoolTest
 
   typedef std::vector<scoped_refptr<RasterTask>> RasterTaskVector;
 
-  enum NamedTaskSet { ALL, REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW };
+  enum NamedTaskSet { REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW, ALL };
 
   TileTaskWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
@@ -188,8 +188,12 @@ class TileTaskWorkerPoolTest
 
   // Overriden from TileTaskWorkerPoolClient:
   void DidFinishRunningTileTasks(TaskSet task_set) override {
-    if (task_set == ALL)
+    EXPECT_FALSE(completed_task_sets_[task_set]);
+    completed_task_sets_[task_set] = true;
+    if (task_set == ALL) {
+      EXPECT_TRUE((~completed_task_sets_).none());
       all_tile_tasks_finished_.Schedule();
+    }
   }
 
   TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
@@ -218,10 +222,13 @@ class TileTaskWorkerPoolTest
     for (RasterTaskVector::const_iterator it = tasks_.begin();
          it != tasks_.end(); ++it) {
       TaskSetCollection task_sets;
+      task_sets[REQUIRED_FOR_ACTIVATION] = true;
+      task_sets[REQUIRED_FOR_DRAW] = true;
       task_sets[ALL] = true;
       queue.items.push_back(TileTaskQueue::Item(it->get(), task_sets));
     }
 
+    completed_task_sets_.reset();
     tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&queue);
   }
 
@@ -311,6 +318,7 @@ class TileTaskWorkerPoolTest
   bool timed_out_;
   RasterTaskVector tasks_;
   std::vector<RasterTaskResult> completed_tasks_;
+  TaskSetCollection completed_task_sets_;
 };
 
 TEST_P(TileTaskWorkerPoolTest, Basic) {

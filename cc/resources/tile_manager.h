@@ -90,12 +90,16 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
                               public RefCountedManager<Tile> {
  public:
   enum NamedTaskSet {
-    ALL,
     REQUIRED_FOR_ACTIVATION,
-    REQUIRED_FOR_DRAW
+    REQUIRED_FOR_DRAW,
+    // PixelBufferTileTaskWorkerPool depends on ALL being last.
+    ALL
     // Adding additional values requires increasing kNumberOfTaskSets in
     // rasterizer.h
   };
+
+  COMPILE_ASSERT(NamedTaskSet::ALL == (kNumberOfTaskSets - 1),
+                 NamedTaskSet_ALL_not_kNumberOfTaskSets_minus_1);
 
   static scoped_ptr<TileManager> Create(TileManagerClient* client,
                                         base::SequencedTaskRunner* task_runner,
