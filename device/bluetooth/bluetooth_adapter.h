@@ -25,6 +25,7 @@ class BluetoothGattDescriptor;
 class BluetoothGattService;
 class BluetoothSocket;
 class BluetoothUUID;
+struct BluetoothAdapterDeleter;
 
 // BluetoothAdapter represents a local Bluetooth adapter which may be used to
 // interact with remote Bluetooth devices. As well as providing support for
@@ -33,7 +34,8 @@ class BluetoothUUID;
 // known to the adapter, discovering new devices, and providing notification of
 // updates to device information.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
-    : public base::RefCounted<BluetoothAdapter> {
+    : public base::RefCountedThreadSafe<BluetoothAdapter,
+                                        BluetoothAdapterDeleter> {
  public:
   // Interface for observing changes from bluetooth adapters.
   class Observer {
@@ -334,10 +336,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const CreateServiceErrorCallback& error_callback) = 0;
 
  protected:
-  friend class base::RefCounted<BluetoothAdapter>;
+  friend class base::RefCountedThreadSafe<BluetoothAdapter,
+                                          BluetoothAdapterDeleter>;
+  friend struct BluetoothAdapterDeleter;
   friend class BluetoothDiscoverySession;
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
+
+  // Called by RefCountedThreadSafeDeleteOnCorrectThread to destroy this.
+  virtual void DeleteOnCorrectThread() const = 0;
 
   // Internal methods for initiating and terminating device discovery sessions.
   // An implementation of BluetoothAdapter keeps an internal reference count to
@@ -418,6 +425,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;
+};
+
+// Trait for RefCountedThreadSafe that deletes BluetoothAdapter.
+struct BluetoothAdapterDeleter {
+  static void Destruct(const BluetoothAdapter* adapter) {
+    adapter->DeleteOnCorrectThread();
+  }
 };
 
 }  // namespace device

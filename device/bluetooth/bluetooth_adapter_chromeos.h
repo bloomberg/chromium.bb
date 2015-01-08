@@ -44,6 +44,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   static base::WeakPtr<BluetoothAdapter> CreateAdapter();
 
   // BluetoothAdapter:
+  void DeleteOnCorrectThread() const override;
   virtual void AddObserver(
       device::BluetoothAdapter::Observer* observer) override;
   virtual void RemoveObserver(
@@ -116,6 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
+  friend class base::DeleteHelper<BluetoothAdapterChromeOS>;
   friend class BluetoothChromeOSTest;
 
   // typedef for callback parameters that are passed to AddDiscoverySession

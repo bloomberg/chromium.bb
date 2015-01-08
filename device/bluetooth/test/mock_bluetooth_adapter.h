@@ -78,6 +78,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     const CreateServiceErrorCallback& error_callback));
 
  protected:
+  void DeleteOnCorrectThread() const override;
   virtual void AddDiscoverySession(const base::Closure& callback,
                                    const ErrorCallback& error_callback);
   virtual void RemoveDiscoverySession(const base::Closure& callback,

@@ -82,12 +82,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
+  friend class base::DeleteHelper<BluetoothAdapterMac>;
   friend class BluetoothAdapterMacTest;
 
   BluetoothAdapterMac();
   ~BluetoothAdapterMac() override;
 
   // BluetoothAdapter:
+  void DeleteOnCorrectThread() const override;
   void AddDiscoverySession(const base::Closure& callback,
                            const ErrorCallback& error_callback) override;
   void RemoveDiscoverySession(const base::Closure& callback,

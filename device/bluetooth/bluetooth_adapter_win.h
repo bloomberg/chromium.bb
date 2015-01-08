@@ -89,6 +89,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
+  friend class base::DeleteHelper<BluetoothAdapterWin>;
   friend class BluetoothAdapterWinTest;
 
   enum DiscoveryStatus {
@@ -102,6 +103,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   virtual ~BluetoothAdapterWin();
 
   // BluetoothAdapter:
+  void DeleteOnCorrectThread() const override;
   virtual void AddDiscoverySession(
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;

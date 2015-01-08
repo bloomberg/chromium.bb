@@ -14,6 +14,10 @@ MockBluetoothAdapter::MockBluetoothAdapter() {
 
 MockBluetoothAdapter::~MockBluetoothAdapter() {}
 
+void MockBluetoothAdapter::DeleteOnCorrectThread() const {
+  delete this;
+};
+
 void MockBluetoothAdapter::AddDiscoverySession(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {}

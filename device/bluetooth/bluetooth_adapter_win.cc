@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -280,6 +281,12 @@ void BluetoothAdapterWin::DevicesPolled(
       }
     }
   }
+}
+
+void BluetoothAdapterWin::DeleteOnCorrectThread() const {
+  if (ui_task_runner_->RunsTasksOnCurrentThread() ||
+      !ui_task_runner_->DeleteSoon(FROM_HERE, this))
+    delete this;
 }
 
 // If the method is called when |discovery_status_| is DISCOVERY_STOPPING,

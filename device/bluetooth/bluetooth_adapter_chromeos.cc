@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
@@ -108,6 +109,12 @@ BluetoothAdapterChromeOS::~BluetoothAdapterChromeOS() {
           dbus::ObjectPath(kAgentPath),
           base::Bind(&base::DoNothing),
           base::Bind(&OnUnregisterAgentError));
+}
+
+void BluetoothAdapterChromeOS::DeleteOnCorrectThread() const {
+  if (ui_task_runner_->RunsTasksOnCurrentThread() ||
+      !ui_task_runner_->DeleteSoon(FROM_HERE, this))
+    delete this;
 }
 
 void BluetoothAdapterChromeOS::AddObserver(
