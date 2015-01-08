@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "chrome/browser/extensions/./extension_prefs_unittest.h"
+#include "chrome/browser/extensions/extension_prefs_unittest.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
