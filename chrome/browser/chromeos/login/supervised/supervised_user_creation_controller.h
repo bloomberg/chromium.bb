@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authenticator.h"
-#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 
 class Profile;
 

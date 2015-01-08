@@ -90,8 +90,8 @@
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"

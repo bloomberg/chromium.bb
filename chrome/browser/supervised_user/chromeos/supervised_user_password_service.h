@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
 

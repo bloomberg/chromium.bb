@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "ui/gfx/image/image_skia.h"

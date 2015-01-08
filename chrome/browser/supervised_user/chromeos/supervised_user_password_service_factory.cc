@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service.h"
-#include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
@@ -41,7 +41,7 @@ SupervisedUserPasswordServiceFactory::
 
 KeyedService* SupervisedUserPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile= static_cast<Profile*>(context);
+  Profile* profile = static_cast<Profile*>(context);
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (user->GetType() != user_manager::USER_TYPE_SUPERVISED)
     return NULL;

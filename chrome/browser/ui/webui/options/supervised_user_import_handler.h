@@ -8,7 +8,7 @@
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/supervised_user/supervised_user_sync_service_observer.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 
