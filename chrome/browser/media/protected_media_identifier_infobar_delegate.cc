@@ -65,7 +65,7 @@ void ProtectedMediaIdentifierInfoBarDelegate::SetPermission(
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   controller_->OnPermissionSet(id_, requesting_frame_,
-                               web_contents->GetLastCommittedURL(),
+                               web_contents->GetLastCommittedURL().GetOrigin(),
                                update_content_setting, allowed);
 }
 
