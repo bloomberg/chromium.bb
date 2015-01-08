@@ -416,6 +416,17 @@ void TexImage2D(GLenum target,
                 GLenum type,
                 const void* pixels) override;
 
+void TexImage3D(GLenum target,
+                GLint level,
+                GLint internalformat,
+                GLsizei width,
+                GLsizei height,
+                GLsizei depth,
+                GLint border,
+                GLenum format,
+                GLenum type,
+                const void* pixels) override;
+
 void TexParameterf(GLenum target, GLenum pname, GLfloat param) override;
 
 void TexParameterfv(GLenum target,
@@ -439,6 +450,18 @@ void TexSubImage2D(GLenum target,
                    GLint yoffset,
                    GLsizei width,
                    GLsizei height,
+                   GLenum format,
+                   GLenum type,
+                   const void* pixels) override;
+
+void TexSubImage3D(GLenum target,
+                   GLint level,
+                   GLint xoffset,
+                   GLint yoffset,
+                   GLint zoffset,
+                   GLsizei width,
+                   GLsizei height,
+                   GLsizei depth,
                    GLenum format,
                    GLenum type,
                    const void* pixels) override;

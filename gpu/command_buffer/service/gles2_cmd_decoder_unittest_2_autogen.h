@@ -424,6 +424,8 @@ TEST_P(GLES2DecoderTest2, StencilOpSeparateValidArgs) {
 }
 // TODO(gman): TexImage2D
 
+// TODO(gman): TexImage3D
+
 TEST_P(GLES2DecoderTest2, TexParameterfValidArgs) {
   EXPECT_CALL(*gl_,
               TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -631,6 +633,8 @@ TEST_P(GLES2DecoderTest2, TexStorage3DValidArgs) {
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 // TODO(gman): TexSubImage2D
+
+// TODO(gman): TexSubImage3D
 
 TEST_P(GLES2DecoderTest2, Uniform1fValidArgs) {
   EXPECT_CALL(*gl_, Uniform1fv(1, 1, _));
@@ -1278,18 +1282,5 @@ TEST_P(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 // TODO(gman): GenQueriesEXTImmediate
 // TODO(gman): DeleteQueriesEXTImmediate
 // TODO(gman): BeginQueryEXT
-
-TEST_P(GLES2DecoderTest2, BeginTransformFeedbackValidArgs) {
-  EXPECT_CALL(*gl_, BeginTransformFeedback(GL_POINTS));
-  SpecializedSetup<cmds::BeginTransformFeedback, 0>(true);
-  cmds::BeginTransformFeedback cmd;
-  cmd.Init(GL_POINTS);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-// TODO(gman): EndQueryEXT
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

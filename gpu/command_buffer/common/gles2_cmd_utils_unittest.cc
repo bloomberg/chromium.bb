@@ -8,6 +8,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <GLES3/gl3.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,53 +96,82 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizesFormats) {
   uint32_t unpadded_row_size;
   uint32_t padded_row_size;
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, 1,
+      &size, &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 3, size);
   EXPECT_EQ(kWidth * 3, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGBA, GL_UNSIGNED_BYTE, 1, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 4, size);
   EXPECT_EQ(kWidth * 4, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_LUMINANCE, GL_UNSIGNED_BYTE, 1, &size,
+      kWidth, kHeight, 1, GL_LUMINANCE, GL_UNSIGNED_BYTE, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 1, size);
   EXPECT_EQ(kWidth * 1, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, 1, &size,
+      kWidth, kHeight, 1, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 2, size);
   EXPECT_EQ(kWidth * 2, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_BGRA_EXT, GL_UNSIGNED_BYTE, 1, &size,
+      kWidth, kHeight, 1, GL_BGRA_EXT, GL_UNSIGNED_BYTE, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 4, size);
   EXPECT_EQ(kWidth * 4, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_ALPHA, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_ALPHA, GL_UNSIGNED_BYTE, 1, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 1, size);
   EXPECT_EQ(kWidth * 1, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 1, &size,
+      kWidth, kHeight, 1, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 2, size);
   EXPECT_EQ(kWidth * 2, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, 1,
-      &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, 1,
+      &size, &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 4, size);
   EXPECT_EQ(kWidth * 4, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RGB_INTEGER, GL_UNSIGNED_BYTE, 1,
+      &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 3, size);
+  EXPECT_EQ(kWidth * 3, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RG, GL_UNSIGNED_BYTE, 1,
+      &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 2, size);
+  EXPECT_EQ(kWidth * 2, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RG_INTEGER, GL_UNSIGNED_BYTE, 1,
+      &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 2, size);
+  EXPECT_EQ(kWidth * 2, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RED, GL_UNSIGNED_BYTE, 1,
+      &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 1, size);
+  EXPECT_EQ(kWidth * 1, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RED_INTEGER, GL_UNSIGNED_BYTE, 1,
+      &size, &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 1, size);
+  EXPECT_EQ(kWidth * 1, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
 }
 
@@ -152,32 +182,56 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizeTypes) {
   uint32_t unpadded_row_size;
   uint32_t padded_row_size;
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGBA, GL_UNSIGNED_BYTE, 1, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 4, size);
   EXPECT_EQ(kWidth * 4, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 1, &size,
+      kWidth, kHeight, 1, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 2, size);
   EXPECT_EQ(kWidth * 2, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, 1, &size,
+      kWidth, kHeight, 1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 2, size);
   EXPECT_EQ(kWidth * 2, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 1, &size,
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 1, &size,
       &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 2, size);
   EXPECT_EQ(kWidth * 2, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 1, &size,
+      kWidth, kHeight, 1, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 1, &size,
       &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 4, size);
+  EXPECT_EQ(kWidth * 4, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, 1, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 4, size);
+  EXPECT_EQ(kWidth * 4, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_INT_10F_11F_11F_REV, 1, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 4, size);
+  EXPECT_EQ(kWidth * 4, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_RGBA, GL_UNSIGNED_INT_5_9_9_9_REV, 1, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * 4, size);
+  EXPECT_EQ(kWidth * 4, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
+      1, &size, &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 4, size);
   EXPECT_EQ(kWidth * 4, padded_row_size);
   EXPECT_EQ(padded_row_size, unpadded_row_size);
@@ -190,29 +244,65 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizesUnpackAlignment) {
   uint32_t unpadded_row_size;
   uint32_t padded_row_size;
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 1, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, 1, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ(kWidth * kHeight * 3, size);
   EXPECT_EQ(kWidth * 3, unpadded_row_size);
   EXPECT_EQ(kWidth * 3, padded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 2, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, 2, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ((kWidth * 3 + 1) * (kHeight - 1) +
             kWidth * 3, size);
   EXPECT_EQ(kWidth * 3, unpadded_row_size);
   EXPECT_EQ(kWidth * 3 + 1, padded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 4, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, 4, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ((kWidth * 3 + 3) * (kHeight - 1) +
             kWidth * 3, size);
   EXPECT_EQ(kWidth * 3, unpadded_row_size);
   EXPECT_EQ(kWidth * 3 + 3, padded_row_size);
   EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, 8, &size, &unpadded_row_size,
-      &padded_row_size));
+      kWidth, kHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, 8, &size,
+      &unpadded_row_size, &padded_row_size));
   EXPECT_EQ((kWidth * 3 + 7) * (kHeight - 1) +
+            kWidth * 3, size);
+  EXPECT_EQ(kWidth * 3, unpadded_row_size);
+  EXPECT_EQ(kWidth * 3 + 7, padded_row_size);
+}
+
+TEST_F(GLES2UtilTest, ComputeImageDataSizeDepth) {
+  const uint32_t kWidth = 19;
+  const uint32_t kHeight = 12;
+  const uint32_t kDepth = 3;
+  uint32_t size;
+  uint32_t unpadded_row_size;
+  uint32_t padded_row_size;
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, kDepth, GL_RGB, GL_UNSIGNED_BYTE, 1, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ(kWidth * kHeight * kDepth * 3, size);
+  EXPECT_EQ(kWidth * 3, padded_row_size);
+  EXPECT_EQ(padded_row_size, unpadded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, kDepth, GL_RGB, GL_UNSIGNED_BYTE, 2, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ((kWidth * 3 + 1) * (kHeight * kDepth - 1) +
+            kWidth * 3, size);
+  EXPECT_EQ(kWidth * 3, unpadded_row_size);
+  EXPECT_EQ(kWidth * 3 + 1, padded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, kDepth, GL_RGB, GL_UNSIGNED_BYTE, 4, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ((kWidth * 3 + 3) * (kHeight * kDepth - 1) +
+            kWidth * 3, size);
+  EXPECT_EQ(kWidth * 3, unpadded_row_size);
+  EXPECT_EQ(kWidth * 3 + 3, padded_row_size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, kDepth, GL_RGB, GL_UNSIGNED_BYTE, 8, &size,
+      &unpadded_row_size, &padded_row_size));
+  EXPECT_EQ((kWidth * 3 + 7) * (kHeight * kDepth - 1) +
             kWidth * 3, size);
   EXPECT_EQ(kWidth * 3, unpadded_row_size);
   EXPECT_EQ(kWidth * 3 + 7, padded_row_size);

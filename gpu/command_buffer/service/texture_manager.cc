@@ -626,7 +626,7 @@ void Texture::SetLevelInfo(
 
   estimated_size_ -= info.estimated_size;
   GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, 4, &info.estimated_size, NULL, NULL);
+      width, height, 1, format, type, 4, &info.estimated_size, NULL, NULL);
   estimated_size_ += info.estimated_size;
 
   UpdateMipCleared(&info, cleared);

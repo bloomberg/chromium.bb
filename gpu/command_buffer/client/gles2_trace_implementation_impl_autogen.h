@@ -873,6 +873,21 @@ void GLES2TraceImplementation::TexImage2D(GLenum target,
                   type, pixels);
 }
 
+void GLES2TraceImplementation::TexImage3D(GLenum target,
+                                          GLint level,
+                                          GLint internalformat,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLsizei depth,
+                                          GLint border,
+                                          GLenum format,
+                                          GLenum type,
+                                          const void* pixels) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::TexImage3D");
+  gl_->TexImage3D(target, level, internalformat, width, height, depth, border,
+                  format, type, pixels);
+}
+
 void GLES2TraceImplementation::TexParameterf(GLenum target,
                                              GLenum pname,
                                              GLfloat param) {
@@ -923,6 +938,22 @@ void GLES2TraceImplementation::TexSubImage2D(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::TexSubImage2D");
   gl_->TexSubImage2D(target, level, xoffset, yoffset, width, height, format,
                      type, pixels);
+}
+
+void GLES2TraceImplementation::TexSubImage3D(GLenum target,
+                                             GLint level,
+                                             GLint xoffset,
+                                             GLint yoffset,
+                                             GLint zoffset,
+                                             GLsizei width,
+                                             GLsizei height,
+                                             GLsizei depth,
+                                             GLenum format,
+                                             GLenum type,
+                                             const void* pixels) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::TexSubImage3D");
+  gl_->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
+                     depth, format, type, pixels);
 }
 
 void GLES2TraceImplementation::Uniform1f(GLint location, GLfloat x) {

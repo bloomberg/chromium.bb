@@ -352,6 +352,10 @@ int ElementsPerGroup(int format, int type) {
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
     case GL_UNSIGNED_INT_24_8_OES:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
        return 1;
     default:
        break;
@@ -359,12 +363,15 @@ int ElementsPerGroup(int format, int type) {
 
     switch (format) {
     case GL_RGB:
+    case GL_RGB_INTEGER:
     case GL_SRGB_EXT:
        return 3;
     case GL_LUMINANCE_ALPHA:
     case GL_RG_EXT:
+    case GL_RG_INTEGER:
        return 2;
     case GL_RGBA:
+    case GL_RGBA_INTEGER:
     case GL_BGRA_EXT:
     case GL_SRGB_ALPHA_EXT:
        return 4;
@@ -377,6 +384,7 @@ int ElementsPerGroup(int format, int type) {
     case GL_DEPTH24_STENCIL8_OES:
     case GL_DEPTH_STENCIL_OES:
     case GL_RED_EXT:
+    case GL_RED_INTEGER:
        return 1;
     default:
        return 0;
@@ -389,6 +397,10 @@ int BytesPerElement(int type) {
     case GL_FLOAT:
     case GL_UNSIGNED_INT_24_8_OES:
     case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
       return 4;
     case GL_HALF_FLOAT_OES:
     case GL_UNSIGNED_SHORT:
@@ -427,23 +439,28 @@ bool GLES2Util::ComputeImagePaddedRowSize(
   return true;
 }
 
-// Returns the amount of data glTexImage2D or glTexSubImage2D will access.
+// Returns the amount of data glTexImage*D or glTexSubImage*D will access.
 bool GLES2Util::ComputeImageDataSizes(
-    int width, int height, int format, int type, int unpack_alignment,
-    uint32* size, uint32* ret_unpadded_row_size, uint32* ret_padded_row_size) {
+    int width, int height, int depth, int format, int type,
+    int unpack_alignment, uint32* size, uint32* ret_unpadded_row_size,
+    uint32* ret_padded_row_size) {
   uint32 bytes_per_group = ComputeImageGroupSize(format, type);
   uint32 row_size;
   if (!SafeMultiplyUint32(width, bytes_per_group, &row_size)) {
     return false;
   }
-  if (height > 1) {
+  uint32 num_of_rows;
+  if (!SafeMultiplyUint32(height, depth, &num_of_rows)) {
+    return false;
+  }
+  if (num_of_rows > 1) {
     uint32 temp;
     if (!SafeAddUint32(row_size, unpack_alignment - 1, &temp)) {
       return false;
     }
     uint32 padded_row_size = (temp / unpack_alignment) * unpack_alignment;
     uint32 size_of_all_but_last_row;
-    if (!SafeMultiplyUint32((height - 1), padded_row_size,
+    if (!SafeMultiplyUint32((num_of_rows - 1), padded_row_size,
                             &size_of_all_but_last_row)) {
       return false;
     }
@@ -454,9 +471,7 @@ bool GLES2Util::ComputeImageDataSizes(
       *ret_padded_row_size = padded_row_size;
     }
   } else {
-    if (!SafeMultiplyUint32(height, row_size, size)) {
-      return false;
-    }
+    *size = row_size;
     if (ret_padded_row_size) {
       *ret_padded_row_size = row_size;
     }

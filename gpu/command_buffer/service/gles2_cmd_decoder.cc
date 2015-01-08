@@ -2129,7 +2129,7 @@ bool BackTexture::AllocateStorage(
   ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
   uint32 image_size = 0;
   GLES2Util::ComputeImageDataSizes(
-      size.width(), size.height(), format, GL_UNSIGNED_BYTE, 8, &image_size,
+      size.width(), size.height(), 1, format, GL_UNSIGNED_BYTE, 8, &image_size,
       NULL, NULL);
 
   if (!memory_tracker_.EnsureGPUMemoryAvailable(image_size)) {
@@ -7682,7 +7682,7 @@ void GLES2DecoderImpl::FinishReadPixels(
     }
   }
   GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.pack_alignment, &pixels_size,
+      width, height, 1, format, type, state_.pack_alignment, &pixels_size,
       NULL, NULL);
   void* pixels = GetSharedMemoryAs<void*>(
       c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
@@ -7729,7 +7729,7 @@ void GLES2DecoderImpl::FinishReadPixels(
     uint32 unpadded_row_size;
     uint32 padded_row_size;
     if (!GLES2Util::ComputeImageDataSizes(
-            width, 2, format, type, state_.pack_alignment, &temp_size,
+            width, 2, 1, format, type, state_.pack_alignment, &temp_size,
             &unpadded_row_size, &padded_row_size)) {
       return;
     }
@@ -7792,7 +7792,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
   typedef cmds::ReadPixels::Result Result;
   uint32 pixels_size;
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.pack_alignment, &pixels_size,
+      width, height, 1, format, type, state_.pack_alignment, &pixels_size,
       NULL, NULL)) {
     return error::kOutOfBounds;
   }
@@ -7868,7 +7868,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     uint32 unpadded_row_size;
     uint32 padded_row_size;
     if (!GLES2Util::ComputeImageDataSizes(
-        width, 2, format, type, state_.pack_alignment, &temp_size,
+        width, 2, 1, format, type, state_.pack_alignment, &temp_size,
         &unpadded_row_size, &padded_row_size)) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE, "glReadPixels", "dimensions out of range");
@@ -7878,8 +7878,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     GLint dest_x_offset = std::max(-x, 0);
     uint32 dest_row_offset;
     if (!GLES2Util::ComputeImageDataSizes(
-        dest_x_offset, 1, format, type, state_.pack_alignment, &dest_row_offset,
-        NULL, NULL)) {
+        dest_x_offset, 1, 1, format, type, state_.pack_alignment,
+        &dest_row_offset, NULL, NULL)) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE, "glReadPixels", "dimensions out of range");
       return error::kNoError;
@@ -8321,7 +8321,7 @@ bool GLES2DecoderImpl::ClearLevel(
   uint32 size;
   uint32 padded_row_size;
   if (!GLES2Util::ComputeImageDataSizes(
-          width, height, format, type, state_.unpack_alignment, &size,
+          width, height, 1, format, type, state_.unpack_alignment, &size,
           NULL, &padded_row_size)) {
     return false;
   }
@@ -8339,7 +8339,7 @@ bool GLES2DecoderImpl::ClearLevel(
     DCHECK_GT(padded_row_size, 0U);
     tile_height = kMaxZeroSize / padded_row_size;
     if (!GLES2Util::ComputeImageDataSizes(
-            width, tile_height, format, type, state_.unpack_alignment, &size,
+            width, tile_height, 1, format, type, state_.unpack_alignment, &size,
             NULL, NULL)) {
       return false;
     }
@@ -8775,8 +8775,8 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
   uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
   uint32 pixels_size;
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.unpack_alignment, &pixels_size, NULL,
-      NULL)) {
+      width, height, 1, format, type, state_.unpack_alignment, &pixels_size,
+      NULL, NULL)) {
     return error::kOutOfBounds;
   }
   const void* pixels = NULL;
@@ -8793,6 +8793,51 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
     pixels, pixels_size};
   texture_manager()->ValidateAndDoTexImage2D(
       &texture_state_, &state_, &framebuffer_state_, args);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleTexImage3D(uint32 immediate_data_size,
+                                                const void* cmd_data) {
+  // TODO(zmo): Unsafe ES3 API.
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+
+  const gles2::cmds::TexImage3D& c =
+      *static_cast<const gles2::cmds::TexImage3D*>(cmd_data);
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexImage3D",
+      "widthXheight", c.width * c.height, "depth", c.depth);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLint border = static_cast<GLint>(c.border);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 pixels_shm_id = static_cast<uint32>(c.pixels_shm_id);
+  uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
+  uint32 pixels_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, depth, format, type, state_.unpack_alignment, &pixels_size,
+      NULL, NULL)) {
+    return error::kOutOfBounds;
+  }
+  const void* pixels = NULL;
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+    pixels = GetSharedMemoryAs<const void*>(
+        pixels_shm_id, pixels_shm_offset, pixels_size);
+    if (!pixels) {
+      return error::kOutOfBounds;
+    }
+  }
+
+  glTexImage3D(target, level, internal_format, width, height, depth, border,
+               format, type, pixels);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -8934,8 +8979,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
   uint32 estimated_size = 0;
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, internal_format, GL_UNSIGNED_BYTE, state_.unpack_alignment,
-      &estimated_size, NULL, NULL)) {
+      width, height, 1, internal_format, GL_UNSIGNED_BYTE,
+      state_.unpack_alignment, &estimated_size, NULL, NULL)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too large");
     return;
@@ -9108,7 +9153,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     // some part was clipped so clear the sub rect.
     uint32 pixels_size = 0;
     if (!GLES2Util::ComputeImageDataSizes(
-        width, height, format, type, state_.unpack_alignment, &pixels_size,
+        width, height, 1, format, type, state_.unpack_alignment, &pixels_size,
         NULL, NULL)) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE, "glCopyTexSubImage2D", "dimensions too large");
@@ -9293,7 +9338,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
   GLenum type = static_cast<GLenum>(c.type);
   uint32 data_size;
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.unpack_alignment, &data_size,
+      width, height, 1, format, type, state_.unpack_alignment, &data_size,
       NULL, NULL)) {
     return error::kOutOfBounds;
   }
@@ -9301,6 +9346,48 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
   return DoTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+// TODO(zmo): Remove the below stub once we add the real function binding.
+// Currently it's missing due to a gmock limitation.
+static void glTexSubImage3D(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLsizei height, GLsizei width, GLsizei depth, GLenum format, GLenum type,
+    const void* pixels) {
+  NOTIMPLEMENTED();
+}
+
+error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32 immediate_data_size,
+                                                   const void* cmd_data) {
+  // TODO(zmo): Unsafe ES3 API.
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+
+  const gles2::cmds::TexSubImage3D& c =
+      *static_cast<const gles2::cmds::TexSubImage3D*>(cmd_data);
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexSubImage3D",
+      "widthXheight", c.width * c.height, "depth", c.depth);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, depth, format, type, state_.unpack_alignment, &data_size,
+      NULL, NULL)) {
+    return error::kOutOfBounds;
+  }
+  const void* pixels = GetSharedMemoryAs<const void*>(
+      c.pixels_shm_id, c.pixels_shm_offset, data_size);
+  glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
+                  depth, format, type, pixels);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
@@ -10702,7 +10789,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     for (int ii = 0; ii < levels; ++ii) {
       uint32 level_size = 0;
       if (!GLES2Util::ComputeImageDataSizes(
-          level_width, level_height, format, type, state_.unpack_alignment,
+          level_width, level_height, 1, format, type, state_.unpack_alignment,
           &estimated_size, NULL, NULL) ||
           !SafeAddUint32(estimated_size, level_size, &estimated_size)) {
         LOCAL_SET_GL_ERROR(
@@ -11317,8 +11404,8 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   // TODO(epenner): Move this and copies of this memory validation
   // into ValidateTexImage2D step.
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.unpack_alignment, &pixels_size, NULL,
-      NULL)) {
+      width, height, 1, format, type, state_.unpack_alignment, &pixels_size,
+      NULL, NULL)) {
     return error::kOutOfBounds;
   }
   const void* pixels = NULL;
@@ -11422,7 +11509,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   // into ValidateTexSubImage2D step.
   uint32 data_size;
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, state_.unpack_alignment, &data_size,
+      width, height, 1, format, type, state_.unpack_alignment, &data_size,
       NULL, NULL)) {
     return error::kOutOfBounds;
   }

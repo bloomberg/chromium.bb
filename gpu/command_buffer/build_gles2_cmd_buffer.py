@@ -2356,6 +2356,12 @@ _FUNCTION_INFO = {
     'data_transfer_methods': ['shm'],
     'client_test': False,
   },
+  'TexImage3D': {
+    'type': 'Manual',
+    'data_transfer_methods': ['shm'],
+    'client_test': False,
+    'unsafe': True,
+  },
   'TexParameterf': {
     'decoder_func': 'DoTexParameterf',
     'valid_args': {
@@ -2396,6 +2402,17 @@ _FUNCTION_INFO = {
                 'GLsizei width, GLsizei height, '
                 'GLenumTextureFormat format, GLenumPixelType type, '
                 'const void* pixels, GLboolean internal'
+  },
+  'TexSubImage3D': {
+    'type': 'Manual',
+    'data_transfer_methods': ['shm'],
+    'client_test': False,
+    'cmd_args': 'GLenumTextureTarget target, GLint level, '
+                'GLint xoffset, GLint yoffset, GLint zoffset, '
+                'GLsizei width, GLsizei height, GLsizei depth, '
+                'GLenumTextureFormat format, GLenumPixelType type, '
+                'const void* pixels, GLboolean internal',
+    'unsafe': True,
   },
   'Uniform1f': {'type': 'PUTXn', 'count': 1},
   'Uniform1fv': {

@@ -561,6 +561,20 @@ void GLES2TexImage2D(GLenum target,
   gles2::GetGLContext()->TexImage2D(target, level, internalformat, width,
                                     height, border, format, type, pixels);
 }
+void GLES2TexImage3D(GLenum target,
+                     GLint level,
+                     GLint internalformat,
+                     GLsizei width,
+                     GLsizei height,
+                     GLsizei depth,
+                     GLint border,
+                     GLenum format,
+                     GLenum type,
+                     const void* pixels) {
+  gles2::GetGLContext()->TexImage3D(target, level, internalformat, width,
+                                    height, depth, border, format, type,
+                                    pixels);
+}
 void GLES2TexParameterf(GLenum target, GLenum pname, GLfloat param) {
   gles2::GetGLContext()->TexParameterf(target, pname, param);
 }
@@ -593,6 +607,21 @@ void GLES2TexSubImage2D(GLenum target,
                         const void* pixels) {
   gles2::GetGLContext()->TexSubImage2D(target, level, xoffset, yoffset, width,
                                        height, format, type, pixels);
+}
+void GLES2TexSubImage3D(GLenum target,
+                        GLint level,
+                        GLint xoffset,
+                        GLint yoffset,
+                        GLint zoffset,
+                        GLsizei width,
+                        GLsizei height,
+                        GLsizei depth,
+                        GLenum format,
+                        GLenum type,
+                        const void* pixels) {
+  gles2::GetGLContext()->TexSubImage3D(target, level, xoffset, yoffset, zoffset,
+                                       width, height, depth, format, type,
+                                       pixels);
 }
 void GLES2Uniform1f(GLint location, GLfloat x) {
   gles2::GetGLContext()->Uniform1f(location, x);
@@ -1679,6 +1708,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glTexImage2D),
     },
     {
+     "glTexImage3D",
+     reinterpret_cast<GLES2FunctionPointer>(glTexImage3D),
+    },
+    {
      "glTexParameterf",
      reinterpret_cast<GLES2FunctionPointer>(glTexParameterf),
     },
@@ -1701,6 +1734,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glTexSubImage2D",
      reinterpret_cast<GLES2FunctionPointer>(glTexSubImage2D),
+    },
+    {
+     "glTexSubImage3D",
+     reinterpret_cast<GLES2FunctionPointer>(glTexSubImage3D),
     },
     {
      "glUniform1f",

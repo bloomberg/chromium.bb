@@ -126,8 +126,9 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // then the padded_row_size will be the same as the unpadded_row_size since
   // padding is not necessary.
   static bool ComputeImageDataSizes(
-      int width, int height, int format, int type, int unpack_alignment,
-      uint32_t* size, uint32_t* unpadded_row_size, uint32_t* padded_row_size);
+      int width, int height, int depth, int format, int type,
+      int unpack_alignment, uint32_t* size, uint32_t* unpadded_row_size,
+      uint32_t* padded_row_size);
 
   static size_t RenderbufferBytesPerPixel(int format);
 

@@ -1865,6 +1865,30 @@ TEST_F(GLES2FormatTest, TexImage2D) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, TexImage3D) {
+  cmds::TexImage3D& cmd = *GetBufferAs<cmds::TexImage3D>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
+              static_cast<GLint>(13), static_cast<GLsizei>(14),
+              static_cast<GLsizei>(15), static_cast<GLsizei>(16),
+              static_cast<GLenum>(17), static_cast<GLenum>(18),
+              static_cast<uint32_t>(19), static_cast<uint32_t>(20));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::TexImage3D::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.depth);
+  EXPECT_EQ(static_cast<GLenum>(17), cmd.format);
+  EXPECT_EQ(static_cast<GLenum>(18), cmd.type);
+  EXPECT_EQ(static_cast<uint32_t>(19), cmd.pixels_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(20), cmd.pixels_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, TexParameterf) {
   cmds::TexParameterf& cmd = *GetBufferAs<cmds::TexParameterf>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
@@ -1971,6 +1995,34 @@ TEST_F(GLES2FormatTest, TexSubImage2D) {
   EXPECT_EQ(static_cast<uint32_t>(19), cmd.pixels_shm_id);
   EXPECT_EQ(static_cast<uint32_t>(20), cmd.pixels_shm_offset);
   EXPECT_EQ(static_cast<GLboolean>(21), cmd.internal);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, TexSubImage3D) {
+  cmds::TexSubImage3D& cmd = *GetBufferAs<cmds::TexSubImage3D>();
+  void* next_cmd = cmd.Set(
+      &cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
+      static_cast<GLint>(13), static_cast<GLint>(14), static_cast<GLint>(15),
+      static_cast<GLsizei>(16), static_cast<GLsizei>(17),
+      static_cast<GLsizei>(18), static_cast<GLenum>(19),
+      static_cast<GLenum>(20), static_cast<uint32_t>(21),
+      static_cast<uint32_t>(22), static_cast<GLboolean>(23));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::TexSubImage3D::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.xoffset);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.yoffset);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.zoffset);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(17), cmd.height);
+  EXPECT_EQ(static_cast<GLsizei>(18), cmd.depth);
+  EXPECT_EQ(static_cast<GLenum>(19), cmd.format);
+  EXPECT_EQ(static_cast<GLenum>(20), cmd.type);
+  EXPECT_EQ(static_cast<uint32_t>(21), cmd.pixels_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(22), cmd.pixels_shm_offset);
+  EXPECT_EQ(static_cast<GLboolean>(23), cmd.internal);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

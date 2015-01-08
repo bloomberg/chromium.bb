@@ -1225,6 +1225,23 @@ void TexImage2D(GLenum target,
   }
 }
 
+void TexImage3D(GLenum target,
+                GLint level,
+                GLint internalformat,
+                GLsizei width,
+                GLsizei height,
+                GLsizei depth,
+                GLenum format,
+                GLenum type,
+                uint32_t pixels_shm_id,
+                uint32_t pixels_shm_offset) {
+  gles2::cmds::TexImage3D* c = GetCmdSpace<gles2::cmds::TexImage3D>();
+  if (c) {
+    c->Init(target, level, internalformat, width, height, depth, format, type,
+            pixels_shm_id, pixels_shm_offset);
+  }
+}
+
 void TexParameterf(GLenum target, GLenum pname, GLfloat param) {
   gles2::cmds::TexParameterf* c = GetCmdSpace<gles2::cmds::TexParameterf>();
   if (c) {
@@ -1286,6 +1303,26 @@ void TexSubImage2D(GLenum target,
   if (c) {
     c->Init(target, level, xoffset, yoffset, width, height, format, type,
             pixels_shm_id, pixels_shm_offset, internal);
+  }
+}
+
+void TexSubImage3D(GLenum target,
+                   GLint level,
+                   GLint xoffset,
+                   GLint yoffset,
+                   GLint zoffset,
+                   GLsizei width,
+                   GLsizei height,
+                   GLsizei depth,
+                   GLenum format,
+                   GLenum type,
+                   uint32_t pixels_shm_id,
+                   uint32_t pixels_shm_offset,
+                   GLboolean internal) {
+  gles2::cmds::TexSubImage3D* c = GetCmdSpace<gles2::cmds::TexSubImage3D>();
+  if (c) {
+    c->Init(target, level, xoffset, yoffset, zoffset, width, height, depth,
+            format, type, pixels_shm_id, pixels_shm_offset, internal);
   }
 }
 

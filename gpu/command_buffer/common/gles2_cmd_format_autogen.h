@@ -6008,6 +6008,96 @@ static_assert(offsetof(TexImage2D, pixels_shm_id) == 32,
 static_assert(offsetof(TexImage2D, pixels_shm_offset) == 36,
               "offset of TexImage2D pixels_shm_offset should be 36");
 
+struct TexImage3D {
+  typedef TexImage3D ValueType;
+  static const CommandId kCmdId = kTexImage3D;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLenum _format,
+            GLenum _type,
+            uint32_t _pixels_shm_id,
+            uint32_t _pixels_shm_offset) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+    depth = _depth;
+    format = _format;
+    type = _type;
+    pixels_shm_id = _pixels_shm_id;
+    pixels_shm_offset = _pixels_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLenum _format,
+            GLenum _type,
+            uint32_t _pixels_shm_id,
+            uint32_t _pixels_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _internalformat, _width,
+                                       _height, _depth, _format, _type,
+                                       _pixels_shm_id, _pixels_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t level;
+  int32_t internalformat;
+  int32_t width;
+  int32_t height;
+  int32_t depth;
+  uint32_t format;
+  uint32_t type;
+  uint32_t pixels_shm_id;
+  uint32_t pixels_shm_offset;
+  static const int32_t border = 0;
+};
+
+static_assert(sizeof(TexImage3D) == 44, "size of TexImage3D should be 44");
+static_assert(offsetof(TexImage3D, header) == 0,
+              "offset of TexImage3D header should be 0");
+static_assert(offsetof(TexImage3D, target) == 4,
+              "offset of TexImage3D target should be 4");
+static_assert(offsetof(TexImage3D, level) == 8,
+              "offset of TexImage3D level should be 8");
+static_assert(offsetof(TexImage3D, internalformat) == 12,
+              "offset of TexImage3D internalformat should be 12");
+static_assert(offsetof(TexImage3D, width) == 16,
+              "offset of TexImage3D width should be 16");
+static_assert(offsetof(TexImage3D, height) == 20,
+              "offset of TexImage3D height should be 20");
+static_assert(offsetof(TexImage3D, depth) == 24,
+              "offset of TexImage3D depth should be 24");
+static_assert(offsetof(TexImage3D, format) == 28,
+              "offset of TexImage3D format should be 28");
+static_assert(offsetof(TexImage3D, type) == 32,
+              "offset of TexImage3D type should be 32");
+static_assert(offsetof(TexImage3D, pixels_shm_id) == 36,
+              "offset of TexImage3D pixels_shm_id should be 36");
+static_assert(offsetof(TexImage3D, pixels_shm_offset) == 40,
+              "offset of TexImage3D pixels_shm_offset should be 40");
+
 struct TexParameterf {
   typedef TexParameterf ValueType;
   static const CommandId kCmdId = kTexParameterf;
@@ -6337,6 +6427,114 @@ static_assert(offsetof(TexSubImage2D, pixels_shm_offset) == 40,
               "offset of TexSubImage2D pixels_shm_offset should be 40");
 static_assert(offsetof(TexSubImage2D, internal) == 44,
               "offset of TexSubImage2D internal should be 44");
+
+struct TexSubImage3D {
+  typedef TexSubImage3D ValueType;
+  static const CommandId kCmdId = kTexSubImage3D;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _zoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLenum _format,
+            GLenum _type,
+            uint32_t _pixels_shm_id,
+            uint32_t _pixels_shm_offset,
+            GLboolean _internal) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
+    zoffset = _zoffset;
+    width = _width;
+    height = _height;
+    depth = _depth;
+    format = _format;
+    type = _type;
+    pixels_shm_id = _pixels_shm_id;
+    pixels_shm_offset = _pixels_shm_offset;
+    internal = _internal;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _zoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLenum _format,
+            GLenum _type,
+            uint32_t _pixels_shm_id,
+            uint32_t _pixels_shm_offset,
+            GLboolean _internal) {
+    static_cast<ValueType*>(cmd)->Init(
+        _target, _level, _xoffset, _yoffset, _zoffset, _width, _height, _depth,
+        _format, _type, _pixels_shm_id, _pixels_shm_offset, _internal);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t level;
+  int32_t xoffset;
+  int32_t yoffset;
+  int32_t zoffset;
+  int32_t width;
+  int32_t height;
+  int32_t depth;
+  uint32_t format;
+  uint32_t type;
+  uint32_t pixels_shm_id;
+  uint32_t pixels_shm_offset;
+  uint32_t internal;
+};
+
+static_assert(sizeof(TexSubImage3D) == 56,
+              "size of TexSubImage3D should be 56");
+static_assert(offsetof(TexSubImage3D, header) == 0,
+              "offset of TexSubImage3D header should be 0");
+static_assert(offsetof(TexSubImage3D, target) == 4,
+              "offset of TexSubImage3D target should be 4");
+static_assert(offsetof(TexSubImage3D, level) == 8,
+              "offset of TexSubImage3D level should be 8");
+static_assert(offsetof(TexSubImage3D, xoffset) == 12,
+              "offset of TexSubImage3D xoffset should be 12");
+static_assert(offsetof(TexSubImage3D, yoffset) == 16,
+              "offset of TexSubImage3D yoffset should be 16");
+static_assert(offsetof(TexSubImage3D, zoffset) == 20,
+              "offset of TexSubImage3D zoffset should be 20");
+static_assert(offsetof(TexSubImage3D, width) == 24,
+              "offset of TexSubImage3D width should be 24");
+static_assert(offsetof(TexSubImage3D, height) == 28,
+              "offset of TexSubImage3D height should be 28");
+static_assert(offsetof(TexSubImage3D, depth) == 32,
+              "offset of TexSubImage3D depth should be 32");
+static_assert(offsetof(TexSubImage3D, format) == 36,
+              "offset of TexSubImage3D format should be 36");
+static_assert(offsetof(TexSubImage3D, type) == 40,
+              "offset of TexSubImage3D type should be 40");
+static_assert(offsetof(TexSubImage3D, pixels_shm_id) == 44,
+              "offset of TexSubImage3D pixels_shm_id should be 44");
+static_assert(offsetof(TexSubImage3D, pixels_shm_offset) == 48,
+              "offset of TexSubImage3D pixels_shm_offset should be 48");
+static_assert(offsetof(TexSubImage3D, internal) == 52,
+              "offset of TexSubImage3D internal should be 52");
 
 struct Uniform1f {
   typedef Uniform1f ValueType;
