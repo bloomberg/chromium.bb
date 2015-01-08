@@ -690,6 +690,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                  int pending_host_id,
                                  const ppapi::URLResponseInfoData& data);
 
+  void RecordFlashJavaScriptUse();
+
   RenderFrameImpl* render_frame_;
   base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
@@ -712,6 +714,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Plugin URL.
   GURL plugin_url_;
+
+  // Used to track Flash-specific metrics.
+  bool is_flash_plugin_;
+
+  // Used to track if JavaScript has ever been used for this plugin instance.
+  bool javascript_used_;
 
   // Responsible for turning on throttling if Power Saver is on.
   scoped_ptr<PepperPluginInstanceThrottler> throttler_;

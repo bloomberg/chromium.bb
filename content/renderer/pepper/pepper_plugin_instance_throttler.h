@@ -56,7 +56,7 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
   PepperPluginInstanceThrottler(
       RenderFrame* frame,
       const blink::WebRect& bounds,
-      const std::string& module_name,
+      bool is_flash_plugin,
       const GURL& plugin_url,
       RenderFrame::PluginPowerSaverMode power_saver_mode,
       const base::Closure& throttle_change_callback);

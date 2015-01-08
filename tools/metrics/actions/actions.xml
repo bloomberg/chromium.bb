@@ -2696,6 +2696,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Flash.JavaScriptUsed">
+  <owner>tommycli@chromium.org</owner>
+  <description>
+    Count of Flash plugin instances that use JavaScript.
+  </description>
+</action>
+
 <action name="Flash.PluginInstanceCreated">
   <owner>thestig@chromium.org</owner>
   <description>Count of Flash plugin instances.</description>

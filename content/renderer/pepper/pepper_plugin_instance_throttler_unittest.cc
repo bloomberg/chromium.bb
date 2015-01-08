@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
@@ -33,7 +32,7 @@ class PepperPluginInstanceThrottlerTest : public testing::Test {
     rect.width = 100;
     rect.height = 100;
     throttler_.reset(new PepperPluginInstanceThrottler(
-        nullptr, rect, kFlashPluginName, GURL("http://example.com"),
+        nullptr, rect, true /* is_flash_plugin */, GURL("http://example.com"),
         content::RenderFrame::POWER_SAVER_MODE_PERIPHERAL_THROTTLED,
         base::Bind(&PepperPluginInstanceThrottlerTest::ChangeCallback,
                    base::Unretained(this))));

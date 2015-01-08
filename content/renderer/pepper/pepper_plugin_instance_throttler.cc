@@ -99,13 +99,13 @@ const int kMinimumConsecutiveInterestingFrames = 4;
 PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
     RenderFrame* frame,
     const blink::WebRect& bounds,
-    const std::string& module_name,
+    bool is_flash_plugin,
     const GURL& plugin_url,
     RenderFrame::PluginPowerSaverMode power_saver_mode,
     const base::Closure& throttle_change_callback)
     : bounds_(bounds),
       throttle_change_callback_(throttle_change_callback),
-      is_flash_plugin_(module_name == kFlashPluginName),
+      is_flash_plugin_(is_flash_plugin),
       needs_representative_keyframe_(false),
       consecutive_interesting_frames_(0),
       has_been_clicked_(false),
