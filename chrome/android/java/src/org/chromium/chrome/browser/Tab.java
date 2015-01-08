@@ -171,7 +171,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     private boolean mGroupedWithParent = true;
 
-    private boolean mIsClosing = false;
+    private boolean mIsClosing;
+    private boolean mIsShowingErrorPage;
 
     private Bitmap mFavicon;
 
@@ -778,6 +779,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Whether the {@link Tab} is currently showing an error page.
+     */
+    public boolean isShowingErrorPage() {
+        return mIsShowingErrorPage;
+    }
+
+    /**
      * @return Whether or not the tab has something valid to render.
      */
     public boolean isReady() {
@@ -1104,6 +1112,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Updating the timestamp has to happen after the showInternal() call since subclasses
             // may use it for logging.
             mTimestampMillis = System.currentTimeMillis();
+
+            for (TabObserver observer : mObservers) observer.onShown(this);
         } finally {
             TraceEvent.end("Tab.show");
         }
@@ -1134,6 +1144,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         hideInternal();
+
+        for (TabObserver observer : mObservers) observer.onHidden(this);
     }
 
     /**
@@ -1249,6 +1261,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param showingErrorPage Whether an error page is being shown.
      */
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
+        mIsShowingErrorPage = showingErrorPage;
+
         updateTitle();
         removeSadTabIfPresent();
         mInfoBarContainer.onPageStarted();
@@ -1684,6 +1698,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void setClosing(boolean closing) {
         mIsClosing = closing;
+
+        for (TabObserver observer : mObservers) observer.onClosingStateChanged(this, closing);
     }
 
     /**

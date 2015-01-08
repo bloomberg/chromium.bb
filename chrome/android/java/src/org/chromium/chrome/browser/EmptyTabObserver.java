@@ -12,6 +12,15 @@ import android.view.ContextMenu;
 public class EmptyTabObserver implements TabObserver {
 
     @Override
+    public void onShown(Tab tab) { }
+
+    @Override
+    public void onHidden(Tab tab) { }
+
+    @Override
+    public void onClosingStateChanged(Tab tab, boolean closing) { }
+
+    @Override
     public void onDestroyed(Tab tab) { }
 
     @Override

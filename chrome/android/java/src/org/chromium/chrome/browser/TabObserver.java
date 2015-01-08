@@ -14,6 +14,26 @@ import org.chromium.content.browser.ContentViewCore;
 public interface TabObserver {
 
     /**
+     * Called when a {@link Tab} is shown.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onShown(Tab tab);
+
+    /**
+     * Called when a {@link Tab} is hidden.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onHidden(Tab tab);
+
+    /**
+     * Called when a {@link Tab}'s closing state has changed.
+     *
+     * @param tab The notifying {@link Tab}.
+     * @param closing Whether the {@link Tab} is currently marked for closure.
+     */
+    void onClosingStateChanged(Tab tab, boolean closing);
+
+    /**
      * Called when a {@link Tab} is being destroyed.
      * @param tab The notifying {@link Tab}.
      */
