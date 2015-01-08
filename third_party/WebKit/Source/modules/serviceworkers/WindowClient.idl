@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#context-frame-type-enum
+enum ContextFrameType {
+    "top-level",
+    "nested",
+    "auxiliary",
+    "none"
+};
+
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#window-client-interface
 [
     Exposed=ServiceWorker,
@@ -12,6 +20,6 @@
 ] interface WindowClient : Client {
     readonly attribute DOMString visibilityState;
     readonly attribute boolean focused;
-    readonly attribute DOMString frameType;
+    readonly attribute ContextFrameType frameType;
     [CallWith=ScriptState] Promise<boolean> focus();
 };
