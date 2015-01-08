@@ -19,6 +19,7 @@ importer.ImportRunner = function() {};
  * @param {!importer.MediaImportHandler.DestinationFactory=} opt_destination A
  *     function that returns the directory into which media will be imported.
  *     The function will be executed only when the import task actually runs.
+ *
  * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
  */
 importer.ImportRunner.prototype.importFromScanResult;
@@ -65,7 +66,7 @@ importer.MediaImportHandler.prototype.importFromScanResult =
       scanResult,
       destination);
 
-  task.addObserver(this.onImportProgress_.bind(this));
+  task.addObserver(this.onTaskProgress_.bind(this));
 
   this.queue_.queueTask(task);
 
@@ -82,13 +83,15 @@ importer.MediaImportHandler.prototype.generateTaskId_ = function() {
 
 /**
  * Sends updates to the ProgressCenter when an import is happening.
+ *
  * @param {!importer.TaskQueue.UpdateType} updateType
  * @param {!importer.TaskQueue.Task} task
  * @private
  */
-importer.MediaImportHandler.prototype.onImportProgress_ =
+importer.MediaImportHandler.prototype.onTaskProgress_ =
     function(updateType, task) {
   var UpdateType = importer.TaskQueue.UpdateType;
+
   var item = this.progressCenter_.getItemById(task.taskId);
   if (!item) {
     item = new ProgressCenterItem();
@@ -207,6 +210,7 @@ importer.MediaImportHandler.ImportTask.prototype.run = function() {
 importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
   this.remainingFilesCount_ = this.scanResult_.getFileEntries().length;
   this.totalBytes_ = this.scanResult_.getTotalBytes();
+  this.notify(importer.TaskQueue.UpdateType.PROGRESS);
 };
 
 /**
@@ -250,6 +254,14 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
     this.processedBytes_ -= currentBytes;
     this.processedBytes_ += entry.size;
     this.onEntryChanged_(sourceUrl, destEntry);
+    this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+  };
+
+  /** @this {importer.MediaImportHandler.ImportTask} */
+  var onComplete = function() {
+    completionCallback();
+    this.markAsCopied_(entry);
+    this.notify(importer.TaskQueue.UpdateType.PROGRESS);
   };
 
   fileOperationUtil.copyTo(
@@ -258,10 +270,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
       entry.name,  // TODO(kenobi): account for duplicate filenames
       onEntryChanged.bind(this),
       onProgress.bind(this),
-      function() {
-        completionCallback();
-        this.markAsCopied_(entry);
-      }.bind(this),
+      onComplete.bind(this),
       this.onError_.bind(this));
 };
 
