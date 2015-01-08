@@ -50,7 +50,7 @@ class MockCanvas : public SkCanvas {
  public:
   explicit MockCanvas(int w, int h) : SkCanvas(w, h) {}
 
-  void drawRect(const SkRect& rect, const SkPaint& paint) override {
+  void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
     // Capture calls before SkCanvas quickReject() kicks in.
     rects_.push_back(rect);
   }

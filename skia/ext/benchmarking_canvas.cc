@@ -57,81 +57,76 @@ public:
     SkProxyCanvas::willRestore();
   }
 
-  void drawPaint(const SkPaint& paint) override {
+  void onDrawPaint(const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::drawPaint(paint);
+    SkProxyCanvas::onDrawPaint(paint);
   }
 
-  void drawPoints(PointMode mode,
-                  size_t count,
-                  const SkPoint pts[],
-                  const SkPaint& paint) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawPoints(mode, count, pts, paint);
-  }
-
-  void drawOval(const SkRect& rect, const SkPaint& paint) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawOval(rect, paint);
-  }
-
-  void drawRect(const SkRect& rect, const SkPaint& paint) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawRect(rect, paint);
-  }
-
-  void drawRRect(const SkRRect& rrect, const SkPaint& paint) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawRRect(rrect, paint);
-  }
-
-  void drawPath(const SkPath& path, const SkPaint& paint) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawPath(path, paint);
-  }
-
-  void drawBitmap(const SkBitmap& bitmap,
-                  SkScalar left,
-                  SkScalar top,
-                  const SkPaint* paint = NULL) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawBitmap(bitmap, left, top, paint);
-  }
-
-  void drawBitmapRectToRect(const SkBitmap& bitmap,
-                            const SkRect* src,
-                            const SkRect& dst,
-                            const SkPaint* paint,
-                            DrawBitmapRectFlags flags) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
-  }
-
-  void drawSprite(const SkBitmap& bitmap,
-                  int left,
-                  int top,
-                  const SkPaint* paint = NULL) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawSprite(bitmap, left, top, paint);
-  }
-
-  void drawVertices(VertexMode vmode,
-                    int vertexCount,
-                    const SkPoint vertices[],
-                    const SkPoint texs[],
-                    const SkColor colors[],
-                    SkXfermode* xmode,
-                    const uint16_t indices[],
-                    int indexCount,
+  void onDrawPoints(PointMode mode,
+                    size_t count,
+                    const SkPoint pts[],
                     const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::drawVertices(vmode, vertexCount, vertices, texs, colors,
-                                xmode, indices, indexCount, paint);
+    SkProxyCanvas::onDrawPoints(mode, count, pts, paint);
   }
 
-  void drawData(const void* data, size_t length) override {
+  void onDrawOval(const SkRect& rect, const SkPaint& paint) override {
     AutoStamper stamper(this);
-    SkProxyCanvas::drawData(data, length);
+    SkProxyCanvas::onDrawOval(rect, paint);
+  }
+
+  void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawRect(rect, paint);
+  }
+
+  void onDrawRRect(const SkRRect& rrect, const SkPaint& paint) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawRRect(rrect, paint);
+  }
+
+  void onDrawPath(const SkPath& path, const SkPaint& paint) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawPath(path, paint);
+  }
+
+  void onDrawBitmap(const SkBitmap& bitmap,
+                    SkScalar left,
+                    SkScalar top,
+                    const SkPaint* paint) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawBitmap(bitmap, left, top, paint);
+  }
+
+  void onDrawBitmapRect(const SkBitmap& bitmap,
+                        const SkRect* src,
+                        const SkRect& dst,
+                        const SkPaint* paint,
+                        DrawBitmapRectFlags flags) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
+  }
+
+  void onDrawSprite(const SkBitmap& bitmap,
+                    int left,
+                    int top,
+                    const SkPaint* paint) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawSprite(bitmap, left, top, paint);
+  }
+
+  void onDrawVertices(VertexMode vmode,
+                      int vertexCount,
+                      const SkPoint vertices[],
+                      const SkPoint texs[],
+                      const SkColor colors[],
+                      SkXfermode* xmode,
+                      const uint16_t indices[],
+                      int indexCount,
+                      const SkPaint& paint) override {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors,
+                                  xmode, indices, indexCount, paint);
   }
 
 protected:

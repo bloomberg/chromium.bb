@@ -95,22 +95,22 @@ void AnalysisCanvas::SetForceNotTransparent(bool flag) {
     is_transparent_ = false;
 }
 
-void AnalysisCanvas::drawPaint(const SkPaint& paint) {
+void AnalysisCanvas::onDrawPaint(const SkPaint& paint) {
   SkRect rect;
   getClipBounds(&rect);
   drawRect(rect, paint);
 }
 
-void AnalysisCanvas::drawPoints(SkCanvas::PointMode mode,
-                                size_t count,
-                                const SkPoint points[],
-                                const SkPaint& paint) {
+void AnalysisCanvas::onDrawPoints(SkCanvas::PointMode mode,
+                                  size_t count,
+                                  const SkPoint points[],
+                                  const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
+void AnalysisCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {
   // This recreates the early-exit logic in SkCanvas.cpp.
   SkRect scratch;
   if (paint.canComputeFastBounds() &&
@@ -158,13 +158,13 @@ void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawOval(const SkRect& oval, const SkPaint& paint) {
+void AnalysisCanvas::onDrawOval(const SkRect& oval, const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawRRect(const SkRRect& rr, const SkPaint& paint) {
+void AnalysisCanvas::onDrawRRect(const SkRRect& rr, const SkPaint& paint) {
   // This should add the SkRRect to an SkPath, and call
   // drawPath, but since drawPath ignores the SkPath, just
   // do the same work here.
@@ -173,26 +173,26 @@ void AnalysisCanvas::drawRRect(const SkRRect& rr, const SkPaint& paint) {
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawPath(const SkPath& path, const SkPaint& paint) {
+void AnalysisCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawBitmap(const SkBitmap& bitmap,
-                                SkScalar left,
-                                SkScalar top,
-                                const SkPaint*) {
+void AnalysisCanvas::onDrawBitmap(const SkBitmap& bitmap,
+                                  SkScalar left,
+                                  SkScalar top,
+                                  const SkPaint*) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawBitmapRectToRect(const SkBitmap&,
-                                          const SkRect* src,
-                                          const SkRect& dst,
-                                          const SkPaint* paint,
-                                          DrawBitmapRectFlags flags) {
+void AnalysisCanvas::onDrawBitmapRect(const SkBitmap&,
+                                      const SkRect* src,
+                                      const SkRect& dst,
+                                      const SkPaint* paint,
+                                      DrawBitmapRectFlags flags) {
   // Call drawRect to determine transparency,
   // but reset solid color to false.
   SkPaint tmpPaint;
@@ -203,19 +203,19 @@ void AnalysisCanvas::drawBitmapRectToRect(const SkBitmap&,
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawBitmapNine(const SkBitmap& bitmap,
-                                    const SkIRect& center,
-                                    const SkRect& dst,
-                                    const SkPaint* paint) {
+void AnalysisCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
+                                      const SkIRect& center,
+                                      const SkRect& dst,
+                                      const SkPaint* paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawSprite(const SkBitmap& bitmap,
-                                int left,
-                                int top,
-                                const SkPaint* paint) {
+void AnalysisCanvas::onDrawSprite(const SkBitmap& bitmap,
+                                  int left,
+                                  int top,
+                                  const SkPaint* paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
@@ -277,15 +277,15 @@ void AnalysisCanvas::onDrawDRRect(const SkRRect& outer,
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawVertices(SkCanvas::VertexMode,
-                                  int vertex_count,
-                                  const SkPoint verts[],
-                                  const SkPoint texs[],
-                                  const SkColor colors[],
-                                  SkXfermode* xmode,
-                                  const uint16_t indices[],
-                                  int index_count,
-                                  const SkPaint& paint) {
+void AnalysisCanvas::onDrawVertices(SkCanvas::VertexMode,
+                                    int vertex_count,
+                                    const SkPoint verts[],
+                                    const SkPoint texs[],
+                                    const SkColor colors[],
+                                    SkXfermode* xmode,
+                                    const uint16_t indices[],
+                                    int index_count,
+                                    const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;
