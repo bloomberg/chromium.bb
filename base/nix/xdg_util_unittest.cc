@@ -25,51 +25,104 @@ class MockEnvironment : public Environment {
   MOCK_METHOD1(UnSetVar, bool(const char*));
 };
 
-const char* const kGnome = "gnome";
-const char* const kKDE4 = "kde4";
-const char* const kKDE = "kde";
-const char* const kXFCE = "xfce";
+// Needs to be const char* to make gmock happy.
+const char* const kDesktopGnome = "gnome";
+const char* const kDesktopGnomeFallback = "gnome-fallback";
+const char* const kDesktopMATE = "mate";
+const char* const kDesktopKDE4 = "kde4";
+const char* const kDesktopKDE = "kde";
+const char* const kDesktopXFCE = "xfce";
+const char* const kXdgDesktopGNOME = "GNOME";
+const char* const kXdgDesktopKDE = "KDE";
+const char* const kXdgDesktopUnity = "Unity";
+
+const char kDesktopSession[] = "DESKTOP_SESSION";
+const char kXdgDesktop[] = "XDG_CURRENT_DESKTOP";
 
 }  // namespace
 
 TEST(XDGUtilTest, GetDesktopEnvironmentGnome) {
   MockEnvironment getter;
   EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
-  EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
-      .WillOnce(DoAll(SetArgumentPointee<1>(kGnome), Return(true)));
+  EXPECT_CALL(getter, GetVar(StrEq(kDesktopSession), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kDesktopGnome), Return(true)));
 
-  EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME,
-            GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetDesktopEnvironmentMATE) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(StrEq(kDesktopSession), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kDesktopMATE), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME, GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentKDE4) {
   MockEnvironment getter;
   EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
-  EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
-      .WillOnce(DoAll(SetArgumentPointee<1>(kKDE4), Return(true)));
+  EXPECT_CALL(getter, GetVar(StrEq(kDesktopSession), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kDesktopKDE4), Return(true)));
 
-  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE4,
-            GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE4, GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentKDE3) {
   MockEnvironment getter;
   EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
-  EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
-      .WillOnce(DoAll(SetArgumentPointee<1>(kKDE), Return(true)));
+  EXPECT_CALL(getter, GetVar(StrEq(kDesktopSession), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kDesktopKDE), Return(true)));
 
-  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE3,
-            GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE3, GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentXFCE) {
   MockEnvironment getter;
   EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
-  EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
-      .WillOnce(DoAll(SetArgumentPointee<1>(kXFCE), Return(true)));
+  EXPECT_CALL(getter, GetVar(StrEq(kDesktopSession), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kDesktopXFCE), Return(true)));
 
-  EXPECT_EQ(DESKTOP_ENVIRONMENT_XFCE,
-            GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_XFCE, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetXdgDesktopGnome) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(StrEq(kXdgDesktop), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kXdgDesktopGNOME), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetXdgDesktopGnomeFallback) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(StrEq(kXdgDesktop), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kXdgDesktopUnity), Return(true)));
+  EXPECT_CALL(getter, GetVar(StrEq(kDesktopSession), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kDesktopGnomeFallback),
+                      Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetXdgDesktopKDE4) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(StrEq(kXdgDesktop), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kXdgDesktopKDE), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE4, GetDesktopEnvironment(&getter));
+}
+
+TEST(XDGUtilTest, GetXdgDesktopUnity) {
+  MockEnvironment getter;
+  EXPECT_CALL(getter, GetVar(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(getter, GetVar(StrEq(kXdgDesktop), _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(kXdgDesktopUnity), Return(true)));
+
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_UNITY, GetDesktopEnvironment(&getter));
 }
 
 }  // namespace nix

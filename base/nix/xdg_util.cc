@@ -33,7 +33,7 @@ FilePath GetXDGDirectory(Environment* env, const char* env_name,
   if (env->GetVar(env_name, &env_value) && !env_value.empty()) {
     path = FilePath(env_value);
   } else {
-    PathService::Get(base::DIR_HOME, &path);
+    PathService::Get(DIR_HOME, &path);
     path = path.Append(fallback_dir);
   }
   return path.StripTrailingSeparators();
@@ -46,7 +46,7 @@ FilePath GetXDGUserDirectory(const char* dir_name, const char* fallback_dir) {
     path = FilePath(xdg_dir);
     free(xdg_dir);
   } else {
-    PathService::Get(base::DIR_HOME, &path);
+    PathService::Get(DIR_HOME, &path);
     path = path.Append(fallback_dir);
   }
   return path.StripTrailingSeparators();
@@ -68,15 +68,17 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
       return DESKTOP_ENVIRONMENT_UNITY;
     } else if (xdg_current_desktop == "GNOME") {
       return DESKTOP_ENVIRONMENT_GNOME;
+    } else if (xdg_current_desktop == "KDE") {
+      return DESKTOP_ENVIRONMENT_KDE4;
     }
   }
 
   // DESKTOP_SESSION was what everyone used in 2010.
   std::string desktop_session;
   if (env->GetVar("DESKTOP_SESSION", &desktop_session)) {
-    if (desktop_session == "gnome") {
+    if (desktop_session == "gnome" || desktop_session =="mate") {
       return DESKTOP_ENVIRONMENT_GNOME;
-    } else if (desktop_session == "kde4") {
+    } else if (desktop_session == "kde4" || desktop_session == "kde-plasma") {
       return DESKTOP_ENVIRONMENT_KDE4;
     } else if (desktop_session == "kde") {
       // This may mean KDE4 on newer systems, so we have to check.
