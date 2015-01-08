@@ -347,8 +347,6 @@ MainWindowComponent.prototype.onDirectoryChanged_ = function(event) {
     this.ui_.locationLine.show(event.newDirEntry);
   else
     this.ui_.locationLine.hide();
-  this.ui_.previewPanel.currentEntry = util.isFakeEntry(event.newDirEntry) ?
-      null : /** @type {Entry} */ (event.newDirEntry);
 };
 
 /**

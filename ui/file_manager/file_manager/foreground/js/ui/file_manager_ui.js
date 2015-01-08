@@ -118,7 +118,7 @@ function FileManagerUI(element, launchParam) {
    * @type {!cr.ui.Menu}
    * @const
    */
-  this.textContextMenu = FileManagerUI.queryDecoratedElement_(
+  this.textContextMenu = util.queryDecoratedElement(
       '#text-context-menu', cr.ui.Menu);
 
   /**
@@ -149,7 +149,7 @@ function FileManagerUI(element, launchParam) {
    * @type {!cr.ui.MenuButton}
    * @const
    */
-  this.gearButton = FileManagerUI.queryDecoratedElement_(
+  this.gearButton = util.queryDecoratedElement(
       '#gear-button', cr.ui.MenuButton);
 
   /**
@@ -188,7 +188,7 @@ function FileManagerUI(element, launchParam) {
    * @type {!cr.ui.Menu}
    * @const
    */
-  this.fileContextMenu = FileManagerUI.queryDecoratedElement_(
+  this.fileContextMenu = util.queryDecoratedElement(
       '#file-context-menu', cr.ui.Menu);
 
   /**
@@ -216,7 +216,7 @@ function FileManagerUI(element, launchParam) {
    * @type {!cr.ui.ComboButton}
    * @const
    */
-  this.taskMenuButton = FileManagerUI.queryDecoratedElement_(
+  this.taskMenuButton = util.queryDecoratedElement(
       '#tasks', cr.ui.ComboButton);
   this.taskMenuButton.showMenu = function(shouldSetFocus) {
     // Prevent the empty menu from opening.
@@ -249,21 +249,6 @@ function FileManagerUI(element, launchParam) {
     });
   }
 }
-
-/**
- * Obtains the element that should exist, decorates it with given type, and
- * returns it.
- * @param {string} query Query for the element.
- * @param {function(new: T, ...)} type Type used to decorate.
- * @private
- * @template T
- * @return {!T} Decorated element.
- */
-FileManagerUI.queryDecoratedElement_ = function(query, type) {
-  var element = queryRequiredElement(document, query);
-  type.decorate(element);
-  return element;
-};
 
 /**
  * Initializes here elements, which are expensive or hidden in the beginning.
@@ -305,7 +290,6 @@ FileManagerUI.prototype.initAdditionalUI = function(
   this.previewPanel.addEventListener(
       PreviewPanel.Event.VISIBILITY_CHANGE,
       this.onPreviewPanelVisibilityChange_.bind(this));
-  this.previewPanel.initialize();
 
   // Location line.
   this.locationLine = locationLine;
@@ -334,10 +318,9 @@ FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
 
   // Set up the context menu for the volume/shortcut items in directory tree.
   this.directoryTree.contextMenuForRootItems =
-      FileManagerUI.queryDecoratedElement_('#roots-context-menu', cr.ui.Menu);
+      util.queryDecoratedElement('#roots-context-menu', cr.ui.Menu);
   this.directoryTree.contextMenuForSubitems =
-      FileManagerUI.queryDecoratedElement_(
-          '#directory-tree-context-menu', cr.ui.Menu);
+      util.queryDecoratedElement('#directory-tree-context-menu', cr.ui.Menu);
 
   // Visible height of the directory tree depends on the size of progress
   // center panel. When the size of progress center panel changes, directory
@@ -414,7 +397,8 @@ FileManagerUI.prototype.onDragging_ = function() {
   // On open file dialog, the preview panel is always shown.
   if (DialogType.isOpenDialog(this.dialogType_))
     return;
-  this.previewPanel.visibilityType = PreviewPanel.VisibilityType.ALWAYS_HIDDEN;
+  this.previewPanel.visibilityType =
+      PreviewPanelModel.VisibilityType.ALWAYS_HIDDEN;
 };
 
 /**
@@ -425,7 +409,8 @@ FileManagerUI.prototype.onDragEnd_ = function() {
   // On open file dialog, the preview panel is always shown.
   if (DialogType.isOpenDialog(this.dialogType_))
     return;
-  this.previewPanel.visibilityType = PreviewPanel.VisibilityType.AUTO;
+  this.previewPanel.visibilityType =
+      PreviewPanelModel.VisibilityType.AUTO;
 };
 
 /**

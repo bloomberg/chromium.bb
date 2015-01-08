@@ -99,3 +99,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, PreviewPanel) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("foreground/js/ui/preview_panel_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, PreviewPanelModelTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("foreground/js/preview_panel_model_unittest.html")));
+}

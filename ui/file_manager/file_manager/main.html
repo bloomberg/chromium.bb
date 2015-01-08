@@ -117,6 +117,7 @@
       <script src="foreground/js/metadata_update_controller.js"></script>
       <script src="foreground/js/naming_controller.js"></script>
       <script src="foreground/js/navigation_list_model.js"></script>
+      <script src="foreground/js/preview_panel_model.js"></script>
       <script src="foreground/js/progress_center_item_group.js"></script>
       <script src="foreground/js/scan_controller.js"></script>
       <script src="foreground/js/search_controller.js"></script>
@@ -210,10 +211,13 @@
       <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
       <command id="zip-selection"
                i18n-values="label:ZIP_SELECTION_BUTTON_LABEL">
-      <command id="share" i18n-values="label:SHARE_BUTTON_LABEL"
-               shortcut="U+00BE" hide-shortcut-text><!-- Shortcut: '.' -->
 
-      <command id="cloud-import" i18n-values="label:CLOUD_IMPORT_BUTTON_LABEL">
+      <!-- The following commands' availability is refered by preview panel.
+           Set disabled until availability is obtained once. -->
+      <command id="share" i18n-values="label:SHARE_BUTTON_LABEL" disabled
+               shortcut="U+00BE" hide-shortcut-text><!-- Shortcut: '.' -->
+      <command id="cloud-import" i18n-values="label:CLOUD_IMPORT_BUTTON_LABEL"
+               disabled>
 
       <command id="zoom-in" shortcut="U+00BB-Ctrl">
       <command id="zoom-out" shortcut="U+00BD-Ctrl">

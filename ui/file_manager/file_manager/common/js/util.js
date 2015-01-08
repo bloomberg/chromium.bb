@@ -266,6 +266,21 @@ util.createChild = function(parent, opt_className, opt_tag) {
 };
 
 /**
+ * Obtains the element that should exist, decorates it with given type, and
+ * returns it.
+ * @param {string} query Query for the element.
+ * @param {function(new: T, ...)} type Type used to decorate.
+ * @private
+ * @template T
+ * @return {!T} Decorated element.
+ */
+util.queryDecoratedElement = function(query, type) {
+  var element = queryRequiredElement(document, query);
+  cr.ui.decorate(element, type);
+  return element;
+};
+
+/**
  * Updates the app state.
  *
  * @param {?string} currentDirectoryURL Currently opened directory as an URL.

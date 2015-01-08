@@ -9,8 +9,10 @@
         'depends': [
           '../../../webui/resources/js/cr.js',
           '../../../webui/resources/js/cr/event_target.js',
+          '../../../webui/resources/js/cr/ui.js',
           '../../../webui/resources/js/cr/ui/array_data_model.js',
           '../../../webui/resources/js/load_time_data.js',
+          '../../../webui/resources/js/util.js',
           '../../file_manager/common/js/util.js',
           '../../file_manager/common/js/async_util.js',
           '../../file_manager/common/js/file_type.js',
@@ -53,7 +55,6 @@
 	  # Referenced in common/js/util.js.
 	  # TODO(yawano): Remove dependency to cr/ui/dialogs from common/js/util.js.
           '../../../webui/resources/js/cr/ui/dialogs.js',
-          '../../../webui/resources/js/load_time_data.js',
           '../../../webui/resources/js/i18n_template_no_process.js',
           '../../file_manager/common/js/async_util.js',
           '../../file_manager/common/js/file_type.js',

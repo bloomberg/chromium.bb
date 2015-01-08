@@ -104,6 +104,7 @@
 //<include src="metadata_update_controller.js">
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">
+//<include src="preview_panel_model.js">
 //<include src="progress_center_item_group.js">
 //<include src="scan_controller.js">
 //<include src="search_controller.js">

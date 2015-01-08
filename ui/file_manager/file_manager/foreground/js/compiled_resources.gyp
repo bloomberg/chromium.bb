@@ -88,6 +88,7 @@
           './metadata_update_controller.js',
           './naming_controller.js',
           './navigation_list_model.js',
+          './preview_panel_model.js',
           './progress_center_item_group.js',
           './scan_controller.js',
           './search_controller.js',

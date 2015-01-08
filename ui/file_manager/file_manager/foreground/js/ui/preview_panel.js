@@ -4,14 +4,12 @@
 
 /**
  * PreviewPanel UI class.
- * @param {Element} element DOM Element of preview panel.
- * @param {PreviewPanel.VisibilityType} visibilityType Initial value of the
+ * @param {!Element} element DOM Element of preview panel.
+ * @param {PreviewPanelModel.VisibilityType} visibilityType Initial value of the
  *     visibility type.
  * @param {MetadataCache} metadataCache Metadata cache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @param {!importer.HistoryLoader} historyLoader
- * @param {function(string): boolean} commandEnabledTest A function
- *     that returns true if the named command is enabled.
  * @constructor
  * @extends {cr.EventTarget}
  */
@@ -19,8 +17,9 @@ var PreviewPanel = function(element,
                             visibilityType,
                             metadataCache,
                             volumeManager,
-                            historyLoader,
-                            commandEnabledTest) {
+                            historyLoader) {
+  cr.EventTarget.call(this);
+
   /**
    * The cached height of preview panel.
    * @type {number}
@@ -30,27 +29,26 @@ var PreviewPanel = function(element,
 
   /**
    * Visibility type of the preview panel.
-   * @type {PreviewPanel.VisibilityType}
+   * @type {!PreviewPanelModel}
+   * @const
    * @private
    */
-  this.visibilityType_ = visibilityType;
-
-  /**
-   * Current entry to be displayed.
-   * @type {Entry}
-   * @private
-   */
-  this.currentEntry_ = null;
+  this.model_ = new PreviewPanelModel(visibilityType, [
+    util.queryDecoratedElement('#share', cr.ui.Command),
+    util.queryDecoratedElement('#cloud-import', cr.ui.Command)
+  ]);
 
   /**
    * Dom element of the preview panel.
-   * @type {Element}
+   * @type {!Element}
+   * @const
    * @private
    */
   this.element_ = element;
 
   /**
-   * @type {PreviewPanel.Thumbnails}
+   * @type {!PreviewPanel.Thumbnails}
+   * @const
    */
   this.thumbnails = new PreviewPanel.Thumbnails(
       element.querySelector('.preview-thumbnails'),
@@ -86,6 +84,19 @@ var PreviewPanel = function(element,
       ({entries: [], computeBytes: function() {}, totalCount: 0});
 
   /**
+   * @type {!PromiseSlot}
+   * @const
+   * @private
+   */
+  this.visibilityPromiseSlot_ = new PromiseSlot(function(visible) {
+    if (this.element_.getAttribute('visibility') ===
+        PreviewPanel.Visibility_.HIDING) {
+      this.element_.setAttribute('visibility', PreviewPanel.Visibility_.HIDDEN);
+    }
+    cr.dispatchSimpleEvent(this, PreviewPanel.Event.VISIBILITY_CHANGE);
+  }.bind(this), function(error) { console.error(error.stack || error); });
+
+  /**
    * Sequence value that is incremented by every selection update and is used to
    * check if the callback is up to date or not.
    * @type {number}
@@ -99,22 +110,10 @@ var PreviewPanel = function(element,
    */
   this.volumeManager_ = volumeManager;
 
-  /**
-   * List of command ids that are should be checked when determining
-   * auto-visibility.
-   *
-   * @private {Array.<string>}
-   */
-  this.autoVisibilityCommandIds_ = [];
-
-  /**
-   * A function that returns true if a named command is enabled.
-   * This is used when determining visibility of the preview panel.
-   * @private {function(string): boolean}
-   */
-  this.commandEnabled_ = commandEnabledTest;
-
   cr.EventTarget.call(this);
+  this.model_.addEventListener(
+      PreviewPanelModel.EventType.CHANGE, this.onModelChanged_.bind(this));
+  this.onModelChanged_();
 };
 
 /**
@@ -126,61 +125,27 @@ PreviewPanel.Event = {
   // Event to be triggered at the end of visibility change.
   VISIBILITY_CHANGE: 'visibilityChange'
 };
-Object.freeze(PreviewPanel.Event);
-
-/**
- * Visibility type of the preview panel.
- * @enum {string}
- * @const
- */
-PreviewPanel.VisibilityType = {
-  // Preview panel always shows.
-  ALWAYS_VISIBLE: 'alwaysVisible',
-  // Preview panel shows when the selection property are set.
-  AUTO: 'auto',
-  // Preview panel does not show.
-  ALWAYS_HIDDEN: 'alwaysHidden'
-};
-Object.freeze(PreviewPanel.VisibilityType);
 
 /**
  * @enum {string}
  * @const
- * @private
  */
 PreviewPanel.Visibility_ = {
   VISIBLE: 'visible',
   HIDING: 'hiding',
   HIDDEN: 'hidden'
 };
-Object.freeze(PreviewPanel.Visibility_);
 
 PreviewPanel.prototype = {
   __proto__: cr.EventTarget.prototype,
 
   /**
-   * Setter for the current entry.
-   * @param {Entry} entry New entry.
-   */
-  set currentEntry(entry) {
-    if (util.isSameEntry(this.currentEntry_, entry))
-      return;
-    this.currentEntry_ = entry;
-    this.updateVisibility_();
-    this.updatePreviewArea_();
-  },
-
-  /**
    * Setter for the visibility type.
-   * @param {PreviewPanel.VisibilityType} visibilityType New value of visibility
-   *     type.
+   * @param {PreviewPanelModel.VisibilityType} visibilityType New value of
+   *     visibility type.
    */
   set visibilityType(visibilityType) {
-    this.visibilityType_ = visibilityType;
-    this.updateVisibility_();
-    // Also update the preview area contents, because the update is suppressed
-    // while the visibility is hiding or hidden.
-    this.updatePreviewArea_();
+    this.model_.setVisibilityType(visibilityType);
   },
 
   get visible() {
@@ -199,97 +164,60 @@ PreviewPanel.prototype = {
 };
 
 /**
- * Initializes the element.
- */
-PreviewPanel.prototype.initialize = function() {
-  this.element_.addEventListener('webkitTransitionEnd',
-                                 this.onTransitionEnd_.bind(this));
-
-  this.autoVisibilityCommandIds_ = this.findAutoVisibilityCommandIds_();
-  this.updateVisibility_();
-  // Also update the preview area contents, because the update is suppressed
-  // while the visibility is hiding or hidden.
-  this.updatePreviewArea_();
-};
-
-/**
- * @return {Array.<string>} List of command ids for the "AUTO" visibility type
- * (which currently happen to correspond to "full-page" commands).
- * @private
- */
-PreviewPanel.prototype.findAutoVisibilityCommandIds_ = function() {
-  if (this.visibilityType_ != PreviewPanel.VisibilityType.AUTO) {
-    return [];
-  }
-  // Find all relevent command elements. Convert the resulting NodeList
-  // to an Array.
-  var elements = Array.prototype.slice.call(
-      this.element_.querySelectorAll('div[class~=buttonbar] button[command]'));
-
-  return elements.map(
-      function(e) {
-        // We can assume that the command attribute starts with '#';
-        return e.getAttribute('command').substring(1);
-      });
-};
-
-/**
- * @return {boolean} True if one of the known "auto visibility"
- *     (non-dialog mode) commands is enabled.
- * @private
- */
-PreviewPanel.prototype.hasEnabledAutoVisibilityCommand_ = function() {
-  return this.autoVisibilityCommandIds_.some(
-      this.commandEnabled_.bind(this));
-};
-
-/**
  * Apply the selection and update the view of the preview panel.
  * @param {FileSelection} selection Selection to be applied.
  */
 PreviewPanel.prototype.setSelection = function(selection) {
   this.sequence_++;
   this.selection_ = selection;
-  this.updateVisibility_();
+  this.model_.setSelection(selection);
   this.updatePreviewArea_();
 };
 
 /**
- * Update the visibility of the preview panel.
+ * webkitTransitionEnd does not always fire (e.g. when animation is aborted or
+ * when no paint happens during the animation).  This function sets up a timer
+ * and call the fulfill callback of the returned promise when the timer expires.
  * @private
  */
-PreviewPanel.prototype.updateVisibility_ = function() {
-  // Get the new visibility value.
-  var visibility = this.element_.getAttribute('visibility');
-  var newVisible = null;
-  switch (this.visibilityType_) {
-    case PreviewPanel.VisibilityType.ALWAYS_VISIBLE:
-      newVisible = true;
-      break;
-    case PreviewPanel.VisibilityType.AUTO:
-      newVisible = this.selection_.entries.length !== 0 ||
-          this.hasEnabledAutoVisibilityCommand_();
-      break;
-    case PreviewPanel.VisibilityType.ALWAYS_HIDDEN:
-      newVisible = false;
-      break;
-    default:
-      console.error('Invalid visibilityType.');
-      return;
-  }
+PreviewPanel.prototype.waitForTransitionEnd_ = function() {
+  // Keep this sync with CSS.
+  var PREVIEW_PANEL_TRANSITION_MS = 220;
 
-  // If the visibility has been already the new value, just return.
-  if ((visibility == PreviewPanel.Visibility_.VISIBLE && newVisible) ||
-      (visibility == PreviewPanel.Visibility_.HIDDEN && !newVisible))
-    return;
+  return new Promise(function(fulfill) {
+    var timeoutId;
+    var onTransitionEnd = function(event) {
+      if (event &&
+          (event.target !== this.element_ ||
+           event.propertyName !== 'opacity')) {
+        return;
+      }
+      this.element_.removeEventListener('webkitTransitionEnd', onTransitionEnd);
+      clearTimeout(timeoutId);
+      fulfill();
+    }.bind(this);
+    this.element_.addEventListener('webkitTransitionEnd', onTransitionEnd);
+    timeoutId = setTimeout(onTransitionEnd, PREVIEW_PANEL_TRANSITION_MS);
+  }.bind(this));
+};
 
-  // Set the new visibility value.
-  if (newVisible) {
-    this.element_.setAttribute('visibility', PreviewPanel.Visibility_.VISIBLE);
-    cr.dispatchSimpleEvent(this, PreviewPanel.Event.VISIBILITY_CHANGE);
+/**
+ * Handles the model change event and update the visibility of the preview
+ * panel.
+ * @private
+ */
+PreviewPanel.prototype.onModelChanged_ = function() {
+  var promise;
+  if (this.model_.visible) {
+    this.element_.setAttribute(
+        'visibility', PreviewPanel.Visibility_.VISIBLE);
+    this.updatePreviewArea_();
+    promise = Promise.resolve();
   } else {
     this.element_.setAttribute('visibility', PreviewPanel.Visibility_.HIDING);
+    promise = this.waitForTransitionEnd_();
   }
+  this.visibilityPromiseSlot_.setPromise(promise);
 };
 
 /**
@@ -351,21 +279,6 @@ PreviewPanel.prototype.updatePreviewArea_ = function() {
       this.updatePreviewArea_();
     }.bind(this, this.sequence_));
   }
-};
-
-/**
- * Event handler to be called at the end of hiding transition.
- * @param {Event} event The webkitTransitionEnd event.
- * @private
- */
-PreviewPanel.prototype.onTransitionEnd_ = function(event) {
-  if (event.target != this.element_ || event.propertyName != 'opacity')
-    return;
-  var visibility = this.element_.getAttribute('visibility');
-  if (visibility != PreviewPanel.Visibility_.HIDING)
-    return;
-  this.element_.setAttribute('visibility', PreviewPanel.Visibility_.HIDDEN);
-  cr.dispatchSimpleEvent(this, PreviewPanel.Event.VISIBILITY_CHANGE);
 };
 
 /**

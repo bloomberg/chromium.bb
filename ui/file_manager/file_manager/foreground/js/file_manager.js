@@ -738,12 +738,11 @@ FileManager.prototype = /** @struct */ {
         new PreviewPanel(
             queryRequiredElement(dom, '.preview-panel'),
             DialogType.isOpenDialog(this.dialogType) ?
-                PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
-                PreviewPanel.VisibilityType.AUTO,
+                PreviewPanelModel.VisibilityType.ALWAYS_VISIBLE :
+                PreviewPanelModel.VisibilityType.AUTO,
             this.metadataCache_,
             this.volumeManager_,
-            this.historyLoader_,
-            this.isCommandEnabled_.bind(this)),
+            this.historyLoader_),
         new LocationLine(
             queryRequiredElement(dom, '#location-breadcrumbs'),
             queryRequiredElement(dom, '#location-volume-icon'),
@@ -1251,27 +1250,6 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.getFileList = function() {
     return this.directoryModel_.getFileList();
-  };
-
-  /**
-   * Returns true if the command is known to be enabled according
-   * to the command handler.
-   *
-   * <p>NOTE: This delegating method is necessary as the consumer
-   * (PreviewPanel) is initialized prior to the CommandHandler.
-   * This allows us to inject a "command enabled" check function
-   * into PreviewPanel.
-   * TODO(mtomasz): Refactor to initialize PreviewPanel after CommandHandler,
-   *     then directly inject the check using CommandHandler.isCommandEnabled.
-   *     See crbug.com/436957.
-   *
-   * @param {string} id Command id.
-   * @return {boolean} True if the command is known to be enabled (very
-   *     recently).
-   * @private
-   */
-  FileManager.prototype.isCommandEnabled_ = function(id) {
-    return !!this.commandHandler && this.commandHandler.isCommandEnabled(id);
   };
 
   /**

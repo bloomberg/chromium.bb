@@ -270,16 +270,6 @@ CommandHandler.prototype.updateAvailability = function() {
 };
 
 /**
- * @param {string} id Command id
- * @return {boolean} True if the specified command was "very recently"
- *     known to be enabled.
- */
-CommandHandler.prototype.isCommandEnabled = function(id) {
-  var command = this.commands_[id];
-  return !!command && !command.disabled;
-};
-
-/**
  * Checks if the handler should ignore the current event, eg. since there is
  * a popup dialog currently opened.
  *
