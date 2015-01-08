@@ -116,7 +116,7 @@ private:
         float m_width;
     };
 
-    int determineWordBreakSpacing();
+    float determineWordBreakSpacing();
     // setPadding sets a number of pixels to be distributed across the TextRun.
     // WebKit uses this to justify text.
     void setPadding(int);

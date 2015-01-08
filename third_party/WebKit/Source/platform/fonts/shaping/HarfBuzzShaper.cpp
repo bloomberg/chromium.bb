@@ -402,9 +402,9 @@ static inline bool isWordEnd(const UChar* normalizedBuffer, unsigned index)
     return index && isCodepointSpace(normalizedBuffer[index]);
 }
 
-int HarfBuzzShaper::determineWordBreakSpacing()
+float HarfBuzzShaper::determineWordBreakSpacing()
 {
-    int wordBreakSpacing = m_wordSpacingAdjustment;
+    float wordBreakSpacing = m_wordSpacingAdjustment;
 
     if (m_padding > 0) {
         int toPad = roundf(m_padPerWordBreak + m_padError);
