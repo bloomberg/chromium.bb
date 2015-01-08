@@ -101,9 +101,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   Status status() const { return status_; }
   int process_id() const { return process_id_; }
   int thread_id() const { return thread_id_; }
-  int worker_devtools_agent_route_id() const {
-    return worker_devtools_agent_route_id_;
-  }
+  int worker_devtools_agent_route_id() const;
   MessagePortMessageFilter* message_port_message_filter() const;
 
   void AddListener(Listener* listener);
@@ -113,7 +111,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
  private:
   typedef ObserverList<Listener> ListenerList;
-
+  class DevToolsProxy;
   friend class EmbeddedWorkerRegistry;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
 
@@ -197,14 +195,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Current running information. -1 indicates the worker is not running.
   int process_id_;
   int thread_id_;
-  int worker_devtools_agent_route_id_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;
 
   StatusCallback start_callback_;
-
   ListenerList listener_list_;
+  scoped_ptr<DevToolsProxy> devtools_proxy_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
 
