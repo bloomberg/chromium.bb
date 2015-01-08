@@ -903,7 +903,6 @@ crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-multiple.html [ Pas
 crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-without-shadow-element.html [ Pass ImageOnlyFailure ]
 crbug.com/432129 [ Mac ] fast/dom/shadow/shadowdom-for-meter-with-style.html [ Pass ImageOnlyFailure ]
 crbug.com/432129 fast/dom/shadow/shadowdom-for-progress-multiple.html [ Pass ImageOnlyFailure ]
-crbug.com/432129 fast/dom/shadow/shadowdom-for-progress-with-style.html [ Pass ImageOnlyFailure ]
 crbug.com/432129 fast/html/marquee-scroll.html [ Pass Failure ]
 crbug.com/432129 fast/inline/whitespace-reattaching.html [ Pass Failure ]
 crbug.com/432129 fast/text/justify-ideograph.html [ Pass ImageOnlyFailure ]
