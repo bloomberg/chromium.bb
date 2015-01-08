@@ -5,7 +5,9 @@ include_rules = [
   "+components/leveldb_proto",
   "+components/suggestions",
   "+components/translate/core",
+  "+components/translate/ios",
   "+components/webp_transcode",
+  "+components/web_resource",
   "+ios/public/provider/chrome",
   "+ios/web/public",
   "+net",
@@ -14,4 +16,12 @@ include_rules = [
   # Only parts of skia are compiled on iOS, so we explicitly list the
   # files that can be included to avoid bringing in more code.
   "+skia/ext/skia_utils_ios.h",
+
+  # Generated file for translated strings in components.
+  "+grit/components_strings.h",
+
+  # ios/chrome is not allowed to depend on //chrome, //content.
+  # No exceptions.
+  "-chrome",
+  "-content",
 ]

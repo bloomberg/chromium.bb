@@ -156,6 +156,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   bool ShouldShowNeverTranslateShortcut();
   bool ShouldShowAlwaysTranslateShortcut();
 
+#if defined(OS_IOS)
+  // Shows the Infobar offering to never translate the language or the site.
+  void ShowNeverTranslateInfobar();
+#endif
+
   // Adds the strings that should be displayed in the after translate infobar to
   // |strings|. If |autodetermined_source_language| is false, the text in that
   // infobar is:

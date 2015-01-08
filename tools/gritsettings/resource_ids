@@ -164,6 +164,11 @@
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
     "includes": [25750],
   },
+  # iOS resources overlap with ash, chromeos and extensions_api, as these are
+  # not used on iOS.
+  "ios/chrome/app/theme/ios_theme_resources.grd": {
+    "structures": [26000],
+  },
   "ash/ash_strings.grd": {
     "messages": [26000],
   },

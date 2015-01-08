@@ -15,12 +15,14 @@
         '../../base/base.gyp:test_support_base',
         '../../net/net.gyp:net_test_support',
         '../../testing/gtest.gyp:gtest',
+        '../ios_tests.gyp:test_support_ios',
         '../web/ios_web.gyp:ios_web',
         '../web/ios_web.gyp:test_support_ios_web',
         'ios_chrome.gyp:ios_chrome_browser',
       ],
       'sources': [
         'browser/net/image_fetcher_unittest.mm',
+        'browser/translate/translate_service_ios_unittest.cc',
       ],
     },
     {

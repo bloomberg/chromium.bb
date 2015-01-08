@@ -1,0 +1,73 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_
+#define IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_
+
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "components/translate/core/browser/translate_client.h"
+#include "components/translate/core/browser/translate_step.h"
+#include "components/translate/core/common/translate_errors.h"
+#include "components/translate/ios/browser/ios_translate_driver.h"
+#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state/web_state_user_data.h"
+
+class PrefService;
+
+namespace translate {
+class TranslateAcceptLanguages;
+class TranslatePrefs;
+class TranslateManager;
+}  // namespace translate
+
+namespace web {
+class WebState;
+}
+
+class ChromeIOSTranslateClient
+    : public translate::TranslateClient,
+      public web::WebStateObserver,
+      public web::WebStateUserData<ChromeIOSTranslateClient> {
+ public:
+  ~ChromeIOSTranslateClient() override;
+
+  // Helper method to return a new TranslatePrefs instance.
+  static scoped_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
+      PrefService* prefs);
+
+  // Gets the associated TranslateManager.
+  translate::TranslateManager* GetTranslateManager();
+
+  // TranslateClient implementation.
+  translate::TranslateDriver* GetTranslateDriver() override;
+  PrefService* GetPrefs() override;
+  scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
+  translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
+  int GetInfobarIconID() const override;
+  scoped_ptr<infobars::InfoBar> CreateInfoBar(
+      scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const override;
+  void ShowTranslateUI(translate::TranslateStep step,
+                       const std::string source_language,
+                       const std::string target_language,
+                       translate::TranslateErrors::Type error_type,
+                       bool triggered_from_menu) override;
+  bool IsTranslatableURL(const GURL& url) override;
+  void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
+
+ private:
+  explicit ChromeIOSTranslateClient(web::WebState* web_state);
+  friend class web::WebStateUserData<ChromeIOSTranslateClient>;
+
+  // web::WebStateObserver implementation.
+  void WebStateDestroyed() override;
+
+  scoped_ptr<translate::TranslateManager> translate_manager_;
+  translate::IOSTranslateDriver translate_driver_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);
+};
+
+#endif  // IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_

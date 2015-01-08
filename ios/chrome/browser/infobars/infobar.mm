@@ -8,6 +8,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
+#include "ios/chrome/browser/translate/translate_infobar_tags.h"
 
 using infobars::InfoBar;
 using infobars::InfoBarDelegate;
@@ -74,8 +75,41 @@ void InfoBarIOS::InfoBarButtonDidPress(NSUInteger button_id) {
       RemoveSelf();
     }
   } else if (delegate()->AsTranslateInfoBarDelegate()) {
-    // TODO(droger): Upstream Translate infobars.
-    NOTREACHED() << "Translate infobars not upstreamed yet.";
+    translate::TranslateInfoBarDelegate* translateDelegate =
+        delegate()->AsTranslateInfoBarDelegate();
+    switch (button_id) {
+      case TranslateInfoBarIOSTag::AFTER_DONE:
+        InfoBarDidCancel();
+        break;
+      case TranslateInfoBarIOSTag::AFTER_REVERT:
+        translateDelegate->RevertTranslation();
+        break;
+      case TranslateInfoBarIOSTag::BEFORE_ACCEPT:
+        translateDelegate->Translate();
+        break;
+      case TranslateInfoBarIOSTag::BEFORE_DENY:
+        translateDelegate->TranslationDeclined();
+        if (translateDelegate->ShouldShowNeverTranslateShortcut())
+          translateDelegate->ShowNeverTranslateInfobar();
+        else
+          RemoveSelf();
+        break;
+      case TranslateInfoBarIOSTag::DENY_LANGUAGE:
+        translateDelegate->NeverTranslatePageLanguage();
+        RemoveSelf();
+        break;
+      case TranslateInfoBarIOSTag::DENY_WEBSITE:
+        if (!translateDelegate->IsSiteBlacklisted())
+          translateDelegate->ToggleSiteBlacklist();
+        RemoveSelf();
+        break;
+      case TranslateInfoBarIOSTag::MESSAGE:
+        translateDelegate->MessageInfoBarButtonPressed();
+        break;
+      default:
+        NOTREACHED() << "Unexpected Translate button label";
+        break;
+    }
   }
 }
 
