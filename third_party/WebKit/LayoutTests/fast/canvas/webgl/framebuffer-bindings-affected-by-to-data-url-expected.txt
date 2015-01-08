@@ -1,0 +1,11 @@
+toDataURL() causes side effect for framebuffer binding. crbug.com/445848
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS should be red
+PASS should be red
+PASS should be red
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

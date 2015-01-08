@@ -505,6 +505,23 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
+class ScopedFramebufferRestorer {
+    STACK_ALLOCATED();
+public:
+    explicit ScopedFramebufferRestorer(WebGLRenderingContextBase* context)
+        : m_context(context)
+    {
+    }
+
+    ~ScopedFramebufferRestorer()
+    {
+        m_context->restoreCurrentFramebuffer();
+    }
+
+private:
+    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
+};
+
 class WebGLRenderingContextLostCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextLostCallback>, public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -912,6 +929,7 @@ bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffe
     m_markedCanvasDirty = false;
 
     ScopedTexture2DRestorer restorer(this);
+    ScopedFramebufferRestorer fboRestorer(this);
 
     drawingBuffer()->commit();
     if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), sourceBuffer)) {
@@ -920,7 +938,6 @@ bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffe
             drawingBuffer()->paintRenderingResultsToCanvas(canvas()->buffer());
     }
 
-    restoreCurrentFramebuffer();
     return true;
 }
 
@@ -928,9 +945,12 @@ PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResul
 {
     if (isContextLost())
         return nullptr;
+    if (m_requestedAttributes.premultipliedAlpha())
+        return nullptr;
 
     clearIfComposited();
     drawingBuffer()->commit();
+    ScopedFramebufferRestorer restorer(this);
     int width, height;
     RefPtr<Uint8ClampedArray> imageDataPixels =
         drawingBuffer()->paintRenderingResultsToImageData(width, height, sourceBuffer);

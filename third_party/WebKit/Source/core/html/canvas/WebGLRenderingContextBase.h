@@ -403,6 +403,7 @@ protected:
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectOES;
     friend class ScopedTexture2DRestorer;
+    friend class ScopedFramebufferRestorer;
 
     WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);
     PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>);
