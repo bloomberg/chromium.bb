@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/shutdown_policy_observer.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -11,40 +11,40 @@
 
 namespace chromeos {
 
-ShutdownPolicyObserver::ShutdownPolicyObserver(CrosSettings* cros_settings,
-                                               Delegate* delegate)
+ShutdownPolicyHandler::ShutdownPolicyHandler(CrosSettings* cros_settings,
+                                             Delegate* delegate)
     : cros_settings_(cros_settings), delegate_(delegate), weak_factory_(this) {
   if (delegate_) {
     shutdown_policy_subscription_ = cros_settings_->AddSettingsObserver(
         kRebootOnShutdown,
-        base::Bind(&ShutdownPolicyObserver::OnShutdownPolicyChanged,
+        base::Bind(&ShutdownPolicyHandler::OnShutdownPolicyChanged,
                    weak_factory_.GetWeakPtr()));
   }
 }
 
-ShutdownPolicyObserver::~ShutdownPolicyObserver() {
+ShutdownPolicyHandler::~ShutdownPolicyHandler() {
 }
 
-void ShutdownPolicyObserver::Shutdown() {
+void ShutdownPolicyHandler::Shutdown() {
   shutdown_policy_subscription_.reset();
   delegate_ = nullptr;
 }
 
-void ShutdownPolicyObserver::CallDelegate(bool reboot_on_shutdown) {
+void ShutdownPolicyHandler::CallDelegate(bool reboot_on_shutdown) {
   if (delegate_)
     delegate_->OnShutdownPolicyChanged(reboot_on_shutdown);
 }
 
-void ShutdownPolicyObserver::OnShutdownPolicyChanged() {
-  CheckIfRebootOnShutdown(base::Bind(&ShutdownPolicyObserver::CallDelegate,
+void ShutdownPolicyHandler::OnShutdownPolicyChanged() {
+  CheckIfRebootOnShutdown(base::Bind(&ShutdownPolicyHandler::CallDelegate,
                           weak_factory_.GetWeakPtr()));
 }
 
-void ShutdownPolicyObserver::CheckIfRebootOnShutdown(
+void ShutdownPolicyHandler::CheckIfRebootOnShutdown(
     const RebootOnShutdownCallback& callback) {
   CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&ShutdownPolicyObserver::CheckIfRebootOnShutdown,
+          base::Bind(&ShutdownPolicyHandler::CheckIfRebootOnShutdown,
                      weak_factory_.GetWeakPtr(), callback));
   if (status != CrosSettingsProvider::TRUSTED)
     return;

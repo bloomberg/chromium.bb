@@ -873,6 +873,8 @@
         'browser/chromeos/settings/session_manager_operation.h',
         'browser/chromeos/settings/stub_cros_settings_provider.cc',
         'browser/chromeos/settings/stub_cros_settings_provider.h',
+        'browser/chromeos/settings/shutdown_policy_handler.cc',
+        'browser/chromeos/settings/shutdown_policy_handler.h',
         'browser/chromeos/settings/system_settings_provider.cc',
         'browser/chromeos/settings/system_settings_provider.h',
         'browser/chromeos/settings/token_encryptor.cc',

@@ -156,9 +156,6 @@ void SystemTrayDelegateCommon::ShowEnterpriseInfo() {
 void SystemTrayDelegateCommon::ShowUserLogin() {
 }
 
-void SystemTrayDelegateCommon::ShutDown() {
-}
-
 void SystemTrayDelegateCommon::SignOut() {
 }
 

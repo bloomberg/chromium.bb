@@ -47,7 +47,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   bool ShouldShowDisplayNotification() override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
-  void ShutDown() override;
   void SignOut() override;
 
  private:

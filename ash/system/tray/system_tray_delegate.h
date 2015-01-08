@@ -205,9 +205,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin() = 0;
 
-  // Attempts to shut down the system.
-  virtual void ShutDown() = 0;
-
   // Attempts to sign out the user.
   virtual void SignOut() = 0;
 

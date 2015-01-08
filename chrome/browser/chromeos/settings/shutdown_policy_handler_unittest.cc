@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/shutdown_policy_observer.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,8 +20,8 @@
 
 namespace chromeos {
 
-class ShutdownPolicyObserverTest : public testing::Test,
-                                   public ShutdownPolicyObserver::Delegate {
+class ShutdownPolicyHandlerTest : public testing::Test,
+                                  public ShutdownPolicyHandler::Delegate {
  public:
   void ResultCallback(bool reboot_on_shutdown) {
     reboot_on_shutdown_ = reboot_on_shutdown;
@@ -29,7 +29,7 @@ class ShutdownPolicyObserverTest : public testing::Test,
   }
 
  protected:
-  ShutdownPolicyObserverTest()
+  ShutdownPolicyHandlerTest()
       : cros_settings_(nullptr),
         callback_called_(false),
         reboot_on_shutdown_(false),
@@ -58,7 +58,7 @@ class ShutdownPolicyObserverTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  // ShutdownPolicyObserver::Delegate:
+  // ShutdownPolicyHandler::Delegate:
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override {
     reboot_on_shutdown_ = reboot_on_shutdown;
     delegate_invocations_count_++;
@@ -78,8 +78,8 @@ class ShutdownPolicyObserverTest : public testing::Test,
   int delegate_invocations_count_;
 };
 
-TEST_F(ShutdownPolicyObserverTest, RetrieveTrustedDevicePolicies) {
-  ShutdownPolicyObserver shutdown_policy_observer(cros_settings_, this);
+TEST_F(ShutdownPolicyHandlerTest, RetrieveTrustedDevicePolicies) {
+  ShutdownPolicyHandler shutdown_policy_observer(cros_settings_, this);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, delegate_invocations_count_);
 
@@ -101,15 +101,15 @@ TEST_F(ShutdownPolicyObserverTest, RetrieveTrustedDevicePolicies) {
   EXPECT_FALSE(reboot_on_shutdown_);
 }
 
-TEST_F(ShutdownPolicyObserverTest, CheckIfRebootOnShutdown) {
-  ShutdownPolicyObserver shutdown_policy_observer(cros_settings_, this);
+TEST_F(ShutdownPolicyHandlerTest, CheckIfRebootOnShutdown) {
+  ShutdownPolicyHandler shutdown_policy_observer(cros_settings_, this);
   base::RunLoop().RunUntilIdle();
 
   // Allow shutdown.
   SetRebootOnShutdown(true);
   callback_called_ = false;
   shutdown_policy_observer.CheckIfRebootOnShutdown(
-      base::Bind(&ShutdownPolicyObserverTest::ResultCallback,
+      base::Bind(&ShutdownPolicyHandlerTest::ResultCallback,
                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called_);
@@ -118,7 +118,7 @@ TEST_F(ShutdownPolicyObserverTest, CheckIfRebootOnShutdown) {
   SetRebootOnShutdown(false);
   callback_called_ = false;
   shutdown_policy_observer.CheckIfRebootOnShutdown(
-      base::Bind(&ShutdownPolicyObserverTest::ResultCallback,
+      base::Bind(&ShutdownPolicyHandlerTest::ResultCallback,
                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called_);

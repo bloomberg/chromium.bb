@@ -94,10 +94,6 @@ bool TestSystemTrayDelegate::GetSessionLengthLimit(
   return session_length_limit_set_;
 }
 
-void TestSystemTrayDelegate::ShutDown() {
-  base::MessageLoop::current()->Quit();
-}
-
 void TestSystemTrayDelegate::SignOut() {
   base::MessageLoop::current()->Quit();
 }

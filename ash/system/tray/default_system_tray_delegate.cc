@@ -155,9 +155,6 @@ void DefaultSystemTrayDelegate::ShowSupervisedUserInfo() {
 void DefaultSystemTrayDelegate::ShowUserLogin() {
 }
 
-void DefaultSystemTrayDelegate::ShutDown() {
-}
-
 void DefaultSystemTrayDelegate::SignOut() {
 }
 

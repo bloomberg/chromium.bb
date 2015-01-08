@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SHUTDOWN_POLICY_OBSERVER_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SHUTDOWN_POLICY_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SHUTDOWN_POLICY_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_SETTINGS_SHUTDOWN_POLICY_HANDLER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -14,9 +14,9 @@
 namespace chromeos {
 
 // This class observes the device setting |DeviceRebootOnShutdown|. Changes to
-// this policy are communicated to the ShutdownPolicyObserver::Delegate by
+// this policy are communicated to the ShutdownPolicyHandler::Delegate by
 // calling its OnShutdownPolicyChanged method with the new state of the policy.
-class ShutdownPolicyObserver {
+class ShutdownPolicyHandler {
  public:
   // This callback is passed to CheckIfRebootOnShutdown, which invokes it with
   // the current state of the |DeviceRebootOnShutdown| policy once a trusted of
@@ -32,8 +32,8 @@ class ShutdownPolicyObserver {
     virtual ~Delegate() {}
   };
 
-  ShutdownPolicyObserver(CrosSettings* cros_settings, Delegate* delegate);
-  ~ShutdownPolicyObserver();
+  ShutdownPolicyHandler(CrosSettings* cros_settings, Delegate* delegate);
+  ~ShutdownPolicyHandler();
 
   // Once a trusted set of policies is established, this function calls
   // |callback| with the trusted state of the |DeviceRebootOnShutdown| policy.
@@ -53,11 +53,11 @@ class ShutdownPolicyObserver {
 
   scoped_ptr<CrosSettings::ObserverSubscription> shutdown_policy_subscription_;
 
-  base::WeakPtrFactory<ShutdownPolicyObserver> weak_factory_;
+  base::WeakPtrFactory<ShutdownPolicyHandler> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyObserver);
+  DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SHUTDOWN_POLICY_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_SHUTDOWN_POLICY_HANDLER_H_

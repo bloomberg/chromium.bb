@@ -98,7 +98,6 @@ class SystemTrayDelegateChromeOS
   void ShowSupervisedUserInfo() override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
-  void ShutDown() override;
   void SignOut() override;
   void RequestLockScreen() override;
   void RequestRestartForUpdate() override;
