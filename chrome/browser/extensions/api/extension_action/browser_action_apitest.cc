@@ -50,7 +50,7 @@ const char kEmptyPathError[] = "The path property must not be empty.";
 // Views implementation of browser action button will return icon whose
 // background will be set.
 gfx::ImageSkia AddBackgroundForViews(const gfx::ImageSkia& icon) {
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION);
   return gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon);
