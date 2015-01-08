@@ -1563,13 +1563,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // If we have no content or a native page, return null.
         if (getContentViewCore() == null) return null;
 
-        if (mFavicon != null) return mFavicon;
+        // Use the cached favicon only if the page wasn't changed.
+        if (mFavicon != null && mFaviconUrl != null && mFaviconUrl.equals(getUrl())) {
+            return mFavicon;
+        }
 
-        // Cache the result so we don't keep querying it.
-        mFavicon = nativeGetFavicon(mNativeTabAndroid);
-        // Invalidate the favicon URL so that if we do get a favicon for this page we don't drop it.
-        mFaviconUrl = null;
-        return mFavicon;
+        return nativeGetFavicon(mNativeTabAndroid);
     }
 
     /**
@@ -1824,7 +1823,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         boolean needUpdate = false;
         String url = getUrl();
         boolean pageUrlChanged = !url.equals(mFaviconUrl);
-
         // This method will be called multiple times if the page has more than one favicon.
         // we are trying to use the 16x16 DP icon here, Bitmap.createScaledBitmap will return
         // the origin bitmap if it is already 16x16 DP.
