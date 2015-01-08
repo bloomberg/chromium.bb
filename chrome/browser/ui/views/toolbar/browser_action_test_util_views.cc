@@ -5,9 +5,12 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -105,6 +108,11 @@ bool BrowserActionTestUtil::HidePopup() {
   return !HasPopup();
 }
 
+void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
+  extensions::ExtensionToolbarModel::Get(browser_->profile())->
+      SetVisibleIconCount(icons);
+}
+
 bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
   return GetContainer(browser_, bar_delegate_)->GetToolbarActionViewAt(index)->
       wants_to_run_for_testing();
@@ -113,6 +121,16 @@ bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
 bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
   return BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
       app_menu()->overflowed_toolbar_action_wants_to_run_for_testing();
+}
+
+// static
+void BrowserActionTestUtil::DisableAnimations() {
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
+}
+
+// static
+void BrowserActionTestUtil::EnableAnimations() {
+  ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
 // static

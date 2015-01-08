@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -44,8 +43,7 @@ scoped_refptr<const extensions::Extension> CreateExtension(
 
 // BrowserActionsBarBrowserTest:
 
-BrowserActionsBarBrowserTest::BrowserActionsBarBrowserTest()
-    : toolbar_model_(nullptr) {
+BrowserActionsBarBrowserTest::BrowserActionsBarBrowserTest() {
 }
 
 BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {
@@ -53,18 +51,17 @@ BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {
 
 void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ToolbarActionsBar::disable_animations_for_testing_ = true;
+  BrowserActionTestUtil::DisableAnimations();
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 }
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
   browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
-  toolbar_model_ = extensions::ExtensionToolbarModel::Get(profile());
 }
 
 void BrowserActionsBarBrowserTest::TearDownOnMainThread() {
-  ToolbarActionsBar::disable_animations_for_testing_ = false;
+  BrowserActionTestUtil::EnableAnimations();
   ExtensionBrowserTest::TearDownOnMainThread();
 }
 
@@ -134,25 +131,29 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
 
+  extensions::ExtensionToolbarModel* model =
+      extensions::ExtensionToolbarModel::Get(profile());
+  ASSERT_TRUE(model);
+
   // Order is now A B C.
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move C to first position. Order is C A B.
-  toolbar_model()->MoveExtensionIcon(extension_c()->id(), 0);
+  model->MoveExtensionIcon(extension_c()->id(), 0);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move B to third position. Order is still C A B.
-  toolbar_model()->MoveExtensionIcon(extension_b()->id(), 2);
+  model->MoveExtensionIcon(extension_b()->id(), 2);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move B to middle position. Order is C B A.
-  toolbar_model()->MoveExtensionIcon(extension_b()->id(), 1);
+  model->MoveExtensionIcon(extension_b()->id(), 1);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(2));
@@ -179,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   LoadExtensions();
 
   // Change container to show only one action, rest in overflow: A, [B, C].
-  toolbar_model()->SetVisibleIconCount(1);
+  browser_actions_bar()->SetIconVisibilityCount(1);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
 
   // Disable extension A (should disappear). State becomes: B [C].
@@ -209,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
 
   // Now we have 3 extensions. Make sure they are all visible. State: A, B, C.
-  toolbar_model()->SetVisibleIconCount(3);
+  browser_actions_bar()->SetIconVisibilityCount(3);
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
 
   // Disable extension A (should disappear). State becomes: B, C.
@@ -239,13 +240,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   // Shrink the browser actions bar to zero visible icons.
   // No icons should be visible, but we *should* show the chevron and have a
   // non-empty size.
-  toolbar_model()->SetVisibleIconCount(0);
+  browser_actions_bar()->SetIconVisibilityCount(0);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
 
   // Reset visibility count to 2. State should be A, B, [C], and the chevron
   // should be visible.
-  toolbar_model()->SetVisibleIconCount(2);
+  browser_actions_bar()->SetIconVisibilityCount(2);
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
@@ -308,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
   EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(3));
 
   // Reduce the visible icon count so that the extension is hidden.
-  toolbar_model()->SetVisibleIconCount(3);
+  browser_actions_bar()->SetIconVisibilityCount(3);
   EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
 
   // Make the extension want to run, and verify that the overflow button (the
@@ -326,6 +327,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
   action->SetIsVisible(tab_id, true);
   extension_action_api->NotifyChange(action, web_contents, profile());
   EXPECT_TRUE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
-  toolbar_model()->SetVisibleIconCount(4);
+  browser_actions_bar()->SetIconVisibilityCount(4);
   EXPECT_FALSE(browser_actions_bar()->OverflowedActionButtonWantsToRun());
 }
