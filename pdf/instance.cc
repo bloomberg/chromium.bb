@@ -434,7 +434,8 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
     return true;
 #endif
 
-  if (toolbar_->HandleEvent(event_device_res))
+  if (!IsMouseOnScrollbar(event_device_res) &&
+      toolbar_->HandleEvent(event_device_res))
     return true;
 
 #ifdef ENABLE_THUMBNAILS
@@ -496,14 +497,8 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
         if (!IsOverlayScrollbar() &&
             !available_area_.Contains(mouse_event.GetPosition())) {
           try_engine_first = false;
-        } else if (IsOverlayScrollbar()) {
-          pp::Rect temp;
-          if ((v_scrollbar_.get() && v_scrollbar_->GetLocation(&temp) &&
-              temp.Contains(mouse_event_dip.GetPosition())) ||
-              (h_scrollbar_.get() && h_scrollbar_->GetLocation(&temp) &&
-              temp.Contains(mouse_event_dip.GetPosition()))) {
+        } else if (IsOverlayScrollbar() && IsMouseOnScrollbar(event)) {
             try_engine_first = false;
-          }
         }
       }
       break;
@@ -1602,6 +1597,22 @@ void Instance::RotateClockwise() {
 
 void Instance::RotateCounterclockwise() {
   engine_->RotateCounterclockwise();
+}
+
+bool Instance::IsMouseOnScrollbar(const pp::InputEvent& event) {
+  pp::MouseInputEvent mouse_event(event);
+  if (mouse_event.is_null())
+    return false;
+
+  pp::Point pt = mouse_event.GetPosition();
+  pp::Rect temp;
+  if ((v_scrollbar_.get() && v_scrollbar_->GetLocation(&temp) &&
+       temp.Contains(pt)) ||
+      (h_scrollbar_.get() && h_scrollbar_->GetLocation(&temp) &&
+       temp.Contains(pt))) {
+    return true;
+  }
+  return false;
 }
 
 void Instance::PreviewDocumentLoadComplete() {

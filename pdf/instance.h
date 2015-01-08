@@ -200,6 +200,10 @@ class Instance : public pp::InstancePrivate,
   void RotateClockwise();
   void RotateCounterclockwise();
 
+  // Helper function to inform when mouse pointer is on scrollbar, returns true
+  // when mouse is on vertical or horizaontal scrollbar else returns false.
+  bool IsMouseOnScrollbar(const pp::InputEvent& event);
+
  private:
   // Called whenever the plugin geometry changes to update the location of the
   // scrollbars, background parts, and notifies the pdf engine.
