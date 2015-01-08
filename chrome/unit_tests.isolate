@@ -39,19 +39,7 @@
         ],
       },
     }],
-    ['use_x11==0', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--lsan=<(lsan)',
-        ],
-      },
-    }],
-    ['use_x11==1', {
+    ['OS=="linux"', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -64,16 +52,16 @@
         ],
         'files': [
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
-        ],
-      },
-    }],
-    ['OS=="linux"', {
-      'variables': {
-        'files': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
+        ],
+      },
+    }],
+    ['OS=="linux" and use_ozone==0', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
@@ -102,6 +90,18 @@
           '<(PRODUCT_DIR)/exif.so',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
           '<(PRODUCT_DIR)/osmesa.so',
+        ],
+      },
+    }],
+    ['OS=="mac" or OS=="win"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
         ],
       },
     }],
