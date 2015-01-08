@@ -72,8 +72,6 @@ class MEDIA_EXPORT MediaKeys{
     PERSISTENT_SESSION
   };
 
-  static const uint32 kInvalidSessionId = 0;
-
   virtual ~MediaKeys();
 
   // Provides a server certificate to be used to encrypt messages to the
