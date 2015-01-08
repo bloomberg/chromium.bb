@@ -522,7 +522,12 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
 }
 
 - (void)resizeContainerToWidth:(CGFloat)width {
-  BOOL animate = !toolbarActionsBar_->suppress_animation();
+  // Cocoa goes a little crazy if we try and change animations while adjusting
+  // child frames (i.e., the buttons). If the toolbar is already animating,
+  // just jump to the new frame. (This typically only happens if someone is
+  // "spamming" a button to add/remove an action.)
+  BOOL animate = !toolbarActionsBar_->suppress_animation() &&
+      ![containerView_ isAnimating];
   [self updateContainerVisibility];
   [containerView_ setMaxWidth:
       toolbarActionsBar_->IconCountToWidth([self buttonCount])];
