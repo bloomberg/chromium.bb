@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/de.xml
@@ -19,9 +19,17 @@ de{
             "AED",
             "VAE-Dirham",
         }
+        AFA{
+            "AFA",
+            "Afghanische Afghani (1927–2002)",
+        }
         AFN{
             "AFN",
             "Afghanischer Afghani",
+        }
+        ALK{
+            "ALK",
+            "Albanischer Lek (1946–1965)",
         }
         ALL{
             "ALL",
@@ -39,9 +47,33 @@ de{
             "AOA",
             "Angolanischer Kwanza",
         }
+        AOK{
+            "AOK",
+            "Angolanischer Kwanza (1977–1990)",
+        }
+        AON{
+            "AON",
+            "Angolanischer Neuer Kwanza (1990–2000)",
+        }
+        AOR{
+            "AOR",
+            "Angolanischer Kwanza Reajustado (1995–1999)",
+        }
         ARA{
             "ARA",
             "Argentinischer Austral",
+        }
+        ARL{
+            "ARL",
+            "Argentinischer Peso Ley (1970–1983)",
+        }
+        ARM{
+            "ARM",
+            "Argentinischer Peso (1881–1970)",
+        }
+        ARP{
+            "ARP",
+            "Argentinischer Peso (1983–1985)",
         }
         ARS{
             "ARS",
@@ -59,13 +91,25 @@ de{
             "AWG",
             "Aruba-Florin",
         }
+        AZM{
+            "AZM",
+            "Aserbaidschan-Manat (1993–2006)",
+        }
         AZN{
             "AZN",
             "Aserbaidschan-Manat",
         }
+        BAD{
+            "BAD",
+            "Bosnien und Herzegowina Dinar (1992–1994)",
+        }
         BAM{
             "BAM",
             "Bosnien und Herzegowina Konvertierbare Mark",
+        }
+        BAN{
+            "BAN",
+            "Bosnien und Herzegowina Neuer Dinar (1994–1997)",
         }
         BBD{
             "BBD",
@@ -91,9 +135,17 @@ de{
             "BGL",
             "Bulgarische Lew (1962–1999)",
         }
+        BGM{
+            "BGK",
+            "Bulgarischer Lew (1952–1962)",
+        }
         BGN{
             "BGN",
             "Bulgarischer Lew",
+        }
+        BGO{
+            "BGJ",
+            "Bulgarischer Lew (1879–1952)",
         }
         BHD{
             "BHD",
@@ -115,6 +167,10 @@ de{
             "BOB",
             "Bolivanischer Boliviano",
         }
+        BOL{
+            "BOL",
+            "Bolivianischer Boliviano (1863–1963)",
+        }
         BOP{
             "BOP",
             "Bolivianischer Peso",
@@ -123,13 +179,37 @@ de{
             "BOV",
             "Boliviansiche Mvdol",
         }
+        BRB{
+            "BRB",
+            "Brasilianischer Cruzeiro Novo (1967–1986)",
+        }
+        BRC{
+            "BRC",
+            "Brasilianischer Cruzado (1986–1989)",
+        }
+        BRE{
+            "BRE",
+            "Brasilianischer Cruzeiro (1990–1993)",
+        }
         BRL{
             "R$",
             "Brasilianischer Real",
         }
+        BRN{
+            "BRN",
+            "Brasilianischer Cruzado Novo (1989–1990)",
+        }
+        BRR{
+            "BRR",
+            "Brasilianischer Cruzeiro (1993–1994)",
+        }
+        BRZ{
+            "BRZ",
+            "Brasilianischer Cruzeiro (1942–1967)",
+        }
         BSD{
             "BSD",
-            "Bahama-Dollar",
+            "Bahamas-Dollar",
         }
         BTN{
             "BTN",
@@ -143,9 +223,13 @@ de{
             "BWP",
             "Botswanischer Pula",
         }
+        BYB{
+            "BYB",
+            "Belarus-Rubel (1994–1999)",
+        }
         BYR{
             "BYR",
-            "Belarus-Rubel",
+            "Weißrussischer Rubel",
         }
         BZD{
             "BZD",
@@ -171,6 +255,10 @@ de{
             "CHW",
             "WIR Franken",
         }
+        CLE{
+            "CLE",
+            "Chilenischer Escudo",
+        }
         CLF{
             "CLF",
             "Chilenische Unidades de Fomento",
@@ -179,6 +267,10 @@ de{
             "CLP",
             "Chilenischer Peso",
         }
+        CNX{
+            "CNX",
+            "Dollar der Chinesischen Volksbank",
+        }
         CNY{
             "CN¥",
             "Renminbi Yuan",
@@ -186,6 +278,10 @@ de{
         COP{
             "COP",
             "Kolumbianischer Peso",
+        }
+        COU{
+            "COU",
+            "Kolumbianische Unidades de valor real",
         }
         CRC{
             "CRC",
@@ -224,7 +320,7 @@ de{
             "Mark der DDR",
         }
         DEM{
-            "DEM",
+            "DM",
             "Deutsche Mark",
         }
         DJF{
@@ -311,6 +407,10 @@ de{
             "GEL",
             "Georgischer Lari",
         }
+        GHC{
+            "GHC",
+            "Ghanaischer Cedi (1979–2007)",
+        }
         GHS{
             "GHS",
             "Ghanaischer Cedi",
@@ -391,6 +491,10 @@ de{
             "ILP",
             "Israelisches Pfund",
         }
+        ILR{
+            "ILR",
+            "Israelischer Schekel (1980–1985)",
+        }
         ILS{
             "₪",
             "Israelischer Neuer Schekel",
@@ -406,6 +510,10 @@ de{
         IRR{
             "IRR",
             "Iranischer Rial",
+        }
+        ISJ{
+            "ISJ",
+            "Isländische Krone (1918–1981)",
         }
         ISK{
             "ISK",
@@ -446,6 +554,14 @@ de{
         KPW{
             "KPW",
             "Nordkoreanischer Won",
+        }
+        KRH{
+            "KRH",
+            "Südkoreanischer Hwan (1953–1962)",
+        }
+        KRO{
+            "KRO",
+            "Südkoreanischer Won (1945–1953)",
         }
         KRW{
             "₩",
@@ -523,6 +639,14 @@ de{
             "MAF",
             "Marokkanischer Franc",
         }
+        MCF{
+            "MCF",
+            "Monegassischer Franc",
+        }
+        MDC{
+            "MDC",
+            "Moldau-Cupon",
+        }
         MDL{
             "MDL",
             "Moldau-Leu",
@@ -538,6 +662,10 @@ de{
         MKD{
             "MKD",
             "Mazedonischer Denar",
+        }
+        MKN{
+            "MKN",
+            "Mazedonischer Denar (1992–1993)",
         }
         MLF{
             "MLF",
@@ -571,9 +699,13 @@ de{
             "MUR",
             "Mauritius-Rupie",
         }
+        MVP{
+            "MVP",
+            "Malediven-Rupie (alt)",
+        }
         MVR{
             "MVR",
-            "Malediven-Rupie",
+            "Malediven-Rufiyaa",
         }
         MWK{
             "MWK",
@@ -582,6 +714,10 @@ de{
         MXN{
             "MX$",
             "Mexikanischer Peso",
+        }
+        MXP{
+            "MXP",
+            "Mexikanischer Silber-Peso (1861–1992)",
         }
         MXV{
             "MXV",
@@ -595,6 +731,10 @@ de{
             "MZE",
             "Mosambikanischer Escudo",
         }
+        MZM{
+            "MZM",
+            "Mosambikanischer Metical (1980–2006)",
+        }
         MZN{
             "MZN",
             "Mosambikanischer Metical",
@@ -607,9 +747,13 @@ de{
             "NGN",
             "Nigerianischer Naira",
         }
+        NIC{
+            "NIC",
+            "Nicaraguanischer Córdoba (1988–1991)",
+        }
         NIO{
             "NIO",
-            "Nicaragua-Cordoba",
+            "Nicaragua-Córdoba",
         }
         NLG{
             "NLG",
@@ -643,6 +787,10 @@ de{
             "PEN",
             "Peruanischer Neuer Sol",
         }
+        PES{
+            "PES",
+            "Peruanischer Sol (1863–1965)",
+        }
         PGK{
             "PGK",
             "Papua-Neuguineischer Kina",
@@ -658,6 +806,10 @@ de{
         PLN{
             "PLN",
             "Polnischer Złoty",
+        }
+        PLZ{
+            "PLZ",
+            "Polnischer Zloty (1950–1995)",
         }
         PTE{
             "PTE",
@@ -675,6 +827,10 @@ de{
             "RHD",
             "Rhodesischer Dollar",
         }
+        ROL{
+            "ROL",
+            "Rumänischer Leu (1952–2006)",
+        }
         RON{
             "RON",
             "Rumänischer Leu",
@@ -686,6 +842,10 @@ de{
         RUB{
             "RUB",
             "Russischer Rubel",
+        }
+        RUR{
+            "RUR",
+            "Russischer Rubel (1991–1998)",
         }
         RWF{
             "RWF",
@@ -703,9 +863,17 @@ de{
             "SCR",
             "Seychellen-Rupie",
         }
+        SDD{
+            "SDD",
+            "Sudanesischer Dinar (1992–2007)",
+        }
         SDG{
             "SDG",
             "Sudanesisches Pfund",
+        }
+        SDP{
+            "SDP",
+            "Sudanesisches Pfund (1957–1998)",
         }
         SEK{
             "SEK",
@@ -779,6 +947,10 @@ de{
             "TJS",
             "Tadschikistan-Somoni",
         }
+        TMM{
+            "TMM",
+            "Turkmenistan-Manat (1993–2009)",
+        }
         TMT{
             "TMT",
             "Turkmenistan-Manat",
@@ -794,6 +966,10 @@ de{
         TPE{
             "TPE",
             "Timor-Escudo",
+        }
+        TRL{
+            "TRL",
+            "Türkische Lira (1922–2005)",
         }
         TRY{
             "TRY",
@@ -819,6 +995,10 @@ de{
             "UAK",
             "Ukrainischer Karbovanetz",
         }
+        UGS{
+            "UGS",
+            "Uganda-Schilling (1966–1987)",
+        }
         UGX{
             "UGX",
             "Uganda-Schilling",
@@ -835,6 +1015,14 @@ de{
             "USS",
             "US Dollar (Gleicher Tag)",
         }
+        UYI{
+            "UYI",
+            "Uruguayischer Peso (Indexierte Rechnungseinheiten)",
+        }
+        UYP{
+            "UYP",
+            "Uruguayischer Peso (1975–1993)",
+        }
         UYU{
             "UYU",
             "Uruguayischer Peso",
@@ -843,6 +1031,10 @@ de{
             "UZS",
             "Usbekistan-Sum",
         }
+        VEB{
+            "VEB",
+            "Venezolanischer Bolívar (1871–2008)",
+        }
         VEF{
             "VEF",
             "Venezolanischer Bolívar",
@@ -850,6 +1042,10 @@ de{
         VND{
             "₫",
             "Vietnamesischer Dong",
+        }
+        VNN{
+            "VNN",
+            "Vietnamesischer Dong(1978–1985)",
         }
         VUV{
             "VUV",
@@ -927,9 +1123,17 @@ de{
             "XRE",
             "RINET Funds",
         }
+        XSU{
+            "XSU",
+            "SUCRE",
+        }
         XTS{
             "XTS",
             "Testwährung",
+        }
+        XUA{
+            "XUA",
+            "Rechnungseinheit der AfEB",
         }
         XXX{
             "XXX",
@@ -943,6 +1147,22 @@ de{
             "YER",
             "Jemen-Rial",
         }
+        YUD{
+            "YUD",
+            "Jugoslawischer Dinar (1966–1990)",
+        }
+        YUM{
+            "YUM",
+            "Jugoslawischer Neuer Dinar (1994–2002)",
+        }
+        YUN{
+            "YUN",
+            "Jugoslawischer Dinar (konvertibel)",
+        }
+        YUR{
+            "YUR",
+            "Jugoslawischer reformierter Dinar (1992–1993)",
+        }
         ZAL{
             "ZAL",
             "Südafrikanischer Rand (Finanz)",
@@ -951,9 +1171,25 @@ de{
             "ZAR",
             "Südafrikanischer Rand",
         }
+        ZMK{
+            "ZMK",
+            "Kwacha (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwacha",
+        }
+        ZRN{
+            "ZRN",
+            "Zaire-Neuer Zaïre (1993–1998)",
+        }
+        ZRZ{
+            "ZRZ",
+            "Zaire-Zaïre (1971–1993)",
+        }
+        ZWD{
+            "ZWD",
+            "Simbabwe-Dollar (1980–2008)",
         }
         ZWL{
             "ZWL",
@@ -964,6 +1200,61 @@ de{
             "Simbabwe-Dollar (2008)",
         }
     }
+    Currencies%narrow{
+        ARS{"$"}
+        AUD{"$"}
+        BBD{"$"}
+        BDT{"৳"}
+        BMD{"$"}
+        BND{"$"}
+        BRL{"R$"}
+        BSD{"$"}
+        BYR{"р."}
+        BZD{"$"}
+        CAD{"$"}
+        CLP{"$"}
+        CNY{"¥"}
+        COP{"$"}
+        CRC{"₡"}
+        CUP{"$"}
+        DOP{"$"}
+        ESP{"₧"}
+        EUR{"€"}
+        FJD{"$"}
+        GBP{"£"}
+        GIP{"£"}
+        GYD{"$"}
+        HKD{"$"}
+        ILS{"₪"}
+        INR{"₹"}
+        JMD{"$"}
+        JPY{"¥"}
+        KHR{"៛"}
+        KRW{"₩"}
+        KYD{"$"}
+        KZT{"₸"}
+        LAK{"₭"}
+        LRD{"$"}
+        MNT{"₮"}
+        MXN{"$"}
+        NAD{"$"}
+        NGN{"₦"}
+        NZD{"$"}
+        PHP{"₱"}
+        PYG{"₲"}
+        RUR{"р."}
+        SBD{"$"}
+        SGD{"$"}
+        SRD{"$"}
+        SSP{"£"}
+        TRY{"₺"}
+        TTD{"$"}
+        TWD{"NT$"}
+        UAH{"₴"}
+        USD{"$"}
+        UYU{"$"}
+        VND{"₫"}
+    }
     CurrencyPlurals{
         ADP{
             one{"Andorranische Pesete"}
@@ -973,9 +1264,17 @@ de{
             one{"VAE-Dirham"}
             other{"VAE-Dirham"}
         }
+        AFA{
+            one{"Afghanische Afghani (1927–2002)"}
+            other{"Afghanische Afghani (1927–2002)"}
+        }
         AFN{
             one{"Afghanischer Afghani"}
             other{"Afghanische Afghani"}
+        }
+        ALK{
+            one{"Albanischer Lek (1946–1965)"}
+            other{"Albanische Lek (1946–1965)"}
         }
         ALL{
             one{"Albanischer Lek"}
@@ -993,9 +1292,33 @@ de{
             one{"Angolanischer Kwanza"}
             other{"Angolanische Kwanza"}
         }
+        AOK{
+            one{"Angolanischer Kwanza (1977–1990)"}
+            other{"Angolanische Kwanza (1977–1990)"}
+        }
+        AON{
+            one{"Angolanischer Neuer Kwanza (1990–2000)"}
+            other{"Angolanische Neue Kwanza (1990–2000)"}
+        }
+        AOR{
+            one{"Angolanischer Kwanza Reajustado (1995–1999)"}
+            other{"Angolanische Kwanza Reajustado (1995–1999)"}
+        }
         ARA{
             one{"Argentinischer Austral"}
             other{"Argentinische Austral"}
+        }
+        ARL{
+            one{"Argentinischer Peso Ley (1970–1983)"}
+            other{"Argentinische Pesos Ley (1970–1983)"}
+        }
+        ARM{
+            one{"Argentinischer Peso (1881–1970)"}
+            other{"Argentinische Pesos (1881–1970)"}
+        }
+        ARP{
+            one{"Argentinischer Peso (1983–1985)"}
+            other{"Argentinische Peso (1983–1985)"}
         }
         ARS{
             one{"Argentinischer Peso"}
@@ -1013,13 +1336,25 @@ de{
             one{"Aruba-Florin"}
             other{"Aruba-Florin"}
         }
+        AZM{
+            one{"Aserbaidschan-Manat (1993–2006)"}
+            other{"Aserbaidschan-Manat (1993–2006)"}
+        }
         AZN{
             one{"Aserbaidschan-Manat"}
             other{"Aserbaidschan-Manat"}
         }
+        BAD{
+            one{"Bosnien und Herzegowina Dinar (1992–1994)"}
+            other{"Bosnien und Herzegowina Dinar (1992–1994)"}
+        }
         BAM{
             one{"Bosnien und Herzegowina Konvertierbare Mark"}
             other{"Bosnien und Herzegowina Konvertierbare Mark"}
+        }
+        BAN{
+            one{"Bosnien und Herzegowina Neuer Dinar (1994–1997)"}
+            other{"Bosnien und Herzegowina Neue Dinar (1994–1997)"}
         }
         BBD{
             one{"Barbados-Dollar"}
@@ -1045,9 +1380,17 @@ de{
             one{"Bulgarische Lew (1962–1999)"}
             other{"Bulgarische Lew (1962–1999)"}
         }
+        BGM{
+            one{"Bulgarischer Lew (1952–1962)"}
+            other{"Bulgarische Lew (1952–1962)"}
+        }
         BGN{
             one{"Bulgarischer Lew"}
             other{"Bulgarische Lew"}
+        }
+        BGO{
+            one{"Bulgarischer Lew (1879–1952)"}
+            other{"Bulgarische Lew (1879–1952)"}
         }
         BHD{
             one{"Bahrain-Dinar"}
@@ -1055,7 +1398,7 @@ de{
         }
         BIF{
             one{"Burundi-Franc"}
-            other{"Burundi-Franc"}
+            other{"Burundi-Francs"}
         }
         BMD{
             one{"Bermuda-Dollar"}
@@ -1067,7 +1410,11 @@ de{
         }
         BOB{
             one{"Bolivanischer Boliviano"}
-            other{"Bolivanische Boliviano"}
+            other{"Bolivianische Bolivianos"}
+        }
+        BOL{
+            one{"Bolivianischer Boliviano (1863–1963)"}
+            other{"Bolivianische Bolivianos (1863–1963)"}
         }
         BOP{
             one{"Bolivianischer Peso"}
@@ -1077,13 +1424,37 @@ de{
             one{"Boliviansiche Mvdol"}
             other{"Bolivianische Mvdol"}
         }
+        BRB{
+            one{"Brasilianischer Cruzeiro Novo (1967–1986)"}
+            other{"Brasilianische Cruzeiro Novo (1967–1986)"}
+        }
+        BRC{
+            one{"Brasilianischer Cruzado (1986–1989)"}
+            other{"Brasilianische Cruzado (1986–1989)"}
+        }
+        BRE{
+            one{"Brasilianischer Cruzeiro (1990–1993)"}
+            other{"Brasilianische Cruzeiro (1990–1993)"}
+        }
         BRL{
             one{"Brasilianischer Real"}
             other{"Brasilianische Real"}
         }
+        BRN{
+            one{"Brasilianischer Cruzado Novo (1989–1990)"}
+            other{"Brasilianische Cruzado Novo (1989–1990)"}
+        }
+        BRR{
+            one{"Brasilianischer Cruzeiro (1993–1994)"}
+            other{"Brasilianische Cruzeiro (1993–1994)"}
+        }
+        BRZ{
+            one{"Brasilianischer Cruzeiro (1942–1967)"}
+            other{"Brasilianischer Cruzeiro (1942–1967)"}
+        }
         BSD{
-            one{"Bahama-Dollar"}
-            other{"Bahama-Dollar"}
+            one{"Bahamas-Dollar"}
+            other{"Bahamas-Dollar"}
         }
         BTN{
             one{"Bhutan-Ngultrum"}
@@ -1097,9 +1468,13 @@ de{
             one{"Botswanischer Pula"}
             other{"Botswanische Pula"}
         }
+        BYB{
+            one{"Belarus-Rubel (1994–1999)"}
+            other{"Belarus-Rubel (1994–1999)"}
+        }
         BYR{
-            one{"Belarus-Rubel"}
-            other{"Belarus-Rubel"}
+            one{"Weißrussischer Rubel"}
+            other{"Weißrussische Rubel"}
         }
         BZD{
             one{"Belize-Dollar"}
@@ -1111,7 +1486,7 @@ de{
         }
         CDF{
             one{"Kongo-Franc"}
-            other{"Kongo-Franc"}
+            other{"Kongo-Francs"}
         }
         CHE{
             one{"WIR-Euro"}
@@ -1125,6 +1500,10 @@ de{
             one{"WIR Franken"}
             other{"WIR Franken"}
         }
+        CLE{
+            one{"Chilenischer Escudo"}
+            other{"Chilenische Escudo"}
+        }
         CLF{
             one{"Chilenische Unidades de Fomento"}
             other{"Chilenische Unidades de Fomento"}
@@ -1133,13 +1512,21 @@ de{
             one{"Chilenischer Peso"}
             other{"Chilenische Pesos"}
         }
+        CNX{
+            one{"Dollar der Chinesischen Volksbank"}
+            other{"Dollar der Chinesischen Volksbank"}
+        }
         CNY{
-            one{"Renminbi Yuan"}
+            one{"Chinesischer Yuan"}
             other{"Renminbi Yuan"}
         }
         COP{
             one{"Kolumbianischer Peso"}
             other{"Kolumbianische Pesos"}
+        }
+        COU{
+            one{"Kolumbianische Unidad de valor real"}
+            other{"Kolumbianische Unidades de valor real"}
         }
         CRC{
             one{"Costa-Rica-Colón"}
@@ -1265,6 +1652,10 @@ de{
             one{"Georgischer Lari"}
             other{"Georgische Lari"}
         }
+        GHC{
+            one{"Ghanaischer Cedi (1979–2007)"}
+            other{"Ghanaische Cedi (1979–2007)"}
+        }
         GHS{
             one{"Ghanaischer Cedi"}
             other{"Ghanaische Cedi"}
@@ -1345,6 +1736,10 @@ de{
             one{"Israelisches Pfund"}
             other{"Israelische Pfund"}
         }
+        ILR{
+            one{"Israelischer Schekel (1980–1985)"}
+            other{"Israelische Schekel (1980–1985)"}
+        }
         ILS{
             one{"Israelischer Neuer Schekel"}
             other{"Israelische Neue Schekel"}
@@ -1360,6 +1755,10 @@ de{
         IRR{
             one{"Iranischer Rial"}
             other{"Iranische Rial"}
+        }
+        ISJ{
+            one{"Isländische Krone (1918–1981)"}
+            other{"Isländische Kronen (1918–1981)"}
         }
         ISK{
             one{"Isländische Krone"}
@@ -1395,11 +1794,19 @@ de{
         }
         KMF{
             one{"Komoren-Franc"}
-            other{"Komoren-Franc"}
+            other{"Komoren-Francs"}
         }
         KPW{
             one{"Nordkoreanischer Won"}
             other{"Nordkoreanische Won"}
+        }
+        KRH{
+            one{"Südkoreanischer Hwan (1953–1962)"}
+            other{"Südkoreanischer Hwan (1953–1962)"}
+        }
+        KRO{
+            one{"Südkoreanischer Won (1945–1953)"}
+            other{"Südkoreanischer Won (1945–1953)"}
         }
         KRW{
             one{"Südkoreanischer Won"}
@@ -1477,6 +1884,14 @@ de{
             one{"Marokkanische Franc"}
             other{"Marokkanische Franc"}
         }
+        MCF{
+            one{"Monegassischer Franc"}
+            other{"Monegassische Franc"}
+        }
+        MDC{
+            one{"Moldau-Cupon"}
+            other{"Moldau-Cupon"}
+        }
         MDL{
             one{"Moldau-Leu"}
             other{"Moldau-Leu"}
@@ -1492,6 +1907,10 @@ de{
         MKD{
             one{"Mazedonischer Denar"}
             other{"Mazedonische Denari"}
+        }
+        MKN{
+            one{"Mazedonischer Denar (1992–1993)"}
+            other{"Mazedonische Denar (1992–1993)"}
         }
         MLF{
             one{"Malische Franc"}
@@ -1525,8 +1944,12 @@ de{
             one{"Mauritius-Rupie"}
             other{"Mauritius-Rupien"}
         }
+        MVP{
+            one{"Malediven-Rupie (alt)"}
+            other{"Malediven-Rupien (alt)"}
+        }
         MVR{
-            one{"Malediven-Rupie"}
+            one{"Malediven-Rufiyaa"}
             other{"Malediven-Rupien"}
         }
         MWK{
@@ -1536,6 +1959,10 @@ de{
         MXN{
             one{"Mexikanischer Peso"}
             other{"Mexikanische Pesos"}
+        }
+        MXP{
+            one{"Mexikanische Silber-Peso (1861–1992)"}
+            other{"Mexikanische Silber-Pesos (1861–1992)"}
         }
         MXV{
             one{"Mexicanischer Unidad de Inversion (UDI)"}
@@ -1549,6 +1976,10 @@ de{
             one{"Mozambikanische Escudo"}
             other{"Mozambikanische Escudo"}
         }
+        MZM{
+            one{"Mosambikanischer Metical (1980–2006)"}
+            other{"Mosambikanische Meticais (1980–2006)"}
+        }
         MZN{
             one{"Mosambikanischer Metical"}
             other{"Mosambikanische Meticais"}
@@ -1561,9 +1992,13 @@ de{
             one{"Nigerianischer Naira"}
             other{"Nigerianische Naira"}
         }
+        NIC{
+            one{"Nicaraguanischer Córdoba (1988–1991)"}
+            other{"Nicaraguanische Córdoba (1988–1991)"}
+        }
         NIO{
-            one{"Nicaragua-Cordoba"}
-            other{"Nicaragua-Cordoba"}
+            one{"Nicaragua-Córdoba"}
+            other{"Nicaragua-Córdobas"}
         }
         NLG{
             one{"Niederländischer Gulden"}
@@ -1597,6 +2032,10 @@ de{
             one{"Peruanischer Neuer Sol"}
             other{"Peruanische Neue Sol"}
         }
+        PES{
+            one{"Peruanischer Sol (1863–1965)"}
+            other{"Peruanische Sol (1863–1965)"}
+        }
         PGK{
             one{"Papua-Neuguineischer Kina"}
             other{"Papua-Neuguineische Kina"}
@@ -1612,6 +2051,10 @@ de{
         PLN{
             one{"Polnischer Złoty"}
             other{"Polnische Złoty"}
+        }
+        PLZ{
+            one{"Polnischer Zloty (1950–1995)"}
+            other{"Polnische Zloty (1950–1995)"}
         }
         PTE{
             one{"Portugiesische Escudo"}
@@ -1629,6 +2072,10 @@ de{
             one{"Rhodesische Dollar"}
             other{"Rhodesische Dollar"}
         }
+        ROL{
+            one{"Rumänischer Leu (1952–2006)"}
+            other{"Rumänische Leu (1952–2006)"}
+        }
         RON{
             one{"Rumänischer Leu"}
             other{"Rumänische Leu"}
@@ -1641,9 +2088,13 @@ de{
             one{"Russischer Rubel"}
             other{"Russische Rubel"}
         }
+        RUR{
+            one{"Russischer Rubel (1991–1998)"}
+            other{"Russische Rubel (1991–1998)"}
+        }
         RWF{
             one{"Ruanda-Franc"}
-            other{"Ruanda-Franc"}
+            other{"Ruanda-Francs"}
         }
         SAR{
             one{"Saudi-Rial"}
@@ -1657,9 +2108,17 @@ de{
             one{"Seychellen-Rupie"}
             other{"Seychellen-Rupien"}
         }
+        SDD{
+            one{"Sudanesischer Dinar (1992–2007)"}
+            other{"Sudanesische Dinar (1992–2007)"}
+        }
         SDG{
             one{"Sudanesisches Pfund"}
             other{"Sudanesische Pfund"}
+        }
+        SDP{
+            one{"Sudanesisches Pfund (1957–1998)"}
+            other{"Sudanesische Pfund (1957–1998)"}
         }
         SEK{
             one{"Schwedische Krone"}
@@ -1733,6 +2192,10 @@ de{
             one{"Tadschikistan-Somoni"}
             other{"Tadschikistan-Somoni"}
         }
+        TMM{
+            one{"Turkmenistan-Manat (1993–2009)"}
+            other{"Turkmenistan-Manat (1993–2009)"}
+        }
         TMT{
             one{"Turkmenistan-Manat"}
             other{"Turkmenistan-Manat"}
@@ -1748,6 +2211,10 @@ de{
         TPE{
             one{"Timor-Escudo"}
             other{"Timor-Escudo"}
+        }
+        TRL{
+            one{"Türkische Lira (1922–2005)"}
+            other{"Türkische Lira (1922–2005)"}
         }
         TRY{
             one{"Türkische Lira"}
@@ -1773,6 +2240,10 @@ de{
             one{"Ukrainische Karbovanetz"}
             other{"Ukrainische Karbovanetz"}
         }
+        UGS{
+            one{"Uganda-Schilling (1966–1987)"}
+            other{"Uganda-Schilling (1966–1987)"}
+        }
         UGX{
             one{"Uganda-Schilling"}
             other{"Uganda-Schilling"}
@@ -1789,6 +2260,14 @@ de{
             one{"US-Dollar (Gleicher Tag)"}
             other{"US-Dollar (Gleicher Tag)"}
         }
+        UYI{
+            one{"Uruguayischer Peso (Indexierte Rechnungseinheiten)"}
+            other{"Uruguayische Pesos (Indexierte Rechnungseinheiten)"}
+        }
+        UYP{
+            one{"Uruguayischer Peso (1975–1993)"}
+            other{"Uruguayische Pesos (1975–1993)"}
+        }
         UYU{
             one{"Uruguayischer Peso"}
             other{"Uruguayische Pesos"}
@@ -1797,6 +2276,10 @@ de{
             one{"Usbekistan-Sum"}
             other{"Usbekistan-Sum"}
         }
+        VEB{
+            one{"Venezolanischer Bolívar (1871–2008)"}
+            other{"Venezolanische Bolívares (1871–2008)"}
+        }
         VEF{
             one{"Venezolanischer Bolívar"}
             other{"Venezolanische Bolívares"}
@@ -1804,6 +2287,10 @@ de{
         VND{
             one{"Vietnamesischer Dong"}
             other{"Vietnamesische Dong"}
+        }
+        VNN{
+            one{"Vietnamesischer Dong(1978–1985)"}
+            other{"Vietnamesische Dong(1978–1985)"}
         }
         VUV{
             one{"Vanuatu-Vatu"}
@@ -1863,7 +2350,7 @@ de{
         }
         XOF{
             one{"CFA-Franc (BCEAO)"}
-            other{"CFA-Franc (BCEAO)"}
+            other{"CFA-Francs (BCEAO)"}
         }
         XPD{
             one{"Unze Palladium"}
@@ -1881,13 +2368,21 @@ de{
             one{"RINET Funds"}
             other{"RINET Funds"}
         }
+        XSU{
+            one{"SUCRE"}
+            other{"SUCRE"}
+        }
         XTS{
             one{"Testwährung"}
             other{"Testwährung"}
         }
+        XUA{
+            one{"Rechnungseinheit der AfEB"}
+            other{"Rechnungseinheiten der AfEB"}
+        }
         XXX{
-            one{"Unbekannte Währung"}
-            other{"Unbekannte Währung"}
+            one{"(unbekannte Währung)"}
+            other{"(unbekannte Währung)"}
         }
         YDD{
             one{"Jemen-Dinar"}
@@ -1897,6 +2392,22 @@ de{
             one{"Jemen-Rial"}
             other{"Jemen-Rial"}
         }
+        YUD{
+            one{"Jugoslawischer Dinar (1966–1990)"}
+            other{"Jugoslawische Dinar (1966–1990)"}
+        }
+        YUM{
+            one{"Jugoslawischer Neuer Dinar (1994–2002)"}
+            other{"Jugoslawische Neue Dinar (1994–2002)"}
+        }
+        YUN{
+            one{"Jugoslawische Dinar (konvertibel)"}
+            other{"Jugoslawische Dinar (konvertibel)"}
+        }
+        YUR{
+            one{"Jugoslawischer reformierter Dinar (1992–1993)"}
+            other{"Jugoslawische reformierte Dinar (1992–1993)"}
+        }
         ZAL{
             one{"Südafrikanischer Rand (Finanz)"}
             other{"Südafrikanischer Rand (Finanz)"}
@@ -1905,9 +2416,25 @@ de{
             one{"Südafrikanischer Rand"}
             other{"Südafrikanische Rand"}
         }
+        ZMK{
+            one{"Kwacha (1968–2012)"}
+            other{"Kwacha (1968–2012)"}
+        }
         ZMW{
             one{"Kwacha"}
             other{"Kwacha"}
+        }
+        ZRN{
+            one{"Zaire-Neuer Zaïre (1993–1998)"}
+            other{"Zaire-Neue Zaïre (1993–1998)"}
+        }
+        ZRZ{
+            one{"Zaire-Zaïre (1971–1993)"}
+            other{"Zaire-Zaïre (1971–1993)"}
+        }
+        ZWD{
+            one{"Simbabwe-Dollar (1980–2008)"}
+            other{"Simbabwe-Dollar (1980–2008)"}
         }
         ZWL{
             one{"Simbabwe-Dollar (2009)"}
@@ -1922,5 +2449,5 @@ de{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

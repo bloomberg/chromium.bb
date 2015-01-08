@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/az.xml
@@ -11,6 +11,35 @@
  */
 az{
     Countries{
+        001{"Dünya"}
+        002{"Afrika"}
+        003{"Şimali Amerika"}
+        005{"Cənubi Amerika"}
+        009{"Okeaniya"}
+        011{"Qərbi Afrika"}
+        013{"Mərkəzi Amerika"}
+        014{"Şərqi Afrika"}
+        015{"Şimali Afrika"}
+        017{"Mərkəzi Afrika"}
+        018{"Cənubi Afrika"}
+        019{"Amerikalar"}
+        021{"Şimal Amerikası"}
+        029{"Karib"}
+        030{"Şərqi Asiya"}
+        034{"Cənubi Asiya"}
+        035{"Cənub-Şərqi Asiya"}
+        039{"Cənubi Avropa"}
+        053{"Avstralaziya"}
+        054{"Melaneziya"}
+        057{"Mikroneziya Regionu"}
+        061{"Polineziya"}
+        142{"Asiya"}
+        143{"Mərkəzi Asiya"}
+        145{"Qərbi Asiya"}
+        150{"Avropa"}
+        151{"Şərqi Avropa"}
+        154{"Şimali Avropa"}
+        155{"Qərbi Avropa"}
         419{"Latın Amerikası"}
         AC{"Yüksəliş Adası"}
         AD{"Andorra"}
@@ -273,6 +302,13 @@ az{
         ZW{"Zimbabve"}
         ZZ{"Naməlum Region"}
     }
+    Countries%variant{
+        CD{"Konqo (KDR)"}
+        CG{"Konqo (Respublika)"}
+        FK{"Folklend Adaları (Malvin Adaları)"}
+        MK{"Makedoniya (FYROM)"}
+        TL{"Doğu Timor"}
+    }
     CountriesShort{
         GB{"B.K."}
         HK{"Honq Konq"}
@@ -280,5 +316,5 @@ az{
         PS{"Fələstin"}
         US{"A.B.Ş."}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

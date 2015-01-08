@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/sv.xml
@@ -11,6 +11,35 @@
  */
 sv{
     Countries{
+        001{"världen"}
+        002{"Afrika"}
+        003{"Nordamerika"}
+        005{"Sydamerika"}
+        009{"Oceanien"}
+        011{"Västafrika"}
+        013{"Centralamerika"}
+        014{"Östafrika"}
+        015{"Nordafrika"}
+        017{"Centralafrika"}
+        018{"södra Afrika"}
+        019{"Nord- och Sydamerika"}
+        021{"norra Amerika"}
+        029{"Karibien"}
+        030{"Östasien"}
+        034{"Sydasien"}
+        035{"Sydostasien"}
+        039{"Sydeuropa"}
+        053{"Australasien"}
+        054{"Melanesien"}
+        057{"Mikronesiska öarna"}
+        061{"Polynesien"}
+        142{"Asien"}
+        143{"Centralasien"}
+        145{"Västasien"}
+        150{"Europa"}
+        151{"Östeuropa"}
+        154{"Nordeuropa"}
+        155{"Västeuropa"}
         419{"Latinamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -273,6 +302,12 @@ sv{
         ZW{"Zimbabwe"}
         ZZ{"okänd region"}
     }
+    Countries%variant{
+        CD{"Demokratiska republiken Kongo"}
+        CG{"Republiken Kongo"}
+        FK{"Falklandsöarna (Malvinerna)"}
+        MK{"f.d. jugoslaviska republiken Makedonien"}
+    }
     CountriesShort{
         GB{"Storbritannien"}
         HK{"Hongkong"}
@@ -280,5 +315,5 @@ sv{
         PS{"Palestina"}
         US{"USA"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

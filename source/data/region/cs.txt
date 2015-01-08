@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/cs.xml
@@ -11,6 +11,35 @@
  */
 cs{
     Countries{
+        001{"Svět"}
+        002{"Afrika"}
+        003{"Severní Amerika"}
+        005{"Jižní Amerika"}
+        009{"Oceánie"}
+        011{"Západní Afrika"}
+        013{"Střední Amerika"}
+        014{"Východní Afrika"}
+        015{"Severní Afrika"}
+        017{"Střední Afrika"}
+        018{"Jižní Afrika"}
+        019{"Amerika"}
+        021{"Severní Amerika (oblast)"}
+        029{"Karibik"}
+        030{"Východní Asie"}
+        034{"Jižní Asie"}
+        035{"Jihovýchodní Asie"}
+        039{"Jižní Evropa"}
+        053{"Australasie"}
+        054{"Melanésie"}
+        057{"Mikronésie (region)"}
+        061{"Polynésie"}
+        142{"Asie"}
+        143{"Střední Asie"}
+        145{"Západní Asie"}
+        150{"Evropa"}
+        151{"Východní Evropa"}
+        154{"Severní Evropa"}
+        155{"Západní Evropa"}
         419{"Latinská Amerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -53,9 +82,9 @@ cs{
         BZ{"Belize"}
         CA{"Kanada"}
         CC{"Kokosové ostrovy"}
-        CD{"Kongo - Kinshasa"}
+        CD{"Kongo – Kinshasa"}
         CF{"Středoafrická republika"}
-        CG{"Kongo - Brazzaville"}
+        CG{"Kongo – Brazzaville"}
         CH{"Švýcarsko"}
         CI{"Pobřeží slonoviny"}
         CK{"Cookovy ostrovy"}
@@ -112,7 +141,7 @@ cs{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong - ZAO Číny"}
+        HK{"Hongkong – ZAO Číny"}
         HM{"Heardův ostrov a McDonaldovy ostrovy"}
         HN{"Honduras"}
         HR{"Chorvatsko"}
@@ -159,14 +188,14 @@ cs{
         MC{"Monako"}
         MD{"Moldavsko"}
         ME{"Černá Hora"}
-        MF{"Svatý Martin"}
+        MF{"Svatý Martin (Francie)"}
         MG{"Madagaskar"}
         MH{"Marshallovy ostrovy"}
         MK{"Makedonie"}
         ML{"Mali"}
         MM{"Myanmar (Barma)"}
         MN{"Mongolsko"}
-        MO{"Macao - ZAO Číny"}
+        MO{"Macao – ZAO Číny"}
         MP{"Severní Mariany"}
         MQ{"Martinik"}
         MR{"Mauritánie"}
@@ -230,7 +259,7 @@ cs{
         SS{"Jižní Súdán"}
         ST{"Svatý Tomáš a Princův ostrov"}
         SV{"Salvador"}
-        SX{"Sint Maarten"}
+        SX{"Svatý Martin (Nizozemsko)"}
         SY{"Sýrie"}
         SZ{"Svazijsko"}
         TA{"Tristan da Cunha"}
@@ -273,6 +302,12 @@ cs{
         ZW{"Zimbabwe"}
         ZZ{"Neznámá oblast"}
     }
+    Countries%variant{
+        CD{"Kongo (DRK)"}
+        CG{"Kongo (republika)"}
+        FK{"Falklandské ostrovy (Malvíny)"}
+        MK{"Makedonie (FYROM)"}
+    }
     CountriesShort{
         GB{"VB"}
         HK{"Hongkong"}
@@ -280,5 +315,5 @@ cs{
         PS{"Palestina"}
         US{"USA"}
     }
-    Version{"2.0.92.98"}
+    Version{"2.1.8.9"}
 }

@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/id.xml
@@ -11,6 +11,35 @@
  */
 id{
     Countries{
+        001{"Dunia"}
+        002{"Afrika"}
+        003{"Amerika Utara"}
+        005{"Amerika Selatan"}
+        009{"Oseania"}
+        011{"Afrika Barat"}
+        013{"Amerika Tengah"}
+        014{"Afrika Timur"}
+        015{"Afrika Utara"}
+        017{"Afrika Tengah"}
+        018{"Afrika Bagian Selatan"}
+        019{"Amerika"}
+        021{"Amerika Bagian Utara"}
+        029{"Kepulauan Karibia"}
+        030{"Asia Timur"}
+        034{"Asia Selatan"}
+        035{"Asia Tenggara"}
+        039{"Eropa Selatan"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Wilayah Mikronesia"}
+        061{"Polinesia"}
+        142{"Asia"}
+        143{"Asia Tengah"}
+        145{"Asia Barat"}
+        150{"Eropa"}
+        151{"Eropa Timur"}
+        154{"Eropa Utara"}
+        155{"Eropa Barat"}
         419{"Amerika Latin"}
         AC{"Pulau Ascension"}
         AD{"Andorra"}
@@ -57,7 +86,7 @@ id{
         CF{"Republik Afrika Tengah"}
         CG{"Kongo - Brazzaville"}
         CH{"Swiss"}
-        CI{"Cote d'Ivoire"}
+        CI{"Cote d’Ivoire"}
         CK{"Kepulauan Cook"}
         CL{"Cile"}
         CM{"Kamerun"}
@@ -122,7 +151,7 @@ id{
         ID{"Indonesia"}
         IE{"Irlandia"}
         IL{"Israel"}
-        IM{"Isle of Man"}
+        IM{"Pulau Man"}
         IN{"India"}
         IO{"Wilayah Inggris di Samudra Hindia"}
         IQ{"Irak"}
@@ -273,6 +302,14 @@ id{
         ZW{"Zimbabwe"}
         ZZ{"Wilayah Tidak Dikenal"}
     }
+    Countries%variant{
+        CD{"Kongo (RDK)"}
+        CG{"Kongo (Republik)"}
+        CI{"Ivory Coast"}
+        FK{"Kepulauan Malvinas (Falkland)"}
+        MK{"Makedonia (BRY)"}
+        TL{"Timor Timur"}
+    }
     CountriesShort{
         GB{"GB"}
         HK{"Hong Kong"}
@@ -280,5 +317,5 @@ id{
         PS{"Palestina"}
         US{"A.S."}
     }
-    Version{"2.0.93.8"}
+    Version{"2.1.8.9"}
 }

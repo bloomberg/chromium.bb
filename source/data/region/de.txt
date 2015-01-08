@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/de.xml
@@ -11,6 +11,35 @@
  */
 de{
     Countries{
+        001{"Welt"}
+        002{"Afrika"}
+        003{"Nordamerika"}
+        005{"Südamerika"}
+        009{"Ozeanien"}
+        011{"Westafrika"}
+        013{"Mittelamerika"}
+        014{"Ostafrika"}
+        015{"Nordafrika"}
+        017{"Zentralafrika"}
+        018{"Südliches Afrika"}
+        019{"Amerika"}
+        021{"Nördliches Amerika"}
+        029{"Karibik"}
+        030{"Ostasien"}
+        034{"Südasien"}
+        035{"Südostasien"}
+        039{"Südeuropa"}
+        053{"Australasien"}
+        054{"Melanesien"}
+        057{"Mikronesisches Inselgebiet"}
+        061{"Polynesien"}
+        142{"Asien"}
+        143{"Zentralasien"}
+        145{"Westasien"}
+        150{"Europa"}
+        151{"Osteuropa"}
+        154{"Nordeuropa"}
+        155{"Westeuropa"}
         419{"Lateinamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -166,7 +195,7 @@ de{
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolei"}
-        MO{"Sonderverwaltungszone Macao"}
+        MO{"Sonderverwaltungsregion Macau"}
         MP{"Nördliche Marianen"}
         MQ{"Martinique"}
         MR{"Mauretanien"}
@@ -273,11 +302,20 @@ de{
         ZW{"Simbabwe"}
         ZZ{"Unbekannte Region"}
     }
+    Countries%variant{
+        CD{"Kongo (Demokratische Republik)"}
+        CG{"Kongo (Republik)"}
+        CI{"Elfenbeinküste"}
+        FK{"Falklandinseln (Malwinen)"}
+        MK{"Mazedonien (EJR)"}
+        TL{"Osttimor"}
+    }
     CountriesShort{
         GB{"UK"}
         HK{"Hongkong"}
-        MO{"Macao"}
+        MO{"Macau"}
         PS{"Palästina"}
+        US{"USA"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

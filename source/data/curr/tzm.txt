@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/tzm.xml
@@ -83,6 +83,10 @@ tzm{
             "£",
             "Junih Usterlini Ubriṭani",
         }
+        GHC{
+            "GHC",
+            "Sidi Uɣani",
+        }
         GMD{
             "GMD",
             "Dalasi Agambi",
@@ -139,6 +143,10 @@ tzm{
             "MWK",
             "Kwača Umalawi",
         }
+        MZM{
+            "MZM",
+            "Mitikal Umuzambiqi",
+        }
         NAD{
             "NAD",
             "Ḍular Unamibi",
@@ -162,6 +170,10 @@ tzm{
         SDG{
             "SDG",
             "Junih Usudani",
+        }
+        SDP{
+            "SDP",
+            "Junih Usudani (1956–2007)",
         }
         SHP{
             "SHP",
@@ -211,10 +223,18 @@ tzm{
             "ZAR",
             "Rand Ufriki Unzul",
         }
+        ZMK{
+            "ZMK",
+            "Kwača Uzambi (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwača Uzambi",
         }
+        ZWD{
+            "ZWD",
+            "Ḍular Uzimbabwi",
+        }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.6.69"}
 }

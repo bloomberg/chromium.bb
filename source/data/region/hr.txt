@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/hr.xml
@@ -11,6 +11,35 @@
  */
 hr{
     Countries{
+        001{"Svijet"}
+        002{"Afrika"}
+        003{"Sjevernoamerički kontinent"}
+        005{"Južna Amerika"}
+        009{"Oceanija"}
+        011{"Zapadna Afrika"}
+        013{"Centralna Amerika"}
+        014{"Istočna Afrika"}
+        015{"Sjeverna Afrika"}
+        017{"Središnja Afrika"}
+        018{"Južna Afrika"}
+        019{"Amerike"}
+        021{"Sjeverna Amerika"}
+        029{"Karibi"}
+        030{"Istočna Azija"}
+        034{"Južna Azija"}
+        035{"Jugoistočna Azija"}
+        039{"Južna Europa"}
+        053{"Australazija"}
+        054{"Melanezija"}
+        057{"Mikronezijsko područje"}
+        061{"Polinezija"}
+        142{"Azija"}
+        143{"Srednja Azija"}
+        145{"Zapadna Azija"}
+        150{"Europa"}
+        151{"Istočna Europa"}
+        154{"Sjeverna Europa"}
+        155{"Zapadna Europa"}
         419{"Latinska Amerika"}
         AC{"Otok Ascension"}
         AD{"Andora"}
@@ -53,7 +82,7 @@ hr{
         BZ{"Belize"}
         CA{"Kanada"}
         CC{"Kokosovi (Keeling) Otoci"}
-        CD{"Kongo (DRK)"}
+        CD{"Kongo - Kinshasa"}
         CF{"Srednjoafrička Republika"}
         CG{"Kongo - Brazzaville"}
         CH{"Švicarska"}
@@ -86,7 +115,7 @@ hr{
         ER{"Eritreja"}
         ES{"Španjolska"}
         ET{"Etiopija"}
-        EU{"Europska Unija"}
+        EU{"Europska unija"}
         FI{"Finska"}
         FJ{"Fidži"}
         FK{"Falklandski Otoci"}
@@ -273,6 +302,13 @@ hr{
         ZW{"Zimbabve"}
         ZZ{"nepoznato područje"}
     }
+    Countries%variant{
+        CD{"Kongo (DRK)"}
+        CG{"Kongo (RK)"}
+        CI{"Bjelokosna Obala"}
+        FK{"Falklandski Otoci (Malvini)"}
+        MK{"Makedonija (BJRM)"}
+    }
     CountriesShort{
         GB{"UK"}
         HK{"Hong Kong"}
@@ -280,5 +316,5 @@ hr{
         PS{"Palestina"}
         US{"SAD"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

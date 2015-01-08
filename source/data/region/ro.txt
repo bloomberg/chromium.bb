@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ro.xml
@@ -11,6 +11,35 @@
  */
 ro{
     Countries{
+        001{"Lume"}
+        002{"Africa"}
+        003{"America de Nord"}
+        005{"America de Sud"}
+        009{"Oceania"}
+        011{"Africa Occidentală"}
+        013{"America Centrală"}
+        014{"Africa Orientală"}
+        015{"Africa Septentrională"}
+        017{"Africa Centrală"}
+        018{"Africa Meridională"}
+        019{"Americi"}
+        021{"America Septentrională"}
+        029{"Caraibe"}
+        030{"Asia Orientală"}
+        034{"Asia Meridională"}
+        035{"Asia de Sud-Est"}
+        039{"Europa Meridională"}
+        053{"Australasia"}
+        054{"Melanezia"}
+        057{"Regiunea Micronezia"}
+        061{"Polinezia"}
+        142{"Asia"}
+        143{"Asia Centrală"}
+        145{"Asia Occidentală"}
+        150{"Europa"}
+        151{"Europa Orientală"}
+        154{"Europa Septentrională"}
+        155{"Europa Occidentală"}
         419{"America Latină"}
         AC{"Insula Ascension"}
         AD{"Andorra"}
@@ -53,9 +82,9 @@ ro{
         BZ{"Belize"}
         CA{"Canada"}
         CC{"Insulele Cocos (Keeling)"}
-        CD{"Republica Democrată Congo"}
+        CD{"Congo - Kinshasa"}
         CF{"Republica Centrafricană"}
-        CG{"Congo"}
+        CG{"Congo - Brazzaville"}
         CH{"Elveția"}
         CI{"Côte d’Ivoire"}
         CK{"Insulele Cook"}
@@ -252,7 +281,7 @@ ro{
         TZ{"Tanzania"}
         UA{"Ucraina"}
         UG{"Uganda"}
-        UM{"Insulele Minore Îndepărtate ale Statelor Unite ale Americii"}
+        UM{"Insulele Îndepărtate ale S.U.A."}
         US{"Statele Unite ale Americii"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -273,6 +302,13 @@ ro{
         ZW{"Zimbabwe"}
         ZZ{"Regiune necunoscută"}
     }
+    Countries%variant{
+        CD{"Congo (Republica Democrată Congo)"}
+        CG{"Congo (Republica)"}
+        CI{"Coasta de Fildeș"}
+        FK{"Insulele Falkland (Insulele Malvine)"}
+        MK{"Macedonia (FRIM)"}
+    }
     CountriesShort{
         GB{"Regatul Unit"}
         HK{"Hong Kong"}
@@ -280,5 +316,5 @@ ro{
         PS{"Palestina"}
         US{"S.U.A."}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

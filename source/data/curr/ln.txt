@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ln.xml
@@ -83,6 +83,10 @@ ln{
             "£",
             "Paunɛ ya Angɛlɛtɛ́lɛ",
         }
+        GHC{
+            "GHC",
+            "Sedi ya Gana",
+        }
         GMD{
             "GMD",
             "Dalasi ya Gambi",
@@ -139,6 +143,10 @@ ln{
             "MWK",
             "Kwasha ya Malawi",
         }
+        MZM{
+            "MZM",
+            "Metikali ya Mozambiki",
+        }
         NAD{
             "NAD",
             "Dolarɛ ya Namibi",
@@ -162,6 +170,10 @@ ln{
         SDG{
             "SDG",
             "Dinarɛ ya Sudá",
+        }
+        SDP{
+            "SDP",
+            "Paunɛ ya Sudá",
         }
         SHP{
             "SHP",
@@ -211,10 +223,18 @@ ln{
             "ZAR",
             "Randɛ ya Afríka Súdi",
         }
+        ZMK{
+            "ZMK",
+            "Kwasha ya Zambi (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwasha ya Zambi",
         }
+        ZWD{
+            "ZWD",
+            "Dolarɛ ya Zimbabwɛ",
+        }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.7.39"}
 }

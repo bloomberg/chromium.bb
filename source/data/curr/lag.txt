@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/lag.xml
@@ -83,6 +83,10 @@ lag{
             "£",
             "Páundi ya Ʉɨngɨréesa",
         }
+        GHC{
+            "GHC",
+            "Séedi ya Gáana",
+        }
         GMD{
             "GMD",
             "Daláasi ya Gámbia",
@@ -138,6 +142,10 @@ lag{
         MWK{
             "MWK",
             "Kwáacha ya Maláawi",
+        }
+        MZM{
+            "MZM",
+            "Metikáali ya Musumbíiji",
         }
         NAD{
             "NAD",
@@ -211,10 +219,18 @@ lag{
             "ZAR",
             "Ráandi ya Afɨrɨka ya Saame",
         }
+        ZMK{
+            "ZMK",
+            "Kwácha ya Sámbia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwácha ya Sámbia",
         }
+        ZWD{
+            "ZWD",
+            "Dóola ya Simbáabwe",
+        }
     }
-    Version{"2.0.92.75"}
+    Version{"2.1.6.69"}
 }

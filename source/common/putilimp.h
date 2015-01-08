@@ -1,7 +1,7 @@
 /*
 ******************************************************************************
 *
-*   Copyright (C) 1997-2013, International Business Machines
+*   Copyright (C) 1997-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
@@ -117,10 +117,11 @@ typedef size_t uintptr_t;
 #   define U_TIMEZONE timezone
 #elif U_PLATFORM_IS_LINUX_BASED
 #   if defined(__UCLIBC__)
-    /* uClibc does not have __timezone or _timezone. */
+       /* uClibc does not have __timezone or _timezone. */
 #   elif defined(_NEWLIB_VERSION)
 #      define U_TIMEZONE      _timezone
 #   elif defined(__GLIBC__)
+       /* glibc */
 #      define U_TIMEZONE      __timezone
 #   endif
 #elif U_PLATFORM_USES_ONLY_WIN32_API

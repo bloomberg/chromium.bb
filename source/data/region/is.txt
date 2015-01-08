@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/is.xml
@@ -11,6 +11,35 @@
  */
 is{
     Countries{
+        001{"Heimurinn"}
+        002{"Afríka"}
+        003{"Norður-Ameríka"}
+        005{"Suður-Ameríka"}
+        009{"Eyjaálfa"}
+        011{"Vestur-Afríka"}
+        013{"Mið-Ameríka"}
+        014{"Austur-Afríka"}
+        015{"Norður-Afríka"}
+        017{"Mið-Afríka"}
+        018{"Suðurhluti Afríku"}
+        019{"Ameríka"}
+        021{"Ameríka norðan Mexikó"}
+        029{"Karíbahafið"}
+        030{"Austur-Asía"}
+        034{"Suður-Asía"}
+        035{"Suðaustur-Asía"}
+        039{"Suður-Evrópa"}
+        053{"Ástralasía"}
+        054{"Melanesía"}
+        057{"Míkrónesíusvæðið"}
+        061{"Pólýnesía"}
+        142{"Asía"}
+        143{"Mið-Asía"}
+        145{"Vestur-Asía"}
+        150{"Evrópa"}
+        151{"Austur-Evrópa"}
+        154{"Norður-Evrópa"}
+        155{"Vestur-Evrópa"}
         419{"Rómanska Ameríka"}
         AC{"Ascension-eyja"}
         AD{"Andorra"}
@@ -67,7 +96,7 @@ is{
         CR{"Kostaríka"}
         CU{"Kúba"}
         CV{"Grænhöfðaeyjar"}
-        CW{"Curaçao"}
+        CW{"Curacao"}
         CX{"Jólaey"}
         CY{"Kýpur"}
         CZ{"Tékkland"}
@@ -90,7 +119,7 @@ is{
         FI{"Finnland"}
         FJ{"Fídjieyjar"}
         FK{"Falklandseyjar"}
-        FM{"Míkrónesía (FM)"}
+        FM{"Míkrónesía"}
         FO{"Færeyjar"}
         FR{"Frakkland"}
         GA{"Gabon"}
@@ -134,11 +163,11 @@ is{
         JO{"Jórdanía"}
         JP{"Japan"}
         KE{"Kenía"}
-        KG{"Kirgisistan"}
+        KG{"Kirgistan"}
         KH{"Kambódía"}
         KI{"Kíribatí"}
         KM{"Kómoreyjar"}
-        KN{"Sankti Kristófer og Nevis"}
+        KN{"Sankti Kitts og Nevis"}
         KP{"Norður-Kórea"}
         KR{"Suður-Kórea"}
         KW{"Kúveit"}
@@ -256,7 +285,7 @@ is{
         US{"Bandaríkin"}
         UY{"Úrúgvæ"}
         UZ{"Úsbekistan"}
-        VA{"Páfastóll"}
+        VA{"Vatíkanið"}
         VC{"Sankti Vinsent og Grenadíneyjar"}
         VE{"Venesúela"}
         VG{"Bresku Jómfrúaeyjar"}
@@ -273,11 +302,19 @@ is{
         ZW{"Simbabve"}
         ZZ{"Óþekkt svæði"}
     }
+    Countries%variant{
+        CD{"Kongó (Lýðstjórnarlýðveldið)"}
+        CG{"Kongó (Lýðveldið)"}
+        FK{"Falklandseyjar (Malvinas)"}
+        MK{"Makedónía (Fyrrverandi lýðveldi Júgóslavíu)"}
+        TL{"Austur-Tímor"}
+    }
     CountriesShort{
+        GB{"Bretland"}
         HK{"Hong Kong"}
         MO{"Makaó"}
         PS{"Palestína"}
         US{"BNA"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

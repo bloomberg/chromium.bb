@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ksf.xml
@@ -83,6 +83,10 @@ ksf{
             "£",
             "mɔni mǝ á ingɛrís",
         }
+        GHC{
+            "GHC",
+            "mɔni mǝ á gána",
+        }
         GMD{
             "GMD",
             "mɔni mǝ á gambí",
@@ -138,6 +142,10 @@ ksf{
         MWK{
             "MWK",
             "mɔni mǝ á malawi",
+        }
+        MZM{
+            "MZM",
+            "mɔni mǝ á mosambík",
         }
         NAD{
             "NAD",
@@ -211,10 +219,18 @@ ksf{
             "ZAR",
             "mɔni mǝ á afrik anǝ a sud",
         }
+        ZMK{
+            "ZMK",
+            "mɔni mǝ á zambí (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "mɔni mǝ á zambí",
         }
+        ZWD{
+            "ZWD",
+            "mɔni mǝ á zimbabwɛ́",
+        }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.6.69"}
 }

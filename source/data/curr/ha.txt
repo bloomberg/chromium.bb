@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ha.xml
@@ -83,6 +83,10 @@ ha{
             "£",
             "Fam kin Ingila",
         }
+        GHC{
+            "GHC",
+            "Cedi",
+        }
         GMD{
             "GMD",
             "Kuɗin Gambiya",
@@ -138,6 +142,10 @@ ha{
         MWK{
             "MWK",
             "Kuɗin Malawi",
+        }
+        MZM{
+            "MZM",
+            "Kuɗin Mozambik",
         }
         NAD{
             "NAD",
@@ -211,10 +219,18 @@ ha{
             "ZAR",
             "Kuɗin Afirka Ta Kudu",
         }
+        ZMK{
+            "ZMK",
+            "Kuɗin Zambiya (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kuɗin Zambiya",
         }
+        ZWD{
+            "ZWD",
+            "Dalar zimbabuwe",
+        }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.7.39"}
 }

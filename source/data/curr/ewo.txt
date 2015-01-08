@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ewo.xml
@@ -83,6 +83,10 @@ ewo{
             "£",
             "Lívə́lə Sətərəlíŋ",
         }
+        GHC{
+            "GHC",
+            "Tzedí yá Ganá",
+        }
         GMD{
             "GMD",
             "Dalasí yá Gámbía",
@@ -139,6 +143,10 @@ ewo{
             "MWK",
             "Kwatsa yá Malawí",
         }
+        MZM{
+            "MZM",
+            "Metikal yá Mozambíg",
+        }
         NAD{
             "NAD",
             "Dolár yá Namibí",
@@ -162,6 +170,10 @@ ewo{
         SDG{
             "SDG",
             "Lívələ yá Sudán",
+        }
+        SDP{
+            "SDP",
+            "Lívələ yá Sudán (1956–2007)",
         }
         SHP{
             "SHP",
@@ -211,10 +223,18 @@ ewo{
             "ZAR",
             "Ránədə yá Afiríka",
         }
+        ZMK{
+            "ZMK",
+            "Kwatsa yá Zambí (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kwatsa yá Zambí",
         }
+        ZWD{
+            "ZWD",
+            "Dolár yá Zimbabwé",
+        }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.6.69"}
 }

@@ -1,15 +1,24 @@
 Name: icu
 URL: http://site.icu-project.org/
-Version: 52.1
+Version: 54.1
 License: MIT
 Security Critical: yes
 
+WARNING: The head of third_party/icu is in the middle of upgrading to ICU 54.1
+and it's NOT usable for Chromium/Blink/v8.
+ - DO NOT deps-roll ICU to the head.
+ - If there is a critical change to make (e.g. security), a branch can be cut
+   for that. Contact <jshin@chromium.org>.
+ - README.chromium (this file) is NOT up to date and will be changed as the
+   upgrade to ICU 54.1 moves forward.
+
 Description:
-This directory contains the source code of ICU 52.1 for C/C++
+This directory contains the source code of ICU 54.1 for C/C++.
+
 
 1. It was obtained with the following:
 
-    $ svn export --native-eol LF http://source.icu-project.org/repos/icu/icu/tags/release-52-1 icu52
+    $ svn export --native-eol LF http://source.icu-project.org/repos/icu/icu/tags/release-54-1 icu
 
   The following directories we don't use are removed:
 

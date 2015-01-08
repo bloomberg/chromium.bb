@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/da.xml
@@ -11,6 +11,35 @@
  */
 da{
     Countries{
+        001{"Verden"}
+        002{"Afrika"}
+        003{"Nordamerika"}
+        005{"Sydamerika"}
+        009{"Oceanien"}
+        011{"Vestafrika"}
+        013{"Mellemamerika"}
+        014{"Østafrika"}
+        015{"Nordafrika"}
+        017{"Centralafrika"}
+        018{"Det sydlige Afrika"}
+        019{"Amerika"}
+        021{"Det nordlige Amerika"}
+        029{"Caribien"}
+        030{"Østasien"}
+        034{"Sydasien"}
+        035{"Sydøstasien"}
+        039{"Sydeuropa"}
+        053{"Australasien"}
+        054{"Melanesien"}
+        057{"Mikronesien"}
+        061{"Polynesien"}
+        142{"Asien"}
+        143{"Centralasien"}
+        145{"Vestasien"}
+        150{"Europa"}
+        151{"Østeuropa"}
+        154{"Nordeuropa"}
+        155{"Vesteuropa"}
         419{"Latinamerika"}
         AC{"Ascensionøen"}
         AD{"Andorra"}
@@ -57,7 +86,7 @@ da{
         CF{"Centralafrikanske Republik"}
         CG{"Congo-Brazzaville"}
         CH{"Schweiz"}
-        CI{"Côte d’Ivoire"}
+        CI{"Elfenbenskysten"}
         CK{"Cookøerne"}
         CL{"Chile"}
         CM{"Cameroun"}
@@ -107,13 +136,13 @@ da{
         GP{"Guadeloupe"}
         GQ{"Ækvatorialguinea"}
         GR{"Grækenland"}
-        GS{"South Georgia og De Sydlige Sandwichøer"}
+        GS{"South Georgia og South Sandwich Islands"}
         GT{"Guatemala"}
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
         HK{"Hongkong SAR"}
-        HM{"Heard- og McDonald-øerne"}
+        HM{"Heard Island og McDonald Islands"}
         HN{"Honduras"}
         HR{"Kroatien"}
         HT{"Haiti"}
@@ -273,6 +302,13 @@ da{
         ZW{"Zimbabwe"}
         ZZ{"Ukendt område"}
     }
+    Countries%variant{
+        CD{"Den Demokratiske Republik Congo"}
+        CG{"Republikken Congo"}
+        FK{"Falklandsøerne (Islas Malvinas)"}
+        MK{"Makedonien (Den Tidligere Jugoslaviske Republik Makedonien)"}
+        TL{"Østtimor"}
+    }
     CountriesShort{
         GB{"UK"}
         HK{"Hongkong"}
@@ -280,5 +316,5 @@ da{
         PS{"Palæstina"}
         US{"USA"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.9.62"}
 }

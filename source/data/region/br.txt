@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/br.xml
@@ -11,6 +11,35 @@
  */
 br{
     Countries{
+        001{"Bed"}
+        002{"Afrika"}
+        003{"Norzhamerika"}
+        005{"Suamerika"}
+        009{"Oseania"}
+        011{"Afrika ar Cʼhornôg"}
+        013{"Kreizamerika"}
+        014{"Afrika ar Reter"}
+        015{"Afrika an Norzh"}
+        017{"Afrika ar Cʼhreiz"}
+        018{"Afrika ar Su"}
+        019{"Amerikaoù"}
+        021{"Amerika an Norzh"}
+        029{"Karib"}
+        030{"Azia ar Reter"}
+        034{"Azia ar Su"}
+        035{"Azia ar Gevred"}
+        039{"Europa ar Su"}
+        053{"Aostralazia"}
+        054{"Melanezia"}
+        057{"Rannved Mikronezia"}
+        061{"Polinezia"}
+        142{"Azia"}
+        143{"Azia ar Cʼhreiz"}
+        145{"Azia ar Cʼhornôg"}
+        150{"Europa"}
+        151{"Europa ar Reter"}
+        154{"Europa an Norzh"}
+        155{"Europa ar Cʼhornôg"}
         419{"Amerika Latin"}
         AC{"Enez Ascension"}
         AD{"Andorra"}
@@ -193,7 +222,7 @@ br{
         OM{"Oman"}
         PA{"Panamá"}
         PE{"Perou"}
-        PF{"Polinezia cʼhall"}
+        PF{"Polinezia Cʼhall"}
         PG{"Papoua Ginea-Nevez"}
         PH{"Filipinez"}
         PK{"Pakistan"}
@@ -218,7 +247,7 @@ br{
         SD{"Soudan"}
         SE{"Sveden"}
         SG{"Singapour"}
-        SH{"Saint Helena"}
+        SH{"Saint-Helena"}
         SI{"Slovenia"}
         SJ{"Svalbard"}
         SK{"Slovakia"}
@@ -227,7 +256,7 @@ br{
         SN{"Senegal"}
         SO{"Somalia"}
         SR{"Surinam"}
-        SS{"Su Soudan"}
+        SS{"Susoudan"}
         ST{"São Tomé ha Príncipe"}
         SV{"Salvador"}
         SX{"Sint Maarten"}
@@ -265,6 +294,7 @@ br{
         VU{"Vanuatu"}
         WF{"Wallis ha Futuna"}
         WS{"Samoa"}
+        XK{"Kosovo"}
         YE{"Yemen"}
         YT{"Mayotte"}
         ZA{"Suafrika"}
@@ -272,9 +302,20 @@ br{
         ZW{"Zimbabwe"}
         ZZ{"Rannved dianav"}
     }
+    Countries%variant{
+        CD{"Kongo (RDK)"}
+        CG{"Kongo (Republik)"}
+        CI{"Aod Olifant"}
+        FK{"Inizi Falkland (Inizi Maloù)"}
+        MK{"Makedonia (RYKM)"}
+        TL{"Timor ar Reter"}
+    }
     CountriesShort{
+        GB{"R.U."}
         HK{"Hong Kong"}
         MO{"Macau"}
+        PS{"Palestina"}
+        US{"S.U."}
     }
-    Version{"2.0.92.75"}
+    Version{"2.1.7.39"}
 }

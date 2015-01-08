@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/vai.xml
@@ -83,6 +83,10 @@ vai{
             "£",
             "ꔛꔟꔻ ꗁꖻꘋ ꔻꗳꔷꘋ",
         }
+        GHC{
+            "GHC",
+            "ꕭꕌꕯ ꔻꔵ",
+        }
         GMD{
             "GMD",
             "ꕭꔭꕩ ꕜꕞꔻ",
@@ -138,6 +142,10 @@ vai{
         MWK{
             "MWK",
             "ꕮꕞꕌꔨ ꖴꕎꕦ",
+        }
+        MZM{
+            "MZM",
+            "ꗞꕤꔭꕃ ꕆꔳꕪ",
         }
         NAD{
             "NAD",
@@ -203,10 +211,18 @@ vai{
             "ZAR",
             "ꕉꔱꔸꕪ ꗛꔤ ꔒꘋꗣ ꗏ ꕟꘋꔵ",
         }
+        ZMK{
+            "ZMK",
+            "ꕤꔭꕩ ꖴꕎꕦ (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "ꕤꔭꕩ ꖴꕎꕦ",
         }
+        ZWD{
+            "ZWD",
+            "ꔽꕓꖜꔃ ꕜꕞ",
+        }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.6.69"}
 }

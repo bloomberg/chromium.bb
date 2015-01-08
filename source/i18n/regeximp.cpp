@@ -12,8 +12,6 @@
 
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS
 #include "regeximp.h"
-
-#include "uassert.h"
 #include "unicode/utf16.h"
 
 U_NAMESPACE_BEGIN
@@ -113,26 +111,6 @@ UBool CaseFoldingUCharIterator::inExpansion() {
 
 int64_t CaseFoldingUCharIterator::getIndex() {
     return fIndex;
-}
-
-// Assemble a pcode instruction from the opcode and operand values.
-// Out-of-range values should not occur - if they do it is from an internal
-// error in the regex compiler. 
-
-// TODO: move into regexcmp, where it has access to fStatus.
-//       NOP cleanly if U_FAILURE.
-//       Set U_REGEX_INTERNAL_ERROR on bad operands.
-
-int32_t URX_BUILD(int32_t type, int32_t val) {
-    if (type < 0 || type > 255) {
-        U_ASSERT(FALSE);
-        type = URX_RESERVED_OP;
-    }
-    if (val > 0x00ffffff) {
-        U_ASSERT(FALSE);
-        val = 0;
-    }
-    return (type << 24) | val;
 }
 
 

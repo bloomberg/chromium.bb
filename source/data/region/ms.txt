@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/ms.xml
@@ -11,6 +11,35 @@
  */
 ms{
     Countries{
+        001{"Dunia"}
+        002{"Afrika"}
+        003{"Amerika Utara"}
+        005{"Amerika Selatan"}
+        009{"Oceania"}
+        011{"Afrika Barat"}
+        013{"Amerika Tengah"}
+        014{"Afrika Timur"}
+        015{"Afrika Utara"}
+        017{"Afrika Tengah"}
+        018{"Selatan Afrika"}
+        019{"Amerika"}
+        021{"Utara Amerika"}
+        029{"Caribbean"}
+        030{"Asia Timur"}
+        034{"Asia Selatan"}
+        035{"Asia Tenggara"}
+        039{"Eropah Selatan"}
+        053{"Australasia"}
+        054{"Melanesia"}
+        057{"Wilayah Mikronesia"}
+        061{"Polinesia"}
+        142{"Asia"}
+        143{"Asia Tengah"}
+        145{"Asia Barat"}
+        150{"Eropah"}
+        151{"Eropah Timur"}
+        154{"Eropah Utara"}
+        155{"Eropah Barat"}
         419{"Amerika Latin"}
         AC{"Pulau Ascension"}
         AD{"Andorra"}
@@ -24,7 +53,7 @@ ms{
         AO{"Angola"}
         AQ{"Antartika"}
         AR{"Argentina"}
-        AS{"American Samoa"}
+        AS{"Samoa Amerika"}
         AT{"Austria"}
         AU{"Australia"}
         AW{"Aruba"}
@@ -107,13 +136,13 @@ ms{
         GP{"Guadeloupe"}
         GQ{"Guinea Khatulistiwa"}
         GR{"Yunani"}
-        GS{"Kepualaun Georgia Selatan dan Sandwich Selatan"}
+        GS{"Kepulauan Georgia Selatan & Sandwich Selatan"}
         GT{"Guatemala"}
         GU{"Guam"}
         GW{"Guinea Bissau"}
         GY{"Guyana"}
         HK{"Hong Kong SAR China"}
-        HM{"Pulau Heard dan Kepulauan McDonald"}
+        HM{"Kepulauan Heard & McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
         HT{"Haiti"}
@@ -177,11 +206,11 @@ ms{
         MW{"Malawi"}
         MX{"Mexico"}
         MY{"Malaysia"}
-        MZ{"Mozambik"}
+        MZ{"Mozambique"}
         NA{"Namibia"}
         NC{"New Caledonia"}
         NE{"Niger"}
-        NF{"Norfolk Island"}
+        NF{"Pulau Norfolk"}
         NG{"Nigeria"}
         NI{"Nicaragua"}
         NL{"Belanda"}
@@ -202,7 +231,7 @@ ms{
         PN{"Kepulauan Pitcairn"}
         PR{"Puerto Rico"}
         PS{"Wilayah Palestin"}
-        PT{"Feringgi"}
+        PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
         QA{"Qatar"}
@@ -241,7 +270,7 @@ ms{
         TH{"Thailand"}
         TJ{"Tajikistan"}
         TK{"Tokelau"}
-        TL{"Timor Timur"}
+        TL{"Timor-Leste"}
         TM{"Turkmenistan"}
         TN{"Tunisia"}
         TO{"Tonga"}
@@ -273,6 +302,14 @@ ms{
         ZW{"Zimbabwe"}
         ZZ{"Wilayah Tidak Diketahui"}
     }
+    Countries%variant{
+        CD{"Congo (DRC)"}
+        CG{"Congo (Republik)"}
+        CI{"Ivory Coast"}
+        FK{"Kepulauan Falkland (Islas Malvinas)"}
+        MK{"Macedonia (FYROM)"}
+        TL{"Timor Timur"}
+    }
     CountriesShort{
         GB{"GB"}
         HK{"Hong Kong"}
@@ -280,5 +317,5 @@ ms{
         PS{"Palestin"}
         US{"A.S"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/yo_BJ.xml
@@ -72,13 +72,13 @@ yo_BJ{
             "ETB",
             "Biri ti Orílɛ́ède Eutopia",
         }
-        EUR{
-            "€",
-            "Uro",
-        }
         GBP{
             "£",
             "Pɔɔn ti Orílɛ́ède Bírítísì",
+        }
+        GHC{
+            "GHC",
+            "shidi ti Orílɛ́ède Gana",
         }
         GMD{
             "GMD",
@@ -136,6 +136,10 @@ yo_BJ{
             "MWK",
             "Kasha ti Orílɛ́ède Malawi",
         }
+        MZM{
+            "MZM",
+            "Metika ti Orílɛ́ède Mosamibiki",
+        }
         NAD{
             "NAD",
             "Dɔla ti Orílɛ́ède Namibia",
@@ -160,13 +164,13 @@ yo_BJ{
             "SDG",
             "Dina ti Orílɛ́ède Sudani",
         }
+        SDP{
+            "SDP",
+            "Pɔɔun ti Orílɛ́ède Sudani",
+        }
         SHP{
             "SHP",
             "Pɔɔun ti Orílɛ́ède ̣Elena",
-        }
-        SLL{
-            "SLL",
-            "Lioni",
         }
         SOS{
             "SOS",
@@ -175,10 +179,6 @@ yo_BJ{
         STD{
             "STD",
             "Dobira ti Orílɛ́ède Sao tome Ati Pirisipe",
-        }
-        SZL{
-            "SZL",
-            "Lilangeni",
         }
         TND{
             "TND",
@@ -208,10 +208,18 @@ yo_BJ{
             "ZAR",
             "Randi ti Orílɛ́ède Ariwa Afirika",
         }
+        ZMK{
+            "ZMK",
+            "Kawasha ti Orílɛ́ède Saabia (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "Kawasha ti Orílɛ́ède Saabia",
         }
+        ZWD{
+            "ZWD",
+            "Dɔla ti Orílɛ́ède Siibabuwe",
+        }
     }
-    Version{"2.0.93.9"}
+    Version{"2.1.8.19"}
 }

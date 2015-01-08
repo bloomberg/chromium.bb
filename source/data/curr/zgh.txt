@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/zgh.xml
@@ -167,6 +167,10 @@ zgh{
             "SDG",
             "ⴰⴷⵉⵏⴰⵔ ⵏ ⵙⵙⵓⴷⴰⵏ",
         }
+        SDP{
+            "SDP",
+            "ⴰⵊⵏⵉⵀ ⵏ ⵙⵙⵓⴷⴰⵏ",
+        }
         SHP{
             "SHP",
             "ⴰⵊⵏⵉⵀ ⵏ ⵙⴰⵏⵜⵉⵍⵉⵏ",
@@ -215,9 +219,17 @@ zgh{
             "ZAR",
             "ⴰⵔⴰⵏⴷ ⵏ ⴰⴼⵔⵉⵇⵢⴰ ⵏ ⵉⴼⴼⵓⵙ",
         }
+        ZMK{
+            "ZMK",
+            "ⴰⴽⵡⴰⵛⴰ ⵏ ⵣⴰⵎⴱⵢⴰ (1968–2012)",
+        }
         ZMW{
             "ZMW",
             "ⴰⴽⵡⴰⵛⴰ ⵏ ⵣⴰⵎⴱⵢⴰ",
+        }
+        ZWD{
+            "ZWD",
+            "ⴰⴷⵓⵍⴰⵔ ⵏ ⵣⵉⵎⴱⴰⴱⵡⵉ (1980–2008)",
         }
         ZWL{
             "ZWL",
@@ -228,5 +240,5 @@ zgh{
             "ⴰⴷⵓⵍⴰⵔ ⵏ ⵣⵉⵎⴱⴰⴱⵡⵉ (2008)",
         }
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.6.69"}
 }

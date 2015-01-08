@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/common/main/sl.xml
@@ -11,6 +11,35 @@
  */
 sl{
     Countries{
+        001{"Svet"}
+        002{"Afrika"}
+        003{"Severna Amerika"}
+        005{"Južna Amerika"}
+        009{"Oceanija"}
+        011{"Zahodna Afrika"}
+        013{"Srednja Amerika"}
+        014{"Vzhodna Afrika"}
+        015{"Severna Afrika"}
+        017{"Srednja Afrika"}
+        018{"Južna Afrika"}
+        019{"Amerike"}
+        021{"severnoameriška celina"}
+        029{"Karibi"}
+        030{"Vzhodna Azija"}
+        034{"Južna Azija"}
+        035{"Jugovzhodna Azija"}
+        039{"Južna Evropa"}
+        053{"Avstralija in Nova Zelandija"}
+        054{"Melanezija"}
+        057{"mikronezijska regija"}
+        061{"Polinezija"}
+        142{"Azija"}
+        143{"Osrednja Azija"}
+        145{"Zahodna Azija"}
+        150{"Evropa"}
+        151{"Vzhodna Evropa"}
+        154{"Severna Evropa"}
+        155{"Zahodna Evropa"}
         419{"Latinska Amerika"}
         AC{"Otok Ascension"}
         AD{"Andora"}
@@ -28,7 +57,7 @@ sl{
         AT{"Avstrija"}
         AU{"Avstralija"}
         AW{"Aruba"}
-        AX{"Alandsko otočje"}
+        AX{"Ålandski otoki"}
         AZ{"Azerbajdžan"}
         BA{"Bosna in Hercegovina"}
         BB{"Barbados"}
@@ -39,7 +68,7 @@ sl{
         BH{"Bahrajn"}
         BI{"Burundi"}
         BJ{"Benin"}
-        BL{"Saint Barthelemy"}
+        BL{"Saint Barthélemy"}
         BM{"Bermudi"}
         BN{"Brunej"}
         BO{"Bolivija"}
@@ -58,7 +87,7 @@ sl{
         CG{"Kongo - Brazzaville"}
         CH{"Švica"}
         CI{"Slonokoščena obala"}
-        CK{"Cookovo otočje"}
+        CK{"Cookovi otoki"}
         CL{"Čile"}
         CM{"Kamerun"}
         CN{"Kitajska"}
@@ -113,7 +142,7 @@ sl{
         GW{"Gvineja Bissau"}
         GY{"Gvajana"}
         HK{"Posebno administrativno območje LR Kitajske Hong Kong"}
-        HM{"Otok Heard in otočje McDonald"}
+        HM{"Heardov otok in McDonaldovi otoki"}
         HN{"Honduras"}
         HR{"Hrvaška"}
         HT{"Haiti"}
@@ -273,6 +302,12 @@ sl{
         ZW{"Zimbabve"}
         ZZ{"Neznano ali neveljavno območje"}
     }
+    Countries%variant{
+        CD{"Kongo (Demokratična republika Kongo)"}
+        CG{"Kongo (Republika)"}
+        FK{"Falklandski otoki (Malvinski otoki)"}
+        MK{"Makedonija (FYROM)"}
+    }
     CountriesShort{
         GB{"ZK"}
         HK{"Hongkong"}
@@ -280,5 +315,5 @@ sl{
         PS{"Palestina"}
         US{"ZDA"}
     }
-    Version{"2.0.92.87"}
+    Version{"2.1.8.9"}
 }

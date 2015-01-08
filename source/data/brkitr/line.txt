@@ -12,8 +12,9 @@
 #         This is only because of a limitation of ICU break engine implementation,
 #         not because the older behavior is desirable.
 
-# CHROME: 1. Use line_ja.txt to apply small kana rules in all locales.
-#         2. Adjust CL, OP, and IS to handle 'comma-variants' consistently.
+#
+#  Character Classes defined by TR 14.
+#
 
 !!chain;
 !!LBCMNoChain;
@@ -56,14 +57,14 @@
 #
 
 $AI = [:LineBreak =  Ambiguous:];
-$AL = [[:LineBreak =  Alphabetic:] - [\u23B4\u23B5]];
+$AL = [:LineBreak =  Alphabetic:];
 $BA = [:LineBreak =  Break_After:];
 $BB = [:LineBreak =  Break_Before:];
 $BK = [:LineBreak =  Mandatory_Break:];
 $B2 = [:LineBreak =  Break_Both:];
 $CB = [:LineBreak =  Contingent_Break:];
 $CJ = [:LineBreak =  Conditional_Japanese_Starter:];
-$CL = [[:LineBreak =  Close_Punctuation:] [\uFE51\uFE10\u23B5]];
+$CL = [:LineBreak =  Close_Punctuation:];
 $CM = [:LineBreak =  Combining_Mark:];
 $CP = [:LineBreak =  Close_Parenthesis:];
 $CR = [:LineBreak =  Carriage_Return:];
@@ -73,17 +74,17 @@ $HL = [:LineBreak =  Hebrew_Letter:];
 $HY = [:LineBreak =  Hyphen:];
 $H2 = [:LineBreak =  H2:];
 $H3 = [:LineBreak =  H3:];
-$ID = [[[:LineBreak =  Ideographic:] $CJ] - [\uFE51]];
+$ID = [:LineBreak =  Ideographic:];
 $IN = [:LineBreak =  Inseperable:];
-$IS = [[:LineBreak =  Infix_Numeric:] - [\uFE10]];
+$IS = [:LineBreak =  Infix_Numeric:];
 $JL = [:LineBreak =  JL:];
 $JV = [:LineBreak =  JV:];
 $JT = [:LineBreak =  JT:];
 $LF = [:LineBreak =  Line_Feed:];
 $NL = [:LineBreak =  Next_Line:];
-$NS = [:LineBreak =  Nonstarter:];
+$NS = [[:LineBreak =  Nonstarter:] $CJ];
 $NU = [:LineBreak =  Numeric:];
-$OP = [[:LineBreak =  Open_Punctuation:] \u23B4];
+$OP = [:LineBreak =  Open_Punctuation:];
 $PO = [:LineBreak =  Postfix_Numeric:];
 $PR = [:LineBreak =  Prefix_Numeric:];
 $QU = [:LineBreak =  Quotation:];

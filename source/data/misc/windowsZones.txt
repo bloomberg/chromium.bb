@@ -210,7 +210,6 @@ windowsZones:table(nofallback){
             }
             CU{"America/Havana"}
             HT{"America/Port-au-Prince"}
-            TC{"America/Grand_Turk"}
             US{
                 "America/New_York America/Detroit America/Indiana/Petersburg America/"
                 "Indiana/Vincennes America/Indiana/Winamac America/Kentucky/Monticell"
@@ -321,6 +320,11 @@ windowsZones:table(nofallback){
         "Libya Standard Time"{
             001{"Africa/Tripoli"}
             LY{"Africa/Tripoli"}
+        }
+        "Line Islands Standard Time"{
+            001{"Pacific/Kiritimati"}
+            KI{"Pacific/Kiritimati"}
+            ZZ{"Etc/GMT-14"}
         }
         "Magadan Standard Time"{
             001{"Asia/Magadan"}
@@ -476,6 +480,7 @@ windowsZones:table(nofallback){
             MS{"America/Montserrat"}
             PR{"America/Puerto_Rico"}
             SX{"America/Lower_Princes"}
+            TC{"America/Grand_Turk"}
             TT{"America/Port_of_Spain"}
             VC{"America/St_Vincent"}
             VG{"America/Tortola"}
