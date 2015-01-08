@@ -135,7 +135,8 @@ class RemoteDeviceEnvironment(environment.Environment):
       if (self._remote_device_os
           and device['os_version'] != self._remote_device_os):
         continue
-      if device['available_devices_count'] > 0:
+      if ((self._remote_device and self._remote_device_os)
+          or device['available_devices_count']):
         logging.info('Found device: %s %s',
                      device['name'], device['os_version'])
         return device['device_type_id']
