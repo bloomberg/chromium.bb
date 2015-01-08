@@ -37,28 +37,13 @@ namespace blink {
 
 struct FocusCandidate;
 class Element;
+class FocusNavigationScope;
 class Frame;
 class HTMLFrameOwnerElement;
 class HTMLShadowElement;
 class Node;
 class Page;
 class TreeScope;
-
-class FocusNavigationScope {
-    STACK_ALLOCATED();
-public:
-    Node* rootNode() const;
-    Element* owner() const;
-    static FocusNavigationScope focusNavigationScopeOf(Node&);
-    static FocusNavigationScope ownedByNonFocusableFocusScopeOwner(Node&);
-    static FocusNavigationScope ownedByShadowHost(Node&);
-    static FocusNavigationScope ownedByShadowInsertionPoint(HTMLShadowElement&);
-    static FocusNavigationScope ownedByIFrame(HTMLFrameOwnerElement&);
-
-private:
-    explicit FocusNavigationScope(TreeScope*);
-    RawPtrWillBeMember<TreeScope> m_rootTreeScope;
-};
 
 class FocusController final : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
     WTF_MAKE_NONCOPYABLE(FocusController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -90,8 +75,8 @@ private:
     bool advanceFocusDirectionally(FocusType);
     bool advanceFocusInDocumentOrder(FocusType, bool initialFocus);
 
-    Node* findFocusableNodeAcrossFocusScope(FocusType, FocusNavigationScope startScope, Node* start);
-    Node* findFocusableNodeRecursively(FocusType, FocusNavigationScope, Node* start);
+    Node* findFocusableNodeAcrossFocusScope(FocusType, const FocusNavigationScope&, Node*);
+    Node* findFocusableNodeRecursively(FocusType, const FocusNavigationScope&, Node*);
     Node* findFocusableNodeDecendingDownIntoFrameDocument(FocusType, Node*);
 
     // Searches through the given tree scope, starting from start node, for the next/previous selectable element that comes after/before start node.
@@ -103,10 +88,10 @@ private:
     // @return The focus node that comes after/before start node.
     //
     // See http://www.w3.org/TR/html4/interact/forms.html#h-17.11.1
-    inline Node* findFocusableNode(FocusType, FocusNavigationScope, Node* start);
+    inline Node* findFocusableNode(FocusType, const FocusNavigationScope&, Node* start);
 
-    Node* nextFocusableNode(FocusNavigationScope, Node* start);
-    Node* previousFocusableNode(FocusNavigationScope, Node* start);
+    Node* nextFocusableNode(const FocusNavigationScope&, Node* start);
+    Node* previousFocusableNode(const FocusNavigationScope&, Node* start);
 
     Node* findNodeWithExactTabIndex(Node* start, int tabIndex, FocusType);
 

@@ -68,6 +68,22 @@ static inline bool isShadowInsertionPointFocusScopeOwner(Node& node)
     return isActiveShadowInsertionPoint(node) && toHTMLShadowElement(node).olderShadowRoot();
 }
 
+class FocusNavigationScope {
+    STACK_ALLOCATED();
+public:
+    Node* rootNode() const;
+    Element* owner() const;
+    static FocusNavigationScope focusNavigationScopeOf(Node&);
+    static FocusNavigationScope ownedByNonFocusableFocusScopeOwner(Node&);
+    static FocusNavigationScope ownedByShadowHost(Node&);
+    static FocusNavigationScope ownedByShadowInsertionPoint(HTMLShadowElement&);
+    static FocusNavigationScope ownedByIFrame(HTMLFrameOwnerElement&);
+
+private:
+    explicit FocusNavigationScope(TreeScope*);
+    RawPtrWillBeMember<TreeScope> m_rootTreeScope;
+};
+
 // FIXME: Some of Node* return values and Node* arguments should be Element*.
 
 FocusNavigationScope::FocusNavigationScope(TreeScope* treeScope)
@@ -468,7 +484,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
     return true;
 }
 
-Node* FocusController::findFocusableNodeAcrossFocusScope(FocusType type, FocusNavigationScope scope, Node* currentNode)
+Node* FocusController::findFocusableNodeAcrossFocusScope(FocusType type, const FocusNavigationScope& scope, Node* currentNode)
 {
     ASSERT(!currentNode || !isNonFocusableShadowHost(*currentNode));
     Node* found;
@@ -480,22 +496,23 @@ Node* FocusController::findFocusableNodeAcrossFocusScope(FocusType type, FocusNa
     }
 
     // If there's no focusable node to advance to, move up the focus scopes until we find one.
+    FocusNavigationScope currentScope = scope;
     while (!found) {
-        Node* owner = scope.owner();
+        Node* owner = currentScope.owner();
         if (!owner)
             break;
-        scope = FocusNavigationScope::focusNavigationScopeOf(*owner);
+        currentScope = FocusNavigationScope::focusNavigationScopeOf(*owner);
         if (type == FocusTypeBackward && isKeyboardFocusableShadowHost(*owner)) {
             found = owner;
             break;
         }
-        found = findFocusableNodeRecursively(type, scope, owner);
+        found = findFocusableNodeRecursively(type, currentScope, owner);
     }
     found = findFocusableNodeDecendingDownIntoFrameDocument(type, found);
     return found;
 }
 
-Node* FocusController::findFocusableNodeRecursively(FocusType type, FocusNavigationScope scope, Node* start)
+Node* FocusController::findFocusableNodeRecursively(FocusType type, const FocusNavigationScope& scope, Node* start)
 {
     // Starting node is exclusive.
     Node* foundOrNull = findFocusableNode(type, scope, start);
@@ -520,7 +537,7 @@ Node* FocusController::findFocusableNodeRecursively(FocusType type, FocusNavigat
     return &found;
 }
 
-Node* FocusController::findFocusableNode(FocusType type, FocusNavigationScope scope, Node* node)
+Node* FocusController::findFocusableNode(FocusType type, const FocusNavigationScope& scope, Node* node)
 {
     return type == FocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);
 }
@@ -566,7 +583,7 @@ static Node* previousNodeWithLowerTabIndex(Node* start, int tabIndex)
     return winner;
 }
 
-Node* FocusController::nextFocusableNode(FocusNavigationScope scope, Node* start)
+Node* FocusController::nextFocusableNode(const FocusNavigationScope& scope, Node* start)
 {
     if (start) {
         int tabIndex = adjustedTabIndex(*start);
@@ -598,7 +615,7 @@ Node* FocusController::nextFocusableNode(FocusNavigationScope scope, Node* start
     return findNodeWithExactTabIndex(scope.rootNode(), 0, FocusTypeForward);
 }
 
-Node* FocusController::previousFocusableNode(FocusNavigationScope scope, Node* start)
+Node* FocusController::previousFocusableNode(const FocusNavigationScope& scope, Node* start)
 {
     Node* last = nullptr;
     for (Node* node = scope.rootNode(); node; node = node->lastChild())
