@@ -107,8 +107,13 @@ class PersonalDataManager : public KeyedService,
   // Adds |credit_card| to the web database.
   void AddCreditCard(const CreditCard& credit_card);
 
-  // Updates |credit_card| which already exists in the web database.
+  // Updates |credit_card| which already exists in the web database. This
+  // can only be used on local credit cards.
   void UpdateCreditCard(const CreditCard& credit_card);
+
+  // Update a server card. Only the full number and masked/unmasked
+  // status can be changed.
+  void UpdateServerCreditCard(const CreditCard& credit_card);
 
   // Returns the credit card with the specified |guid|, or NULL if there is
   // no credit card with the specified |guid|.

@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -26,6 +27,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/webdata/common/web_database.h"
@@ -34,6 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
 using base::Time;
 
 namespace autofill {
@@ -1232,6 +1235,42 @@ bool AutofillTable::GetServerCreditCards(
     card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
     credit_cards->push_back(card);
   }
+
+  static bool do_once = true;
+  // Fake out some masked cards. TODO(estade): remove this block of code.
+  if (do_once &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWalletCardImport)) {
+    do_once = false;
+    std::vector<CreditCard> fake_masked_cards;
+    fake_masked_cards.push_back(
+        CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NAME,
+                                        ASCIIToUTF16("Edgar Salazar"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_MONTH,
+                                        ASCIIToUTF16("03"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                                        ASCIIToUTF16("2016"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
+                                        ASCIIToUTF16("8431"));
+    fake_masked_cards.back().SetTypeForMaskedCard(kAmericanExpressCard);
+
+    fake_masked_cards.push_back(
+        CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NAME,
+                                        ASCIIToUTF16("Elena Salazar"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_MONTH,
+                                        ASCIIToUTF16("05"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                                        ASCIIToUTF16("2017"));
+    fake_masked_cards.back().SetRawInfo(CREDIT_CARD_NUMBER,
+                                        ASCIIToUTF16("9424"));
+    fake_masked_cards.back().SetTypeForMaskedCard(kDiscoverCard);
+
+    SetServerCreditCards(fake_masked_cards);
+    return GetServerCreditCards(credit_cards);
+  }
+
   return s.Succeeded();
 }
 

@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
@@ -54,7 +55,8 @@ struct FormFieldData;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
-class AutofillManager : public AutofillDownloadManager::Observer {
+class AutofillManager : public AutofillDownloadManager::Observer,
+                        public CardUnmaskDelegate {
  public:
   enum AutofillDownloadManagerState {
     ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
@@ -221,6 +223,12 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(const std::string& response_xml) override;
 
+  // CardUnmaskDelegate:
+  void OnUnmaskResponse(const base::string16& cvc) override;
+
+  // A toy method called when the (fake) unmasking process has finished.
+  void OnUnmaskVerificationResult(bool success);
+
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels() const;
 
@@ -344,6 +352,13 @@ class AutofillManager : public AutofillDownloadManager::Observer {
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
+
+  // A copy of the credit card that's currently being unmasked, and data about
+  // the form.
+  CreditCard unmasking_card_;
+  int unmasking_query_id_;
+  FormData unmasking_form_;
+  FormFieldData unmasking_field_;
 
   // SuggestionBackendID to ID mapping. We keep two maps to convert back and
   // forth. These should be used only by BackendIDToInt and IntToBackendID.

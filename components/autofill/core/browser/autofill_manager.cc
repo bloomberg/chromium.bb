@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -541,6 +542,21 @@ void AutofillManager::FillOrPreviewForm(
     return;
   }
 
+  if (is_credit_card && action == AutofillDriver::FORM_DATA_ACTION_FILL) {
+    const CreditCard* card = static_cast<const CreditCard*>(data_model);
+    if (card->record_type() == CreditCard::MASKED_SERVER_CARD) {
+      unmasking_card_ = *card;
+      unmasking_query_id_ = query_id;
+      unmasking_form_ = form;
+      unmasking_field_ = field;
+      client()->ShowUnmaskPrompt(unmasking_card_,
+                                 weak_ptr_factory_.GetWeakPtr());
+      return;
+    }
+  }
+
+  // TODO(estade): previewing masked cards should show something nicer in
+  // the number field than just the last 4 digits.
   FillOrPreviewDataModelForm(action, query_id, form, field, data_model, variant,
                              is_credit_card);
 }
@@ -653,6 +669,38 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // If the corresponding flag is set, annotate forms with the predicted types.
   driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
+}
+
+void AutofillManager::OnUnmaskResponse(const base::string16& cvc) {
+  // TODO(estade): fake verification: assume 123/1234 is the correct cvc.
+  // TODO(estade): hold onto this CVC so we can fill it.
+  if (StartsWithASCII(base::UTF16ToASCII(cvc), "123", true)) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&AutofillManager::OnUnmaskVerificationResult,
+                              base::Unretained(this), true),
+        base::TimeDelta::FromSeconds(2));
+  } else {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&AutofillManager::OnUnmaskVerificationResult,
+                              base::Unretained(this), false),
+        base::TimeDelta::FromSeconds(2));
+  }
+}
+
+void AutofillManager::OnUnmaskVerificationResult(bool success) {
+  if (success) {
+    unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
+    if (unmasking_card_.type() == kAmericanExpressCard) {
+      unmasking_card_.SetNumber(base::ASCIIToUTF16("371449635398431"));
+    } else {
+      DCHECK_EQ(kDiscoverCard, unmasking_card_.type());
+      unmasking_card_.SetNumber(base::ASCIIToUTF16("6011000990139424"));
+    }
+    personal_data_->UpdateCreditCard(unmasking_card_);
+    FillCreditCardForm(unmasking_query_id_, unmasking_form_, unmasking_field_,
+                       unmasking_card_);
+  }
+  client()->OnUnmaskVerificationResult(success);
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {
@@ -770,6 +818,10 @@ void AutofillManager::Reset() {
   user_did_type_ = false;
   user_did_autofill_ = false;
   user_did_edit_autofilled_field_ = false;
+  unmasking_card_ = CreditCard();
+  unmasking_query_id_ = -1;
+  unmasking_form_ = FormData();
+  unmasking_field_ = FormFieldData();
   forms_loaded_timestamps_.clear();
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
@@ -790,6 +842,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
+      unmasking_query_id_(-1),
       external_delegate_(NULL),
       test_delegate_(NULL),
       weak_ptr_factory_(this) {

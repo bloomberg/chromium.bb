@@ -81,7 +81,7 @@ void ExpectSameElements(const std::vector<T*>& expectations,
 
 class PersonalDataManagerTest : public testing::Test {
  protected:
-  PersonalDataManagerTest() {}
+  PersonalDataManagerTest() : autofill_table_(nullptr) {}
 
   void SetUp() override {
     prefs_ = test::PrefServiceForTesting();
@@ -90,8 +90,9 @@ class PersonalDataManagerTest : public testing::Test {
     web_database_ = new WebDatabaseService(path,
                                            base::MessageLoopProxy::current(),
                                            base::MessageLoopProxy::current());
-    web_database_->AddTable(
-        scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
+    // Hacky: hold onto a pointer but pass ownership.
+    autofill_table_ = new AutofillTable("en-US");
+    web_database_->AddTable(scoped_ptr<WebDatabaseTable>(autofill_table_));
     web_database_->LoadDatabase();
     autofill_database_service_ =
         new AutofillWebDataService(web_database_,
@@ -106,7 +107,7 @@ class PersonalDataManagerTest : public testing::Test {
 
   void ResetPersonalDataManager(UserMode user_mode) {
     bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
-    personal_data_.reset(new PersonalDataManager("en-US"));
+    personal_data_.reset(new PersonalDataManager("en"));
     personal_data_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
         prefs_.get(),
@@ -126,6 +127,7 @@ class PersonalDataManagerTest : public testing::Test {
   scoped_ptr<PrefService> prefs_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
+  AutofillTable* autofill_table_;  // weak ref
   PersonalDataLoadedObserverMock personal_data_observer_;
   scoped_ptr<PersonalDataManager> personal_data_;
 };
@@ -366,6 +368,63 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   EXPECT_EQ(0, credit_card.Compare(*cards3[0]));
   EXPECT_EQ(profile.origin(), profiles3[0]->origin());
   EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
+}
+
+// Tests that UpdateCreditCard can be used to mask or unmask server cards.
+TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "9012" /* Visa */, "01", "2010");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
+  test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
+                          "2109" /* Mastercard */, "12", "2012");
+  server_cards.back().SetTypeForMaskedCard(kMasterCard);
+
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+
+  autofill_table_->SetServerCreditCards(server_cards);
+  personal_data_->Refresh();
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // The GUIDs will be different, so just compare the data.
+  for (size_t i = 0; i < 3; ++i)
+    EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
+
+  CreditCard* unmasked_card = &server_cards.front();
+  unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
+  unmasked_card->SetNumber(ASCIIToUTF16("423456789012"));
+  EXPECT_NE(0, server_cards.front().Compare(
+                   *personal_data_->GetCreditCards().front()));
+  personal_data_->UpdateServerCreditCard(*unmasked_card);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  for (size_t i = 0; i < 3; ++i)
+    EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
+
+  CreditCard* remasked_card = &server_cards.back();
+  remasked_card->set_record_type(CreditCard::MASKED_SERVER_CARD);
+  remasked_card->SetNumber(ASCIIToUTF16("8555"));
+  EXPECT_NE(
+      0, server_cards.back().Compare(*personal_data_->GetCreditCards().back()));
+  personal_data_->UpdateServerCreditCard(*remasked_card);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  for (size_t i = 0; i < 3; ++i)
+    EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
 }
 
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {

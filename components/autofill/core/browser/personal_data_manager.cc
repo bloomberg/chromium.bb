@@ -547,6 +547,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
 }
 
 void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
+  DCHECK_EQ(CreditCard::LOCAL_CARD, credit_card.record_type());
   if (is_off_the_record_)
     return;
 
@@ -570,6 +571,36 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   database_->UpdateCreditCard(credit_card);
 
   // Refresh our local cache and send notifications to observers.
+  Refresh();
+}
+
+void PersonalDataManager::UpdateServerCreditCard(
+    const CreditCard& credit_card) {
+  DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
+
+  if (is_off_the_record_ || !database_.get())
+    return;
+
+  // Look up by server id, not GUID.
+  CreditCard* existing_credit_card = nullptr;
+  for (auto it : server_credit_cards_) {
+    if (credit_card.server_id() == it->server_id()) {
+      existing_credit_card = it;
+      break;
+    }
+  }
+  if (!existing_credit_card)
+    return;
+
+  DCHECK_NE(existing_credit_card->record_type(), credit_card.record_type());
+  DCHECK_EQ(existing_credit_card->Label(), credit_card.Label());
+  if (existing_credit_card->record_type() == CreditCard::MASKED_SERVER_CARD) {
+    database_->UnmaskServerCreditCard(credit_card.server_id(),
+                                      credit_card.number());
+  } else {
+    database_->MaskServerCreditCard(credit_card.server_id());
+  }
+
   Refresh();
 }
 

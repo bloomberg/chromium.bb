@@ -101,13 +101,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Add or hide warnings as appropriate.
   ApplyAutofillWarnings(&suggestions);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWalletCardImport)) {
-    // For now, add a fake masked card.
-    suggestions.push_back(Suggestion("Amex - 8431", "[tap to unlock]", "",
-                                     POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT));
-  }
-
   // Add a separator to go between the values and menu items.
   suggestions.push_back(Suggestion());
   suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
@@ -266,11 +259,6 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::Bind(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
-  } else if (identifier == POPUP_ITEM_ID_FAKE_MASKED_INSTRUMENT) {
-    CreditCard fake_masked_card(base::ASCIIToUTF16("8431"), 5, 2016);
-    fake_masked_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
-    fake_masked_card.SetTypeForMaskedCard(kAmericanExpressCard);
-    manager_->client()->ShowUnmaskPrompt(fake_masked_card, GetWeakPtr());
   } else {
     FillAutofillFormData(identifier, false);
   }
@@ -301,23 +289,6 @@ void AutofillExternalDelegate::DidEndTextFieldEditing() {
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
   driver_->RendererShouldClearPreviewedForm();
-}
-
-void AutofillExternalDelegate::OnUnmaskResponse(const base::string16& cvc) {
-  // TODO(estade): fake verification: assume 1234 is the correct cvc.
-  if (LowerCaseEqualsASCII(cvc, "1234")) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AutofillExternalDelegate::OnUnmaskVerificationResult,
-                   base::Unretained(this), true),
-        base::TimeDelta::FromSeconds(2));
-  } else {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AutofillExternalDelegate::OnUnmaskVerificationResult,
-                   base::Unretained(this), false),
-        base::TimeDelta::FromSeconds(2));
-  }
 }
 
 void AutofillExternalDelegate::Reset() {
@@ -437,14 +408,5 @@ void AutofillExternalDelegate::PingRenderer() {
   driver_->PingRenderer();
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-void AutofillExternalDelegate::OnUnmaskVerificationResult(bool success) {
-  if (success) {
-    CreditCard fake_card(base::ASCIIToUTF16("371449635398431"), 5, 2016);
-    manager_->FillCreditCardForm(query_id_, query_form_, query_field_,
-                                 fake_card);
-  }
-  manager_->client()->OnUnmaskVerificationResult(success);
-}
 
 }  // namespace autofill
