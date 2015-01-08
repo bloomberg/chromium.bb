@@ -3180,7 +3180,8 @@ drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 
 	/* Set up the GTT. The max we can handle is 256M */
 	aub_out(bufmgr_gem, CMD_AUB_TRACE_HEADER_BLOCK | ((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
-	aub_out(bufmgr_gem, AUB_TRACE_MEMTYPE_NONLOCAL | 0 | AUB_TRACE_OP_DATA_WRITE);
+	/* Need to use GTT_ENTRY type for recent emulator */
+	aub_out(bufmgr_gem, AUB_TRACE_MEMTYPE_GTT_ENTRY | 0 | AUB_TRACE_OP_DATA_WRITE);
 	aub_out(bufmgr_gem, 0); /* subtype */
 	aub_out(bufmgr_gem, 0); /* offset */
 	aub_out(bufmgr_gem, gtt_size); /* size */
