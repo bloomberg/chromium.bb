@@ -392,6 +392,12 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     text = placeholder;
   else if (!value().empty())
     text = base::UTF8ToUTF16(value());
+  else if (title_elem_id) {
+    BrowserAccessibility* title_elem =
+          manager()->GetFromID(title_elem_id);
+    if (title_elem)
+      text = static_cast<BrowserAccessibilityAndroid*>(title_elem)->GetText();
+  }
 
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
