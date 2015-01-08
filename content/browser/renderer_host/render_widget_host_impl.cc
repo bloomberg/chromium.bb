@@ -749,8 +749,6 @@ bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
 }
 
 void RenderWidgetHostImpl::WaitForSurface() {
-  TRACE_EVENT0("browser", "RenderWidgetHostImpl::WaitForSurface");
-
   // How long to (synchronously) wait for the renderer to respond with a
   // new frame when our current frame doesn't exist or is the wrong size.
   // This timeout impacts the "choppiness" of our window resize.
@@ -772,16 +770,14 @@ void RenderWidgetHostImpl::WaitForSurface() {
   }
 
   TRACE_EVENT2("renderer_host",
-               "RenderWidgetHostImpl::WaitForBackingStore",
+               "RenderWidgetHostImpl::WaitForSurface",
                "width",
                base::IntToString(view_size.width()),
                "height",
                base::IntToString(view_size.height()));
 
   // We should not be asked to paint while we are hidden.  If we are hidden,
-  // then it means that our consumer failed to call WasShown. If we're not
-  // force creating the backing store, it's OK since we can feel free to give
-  // out our cached one if we have it.
+  // then it means that our consumer failed to call WasShown.
   DCHECK(!is_hidden_) << "WaitForSurface called while hidden!";
 
   // We should never be called recursively; this can theoretically lead to
@@ -790,12 +786,12 @@ void RenderWidgetHostImpl::WaitForSurface() {
   base::AutoReset<bool> auto_reset_in_get_backing_store(
       &in_get_backing_store_, true);
 
-  // We might have a surface that we can use!
+  // We might have a surface that we can use already.
   if (view_->HasAcceleratedSurface(view_size))
     return;
 
-  // We do not have a suitable backing store in the cache, so send out a
-  // request to the renderer to paint the view if required.
+  // Request that the renderer produce a frame of the right size, if it
+  // hasn't been requested already.
   if (!repaint_ack_pending_ && !resize_ack_pending_) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
@@ -804,40 +800,30 @@ void RenderWidgetHostImpl::WaitForSurface() {
     Send(new ViewMsg_Repaint(routing_id_, view_size));
   }
 
-  TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
+  // Pump a nested message loop until we time out or get a frame of the right
+  // size.
   TimeTicks start_time = TimeTicks::Now();
-  TimeDelta elapsed_delay;
-  do {
-    TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForUpdate");
-
-    // When we have asked the RenderWidget to resize, and we are still waiting
-    // on a response, block for a little while to see if we can't get a response
-    // before returning the old (incorrectly sized) backing store.
-    IPC::Message msg;
-    if (RenderWidgetResizeHelper::Get()->WaitForSingleTaskToRun(max_delay)) {
-
+  TimeDelta time_left = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
+  TimeTicks timeout_time = start_time + time_left;
+  while (1) {
+    TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForSingleTaskToRun");
+    if (RenderWidgetResizeHelper::Get()->WaitForSingleTaskToRun(time_left)) {
       // For auto-resized views, current_size_ determines the view_size and it
       // may have changed during the handling of an UpdateRect message.
       if (auto_resize_enabled_)
         view_size = current_size_;
-
-      // Break now if we got a backing store or accelerated surface of the
-      // correct size.
       if (view_->HasAcceleratedSurface(view_size))
-        return;
-    } else {
+        break;
+    }
+    time_left = timeout_time - TimeTicks::Now();
+    if (time_left <= TimeDelta::FromSeconds(0)) {
       TRACE_EVENT0("renderer_host", "WaitForSurface::Timeout");
       break;
     }
+  }
 
-    // Loop if we still have time left and haven't gotten a properly sized
-    // BackingStore yet. This is necessary to support the GPU path which
-    // typically has multiple frames pipelined -- we may need to skip one or two
-    // BackingStore messages to get to the latest.
-    elapsed_delay = TimeTicks::Now() - start_time;
-  } while (elapsed_delay < max_delay);
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("OSX.RendererHost.SurfaceWaitTime", elapsed_delay,
+  UMA_HISTOGRAM_CUSTOM_TIMES("OSX.RendererHost.SurfaceWaitTime",
+                             TimeTicks::Now() - start_time,
                              TimeDelta::FromMilliseconds(1),
                              TimeDelta::FromMilliseconds(200), 50);
 }
