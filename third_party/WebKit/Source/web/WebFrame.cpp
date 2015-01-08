@@ -48,7 +48,12 @@ bool WebFrame::swap(WebFrame* frame)
             m_parent->m_firstChild = frame;
         if (m_parent->m_lastChild == this)
             m_parent->m_lastChild = frame;
-        swap(m_parent, frame->m_parent);
+        // FIXME: This is due to the fact that the |frame| may be a provisional
+        // local frame, because we don't know if the navigation will result in
+        // an actual page or something else, like a download. The PlzNavigate
+        // project will remove the need for provisional local frames.
+        frame->m_parent = m_parent;
+        m_parent = nullptr;
     }
 
     if (m_previousSibling) {
