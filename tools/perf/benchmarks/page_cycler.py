@@ -148,8 +148,7 @@ class PageCyclerToughLayoutCases(_PageCycler):
 
 
 # crbug.com/273986: This test is really flakey on xp.
-# cabug.com/341843: This test is always timing out on Android.
-@benchmark.Disabled('android', 'win')
+@benchmark.Disabled('win')
 class PageCyclerTypical25(_PageCycler):
   """Page load time benchmark for a 25 typical web pages.
 
