@@ -154,17 +154,19 @@ class DriveUploader : public DriveUploaderInterface {
       const StartInitiateUploadCallback& start_initiate_upload_callback,
       bool get_file_size_result);
 
-  // Starts to initiate the new file uploading.
-  // Upon completion, OnUploadLocationReceived should be called.
-  void StartInitiateUploadNewFile(
-      const std::string& parent_resource_id,
-      const std::string& title,
-      const UploadNewFileOptions& options,
-      scoped_ptr<UploadFileInfo> upload_file_info);
+  // Checks file size and call InitiateUploadNewFile or MultipartUploadNewFile
+  // API.  Upon completion, OnUploadLocationReceived (for InitiateUploadNewFile)
+  // or OnMultipartUploadComplete (for MultipartUploadNewFile) should be called.
+  void CallUploadServiceAPINewFile(const std::string& parent_resource_id,
+                                   const std::string& title,
+                                   const UploadNewFileOptions& options,
+                                   scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Starts to initiate the existing file uploading.
-  // Upon completion, OnUploadLocationReceived should be called.
-  void StartInitiateUploadExistingFile(
+  // Checks file size and call InitiateUploadExistingFile or
+  // MultipartUploadExistingFile API.  Upon completion, OnUploadLocationReceived
+  // (for InitiateUploadExistingFile) or OnMultipartUploadComplete (for
+  // MultipartUploadExistingFile) should be called.
+  void CallUploadServiceAPIExistingFile(
       const std::string& resource_id,
       const UploadExistingFileOptions& options,
       scoped_ptr<UploadFileInfo> upload_file_info);
@@ -192,9 +194,14 @@ class DriveUploader : public DriveUploaderInterface {
                         int64 progress_of_chunk,
                         int64 total_of_chunk);
 
-  // Handle failed uploads.
+  // Handles failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                     google_apis::GDataErrorCode error);
+
+  // Handles completion/error of multipart uploading.
+  void OnMultipartUploadComplete(scoped_ptr<UploadFileInfo> upload_file_info,
+                                 google_apis::GDataErrorCode error,
+                                 scoped_ptr<google_apis::FileResource> entry);
 
   // The class is expected to run on UI thread.
   base::ThreadChecker thread_checker_;

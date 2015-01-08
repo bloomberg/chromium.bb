@@ -145,6 +145,38 @@ bool UserHasWriteAccess(google_apis::drive::PermissionRole user_permission) {
   return false;
 }
 
+void CallFileResouceCallback(const FileResourceCallback& callback,
+                             const UploadRangeResponse& response,
+                             scoped_ptr<FileResource> entry) {
+  callback.Run(response.code, entry.Pass());
+}
+
+struct CallResumeUpload {
+  CallResumeUpload() {}
+  ~CallResumeUpload() {}
+
+  void Run(GDataErrorCode code, const GURL& upload_url) {
+    if (service) {
+      service->ResumeUpload(
+          upload_url,
+          /* start position */ 0,
+          /* end position */ content_length,
+          content_length,
+          content_type,
+          local_file_path,
+          base::Bind(&CallFileResouceCallback, callback),
+          progress_callback);
+    }
+  }
+
+  base::WeakPtr<FakeDriveService> service;
+  int64 content_length;
+  std::string content_type;
+  base::FilePath local_file_path;
+  FileResourceCallback callback;
+  ProgressCallback progress_callback;
+};
+
 }  // namespace
 
 struct FakeDriveService::EntryInfo {
@@ -1234,11 +1266,21 @@ CancelCallback FakeDriveService::MultipartUploadNewFile(
     const base::FilePath& local_file_path,
     const UploadNewFileOptions& options,
     const FileResourceCallback& callback,
-    const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  NOTIMPLEMENTED();
+    const ProgressCallback& progress_callback) {
+  CallResumeUpload* const call_resume_upload = new CallResumeUpload();
+  call_resume_upload->service = weak_ptr_factory_.GetWeakPtr();
+  call_resume_upload->content_type = content_type;
+  call_resume_upload->content_length = content_length;
+  call_resume_upload->local_file_path = local_file_path;
+  call_resume_upload->callback = callback;
+  call_resume_upload->progress_callback = progress_callback;
+  InitiateUploadNewFile(
+      content_type,
+      content_length,
+      parent_resource_id,
+      title,
+      options,
+      base::Bind(&CallResumeUpload::Run, base::Owned(call_resume_upload)));
   return CancelCallback();
 }
 
@@ -1249,11 +1291,20 @@ CancelCallback FakeDriveService::MultipartUploadExistingFile(
     const base::FilePath& local_file_path,
     const UploadExistingFileOptions& options,
     const FileResourceCallback& callback,
-    const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  NOTIMPLEMENTED();
+    const ProgressCallback& progress_callback) {
+  CallResumeUpload* const call_resume_upload = new CallResumeUpload();
+  call_resume_upload->service = weak_ptr_factory_.GetWeakPtr();
+  call_resume_upload->content_type = content_type;
+  call_resume_upload->content_length = content_length;
+  call_resume_upload->local_file_path = local_file_path;
+  call_resume_upload->callback = callback;
+  call_resume_upload->progress_callback = progress_callback;
+  InitiateUploadExistingFile(
+      content_type,
+      content_length,
+      resource_id,
+      options,
+      base::Bind(&CallResumeUpload::Run, base::Owned(call_resume_upload)));
   return CancelCallback();
 }
 

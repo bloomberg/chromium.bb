@@ -47,7 +47,7 @@ const char kTestMimeType[] = "text/plain";
 const char kTestUploadNewFileURL[] = "http://test/upload_location/new_file";
 const char kTestUploadExistingFileURL[] =
     "http://test/upload_location/existing_file";
-const int64 kUploadChunkSize = 512 * 1024;
+const int64 kUploadChunkSize = 1024 * 1024 * 1024;
 const char kTestETag[] = "test_etag";
 
 // Mock DriveService that verifies if the uploaded content matches the preset
@@ -59,10 +59,11 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   MockDriveServiceWithUploadExpectation(
       const base::FilePath& expected_upload_file,
       int64 expected_content_length)
-     : expected_upload_file_(expected_upload_file),
-       expected_content_length_(expected_content_length),
-       received_bytes_(0),
-       resume_upload_call_count_(0) {}
+      : expected_upload_file_(expected_upload_file),
+        expected_content_length_(expected_content_length),
+        received_bytes_(0),
+        resume_upload_call_count_(0),
+        multipart_upload_call_count_(0) {}
 
   int64 received_bytes() const { return received_bytes_; }
   void set_received_bytes(int64 received_bytes) {
@@ -70,6 +71,9 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   }
 
   int64 resume_upload_call_count() const { return resume_upload_call_count_; }
+  int64 multipart_upload_call_count() const {
+    return multipart_upload_call_count_;
+  }
 
  private:
   // DriveServiceInterface overrides.
@@ -196,10 +200,82 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
         base::Bind(callback, response, base::Passed(&entry)));
   }
 
+  CancelCallback MultipartUploadNewFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const base::FilePath& local_file_path,
+      const UploadNewFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) override {
+    EXPECT_EQ(kTestMimeType, content_type);
+    EXPECT_EQ(expected_content_length_, content_length);
+    EXPECT_EQ(kTestInitiateUploadParentResourceId, parent_resource_id);
+    EXPECT_EQ(kTestDocumentTitle, title);
+    EXPECT_EQ(expected_upload_file_, local_file_path);
+
+    return SendMultipartUploadResult(HTTP_CREATED, content_length, callback,
+                                     progress_callback);
+  }
+
+  CancelCallback MultipartUploadExistingFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& resource_id,
+      const base::FilePath& local_file_path,
+      const UploadExistingFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) override {
+    EXPECT_EQ(kTestMimeType, content_type);
+    EXPECT_EQ(expected_content_length_, content_length);
+    EXPECT_EQ(kTestInitiateUploadResourceId, resource_id);
+    EXPECT_EQ(expected_upload_file_, local_file_path);
+
+    if (!options.etag.empty() && options.etag != kTestETag) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, HTTP_PRECONDITION,
+                     base::Passed(make_scoped_ptr<FileResource>(NULL))));
+      return CancelCallback();
+    }
+
+    return SendMultipartUploadResult(HTTP_SUCCESS, content_length, callback,
+                                     progress_callback);
+  }
+
+  CancelCallback SendMultipartUploadResult(
+      GDataErrorCode response_code,
+      int64 content_length,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) {
+    received_bytes_ = content_length;
+    multipart_upload_call_count_++;
+
+    // Callback progress
+    if (!progress_callback.is_null()) {
+      // For the testing purpose, it always notifies the progress at the end of
+      // whole file uploading.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(progress_callback, content_length, content_length));
+    }
+
+    // MultipartUploadXXXFile is an asynchronous function, so don't callback
+    // directly.
+    scoped_ptr<FileResource> entry;
+    entry.reset(new FileResource);
+    entry->set_md5_checksum(kTestDummyMd5);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, response_code, base::Passed(&entry)));
+    return CancelCallback();
+  }
+
   const base::FilePath expected_upload_file_;
   const int64 expected_content_length_;
   int64 received_bytes_;
   int64 resume_upload_call_count_;
+  int64 multipart_upload_call_count_;
 };
 
 // Mock DriveService that returns a failure at InitiateUpload().
@@ -239,6 +315,37 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) override {
     NOTREACHED();
+    return CancelCallback();
+  }
+
+  CancelCallback MultipartUploadNewFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const base::FilePath& local_file_path,
+      const UploadNewFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) override {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, GDATA_NO_CONNECTION,
+                   base::Passed(make_scoped_ptr<FileResource>(NULL))));
+    return CancelCallback();
+  }
+
+  CancelCallback MultipartUploadExistingFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& resource_id,
+      const base::FilePath& local_file_path,
+      const UploadExistingFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) override {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, GDATA_NO_CONNECTION,
+                   base::Passed(make_scoped_ptr<FileResource>(NULL))));
     return CancelCallback();
   }
 };
@@ -337,7 +444,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
                  &upload_progress_values));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1, mock_service.resume_upload_call_count());
+  EXPECT_EQ(0, mock_service.resume_upload_call_count());
+  EXPECT_EQ(1, mock_service.multipart_upload_call_count());
   EXPECT_EQ(0, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -372,8 +480,9 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
                  &upload_progress_values));
   base::RunLoop().RunUntilIdle();
 
-  // 512KB upload should not be split into multiple chunks.
-  EXPECT_EQ(1, mock_service.resume_upload_call_count());
+  // 512KB upload should be uploaded as multipart body.
+  EXPECT_EQ(0, mock_service.resume_upload_call_count());
+  EXPECT_EQ(1, mock_service.multipart_upload_call_count());
   EXPECT_EQ(512 * 1024, mock_service.received_bytes());
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -384,11 +493,71 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
             upload_progress_values[0]);
 }
 
+TEST_F(DriveUploaderTest, UploadExisting2MB) {
+  base::FilePath local_path;
+  std::string data;
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 2 * 1024 * 1024, &local_path, &data));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  scoped_ptr<FileResource> entry;
+
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  std::vector<test_util::ProgressInfo> upload_progress_values;
+  uploader.UploadExistingFile(
+      kTestInitiateUploadResourceId, local_path, kTestMimeType,
+      DriveUploader::UploadExistingFileOptions(),
+      test_util::CreateCopyResultCallback(&error, &upload_location, &entry),
+      base::Bind(&test_util::AppendProgressCallbackResult,
+                 &upload_progress_values));
+  base::RunLoop().RunUntilIdle();
+
+  // 2MB upload should not be split into multiple chunks.
+  EXPECT_EQ(1, mock_service.resume_upload_call_count());
+  EXPECT_EQ(0, mock_service.multipart_upload_call_count());
+  EXPECT_EQ(2 * 1024 * 1024, mock_service.received_bytes());
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_TRUE(upload_location.is_empty());
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kTestDummyMd5, entry->md5_checksum());
+  ASSERT_EQ(1U, upload_progress_values.size());
+  EXPECT_EQ(test_util::ProgressInfo(2 * 1024 * 1024, 2 * 1024 * 1024),
+            upload_progress_values[0]);
+}
+
 TEST_F(DriveUploaderTest, InitiateUploadFail) {
   base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
-      temp_dir_.path(), 512 * 1024, &local_path, &data));
+      temp_dir_.path(), 2 * 1024 * 1024, &local_path, &data));
+
+  GDataErrorCode error = HTTP_SUCCESS;
+  GURL upload_location;
+  scoped_ptr<FileResource> entry;
+
+  MockDriveServiceNoConnectionAtInitiate mock_service;
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  uploader.UploadExistingFile(
+      kTestInitiateUploadResourceId, local_path, kTestMimeType,
+      DriveUploader::UploadExistingFileOptions(),
+      test_util::CreateCopyResultCallback(&error, &upload_location, &entry),
+      google_apis::ProgressCallback());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_TRUE(upload_location.is_empty());
+  EXPECT_FALSE(entry);
+}
+
+TEST_F(DriveUploaderTest, MultipartUploadFail) {
+  base::FilePath local_path;
+  std::string data;
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
+                                                   &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
   GURL upload_location;
@@ -439,7 +608,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   EXPECT_TRUE(upload_location.is_empty());
 }
 
-TEST_F(DriveUploaderTest, InitiateUploadConflict) {
+TEST_F(DriveUploaderTest, MultipartUploadConflict) {
   base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
@@ -468,11 +637,37 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   EXPECT_TRUE(upload_location.is_empty());
 }
 
+TEST_F(DriveUploaderTest, InitiateUploadConflict) {
+  base::FilePath local_path;
+  std::string data;
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 2 * 1024 * 1024, &local_path, &data));
+  const std::string kDestinationETag("destination_etag");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  scoped_ptr<FileResource> entry;
+
+  MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  DriveUploader::UploadExistingFileOptions options;
+  options.etag = kDestinationETag;
+  uploader.UploadExistingFile(
+      kTestInitiateUploadResourceId, local_path, kTestMimeType, options,
+      test_util::CreateCopyResultCallback(&error, &upload_location, &entry),
+      google_apis::ProgressCallback());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_CONFLICT, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
 TEST_F(DriveUploaderTest, ResumeUploadFail) {
   base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
-      temp_dir_.path(), 512 * 1024, &local_path, &data));
+      temp_dir_.path(), 2 * 1024 * 1024, &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
   GURL upload_location;
@@ -498,7 +693,7 @@ TEST_F(DriveUploaderTest, GetUploadStatusFail) {
   base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
-      temp_dir_.path(), 512 * 1024, &local_path, &data));
+      temp_dir_.path(), 2 * 1024 * 1024, &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
   GURL upload_location;
