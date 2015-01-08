@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_ASM_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_NACL_ASM_H_
 
+#include "native_client/src/include/build_config.h"
+
 /*
  * macros to provide uniform access to identifiers from assembly due
  * to different C -> asm name mangling conventions and other platform-specific

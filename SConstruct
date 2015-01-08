@@ -2145,13 +2145,6 @@ that the given target requires that argument be given."""
 pre_base_env.AddMethod(GetAbsDirArg)
 
 
-pre_base_env.Append(
-    CPPDEFINES = [
-        ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-        ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
-        ],
-    )
-
 def MakeGTestEnv(env):
   # Create an environment to run unit tests using Gtest.
   gtest_env = env.Clone()
@@ -2453,10 +2446,6 @@ def MakeWindowsEnv(platform=None):
 
   windows_env.Append(
       CPPDEFINES = [
-          ['NACL_WINDOWS', '1'],
-          ['NACL_OSX', '0'],
-          ['NACL_LINUX', '0'],
-          ['NACL_ANDROID', '0'],
           ['_WIN32_WINNT', '0x0501'],
           ['__STDC_LIMIT_MACROS', '1'],
           ['NOMINMAX', '1'],
@@ -2470,7 +2459,12 @@ def MakeWindowsEnv(platform=None):
       LIBS = ['ws2_32', 'advapi32'],
       # TODO(bsy) remove 4355 once cross-repo
       # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
-      CCFLAGS = ['/EHsc', '/WX', '/wd4355', '/wd4800'],
+      CCFLAGS = ['/EHsc', '/WX', '/wd4355', '/wd4800',
+                 # build_config.h is injected as a header in all sources to
+                 # provide macro definitions for the operating system and
+                 # architecture. This is injected so it's never accidentally
+                 # omitted in source files.
+                 '/FI', '$SOURCE_ROOT/native_client/src/include/build_config.h']
   )
 
   # This linker option allows us to ensure our builds are compatible with
@@ -2526,6 +2520,10 @@ def MakeUnixLikeEnv(platform=None):
         '-fdiagnostics-show-option',
         '-fvisibility=hidden',
         '-fstack-protector',
+        # build_config.h is injected as a header in all sources to provide
+        # macro definitions for the operating system and architecture. This is
+        # injected so it's never accidentally omitted in source files.
+        '-include', '$SOURCE_ROOT/native_client/src/include/build_config.h',
         ] + werror_flags,
     # NOTE: pthread is only neeeded for libppNaClPlugin.so and on arm
     LIBS = ['pthread'],
@@ -2577,15 +2575,12 @@ def MakeMacEnv(platform=None):
       CCFLAGS=[subarch_flag, '-fPIC'],
       ASFLAGS=[subarch_flag],
       LINKFLAGS=[subarch_flag, '-fPIC'],
-      CPPDEFINES = [['NACL_WINDOWS', '0'],
-                    ['NACL_OSX', '1'],
-                    ['NACL_LINUX', '0'],
-                    ['NACL_ANDROID', '0'],
-                    # defining _DARWIN_C_SOURCE breaks 10.4
+      CPPDEFINES = [# defining _DARWIN_C_SOURCE breaks 10.4
                     #['_DARWIN_C_SOURCE', '1'],
                     #['__STDC_LIMIT_MACROS', '1']
                     ],
   )
+
   return mac_env
 
 (mac_debug_env, mac_optimized_env) = GenerateOptimizationLevels(MakeMacEnv())
@@ -2631,8 +2626,6 @@ def SetUpLinuxEnvArm(env):
 
 def SetUpAndroidEnv(env):
   env.FilterOut(CPPDEFINES=[['_LARGEFILE64_SOURCE', '1']])
-  env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
-  env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
   android_ndk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
                                   'android_tools', 'ndk')
   android_ndk_experimental_root = os.path.join('${SOURCE_ROOT}',
@@ -2803,11 +2796,7 @@ def MakeGenericLinuxEnv(platform=None):
 
   # Prepend so we can disable warnings via Append
   linux_env.Prepend(
-      CPPDEFINES = [['NACL_WINDOWS', '0'],
-                    ['NACL_OSX', '0'],
-                    ['NACL_LINUX', '1'],
-                    ['NACL_ANDROID', '0'],
-                    ['_DEFAULT_SOURCE', '1'],
+      CPPDEFINES = [['_DEFAULT_SOURCE', '1'],
                     ['_BSD_SOURCE', '1'],
                     ['_POSIX_C_SOURCE', '199506'],
                     ['_XOPEN_SOURCE', '600'],
@@ -3117,11 +3106,11 @@ nacl_env.Append(
         ['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
         ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
 
-        ['NACL_WINDOWS', '0'],
-        ['NACL_OSX', '0'],
-        ['NACL_LINUX', '0'],
-        ['NACL_ANDROID', '0'],
+        ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}'],
+        ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}'],
         ],
+    CCFLAGS = [
+        '-include', '$SOURCE_ROOT/native_client/src/include/build_config.h'],
     )
 
 def FixWindowsAssembler(env):
@@ -3482,8 +3471,6 @@ def RawSyscallObjects(env, sources):
   raw_syscall_env.Append(
     CPPDEFINES = [
       ['USE_RAW_SYSCALLS', '1'],
-      ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-      ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
       ],
   )
   objects = []

@@ -297,6 +297,7 @@
           '-pthread',
           '-fno-exceptions',
           '-Wall', # TODO(bradnelson): why does this disappear?!?
+          '-include', 'native_client/src/include/build_config.h'
         ],
         'conditions': [
           ['nacl_standalone==1 and OS=="linux"', {
@@ -305,13 +306,10 @@
           ['OS=="android"', {
             'target_conditions': [
               ['_toolset=="target"', {
-                'defines': ['NACL_ANDROID=1'],
-              }, {
-                'defines': ['NACL_ANDROID=0'],
+                'defines': ['ANDROID'],
               }],
             ],
            }, {
-            'defines': ['NACL_ANDROID=0'],
             'link_settings': {
               'libraries': [
                 '-lrt',
@@ -449,9 +447,6 @@
           '-Wl,-z,noexecstack',
         ],
         'defines': [
-          'NACL_LINUX=1',
-          'NACL_OSX=0',
-          'NACL_WINDOWS=0',
           '_DEFAULT_SOURCE=1',
           '_BSD_SOURCE=1',
           '_POSIX_C_SOURCE=199506',
@@ -533,6 +528,9 @@
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels', '-Wno-long-long'],
+          'OTHER_CFLAGS': [
+            '-include', 'native_client/src/include/build_config.h'
+          ],
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],
@@ -643,12 +641,6 @@
             ],
           }],
         ],
-        'defines': [
-          'NACL_LINUX=0',
-          'NACL_ANDROID=0',
-          'NACL_OSX=1',
-          'NACL_WINDOWS=0',
-        ],
       },
     }],
     ['OS=="win"', {
@@ -703,11 +695,6 @@
           '_SECURE_ATL',
           '__STDC_LIMIT_MACROS=1',
           '_HAS_EXCEPTIONS=0',
-
-          'NACL_LINUX=0',
-          'NACL_ANDROID=0',
-          'NACL_OSX=0',
-          'NACL_WINDOWS=1'
         ],
         'conditions': [
           ['MSVS_VERSION=="2008"', {
@@ -730,6 +717,9 @@
             'WarnAsError': 'true',
             'DebugInformationFormat': '3',
             'ExceptionHandling': '0',
+            'AdditionalOptions': [
+              '/FI', 'native_client/src/include/build_config.h'
+            ],
           },
           'VCLibrarianTool': {
             'AdditionalOptions': ['/ignore:4221'],

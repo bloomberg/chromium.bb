@@ -8,4 +8,10 @@ Import('env')
 # Check that headers are #includable without native_client/ being in
 # the #include search path.
 env.FilterOut(CPPPATH='${SOURCE_ROOT}')
+
+# Remove the forced inclusion of build_config.h, which requires native_client/
+# to be in the search path.
+env.FilterOut(CCFLAGS=[
+    '-include', '$SOURCE_ROOT/native_client/src/include/build_config.h'])
+
 env.ComponentProgram('includability_test', 'use_irt.c')
