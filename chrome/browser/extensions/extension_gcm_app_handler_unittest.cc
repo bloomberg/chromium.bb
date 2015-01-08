@@ -460,6 +460,7 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
+  SignIn(kTestingUsername);
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
@@ -475,6 +476,7 @@ TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionRemoved) {
+  SignIn(kTestingUsername);
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
