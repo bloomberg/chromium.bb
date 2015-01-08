@@ -8,11 +8,8 @@
     RuntimeEnabled=ServiceWorker,
     GarbageCollected,
     TypeChecking=Interface,
-] interface ServiceWorkerClient {
-    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute DOMString visibilityState;
-    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute boolean focused;
+    ImplementedAs=ServiceWorkerClient,
+] interface Client {
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;
-    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute DOMString frameType;
     [Custom, RaisesException, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
-    [RuntimeEnabled=ServiceWorkerClientAttributes, CallWith=ScriptState] Promise<boolean> focus();
 };

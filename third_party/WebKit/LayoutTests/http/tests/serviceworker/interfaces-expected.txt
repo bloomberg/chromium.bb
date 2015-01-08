@@ -3,8 +3,9 @@ PASS Interfaces and attributes of ServiceWorkerContainer
 PASS Interfaces and attributes of ServiceWorker 
 PASS Interfaces and attributes in ServiceWorkerGlobalScope 
 PASS ServiceWorkerGlobalScope 
-PASS ServiceWorkerClients 
-PASS ServiceWorkerClient 
+PASS Clients 
+PASS Client 
+PASS WindowClient 
 PASS CacheStorage 
 FAIL Cache assert_true: matchAll should be an attribute of Cache expected true got false
 PASS Event constructors 

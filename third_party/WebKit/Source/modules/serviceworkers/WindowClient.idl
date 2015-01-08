@@ -1,0 +1,17 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#window-client-interface
+[
+    Exposed=ServiceWorker,
+    RuntimeEnabled=ServiceWorkerClientAttributes,
+    GarbageCollected,
+    TypeChecking=Interface,
+    ImplementedAs=ServiceWorkerWindowClient,
+] interface WindowClient : Client {
+    readonly attribute DOMString visibilityState;
+    readonly attribute boolean focused;
+    readonly attribute DOMString frameType;
+    [CallWith=ScriptState] Promise<boolean> focus();
+};

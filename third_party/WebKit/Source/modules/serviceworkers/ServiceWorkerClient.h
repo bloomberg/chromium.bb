@@ -17,31 +17,27 @@ namespace blink {
 class ExecutionContext;
 class ScriptState;
 
-class ServiceWorkerClient final : public GarbageCollectedFinalized<ServiceWorkerClient>, public ScriptWrappable {
+class ServiceWorkerClient : public GarbageCollectedFinalized<ServiceWorkerClient>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
 
     ~ServiceWorkerClient();
 
-    // ServiceWorkerClient.idl
-    String visibilityState() const { return m_visibilityState; }
-    bool focused() const { return m_isFocused; }
+    // Client.idl
     String url() const { return m_url; }
-    String frameType() const;
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
-    ScriptPromise focus(ScriptState*);
 
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) { }
 
-private:
+protected:
     explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
 
+    unsigned id() const { return m_id; }
+
+private:
     unsigned m_id;
-    String m_visibilityState;
-    bool m_isFocused;
     String m_url;
-    WebURLRequest::FrameType m_frameType;
 };
 
 } // namespace blink

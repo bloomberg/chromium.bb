@@ -20,18 +20,24 @@ test(function() {
   }, 'ServiceWorkerGlobalScope');
 
 test(function() {
-    verify_interface('ServiceWorkerClients',
+    verify_interface('Clients',
                      self.clients,
                      {
                        getAll: 'function'
                      });
-  }, 'ServiceWorkerClients');
+  }, 'Clients');
 
 test(function() {
-    verify_interface('ServiceWorkerClient');
+    verify_interface('Client');
     // FIXME: Get an instance and test it, or ensure property exists on
     // prototype.
-  }, 'ServiceWorkerClient');
+  }, 'Client');
+
+test(function() {
+    verify_interface('WindowClient');
+    // FIXME: Get an instance and test it, or ensure property exists on
+    // prototype.
+  }, 'WindowClient');
 
 test(function() {
     verify_interface('CacheStorage',
