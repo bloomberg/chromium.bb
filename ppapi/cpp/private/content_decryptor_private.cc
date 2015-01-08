@@ -56,11 +56,11 @@ void SetServerCertificate(PP_Instance instance,
       ->SetServerCertificate(promise_id, server_certificate);
 }
 
-void CreateSession(PP_Instance instance,
-                   uint32_t promise_id,
-                   PP_Var init_data_type_arg,
-                   PP_Var init_data_arg,
-                   PP_SessionType session_type) {
+void CreateSessionAndGenerateRequest(PP_Instance instance,
+                                     uint32_t promise_id,
+                                     PP_SessionType session_type,
+                                     PP_Var init_data_type_arg,
+                                     PP_Var init_data_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
@@ -76,14 +76,14 @@ void CreateSession(PP_Instance instance,
   pp::VarArrayBuffer init_data_array_buffer(init_data_var);
 
   static_cast<ContentDecryptor_Private*>(object)
-      ->CreateSession(promise_id,
-                      init_data_type_var.AsString(),
-                      init_data_array_buffer,
-                      session_type);
+      ->CreateSessionAndGenerateRequest(promise_id, session_type,
+                                        init_data_type_var.AsString(),
+                                        init_data_array_buffer);
 }
 
 void LoadSession(PP_Instance instance,
                  uint32_t promise_id,
+                 PP_SessionType session_type,
                  PP_Var web_session_id_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
@@ -95,7 +95,7 @@ void LoadSession(PP_Instance instance,
     return;
 
   static_cast<ContentDecryptor_Private*>(object)
-      ->LoadSession(promise_id, web_session_id_var.AsString());
+      ->LoadSession(promise_id, session_type, web_session_id_var.AsString());
 }
 
 void UpdateSession(PP_Instance instance,
@@ -150,22 +150,6 @@ void RemoveSession(PP_Instance instance,
 
   static_cast<ContentDecryptor_Private*>(object)
       ->RemoveSession(promise_id, web_session_id_var.AsString());
-}
-
-void GetUsableKeyIds(PP_Instance instance,
-                     uint32_t promise_id,
-                     PP_Var web_session_id_arg) {
-  void* object =
-      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
-  if (!object)
-    return;
-
-  pp::Var web_session_id_var(web_session_id_arg);
-  if (!web_session_id_var.is_string())
-    return;
-
-  static_cast<ContentDecryptor_Private*>(object)
-      ->GetUsableKeyIds(promise_id, web_session_id_var.AsString());
 }
 
 void Decrypt(PP_Instance instance,
@@ -258,12 +242,11 @@ void DecryptAndDecode(PP_Instance instance,
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {
     &Initialize,
     &SetServerCertificate,
-    &CreateSession,
+    &CreateSessionAndGenerateRequest,
     &LoadSession,
     &UpdateSession,
     &CloseSession,
     &RemoveSession,
-    &GetUsableKeyIds,
     &Decrypt,
     &InitializeAudioDecoder,
     &InitializeVideoDecoder,
@@ -309,23 +292,6 @@ void ContentDecryptor_Private::PromiseResolvedWithSession(
   }
 }
 
-void ContentDecryptor_Private::PromiseResolvedWithKeyIds(
-    uint32_t promise_id,
-    const std::vector<std::vector<uint8_t> >& key_ids) {
-  if (has_interface<PPB_ContentDecryptor_Private>()) {
-    pp::VarArray key_ids_array = pp::VarArray();
-    key_ids_array.SetLength(key_ids.size());
-    for (size_t i = 0; i < key_ids.size(); ++i) {
-      const std::vector<uint8_t>& entry = key_ids[i];
-      pp::VarArrayBuffer array_buffer(entry.size());
-      memcpy(array_buffer.Map(), &entry[0], entry.size());
-      key_ids_array.Set(i, array_buffer);
-    }
-    get_interface<PPB_ContentDecryptor_Private>()->PromiseResolvedWithKeyIds(
-        associated_instance_.pp_instance(), promise_id, key_ids_array.pp_var());
-  }
-}
-
 void ContentDecryptor_Private::PromiseRejected(
     uint32_t promise_id,
     PP_CdmExceptionCode exception_code,
@@ -342,30 +308,27 @@ void ContentDecryptor_Private::PromiseRejected(
   }
 }
 
-void ContentDecryptor_Private::SessionMessage(
-    const std::string& web_session_id,
-    pp::VarArrayBuffer message,
-    const std::string& destination_url) {
+void ContentDecryptor_Private::SessionMessage(const std::string& web_session_id,
+                                              PP_CdmMessageType message_type,
+                                              pp::VarArrayBuffer message) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var web_session_id_var(web_session_id);
-    pp::Var destination_url_var(destination_url);
     get_interface<PPB_ContentDecryptor_Private>()->SessionMessage(
-        associated_instance_.pp_instance(),
-        web_session_id_var.pp_var(),
-        message.pp_var(),
-        destination_url_var.pp_var());
+        associated_instance_.pp_instance(), web_session_id_var.pp_var(),
+        message_type, message.pp_var());
   }
 }
 
 void ContentDecryptor_Private::SessionKeysChange(
     const std::string& web_session_id,
-    bool has_additional_usable_key) {
+    bool has_additional_usable_key,
+    const std::vector<PP_KeyInformation>& key_information) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var web_session_id_var(web_session_id);
     get_interface<PPB_ContentDecryptor_Private>()->SessionKeysChange(
-        associated_instance_.pp_instance(),
-        web_session_id_var.pp_var(),
-        PP_FromBool(has_additional_usable_key));
+        associated_instance_.pp_instance(), web_session_id_var.pp_var(),
+        PP_FromBool(has_additional_usable_key), key_information.size(),
+        key_information.empty() ? NULL : &key_information[0]);
   }
 }
 
@@ -378,14 +341,6 @@ void ContentDecryptor_Private::SessionExpirationChange(
         associated_instance_.pp_instance(),
         web_session_id_var.pp_var(),
         new_expiry_time);
-  }
-}
-
-void ContentDecryptor_Private::SessionReady(const std::string& web_session_id) {
-  if (has_interface<PPB_ContentDecryptor_Private>()) {
-    pp::Var web_session_id_var(web_session_id);
-    get_interface<PPB_ContentDecryptor_Private>()->SessionReady(
-        associated_instance_.pp_instance(), web_session_id_var.pp_var());
   }
 }
 

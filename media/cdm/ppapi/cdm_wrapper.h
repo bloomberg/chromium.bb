@@ -45,13 +45,14 @@ class CdmWrapper {
   virtual void SetServerCertificate(uint32_t promise_id,
                                     const uint8_t* server_certificate_data,
                                     uint32_t server_certificate_data_size) = 0;
-  virtual void CreateSession(uint32_t promise_id,
-                             const char* init_data_type,
-                             uint32_t init_data_type_size,
-                             const uint8_t* init_data,
-                             uint32_t init_data_size,
-                             cdm::SessionType session_type) = 0;
+  virtual void CreateSessionAndGenerateRequest(uint32_t promise_id,
+                                               cdm::SessionType session_type,
+                                               const char* init_data_type,
+                                               uint32_t init_data_type_size,
+                                               const uint8_t* init_data,
+                                               uint32_t init_data_size) = 0;
   virtual void LoadSession(uint32_t promise_id,
+                           cdm::SessionType session_type,
                            const char* web_session_id,
                            uint32_t web_session_id_size) = 0;
   virtual void UpdateSession(uint32_t promise_id,
@@ -65,9 +66,6 @@ class CdmWrapper {
   virtual void RemoveSession(uint32_t promise_id,
                              const char* web_session_id,
                              uint32_t web_session_id_size) = 0;
-  virtual void GetUsableKeyIds(uint32_t promise_id,
-                               const char* web_session_id,
-                               uint32_t web_session_id_size) = 0;
   virtual void TimerExpired(void* context) = 0;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_buffer) = 0;
@@ -86,6 +84,7 @@ class CdmWrapper {
   virtual void OnPlatformChallengeResponse(
       const cdm::PlatformChallengeResponse& response) = 0;
   virtual void OnQueryOutputProtectionStatus(
+      cdm::QueryResult result,
       uint32_t link_mask,
       uint32_t output_protection_mask) = 0;
 
@@ -128,24 +127,24 @@ class CdmWrapperImpl : public CdmWrapper {
         promise_id, server_certificate_data, server_certificate_data_size);
   }
 
-  virtual void CreateSession(uint32_t promise_id,
-                             const char* init_data_type,
-                             uint32_t init_data_type_size,
-                             const uint8_t* init_data,
-                             uint32_t init_data_size,
-                             cdm::SessionType session_type) override {
-    cdm_->CreateSession(promise_id,
-                        init_data_type,
-                        init_data_type_size,
-                        init_data,
-                        init_data_size,
-                        session_type);
+  virtual void CreateSessionAndGenerateRequest(
+      uint32_t promise_id,
+      cdm::SessionType session_type,
+      const char* init_data_type,
+      uint32_t init_data_type_size,
+      const uint8_t* init_data,
+      uint32_t init_data_size) override {
+    cdm_->CreateSessionAndGenerateRequest(promise_id, session_type,
+                                          init_data_type, init_data_type_size,
+                                          init_data, init_data_size);
   }
 
   virtual void LoadSession(uint32_t promise_id,
+                           cdm::SessionType session_type,
                            const char* web_session_id,
                            uint32_t web_session_id_size) override {
-    cdm_->LoadSession(promise_id, web_session_id, web_session_id_size);
+    cdm_->LoadSession(promise_id, session_type, web_session_id,
+                      web_session_id_size);
   }
 
   virtual void UpdateSession(uint32_t promise_id,
@@ -170,12 +169,6 @@ class CdmWrapperImpl : public CdmWrapper {
                              const char* web_session_id,
                              uint32_t web_session_id_size) override {
     cdm_->RemoveSession(promise_id, web_session_id, web_session_id_size);
-  }
-
-  virtual void GetUsableKeyIds(uint32_t promise_id,
-                               const char* web_session_id,
-                               uint32_t web_session_id_size) override {
-    cdm_->GetUsableKeyIds(promise_id, web_session_id, web_session_id_size);
   }
 
   virtual void TimerExpired(void* context) override {
@@ -223,9 +216,11 @@ class CdmWrapperImpl : public CdmWrapper {
   }
 
   virtual void OnQueryOutputProtectionStatus(
+      cdm::QueryResult result,
       uint32_t link_mask,
       uint32_t output_protection_mask) override {
-    cdm_->OnQueryOutputProtectionStatus(link_mask, output_protection_mask);
+    cdm_->OnQueryOutputProtectionStatus(result, link_mask,
+                                        output_protection_mask);
   }
 
  private:
@@ -238,24 +233,64 @@ class CdmWrapperImpl : public CdmWrapper {
   DISALLOW_COPY_AND_ASSIGN(CdmWrapperImpl);
 };
 
+// Overrides for the cdm::Host_6 methods.
+// TODO(jrummell): Remove these once Host_6 interface is removed.
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_6>::
+    CreateSessionAndGenerateRequest(uint32_t promise_id,
+                                    cdm::SessionType session_type,
+                                    const char* init_data_type,
+                                    uint32_t init_data_type_size,
+                                    const uint8_t* init_data,
+                                    uint32_t init_data_size) {
+  cdm_->CreateSession(promise_id, init_data_type, init_data_type_size,
+                      init_data, init_data_size, session_type);
+}
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_6>::LoadSession(
+    uint32_t promise_id,
+    cdm::SessionType session_type,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  cdm_->LoadSession(promise_id, web_session_id, web_session_id_size);
+}
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_6>::
+    OnQueryOutputProtectionStatus(cdm::QueryResult result,
+                                  uint32_t link_mask,
+                                  uint32_t output_protection_mask) {
+  if (result == cdm::kQuerySucceeded) {
+    cdm_->OnQueryOutputProtectionStatus(link_mask, output_protection_mask);
+    return;
+  }
+
+  // Invalid results, so return 0, 0 to indicate failure.
+  cdm_->OnQueryOutputProtectionStatus(0, 0);
+}
+
 CdmWrapper* CdmWrapper::Create(const char* key_system,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
   static_assert(cdm::ContentDecryptionModule::kVersion ==
-                    cdm::ContentDecryptionModule_6::kVersion,
+                    cdm::ContentDecryptionModule_7::kVersion,
                 "update the code below");
 
   // Ensure IsSupportedCdmInterfaceVersion() matches this implementation.
   // Always update this DCHECK when updating this function.
   // If this check fails, update this function and DCHECK or update
   // IsSupportedCdmInterfaceVersion().
-  PP_DCHECK(
-      !IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion +
-                                      1) &&
-      IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion) &&
-      !IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion -
-                                      1));
+  PP_DCHECK(!IsSupportedCdmInterfaceVersion(
+                cdm::ContentDecryptionModule_7::kVersion + 1) &&
+            IsSupportedCdmInterfaceVersion(
+                cdm::ContentDecryptionModule_7::kVersion) &&
+            IsSupportedCdmInterfaceVersion(
+                cdm::ContentDecryptionModule_6::kVersion) &&
+            !IsSupportedCdmInterfaceVersion(
+                cdm::ContentDecryptionModule_6::kVersion - 1));
 
   // Try to create the CDM using the latest CDM interface version.
   CdmWrapper* cdm_wrapper =
@@ -264,6 +299,10 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
   // versions of the CDM interface here.
+  if (!cdm_wrapper) {
+    cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_6>::Create(
+        key_system, key_system_size, get_cdm_host_func, user_data);
+  }
 
   return cdm_wrapper;
 }
@@ -273,7 +312,7 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 // does not have.
 // Also update supported_cdm_versions.h.
 static_assert(cdm::ContentDecryptionModule::kVersion ==
-                  cdm::ContentDecryptionModule_6::kVersion,
+                  cdm::ContentDecryptionModule_7::kVersion,
               "ensure cdm wrapper templates have old version support");
 
 }  // namespace media

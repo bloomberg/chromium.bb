@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M36 = 0.12
+  M41 = 0.13
 };
 
 /**
@@ -46,16 +46,20 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Var server_certificate);
 
   /**
-   * Creates a session. <code>init_data_type</code> contains the MIME type of
+   * Creates a session and subsequently generates a request for a license.
+   * <code>init_data_type</code> contains the MIME type of
    * <code>init_data</code>. <code>init_data</code> is a data buffer
    * containing data for use in generating the request.
    *
-   * Note: <code>CreateSession()</code> must create a web session ID and provide
-   * it to the browser via <code>SessionCreated()</code> on the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
+   * Note: <code>CreateSessionAndGenerateRequest()</code> must create a web
+   * session ID and provide it to the browser via <code>SessionCreated()</code>
+   * on the <code>PPB_ContentDecryptor_Private</code> interface.
    *
    * @param[in] promise_id A reference for the promise that gets resolved or
    * rejected depending upon the success or failure when creating the session.
+   *
+   * @param[in] session_type A <code>PP_SessionType</code> that indicates the
+   * type of session to be created.
    *
    * @param[in] init_data_type A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
@@ -63,16 +67,13 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
-   *
-   * @param[in] session_type A <code>PP_SessionType</code> that indicates the
-   * type of session to be created.
    */
-  void CreateSession(
+  void CreateSessionAndGenerateRequest(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
+      [in] PP_SessionType session_type,
       [in] PP_Var init_data_type,
-      [in] PP_Var init_data,
-      [in] PP_SessionType session_type);
+      [in] PP_Var init_data);
 
   /**
    * Loads a session whose web session ID is <code>web_session_id</code>.
@@ -84,6 +85,9 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] promise_id A reference for the promise that gets resolved or
    * rejected depending upon the success or failure of loading the session.
    *
+   * @param[in] session_type A <code>PP_SessionType</code> that indicates the
+   * type of session to be loaded.
+   *
    * @param[in] web_session_id A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
    * to load.
@@ -91,6 +95,7 @@ interface PPP_ContentDecryptor_Private {
   void LoadSession(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
+      [in] PP_SessionType session_type,
       [in] PP_Var web_session_id);
 
   /**
@@ -151,23 +156,6 @@ interface PPP_ContentDecryptor_Private {
    *
    */
   void RemoveSession(
-      [in] PP_Instance instance,
-      [in] uint32_t promise_id,
-      [in] PP_Var web_session_id);
-
-  /**
-   * Get the key IDs for keys in the session that the CDM knows are currently
-   * usable to decrypt media data.
-   *
-   * @param[in] promise_id A reference for the promise that gets resolved or
-   * rejected depending upon the success or failure of obtaining the key IDs.
-   *
-   * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
-   * to be queried.
-   *
-   */
-  void GetUsableKeyIds(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
       [in] PP_Var web_session_id);

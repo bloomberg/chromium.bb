@@ -257,11 +257,12 @@ media::SampleFormat PpDecryptedSampleFormatToMediaSampleFormat(
 
 PP_SessionType MediaSessionTypeToPpSessionType(
     MediaKeys::SessionType session_type) {
+  // TODO(jrummell): Add support for PP_SESSIONTYPE_RELEASE_LICENSE.
   switch (session_type) {
     case MediaKeys::TEMPORARY_SESSION:
       return PP_SESSIONTYPE_TEMPORARY;
     case MediaKeys::PERSISTENT_SESSION:
-      return PP_SESSIONTYPE_PERSISTENT;
+      return PP_SESSIONTYPE_PERSISTENT_LICENSE;
     default:
       NOTREACHED();
       return PP_SESSIONTYPE_TEMPORARY;
@@ -321,6 +322,7 @@ ContentDecryptorDelegate::~ContentDecryptorDelegate() {
   SatisfyAllPendingCallbacksOnError();
 }
 
+// TODO(jrummell): Remove |session_ready_cb| and |session_keys_change_cb|.
 void ContentDecryptorDelegate::Initialize(
     const std::string& key_system,
     const media::SessionMessageCB& session_message_cb,
@@ -379,21 +381,19 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
-  // TODO(jrummell): Update pepper to rename method.
-  plugin_decryption_interface_->CreateSession(
-      pp_instance_,
-      promise_id,
-      StringVar::StringToPPVar(init_data_type),
-      init_data_array,
-      MediaSessionTypeToPpSessionType(session_type));
+  plugin_decryption_interface_->CreateSessionAndGenerateRequest(
+      pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
+      StringVar::StringToPPVar(init_data_type), init_data_array);
 }
 
+// TODO(jrummell): Pass |session_type| to this method.
 void ContentDecryptorDelegate::LoadSession(
     const std::string& web_session_id,
     scoped_ptr<NewSessionCdmPromise> promise) {
   uint32_t promise_id = SavePromise(promise.Pass());
   plugin_decryption_interface_->LoadSession(
-      pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
+      pp_instance_, promise_id, PP_SESSIONTYPE_PERSISTENT_LICENSE,
+      StringVar::StringToPPVar(web_session_id));
 }
 
 void ContentDecryptorDelegate::UpdateSession(
@@ -714,14 +714,6 @@ void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
   session_promise->resolve(web_session_id_string->value());
 }
 
-void ContentDecryptorDelegate::OnPromiseResolvedWithKeyIds(
-    uint32 promise_id,
-    PP_Var key_ids_array) {
-  // Since there are no calls to GetUsableKeyIds(), this should never be called.
-  // FIXME(jrummell): remove once CDM interface updated.
-  NOTREACHED();
-}
-
 void ContentDecryptorDelegate::OnPromiseRejected(
     uint32 promise_id,
     PP_CdmExceptionCode exception_code,
@@ -741,9 +733,10 @@ void ContentDecryptorDelegate::OnPromiseRejected(
   }
 }
 
+// TODO(jrummell): Pass |message_type| to the callback.
 void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
-                                                PP_Var message,
-                                                PP_Var destination_url) {
+                                                PP_CdmMessageType message_type,
+                                                PP_Var message) {
   if (session_message_cb_.is_null())
     return;
 
@@ -757,23 +750,16 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
     message_vector.assign(data, data + message_array_buffer->ByteLength());
   }
 
-  StringVar* destination_url_string = StringVar::FromPPVar(destination_url);
-  DCHECK(destination_url_string);
-
-  GURL verified_gurl = GURL(destination_url_string->value());
-  if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
-    DLOG(WARNING) << "SessionMessage default_url is invalid : "
-                  << verified_gurl.possibly_invalid_spec();
-    verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
-  }
-
-  session_message_cb_.Run(
-      web_session_id_string->value(), message_vector, verified_gurl);
+  session_message_cb_.Run(web_session_id_string->value(), message_vector,
+                          GURL::EmptyGURL());
 }
 
+// TODO(jrummell): Decode |key_information| and pass it to the callback.
 void ContentDecryptorDelegate::OnSessionKeysChange(
     PP_Var web_session_id,
-    PP_Bool has_additional_usable_key) {
+    PP_Bool has_additional_usable_key,
+    uint32_t key_count,
+    const struct PP_KeyInformation key_information[]) {
   if (session_keys_change_cb_.is_null())
     return;
 
@@ -797,12 +783,6 @@ void ContentDecryptorDelegate::OnSessionExpirationChange(
 
   session_expiration_update_cb_.Run(web_session_id_string->value(),
                                     ppapi::PPTimeToTime(new_expiry_time));
-}
-
-void ContentDecryptorDelegate::OnSessionReady(PP_Var web_session_id) {
-  // Ready events no longer generated.
-  // TODO(jrummell): Remove event from Pepper.
-  NOTREACHED();
 }
 
 void ContentDecryptorDelegate::OnSessionClosed(PP_Var web_session_id) {

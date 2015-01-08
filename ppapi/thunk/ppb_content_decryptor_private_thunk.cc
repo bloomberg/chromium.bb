@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_content_decryptor_private.idl modified Wed Nov  5 14:29:15
-// 2014.
+// From private/ppb_content_decryptor_private.idl modified Wed Jan  7 16:48:10
+// 2015.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -35,17 +35,6 @@ void PromiseResolvedWithSession(PP_Instance instance,
                                                 web_session_id);
 }
 
-void PromiseResolvedWithKeyIds(PP_Instance instance,
-                               uint32_t promise_id,
-                               struct PP_Var key_ids_array) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::PromiseResolvedWithKeyIds()";
-  EnterInstance enter(instance);
-  if (enter.failed())
-    return;
-  enter.functions()->PromiseResolvedWithKeyIds(instance, promise_id,
-                                               key_ids_array);
-}
-
 void PromiseRejected(PP_Instance instance,
                      uint32_t promise_id,
                      PP_CdmExceptionCode exception_code,
@@ -61,25 +50,28 @@ void PromiseRejected(PP_Instance instance,
 
 void SessionMessage(PP_Instance instance,
                     struct PP_Var web_session_id,
-                    struct PP_Var message,
-                    struct PP_Var destination_url) {
+                    PP_CdmMessageType message_type,
+                    struct PP_Var message) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionMessage()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionMessage(instance, web_session_id, message,
-                                    destination_url);
+  enter.functions()->SessionMessage(instance, web_session_id, message_type,
+                                    message);
 }
 
 void SessionKeysChange(PP_Instance instance,
                        struct PP_Var web_session_id,
-                       PP_Bool has_additional_usable_key) {
+                       PP_Bool has_additional_usable_key,
+                       uint32_t key_count,
+                       const struct PP_KeyInformation key_information[]) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionKeysChange()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
   enter.functions()->SessionKeysChange(instance, web_session_id,
-                                       has_additional_usable_key);
+                                       has_additional_usable_key, key_count,
+                                       key_information);
 }
 
 void SessionExpirationChange(PP_Instance instance,
@@ -91,14 +83,6 @@ void SessionExpirationChange(PP_Instance instance,
     return;
   enter.functions()->SessionExpirationChange(instance, web_session_id,
                                              new_expiry_time);
-}
-
-void SessionReady(PP_Instance instance, struct PP_Var web_session_id) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::SessionReady()";
-  EnterInstance enter(instance);
-  if (enter.failed())
-    return;
-  enter.functions()->SessionReady(instance, web_session_id);
 }
 
 void SessionClosed(PP_Instance instance, struct PP_Var web_session_id) {
@@ -189,15 +173,13 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_12
-    g_ppb_contentdecryptor_private_thunk_0_12 = {&PromiseResolved,
+const PPB_ContentDecryptor_Private_0_13
+    g_ppb_contentdecryptor_private_thunk_0_13 = {&PromiseResolved,
                                                  &PromiseResolvedWithSession,
-                                                 &PromiseResolvedWithKeyIds,
                                                  &PromiseRejected,
                                                  &SessionMessage,
                                                  &SessionKeysChange,
                                                  &SessionExpirationChange,
-                                                 &SessionReady,
                                                  &SessionClosed,
                                                  &SessionError,
                                                  &DeliverBlock,
@@ -209,9 +191,9 @@ const PPB_ContentDecryptor_Private_0_12
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_12*
-GetPPB_ContentDecryptor_Private_0_12_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_12;
+PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_13*
+GetPPB_ContentDecryptor_Private_0_13_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_13;
 }
 
 }  // namespace thunk

@@ -53412,6 +53412,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2031327332" label="PPB_TextInput(Dev);0.1"/>
   <int value="2056532375" label="PPB_Audio;1.0"/>
   <int value="2062775054" label="PPB_IMEInputEvent(Dev);0.1"/>
+  <int value="2070539867" label="PPB_ContentDecryptor_Private;0.13"/>
   <int value="2070630224" label="PPB_AudioInput(Dev);0.3"/>
   <int value="2095945999" label="PPB_NetAddress_Private;0.1"/>
   <int value="2098849894" label="PPB_ContentDecryptor_Private;0.10"/>

@@ -102,19 +102,19 @@ class ContentDecryptorDelegate {
   // PPB_ContentDecryptor_Private dispatching methods.
   void OnPromiseResolved(uint32 promise_id);
   void OnPromiseResolvedWithSession(uint32 promise_id, PP_Var web_session_id);
-  void OnPromiseResolvedWithKeyIds(uint32 promise_id, PP_Var key_ids_array);
   void OnPromiseRejected(uint32 promise_id,
                          PP_CdmExceptionCode exception_code,
                          uint32 system_code,
                          PP_Var error_description);
   void OnSessionMessage(PP_Var web_session_id,
-                        PP_Var message,
-                        PP_Var destination_url);
+                        PP_CdmMessageType message_type,
+                        PP_Var message);
   void OnSessionKeysChange(PP_Var web_session_id,
-                           PP_Bool has_additional_usable_key);
+                           PP_Bool has_additional_usable_key,
+                           uint32_t key_count,
+                           const struct PP_KeyInformation key_information[]);
   void OnSessionExpirationChange(PP_Var web_session_id,
                                  PP_Time new_expiry_time);
-  void OnSessionReady(PP_Var web_session_id);
   void OnSessionClosed(PP_Var web_session_id);
   void OnSessionError(PP_Var web_session_id,
                       PP_CdmExceptionCode exception_code,

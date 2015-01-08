@@ -471,9 +471,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void PromiseResolvedWithSession(PP_Instance instance,
                                   uint32 promise_id,
                                   PP_Var web_session_id_var) override;
-  void PromiseResolvedWithKeyIds(PP_Instance instance,
-                                 uint32 promise_id,
-                                 PP_Var key_ids_var) override;
   void PromiseRejected(PP_Instance instance,
                        uint32 promise_id,
                        PP_CdmExceptionCode exception_code,
@@ -481,15 +478,17 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                        PP_Var error_description_var) override;
   void SessionMessage(PP_Instance instance,
                       PP_Var web_session_id_var,
-                      PP_Var message_var,
-                      PP_Var destination_url_var) override;
-  void SessionKeysChange(PP_Instance instance,
-                         PP_Var web_session_id_var,
-                         PP_Bool has_additional_usable_key) override;
+                      PP_CdmMessageType message_type,
+                      PP_Var message_var) override;
+  void SessionKeysChange(
+      PP_Instance instance,
+      PP_Var web_session_id_var,
+      PP_Bool has_additional_usable_key,
+      uint32_t key_count,
+      const struct PP_KeyInformation key_information[]) override;
   void SessionExpirationChange(PP_Instance instance,
                                PP_Var web_session_id_var,
                                PP_Time new_expiry_time) override;
-  void SessionReady(PP_Instance instance, PP_Var web_session_id_var) override;
   void SessionClosed(PP_Instance instance, PP_Var web_session_id_var) override;
   void SessionError(PP_Instance instance,
                     PP_Var web_session_id_var,

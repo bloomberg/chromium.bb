@@ -157,10 +157,13 @@ static cdm::Error ConvertException(media::MediaKeys::Exception exception_code) {
 static media::MediaKeys::SessionType ConvertSessionType(
     cdm::SessionType session_type) {
   switch (session_type) {
-    case cdm::kPersistent:
-      return media::MediaKeys::PERSISTENT_SESSION;
     case cdm::kTemporary:
       return media::MediaKeys::TEMPORARY_SESSION;
+    case cdm::kPersistentLicense:
+      return media::MediaKeys::PERSISTENT_SESSION;
+    case cdm::kPersistentKeyRelease:
+      // TODO(jrummell): Return matching type when MediaKeys changes.
+      return media::MediaKeys::PERSISTENT_SESSION;
   }
   NOTIMPLEMENTED();
   return media::MediaKeys::TEMPORARY_SESSION;

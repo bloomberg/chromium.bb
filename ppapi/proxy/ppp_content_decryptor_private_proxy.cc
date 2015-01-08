@@ -160,28 +160,27 @@ void SetServerCertificate(PP_Instance instance,
       server_certificate_vector));
 }
 
-void CreateSession(PP_Instance instance,
-                   uint32_t promise_id,
-                   PP_Var init_data_type,
-                   PP_Var init_data,
-                   PP_SessionType session_type) {
+void CreateSessionAndGenerateRequest(PP_Instance instance,
+                                     uint32_t promise_id,
+                                     PP_SessionType session_type,
+                                     PP_Var init_data_type,
+                                     PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
     return;
   }
 
-  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_CreateSession(
-      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-      instance,
-      promise_id,
-      SerializedVarSendInput(dispatcher, init_data_type),
-      SerializedVarSendInput(dispatcher, init_data),
-      session_type));
+  dispatcher->Send(
+      new PpapiMsg_PPPContentDecryptor_CreateSessionAndGenerateRequest(
+          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, promise_id,
+          session_type, SerializedVarSendInput(dispatcher, init_data_type),
+          SerializedVarSendInput(dispatcher, init_data)));
 }
 
 void LoadSession(PP_Instance instance,
                  uint32_t promise_id,
+                 PP_SessionType session_type,
                  PP_Var web_session_id) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
@@ -190,9 +189,7 @@ void LoadSession(PP_Instance instance,
   }
 
   dispatcher->Send(new PpapiMsg_PPPContentDecryptor_LoadSession(
-      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-      instance,
-      promise_id,
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, promise_id, session_type,
       SerializedVarSendInput(dispatcher, web_session_id)));
 }
 
@@ -254,29 +251,6 @@ void RemoveSession(PP_Instance instance,
   }
 
   dispatcher->Send(new PpapiMsg_PPPContentDecryptor_RemoveSession(
-      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-      instance,
-      promise_id,
-      session_id->value()));
-}
-
-void GetUsableKeyIds(PP_Instance instance,
-                     uint32_t promise_id,
-                     PP_Var web_session_id) {
-  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-  if (!dispatcher) {
-    NOTREACHED();
-    return;
-  }
-
-  StringVar* session_id = StringVar::FromPPVar(web_session_id);
-  if (!session_id ||
-      session_id->value().length() > media::limits::kMaxWebSessionIdLength) {
-    NOTREACHED();
-    return;
-  }
-
-  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_GetUsableKeyIds(
       API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
       instance,
       promise_id,
@@ -473,12 +447,11 @@ void DecryptAndDecode(PP_Instance instance,
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
     &Initialize,
     &SetServerCertificate,
-    &CreateSession,
+    &CreateSessionAndGenerateRequest,
     &LoadSession,
     &UpdateSession,
     &CloseSession,
     &RemoveSession,
-    &GetUsableKeyIds,
     &Decrypt,
     &InitializeAudioDecoder,
     &InitializeVideoDecoder,
@@ -520,8 +493,9 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgInitialize)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_SetServerCertificate,
                         OnMsgSetServerCertificate)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_CreateSession,
-                        OnMsgCreateSession)
+    IPC_MESSAGE_HANDLER(
+        PpapiMsg_PPPContentDecryptor_CreateSessionAndGenerateRequest,
+        OnMsgCreateSessionAndGenerateRequest)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_LoadSession,
                         OnMsgLoadSession)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_UpdateSession,
@@ -530,8 +504,6 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgCloseSession)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_RemoveSession,
                         OnMsgRemoveSession)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_GetUsableKeyIds,
-                        OnMsgGetUsableKeyIds)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_Decrypt,
                         OnMsgDecrypt)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder,
@@ -585,32 +557,29 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgSetServerCertificate(
   }
 }
 
-void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSession(
+void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSessionAndGenerateRequest(
     PP_Instance instance,
     uint32_t promise_id,
+    PP_SessionType session_type,
     SerializedVarReceiveInput init_data_type,
-    SerializedVarReceiveInput init_data,
-    PP_SessionType session_type) {
+    SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(
-        ppp_decryptor_impl_->CreateSession,
-        instance,
-        promise_id,
+        ppp_decryptor_impl_->CreateSessionAndGenerateRequest, instance,
+        promise_id, session_type,
         ExtractReceivedVarAndAddRef(dispatcher(), &init_data_type),
-        ExtractReceivedVarAndAddRef(dispatcher(), &init_data),
-        session_type);
+        ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
 }
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgLoadSession(
     PP_Instance instance,
     uint32_t promise_id,
+    PP_SessionType session_type,
     SerializedVarReceiveInput web_session_id) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(
-        ppp_decryptor_impl_->LoadSession,
-        instance,
-        promise_id,
+        ppp_decryptor_impl_->LoadSession, instance, promise_id, session_type,
         ExtractReceivedVarAndAddRef(dispatcher(), &web_session_id));
   }
 }
@@ -652,20 +621,6 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgRemoveSession(
     ScopedPPVar web_session_id_var(ScopedPPVar::PassRef(),
                                    StringVar::StringToPPVar(web_session_id));
     CallWhileUnlocked(ppp_decryptor_impl_->RemoveSession,
-                      instance,
-                      promise_id,
-                      web_session_id_var.get());
-  }
-}
-
-void PPP_ContentDecryptor_Private_Proxy::OnMsgGetUsableKeyIds(
-    PP_Instance instance,
-    uint32_t promise_id,
-    const std::string& web_session_id) {
-  if (ppp_decryptor_impl_) {
-    ScopedPPVar web_session_id_var(ScopedPPVar::PassRef(),
-                                   StringVar::StringToPPVar(web_session_id));
-    CallWhileUnlocked(ppp_decryptor_impl_->GetUsableKeyIds,
                       instance,
                       promise_id,
                       web_session_id_var.get());

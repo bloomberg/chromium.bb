@@ -222,12 +222,14 @@ cdm::SessionType PpSessionTypeToCdmSessionType(PP_SessionType session_type) {
   switch (session_type) {
     case PP_SESSIONTYPE_TEMPORARY:
       return cdm::kTemporary;
-    case PP_SESSIONTYPE_PERSISTENT:
-      return cdm::kPersistent;
-    default:
-      PP_NOTREACHED();
-      return cdm::kTemporary;
+    case PP_SESSIONTYPE_PERSISTENT_LICENSE:
+      return cdm::kPersistentLicense;
+    case PP_SESSIONTYPE_PERSISTENT_RELEASE:
+      return cdm::kPersistentKeyRelease;
   }
+
+  PP_NOTREACHED();
+  return cdm::kTemporary;
 }
 
 PP_CdmExceptionCode CdmExceptionTypeToPpCdmExceptionType(cdm::Error error) {
@@ -246,10 +248,40 @@ PP_CdmExceptionCode CdmExceptionTypeToPpCdmExceptionType(cdm::Error error) {
       return PP_CDMEXCEPTIONCODE_CLIENTERROR;
     case cdm::kOutputError:
       return PP_CDMEXCEPTIONCODE_OUTPUTERROR;
-    default:
-      PP_NOTREACHED();
-      return PP_CDMEXCEPTIONCODE_UNKNOWNERROR;
   }
+
+  PP_NOTREACHED();
+  return PP_CDMEXCEPTIONCODE_UNKNOWNERROR;
+}
+
+PP_CdmMessageType CdmMessageTypeToPpMessageType(cdm::MessageType message) {
+  switch (message) {
+    case cdm::kLicenseRequest:
+      return PP_CDMMESSAGETYPE_LICENSE_REQUEST;
+    case cdm::kLicenseRenewal:
+      return PP_CDMMESSAGETYPE_LICENSE_RENEWAL;
+    case cdm::kLicenseRelease:
+      return PP_CDMMESSAGETYPE_LICENSE_RELEASE;
+  }
+
+  PP_NOTREACHED();
+  return PP_CDMMESSAGETYPE_LICENSE_REQUEST;
+}
+
+PP_CdmKeyStatus CdmKeyStatusToPpKeyStatus(cdm::KeyStatus status) {
+  switch (status) {
+    case cdm::kUsable:
+      return PP_CDMKEYSTATUS_USABLE;
+    case cdm::kInternalError:
+      return PP_CDMKEYSTATUS_INVALID;
+    case cdm::kExpired:
+      return PP_CDMKEYSTATUS_EXPIRED;
+    case cdm::kOutputNotAllowed:
+      return PP_CDMKEYSTATUS_OUTPUTNOTALLOWED;
+  }
+
+  PP_NOTREACHED();
+  return PP_CDMKEYSTATUS_INVALID;
 }
 
 }  // namespace
@@ -361,10 +393,11 @@ void CdmAdapter::SetServerCertificate(uint32_t promise_id,
       promise_id, server_certificate_ptr, server_certificate_size);
 }
 
-void CdmAdapter::CreateSession(uint32_t promise_id,
-                               const std::string& init_data_type,
-                               pp::VarArrayBuffer init_data,
-                               PP_SessionType session_type) {
+void CdmAdapter::CreateSessionAndGenerateRequest(
+    uint32_t promise_id,
+    PP_SessionType session_type,
+    const std::string& init_data_type,
+    pp::VarArrayBuffer init_data) {
   // Initialize() doesn't report an error, so CreateSession() can be called
   // even if Initialize() failed.
   // TODO(jrummell): Remove this code when prefixed EME gets removed.
@@ -378,16 +411,15 @@ void CdmAdapter::CreateSession(uint32_t promise_id,
     return;
   }
 
-  cdm_->CreateSession(promise_id,
-                      init_data_type.data(),
-                      init_data_type.size(),
-                      static_cast<const uint8_t*>(init_data.Map()),
-                      init_data.ByteLength(),
-                      PpSessionTypeToCdmSessionType(session_type));
+  cdm_->CreateSessionAndGenerateRequest(
+      promise_id, PpSessionTypeToCdmSessionType(session_type),
+      init_data_type.data(), init_data_type.size(),
+      static_cast<const uint8_t*>(init_data.Map()), init_data.ByteLength());
 }
 
 void CdmAdapter::LoadSession(uint32_t promise_id,
-                             const std::string& web_session_id) {
+                             PP_SessionType session_type,
+                             const std::string& session_id) {
   // Initialize() doesn't report an error, so LoadSession() can be called
   // even if Initialize() failed.
   // TODO(jrummell): Remove this code when prefixed EME gets removed.
@@ -401,42 +433,32 @@ void CdmAdapter::LoadSession(uint32_t promise_id,
     return;
   }
 
-  cdm_->LoadSession(promise_id, web_session_id.data(), web_session_id.size());
+  cdm_->LoadSession(promise_id, PpSessionTypeToCdmSessionType(session_type),
+                    session_id.data(), session_id.size());
 }
 
 void CdmAdapter::UpdateSession(uint32_t promise_id,
-                               const std::string& web_session_id,
+                               const std::string& session_id,
                                pp::VarArrayBuffer response) {
   const uint8_t* response_ptr = static_cast<const uint8_t*>(response.Map());
   const uint32_t response_size = response.ByteLength();
 
-  PP_DCHECK(!web_session_id.empty());
+  PP_DCHECK(!session_id.empty());
   PP_DCHECK(response_ptr);
   PP_DCHECK(response_size > 0);
 
-  cdm_->UpdateSession(promise_id,
-                      web_session_id.data(),
-                      web_session_id.length(),
-                      response_ptr,
-                      response_size);
+  cdm_->UpdateSession(promise_id, session_id.data(), session_id.length(),
+                      response_ptr, response_size);
 }
 
 void CdmAdapter::CloseSession(uint32_t promise_id,
-                              const std::string& web_session_id) {
-  cdm_->CloseSession(
-      promise_id, web_session_id.data(), web_session_id.length());
+                              const std::string& session_id) {
+  cdm_->CloseSession(promise_id, session_id.data(), session_id.length());
 }
 
 void CdmAdapter::RemoveSession(uint32_t promise_id,
-                               const std::string& web_session_id) {
-  cdm_->RemoveSession(
-      promise_id, web_session_id.data(), web_session_id.length());
-}
-
-void CdmAdapter::GetUsableKeyIds(uint32_t promise_id,
-                                 const std::string& web_session_id) {
-  cdm_->GetUsableKeyIds(
-      promise_id, web_session_id.data(), web_session_id.length());
+                               const std::string& session_id) {
+  cdm_->RemoveSession(promise_id, session_id.data(), session_id.length());
 }
 
 // Note: In the following decryption/decoding related functions, errors are NOT
@@ -638,12 +660,11 @@ cdm::Time CdmAdapter::GetCurrentWallTime() {
 }
 
 void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
-                                            const char* web_session_id,
-                                            uint32_t web_session_id_length) {
+                                            const char* session_id,
+                                            uint32_t session_id_size) {
   PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendPromiseResolvedWithSessionInternal,
-      promise_id,
-      std::string(web_session_id, web_session_id_length)));
+      &CdmAdapter::SendPromiseResolvedWithSessionInternal, promise_id,
+      std::string(session_id, session_id_size)));
 }
 
 void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
@@ -651,26 +672,19 @@ void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
       &CdmAdapter::SendPromiseResolvedInternal, promise_id));
 }
 
+// cdm::Host_6 only
 void CdmAdapter::OnResolveKeyIdsPromise(uint32_t promise_id,
                                         const cdm::BinaryData* usable_key_ids,
-                                        uint32_t usable_key_ids_length) {
-  std::vector<std::vector<uint8> > key_ids;
-  for (uint32_t i = 0; i < usable_key_ids_length; ++i) {
-    key_ids.push_back(
-        std::vector<uint8>(usable_key_ids[i].data,
-                           usable_key_ids[i].data + usable_key_ids[i].length));
-  }
-  PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendPromiseResolvedWithUsableKeyIdsInternal,
-      promise_id,
-      key_ids));
+                                        uint32_t usable_key_ids_size) {
+  // This should never be called as GetUsableKeyIds() has been removed.
+  PP_NOTREACHED();
 }
 
 void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                  cdm::Error error,
                                  uint32_t system_code,
                                  const char* error_message,
-                                 uint32_t error_message_length) {
+                                 uint32_t error_message_size) {
   // UMA to investigate http://crbug.com/410630
   // TODO(xhwang): Remove after bug is fixed.
   if (system_code == 0x27) {
@@ -682,10 +696,8 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                         kSizeKBBuckets);
   }
 
-  RejectPromise(promise_id,
-                error,
-                system_code,
-                std::string(error_message, error_message_length));
+  RejectPromise(promise_id, error, system_code,
+                std::string(error_message, error_message_size));
 }
 
 void CdmAdapter::RejectPromise(uint32_t promise_id,
@@ -698,56 +710,106 @@ void CdmAdapter::RejectPromise(uint32_t promise_id,
       SessionError(error, system_code, error_message)));
 }
 
-void CdmAdapter::OnSessionMessage(const char* web_session_id,
-                                  uint32_t web_session_id_length,
+// cdm::Host_7 only.
+void CdmAdapter::OnSessionMessage(const char* session_id,
+                                  uint32_t session_id_size,
+                                  cdm::MessageType message_type,
                                   const char* message,
-                                  uint32_t message_length,
-                                  const char* destination_url,
-                                  uint32_t destination_url_length) {
+                                  uint32_t message_size) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionMessageInternal,
-      std::string(web_session_id, web_session_id_length),
-      std::vector<uint8>(message, message + message_length),
-      std::string(destination_url, destination_url_length)));
+      std::string(session_id, session_id_size), message_type,
+      std::vector<uint8_t>(message, message + message_size)));
 }
 
-void CdmAdapter::OnSessionUsableKeysChange(const char* web_session_id,
-                                           uint32_t web_session_id_length,
+// cdm::Host_6 only.
+void CdmAdapter::OnSessionMessage(const char* session_id,
+                                  uint32_t session_id_size,
+                                  const char* message,
+                                  uint32_t message_size,
+                                  const char* destination_url,
+                                  uint32_t destination_url_size) {
+  // |destination_url| is no longer passed to EME applications, so it is
+  // dropped. All messages will appear as license renewals if |destination_url|
+  // is provided, license request if not.
+  cdm::MessageType message_type = (destination_url_size > 0)
+                                      ? cdm::MessageType::kLicenseRenewal
+                                      : cdm::MessageType::kLicenseRequest;
+  PostOnMain(callback_factory_.NewCallback(
+      &CdmAdapter::SendSessionMessageInternal,
+      std::string(session_id, session_id_size), message_type,
+      std::vector<uint8_t>(message, message + message_size)));
+}
+
+// cdm::Host_7 only.
+void CdmAdapter::OnSessionKeysChange(const char* session_id,
+                                     uint32_t session_id_size,
+                                     bool has_additional_usable_key,
+                                     const cdm::KeyInformation* keys_info,
+                                     uint32_t keys_info_count) {
+  std::vector<PP_KeyInformation> key_information;
+  for (uint32_t i = 0; i < keys_info_count; ++i) {
+    const auto& key_info = keys_info[i];
+    PP_KeyInformation next_key = {};
+
+    if (key_info.key_id_size > sizeof(next_key.key_id)) {
+      PP_NOTREACHED();
+      continue;
+    }
+
+    // Copy key_id into |next_key|.
+    memcpy(next_key.key_id, key_info.key_id, key_info.key_id_size);
+
+    // Set remaining fields on |next_key|.
+    next_key.key_id_size = key_info.key_id_size;
+    next_key.key_status = CdmKeyStatusToPpKeyStatus(key_info.status);
+    next_key.system_code = key_info.system_code;
+    key_information.push_back(next_key);
+  }
+
+  PostOnMain(callback_factory_.NewCallback(
+      &CdmAdapter::SendSessionKeysChangeInternal,
+      std::string(session_id, session_id_size), has_additional_usable_key,
+      key_information));
+}
+
+// cdm::Host_6 only.
+void CdmAdapter::OnSessionUsableKeysChange(const char* session_id,
+                                           uint32_t session_id_size,
                                            bool has_additional_usable_key) {
   PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendSessionUsableKeysChangeInternal,
-      std::string(web_session_id, web_session_id_length),
-      has_additional_usable_key));
+      &CdmAdapter::SendSessionKeysChangeInternal,
+      std::string(session_id, session_id_size), has_additional_usable_key,
+      std::vector<PP_KeyInformation>()));
 }
 
-void CdmAdapter::OnExpirationChange(const char* web_session_id,
-                                    uint32_t web_session_id_length,
+void CdmAdapter::OnExpirationChange(const char* session_id,
+                                    uint32_t session_id_size,
                                     cdm::Time new_expiry_time) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendExpirationChangeInternal,
-      std::string(web_session_id, web_session_id_length),
-      new_expiry_time));
+      std::string(session_id, session_id_size), new_expiry_time));
 }
 
-void CdmAdapter::OnSessionClosed(const char* web_session_id,
-                                 uint32_t web_session_id_length) {
-  PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendSessionClosedInternal,
-      std::string(web_session_id, web_session_id_length)));
+void CdmAdapter::OnSessionClosed(const char* session_id,
+                                 uint32_t session_id_size) {
+  PostOnMain(
+      callback_factory_.NewCallback(&CdmAdapter::SendSessionClosedInternal,
+                                    std::string(session_id, session_id_size)));
 }
 
-void CdmAdapter::OnSessionError(const char* web_session_id,
-                                uint32_t web_session_id_length,
+// cdm::Host_6 only.
+void CdmAdapter::OnSessionError(const char* session_id,
+                                uint32_t session_id_size,
                                 cdm::Error error,
                                 uint32_t system_code,
                                 const char* error_message,
-                                uint32_t error_message_length) {
+                                uint32_t error_message_size) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionErrorInternal,
-      std::string(web_session_id, web_session_id_length),
-      SessionError(error,
-                   system_code,
-                   std::string(error_message, error_message_length))));
+      std::string(session_id, session_id_size),
+      SessionError(error, system_code,
+                   std::string(error_message, error_message_size))));
 }
 
 // Helpers to pass the event to Pepper.
@@ -761,18 +823,10 @@ void CdmAdapter::SendPromiseResolvedInternal(int32_t result,
 void CdmAdapter::SendPromiseResolvedWithSessionInternal(
     int32_t result,
     uint32_t promise_id,
-    const std::string& web_session_id) {
+    const std::string& session_id) {
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::PromiseResolvedWithSession(promise_id,
-                                                           web_session_id);
-}
-
-void CdmAdapter::SendPromiseResolvedWithUsableKeyIdsInternal(
-    int32_t result,
-    uint32_t promise_id,
-    std::vector<std::vector<uint8> > key_ids) {
-  PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::PromiseResolvedWithKeyIds(promise_id, key_ids);
+                                                           session_id);
 }
 
 void CdmAdapter::SendPromiseRejectedInternal(int32_t result,
@@ -788,9 +842,9 @@ void CdmAdapter::SendPromiseRejectedInternal(int32_t result,
 
 void CdmAdapter::SendSessionMessageInternal(
     int32_t result,
-    const std::string& web_session_id,
-    const std::vector<uint8>& message,
-    const std::string& destination_url) {
+    const std::string& session_id,
+    cdm::MessageType message_type,
+    const std::vector<uint8_t>& message) {
   PP_DCHECK(result == PP_OK);
 
   pp::VarArrayBuffer message_array_buffer(message.size());
@@ -799,46 +853,40 @@ void CdmAdapter::SendSessionMessageInternal(
   }
 
   pp::ContentDecryptor_Private::SessionMessage(
-      web_session_id, message_array_buffer, destination_url);
-}
-
-void CdmAdapter::SendSessionReadyInternal(int32_t result,
-                                          const std::string& web_session_id) {
-  PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionReady(web_session_id);
+      session_id, CdmMessageTypeToPpMessageType(message_type),
+      message_array_buffer);
 }
 
 void CdmAdapter::SendSessionClosedInternal(int32_t result,
-                                           const std::string& web_session_id) {
+                                           const std::string& session_id) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionClosed(web_session_id);
+  pp::ContentDecryptor_Private::SessionClosed(session_id);
 }
 
 void CdmAdapter::SendSessionErrorInternal(int32_t result,
-                                          const std::string& web_session_id,
+                                          const std::string& session_id,
                                           const SessionError& error) {
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::SessionError(
-      web_session_id,
-      CdmExceptionTypeToPpCdmExceptionType(error.error),
-      error.system_code,
-      error.error_description);
+      session_id, CdmExceptionTypeToPpCdmExceptionType(error.error),
+      error.system_code, error.error_description);
 }
 
-void CdmAdapter::SendSessionUsableKeysChangeInternal(
+void CdmAdapter::SendSessionKeysChangeInternal(
     int32_t result,
-    const std::string& web_session_id,
-    bool has_additional_usable_key) {
+    const std::string& session_id,
+    bool has_additional_usable_key,
+    const std::vector<PP_KeyInformation>& key_info) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionKeysChange(web_session_id,
-                                                  has_additional_usable_key);
+  pp::ContentDecryptor_Private::SessionKeysChange(
+      session_id, has_additional_usable_key, key_info);
 }
 
 void CdmAdapter::SendExpirationChangeInternal(int32_t result,
-                                              const std::string& web_session_id,
+                                              const std::string& session_id,
                                               cdm::Time new_expiry_time) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionExpirationChange(web_session_id,
+  pp::ContentDecryptor_Private::SessionExpirationChange(session_id,
                                                         new_expiry_time);
 }
 
@@ -1033,15 +1081,16 @@ void CdmAdapter::LogToConsole(const pp::Var& value) {
 }
 #endif  // !defined(NDEBUG)
 
-void CdmAdapter::SendPlatformChallenge(
-    const char* service_id, uint32_t service_id_length,
-    const char* challenge, uint32_t challenge_length) {
+void CdmAdapter::SendPlatformChallenge(const char* service_id,
+                                       uint32_t service_id_size,
+                                       const char* challenge,
+                                       uint32_t challenge_size) {
 #if defined(OS_CHROMEOS)
-  pp::VarArrayBuffer challenge_var(challenge_length);
+  pp::VarArrayBuffer challenge_var(challenge_size);
   uint8_t* var_data = static_cast<uint8_t*>(challenge_var.Map());
-  memcpy(var_data, challenge, challenge_length);
+  memcpy(var_data, challenge, challenge_size);
 
-  std::string service_id_str(service_id, service_id_length);
+  std::string service_id_str(service_id, service_id_size);
 
   linked_ptr<PepperPlatformChallengeResponse> response(
       new PepperPlatformChallengeResponse());
@@ -1098,9 +1147,9 @@ void CdmAdapter::QueryOutputProtectionStatus() {
 
   // Fall through on error and issue an empty OnQueryOutputProtectionStatus().
   PP_DCHECK(result != PP_OK);
+  CDM_DLOG() << __FUNCTION__ << " failed, result = " << result;
 #endif
-
-  cdm_->OnQueryOutputProtectionStatus(0, 0);
+  cdm_->OnQueryOutputProtectionStatus(cdm::kQueryFailed, 0, 0);
 }
 
 void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
@@ -1222,13 +1271,18 @@ void CdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
   PP_DCHECK(query_output_protection_in_progress_);
   query_output_protection_in_progress_ = false;
 
-  // Return a protection status of none on error.
-  if (result != PP_OK)
+  // Return a query status of failed on error.
+  cdm::QueryResult query_result;
+  if (result != PP_OK) {
+    CDM_DLOG() << __FUNCTION__ << " failed, result = " << result;
     output_link_mask_ = output_protection_mask_ = 0;
-  else
+    query_result = cdm::kQueryFailed;
+  } else {
+    query_result = cdm::kQuerySucceeded;
     ReportOutputProtectionQueryResult();
+  }
 
-  cdm_->OnQueryOutputProtectionStatus(output_link_mask_,
+  cdm_->OnQueryOutputProtectionStatus(query_result, output_link_mask_,
                                       output_protection_mask_);
 }
 #endif
@@ -1246,7 +1300,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return NULL;
 
   static_assert(
-      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_6::kVersion,
+      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_7::kVersion,
       "update the code below");
 
   // Ensure IsSupportedCdmHostVersion matches implementation of this function.
@@ -1256,10 +1310,11 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 
   PP_DCHECK(
       // Future version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_6::kVersion + 1) &&
+      !IsSupportedCdmHostVersion(cdm::Host_7::kVersion + 1) &&
       // Current version is supported.
-      IsSupportedCdmHostVersion(cdm::Host_6::kVersion) &&
+      IsSupportedCdmHostVersion(cdm::Host_7::kVersion) &&
       // Include all previous supported versions (if any) here.
+      IsSupportedCdmHostVersion(cdm::Host_6::kVersion) &&
       // One older than the oldest supported version is not supported.
       !IsSupportedCdmHostVersion(cdm::Host_6::kVersion - 1));
   PP_DCHECK(IsSupportedCdmHostVersion(host_interface_version));
@@ -1267,6 +1322,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   CDM_DLOG() << "Create CDM Host with version " << host_interface_version;
   switch (host_interface_version) {
+    case cdm::Host_7::kVersion:
+      return static_cast<cdm::Host_7*>(cdm_adapter);
     case cdm::Host_6::kVersion:
       return static_cast<cdm::Host_6*>(cdm_adapter);
     default:

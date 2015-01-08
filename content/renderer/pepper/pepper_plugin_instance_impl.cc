@@ -2411,13 +2411,6 @@ void PepperPluginInstanceImpl::PromiseResolvedWithSession(
                                                             web_session_id_var);
 }
 
-void PepperPluginInstanceImpl::PromiseResolvedWithKeyIds(PP_Instance instance,
-                                                         uint32 promise_id,
-                                                         PP_Var key_ids_var) {
-  content_decryptor_delegate_->OnPromiseResolvedWithKeyIds(promise_id,
-                                                           key_ids_var);
-}
-
 void PepperPluginInstanceImpl::PromiseRejected(
     PP_Instance instance,
     uint32 promise_id,
@@ -2430,18 +2423,21 @@ void PepperPluginInstanceImpl::PromiseRejected(
 
 void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
                                               PP_Var web_session_id_var,
-                                              PP_Var message_var,
-                                              PP_Var destination_url_var) {
-  content_decryptor_delegate_->OnSessionMessage(
-      web_session_id_var, message_var, destination_url_var);
+                                              PP_CdmMessageType message_type,
+                                              PP_Var message_var) {
+  content_decryptor_delegate_->OnSessionMessage(web_session_id_var,
+                                                message_type, message_var);
 }
 
 void PepperPluginInstanceImpl::SessionKeysChange(
     PP_Instance instance,
     PP_Var web_session_id_var,
-    PP_Bool has_additional_usable_key) {
+    PP_Bool has_additional_usable_key,
+    uint32_t key_count,
+    const struct PP_KeyInformation key_information[]) {
   content_decryptor_delegate_->OnSessionKeysChange(web_session_id_var,
-                                                   has_additional_usable_key);
+                                                   has_additional_usable_key,
+                                                   key_count, key_information);
 }
 
 void PepperPluginInstanceImpl::SessionExpirationChange(
@@ -2450,11 +2446,6 @@ void PepperPluginInstanceImpl::SessionExpirationChange(
     PP_Time new_expiry_time) {
   content_decryptor_delegate_->OnSessionExpirationChange(web_session_id_var,
                                                          new_expiry_time);
-}
-
-void PepperPluginInstanceImpl::SessionReady(PP_Instance instance,
-                                            PP_Var web_session_id_var) {
-  content_decryptor_delegate_->OnSessionReady(web_session_id_var);
 }
 
 void PepperPluginInstanceImpl::SessionClosed(PP_Instance instance,

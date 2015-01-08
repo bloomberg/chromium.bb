@@ -36,13 +36,15 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgSetServerCertificate(PP_Instance instance,
                                  uint32_t promise_id,
                                  std::vector<uint8_t> server_certificate);
-  void OnMsgCreateSession(PP_Instance instance,
-                          uint32_t promise_id,
-                          SerializedVarReceiveInput init_data_type,
-                          SerializedVarReceiveInput init_data,
-                          PP_SessionType session_type);
+  void OnMsgCreateSessionAndGenerateRequest(
+      PP_Instance instance,
+      uint32_t promise_id,
+      PP_SessionType session_type,
+      SerializedVarReceiveInput init_data_type,
+      SerializedVarReceiveInput init_data);
   void OnMsgLoadSession(PP_Instance instance,
                         uint32_t promise_id,
+                        PP_SessionType session_type,
                         SerializedVarReceiveInput web_session_id);
   void OnMsgUpdateSession(PP_Instance instance,
                           uint32_t promise_id,
@@ -54,9 +56,6 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgRemoveSession(PP_Instance instance,
                           uint32_t promise_id,
                           const std::string& web_session_id);
-  void OnMsgGetUsableKeyIds(PP_Instance instance,
-                            uint32_t promise_id,
-                            const std::string& web_session_id);
   void OnMsgDecrypt(PP_Instance instance,
                     const PPPDecryptor_Buffer& encrypted_buffer,
                     const std::string& serialized_encrypted_block_info);

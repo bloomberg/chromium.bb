@@ -406,7 +406,8 @@ enum PP_DecryptorStreamType {
 [assert_size(4)]
 enum PP_SessionType {
   PP_SESSIONTYPE_TEMPORARY = 0,
-  PP_SESSIONTYPE_PERSISTENT = 1
+  PP_SESSIONTYPE_PERSISTENT_LICENSE = 1,
+  PP_SESSIONTYPE_PERSISTENT_RELEASE = 2
 };
 
 /**
@@ -421,4 +422,48 @@ enum PP_CdmExceptionCode {
   PP_CDMEXCEPTIONCODE_UNKNOWNERROR = 5,
   PP_CDMEXCEPTIONCODE_CLIENTERROR = 6,
   PP_CDMEXCEPTIONCODE_OUTPUTERROR = 7
+};
+
+/**
+ * <code>PP_CdmMessageType</code> contains message type constants.
+ */
+[assert_size(4)]
+enum PP_CdmMessageType {
+  PP_CDMMESSAGETYPE_LICENSE_REQUEST = 0,
+  PP_CDMMESSAGETYPE_LICENSE_RENEWAL = 1,
+  PP_CDMMESSAGETYPE_LICENSE_RELEASE = 2
+};
+
+/**
+ * <code>PP_CdmKeyStatus</code> contains key status constants.
+ */
+[assert_size(4)]
+enum PP_CdmKeyStatus {
+  PP_CDMKEYSTATUS_USABLE = 0,
+  PP_CDMKEYSTATUS_INVALID = 1,
+  PP_CDMKEYSTATUS_EXPIRED = 2,
+  PP_CDMKEYSTATUS_OUTPUTNOTALLOWED = 3
+};
+
+/**
+ * The <code>PP_KeyInformation</code> struct contains information about a
+ * key used for decryption.
+ */
+[assert_size(524)]
+struct PP_KeyInformation {
+  /**
+   * Key ID.
+   */
+  uint8_t[512] key_id;
+  uint32_t key_id_size;
+
+  /**
+   * Status of this key.
+   */
+  PP_CdmKeyStatus key_status;
+
+  /**
+   * Optional error code for keys that are not usable.
+   */
+  uint32_t system_code;
 };
