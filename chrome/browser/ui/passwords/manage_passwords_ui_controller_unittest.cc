@@ -368,3 +368,14 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   ASSERT_TRUE(credential_info());
   EXPECT_EQ(password_manager::CREDENTIAL_TYPE_EMPTY, credential_info()->type);
 }
+
+TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
+  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
+  autofill::PasswordFormMap map;
+  autofill::PasswordForm psl_matched_test_form = test_form();
+  psl_matched_test_form.original_signon_realm = "http://pslmatched.example.com";
+  map[kTestUsername] = &psl_matched_test_form;
+  controller()->OnPasswordAutofilled(map);
+
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
+}

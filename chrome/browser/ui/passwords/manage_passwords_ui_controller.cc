@@ -146,7 +146,11 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map) {
   DeepCopyMap(password_form_map, &password_form_map_, &new_password_forms_);
   origin_ = password_form_map_.begin()->second->origin;
-  state_ = password_manager::ui::MANAGE_STATE;
+  // Don't show the UI for PSL matched passwords. They are not stored for this
+  // page and cannot be deleted.
+  state_ = password_form_map_.begin()->second->IsPublicSuffixMatch()
+               ? password_manager::ui::INACTIVE_STATE
+               : password_manager::ui::MANAGE_STATE;
   UpdateBubbleAndIconVisibility();
 }
 
