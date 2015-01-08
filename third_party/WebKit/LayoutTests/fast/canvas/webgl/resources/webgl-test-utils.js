@@ -1300,7 +1300,7 @@ var cancelAnimFrame = (function() {
          window.clearTimeout;
 })();
 
-var waitFrames = function(frames, callback) {
+var waitForComposite = function(frames, callback) {
   var countDown = function() {
     if (frames == 0) {
       callback();
@@ -1363,7 +1363,7 @@ return {
   readFile: readFile,
   readFileList: readFileList,
   requestAnimFrame: requestAnimFrame,
-  waitFrames: waitFrames,
+  waitForComposite: waitForComposite,
 
   none: false
 };

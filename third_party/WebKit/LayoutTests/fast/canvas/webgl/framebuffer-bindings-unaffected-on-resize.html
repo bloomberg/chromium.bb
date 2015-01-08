@@ -69,7 +69,7 @@ canvas.width = 8;
 test();
 debug("test after resizing canvas and waiting for compositing");
 canvas.width = 16;
-wtu.waitFrames(5, function() {
+wtu.waitForComposite(5, function() {
   test();
   finishTest();
   glErrorShouldBe(gl, gl.NO_ERROR, "Should be no errors.");
