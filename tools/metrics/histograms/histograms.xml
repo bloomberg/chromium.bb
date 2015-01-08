@@ -48679,6 +48679,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14" label="OpenAttemptPriorCorruption">
     The corrupted open database was deleted.
   </int>
+  <int value="15" label="OpenCleanupBlobJournalFailed">
+    Open failed because the blob journal could not be cleaned up.
+  </int>
 </enum>
 
 <enum name="IMECommitType" type="int">
