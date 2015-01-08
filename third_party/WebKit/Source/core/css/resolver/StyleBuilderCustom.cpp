@@ -121,8 +121,15 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
         return;
     }
 
-    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSPropertyMetadata::isInheritedProperty(id))
+    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSPropertyMetadata::isInheritedProperty(id)) {
         state.parentStyle()->setHasExplicitlyInheritedProperties();
+    } else if (value->isUnsetValue()) {
+        ASSERT(!isInherit && !isInitial);
+        if (CSSPropertyMetadata::isInheritedProperty(id))
+            isInherit = true;
+        else
+            isInitial = true;
+    }
 
     StyleBuilder::applyProperty(id, state, value, isInitial, isInherit);
 }

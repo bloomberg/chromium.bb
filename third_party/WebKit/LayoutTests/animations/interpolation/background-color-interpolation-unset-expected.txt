@@ -1,0 +1,16 @@
+CSS Animations:
+PASS: background-color from [unset] to [transparent] was [transparent] at -0.3
+PASS: background-color from [unset] to [transparent] was [transparent] at 0
+PASS: background-color from [unset] to [transparent] was [transparent] at 0.3
+PASS: background-color from [unset] to [transparent] was [transparent] at 0.6
+PASS: background-color from [unset] to [transparent] was [transparent] at 1
+PASS: background-color from [unset] to [transparent] was [transparent] at 1.5
+
+Web Animations API:
+PASS: backgroundColor from [unset] to [transparent] was [transparent] at -0.3
+PASS: backgroundColor from [unset] to [transparent] was [transparent] at 0
+PASS: backgroundColor from [unset] to [transparent] was [transparent] at 0.3
+PASS: backgroundColor from [unset] to [transparent] was [transparent] at 0.6
+PASS: backgroundColor from [unset] to [transparent] was [transparent] at 1
+PASS: backgroundColor from [unset] to [transparent] was [transparent] at 1.5
+
