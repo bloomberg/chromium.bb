@@ -58,6 +58,8 @@
 # define __NR_exit_group         252
 # define __NR_clock_gettime      265
 # define __NR_clock_getres       266
+# define __NR_openat             295
+# define __NR_fstatat64          300
 
 #define SYS_SOCKETPAIR 8
 #define SYS_SHUTDOWN   13
@@ -115,6 +117,8 @@
 # define __NR_shutdown           293
 # define __NR_sendmsg            296
 # define __NR_recvmsg            297
+# define __NR_openat             322
+# define __NR_fstatat64          327
 # define __NR_ARM_set_tls        0xf0005
 
 #else

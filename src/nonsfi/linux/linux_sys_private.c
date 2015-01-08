@@ -35,6 +35,9 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 
 
+/* Used in openat() and fstatat(). */
+#define LINUX_AT_FDCWD (-100)
+
 /*
  * Note that Non-SFI NaCl uses a 4k page size, in contrast to SFI NaCl's
  * 64k page size.
@@ -175,11 +178,17 @@ int write(int fd, const void *buf, size_t count) {
                                          (uintptr_t) buf, count));
 }
 
-int open(char const *pathname, int oflag, ...) {
+int open(const char *pathname, int oflag, ...) {
   mode_t cmode;
-  va_list ap;
 
-  if (oflag & O_CREAT) {
+  oflag = nacl_oflags_to_linux_oflags(oflag);
+  if (oflag == -1) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (oflag & LINUX_O_CREAT) {
+    va_list ap;
     va_start(ap, oflag);
     cmode = va_arg(ap, mode_t);
     va_end(ap);
@@ -189,6 +198,31 @@ int open(char const *pathname, int oflag, ...) {
 
   return errno_value_call(
       linux_syscall3(__NR_open, (uintptr_t) pathname, oflag, cmode));
+}
+
+int openat(int dirfd, const char *pathname, int oflag, ...) {
+  mode_t cmode;
+
+  if (dirfd == AT_FDCWD)
+    dirfd = LINUX_AT_FDCWD;
+
+  oflag = nacl_oflags_to_linux_oflags(oflag);
+  if (oflag == -1) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (oflag & LINUX_O_CREAT) {
+    va_list ap;
+    va_start(ap, oflag);
+    cmode = va_arg(ap, mode_t);
+    va_end(ap);
+  } else {
+    cmode = 0;
+  }
+
+  return errno_value_call(
+      linux_syscall4(__NR_openat, dirfd, (uintptr_t) pathname, oflag, cmode));
 }
 
 int close(int fd) {
@@ -286,6 +320,18 @@ int lstat(const char *file, struct stat *st) {
   return 0;
 }
 
+int fstatat(int dirfd, const char *file, struct stat *st, int flags) {
+  struct linux_abi_stat64 linux_st;
+  if (dirfd == AT_FDCWD)
+    dirfd = LINUX_AT_FDCWD;
+  int rc = errno_value_call(linux_syscall4(
+      __NR_fstatat64, dirfd, (uintptr_t) file, (uintptr_t) &linux_st, flags));
+  if (rc == -1)
+    return -1;
+  linux_stat_to_nacl_stat(&linux_st, st);
+  return 0;
+}
+
 int mkdir(const char *path, mode_t mode) {
   return errno_value_call(linux_syscall2(__NR_mkdir, (uintptr_t) path, mode));
 }
@@ -363,14 +409,32 @@ int readlink(const char *path, char *buf, int bufsize) {
 }
 
 int fcntl(int fd, int cmd, ...) {
-  if (cmd == F_GETFL || cmd == F_GETFD) {
+  if (cmd == F_GETFD) {
     return errno_value_call(linux_syscall2(__NR_fcntl64, fd, cmd));
   }
-  if (cmd == F_SETFL || cmd == F_SETFD) {
+  if (cmd == F_GETFL) {
+    int rc = errno_value_call(linux_syscall2(__NR_fcntl64, fd, cmd));
+    if (rc == -1)
+      return -1;
+    return linux_oflags_to_nacl_oflags(rc);
+  }
+  if (cmd == F_SETFD) {
     va_list ap;
     va_start(ap, cmd);
     int32_t arg = va_arg(ap, int32_t);
     va_end(ap);
+    return errno_value_call(linux_syscall3(__NR_fcntl64, fd, cmd, arg));
+  }
+  if (cmd == F_SETFL) {
+    va_list ap;
+    va_start(ap, cmd);
+    int32_t arg = va_arg(ap, int32_t);
+    va_end(ap);
+    arg = nacl_oflags_to_linux_oflags(arg);
+    if (arg == -1) {
+      errno = EINVAL;
+      return -1;
+    }
     return errno_value_call(linux_syscall3(__NR_fcntl64, fd, cmd, arg));
   }
   /* We only support the fcntl commands above. */

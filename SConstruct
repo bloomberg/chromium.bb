@@ -688,6 +688,7 @@ nonsfi_test_whitelist = set([
     'run_dup_test',
     'run_exception_test',
     'run_fcntl_test',
+    'run_file_descriptor_test',
     'run_float_test',
     'run_fork_test',
     'run_getpid_test',

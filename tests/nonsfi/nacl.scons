@@ -19,6 +19,16 @@ node = env.CommandSelLdrTestNacl('fcntl_test.out', nexe,
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_fcntl_test')
 
+nexe = env.ComponentProgram('file_descriptor_test',
+                            'file_descriptor_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'file_descriptor_test.out', nexe,
+    args=[env.MakeTempDir(prefix='tmp_file_descriptor')])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_file_descriptor_test')
+
 nexe = env.ComponentProgram('fork_test',
                             'fork_test.cc',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])
