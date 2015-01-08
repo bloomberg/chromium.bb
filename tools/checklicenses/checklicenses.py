@@ -112,6 +112,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    'buildtools/third_party/libc++/trunk/test': [
+        # http://llvm.org/bugs/show_bug.cgi?id=18291
+        'UNKNOWN',
+    ],
+
     'chrome/common/extensions/docs/examples': [  # http://crbug.com/98092
         'UNKNOWN',
     ],
