@@ -44,6 +44,7 @@ class NewWindowDelegateImpl : public ChromeNewWindowDelegate {
   // Overridden from ash::NewWindowDelegate:
   void OpenFileManager() override {}
   void OpenCrosh() override {}
+  void OpenGetHelp() override {}
   void ShowKeyboardOverlay() override {}
 
  private:

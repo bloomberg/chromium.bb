@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -40,7 +41,13 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
       service->GetInstalledExtension(kFileManagerAppId);
   OpenApplication(AppLaunchParams(profile, extension, CURRENT_TAB,
                                   chrome::HOST_DESKTOP_TYPE_ASH,
-                                  extensions::SOURCE_CHROME_INTERNAL));
+                                  extensions::SOURCE_KEYBOARD));
+}
+
+void ChromeNewWindowDelegateChromeos::OpenGetHelp() {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  chrome::ShowHelpForProfile(
+      profile, chrome::HOST_DESKTOP_TYPE_ASH, chrome::HELP_SOURCE_KEYBOARD);
 }
 
 void ChromeNewWindowDelegateChromeos::OpenCrosh() {

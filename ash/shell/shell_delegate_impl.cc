@@ -45,6 +45,7 @@ class NewWindowDelegateImpl : public NewWindowDelegate {
   }
   void OpenFileManager() override {}
   void OpenCrosh() override {}
+  void OpenGetHelp() override {}
   void RestoreTab() override {}
   void ShowKeyboardOverlay() override {}
   void ShowTaskManager() override {}

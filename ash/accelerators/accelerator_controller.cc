@@ -564,6 +564,10 @@ void HandleFileManager() {
   Shell::GetInstance()->new_window_delegate()->OpenFileManager();
 }
 
+void HandleGetHelp() {
+  Shell::GetInstance()->new_window_delegate()->OpenGetHelp();
+}
+
 bool CanHandleSilenceSpokenFeedback() {
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
@@ -975,6 +979,7 @@ bool AcceleratorController::CanPerformAction(
     case LOCK_SCREEN:
     case OPEN_CROSH:
     case OPEN_FILE_MANAGER:
+    case OPEN_GET_HELP:
     case POWER_PRESSED:
     case POWER_RELEASED:
     case SWAP_PRIMARY_DISPLAY:
@@ -1206,6 +1211,9 @@ void  AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case OPEN_FILE_MANAGER:
       HandleFileManager();
+      break;
+    case OPEN_GET_HELP:
+      HandleGetHelp();
       break;
     case POWER_PRESSED:  // fallthrough
     case POWER_RELEASED:

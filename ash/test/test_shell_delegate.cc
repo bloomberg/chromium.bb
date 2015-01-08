@@ -46,6 +46,7 @@ class NewWindowDelegateImpl : public NewWindowDelegate {
   void NewWindow(bool incognito) override {}
   void OpenFileManager() override {}
   void OpenCrosh() override {}
+  void OpenGetHelp() override {}
   void RestoreTab() override {}
   void ShowKeyboardOverlay() override {}
   void ShowTaskManager() override {}

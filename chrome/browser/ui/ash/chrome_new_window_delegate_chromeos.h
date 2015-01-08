@@ -15,6 +15,7 @@ class ChromeNewWindowDelegateChromeos : public ChromeNewWindowDelegate {
   // Overridden from ash::NewWindowDelegate:
   virtual void OpenFileManager() override;
   virtual void OpenCrosh() override;
+  virtual void OpenGetHelp() override;
   virtual void ShowKeyboardOverlay() override;
 
  private:
