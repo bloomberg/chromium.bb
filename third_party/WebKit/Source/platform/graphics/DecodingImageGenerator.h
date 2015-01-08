@@ -44,6 +44,8 @@ class ImageFrameGenerator;
 // as and adapter to ImageFrameGenerator which actually performs decoding.
 class DecodingImageGenerator final : public SkImageGenerator {
 public:
+    static SkImageGenerator* create(SkData*);
+
     DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>, const SkImageInfo&, size_t index);
     virtual ~DecodingImageGenerator();
 

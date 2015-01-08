@@ -33,6 +33,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageFrameGenerator.h"
+#include "platform/image-decoders/ImageDecoder.h"
 
 namespace blink {
 
@@ -101,4 +102,29 @@ bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], 
     return decoded;
 }
 
+SkImageGenerator* DecodingImageGenerator::create(SkData* data)
+{
+    RefPtr<SharedBuffer> buffer = SharedBuffer::create(data->bytes(), data->size());
+
+    // We just need the size of the image, so we have to temporarily create an ImageDecoder. Since
+    // we only need the size, it doesn't really matter about premul or not, or gamma settings.
+    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*buffer.get(), ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+    if (!decoder)
+        return 0;
+
+    decoder->setData(buffer.get(), true);
+    if (!decoder->isSizeAvailable())
+        return 0;
+
+    const IntSize size = decoder->size();
+    const SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
+
+    RefPtr<ImageFrameGenerator> frame = ImageFrameGenerator::create(SkISize::Make(size.width(), size.height()), buffer, true, false);
+    if (!frame)
+        return 0;
+
+    return new DecodingImageGenerator(frame, info, 0);
+}
+
 } // namespace blink
+
