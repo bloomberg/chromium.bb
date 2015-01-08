@@ -180,7 +180,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
     g_object_unref(icon_);
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(&DeleteTempDirectory, temp_dir_.DirName()));
+        base::Bind(&DeleteTempDirectory, temp_dir_));
   }
 }
 
