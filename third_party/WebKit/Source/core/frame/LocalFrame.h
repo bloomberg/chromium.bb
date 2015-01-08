@@ -175,7 +175,7 @@ namespace blink {
 
         void detachView();
 
-        WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> > m_destructionObservers;
+        WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver>> m_destructionObservers;
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 

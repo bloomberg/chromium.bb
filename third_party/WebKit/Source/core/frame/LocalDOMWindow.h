@@ -216,7 +216,7 @@ public:
 
     bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString);
 
-    PassOwnPtr<LifecycleNotifier<LocalDOMWindow> > createLifecycleNotifier();
+    PassOwnPtr<LifecycleNotifier<LocalDOMWindow>> createLifecycleNotifier();
 
     EventQueue* eventQueue() const;
     void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);
@@ -292,7 +292,7 @@ private:
     bool m_hasBeenReset;
 #endif
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty> > m_properties;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty>> m_properties;
 
     mutable RefPtrWillBeMember<Screen> m_screen;
     mutable RefPtrWillBeMember<History> m_history;
@@ -321,7 +321,7 @@ private:
     RefPtrWillBeMember<DOMWindowEventQueue> m_eventQueue;
     RefPtr<SerializedScriptValue> m_pendingStateObject;
 
-    WillBeHeapHashSet<OwnPtrWillBeMember<PostMessageTimer> > m_postMessageTimers;
+    WillBeHeapHashSet<OwnPtrWillBeMember<PostMessageTimer>> m_postMessageTimers;
 };
 
 DEFINE_TYPE_CASTS(LocalDOMWindow, DOMWindow, x, x->isLocalDOMWindow(), x.isLocalDOMWindow());

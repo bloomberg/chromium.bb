@@ -104,7 +104,7 @@ public:
     bool canInvalidatePaintDuringPerformLayout() const { return m_canInvalidatePaintDuringPerformLayout; }
 
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
-    void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = 0; }
+    void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = nullptr; }
     int layoutCount() const { return m_layoutCount; }
 
     bool needsLayout() const;
@@ -364,7 +364,7 @@ public:
     // Returns a clip rect in host window coordinates. Used to clip the blit on a scroll.
     IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
 
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget> > ChildrenWidgetSet;
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget>> ChildrenWidgetSet;
 
     // Functions for child manipulation and inspection.
     virtual void setParent(Widget*) override;
@@ -689,11 +689,11 @@ private:
 
     LayoutSize m_size;
 
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > EmbeddedObjectSet;
-    WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > m_partUpdateSet;
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject>> EmbeddedObjectSet;
+    WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject>> m_partUpdateSet;
 
     // FIXME: These are just "children" of the FrameView and should be RefPtrWillBeMember<Widget> instead.
-    WillBeHeapHashSet<RefPtrWillBeMember<RenderPart> > m_parts;
+    WillBeHeapHashSet<RefPtrWillBeMember<RenderPart>> m_parts;
 
     // The RefPtr cycle between LocalFrame and FrameView is broken
     // when a LocalFrame is detached by FrameLoader::detachFromParent().

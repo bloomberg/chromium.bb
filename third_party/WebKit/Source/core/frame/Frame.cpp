@@ -85,7 +85,7 @@ void Frame::detach()
 
 void Frame::detachChildren()
 {
-    typedef WillBeHeapVector<RefPtrWillBeMember<Frame> > FrameVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Frame>> FrameVector;
     FrameVector childrenToDetach;
     childrenToDetach.reserveCapacity(tree().childCount());
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
@@ -107,7 +107,7 @@ Page* Frame::page() const
 {
     if (m_host)
         return &m_host->page();
-    return 0;
+    return nullptr;
 }
 
 FrameHost* Frame::host() const
@@ -134,7 +134,7 @@ bool Frame::isLocalRoot() const
 
 HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
 {
-    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : 0;
+    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : nullptr;
 }
 
 static ChromeClient& emptyChromeClient()
@@ -153,16 +153,16 @@ ChromeClient& Frame::chromeClient() const
 RenderPart* Frame::ownerRenderer() const
 {
     if (!deprecatedLocalOwner())
-        return 0;
+        return nullptr;
     RenderObject* object = deprecatedLocalOwner()->renderer();
     if (!object)
-        return 0;
+        return nullptr;
     // FIXME: If <object> is ever fixed to disassociate itself from frames
     // that it has started but canceled, then this can turn into an ASSERT
     // since ownerElement() would be 0 when the load is canceled.
     // https://bugs.webkit.org/show_bug.cgi?id=18585
     if (!object->isRenderPart())
-        return 0;
+        return nullptr;
     return toRenderPart(object);
 }
 
@@ -184,7 +184,7 @@ Settings* Frame::settings() const
 {
     if (m_host)
         return &m_host->settings();
-    return 0;
+    return nullptr;
 }
 
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
@@ -192,7 +192,7 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     , m_host(host)
     , m_owner(owner)
     , m_client(client)
-    , m_remotePlatformLayer(0)
+    , m_remotePlatformLayer(nullptr)
     , m_isLoading(false)
 {
     ASSERT(page());

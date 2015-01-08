@@ -58,7 +58,7 @@ static Node* nodeInsideFrame(Node* node)
 {
     if (node->isFrameOwnerElement())
         return toHTMLFrameOwnerElement(node)->contentDocument();
-    return 0;
+    return nullptr;
 }
 
 IntRect SmartClipData::rect() const
@@ -90,7 +90,7 @@ SmartClipData SmartClip::dataForRect(const IntRect& cropRect)
             bestNode = bestNodeInFrame;
     }
 
-    WillBeHeapVector<RawPtrWillBeMember<Node> > hitNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node>> hitNodes;
     collectOverlappingChildNodes(bestNode, resizedCropRect, hitNodes);
 
     if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
@@ -156,18 +156,18 @@ Node* SmartClip::minNodeContainsNodes(Node* minNode, Node* newNode)
         node = node->parentNode();
     }
 
-    return 0;
+    return nullptr;
 }
 
 Node* SmartClip::findBestOverlappingNode(Node* rootNode, const IntRect& cropRect)
 {
     if (!rootNode)
-        return 0;
+        return nullptr;
 
     IntRect resizedCropRect = rootNode->document().view()->windowToContents(cropRect);
 
     Node* node = rootNode;
-    Node* minNode = 0;
+    Node* minNode = nullptr;
 
     while (node) {
         IntRect nodeRect = node->pixelSnappedBoundingBox();
@@ -218,7 +218,7 @@ bool SmartClip::shouldSkipBackgroundImage(Node* node)
     return false;
 }
 
-void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, WillBeHeapVector<RawPtrWillBeMember<Node> >& hitNodes)
+void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, WillBeHeapVector<RawPtrWillBeMember<Node>>& hitNodes)
 {
     if (!parentNode)
         return;

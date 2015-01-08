@@ -227,7 +227,7 @@ void FrameView::trace(Visitor* visitor)
 void FrameView::reset()
 {
     m_hasPendingLayout = false;
-    m_layoutSubtreeRoot = 0;
+    m_layoutSubtreeRoot = nullptr;
     m_doFullPaintInvalidation = false;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
@@ -474,8 +474,8 @@ void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 
 bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame) const
 {
-    customScrollbarElement = 0;
-    customScrollbarFrame = 0;
+    customScrollbarElement = nullptr;
+    customScrollbarFrame = nullptr;
 
     if (Settings* settings = m_frame->settings()) {
         if (!settings->allowCustomScrollbarInMainFrame() && m_frame->isMainFrame())
@@ -511,8 +511,8 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
 
 PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
-    Element* customScrollbarElement = 0;
-    LocalFrame* customScrollbarFrame = 0;
+    Element* customScrollbarElement = nullptr;
+    LocalFrame* customScrollbarFrame = nullptr;
     if (shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame))
         return RenderScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
 
@@ -632,7 +632,7 @@ void FrameView::applyOverflowToViewportAndSetRenderer(RenderObject* o, Scrollbar
 
 void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
 {
-    m_viewportRenderer = 0;
+    m_viewportRenderer = nullptr;
 
     // FIXME: How do we handle this for OOPI?
     const HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
@@ -719,7 +719,7 @@ GraphicsLayer* FrameView::layerForScrolling() const
 {
     RenderView* renderView = this->renderView();
     if (!renderView)
-        return 0;
+        return nullptr;
     return renderView->compositor()->frameScrollLayer();
 }
 
@@ -727,7 +727,7 @@ GraphicsLayer* FrameView::layerForHorizontalScrollbar() const
 {
     RenderView* renderView = this->renderView();
     if (!renderView)
-        return 0;
+        return nullptr;
     return renderView->compositor()->layerForHorizontalScrollbar();
 }
 
@@ -735,7 +735,7 @@ GraphicsLayer* FrameView::layerForVerticalScrollbar() const
 {
     RenderView* renderView = this->renderView();
     if (!renderView)
-        return 0;
+        return nullptr;
     return renderView->compositor()->layerForVerticalScrollbar();
 }
 
@@ -743,7 +743,7 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
 {
     RenderView* renderView = this->renderView();
     if (!renderView)
-        return 0;
+        return nullptr;
     return renderView->compositor()->layerForScrollCorner();
 }
 
@@ -758,7 +758,7 @@ bool FrameView::isEnclosedInCompositingLayer() const
 
 RenderObject* FrameView::layoutRoot(bool onlyDuringLayout) const
 {
-    return onlyDuringLayout && layoutPending() ? 0 : m_layoutSubtreeRoot;
+    return onlyDuringLayout && layoutPending() ? nullptr : m_layoutSubtreeRoot;
 }
 
 inline void FrameView::forceLayoutParentViewIfNeeded()
@@ -913,7 +913,7 @@ void FrameView::layout(bool allowSubtree)
 
     if (!allowSubtree && isSubtreeLayout()) {
         m_layoutSubtreeRoot->markContainingBlocksForLayout(false);
-        m_layoutSubtreeRoot = 0;
+        m_layoutSubtreeRoot = nullptr;
     }
 
     performPreLayoutTasks();
@@ -1007,7 +1007,7 @@ void FrameView::layout(bool allowSubtree)
 
         performLayout(rootForThisLayout, inSubtreeLayout);
 
-        m_layoutSubtreeRoot = 0;
+        m_layoutSubtreeRoot = nullptr;
         // We need to ensure that we mark up all renderers up to the RenderView
         // for paint invalidation. This simplifies our code as we just always
         // do a full tree walk.
@@ -1131,17 +1131,17 @@ RenderBox* FrameView::embeddedContentBox() const
 {
     RenderView* renderView = this->renderView();
     if (!renderView)
-        return 0;
+        return nullptr;
 
     RenderObject* firstChild = renderView->firstChild();
     if (!firstChild || !firstChild->isBox())
-        return 0;
+        return nullptr;
 
     // Curently only embedded SVG documents participate in the size-negotiation logic.
     if (firstChild->isSVGRoot())
         return toRenderBox(firstChild);
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -1157,7 +1157,7 @@ void FrameView::removePart(RenderPart* object)
 
 void FrameView::updateWidgetPositions()
 {
-    WillBeHeapVector<RefPtrWillBeMember<RenderPart> > parts;
+    WillBeHeapVector<RefPtrWillBeMember<RenderPart>> parts;
     copyToVector(m_parts, parts);
 
     // Script or plugins could detach the frame so abort processing if that happens.
@@ -1718,7 +1718,7 @@ HostWindow* FrameView::hostWindow() const
 {
     Page* page = frame().page();
     if (!page)
-        return 0;
+        return nullptr;
     return &page->chrome();
 }
 
@@ -1797,7 +1797,7 @@ void FrameView::scheduleRelayout()
 
     if (isSubtreeLayout()) {
         m_layoutSubtreeRoot->markContainingBlocksForLayout(false);
-        m_layoutSubtreeRoot = 0;
+        m_layoutSubtreeRoot = nullptr;
     }
     if (!m_layoutSchedulingEnabled)
         return;
@@ -1856,7 +1856,7 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
                 // Just do a full relayout
                 if (isSubtreeLayout())
                     m_layoutSubtreeRoot->markContainingBlocksForLayout(false);
-                m_layoutSubtreeRoot = 0;
+                m_layoutSubtreeRoot = nullptr;
                 relayoutRoot->markContainingBlocksForLayout(false);
             }
         }
@@ -2504,13 +2504,13 @@ Color FrameView::documentBackgroundColor() const
 FrameView* FrameView::parentFrameView() const
 {
     if (!parent())
-        return 0;
+        return nullptr;
 
     Frame* parentFrame = m_frame->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame())
         return toLocalFrame(parentFrame)->view();
 
-    return 0;
+    return nullptr;
 }
 
 bool FrameView::wasScrolledByUser() const
@@ -2606,7 +2606,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
 
     // FIXME: Calling layout() shouldn't trigger scripe execution or have any
     // observable effects on the frame tree but we're not quite there yet.
-    WillBeHeapVector<RefPtrWillBeMember<FrameView> > frameViews;
+    WillBeHeapVector<RefPtrWillBeMember<FrameView>> frameViews;
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
@@ -3021,7 +3021,7 @@ AXObjectCache* FrameView::axObjectCache() const
 {
     if (frame().document())
         return frame().document()->existingAXObjectCache();
-    return 0;
+    return nullptr;
 }
 
 void FrameView::setCursor(const Cursor& cursor)
@@ -3709,7 +3709,7 @@ Scrollbar* FrameView::scrollbarAtViewPoint(const IntPoint& viewPoint)
         return m_horizontalScrollbar.get();
     if (m_verticalScrollbar && m_verticalScrollbar->shouldParticipateInHitTesting() && m_verticalScrollbar->frameRect().contains(viewPoint))
         return m_verticalScrollbar.get();
-    return 0;
+    return nullptr;
 }
 
 static void positionScrollbarLayer(GraphicsLayer* graphicsLayer, Scrollbar* scrollbar)

@@ -576,7 +576,7 @@ PassRefPtrWillBeRawPtr<MediaQueryList> LocalDOMWindow::matchMedia(const String& 
 
 Page* LocalDOMWindow::page()
 {
-    return frame() ? frame()->page() : 0;
+    return frame() ? frame()->page() : nullptr;
 }
 
 void LocalDOMWindow::willDetachFrameHost()
@@ -648,7 +648,7 @@ void LocalDOMWindow::sendOrientationChangeEvent()
     // Before dispatching the event, build a list of the child frames to
     // also send the event to, to mitigate side effects from event handlers
     // potentially interfering with others.
-    WillBeHeapVector<RefPtrWillBeMember<Frame> > childFrames;
+    WillBeHeapVector<RefPtrWillBeMember<Frame>> childFrames;
     for (Frame* child = frame()->tree().firstChild(); child; child = child->tree().nextSibling()) {
         childFrames.append(child);
     }
@@ -744,14 +744,14 @@ Console* LocalDOMWindow::console() const
 FrameConsole* LocalDOMWindow::frameConsole() const
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
     return &frame()->console();
 }
 
 ApplicationCache* LocalDOMWindow::applicationCache() const
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
     if (!m_applicationCache)
         m_applicationCache = ApplicationCache::create(frame());
     return m_applicationCache.get();
@@ -781,11 +781,11 @@ Location* LocalDOMWindow::location() const
 Storage* LocalDOMWindow::sessionStorage(ExceptionState& exceptionState) const
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
 
     Document* document = this->document();
     if (!document)
-        return 0;
+        return nullptr;
 
     String accessDeniedMessage = "Access is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
@@ -795,25 +795,25 @@ Storage* LocalDOMWindow::sessionStorage(ExceptionState& exceptionState) const
             exceptionState.throwSecurityError("Storage is disabled inside 'data:' URLs.");
         else
             exceptionState.throwSecurityError(accessDeniedMessage);
-        return 0;
+        return nullptr;
     }
 
     if (m_sessionStorage) {
         if (!m_sessionStorage->area()->canAccessStorage(frame())) {
             exceptionState.throwSecurityError(accessDeniedMessage);
-            return 0;
+            return nullptr;
         }
         return m_sessionStorage.get();
     }
 
     Page* page = document->page();
     if (!page)
-        return 0;
+        return nullptr;
 
     OwnPtrWillBeRawPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(frame())) {
         exceptionState.throwSecurityError(accessDeniedMessage);
-        return 0;
+        return nullptr;
     }
 
     m_sessionStorage = Storage::create(frame(), storageArea.release());
@@ -823,11 +823,11 @@ Storage* LocalDOMWindow::sessionStorage(ExceptionState& exceptionState) const
 Storage* LocalDOMWindow::localStorage(ExceptionState& exceptionState) const
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
 
     Document* document = this->document();
     if (!document)
-        return 0;
+        return nullptr;
 
     String accessDeniedMessage = "Access is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
@@ -837,13 +837,13 @@ Storage* LocalDOMWindow::localStorage(ExceptionState& exceptionState) const
             exceptionState.throwSecurityError("Storage is disabled inside 'data:' URLs.");
         else
             exceptionState.throwSecurityError(accessDeniedMessage);
-        return 0;
+        return nullptr;
     }
 
     if (m_localStorage) {
         if (!m_localStorage->area()->canAccessStorage(frame())) {
             exceptionState.throwSecurityError(accessDeniedMessage);
-            return 0;
+            return nullptr;
         }
         return m_localStorage.get();
     }
@@ -851,12 +851,12 @@ Storage* LocalDOMWindow::localStorage(ExceptionState& exceptionState) const
     // FIXME: Seems this check should be much higher?
     FrameHost* host = document->frameHost();
     if (!host || !host->settings().localStorageEnabled())
-        return 0;
+        return nullptr;
 
     OwnPtrWillBeRawPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(frame())) {
         exceptionState.throwSecurityError(accessDeniedMessage);
-        return 0;
+        return nullptr;
     }
 
     m_localStorage = Storage::create(frame(), storageArea.release());
@@ -926,7 +926,7 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
     // Give the embedder a chance to intercept this postMessage because this
     // LocalDOMWindow might be a proxy for another in browsers that support
     // postMessage calls across WebKit instances.
-    LocalFrame* source = timer->source()->document() ? timer->source()->document()->frame() : 0;
+    LocalFrame* source = timer->source()->document() ? timer->source()->document()->frame() : nullptr;
     if (frame()->client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get(), source)) {
         m_postMessageTimers.remove(timer);
         return;
@@ -958,7 +958,7 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intende
 DOMSelection* LocalDOMWindow::getSelection()
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
 
     return frame()->document()->getSelection();
 }
@@ -966,7 +966,7 @@ DOMSelection* LocalDOMWindow::getSelection()
 Element* LocalDOMWindow::frameElement() const
 {
     if (!frame())
-        return 0;
+        return nullptr;
 
     // The bindings security check should ensure we're same origin...
     ASSERT(!frame()->owner() || frame()->owner()->isLocal());
@@ -1646,7 +1646,7 @@ void LocalDOMWindow::dispatchLoadEvent()
     // For load events, send a separate load event to the enclosing frame only.
     // This is a DOM extension and is independent of bubbling/capturing rules of
     // the DOM.
-    FrameOwner* owner = frame() ? frame()->owner() : 0;
+    FrameOwner* owner = frame() ? frame()->owner() : nullptr;
     if (owner)
         owner->dispatchLoad();
 
@@ -1871,7 +1871,7 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
 
     // Get the target frame for the special cases of _top and _parent.
     // In those cases, we schedule a location change right now and return early.
-    Frame* targetFrame = 0;
+    Frame* targetFrame = nullptr;
     if (frameName == "_top")
         targetFrame = frame()->tree().top();
     else if (frameName == "_parent") {
@@ -1900,7 +1900,7 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
 
     WindowFeatures windowFeatures(windowFeaturesString);
     LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
-    return result ? result->localDOMWindow() : 0;
+    return result ? result->localDOMWindow() : nullptr;
 }
 
 void LocalDOMWindow::showModalDialog(const String& urlString, const String& dialogFeaturesString,
@@ -1934,7 +1934,7 @@ DOMWindowLifecycleNotifier& LocalDOMWindow::lifecycleNotifier()
     return static_cast<DOMWindowLifecycleNotifier&>(LifecycleContext<LocalDOMWindow>::lifecycleNotifier());
 }
 
-PassOwnPtr<LifecycleNotifier<LocalDOMWindow> > LocalDOMWindow::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<LocalDOMWindow>> LocalDOMWindow::createLifecycleNotifier()
 {
     return DOMWindowLifecycleNotifier::create(this);
 }

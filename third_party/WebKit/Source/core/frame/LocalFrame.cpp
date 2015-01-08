@@ -369,7 +369,7 @@ void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 
 Document* LocalFrame::document() const
 {
-    return m_domWindow ? m_domWindow->document() : 0;
+    return m_domWindow ? m_domWindow->document() : nullptr;
 }
 
 void LocalFrame::setPagePopupOwner(Element& owner)
@@ -379,7 +379,7 @@ void LocalFrame::setPagePopupOwner(Element& owner)
 
 RenderView* LocalFrame::contentRenderer() const
 {
-    return document() ? document()->renderView() : 0;
+    return document() ? document()->renderView() : nullptr;
 }
 
 void LocalFrame::didChangeVisibilityState()
@@ -387,7 +387,7 @@ void LocalFrame::didChangeVisibilityState()
     if (document())
         document()->didChangeVisibilityState();
 
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > childFrames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> childFrames;
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));
@@ -680,14 +680,14 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
 Document* LocalFrame::documentAtPoint(const IntPoint& point)
 {
     if (!view())
-        return 0;
+        return nullptr;
 
     IntPoint pt = view()->windowToContents(point);
     HitTestResult result = HitTestResult(pt);
 
     if (contentRenderer())
         result = eventHandler().hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active);
-    return result.innerNode() ? &result.innerNode()->document() : 0;
+    return result.innerNode() ? &result.innerNode()->document() : nullptr;
 }
 
 PassRefPtrWillBeRawPtr<Range> LocalFrame::rangeForPoint(const IntPoint& framePoint)

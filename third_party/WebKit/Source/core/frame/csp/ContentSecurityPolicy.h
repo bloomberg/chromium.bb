@@ -56,8 +56,8 @@ class KURL;
 class SecurityOrigin;
 
 typedef int SandboxFlags;
-typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
-typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage> > ConsoleMessageVector;
+typedef Vector<OwnPtr<CSPDirectiveList>> CSPDirectiveListVector;
+typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
 
 class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -118,7 +118,7 @@ public:
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
-    bool allowEval(ScriptState* = 0, ReportingStatus = SendReport) const;
+    bool allowEval(ScriptState* = nullptr, ReportingStatus = SendReport) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
 
     bool allowScriptFromSource(const KURL&, ReportingStatus = SendReport) const;
@@ -163,7 +163,7 @@ public:
 
     // If a frame is passed in, the message will be logged to its active document's console.
     // Otherwise, the message will be logged to this object's |m_executionContext|.
-    void logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>, LocalFrame* = 0);
+    void logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>, LocalFrame* = nullptr);
 
     void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression);
     void reportDuplicateDirective(const String&);
@@ -184,7 +184,7 @@ public:
     // If a frame is passed in, the report will be sent using it as a context. If no frame is
     // passed in, the report will be sent via this object's |m_executionContext| (or dropped
     // on the floor if no such context is available).
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, LocalFrame* = 0);
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, LocalFrame* = nullptr);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 

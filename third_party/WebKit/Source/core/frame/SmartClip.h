@@ -78,7 +78,7 @@ private:
     Node* minNodeContainsNodes(Node* minNode, Node* newNode);
     Node* findBestOverlappingNode(Node*, const IntRect& cropRect);
     bool shouldSkipBackgroundImage(Node*);
-    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, WillBeHeapVector<RawPtrWillBeMember<Node> >& overlappingNodeInfoTable);
+    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, WillBeHeapVector<RawPtrWillBeMember<Node>>& overlappingNodeInfoTable);
     IntRect convertRectToWindow(const IntRect& nodeRect);
     String extractTextFromNode(Node*);
 
