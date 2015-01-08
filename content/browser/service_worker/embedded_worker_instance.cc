@@ -168,7 +168,7 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
-  DCHECK(status_ == STARTING || status_ == RUNNING);
+  DCHECK(status_ == STARTING || status_ == RUNNING) << status_;
   ServiceWorkerStatusCode status =
       registry_->StopWorker(process_id_, embedded_worker_id_);
   if (status == SERVICE_WORKER_OK)
