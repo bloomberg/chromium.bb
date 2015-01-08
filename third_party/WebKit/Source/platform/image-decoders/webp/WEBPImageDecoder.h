@@ -37,6 +37,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT WEBPImageDecoder : public ImageDecoder {
+    WTF_MAKE_NONCOPYABLE(WEBPImageDecoder);
 public:
     WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
     virtual ~WEBPImageDecoder();
