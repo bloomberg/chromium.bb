@@ -2346,7 +2346,7 @@ void Document::open(Document* ownerDocument, ExceptionState& exceptionState)
             }
         }
 
-        if (m_frame->loader().state() == FrameStateProvisional)
+        if (m_frame->loader().provisionalDocumentLoader())
             m_frame->loader().stopAllLoaders();
     }
 
@@ -4417,8 +4417,8 @@ KURL Document::openSearchDescriptionURL()
     if (!frame() || frame()->tree().parent())
         return KURL();
 
-    // FIXME: Why do we need to wait for FrameStateComplete?
-    if (frame()->loader().state() != FrameStateComplete)
+    // FIXME: Why do we need to wait for load completion?
+    if (!loadEventFinished())
         return KURL();
 
     if (!head())

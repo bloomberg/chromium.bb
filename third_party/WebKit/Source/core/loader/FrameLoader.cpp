@@ -114,7 +114,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     : m_frame(frame)
     , m_mixedContentChecker(frame)
     , m_progressTracker(ProgressTracker::create(frame))
-    , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
     , m_fetchContext(FrameFetchContext::create(frame))
     , m_inStopAllLoaders(false)
@@ -950,7 +949,6 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
 void FrameLoader::commitProvisionalLoad()
 {
     ASSERT(client()->hasWebView());
-    ASSERT(m_state == FrameStateProvisional);
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
@@ -974,7 +972,6 @@ void FrameLoader::commitProvisionalLoad()
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
     m_documentLoader = m_provisionalDocumentLoader.release();
-    m_state = FrameStateCommittedPage;
 
     if (isLoadingMainFrame())
         m_frame->page()->chrome().client().needTouchEvents(false);
@@ -1013,7 +1010,7 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         allChildrenAreDoneLoading &= child->checkLoadComplete();
     }
 
-    if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
+    if (m_provisionalDocumentLoader) {
         const ResourceError& error = m_provisionalDocumentLoader->mainDocumentError();
         if (error.isNull())
             return false;
@@ -1024,7 +1021,6 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = nullptr;
         m_progressTracker->progressCompleted();
-        m_state = FrameStateComplete;
         checkCompleted();
         return true;
     }
@@ -1032,16 +1028,14 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     if (!allChildrenAreDoneLoading)
         return false;
 
-    if (m_state == FrameStateComplete)
+    if (!m_frame->isLoading())
         return true;
     if (m_provisionalDocumentLoader || !m_documentLoader)
         return false;
     if (!m_frame->document()->loadEventFinished())
         return false;
 
-    m_state = FrameStateComplete;
-
-    // Retry restoring scroll offset since FrameStateComplete disables content
+    // Retry restoring scroll offset since finishing the load event disables content
     // size clamping.
     restoreScrollPositionAndViewState();
 
@@ -1081,7 +1075,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
     // height.
     float mainFrameScale = m_frame->settings()->pinchVirtualViewportEnabled() ? 1 : m_currentItem->pageScaleFactor();
     bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), mainFrameScale) == m_currentItem->scrollPoint();
-    bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_state == FrameStateComplete);
+    bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_frame->document()->loadEventFinished());
     if (!canRestoreWithoutAnnoyingUser)
         return;
 
@@ -1292,8 +1286,6 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
-        if (!m_stateMachine.committedFirstRealDocumentLoad())
-            m_state = FrameStateComplete;
         checkCompleted();
         return;
     }
@@ -1317,7 +1309,6 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
 
     m_provisionalDocumentLoader = m_policyDocumentLoader.release();
     m_loadType = type;
-    m_state = FrameStateProvisional;
 
     if (FormState* formState = frameLoadRequest.formState())
         client()->dispatchWillSubmitForm(formState->form());

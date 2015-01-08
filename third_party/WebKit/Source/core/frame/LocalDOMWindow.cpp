@@ -1047,7 +1047,7 @@ void LocalDOMWindow::print()
     if (!host)
         return;
 
-    if (frame()->loader().state() != FrameStateComplete) {
+    if (!frame()->document()->loadEventFinished()) {
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }

@@ -31,14 +31,6 @@
 
 namespace blink {
 
-enum FrameState {
-    FrameStateProvisional,
-    // This state indicates we are ready to commit to a page,
-    // which means the view will transition to use the new data source.
-    FrameStateCommittedPage,
-    FrameStateComplete
-};
-
 enum FrameLoadType {
     FrameLoadTypeStandard,
     FrameLoadTypeBackForward,

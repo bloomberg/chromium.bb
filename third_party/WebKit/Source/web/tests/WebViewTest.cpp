@@ -1014,7 +1014,7 @@ TEST_F(WebViewTest, PrintWithXHRInFlight)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("print_with_xhr_inflight.html"));
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "print_with_xhr_inflight.html", true, 0, &client);
 
-    ASSERT_EQ(FrameStateComplete, toLocalFrame(webViewImpl->page()->mainFrame())->loader().state());
+    ASSERT_TRUE(toLocalFrame(webViewImpl->page()->mainFrame())->document()->loadEventFinished());
     EXPECT_TRUE(client.printCalled());
     m_webViewHelper.reset();
 }
