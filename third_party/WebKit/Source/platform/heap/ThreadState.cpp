@@ -708,13 +708,6 @@ Mutex& ThreadState::globalRootsMutex()
 
 bool ThreadState::shouldGC()
 {
-    checkThread();
-    // Allocation is allowed during sweeping, but those allocations should not
-    // trigger nested GCs
-    if (isSweepingInProgress())
-        return false;
-    ASSERT(!sweepForbidden());
-
     // Trigger garbage collection on a 50% increase in size since the last GC,
     // but not for less than 512 KB.
     size_t newSize = Heap::allocatedObjectSize();
@@ -723,13 +716,6 @@ bool ThreadState::shouldGC()
 
 bool ThreadState::shouldForceConservativeGC()
 {
-    checkThread();
-    // Allocation is allowed during sweeping, but those allocations should not
-    // trigger nested GCs
-    if (isSweepingInProgress())
-        return false;
-    ASSERT(!sweepForbidden());
-
     size_t newSize = Heap::allocatedObjectSize();
     if (m_didV8GCAfterLastGC && m_collectionRate > 0.5) {
         // If we had a V8 GC after the last Oilpan GC and the last collection
@@ -747,6 +733,13 @@ bool ThreadState::shouldForceConservativeGC()
 
 void ThreadState::scheduleGCOrForceConservativeGCIfNeeded()
 {
+    checkThread();
+    // Allocation is allowed during sweeping, but those allocations should not
+    // trigger nested GCs
+    if (isSweepingInProgress())
+        return;
+    ASSERT(!sweepForbidden());
+
     if (!shouldGC())
         return;
     if (shouldForceConservativeGC())

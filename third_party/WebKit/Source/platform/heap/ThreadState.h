@@ -313,18 +313,8 @@ public:
 
     void didV8GC();
 
-    // shouldGC and shouldForceConservativeGC implement the heuristics
-    // that are used to determine when to collect garbage. If
-    // shouldForceConservativeGC returns true, we force the garbage
-    // collection immediately. Otherwise, if shouldGC returns true, we
-    // record that we should garbage collect the next time we return
-    // to the event loop. If both return false, we don't need to
-    // collect garbage at this point.
-    bool shouldGC();
-    bool shouldForceConservativeGC();
-    void scheduleGCOrForceConservativeGCIfNeeded();
-
     void scheduleGC();
+    void scheduleGCOrForceConservativeGCIfNeeded();
     void setGCState(GCState);
     GCState gcState() const;
     bool isInGC() const { return gcState() == GCRunning; }
@@ -594,6 +584,15 @@ private:
         m_safePointScopeMarker = nullptr;
     }
 
+    // shouldGC and shouldForceConservativeGC implement the heuristics
+    // that are used to determine when to collect garbage. If
+    // shouldForceConservativeGC returns true, we force the garbage
+    // collection immediately. Otherwise, if shouldGC returns true, we
+    // record that we should garbage collect the next time we return
+    // to the event loop. If both return false, we don't need to
+    // collect garbage at this point.
+    bool shouldGC();
+    bool shouldForceConservativeGC();
     void runScheduledGC(StackState);
 
     // When ThreadState is detaching from non-main thread its
