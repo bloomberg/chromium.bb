@@ -13,6 +13,6 @@ ADDRESS_HOME_STATE | payment-credit-user-address-state | State |  | payment-cred
 ADDRESS_HOME_ZIP | payment-credit-user-address-postalCode | ZIP Code |  | payment-credit-user-address-firstName_1-default
 ADDRESS_HOME_CITY | payment-credit-user-address-lookup-options | City / State: |  | payment-credit-user-address-firstName_1-default
 CREDIT_CARD_NUMBER | payment-credit-method-cc0-cardNumber | Card Number |  | payment-credit-user-address-firstName_1-cc
-UNKNOWN_TYPE | null | Card code |  | payment-credit-user-address-firstName_1-default
+CREDIT_CARD_VERIFICATION_CODE | null | Card code |  | payment-credit-user-address-firstName_1-cc
 CREDIT_CARD_EXP_MONTH | payment-credit-method-cc0-expirationMonth | Credit card expiration month | WONoSelectionString | payment-credit-user-address-firstName_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | payment-credit-method-cc0-expirationYear | Credit card expiration year | WONoSelectionString | payment-credit-user-address-firstName_1-cc
