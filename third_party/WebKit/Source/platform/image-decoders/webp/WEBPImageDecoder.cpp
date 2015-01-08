@@ -125,10 +125,8 @@ void alphaBlendNonPremultiplied(blink::ImageFrame& src, blink::ImageFrame& dst, 
 
 namespace blink {
 
-WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
-    ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
+WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_decoder(0)
     , m_formatFlags(0)
     , m_frameBackgroundHasAlpha(false)
