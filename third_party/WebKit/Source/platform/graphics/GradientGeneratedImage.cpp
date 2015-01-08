@@ -28,6 +28,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -47,56 +48,27 @@ void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect&
 void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
-    float stepX = srcRect.width() + repeatSpacing.width();
-    float stepY = srcRect.height() + repeatSpacing.height();
-    int firstColumn = static_cast<int>(floorf((((destRect.x() - phase.x()) / scale.width()) - srcRect.x()) / srcRect.width()));
-    int firstRow = static_cast<int>(floorf((((destRect.y() - phase.y()) / scale.height())  - srcRect.y()) / srcRect.height()));
-    for (int i = firstColumn; ; ++i) {
-        float dstX = (srcRect.x() + i * stepX) * scale.width() + phase.x();
-        // assert that first column encroaches left edge of dstRect.
-        ASSERT(i > firstColumn || dstX <= destRect.x());
-        ASSERT(i == firstColumn || dstX > destRect.x());
+    FloatRect tileRect = srcRect;
+    tileRect.expand(repeatSpacing);
 
-        if (dstX >= destRect.maxX())
-            break;
-        float dstMaxX = dstX + srcRect.width() * scale.width();
-        if (dstX < destRect.x())
-            dstX = destRect.x();
-        if (dstMaxX > destRect.maxX())
-            dstMaxX = destRect.maxX();
-        if (dstX >= dstMaxX)
-            continue;
+    GraphicsContext recordingContext(nullptr, nullptr);
+    recordingContext.beginRecording(tileRect);
+    recordingContext.setFillGradient(m_gradient);
+    recordingContext.fillRect(srcRect);
+    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
 
-        FloatRect visibleSrcRect;
-        FloatRect tileDstRect;
-        tileDstRect.setX(dstX);
-        tileDstRect.setWidth(dstMaxX - dstX);
-        visibleSrcRect.setX((tileDstRect.x() - phase.x()) / scale.width() - i * stepX);
-        visibleSrcRect.setWidth(tileDstRect.width() / scale.width());
+    AffineTransform patternTransform;
+    patternTransform.translate(phase.x(), phase.y());
+    patternTransform.scale(scale.width(), scale.height());
+    patternTransform.translate(tileRect.x(), tileRect.y());
 
-        for (int j = firstRow; ; j++) {
-            float dstY = (srcRect.y() + j * stepY) * scale.height() + phase.y();
-            // assert that first row encroaches top edge of dstRect.
-            ASSERT(j > firstRow || dstY <= destRect.y());
-            ASSERT(j == firstRow || dstY > destRect.y());
+    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
+    picturePattern->setPatternSpaceTransform(patternTransform);
 
-            if (dstY >= destRect.maxY())
-                break;
-            float dstMaxY = dstY + srcRect.height() * scale.height();
-            if (dstY < destRect.y())
-                dstY = destRect.y();
-            if (dstMaxY > destRect.maxY())
-                dstMaxY = destRect.maxY();
-            if (dstY >= dstMaxY)
-                continue;
-
-            tileDstRect.setY(dstY);
-            tileDstRect.setHeight(dstMaxY - dstY);
-            visibleSrcRect.setY((tileDstRect.y() - phase.y()) / scale.height() - j * stepY);
-            visibleSrcRect.setHeight(tileDstRect.height() / scale.height());
-            draw(destContext, tileDstRect, visibleSrcRect, compositeOp, blendMode);
-        }
-    }
+    GraphicsContextStateSaver saver(*destContext);
+    destContext->setCompositeOperation(compositeOp, blendMode);
+    destContext->setFillPattern(picturePattern);
+    destContext->fillRect(destRect);
 }
 
 } // namespace blink
