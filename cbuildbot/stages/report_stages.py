@@ -54,7 +54,7 @@ def WriteBasicMetadata(builder_run):
       # Data for this build.
       'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
       'build-number': builder_run.buildnumber,
-      'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
+      'builder-name': builder_run.GetBuilderName(),
       'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
       'buildbot-master-name':
           os.environ.get('BUILDBOT_MASTERNAME', ''),
