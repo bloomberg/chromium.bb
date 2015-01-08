@@ -174,10 +174,8 @@ void PushMessagingServiceImpl::OnMessage(
                    message));
   } else {
     // Drop the message, as it is invalid.
-    // TODO(mvanouwerkerk): Show a warning in the developer console of the
-    // Service Worker corresponding to app_id.
-    // TODO(johnme): Add diagnostic observers (e.g. UMA and an internals page)
-    // to know when bad things happen.
+    DeliverMessageCallback(application_id, message,
+                           content::PUSH_DELIVERY_STATUS_INVALID_MESSAGE);
   }
 }
 
@@ -190,9 +188,12 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     const GCMClient::IncomingMessage& message,
     content::PushDeliveryStatus status) {
   // TODO(mvanouwerkerk): UMA logging.
+  // TODO(mvanouwerkerk): Show a warning in the developer console of the
+  // Service Worker corresponding to app_id (and/or on an internals page).
   // TODO(mvanouwerkerk): Is there a way to recover from failure?
   switch (status) {
     case content::PUSH_DELIVERY_STATUS_SUCCESS:
+    case content::PUSH_DELIVERY_STATUS_INVALID_MESSAGE:
     case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
     case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
       break;

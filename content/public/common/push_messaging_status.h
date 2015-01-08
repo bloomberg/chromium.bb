@@ -89,6 +89,9 @@ enum PushDeliveryStatus {
   // The message was successfully delivered.
   PUSH_DELIVERY_STATUS_SUCCESS,
 
+  // The message could not be delivered because it was invalid.
+  PUSH_DELIVERY_STATUS_INVALID_MESSAGE,
+
   // The message could not be delivered because no service worker was found.
   PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER,
 
