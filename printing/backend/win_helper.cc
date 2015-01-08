@@ -472,6 +472,11 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
       NULL, printer, const_cast<wchar_t*>(L""), NULL, NULL, 0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
+
+  // Some drivers request buffers with size smaller than dmSize + dmDriverExtra.
+  // crbug.com/421402
+  buffer_size *= 2;
+
   scoped_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER;
@@ -501,6 +506,11 @@ scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
                          0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
+
+  // Some drivers request buffers with size smaller than dmSize + dmDriverExtra.
+  // crbug.com/421402
+  buffer_size *= 2;
+
   scoped_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER | DM_IN_PROMPT;
