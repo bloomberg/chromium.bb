@@ -645,8 +645,11 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  NOTIMPLEMENTED();
-  return CancelCallback();
+  return sender_->StartRequestWithRetry(
+      new google_apis::drive::MultipartUploadNewFileRequest(
+          sender_.get(), title, parent_resource_id, content_type,
+          content_length, options.modified_date, options.last_viewed_by_me_date,
+          local_file_path, url_generator_, callback, progress_callback));
 }
 
 CancelCallback DriveAPIService::MultipartUploadExistingFile(
@@ -660,8 +663,12 @@ CancelCallback DriveAPIService::MultipartUploadExistingFile(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  NOTIMPLEMENTED();
-  return CancelCallback();
+  return sender_->StartRequestWithRetry(
+      new google_apis::drive::MultipartUploadExistingFileRequest(
+          sender_.get(), options.title, resource_id, options.parent_resource_id,
+          content_type, content_length, options.modified_date,
+          options.last_viewed_by_me_date, local_file_path, options.etag,
+          url_generator_, callback, progress_callback));
 }
 
 CancelCallback DriveAPIService::AuthorizeApp(

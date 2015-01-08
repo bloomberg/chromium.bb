@@ -702,6 +702,97 @@ void GetUploadStatusRequest::OnRangeRequestComplete(
   ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }
 
+//======================= MultipartUploadNewFileRequest =======================
+
+MultipartUploadNewFileRequest::MultipartUploadNewFileRequest(
+    RequestSender* sender,
+    const std::string& title,
+    const std::string& parent_resource_id,
+    const std::string& content_type,
+    int64 content_length,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const base::FilePath& local_file_path,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback,
+    const ProgressCallback& progress_callback)
+    : MultipartUploadRequestBase(sender,
+                                 title,
+                                 parent_resource_id,
+                                 content_type,
+                                 content_length,
+                                 modified_date,
+                                 last_viewed_by_me_date,
+                                 local_file_path,
+                                 callback,
+                                 progress_callback),
+      url_generator_(url_generator) {
+}
+
+MultipartUploadNewFileRequest::~MultipartUploadNewFileRequest() {
+}
+
+GURL MultipartUploadNewFileRequest::GetURL() const {
+  return url_generator_.GetMultipartUploadNewFileUrl(has_modified_date());
+}
+
+net::URLFetcher::RequestType MultipartUploadNewFileRequest::GetRequestType()
+    const {
+  return net::URLFetcher::POST;
+}
+
+//======================= MultipartUploadExistingFileRequest ===================
+
+MultipartUploadExistingFileRequest::MultipartUploadExistingFileRequest(
+    RequestSender* sender,
+    const std::string& title,
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& content_type,
+    int64 content_length,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const base::FilePath& local_file_path,
+    const std::string& etag,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback,
+    const ProgressCallback& progress_callback)
+    : MultipartUploadRequestBase(sender,
+                                 title,
+                                 parent_resource_id,
+                                 content_type,
+                                 content_length,
+                                 modified_date,
+                                 last_viewed_by_me_date,
+                                 local_file_path,
+                                 callback,
+                                 progress_callback),
+      resource_id_(resource_id),
+      etag_(etag),
+      url_generator_(url_generator) {
+}
+
+MultipartUploadExistingFileRequest::~MultipartUploadExistingFileRequest() {
+}
+
+std::vector<std::string>
+MultipartUploadExistingFileRequest::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers(
+      MultipartUploadRequestBase::GetExtraRequestHeaders());
+  headers.push_back(util::GenerateIfMatchHeader(etag_));
+  return headers;
+}
+
+GURL MultipartUploadExistingFileRequest::GetURL() const {
+  return url_generator_.GetMultipartUploadExistingFileUrl(
+      resource_id_, has_modified_date());
+}
+
+net::URLFetcher::RequestType
+MultipartUploadExistingFileRequest::GetRequestType() const {
+  return net::URLFetcher::PUT;
+}
+
 //========================== DownloadFileRequest ==========================
 
 DownloadFileRequest::DownloadFileRequest(

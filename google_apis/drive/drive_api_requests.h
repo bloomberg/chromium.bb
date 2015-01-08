@@ -888,6 +888,77 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
   DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequest);
 };
 
+//======================= MultipartUploadNewFileRequest =======================
+
+// This class performs the request for initiating the upload of a new file.
+class MultipartUploadNewFileRequest : public MultipartUploadRequestBase {
+ public:
+  // |parent_resource_id| should be the resource id of the parent directory.
+  // |title| should be set.
+  // See also the comments of MultipartUploadRequestBase for more details
+  // about the other parameters.
+  MultipartUploadNewFileRequest(RequestSender* sender,
+                                const std::string& title,
+                                const std::string& parent_resource_id,
+                                const std::string& content_type,
+                                int64 content_length,
+                                const base::Time& modified_date,
+                                const base::Time& last_viewed_by_me_date,
+                                const base::FilePath& local_file_path,
+                                const DriveApiUrlGenerator& url_generator,
+                                const FileResourceCallback& callback,
+                                const ProgressCallback& progress_callback);
+  ~MultipartUploadNewFileRequest() override;
+
+ protected:
+  // UrlFetchRequestBase overrides.
+  GURL GetURL() const override;
+  net::URLFetcher::RequestType GetRequestType() const override;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultipartUploadNewFileRequest);
+};
+
+//======================= MultipartUploadExistingFileRequest ===================
+
+// This class performs the request for initiating the upload of a new file.
+class MultipartUploadExistingFileRequest : public MultipartUploadRequestBase {
+ public:
+  // |parent_resource_id| should be the resource id of the parent directory.
+  // |title| should be set.
+  // See also the comments of MultipartUploadRequestBase for more details
+  // about the other parameters.
+  MultipartUploadExistingFileRequest(RequestSender* sender,
+                                     const std::string& title,
+                                     const std::string& resource_id,
+                                     const std::string& parent_resource_id,
+                                     const std::string& content_type,
+                                     int64 content_length,
+                                     const base::Time& modified_date,
+                                     const base::Time& last_viewed_by_me_date,
+                                     const base::FilePath& local_file_path,
+                                     const std::string& etag,
+                                     const DriveApiUrlGenerator& url_generator,
+                                     const FileResourceCallback& callback,
+                                     const ProgressCallback& progress_callback);
+  ~MultipartUploadExistingFileRequest() override;
+
+ protected:
+  // UrlFetchRequestBase overrides.
+  std::vector<std::string> GetExtraRequestHeaders() const override;
+  GURL GetURL() const override;
+  net::URLFetcher::RequestType GetRequestType() const override;
+
+ private:
+  const std::string resource_id_;
+  const std::string etag_;
+  const DriveApiUrlGenerator url_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultipartUploadExistingFileRequest);
+};
+
 //========================== DownloadFileRequest ==========================
 
 // This class performs the request for downloading of a specified file.
