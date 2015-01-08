@@ -62,8 +62,8 @@ bool MockRenderThread::Send(IPC::Message* msg) {
   return true;
 }
 
-base::MessageLoop* MockRenderThread::GetMessageLoop() {
-  return NULL;
+scoped_refptr<base::SingleThreadTaskRunner> MockRenderThread::GetTaskRunner() {
+  return scoped_refptr<base::MessageLoopProxy>();
 }
 
 IPC::SyncChannel* MockRenderThread::GetChannel() {

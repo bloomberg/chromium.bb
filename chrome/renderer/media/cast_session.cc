@@ -54,9 +54,7 @@ void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
                              const AudioFrameInputAvailableCallback& callback,
                              const ErrorCallback& error_callback) {
   DCHECK(content::RenderThread::Get()
-             ->GetMessageLoop()
-             ->message_loop_proxy()
-             ->BelongsToCurrentThread());
+             ->GetTaskRunner()->BelongsToCurrentThread());
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -71,9 +69,7 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                              const VideoFrameInputAvailableCallback& callback,
                              const ErrorCallback& error_callback) {
   DCHECK(content::RenderThread::Get()
-             ->GetMessageLoop()
-             ->message_loop_proxy()
-             ->BelongsToCurrentThread());
+             ->GetTaskRunner()->BelongsToCurrentThread());
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,

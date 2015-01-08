@@ -594,7 +594,7 @@ void CastRtpStream::DidEncounterError(const std::string& message) {
   // Save the WeakPtr first because the error callback might delete this object.
   base::WeakPtr<CastRtpStream> ptr = weak_factory_.GetWeakPtr();
   error_callback_.Run(message);
-  content::RenderThread::Get()->GetMessageLoop()->PostTask(
+  content::RenderThread::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CastRtpStream::Stop, ptr));
 }

@@ -820,8 +820,8 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
   return rv;
 }
 
-base::MessageLoop* RenderThreadImpl::GetMessageLoop() {
-  return message_loop();
+scoped_refptr<base::SingleThreadTaskRunner> RenderThreadImpl::GetTaskRunner() {
+  return GetRendererScheduler()->DefaultTaskRunner();
 }
 
 IPC::SyncChannel* RenderThreadImpl::GetChannel() {

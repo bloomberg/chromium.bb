@@ -52,7 +52,7 @@ void RendererNetPredictor::Resolve(const char* name, size_t length) {
       if (0 != old_size)
         return;  // Overkill safety net: Don't send too many InvokeLater's.
       weak_factory_.InvalidateWeakPtrs();
-      RenderThread::Get()->GetMessageLoop()->PostDelayedTask(
+      RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
           FROM_HERE, base::Bind(&RendererNetPredictor::SubmitHostnames,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(10));
@@ -87,7 +87,7 @@ void RendererNetPredictor::SubmitHostnames() {
   DnsPrefetchNames(kMaxDnsHostnamesPerRequest);
   if (new_name_count_ > 0 || 0 < c_string_queue_.Size()) {
     weak_factory_.InvalidateWeakPtrs();
-    RenderThread::Get()->GetMessageLoop()->PostDelayedTask(
+    RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
         FROM_HERE, base::Bind(&RendererNetPredictor::SubmitHostnames,
                               weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(10));

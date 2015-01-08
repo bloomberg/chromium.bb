@@ -54,7 +54,7 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   RenderThread();
   ~RenderThread() override;
 
-  virtual base::MessageLoop* GetMessageLoop() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
   virtual IPC::SyncChannel* GetChannel() = 0;
   virtual std::string GetLocale() = 0;
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() = 0;
