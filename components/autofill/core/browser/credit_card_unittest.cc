@@ -16,6 +16,12 @@
 using base::ASCIIToUTF16;
 
 namespace autofill {
+
+const CreditCard::RecordType LOCAL_CARD = CreditCard::LOCAL_CARD;
+const CreditCard::RecordType MASKED_SERVER_CARD =
+    CreditCard::MASKED_SERVER_CARD;
+const CreditCard::RecordType FULL_SERVER_CARD = CreditCard::FULL_SERVER_CARD;
+
 namespace {
 
 // From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
@@ -140,6 +146,75 @@ TEST(CreditCardTest, Copy) {
 }
 
 TEST(CreditCardTest, Compare) {
+  struct {
+    CreditCard::RecordType first_card_record_type;
+    const char* first_card_name;
+    const char* first_card_number;
+    const char* first_card_exp_mo;
+    const char* first_card_exp_yr;
+
+    CreditCard::RecordType second_card_record_type;
+    const char* second_card_name;
+    const char* second_card_number;
+    const char* second_card_exp_mo;
+    const char* second_card_exp_yr;
+    const char* second_card_type;
+
+    bool is_local_duplicate;
+  } test_cases[] = {
+    { LOCAL_CARD, "", "", "", "",
+      LOCAL_CARD, "", "", "", "", nullptr, false },
+    { LOCAL_CARD, "", "", "", "",
+      FULL_SERVER_CARD, "", "", "", "", nullptr, true},
+    { FULL_SERVER_CARD, "", "", "", "",
+      FULL_SERVER_CARD, "", "", "", "", nullptr, false},
+    { LOCAL_CARD, "John Dillinger", "423456789012", "01", "2010",
+      FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010", nullptr,
+      true },
+    { LOCAL_CARD, "J Dillinger", "423456789012", "01", "2010",
+      FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010", nullptr,
+      false },
+    { LOCAL_CARD, "", "423456789012", "01", "2010",
+      FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010", nullptr,
+      true },
+    { LOCAL_CARD, "", "423456789012", "", "",
+      FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010", nullptr,
+      true },
+    { LOCAL_CARD, "", "423456789012", "", "",
+      MASKED_SERVER_CARD, "John Dillinger", "9012", "01", "2010", kVisaCard,
+      true },
+    { LOCAL_CARD, "", "423456789012", "", "",
+      MASKED_SERVER_CARD, "John Dillinger", "9012", "01", "2010", kMasterCard,
+      false },
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    CreditCard a(base::GenerateGUID(), std::string());
+    a.set_record_type(test_cases[i].first_card_record_type);
+    test::SetCreditCardInfo(&a,
+                            test_cases[i].first_card_name,
+                            test_cases[i].first_card_number,
+                            test_cases[i].first_card_exp_mo,
+                            test_cases[i].first_card_exp_yr);
+
+    CreditCard b(base::GenerateGUID(), std::string());
+    b.set_record_type(test_cases[i].second_card_record_type);
+    test::SetCreditCardInfo(&b,
+                            test_cases[i].second_card_name,
+                            test_cases[i].second_card_number,
+                            test_cases[i].second_card_exp_mo,
+                            test_cases[i].second_card_exp_yr);
+
+    if (test_cases[i].second_card_record_type == CreditCard::MASKED_SERVER_CARD)
+      b.SetTypeForMaskedCard(test_cases[i].second_card_type);
+
+    EXPECT_EQ(test_cases[i].is_local_duplicate,
+              a.IsLocalDuplicateOfServerCard(b)) << " when comparing cards "
+                  << a.Label() << " and " << b.Label();
+  }
+}
+
+TEST(CreditCardTest, IsLocalDuplicateOfServerCard) {
   CreditCard a(base::GenerateGUID(), std::string());
   CreditCard b(base::GenerateGUID(), std::string());
 

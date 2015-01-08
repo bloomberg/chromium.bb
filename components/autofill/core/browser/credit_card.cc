@@ -582,6 +582,29 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   return 0;
 }
 
+bool CreditCard::IsLocalDuplicateOfServerCard(const CreditCard& other) const {
+  if (record_type() != LOCAL_CARD || other.record_type() == LOCAL_CARD)
+    return false;
+
+  // If |this| is only a partial card, i.e. some fields are missing, assume
+  // those fields match.
+  if ((!name_on_card_.empty() && name_on_card_ != other.name_on_card_) ||
+      (expiration_month_ != 0 &&
+       expiration_month_ != other.expiration_month_) ||
+      (expiration_year_ != 0 && expiration_year_ != other.expiration_year_)) {
+    return false;
+  }
+
+  if (number_.empty())
+    return true;
+
+  if (other.record_type() == FULL_SERVER_CARD)
+    return number_ == other.number_;
+
+  // For masked cards, this is the best we can do to compare card numbers.
+  return TypeAndLastFourDigits() == other.TypeAndLastFourDigits();
+}
+
 bool CreditCard::operator==(const CreditCard& credit_card) const {
   return guid() == credit_card.guid() &&
          origin() == credit_card.origin() &&

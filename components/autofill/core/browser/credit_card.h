@@ -125,6 +125,9 @@ class CreditCard : public AutofillDataModel {
   // the credit cards themselves.
   int Compare(const CreditCard& credit_card) const;
 
+  // Determines if |this| is a local version of the server card |other|.
+  bool IsLocalDuplicateOfServerCard(const CreditCard& other) const;
+
   // Used by tests.
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;

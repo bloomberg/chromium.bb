@@ -2718,6 +2718,72 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[1].label);
   EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[0].value);
   EXPECT_EQ(base::string16(), suggestions[0].label);
+
+  // Add some server cards. If there are local dupes, the locals should be
+  // hidden.
+  std::vector<CreditCard> server_cards;
+  // This server card matches a local card, except the local card is missing the
+  // number. This should count as a dupe.
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "9012" /* Visa */, "01", "2010");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  // This server card is identical to a local card, but has a different
+  // card type. Not a dupe.
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
+  test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
+                          "2109", "12", "2012");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  // This unmasked server card is a dupe.
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+
+  autofill_table_->SetServerCreditCards(server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  suggestions = personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME), base::string16());
+  ASSERT_EQ(4U, suggestions.size());
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+  EXPECT_EQ(suggestions[0].backend_id.guid, credit_card2.guid());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
+  EXPECT_NE(suggestions[1].backend_id.guid, credit_card1.guid());
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  EXPECT_NE(suggestions[2].backend_id.guid, credit_card2.guid());
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[3].value);
+  EXPECT_NE(suggestions[0].backend_id.guid, credit_card0.guid());
+
+  suggestions = personal_data_->GetCreditCardSuggestions(
+      AutofillType(CREDIT_CARD_NUMBER), base::string16());
+  ASSERT_EQ(4U, suggestions.size());
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("Visa - 9012"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("Visa - 2109"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("American Express - 8555"), suggestions[3].value);
+
+  // Make sure a server card can be a dupe of more than one local card.
+  CreditCard credit_card3("4141084B-72D7-4B73-90CF-3D6AC154673B",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card3, "John Dillinger", "", "01", "");
+  personal_data_->AddCreditCard(credit_card3);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  suggestions = personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME), base::string16());
+  ASSERT_EQ(4U, suggestions.size());
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[3].value);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
