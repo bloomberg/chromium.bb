@@ -211,6 +211,7 @@ class AccountTrackerServiceTest : public testing::Test {
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(fake_oauth2_token_service_.get(),
                                  signin_client_.get());
+    account_tracker_->EnableNetworkFetches();
     account_tracker_->AddObserver(&observer_);
   }
 
@@ -239,17 +240,17 @@ class AccountTrackerServiceTest : public testing::Test {
         AccountIdToGaiaId(account_id).c_str(),
         AccountIdToEmail(account_id).c_str());
   }
-
   void ReturnOAuthUrlFetchSuccess(const std::string& account_id);
   void ReturnOAuthUrlFetchFailure(const std::string& account_id);
 
-  base::MessageLoopForIO* message_loop() { return &message_loop_; }
+  net::TestURLFetcherFactory* test_fetcher_factory() {
+    return &test_fetcher_factory_;
+  }
   AccountTrackerService* account_tracker() { return account_tracker_.get(); }
   AccountTrackerObserver* observer() { return &observer_; }
   OAuth2TokenService* token_service() {
     return fake_oauth2_token_service_.get();
   }
-  TestingPrefServiceSimple* pref_service() { return &pref_service_; }
   SigninClient* signin_client() { return signin_client_.get(); }
 
  private:
@@ -349,6 +350,7 @@ TEST_F(AccountTrackerServiceTest, TokenAlreadyExists) {
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
   tracker.Initialize(token_service(), signin_client());
+  tracker.EnableNetworkFetches();
   ASSERT_FALSE(tracker.IsAllUserInfoFetched());
   ASSERT_TRUE(observer.CheckEvents());
   tracker.RemoveObserver(&observer);
@@ -431,6 +433,37 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_UserInfo) {
   ASSERT_EQ(AccountTrackerService::kNoHostedDomainFound, info.hosted_domain);
 }
 
+TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
+  // Shutdown the network-enabled tracker built into the test case.
+  TearDown();
+
+  // Create an account tracker but do not enable network fetches.
+  AccountTrackerService tracker;
+  tracker.AddObserver(observer());
+  tracker.Initialize(token_service(), signin_client());
+
+  SimulateTokenAvailable("alpha");
+  IssueAccessToken("alpha");
+  // No fetcher has been created yet.
+  net::TestURLFetcher* fetcher = test_fetcher_factory()->GetFetcherByID(
+      gaia::GaiaOAuthClient::kUrlFetcherId);
+  ASSERT_FALSE(fetcher);
+
+  // Enable the network to create the fetcher then issue the access token.
+  tracker.EnableNetworkFetches();
+
+  // Fetcher was created and executes properly.
+  ReturnOAuthUrlFetchSuccess("alpha");
+
+  AccountTrackerService::AccountInfo info =
+      tracker.GetAccountInfo("alpha");
+  ASSERT_EQ("alpha", info.account_id);
+  ASSERT_EQ(AccountIdToGaiaId("alpha"), info.gaia);
+  ASSERT_EQ(AccountIdToEmail("alpha"), info.email);
+  ASSERT_EQ(AccountTrackerService::kNoHostedDomainFound, info.hosted_domain);
+  tracker.Shutdown();
+}
+
 TEST_F(AccountTrackerServiceTest, FindAccountInfoByGaiaId) {
   SimulateTokenAvailable("alpha");
   ReturnOAuthUrlFetchSuccess("alpha");
@@ -475,6 +508,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
   {
     AccountTrackerService tracker;
     tracker.Initialize(token_service(), signin_client());
+    tracker.EnableNetworkFetches();
     SimulateTokenAvailable("alpha");
     ReturnOAuthUrlFetchSuccess("alpha");
     SimulateTokenAvailable("beta");
@@ -488,6 +522,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     AccountTrackerService tracker;
     tracker.AddObserver(observer());
     tracker.Initialize(token_service(), signin_client());
+    tracker.EnableNetworkFetches();
     ASSERT_TRUE(observer()->CheckEvents(TrackingEvent(UPDATED, "alpha"),
                                         TrackingEvent(UPDATED, "beta")));
 
@@ -511,6 +546,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
   {
     AccountTrackerService tracker;
     tracker.Initialize(token_service(), signin_client());
+    tracker.EnableNetworkFetches();
 
     std::vector<AccountTrackerService::AccountInfo> infos =
         tracker.GetAccounts();

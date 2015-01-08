@@ -176,7 +176,8 @@ const char AccountTrackerService::kAccountInfoPref[] = "account_info";
 AccountTrackerService::AccountTrackerService()
     : token_service_(NULL),
       signin_client_(NULL),
-      shutdown_called_(false) {
+      shutdown_called_(false),
+      network_fetches_enabled_(false) {
 }
 
 AccountTrackerService::~AccountTrackerService() {
@@ -195,6 +196,15 @@ void AccountTrackerService::Initialize(
   token_service_->AddObserver(this);
   LoadFromPrefs();
   LoadFromTokenService();
+}
+
+void AccountTrackerService::EnableNetworkFetches() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!network_fetches_enabled_);
+  network_fetches_enabled_ = true;
+  for (std::string account_id : pending_user_info_fetches_)
+    StartFetchingUserInfo(account_id);
+  pending_user_info_fetches_.clear();
 }
 
 void AccountTrackerService::Shutdown() {
@@ -365,6 +375,11 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
 
 void AccountTrackerService::StartFetchingUserInfo(
     const std::string& account_id) {
+  DCHECK(CalledOnValidThread());
+  if (!network_fetches_enabled_) {
+    pending_user_info_fetches_.push_back(account_id);
+    return;
+  }
 
   if (ContainsKey(user_info_requests_, account_id))
     DeleteFetcher(user_info_requests_[account_id]);
