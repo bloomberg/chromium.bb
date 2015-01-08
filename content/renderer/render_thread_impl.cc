@@ -947,6 +947,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     gin::Debug::SetJitCodeEventHandler(vTune::GetVtuneCodeEventHandler());
 #endif
 
+  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
+
   blink_platform_impl_.reset(
       new RendererBlinkPlatformImpl(renderer_scheduler_.get()));
   blink::initialize(blink_platform_impl_.get());
@@ -1033,8 +1035,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   EnableBlinkPlatformLogChannels(
       command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
-
-  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 
   if (!media::IsMediaLibraryInitialized()) {
     WebRuntimeFeatures::enableWebAudio(false);

@@ -180,11 +180,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   scoped_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
 
-  bool send_v8_idle_notification_after_commit_;
-  base::TimeTicks begin_main_frame_time_;
-  // The time interval between BeginMainFrame calls, provided by the scheduler.
-  base::TimeDelta begin_main_frame_interval_;
-
   base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
 };
 

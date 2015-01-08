@@ -171,14 +171,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
     : num_failed_recreate_attempts_(0),
       widget_(widget),
       compositor_deps_(compositor_deps),
-      send_v8_idle_notification_after_commit_(true),
       weak_factory_(this) {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-
-  if (cmd->HasSwitch(switches::kEnableV8IdleNotificationAfterCommit))
-    send_v8_idle_notification_after_commit_ = true;
-  if (cmd->HasSwitch(switches::kDisableV8IdleNotificationAfterCommit))
-    send_v8_idle_notification_after_commit_ = false;
 }
 
 void RenderWidgetCompositor::Initialize() {
@@ -765,8 +758,6 @@ void RenderWidgetCompositor::DidBeginMainFrame() {
 }
 
 void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
-  begin_main_frame_time_ = args.frame_time;
-  begin_main_frame_interval_ = args.interval;
   double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
   double deadline_sec = (args.deadline - base::TimeTicks()).InSecondsF();
   double interval_sec = args.interval.InSecondsF();
@@ -851,19 +842,6 @@ void RenderWidgetCompositor::WillCommit() {
 
 void RenderWidgetCompositor::DidCommit() {
   DCHECK(!temporary_copy_output_request_);
-  if (send_v8_idle_notification_after_commit_) {
-    base::TimeDelta idle_time = begin_main_frame_time_ +
-                                begin_main_frame_interval_ -
-                                gfx::FrameTime::Now();
-    if (idle_time > base::TimeDelta()) {
-      // Convert to 32-bit microseconds first to avoid costly 64-bit division.
-      int32 idle_time_in_us = idle_time.InMicroseconds();
-      int32 idle_time_in_ms = idle_time_in_us / 1000;
-      if (idle_time_in_ms)
-        blink::mainThreadIsolate()->IdleNotification(idle_time_in_ms);
-    }
-  }
-
   widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
   compositor_deps_->GetRendererScheduler()->DidCommitFrameToCompositor();
