@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -72,6 +73,26 @@ class CallbackLogger {
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
+
+// Returns the request value as |result| in case of successful parse.
+void CreateRequestValueFromJSON(const std::string& json,
+                                scoped_ptr<RequestValue>* result) {
+  using extensions::api::file_system_provider_internal::
+      ReadDirectoryRequestedSuccess::Params;
+
+  int json_error_code;
+  std::string json_error_msg;
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+      json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg));
+  ASSERT_TRUE(value.get()) << json_error_msg;
+
+  base::ListValue* value_as_list;
+  ASSERT_TRUE(value->GetAsList(&value_as_list));
+  scoped_ptr<Params> params(Params::Create(*value_as_list));
+  ASSERT_TRUE(params.get());
+  *result = RequestValue::CreateForReadDirectorySuccess(params.Pass());
+  ASSERT_TRUE(result->get());
+}
 
 }  // namespace
 
@@ -141,9 +162,6 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute_NoListener) {
 }
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
-  using extensions::api::file_system_provider_internal::
-      ReadDirectoryRequestedSuccess::Params;
-
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -177,20 +195,8 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
       "  false,\n"  // has_more
       "  0\n"       // execution_time
       "]\n";
-
-  int json_error_code;
-  std::string json_error_msg;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      input, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg));
-  ASSERT_TRUE(value.get()) << json_error_msg;
-
-  base::ListValue* value_as_list;
-  ASSERT_TRUE(value->GetAsList(&value_as_list));
-  scoped_ptr<Params> params(Params::Create(*value_as_list));
-  ASSERT_TRUE(params.get());
-  scoped_ptr<RequestValue> request_value(
-      RequestValue::CreateForReadDirectorySuccess(params.Pass()));
-  ASSERT_TRUE(request_value.get());
+  scoped_ptr<RequestValue> request_value;
+  ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
   read_directory.OnSuccess(kRequestId, request_value.Pass(), has_more);
@@ -208,6 +214,54 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   EXPECT_TRUE(
       base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014", &expected_time));
   EXPECT_EQ(expected_time, entry.last_modified_time);
+}
+
+TEST_F(FileSystemProviderOperationsReadDirectoryTest,
+       OnSuccess_InvalidMetadata) {
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  CallbackLogger callback_logger;
+
+  ReadDirectory read_directory(NULL, file_system_info_,
+                               base::FilePath(kDirectoryPath),
+                               base::Bind(&CallbackLogger::OnReadDirectory,
+                                          base::Unretained(&callback_logger)));
+  read_directory.SetDispatchEventImplForTesting(
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
+                 base::Unretained(&dispatcher)));
+
+  EXPECT_TRUE(read_directory.Execute(kRequestId));
+
+  // Sample input as JSON. Keep in sync with file_system_provider_api.idl.
+  // As for now, it is impossible to create *::Params class directly, not from
+  // base::Value.
+  const std::string input =
+      "[\n"
+      "  \"testing-file-system\",\n"  // kFileSystemId
+      "  2,\n"                        // kRequestId
+      "  [\n"
+      "    {\n"
+      "      \"isDirectory\": false,\n"
+      "      \"name\": \"blue/berries.txt\",\n"
+      "      \"size\": 4096,\n"
+      "      \"modificationTime\": {\n"
+      "        \"value\": \"Thu Apr 24 00:46:52 UTC 2014\"\n"
+      "      }\n"
+      "    }\n"
+      "  ],\n"
+      "  false,\n"  // has_more
+      "  0\n"       // execution_time
+      "]\n";
+  scoped_ptr<RequestValue> request_value;
+  ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
+
+  const bool has_more = false;
+  read_directory.OnSuccess(kRequestId, request_value.Pass(), has_more);
+
+  ASSERT_EQ(1u, callback_logger.events().size());
+  CallbackLogger::Event* event = callback_logger.events()[0];
+  EXPECT_EQ(base::File::FILE_ERROR_IO, event->result());
+
+  EXPECT_EQ(0u, event->entry_list().size());
 }
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {

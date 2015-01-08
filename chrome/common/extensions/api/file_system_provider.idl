@@ -46,7 +46,7 @@ namespace fileSystemProvider {
     // True if it is a directory.
     boolean isDirectory;
 
-    // Name of this entry (not full path name).
+    // Name of this entry (not full path name). Must not contain '/'.
     DOMString name;
 
     // File size in bytes.

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 
@@ -28,6 +29,8 @@ bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
 
   for (size_t i = 0; i < params->entries.size(); ++i) {
     const linked_ptr<EntryMetadata> entry_metadata = params->entries[i];
+    if (!ValidateIDLEntryMetadata(*entry_metadata, false /* root_entry */))
+      return false;
 
     storage::DirectoryEntry output_entry;
     output_entry.is_directory = entry_metadata->is_directory;
@@ -37,11 +40,11 @@ bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
     std::string input_modification_time;
     if (!entry_metadata->modification_time.additional_properties.GetString(
             "value", &input_modification_time)) {
-      return false;
+      NOTREACHED();
     }
     if (!base::Time::FromString(input_modification_time.c_str(),
                                 &output_entry.last_modified_time)) {
-      return false;
+      NOTREACHED();
     }
 
     output->push_back(output_entry);

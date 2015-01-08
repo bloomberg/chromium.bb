@@ -34,6 +34,26 @@ const base::FilePath::CharType kDirectoryPath[] =
 // URLs are case insensitive, so it should pass the sanity check.
 const char kThumbnail[] = "DaTa:ImAgE/pNg;base64,";
 
+// Returns the request value as |result| in case of successful parse.
+void CreateRequestValueFromJSON(const std::string& json,
+                                scoped_ptr<RequestValue>* result) {
+  using extensions::api::file_system_provider_internal::
+      GetMetadataRequestedSuccess::Params;
+
+  int json_error_code;
+  std::string json_error_msg;
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+      json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg));
+  ASSERT_TRUE(value.get()) << json_error_msg;
+
+  base::ListValue* value_as_list;
+  ASSERT_TRUE(value->GetAsList(&value_as_list));
+  scoped_ptr<Params> params(Params::Create(*value_as_list));
+  ASSERT_TRUE(params.get());
+  *result = RequestValue::CreateForGetMetadataSuccess(params.Pass());
+  ASSERT_TRUE(result->get());
+}
+
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
  public:
@@ -86,6 +106,89 @@ class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
 
   ProvidedFileSystemInfo file_system_info_;
 };
+
+TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateName) {
+  EXPECT_TRUE(ValidateName("hello-world!@#$%^&*()-_=+\"':,.<>?[]{}|\\",
+                           false /* root_entry */));
+  EXPECT_FALSE(ValidateName("hello-world!@#$%^&*()-_=+\"':,.<>?[]{}|\\",
+                            true /* root_entry */));
+  EXPECT_FALSE(ValidateName("", false /* root_path */));
+  EXPECT_TRUE(ValidateName("", true /* root_path */));
+  EXPECT_FALSE(ValidateName("hello/world", false /* root_path */));
+  EXPECT_FALSE(ValidateName("hello/world", true /* root_path */));
+}
+
+TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
+  using extensions::api::file_system_provider::EntryMetadata;
+  const std::string kValidFileName = "hello-world";
+  const std::string kValidThumbnailUrl = "data:something";
+
+  // Correct metadata for non-root.
+  {
+    EntryMetadata metadata;
+    metadata.name = kValidFileName;
+    metadata.modification_time.additional_properties.SetString(
+        "value", "invalid-date-time");  // Invalid modification time is OK.
+    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
+    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+  }
+
+  // Correct metadata for non-root (without thumbnail).
+  {
+    EntryMetadata metadata;
+    metadata.name = kValidFileName;
+    metadata.modification_time.additional_properties.SetString(
+        "value", "invalid-date-time");  // Invalid modification time is OK.
+    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+  }
+
+  // Correct metadata for root.
+  {
+    EntryMetadata metadata;
+    metadata.name = "";
+    metadata.modification_time.additional_properties.SetString(
+        "value", "invalid-date-time");  // Invalid modification time is OK.
+    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, true /* root_path */));
+  }
+
+  // Invalid characters in the name.
+  {
+    EntryMetadata metadata;
+    metadata.name = "hello/world";
+    metadata.modification_time.additional_properties.SetString(
+        "value", "invalid-date-time");  // Invalid modification time is OK.
+    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+  }
+
+  // Empty name for non-root.
+  {
+    EntryMetadata metadata;
+    metadata.name = "";
+    metadata.modification_time.additional_properties.SetString(
+        "value", "invalid-date-time");  // Invalid modification time is OK.
+    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+  }
+
+  // Missing date time.
+  {
+    EntryMetadata metadata;
+    metadata.name = kValidFileName;
+    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+  }
+
+  // Invalid thumbnail.
+  {
+    EntryMetadata metadata;
+    metadata.name = kValidFileName;
+    metadata.modification_time.additional_properties.SetString(
+        "value", "invalid-date-time");  // Invalid modification time is OK.
+    metadata.thumbnail.reset(new std::string("http://invalid-scheme"));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+  }
+}
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
   using extensions::api::file_system_provider::GetMetadataRequestedOptions;
@@ -141,9 +244,6 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
-  using extensions::api::file_system_provider_internal::
-      GetMetadataRequestedSuccess::Params;
-
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -177,20 +277,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
       "  },\n"
       "  0\n"  // execution_time
       "]\n";
-
-  int json_error_code;
-  std::string json_error_msg;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      input, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg));
-  ASSERT_TRUE(value.get()) << json_error_msg;
-
-  base::ListValue* value_as_list;
-  ASSERT_TRUE(value->GetAsList(&value_as_list));
-  scoped_ptr<Params> params(Params::Create(*value_as_list));
-  ASSERT_TRUE(params.get());
-  scoped_ptr<RequestValue> request_value(
-      RequestValue::CreateForGetMetadataSuccess(params.Pass()));
-  ASSERT_TRUE(request_value.get());
+  scoped_ptr<RequestValue> request_value;
+  ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
   get_metadata.OnSuccess(kRequestId, request_value.Pass(), has_more);
@@ -210,11 +298,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   EXPECT_EQ(kThumbnail, metadata->thumbnail);
 }
 
-TEST_F(FileSystemProviderOperationsGetMetadataTest,
-       OnSuccess_InvalidThumbnail) {
-  using extensions::api::file_system_provider_internal::
-      GetMetadataRequestedSuccess::Params;
-
+TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -238,7 +322,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest,
       "  2,\n"                        // kRequestId
       "  {\n"
       "    \"isDirectory\": false,\n"
-      "    \"name\": \"blueberries.txt\",\n"
+      "    \"name\": \"blue/berries.txt\",\n"
       "    \"size\": 4096,\n"
       "    \"modificationTime\": {\n"
       "      \"value\": \"Thu Apr 24 00:46:52 UTC 2014\"\n"
@@ -249,19 +333,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest,
       "  0\n"  // execution_time
       "]\n";
 
-  int json_error_code;
-  std::string json_error_msg;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      input, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg));
-  ASSERT_TRUE(value.get()) << json_error_msg;
-
-  base::ListValue* value_as_list;
-  ASSERT_TRUE(value->GetAsList(&value_as_list));
-  scoped_ptr<Params> params(Params::Create(*value_as_list));
-  ASSERT_TRUE(params.get());
-  scoped_ptr<RequestValue> request_value(
-      RequestValue::CreateForGetMetadataSuccess(params.Pass()));
-  ASSERT_TRUE(request_value.get());
+  scoped_ptr<RequestValue> request_value;
+  ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
   get_metadata.OnSuccess(kRequestId, request_value.Pass(), has_more);
