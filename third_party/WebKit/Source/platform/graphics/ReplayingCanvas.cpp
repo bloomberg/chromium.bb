@@ -83,78 +83,72 @@ bool ReplayingCanvas::abortDrawing()
     return m_abortDrawing;
 }
 
-void ReplayingCanvas::drawPaint(const SkPaint& paint)
+void ReplayingCanvas::onDrawPaint(const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawPaint(paint);
+    this->SkCanvas::onDrawPaint(paint);
 }
 
-void ReplayingCanvas::drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint)
+void ReplayingCanvas::onDrawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawPoints(mode, count, pts, paint);
+    this->SkCanvas::onDrawPoints(mode, count, pts, paint);
 }
 
-void ReplayingCanvas::drawRect(const SkRect& rect, const SkPaint& paint)
+void ReplayingCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawRect(rect, paint);
+    this->SkCanvas::onDrawRect(rect, paint);
 }
 
-void ReplayingCanvas::drawOval(const SkRect& rect, const SkPaint& paint)
+void ReplayingCanvas::onDrawOval(const SkRect& rect, const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawOval(rect, paint);
+    this->SkCanvas::onDrawOval(rect, paint);
 }
 
-void ReplayingCanvas::drawRRect(const SkRRect& rrect, const SkPaint& paint)
+void ReplayingCanvas::onDrawRRect(const SkRRect& rrect, const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawRRect(rrect, paint);
+    this->SkCanvas::onDrawRRect(rrect, paint);
 }
 
-void ReplayingCanvas::drawPath(const SkPath& path, const SkPaint& paint)
+void ReplayingCanvas::onDrawPath(const SkPath& path, const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawPath(path, paint);
+    this->SkCanvas::onDrawPath(path, paint);
 }
 
-void ReplayingCanvas::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
+void ReplayingCanvas::onDrawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawBitmap(bitmap, left, top, paint);
+    this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
 }
 
-void ReplayingCanvas::drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst,
+void ReplayingCanvas::onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst,
     const SkPaint* paint, DrawBitmapRectFlags flags)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
+    this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
 }
 
-void ReplayingCanvas::drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
+void ReplayingCanvas::onDrawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawBitmapNine(bitmap, center, dst, paint);
+    this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
 }
 
-void ReplayingCanvas::drawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
+void ReplayingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawSprite(bitmap, left, top, paint);
+    this->SkCanvas::onDrawSprite(bitmap, left, top, paint);
 }
 
-void ReplayingCanvas::drawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
+void ReplayingCanvas::onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
     const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint& paint)
 {
     AutoReplayer replayer(this);
-    this->SkCanvas::drawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
-}
-
-void ReplayingCanvas::drawData(const void* data, size_t length)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::drawData(data, length);
+    this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
 }
 
 void ReplayingCanvas::beginCommentGroup(const char* description)

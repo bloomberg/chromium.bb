@@ -40,19 +40,18 @@ public:
     InterceptingCanvas(SkBitmap bitmap) : SkCanvas(bitmap), m_depthCount(0) { };
     InterceptingCanvas(int width, int height) : SkCanvas(width, height), m_depthCount(0) { };
 
-    virtual void drawPaint(const SkPaint&) override = 0;
-    virtual void drawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override = 0;
-    virtual void drawRect(const SkRect&, const SkPaint&) override = 0;
-    virtual void drawOval(const SkRect&, const SkPaint&) override = 0;
-    virtual void drawRRect(const SkRRect&, const SkPaint&) override = 0;
-    virtual void drawPath(const SkPath&, const SkPaint&) override = 0;
-    virtual void drawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint* = 0) override = 0;
-    virtual void drawBitmapRectToRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override = 0;
-    virtual void drawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override = 0;
-    virtual void drawSprite(const SkBitmap&, int left, int top, const SkPaint* = 0) override = 0;
-    virtual void drawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
+    virtual void onDrawPaint(const SkPaint&) override = 0;
+    virtual void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override = 0;
+    virtual void onDrawRect(const SkRect&, const SkPaint&) override = 0;
+    virtual void onDrawOval(const SkRect&, const SkPaint&) override = 0;
+    virtual void onDrawRRect(const SkRRect&, const SkPaint&) override = 0;
+    virtual void onDrawPath(const SkPath&, const SkPaint&) override = 0;
+    virtual void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override = 0;
+    virtual void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override = 0;
+    virtual void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override = 0;
+    virtual void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override = 0;
+    virtual void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
         const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override = 0;
-    virtual void drawData(const void* data, size_t length) override = 0;
     virtual void beginCommentGroup(const char* description) override = 0;
     virtual void addComment(const char* keyword, const char* value) override = 0;
     virtual void endCommentGroup() override = 0;

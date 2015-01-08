@@ -72,78 +72,72 @@ void ProfilingCanvas::setTimings(Vector<double>* timings)
     m_timings = timings;
 }
 
-void ProfilingCanvas::drawPaint(const SkPaint& paint)
+void ProfilingCanvas::onDrawPaint(const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawPaint(paint);
+    this->SkCanvas::onDrawPaint(paint);
 }
 
-void ProfilingCanvas::drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint)
+void ProfilingCanvas::onDrawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawPoints(mode, count, pts, paint);
+    this->SkCanvas::onDrawPoints(mode, count, pts, paint);
 }
 
-void ProfilingCanvas::drawRect(const SkRect& rect, const SkPaint& paint)
+void ProfilingCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawRect(rect, paint);
+    this->SkCanvas::onDrawRect(rect, paint);
 }
 
-void ProfilingCanvas::drawOval(const SkRect& rect, const SkPaint& paint)
+void ProfilingCanvas::onDrawOval(const SkRect& rect, const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawOval(rect, paint);
+    this->SkCanvas::onDrawOval(rect, paint);
 }
 
-void ProfilingCanvas::drawRRect(const SkRRect& rrect, const SkPaint& paint)
+void ProfilingCanvas::onDrawRRect(const SkRRect& rrect, const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawRRect(rrect, paint);
+    this->SkCanvas::onDrawRRect(rrect, paint);
 }
 
-void ProfilingCanvas::drawPath(const SkPath& path, const SkPaint& paint)
+void ProfilingCanvas::onDrawPath(const SkPath& path, const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawPath(path, paint);
+    this->SkCanvas::onDrawPath(path, paint);
 }
 
-void ProfilingCanvas::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
+void ProfilingCanvas::onDrawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawBitmap(bitmap, left, top, paint);
+    this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
 }
 
-void ProfilingCanvas::drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst,
+void ProfilingCanvas::onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst,
     const SkPaint* paint, DrawBitmapRectFlags flags)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
+    this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
 }
 
-void ProfilingCanvas::drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
+void ProfilingCanvas::onDrawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawBitmapNine(bitmap, center, dst, paint);
+    this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
 }
 
-void ProfilingCanvas::drawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
+void ProfilingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawSprite(bitmap, left, top, paint);
+    this->SkCanvas::onDrawSprite(bitmap, left, top, paint);
 }
 
-void ProfilingCanvas::drawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
+void ProfilingCanvas::onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
     const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint& paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::drawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
-}
-
-void ProfilingCanvas::drawData(const void* data, size_t length)
-{
-    AutoStamper stamper(this);
-    this->SkCanvas::drawData(data, length);
+    this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
 }
 
 void ProfilingCanvas::beginCommentGroup(const char* description)
