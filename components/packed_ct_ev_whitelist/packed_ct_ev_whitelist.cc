@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/packed_ct_ev_whitelist.h"
+#include "components/packed_ct_ev_whitelist/packed_ct_ev_whitelist.h"
 
 #include <string.h>
 
@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "chrome/browser/net/bit_stream_reader.h"
+#include "components/packed_ct_ev_whitelist/bit_stream_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -37,6 +37,8 @@ int TruncatedHashesComparator(const void* v1, const void* v2) {
   return 0;
 }
 }  // namespace
+
+namespace packed_ct_ev_whitelist {
 
 void SetEVCertsWhitelist(scoped_refptr<net::ct::EVCertsWhitelist> whitelist) {
   if (!whitelist->IsValid()) {
@@ -130,3 +132,5 @@ bool PackedEVCertsWhitelist::IsValid() const {
 base::Version PackedEVCertsWhitelist::Version() const {
   return version_;
 }
+
+}  // namespace packed_ct_ev_whitelist

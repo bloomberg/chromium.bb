@@ -15,8 +15,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/version.h"
-#include "chrome/browser/net/packed_ct_ev_whitelist.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/packed_ct_ev_whitelist/packed_ct_ev_whitelist.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -42,7 +42,8 @@ void UpdateNewWhitelistData(const base::FilePath& new_whitelist_file,
   }
 
   scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
-      new PackedEVCertsWhitelist(compressed_list, version));
+      new packed_ct_ev_whitelist::PackedEVCertsWhitelist(compressed_list,
+                                                         version));
   if (!new_whitelist->IsValid()) {
     VLOG(1) << "Failed uncompressing EV certs whitelist.";
     return;
@@ -56,7 +57,7 @@ void UpdateNewWhitelistData(const base::FilePath& new_whitelist_file,
     }
   }
 
-  SetEVCertsWhitelist(new_whitelist);
+  packed_ct_ev_whitelist::SetEVCertsWhitelist(new_whitelist);
 }
 
 void DoInitialLoadFromDisk(const base::FilePath& stored_whitelist_path) {
@@ -77,14 +78,15 @@ void DoInitialLoadFromDisk(const base::FilePath& stored_whitelist_path) {
   // In practice very quickly the component updater will call ComponentReady
   // which will have a valid version.
   scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
-      new PackedEVCertsWhitelist(compressed_list, Version()));
+      new packed_ct_ev_whitelist::PackedEVCertsWhitelist(compressed_list,
+                                                         Version()));
   if (!new_whitelist->IsValid()) {
     VLOG(1) << "Failed uncompressing EV certs whitelist.";
     return;
   }
 
   VLOG(1) << "EV whitelist: Sucessfully loaded initial data.";
-  SetEVCertsWhitelist(new_whitelist);
+  packed_ct_ev_whitelist::SetEVCertsWhitelist(new_whitelist);
 }
 
 }  // namespace

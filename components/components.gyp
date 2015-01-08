@@ -43,6 +43,7 @@
     'onc.gypi',
     'os_crypt.gypi',
     'ownership.gypi',
+    'packed_ct_ev_whitelist.gypi',
     'password_manager.gypi',
     'policy.gypi',
     'precache.gypi',

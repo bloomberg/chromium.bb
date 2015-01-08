@@ -1,0 +1,36 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("packed_ct_ev_whitelist") {
+  sources = [
+    "bit_stream_reader.cc",
+    "bit_stream_reader.h",
+    "packed_ct_ev_whitelist.cc",
+    "packed_ct_ev_whitelist.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content",
+    "//net",
+  ]
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "bit_stream_reader_unittest.cc",
+    "packed_ct_ev_whitelist_unittest.cc",
+  ]
+
+  deps = [
+    ":packed_ct_ev_whitelist",
+    "//testing/gtest",
+  ]
+}

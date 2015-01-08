@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/packed_ct_ev_whitelist.h"
+#include "components/packed_ct_ev_whitelist/packed_ct_ev_whitelist.h"
 
 #include <algorithm>
 #include <string>
@@ -53,6 +53,8 @@ std::string GetAllWhitelistData() {
 }
 
 }  // namespace
+
+namespace packed_ct_ev_whitelist {
 
 TEST(PackedEVCertsWhitelistTest, UncompressFailsForTooShortList) {
   // This list does not contain enough bytes even for the first hash.
@@ -147,3 +149,5 @@ TEST(PackedEVCertsWhitelistTest, CorrectlyIdentifiesWhitelistIsValid) {
 
   EXPECT_TRUE(whitelist->IsValid());
 }
+
+}  //  namespace packed_ct_ev_whitelist

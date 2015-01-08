@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/bit_stream_reader.h"
+#include "components/packed_ct_ev_whitelist/bit_stream_reader.h"
 
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
+namespace packed_ct_ev_whitelist {
 namespace internal {
 
 BitStreamReader::BitStreamReader(const base::StringPiece& source)
@@ -61,3 +62,4 @@ uint8_t BitStreamReader::ReadBit() {
 }
 
 }  // namespace internal
+}  // namespace packed_ct_ev_whitelist

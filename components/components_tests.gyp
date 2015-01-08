@@ -190,6 +190,8 @@
             'os_crypt/keychain_password_mac_unittest.mm',
             'os_crypt/os_crypt_unittest.cc',
             'ownership/owner_key_util_impl_unittest.cc',
+            'packed_ct_ev_whitelist/bit_stream_reader_unittest.cc',
+            'packed_ct_ev_whitelist/packed_ct_ev_whitelist_unittest.cc',
             'password_manager/core/browser/affiliation_fetcher_unittest.cc',
             'password_manager/core/browser/affiliation_utils_unittest.cc',
             'password_manager/core/browser/browser_save_password_progress_logger_unittest.cc',
@@ -351,6 +353,9 @@
             'components.gyp:content_settings_core_browser',
             'components.gyp:content_settings_core_common',
             'components.gyp:content_settings_core_test_support',
+            
+            # Dependencies of packed CT EV white list
+            'components.gyp:packed_ct_ev_whitelist',
 
             # Dependencies of crash
             'components.gyp:crash_test_support',

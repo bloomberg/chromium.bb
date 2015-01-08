@@ -94,6 +94,7 @@ static_library("browser") {
     "//components/network_time",
     "//components/omnibox",
     "//components/os_crypt",
+    "//components/packed_ct_ev_whitelist",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/policy:policy_component",

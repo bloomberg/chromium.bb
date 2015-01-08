@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_BIT_STREAM_READER_H_
-#define CHROME_BROWSER_NET_BIT_STREAM_READER_H_
+#ifndef COMPONENTS_PACKED_CT_EV_WHITELIST_BIT_STREAM_READER_H_
+#define COMPONENTS_PACKED_CT_EV_WHITELIST_BIT_STREAM_READER_H_
 
 #include <stdint.h>
 
 #include "base/strings/string_piece.h"
 
+namespace packed_ct_ev_whitelist {
 namespace internal {
 
 // A class for reading individual bits from a packed buffer. Bits are read
@@ -54,5 +55,6 @@ class BitStreamReader {
 };
 
 }  // namespace internal
+}  // namespace packed_ct_ev_whitelist
 
-#endif  // CHROME_BROWSER_NET_BIT_STREAM_READER_H_
+#endif  // COMPONENTS_PACKED_CT_EV_WHITELIST_BIT_STREAM_READER_H_

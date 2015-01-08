@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/bit_stream_reader.h"
+#include "components/packed_ct_ev_whitelist/bit_stream_reader.h"
 
 #include <algorithm>
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace packed_ct_ev_whitelist {
 namespace internal {
 
 const uint8_t kSomeData[] = {0xd5, 0xe2, 0xaf, 0xe5, 0xbb, 0x10, 0x7c, 0xd1};
@@ -93,3 +94,4 @@ TEST(BitStreamReaderTest, CannotReadFromEmptyStream) {
 }
 
 }  // namespace internal
+}  // namespace packed_ct_ev_whitelist

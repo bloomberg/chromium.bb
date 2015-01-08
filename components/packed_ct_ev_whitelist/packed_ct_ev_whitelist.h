@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_PACKED_CT_EV_WHITELIST_H_
-#define CHROME_BROWSER_NET_PACKED_CT_EV_WHITELIST_H_
+#ifndef COMPONENTS_PACKED_CT_EV_WHITELIST_PACKED_CT_EV_WHITELIST_H_
+#define COMPONENTS_PACKED_CT_EV_WHITELIST_PACKED_CT_EV_WHITELIST_H_
 
 #include <stdint.h>
 
@@ -17,6 +17,8 @@
 namespace base {
 class FilePath;
 }
+
+namespace packed_ct_ev_whitelist {
 
 // An implementation of the EVCertsWhitelist that gets its data packed using
 // Golomb coding to encode the difference between subsequent hash values.
@@ -82,4 +84,6 @@ class PackedEVCertsWhitelist : public net::ct::EVCertsWhitelist {
 // To set the new whitelist, this function dispatches a task to the IO thread.
 void SetEVCertsWhitelist(scoped_refptr<net::ct::EVCertsWhitelist> whitelist);
 
-#endif  // CHROME_BROWSER_NET_PACKED_CT_EV_WHITELIST_H_
+}  // namespace packed_ct_ev_whitelist
+
+#endif  // COMPONENTS_PACKED_CT_EV_WHITELIST_PACKED_CT_EV_WHITELIST_H_
