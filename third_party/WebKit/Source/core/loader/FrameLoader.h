@@ -114,7 +114,7 @@ public:
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
     FetchContext& fetchContext() const { return *m_fetchContext; }
 
-    void receivedMainResourceError(const ResourceError&);
+    void receivedMainResourceError(DocumentLoader*, const ResourceError&);
 
     bool isLoadingMainFrame() const;
 

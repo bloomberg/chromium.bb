@@ -172,7 +172,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
         return;
     setMainDocumentError(error);
     clearMainResourceLoader();
-    frameLoader()->receivedMainResourceError(error);
+    frameLoader()->receivedMainResourceError(this, error);
     clearMainResourceHandle();
 }
 

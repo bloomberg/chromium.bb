@@ -1000,22 +1000,6 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     for (RefPtrWillBeRawPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         allChildrenAreDoneLoading &= child->checkLoadComplete();
     }
-
-    if (m_provisionalDocumentLoader) {
-        const ResourceError& error = m_provisionalDocumentLoader->mainDocumentError();
-        if (error.isNull())
-            return false;
-        RefPtr<DocumentLoader> loader = m_provisionalDocumentLoader;
-        client()->dispatchDidFailProvisionalLoad(error);
-        if (loader != m_provisionalDocumentLoader)
-            return false;
-        m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = nullptr;
-        m_progressTracker->progressCompleted();
-        checkCompleted();
-        return true;
-    }
-
     if (!allChildrenAreDoneLoading)
         return false;
 
@@ -1031,16 +1015,11 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
     m_progressTracker->progressCompleted();
     m_frame->localDOMWindow()->finishedLoading();
 
-    const ResourceError& error = m_documentLoader->mainDocumentError();
-    if (!error.isNull()) {
-        client()->dispatchDidFailLoad(error);
-    } else {
-        // Report mobile vs. desktop page statistics. This will only report on Android.
-        if (m_frame->isMainFrame())
-            m_frame->document()->viewportDescription().reportMobilePageStats(m_frame);
+    // Report mobile vs. desktop page statistics. This will only report on Android.
+    if (m_frame->isMainFrame())
+        m_frame->document()->viewportDescription().reportMobilePageStats(m_frame);
 
-        client()->dispatchDidFinishLoad();
-    }
+    client()->dispatchDidFinishLoad();
     m_loadType = FrameLoadTypeStandard;
     return true;
 }
@@ -1124,13 +1103,11 @@ void FrameLoader::detach()
     setOpener(0);
 }
 
-void FrameLoader::receivedMainResourceError(const ResourceError& error)
+void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const ResourceError& error)
 {
     // Retain because the stop may release the last reference to it.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-
-    if (m_frame->document()->parser())
-        m_frame->document()->parser()->stopParsing();
+    RefPtrWillBeRawPtr<DocumentLoader> protectDocumentLoader(loader);
 
     // FIXME: We really ought to be able to just check for isCancellation() here, but there are some
     // ResourceErrors that setIsCancellation() but aren't created by ResourceError::cancelledError().
@@ -1139,6 +1116,23 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         // FIXME: For now, fallback content doesn't work cross process.
         ASSERT(m_frame->owner()->isLocal());
         m_frame->deprecatedLocalOwner()->renderFallbackContent();
+    }
+
+    if (loader == m_provisionalDocumentLoader) {
+        client()->dispatchDidFailProvisionalLoad(error);
+        if (loader != m_provisionalDocumentLoader)
+            return;
+        m_provisionalDocumentLoader->detachFromFrame();
+        m_provisionalDocumentLoader = nullptr;
+        m_progressTracker->progressCompleted();
+    } else {
+        ASSERT(loader == m_documentLoader);
+        if (m_frame->document()->parser())
+            m_frame->document()->parser()->stopParsing();
+        if (!m_provisionalDocumentLoader && m_frame->isLoading()) {
+            client()->dispatchDidFailLoad(error);
+            m_progressTracker->progressCompleted();
+        }
     }
 
     checkCompleted();
