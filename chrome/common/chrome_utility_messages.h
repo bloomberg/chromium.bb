@@ -30,11 +30,13 @@ typedef std::vector<Tuple<SkBitmap, base::FilePath>> DecodedImages;
 
 #endif  // CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
 
+#if defined(FULL_SAFE_BROWSING)
 IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
   IPC_STRUCT_TRAITS_MEMBER(success)
   IPC_STRUCT_TRAITS_MEMBER(has_executable)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
 IPC_STRUCT_TRAITS_END()
+#endif
 
 #if defined(OS_WIN)
 
