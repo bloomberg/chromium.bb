@@ -2503,11 +2503,6 @@ bool HeapAllocator::expandInlineVectorBacking(void* address, size_t newSize)
     return backingExpand(address, newSize, InlineVectorBackingHeap);
 }
 
-bool HeapAllocator::expandHashTableBacking(void* address, size_t newSize)
-{
-    return backingExpand(address, newSize, HashTableBackingHeap);
-}
-
 void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize, int heapIndex)
 {
     // We shrink the object only if the shrinking will make a non-small

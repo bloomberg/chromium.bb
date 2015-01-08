@@ -105,11 +105,6 @@ public:
     {
         return reinterpret_cast<Return>(fastMalloc(size));
     }
-
-    WTF_EXPORT static inline bool expandHashTableBacking(void*, size_t)
-    {
-        return false;
-    }
     static void free(void* address)
     {
         fastFree(address);
