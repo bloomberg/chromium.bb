@@ -122,6 +122,8 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 {
     TRACE_EVENT0("blink", "AnimationTimeline::serviceAnimations");
 
+    m_lastCurrentTimeInternal = currentTimeInternal();
+
     m_timing->cancelWake();
 
     WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> players;
@@ -244,6 +246,11 @@ bool AnimationTimeline::hasOutdatedAnimationPlayer() const
             return true;
     }
     return false;
+}
+
+bool AnimationTimeline::needsAnimationTimingUpdate()
+{
+    return m_playersNeedingUpdate.size() && currentTimeInternal() != m_lastCurrentTimeInternal;
 }
 
 void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)

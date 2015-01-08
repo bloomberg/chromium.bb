@@ -1794,7 +1794,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
-    DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(*this);
+    DocumentAnimations::updateAnimationTimingIfNeeded(*this);
     evaluateMediaQueryListIfNeeded();
     updateUseShadowTreesIfNeeded();
     updateDistributionIfNeeded();

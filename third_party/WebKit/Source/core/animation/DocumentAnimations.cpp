@@ -59,9 +59,9 @@ void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& docume
     updateAnimationTiming(document, TimingUpdateForAnimationFrame);
 }
 
-void DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(Document& document)
+void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
 {
-    if (needsOutdatedAnimationPlayerUpdate(document))
+    if (needsOutdatedAnimationPlayerUpdate(document) || document.timeline().needsAnimationTimingUpdate())
         updateAnimationTiming(document, TimingUpdateOnDemand);
 }
 

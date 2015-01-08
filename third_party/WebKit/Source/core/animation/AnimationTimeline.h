@@ -93,6 +93,7 @@ public:
 
     void setOutdatedAnimationPlayer(AnimationPlayer*);
     bool hasOutdatedAnimationPlayer() const;
+    bool needsAnimationTimingUpdate();
 
     void setPlaybackRate(double);
     double playbackRate() const;
@@ -124,6 +125,7 @@ private:
     static const double s_minimumDelay;
 
     OwnPtrWillBeMember<PlatformTiming> m_timing;
+    double m_lastCurrentTimeInternal;
 
     class AnimationTimelineTiming final : public PlatformTiming {
     public:
