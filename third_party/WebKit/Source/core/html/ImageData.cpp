@@ -47,7 +47,7 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size)
     return adoptRefWillBeNoop(new ImageData(size));
 }
 
-PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<DOMUint8ClampedArray> byteArray)
+PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<Uint8ClampedArray> byteArray)
 {
     Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= size.width();
@@ -59,7 +59,7 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size, PassRef
         || static_cast<unsigned>(dataSize.unsafeGet()) > byteArray->length())
         return nullptr;
 
-    return adoptRefWillBeNoop(new ImageData(size, byteArray));
+    return adoptRefWillBeNoop(new ImageData(size, DOMUint8ClampedArray::create(byteArray)));
 }
 
 PassRefPtrWillBeRawPtr<ImageData> ImageData::create(unsigned width, unsigned height, ExceptionState& exceptionState)
@@ -81,7 +81,9 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(unsigned width, unsigned hei
         return nullptr;
     }
 
-    return adoptRefWillBeNoop(new ImageData(IntSize(width, height)));
+    RefPtrWillBeRawPtr<ImageData> imageData = adoptRefWillBeNoop(new ImageData(IntSize(width, height)));
+    imageData->data()->zeroFill();
+    return imageData.release();
 }
 
 PassRefPtrWillBeRawPtr<ImageData> ImageData::create(DOMUint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)

@@ -71,9 +71,6 @@ public:
     {
         return view()->zeroRange(offset, length);
     }
-    // Invoked by the indexed getter. Does not perform range checks; caller
-    // is responsible for doing so and returning undefined as necessary.
-    ValueType item(unsigned index) const { return view()->item(index); }
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;

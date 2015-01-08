@@ -96,7 +96,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     if (!buf)
         return;
     if (srcRect.width() > 0 && srcRect.height() > 0)
-        buf->putByteArray(Premultiplied, data->data()->data(), data->size(), srcRect, IntPoint(std::min(0, -cropRect.x()), std::min(0, -cropRect.y())));
+        buf->putByteArray(Premultiplied, data->data(), data->size(), srcRect, IntPoint(std::min(0, -cropRect.x()), std::min(0, -cropRect.y())));
 
     m_bitmap = buf->copyImage(DontCopyBackingStore);
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())),  srcRect.size());

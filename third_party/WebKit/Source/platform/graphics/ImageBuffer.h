@@ -45,12 +45,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WTF {
-
-class ArrayBufferContents;
-
-} // namespace WTF
-
 namespace blink {
 
 class DrawingBuffer;
@@ -118,9 +112,9 @@ public:
     // or return CopyBackingStore if it doesn't.
     static BackingStoreCopy fastCopyImageMode();
 
-    bool getImageData(Multiply, const IntRect&, WTF::ArrayBufferContents&) const;
+    PassRefPtr<Uint8ClampedArray> getImageData(Multiply, const IntRect&) const;
 
-    void putByteArray(Multiply, const unsigned char* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint);
+    void putByteArray(Multiply, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint);
 
     String toDataURL(const String& mimeType, const double* quality = 0) const;
     AffineTransform baseTransform() const { return AffineTransform(); }

@@ -44,15 +44,15 @@ class ImageData final : public RefCountedWillBeGarbageCollectedFinalized<ImageDa
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ImageData> create(const IntSize&);
-    static PassRefPtrWillBeRawPtr<ImageData> create(const IntSize&, PassRefPtr<DOMUint8ClampedArray>);
+    static PassRefPtrWillBeRawPtr<ImageData> create(const IntSize&, PassRefPtr<Uint8ClampedArray>);
     static PassRefPtrWillBeRawPtr<ImageData> create(unsigned width, unsigned height, ExceptionState&);
     static PassRefPtrWillBeRawPtr<ImageData> create(DOMUint8ClampedArray*, unsigned width, unsigned height, ExceptionState&);
 
     IntSize size() const { return m_size; }
     int width() const { return m_size.width(); }
     int height() const { return m_size.height(); }
-    const DOMUint8ClampedArray* data() const { return m_data.get(); }
-    DOMUint8ClampedArray* data() { return m_data.get(); }
+    const Uint8ClampedArray* data() const { return m_data->view(); }
+    Uint8ClampedArray* data() { return m_data->view(); }
 
     void trace(Visitor*) { }
 

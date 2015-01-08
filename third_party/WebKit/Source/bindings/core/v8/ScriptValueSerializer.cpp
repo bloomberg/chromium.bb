@@ -871,7 +871,7 @@ void ScriptValueSerializer::writeImageData(v8::Handle<v8::Value> value)
     ImageData* imageData = V8ImageData::toImpl(value.As<v8::Object>());
     if (!imageData)
         return;
-    DOMUint8ClampedArray* pixelArray = imageData->data();
+    Uint8ClampedArray* pixelArray = imageData->data();
     m_writer.writeImageData(imageData->width(), imageData->height(), pixelArray->data(), pixelArray->length());
 }
 
@@ -1371,7 +1371,7 @@ bool SerializedScriptValueReader::readImageData(v8::Handle<v8::Value>* value)
     if (m_position + pixelDataLength > m_length)
         return false;
     RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(IntSize(width, height));
-    DOMUint8ClampedArray* pixelArray = imageData->data();
+    Uint8ClampedArray* pixelArray = imageData->data();
     ASSERT(pixelArray);
     ASSERT(pixelArray->length() >= pixelDataLength);
     memcpy(pixelArray->data(), m_buffer + m_position, pixelDataLength);
