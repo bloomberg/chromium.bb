@@ -29665,7 +29665,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourceScheduler.RequestTimeThrottled_Active">
+<histogram name="ResourceScheduler.RequestTimeThrottled.Active">
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the request was created and when the
@@ -29674,7 +29674,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourceScheduler.RequestTimeThrottled_Background">
+<histogram name="ResourceScheduler.RequestTimeThrottled.Background">
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the request was created and when the
@@ -29683,7 +29683,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourceScheduler.RequestTimeThrottled_Other">
+<histogram name="ResourceScheduler.RequestTimeThrottled.Other">
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time between when the request was created and when the
@@ -61986,6 +61986,23 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork"/>
   <affected-histogram
       name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourceSchedulerClientBreakDown">
+  <suffix name="1Client" label="One Client in the ResourceScheduler."/>
+  <suffix name="Max5Clients"
+      label="Two to five Clients in the ResourceScheduler."/>
+  <suffix name="Max15Clients"
+      label="Six to fifteen Clients in the ResourceScheduler."/>
+  <suffix name="Max30Clients"
+      label="Sixteen to thirty Clients in the ResourceScheduler."/>
+  <suffix name="Over30Clients"
+      label="Over thirty Clients in the ResourceScheduler."/>
+  <affected-histogram name="ResourceScheduler.ClientLoadedTime.Active"/>
+  <affected-histogram name="ResourceScheduler.ClientLoadedTime.Background"/>
+  <affected-histogram name="ResourceScheduler.ClientLoadedTime.Other"/>
+  <affected-histogram
+      name="ResourceScheduler.ClientLoadedTime.Other.SwitchedToActive"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SafeBrowsingLists" separator=".">
