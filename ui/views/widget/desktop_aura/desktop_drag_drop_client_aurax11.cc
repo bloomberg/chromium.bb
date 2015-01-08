@@ -811,7 +811,7 @@ void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
 
 scoped_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
     X11MoveLoopDelegate* delegate) {
-  return scoped_ptr<X11MoveLoop>(new X11WholeScreenMoveLoop(this));
+  return make_scoped_ptr(new X11WholeScreenMoveLoop(this));
 }
 
 XID DesktopDragDropClientAuraX11::FindWindowFor(

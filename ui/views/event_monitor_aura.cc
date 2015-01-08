@@ -14,7 +14,7 @@ namespace views {
 // static
 scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
     ui::EventHandler* event_handler) {
-  return scoped_ptr<EventMonitor>(
+  return make_scoped_ptr(
       new EventMonitorAura(event_handler, aura::Env::GetInstance()));
 }
 
@@ -22,8 +22,7 @@ scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
 scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
     ui::EventHandler* event_handler,
     gfx::NativeWindow target_window) {
-  return scoped_ptr<EventMonitor>(
-      new EventMonitorAura(event_handler, target_window));
+  return make_scoped_ptr(new EventMonitorAura(event_handler, target_window));
 }
 
 // static

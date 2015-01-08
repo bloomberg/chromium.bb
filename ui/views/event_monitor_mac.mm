@@ -16,15 +16,14 @@ namespace views {
 // static
 scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
     ui::EventHandler* event_handler) {
-  return scoped_ptr<EventMonitor>(new EventMonitorMac(event_handler, nullptr));
+  return make_scoped_ptr(new EventMonitorMac(event_handler, nullptr));
 }
 
 // static
 scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
     ui::EventHandler* event_handler,
     gfx::NativeWindow target_window) {
-  return scoped_ptr<EventMonitor>(
-      new EventMonitorMac(event_handler, target_window));
+  return make_scoped_ptr(new EventMonitorMac(event_handler, target_window));
 }
 
 // static

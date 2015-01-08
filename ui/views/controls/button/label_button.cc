@@ -335,7 +335,7 @@ const char* LabelButton::GetClassName() const {
 }
 
 scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
-  return scoped_ptr<LabelButtonBorder>(new LabelButtonBorder(style_));
+  return make_scoped_ptr(new LabelButtonBorder(style_));
 }
 
 void LabelButton::SetBorder(scoped_ptr<Border> border) {

@@ -128,12 +128,12 @@ Border::~Border() {
 
 // static
 scoped_ptr<Border> Border::NullBorder() {
-  return scoped_ptr<Border>();
+  return nullptr;
 }
 
 // static
 scoped_ptr<Border> Border::CreateSolidBorder(int thickness, SkColor color) {
-  return scoped_ptr<Border>(new SolidBorder(thickness, color));
+  return make_scoped_ptr(new SolidBorder(thickness, color));
 }
 
 // static
@@ -141,7 +141,7 @@ scoped_ptr<Border> Border::CreateEmptyBorder(int top,
                                              int left,
                                              int bottom,
                                              int right) {
-  return scoped_ptr<Border>(new EmptyBorder(top, left, bottom, right));
+  return make_scoped_ptr(new EmptyBorder(top, left, bottom, right));
 }
 
 // static
@@ -150,14 +150,13 @@ scoped_ptr<Border> Border::CreateSolidSidedBorder(int top,
                                                   int bottom,
                                                   int right,
                                                   SkColor color) {
-  return scoped_ptr<Border>(
-      new SidedSolidBorder(top, left, bottom, right, color));
+  return make_scoped_ptr(new SidedSolidBorder(top, left, bottom, right, color));
 }
 
 // static
 scoped_ptr<Border> Border::CreateBorderPainter(Painter* painter,
                                                const gfx::Insets& insets) {
-  return scoped_ptr<Border>(new BorderPainter(painter, insets));
+  return make_scoped_ptr(new BorderPainter(painter, insets));
 }
 
 }  // namespace views

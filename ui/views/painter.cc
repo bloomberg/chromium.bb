@@ -272,20 +272,20 @@ Painter* Painter::CreateImageGridPainter(const int image_ids[]) {
 
 // static
 scoped_ptr<Painter> Painter::CreateDashedFocusPainter() {
-  return scoped_ptr<Painter>(new DashedFocusPainter(gfx::Insets())).Pass();
+  return make_scoped_ptr(new DashedFocusPainter(gfx::Insets()));
 }
 
 // static
 scoped_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
     const gfx::Insets& insets) {
-  return scoped_ptr<Painter>(new DashedFocusPainter(insets)).Pass();
+  return make_scoped_ptr(new DashedFocusPainter(insets));
 }
 
 // static
 scoped_ptr<Painter> Painter::CreateSolidFocusPainter(
     SkColor color,
     const gfx::Insets& insets) {
-  return scoped_ptr<Painter>(new SolidFocusPainter(color, insets)).Pass();
+  return make_scoped_ptr(new SolidFocusPainter(color, insets));
 }
 
 // HorizontalPainter ----------------------------------------------------------

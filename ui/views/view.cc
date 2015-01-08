@@ -1052,8 +1052,7 @@ ui::EventTarget* View::GetParentTarget() {
 }
 
 scoped_ptr<ui::EventTargetIterator> View::GetChildIterator() const {
-  return scoped_ptr<ui::EventTargetIterator>(
-      new ui::EventTargetIteratorImpl<View>(children_));
+  return make_scoped_ptr(new ui::EventTargetIteratorImpl<View>(children_));
 }
 
 ui::EventTargeter* View::GetEventTargeter() {

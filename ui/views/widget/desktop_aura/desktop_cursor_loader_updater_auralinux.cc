@@ -66,8 +66,7 @@ void DesktopCursorLoaderUpdaterAuraLinux::OnDisplayUpdated(
 
 // static
 scoped_ptr<DesktopCursorLoaderUpdater> DesktopCursorLoaderUpdater::Create() {
-  return scoped_ptr<DesktopCursorLoaderUpdater>(
-      new DesktopCursorLoaderUpdaterAuraLinux).Pass();
+  return make_scoped_ptr(new DesktopCursorLoaderUpdaterAuraLinux);
 }
 
 }  // namespace views

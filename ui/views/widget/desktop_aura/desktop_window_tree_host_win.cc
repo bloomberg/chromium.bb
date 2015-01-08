@@ -172,14 +172,14 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
 scoped_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
   DCHECK(!tooltip_);
   tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
-  return scoped_ptr<corewm::Tooltip>(tooltip_);
+  return make_scoped_ptr(tooltip_);
 }
 
 scoped_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostWin::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientWin(window(), GetHWND());
-  return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
+  return make_scoped_ptr(drag_drop_client_);
 }
 
 void DesktopWindowTreeHostWin::Close() {

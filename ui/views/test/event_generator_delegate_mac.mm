@@ -312,7 +312,7 @@ EventGeneratorDelegateMac::~EventGeneratorDelegateMac() {
 scoped_ptr<ui::EventTargetIterator>
 EventGeneratorDelegateMac::GetChildIterator() const {
   // Return NULL to dispatch all events to the result of GetRootTarget().
-  return scoped_ptr<ui::EventTargetIterator>();
+  return nullptr;
 }
 
 void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {

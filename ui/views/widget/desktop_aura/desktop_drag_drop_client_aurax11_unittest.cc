@@ -286,7 +286,7 @@ bool SimpleTestDragDropClient::IsMoveLoopRunning() {
 scoped_ptr<X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
     X11MoveLoopDelegate* delegate) {
   loop_ = new TestMoveLoop(delegate);
-  return scoped_ptr<X11MoveLoop>(loop_);
+  return make_scoped_ptr(loop_);
 }
 
 XID SimpleTestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
