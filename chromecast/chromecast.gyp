@@ -201,6 +201,7 @@
           'sources': [
             'browser/cast_network_delegate_simple.cc',
             'browser/devtools/remote_debugging_server_simple.cc',
+            'browser/media/cast_browser_cdm_factory_simple.cc',
             'browser/metrics/platform_metrics_providers_simple.cc',
             'browser/pref_service_helper_simple.cc',
             'common/platform_client_auth_simple.cc',
@@ -432,8 +433,11 @@
             'media/media.gyp:cast_media',
             '../content/content.gyp:content',
             '../ipc/ipc.gyp:ipc',
+            '../media/media.gyp:media',
           ],
           'sources': [
+            'browser/media/cast_browser_cdm_factory.cc',
+            'browser/media/cast_browser_cdm_factory.h',
             'browser/media/cma_message_filter_host.cc',
             'browser/media/cma_message_filter_host.h',
             'browser/media/cma_message_loop.cc',
