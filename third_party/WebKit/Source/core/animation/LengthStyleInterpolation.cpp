@@ -95,7 +95,8 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::interpolable
 
     switch (unitTypeCount) {
     case 0:
-        ASSERT_NOT_REACHED();
+        // TODO: this case should never be reached. This issue should be fixed once we have multiple interpolators.
+        return CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX);
     case 1:
         for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
             const InterpolableNumber *subValueType = toInterpolableNumber(listOfTypes->get(i));
