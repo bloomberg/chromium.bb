@@ -11,10 +11,10 @@
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::AnyNumber;
 using testing::_;
+using testing::AnyNumber;
+using testing::Invoke;
 using testing::Return;
-using testing::ReturnRef;
 using content::BrowserThread;
 using device::UsbConfigDescriptor;
 using device::UsbDevice;
@@ -34,6 +34,11 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
   net::IOBuffer* io_buffer = new net::IOBuffer(1);
   memset(io_buffer->data(), 0, 1);  // Avoid uninitialized reads.
   ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
+}
+
+void RequestUsbAccess(int interface_id,
+                      const base::Callback<void(bool success)>& callback) {
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
 class MockUsbDeviceHandle : public UsbDeviceHandle {
@@ -82,6 +87,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   MOCK_METHOD0(ResetDevice, bool());
   MOCK_METHOD2(GetStringDescriptor, bool(uint8_t, base::string16*));
+  MOCK_METHOD1(SetConfiguration, bool(int));
   MOCK_METHOD1(ClaimInterface, bool(int interface_number));
   MOCK_METHOD1(ReleaseInterface, bool(int interface_number));
   MOCK_METHOD2(SetInterfaceAlternateSetting,
@@ -101,36 +107,18 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
 class MockUsbDevice : public UsbDevice {
  public:
-  explicit MockUsbDevice(MockUsbDeviceHandle* mock_handle)
-      : UsbDevice(0, 0, 0), mock_handle_(mock_handle) {
-    mock_handle->set_device(this);
-  }
+  MockUsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
+      : UsbDevice(vendor_id, product_id, unique_id) {}
 
-  virtual scoped_refptr<UsbDeviceHandle> Open() override {
-    return mock_handle_;
-  }
-
-  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) override {
-    EXPECT_TRUE(false) << "Should not be reached";
-    return false;
-  }
-
-#if defined(OS_CHROMEOS)
-  virtual void RequestUsbAccess(
-      int interface_id,
-      const base::Callback<void(bool success)>& callback) override {
-    BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE, base::Bind(callback, true));
-  }
-#endif  // OS_CHROMEOS
-
-  MOCK_METHOD0(GetConfiguration, const UsbConfigDescriptor&());
-  MOCK_METHOD1(GetManufacturer, bool(base::string16* manufacturer));
-  MOCK_METHOD1(GetProduct, bool(base::string16* product));
-  MOCK_METHOD1(GetSerialNumber, bool(base::string16* serial_number));
+  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
+  MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
+  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
+  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
+  MOCK_METHOD1(GetManufacturer, bool(base::string16*));
+  MOCK_METHOD1(GetProduct, bool(base::string16*));
+  MOCK_METHOD1(GetSerialNumber, bool(base::string16*));
 
  private:
-  MockUsbDeviceHandle* mock_handle_;
   virtual ~MockUsbDevice() {}
 };
 
@@ -157,14 +145,18 @@ class UsbApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
     mock_device_handle_ = new MockUsbDeviceHandle();
-    mock_device_ = new MockUsbDevice(mock_device_handle_.get());
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-    BrowserThread::PostTaskAndReply(BrowserThread::FILE,
-                                    FROM_HERE,
+    mock_device_ = new MockUsbDevice(0, 0, 0);
+    mock_device_handle_->set_device(mock_device_.get());
+    EXPECT_CALL(*mock_device_.get(), RequestUsbAccess(_, _))
+        .WillRepeatedly(Invoke(RequestUsbAccess));
+    EXPECT_CALL(*mock_device_.get(), Open())
+        .WillRepeatedly(Return(mock_device_handle_));
+
+    base::RunLoop run_loop;
+    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
                                     base::Bind(&UsbApiTest::SetUpService, this),
-                                    runner->QuitClosure());
-    runner->Run();
+                                    run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void SetUpService() {
@@ -172,15 +164,13 @@ class UsbApiTest : public ShellApiTest {
   }
 
   void TearDownOnMainThread() override {
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
     UsbService* service = NULL;
+    base::RunLoop run_loop;
     BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE,
-        FROM_HERE,
+        BrowserThread::FILE, FROM_HERE,
         base::Bind(&UsbService::SetInstanceForTest, service),
-        runner->QuitClosure());
-    runner->Run();
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
 
  protected:
@@ -206,11 +196,22 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
   ASSERT_TRUE(RunAppTest("api_test/usb/reset_device"));
 }
 
+IN_PROC_BROWSER_TEST_F(UsbApiTest, SetConfiguration) {
+  UsbConfigDescriptor config_descriptor;
+  EXPECT_CALL(*mock_device_handle_.get(), SetConfiguration(1))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
+  EXPECT_CALL(*mock_device_.get(), GetConfiguration())
+      .WillOnce(Return(nullptr))
+      .WillOnce(Return(&config_descriptor));
+  ASSERT_TRUE(RunAppTest("api_test/usb/set_configuration"));
+}
+
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
   UsbConfigDescriptor config_descriptor;
-  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
   EXPECT_CALL(*mock_device_.get(), GetConfiguration())
-      .WillOnce(ReturnRef(config_descriptor));
+      .WillOnce(Return(&config_descriptor));
   ASSERT_TRUE(RunAppTest("api_test/usb/list_interfaces"));
 }
 

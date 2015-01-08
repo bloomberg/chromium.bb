@@ -9,6 +9,7 @@ var tests = [
     usb.findDevices({vendorId: 0, productId: 0}, function (devices) {
       var device = devices[0];
       usb.listInterfaces(device, function (result) {
+        chrome.test.assertNoLastError();
         chrome.test.succeed();
       });
     });

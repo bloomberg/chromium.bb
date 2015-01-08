@@ -13,6 +13,11 @@ function createErrorTest(resultCode, errorMessage) {
       transfer.endpoint = 1;
       transfer.data = new ArrayBuffer(0);
       usb.bulkTransfer(device, transfer, function (result) {
+        if (errorMessage) {
+          chrome.test.assertLastError(errorMessage);
+        } else {
+          chrome.test.assertNoLastError();
+        }
         chrome.test.assertTrue(resultCode == result.resultCode);
         chrome.test.succeed();
       });
@@ -22,8 +27,8 @@ function createErrorTest(resultCode, errorMessage) {
 
 var tests = [
   createErrorTest(0, undefined),
-  createErrorTest(1, "Transfer failed"),
-  createErrorTest(2, "Transfer timed out"),
+  createErrorTest(1, "Transfer failed."),
+  createErrorTest(2, "Transfer timed out."),
 ];
 
 chrome.test.runTests(tests);

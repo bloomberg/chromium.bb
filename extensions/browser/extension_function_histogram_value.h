@@ -1003,6 +1003,7 @@ enum HistogramValue {
   CRYPTOTOKENPRIVATE_REQUESTPERMISSION,
   BLUETOOTHPRIVATE_DISCONNECTALL,
   FILEMANAGERPRIVATE_GETMIMETYPE,
+  USB_SETCONFIGURATION,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

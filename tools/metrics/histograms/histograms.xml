@@ -46555,6 +46555,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="942" label="CRYPTOTOKENPRIVATE_REQUESTPERMISSION"/>
   <int value="943" label="BLUETOOTHPRIVATE_DISCONNECTALL"/>
   <int value="944" label="FILEMANAGERPRIVATE_GETMIMETYPE"/>
+  <int value="945" label="USB_SETCONFIGURATION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

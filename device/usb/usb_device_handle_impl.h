@@ -37,6 +37,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
  public:
   scoped_refptr<UsbDevice> GetDevice() const override;
   void Close() override;
+  bool SetConfiguration(int configuration_value) override;
   bool ClaimInterface(int interface_number) override;
   bool ReleaseInterface(int interface_number) override;
   bool SetInterfaceAlternateSetting(int interface_number,
@@ -86,8 +87,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // This constructor is called by UsbDevice.
   UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
                       UsbDeviceImpl* device,
-                      PlatformUsbDeviceHandle handle,
-                      const UsbConfigDescriptor& config);
+                      PlatformUsbDeviceHandle handle);
 
   ~UsbDeviceHandleImpl() override;
 
@@ -129,8 +129,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   UsbDeviceImpl* device_;
 
   PlatformUsbDeviceHandle handle_;
-
-  const UsbConfigDescriptor& config_;
 
   std::vector<uint16> languages_;
   std::map<uint8, base::string16> strings_;

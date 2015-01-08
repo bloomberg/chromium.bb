@@ -176,6 +176,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   virtual void Close() override { device_ = nullptr; }
 
+  bool SetConfiguration(int configuration_value) override { return true; }
+
   bool ClaimInterface(int interface_number) override {
     if (device_->claimed_interfaces_.find(interface_number) !=
         device_->claimed_interfaces_.end())
@@ -471,8 +473,8 @@ class MockUsbDevice : public UsbDevice {
     return new MockUsbDeviceHandle<T>(this);
   }
 
-  virtual const UsbConfigDescriptor& GetConfiguration() override {
-    return config_desc_;
+  virtual const UsbConfigDescriptor* GetConfiguration() override {
+    return &config_desc_;
   }
 
   virtual bool GetManufacturer(base::string16* manufacturer) override {

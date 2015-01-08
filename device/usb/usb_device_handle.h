@@ -51,6 +51,7 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   // Device manipulation operations. These methods are blocking and must be
   // called on FILE thread.
+  virtual bool SetConfiguration(int configuration_value) = 0;
   virtual bool ClaimInterface(int interface_number) = 0;
   virtual bool ReleaseInterface(int interface_number) = 0;
   virtual bool SetInterfaceAlternateSetting(int interface_number,

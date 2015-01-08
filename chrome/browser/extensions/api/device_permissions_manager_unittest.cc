@@ -23,7 +23,12 @@ namespace {
 using device::UsbDevice;
 using device::UsbDeviceHandle;
 using device::UsbService;
+using testing::_;
+using testing::DoAll;
 using testing::Return;
+using testing::SetArgPointee;
+
+int next_id;
 
 class MockUsbService : public UsbService {
  public:
@@ -54,41 +59,37 @@ class MockUsbService : public UsbService {
 
 class MockUsbDevice : public UsbDevice {
  public:
-  MockUsbDevice(const std::string& serial_number, uint32 unique_id)
-      : UsbDevice(0, 0, unique_id), serial_number_(serial_number) {}
-
-  MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-#if defined(OS_CHROMEOS)
-  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
-#endif
-  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor&());
-
-  virtual bool GetManufacturer(base::string16* manufacturer) {
-    *manufacturer = base::ASCIIToUTF16("Test Manufacturer");
-    return true;
-  }
-
-  virtual bool GetProduct(base::string16* product) {
-    *product = base::ASCIIToUTF16("Test Product");
-    return true;
-  }
-
-  virtual bool GetSerialNumber(base::string16* serial_number) override {
-    if (serial_number_.empty()) {
-      // Return false as if the device does not have or failed to return its
-      // serial number.
-      return false;
+  explicit MockUsbDevice(const std::string& serial_number)
+      : UsbDevice(0, 0, next_id++) {
+    if (serial_number.empty()) {
+      EXPECT_CALL(*this, GetSerialNumber(_)).WillRepeatedly(Return(false));
+    } else {
+      EXPECT_CALL(*this, GetSerialNumber(_))
+          .WillRepeatedly(
+              DoAll(SetArgPointee<0>(base::ASCIIToUTF16(serial_number)),
+                    Return(true)));
     }
 
-    *serial_number = base::UTF8ToUTF16(serial_number_);
-    return true;
+    EXPECT_CALL(*this, GetProduct(_))
+        .WillRepeatedly(
+            DoAll(SetArgPointee<0>(base::ASCIIToUTF16("Test Product")),
+                  Return(true)));
+    EXPECT_CALL(*this, GetManufacturer(_))
+        .WillRepeatedly(
+            DoAll(SetArgPointee<0>(base::ASCIIToUTF16("Test Manufacturer")),
+                  Return(true)));
   }
+
+  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
+  MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
+  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
+  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
+  MOCK_METHOD1(GetManufacturer, bool(base::string16*));
+  MOCK_METHOD1(GetProduct, bool(base::string16*));
+  MOCK_METHOD1(GetSerialNumber, bool(base::string16*));
 
  private:
   virtual ~MockUsbDevice() {}
-
-  const std::string serial_number_;
 };
 
 void AllowUsbDevice(DevicePermissionsManager* manager,
@@ -136,10 +137,10 @@ class DevicePermissionsManagerTest : public testing::Test {
                                 "    \"usb\""
                                 "  ]"
                                 "}"));
-    device0 = new MockUsbDevice("ABCDE", 0);
-    device1 = new MockUsbDevice("", 1);
-    device2 = new MockUsbDevice("12345", 2);
-    device3 = new MockUsbDevice("", 3);
+    device0_ = new MockUsbDevice("ABCDE");
+    device1_ = new MockUsbDevice("");
+    device2_ = new MockUsbDevice("12345");
+    device3_ = new MockUsbDevice("");
     usb_service_ = new MockUsbService();
     UsbService::SetInstanceForTest(usb_service_);
   }
@@ -152,28 +153,28 @@ class DevicePermissionsManagerTest : public testing::Test {
   scoped_ptr<extensions::TestExtensionEnvironment> env_;
   const extensions::Extension* extension_;
   MockUsbService* usb_service_;
-  scoped_refptr<MockUsbDevice> device0;
-  scoped_refptr<MockUsbDevice> device1;
-  scoped_refptr<MockUsbDevice> device2;
-  scoped_refptr<MockUsbDevice> device3;
+  scoped_refptr<MockUsbDevice> device0_;
+  scoped_refptr<MockUsbDevice> device1_;
+  scoped_refptr<MockUsbDevice> device2_;
+  scoped_refptr<MockUsbDevice> device3_;
 };
 
 TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());
-  AllowUsbDevice(manager, extension_, device0);
-  AllowUsbDevice(manager, extension_, device1);
+  AllowUsbDevice(manager, extension_, device0_);
+  AllowUsbDevice(manager, extension_, device1_);
 
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
   scoped_refptr<DevicePermissionEntry> device0_entry =
-      FindEntry(device_permissions.get(), device0);
+      FindEntry(device_permissions.get(), device0_);
   ASSERT_TRUE(device0_entry.get());
   scoped_refptr<DevicePermissionEntry> device1_entry =
-      FindEntry(device_permissions.get(), device1);
+      FindEntry(device_permissions.get(), device1_);
   ASSERT_TRUE(device1_entry.get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
   ASSERT_EQ(2U, device_permissions->entries().size());
 
   ASSERT_EQ(base::ASCIIToUTF16(
@@ -185,128 +186,128 @@ TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   manager->Clear(extension_->id());
 
   device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
   ASSERT_EQ(0U, device_permissions->entries().size());
 
   // After clearing device it should be possible to grant permission again.
-  AllowUsbDevice(manager, extension_, device0);
-  AllowUsbDevice(manager, extension_, device1);
+  AllowUsbDevice(manager, extension_, device0_);
+  AllowUsbDevice(manager, extension_, device1_);
 
   device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, SuspendExtension) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());
-  AllowUsbDevice(manager, extension_, device0);
-  AllowUsbDevice(manager, extension_, device1);
+  AllowUsbDevice(manager, extension_, device0_);
+  AllowUsbDevice(manager, extension_, device1_);
 
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 
   manager->OnBackgroundHostClose(extension_->id());
 
   device_permissions = manager->GetForExtension(extension_->id());
   // Device 0 is still registered because its serial number has been stored in
   // ExtensionPrefs, it is "persistent".
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
   // Device 1 does not have uniquely identifying traits and so permission to
   // open it has been dropped when the app's windows have closed and the
   // background page has been suspended.
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());
-  AllowUsbDevice(manager, extension_, device0);
-  AllowUsbDevice(manager, extension_, device1);
+  AllowUsbDevice(manager, extension_, device0_);
+  AllowUsbDevice(manager, extension_, device1_);
 
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 
-  usb_service_->NotifyDeviceRemoved(device0);
-  usb_service_->NotifyDeviceRemoved(device1);
+  usb_service_->NotifyDeviceRemoved(device0_);
+  usb_service_->NotifyDeviceRemoved(device1_);
 
   device_permissions = manager->GetForExtension(extension_->id());
   // Device 0 will be accessible when it is reconnected because it can be
   // recognized by its serial number.
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
   // Device 1 does not have a serial number and cannot be distinguished from
   // any other device of the same model so the app must request permission again
   // when it is reconnected.
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());
-  AllowUsbDevice(manager, extension_, device0);
-  AllowUsbDevice(manager, extension_, device1);
+  AllowUsbDevice(manager, extension_, device0_);
+  AllowUsbDevice(manager, extension_, device1_);
 
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
   scoped_refptr<DevicePermissionEntry> device0_entry =
-      FindEntry(device_permissions.get(), device0);
+      FindEntry(device_permissions.get(), device0_);
   ASSERT_TRUE(device0_entry.get());
   scoped_refptr<DevicePermissionEntry> device1_entry =
-      FindEntry(device_permissions.get(), device1);
+      FindEntry(device_permissions.get(), device1_);
   ASSERT_TRUE(device1_entry.get());
 
   manager->RemoveEntry(extension_->id(), device0_entry);
   device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device1).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device1_).get());
 
-  AllowUsbDevice(manager, extension_, device0);
+  AllowUsbDevice(manager, extension_, device0_);
   device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device1).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device1_).get());
 
   manager->RemoveEntry(extension_->id(), device1_entry);
   device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device1).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device1_).get());
 
-  AllowUsbDevice(manager, extension_, device1);
+  AllowUsbDevice(manager, extension_, device1_);
   device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device1).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device1_).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, UpdateLastUsed) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());
-  AllowUsbDevice(manager, extension_, device0);
+  AllowUsbDevice(manager, extension_, device0_);
 
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
   scoped_refptr<DevicePermissionEntry> device0_entry =
-      FindEntry(device_permissions.get(), device0);
+      FindEntry(device_permissions.get(), device0_);
   ASSERT_TRUE(device0_entry->last_used().is_null());
 
   manager->UpdateLastUsed(extension_->id(), device0_entry);
   device_permissions = manager->GetForExtension(extension_->id());
-  device0_entry = FindEntry(device_permissions.get(), device0);
+  device0_entry = FindEntry(device_permissions.get(), device0_);
   ASSERT_FALSE(device0_entry->last_used().is_null());
 }
 
@@ -327,10 +328,10 @@ TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
       DevicePermissionsManager::Get(env_->profile());
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(FindEntry(device_permissions.get(), device0).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device1).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device2).get());
-  ASSERT_FALSE(FindEntry(device_permissions.get(), device3).get());
+  ASSERT_TRUE(FindEntry(device_permissions.get(), device0_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device1_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device2_).get());
+  ASSERT_FALSE(FindEntry(device_permissions.get(), device3_).get());
 }
 
 }  // namespace extensions

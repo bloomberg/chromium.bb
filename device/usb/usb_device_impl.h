@@ -38,13 +38,14 @@ class UsbDeviceImpl : public UsbDevice {
 #endif  // OS_CHROMEOS
   scoped_refptr<UsbDeviceHandle> Open() override;
   bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
-  const UsbConfigDescriptor& GetConfiguration() override;
+  const UsbConfigDescriptor* GetConfiguration() override;
   bool GetManufacturer(base::string16* manufacturer) override;
   bool GetProduct(base::string16* product) override;
   bool GetSerialNumber(base::string16* serial_number) override;
 
  protected:
   friend class UsbServiceImpl;
+  friend class UsbDeviceHandleImpl;
 
   // Called by UsbServiceImpl only;
   UsbDeviceImpl(scoped_refptr<UsbContext> context,
@@ -56,8 +57,11 @@ class UsbDeviceImpl : public UsbDevice {
 
   ~UsbDeviceImpl() override;
 
-  // Called only by UsbService.
+  // Called only by UsbServiceImpl.
   void OnDisconnect();
+
+  // Called by UsbDeviceHandleImpl.
+  void RefreshConfiguration();
 
  private:
   base::ThreadChecker thread_checker_;
@@ -82,10 +86,9 @@ class UsbDeviceImpl : public UsbDevice {
   std::string devnode_;
 #endif
 
-  // The active configuration descriptor is not read immediately but cached for
-  // later use.
-  bool current_configuration_cached_;
-  UsbConfigDescriptor current_configuration_;
+  // The current device configuration descriptor. May be null if the device is
+  // in an unconfigured state.
+  scoped_ptr<UsbConfigDescriptor> configuration_;
 
   // Retain the context so that it will not be released before UsbDevice.
   scoped_refptr<UsbContext> context_;

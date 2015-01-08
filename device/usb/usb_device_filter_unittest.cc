@@ -16,20 +16,17 @@ namespace device {
 
 namespace {
 
-using testing::NiceMock;
-using testing::ReturnRef;
+using testing::Return;
 
 class MockUsbDevice : public UsbDevice {
  public:
   MockUsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
       : UsbDevice(vendor_id, product_id, unique_id) {}
 
+  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
   MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
   MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-#if defined(OS_CHROMEOS)
-  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
-#endif
-  MOCK_METHOD0(GetConfiguration, const UsbConfigDescriptor&());
+  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
   MOCK_METHOD1(GetManufacturer, bool(base::string16*));
   MOCK_METHOD1(GetProduct, bool(base::string16*));
   MOCK_METHOD1(GetSerialNumber, bool(base::string16*));
@@ -51,7 +48,7 @@ class UsbFilterTest : public testing::Test {
 
     android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, 0);
     ON_CALL(*android_phone_.get(), GetConfiguration())
-        .WillByDefault(ReturnRef(config_));
+        .WillByDefault(Return(&config_));
   }
 
  protected:

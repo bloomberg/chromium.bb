@@ -377,6 +377,7 @@ bool UsbDeviceHandleImpl::Transfer::Submit(
 
 void UsbDeviceHandleImpl::Transfer::Cancel() {
   libusb_cancel_transfer(platform_transfer_);
+  claimed_interface_ = nullptr;
 }
 
 void UsbDeviceHandleImpl::Transfer::ProcessCompletion() {
@@ -477,11 +478,9 @@ void LIBUSB_CALL UsbDeviceHandleImpl::Transfer::PlatformCallback(
 
 UsbDeviceHandleImpl::UsbDeviceHandleImpl(scoped_refptr<UsbContext> context,
                                          UsbDeviceImpl* device,
-                                         PlatformUsbDeviceHandle handle,
-                                         const UsbConfigDescriptor& config)
+                                         PlatformUsbDeviceHandle handle)
     : device_(device),
       handle_(handle),
-      config_(config),
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
@@ -503,6 +502,28 @@ void UsbDeviceHandleImpl::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_)
     device_->Close(this);
+}
+
+bool UsbDeviceHandleImpl::SetConfiguration(int configuration_value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!device_) {
+    return false;
+  }
+
+  for (Transfer* transfer : transfers_) {
+    transfer->Cancel();
+  }
+  claimed_interfaces_.clear();
+
+  int rv = libusb_set_configuration(handle_, configuration_value);
+  if (rv == LIBUSB_SUCCESS) {
+    device_->RefreshConfiguration();
+    RefreshEndpointMap();
+  } else {
+    VLOG(1) << "Failed to set configuration " << configuration_value << ": "
+            << ConvertPlatformUsbErrorToString(rv);
+  }
+  return rv == LIBUSB_SUCCESS;
 }
 
 bool UsbDeviceHandleImpl::ClaimInterface(const int interface_number) {
@@ -730,22 +751,20 @@ void UsbDeviceHandleImpl::IsochronousTransfer(
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   endpoint_map_.clear();
-  for (ClaimedInterfaceMap::iterator claimedIt = claimed_interfaces_.begin();
-       claimedIt != claimed_interfaces_.end();
-       ++claimedIt) {
-    for (UsbInterfaceDescriptor::Iterator ifaceIt = config_.interfaces.begin();
-         ifaceIt != config_.interfaces.end();
-         ++ifaceIt) {
-      if (ifaceIt->interface_number == claimedIt->first &&
-          ifaceIt->alternate_setting ==
-              claimedIt->second->alternate_setting()) {
-        for (UsbEndpointDescriptor::Iterator endpointIt =
-                 ifaceIt->endpoints.begin();
-             endpointIt != ifaceIt->endpoints.end();
-             ++endpointIt) {
-          endpoint_map_[endpointIt->address] = claimedIt->first;
+  const UsbConfigDescriptor* config = device_->GetConfiguration();
+  if (config) {
+    for (const auto& map_entry : claimed_interfaces_) {
+      int interface_number = map_entry.first;
+      const scoped_refptr<InterfaceClaimer>& claimed_iface = map_entry.second;
+
+      for (const UsbInterfaceDescriptor& iface : config->interfaces) {
+        if (iface.interface_number == interface_number &&
+            iface.alternate_setting == claimed_iface->alternate_setting()) {
+          for (const UsbEndpointDescriptor& endpoint : iface.endpoints) {
+            endpoint_map_[endpoint.address] = interface_number;
+          }
+          break;
         }
-        break;
       }
     }
   }

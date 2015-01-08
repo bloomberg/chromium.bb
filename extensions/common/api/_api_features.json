@@ -330,6 +330,11 @@
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
   },
+  "usb.setConfiguration": {
+    "dependencies": ["permission:usb"],
+    "contexts": ["blessed_extension"],
+    "channel": "dev"
+  },
   "usb.onDeviceAdded": {
     "channel": "dev",
     "dependencies": ["permission:usb"],

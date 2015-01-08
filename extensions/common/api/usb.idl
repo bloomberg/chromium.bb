@@ -210,6 +210,7 @@ namespace usb {
   callback RequestAccessCallback = void (boolean success);
   callback OpenDeviceCallback = void (ConnectionHandle handle);
   callback FindDevicesCallback = void (ConnectionHandle[] handles);
+  callback SetConfigurationCallback = void (boolean success);
   callback GetConfigurationCallback = void (ConfigDescriptor config);
   callback ListInterfacesCallback = void (InterfaceDescriptor[] descriptors);
   callback CloseDeviceCallback = void ();
@@ -267,6 +268,17 @@ namespace usb {
     // |handle|: The $(ref:ConnectionHandle) to close.
     static void closeDevice(ConnectionHandle handle,
                             optional CloseDeviceCallback callback);
+
+    // Select a device configuration.
+    //
+    // This function effectively resets the device by selecting one of the
+    // device's available configurations. Only configuration values greater
+    // than <code>0</code> are valid however some buggy devices have a working
+    // configuration <code>0</code> and so this value is allowed.
+    // |handle|: An open connection to the device.
+    static void setConfiguration(ConnectionHandle handle,
+                                 long configurationValue,
+                                 SetConfigurationCallback callback);
 
     // Gets the configuration descriptor for the currently selected
     // configuration.

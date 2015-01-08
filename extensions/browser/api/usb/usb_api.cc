@@ -31,6 +31,7 @@ namespace GetDevices = usb::GetDevices;
 namespace GetUserSelectedDevices = usb::GetUserSelectedDevices;
 namespace InterruptTransfer = usb::InterruptTransfer;
 namespace IsochronousTransfer = usb::IsochronousTransfer;
+namespace SetConfiguration = usb::SetConfiguration;
 namespace GetConfiguration = usb::GetConfiguration;
 namespace ListInterfaces = usb::ListInterfaces;
 namespace OpenDevice = usb::OpenDevice;
@@ -84,10 +85,13 @@ const char kErrorCancelled[] = "Transfer was cancelled.";
 const char kErrorDisconnect[] = "Device disconnected.";
 const char kErrorGeneric[] = "Transfer failed.";
 const char kErrorNotSupported[] = "Not supported on this platform.";
+const char kErrorNotConfigured[] = "The device is not in a configured state.";
 const char kErrorOverflow[] = "Inbound transfer overflow.";
 const char kErrorStalled[] = "Transfer stalled.";
 const char kErrorTimeout[] = "Transfer timed out.";
 const char kErrorTransferLength[] = "Transfer length is insufficient.";
+const char kErrorCannotSetConfiguration[] =
+    "Error setting device configuration.";
 const char kErrorCannotClaimInterface[] = "Error claiming interface.";
 const char kErrorCannotReleaseInterface[] = "Error releasing interface.";
 const char kErrorCannotSetInterfaceAlternateSetting[] =
@@ -389,11 +393,9 @@ void ConvertInterfaceDescriptor(const UsbInterfaceDescriptor& input,
   output->interface_class = input.interface_class;
   output->interface_subclass = input.interface_subclass;
   output->interface_protocol = input.interface_protocol;
-  for (UsbEndpointDescriptor::Iterator endpointIt = input.endpoints.begin();
-       endpointIt != input.endpoints.end();
-       ++endpointIt) {
+  for (const UsbEndpointDescriptor& input_endpoint : input.endpoints) {
     linked_ptr<EndpointDescriptor> endpoint(new EndpointDescriptor);
-    ConvertEndpointDescriptor(*endpointIt, endpoint.get());
+    ConvertEndpointDescriptor(input_endpoint, endpoint.get());
     output->endpoints.push_back(endpoint);
   }
   if (input.extra_data.size() > 0) {
@@ -409,11 +411,9 @@ void ConvertConfigDescriptor(const UsbConfigDescriptor& input,
   output->self_powered = input.self_powered;
   output->remote_wakeup = input.remote_wakeup;
   output->max_power = input.maximum_power;
-  for (UsbInterfaceDescriptor::Iterator interfaceIt = input.interfaces.begin();
-       interfaceIt != input.interfaces.end();
-       ++interfaceIt) {
+  for (const UsbInterfaceDescriptor& input_interface : input.interfaces) {
     linked_ptr<InterfaceDescriptor> interface(new InterfaceDescriptor);
-    ConvertInterfaceDescriptor(*interfaceIt, interface.get());
+    ConvertInterfaceDescriptor(input_interface, interface.get());
     output->interfaces.push_back(interface);
   }
   if (input.extra_data.size() > 0) {
@@ -839,6 +839,33 @@ bool UsbOpenDeviceFunction::Respond() {
   return UsbAsyncApiFunction::Respond();
 }
 
+UsbSetConfigurationFunction::UsbSetConfigurationFunction() {
+}
+
+UsbSetConfigurationFunction::~UsbSetConfigurationFunction() {
+}
+
+bool UsbSetConfigurationFunction::Prepare() {
+  parameters_ = SetConfiguration::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  return true;
+}
+
+void UsbSetConfigurationFunction::AsyncWorkStart() {
+  scoped_refptr<UsbDeviceHandle> device_handle =
+      GetDeviceHandleOrCompleteWithError(parameters_->handle);
+  if (!device_handle.get()) {
+    return;
+  }
+
+  if (device_handle->SetConfiguration(parameters_->configuration_value)) {
+    SetResult(new base::FundamentalValue(true));
+  } else {
+    SetError(kErrorCannotSetConfiguration);
+  }
+  AsyncWorkCompleted();
+}
+
 UsbGetConfigurationFunction::UsbGetConfigurationFunction() {
 }
 
@@ -858,11 +885,16 @@ void UsbGetConfigurationFunction::AsyncWorkStart() {
     return;
   }
 
-  ConfigDescriptor config;
-  ConvertConfigDescriptor(device_handle->GetDevice()->GetConfiguration(),
-                          &config);
+  const UsbConfigDescriptor* config_descriptor =
+      device_handle->GetDevice()->GetConfiguration();
+  if (config_descriptor) {
+    ConfigDescriptor config;
+    ConvertConfigDescriptor(*config_descriptor, &config);
+    SetResult(config.ToValue().release());
+  } else {
+    SetError(kErrorNotConfigured);
+  }
 
-  SetResult(config.ToValue().release());
   AsyncWorkCompleted();
 }
 
@@ -885,16 +917,22 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
     return;
   }
 
-  ConfigDescriptor config;
-  ConvertConfigDescriptor(device_handle->GetDevice()->GetConfiguration(),
-                          &config);
+  const UsbConfigDescriptor* config_descriptor =
+      device_handle->GetDevice()->GetConfiguration();
+  if (config_descriptor) {
+    ConfigDescriptor config;
+    ConvertConfigDescriptor(*config_descriptor, &config);
 
-  scoped_ptr<base::ListValue> result(new base::ListValue);
-  for (size_t i = 0; i < config.interfaces.size(); ++i) {
-    result->Append(config.interfaces[i]->ToValue().release());
+    scoped_ptr<base::ListValue> result(new base::ListValue);
+    for (size_t i = 0; i < config.interfaces.size(); ++i) {
+      result->Append(config.interfaces[i]->ToValue().release());
+    }
+
+    SetResult(result.release());
+  } else {
+    SetError(kErrorNotConfigured);
   }
 
-  SetResult(result.release());
   AsyncWorkCompleted();
 }
 

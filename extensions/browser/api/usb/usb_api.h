@@ -169,6 +169,23 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
   scoped_ptr<extensions::core_api::usb::OpenDevice::Params> parameters_;
 };
 
+class UsbSetConfigurationFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usb.setConfiguration", USB_SETCONFIGURATION)
+
+  UsbSetConfigurationFunction();
+
+ protected:
+  ~UsbSetConfigurationFunction() override;
+
+  // AsyncApiFunction:
+  bool Prepare() override;
+  void AsyncWorkStart() override;
+
+ private:
+  scoped_ptr<extensions::core_api::usb::SetConfiguration::Params> parameters_;
+};
+
 class UsbGetConfigurationFunction : public UsbAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.getConfiguration", USB_GETCONFIGURATION)

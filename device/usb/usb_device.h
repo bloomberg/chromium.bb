@@ -45,9 +45,10 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Blocking method. Must be called on FILE thread.
   virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) = 0;
 
-  // Gets the UsbConfigDescriptor for the active device configuration.
+  // Gets the UsbConfigDescriptor for the active device configuration or nullptr
+  // if the device is unconfigured.
   // Blocking method. Must be called on FILE thread.
-  virtual const UsbConfigDescriptor& GetConfiguration() = 0;
+  virtual const UsbConfigDescriptor* GetConfiguration() = 0;
 
   // Gets the manufacturer string of the device, or false and an empty
   // string. This is a blocking method and must be called on FILE thread.

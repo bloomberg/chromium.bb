@@ -200,16 +200,17 @@ static void OpenAndroidDeviceOnFileThread(
   if (success) {
     base::string16 serial;
     if (device->GetSerialNumber(&serial) && !serial.empty()) {
-      const UsbConfigDescriptor& config = device->GetConfiguration();
-      scoped_refptr<UsbDeviceHandle> usb_handle = device->Open();
-      if (usb_handle.get()) {
-        scoped_refptr<AndroidUsbDevice> android_device =
-            ClaimInterface(rsa_key, usb_handle, serial,
-                           config.interfaces[interface_id]);
-        if (android_device.get())
-          devices->push_back(android_device.get());
-        else
-          usb_handle->Close();
+      const UsbConfigDescriptor* config = device->GetConfiguration();
+      if (config) {
+        scoped_refptr<UsbDeviceHandle> usb_handle = device->Open();
+        if (usb_handle.get()) {
+          scoped_refptr<AndroidUsbDevice> android_device = ClaimInterface(
+              rsa_key, usb_handle, serial, config->interfaces[interface_id]);
+          if (android_device.get())
+            devices->push_back(android_device.get());
+          else
+            usb_handle->Close();
+        }
       }
     }
   }
@@ -223,16 +224,13 @@ static int CountOnFileThread() {
   if (service != NULL)
     service->GetDevices(&usb_devices);
   int device_count = 0;
-  for (UsbDevices::iterator deviceIt = usb_devices.begin();
-       deviceIt != usb_devices.end();
-       ++deviceIt) {
-    const UsbConfigDescriptor& config = (*deviceIt)->GetConfiguration();
-
-    for (UsbInterfaceDescriptor::Iterator ifaceIt = config.interfaces.begin();
-         ifaceIt != config.interfaces.end();
-         ++ifaceIt) {
-      if (IsAndroidInterface(*ifaceIt)) {
-        ++device_count;
+  for (const scoped_refptr<UsbDevice>& device : usb_devices) {
+    const UsbConfigDescriptor* config = device->GetConfiguration();
+    if (config) {
+      for (const UsbInterfaceDescriptor& iface : config->interfaces) {
+        if (IsAndroidInterface(iface)) {
+          ++device_count;
+        }
       }
     }
   }
@@ -258,22 +256,24 @@ static void EnumerateOnFileThread(
                                      devices,
                                      caller_message_loop_proxy));
 
-  for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
-       ++it) {
-    const UsbConfigDescriptor& config = (*it)->GetConfiguration();
-
+  for (const scoped_refptr<UsbDevice>& device : usb_devices) {
+    const UsbConfigDescriptor* config = device->GetConfiguration();
+    if (!config) {
+      continue;
+    }
     bool has_android_interface = false;
-    for (size_t j = 0; j < config.interfaces.size(); ++j) {
-      if (!IsAndroidInterface(config.interfaces[j])) {
+    for (size_t j = 0; j < config->interfaces.size(); ++j) {
+      if (!IsAndroidInterface(config->interfaces[j])) {
         continue;
       }
 
       // Request permission on Chrome OS.
 #if defined(OS_CHROMEOS)
-      (*it)->RequestUsbAccess(j, base::Bind(&OpenAndroidDeviceOnFileThread,
-                                            devices, rsa_key, barrier, *it, j));
+      device->RequestUsbAccess(
+          j, base::Bind(&OpenAndroidDeviceOnFileThread, devices, rsa_key,
+                        barrier, device, j));
 #else
-      OpenAndroidDeviceOnFileThread(devices, rsa_key, barrier, *it, j, true);
+      OpenAndroidDeviceOnFileThread(devices, rsa_key, barrier, device, j, true);
 #endif  // defined(OS_CHROMEOS)
 
       has_android_interface = true;
