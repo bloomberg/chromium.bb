@@ -543,7 +543,7 @@ WebRemoteFrame* WebLocalFrameImpl::toWebRemoteFrame()
 
 void WebLocalFrameImpl::close()
 {
-    m_client = 0;
+    m_client = nullptr;
 
 #if ENABLE(OILPAN)
     m_selfKeepAlive.clear();
@@ -823,7 +823,7 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(const WebScriptSource
     SuspendableScriptExecutor::createAndRun(frame(), 0, createSourcesVector(&source, 1), 0, userGesture, callback);
 }
 
-void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
+void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value>>* results)
 {
     ASSERT(frame());
     RELEASE_ASSERT(worldID > 0);
@@ -832,9 +832,9 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
 
     if (results) {
-        Vector<v8::Local<v8::Value> > scriptResults;
+        Vector<v8::Local<v8::Value>> scriptResults;
         frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
-        WebVector<v8::Local<v8::Value> > v8Results(scriptResults.size());
+        WebVector<v8::Local<v8::Value>> v8Results(scriptResults.size());
         for (unsigned i = 0; i < scriptResults.size(); i++)
             v8Results[i] = v8::Local<v8::Value>::New(toIsolate(frame()), scriptResults[i]);
         results->swap(v8Results);
@@ -1195,7 +1195,7 @@ void WebLocalFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent
 
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
-    if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range> >(webRange))
+    if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range>>(webRange))
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
@@ -1297,7 +1297,7 @@ WebPlugin* WebLocalFrameImpl::focusedPluginIfInputMethodSupported()
 int WebLocalFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode)
 {
     ASSERT(!frame()->document()->isFrameSet());
-    WebPluginContainerImpl* pluginContainer = 0;
+    WebPluginContainerImpl* pluginContainer = nullptr;
     if (constrainToNode.isNull()) {
         // If this is a plugin document, check if the plugin supports its own
         // printing. If it does, we will delegate all printing to that.

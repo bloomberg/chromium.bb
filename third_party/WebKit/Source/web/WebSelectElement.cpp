@@ -41,7 +41,7 @@ namespace blink {
 
 WebVector<WebElement> WebSelectElement::listItems() const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& sourceItems = constUnwrap<HTMLSelectElement>()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& sourceItems = constUnwrap<HTMLSelectElement>()->listItems();
     WebVector<WebElement> items(sourceItems.size());
     for (size_t i = 0; i < sourceItems.size(); ++i)
         items[i] = WebElement(sourceItems[i].get());

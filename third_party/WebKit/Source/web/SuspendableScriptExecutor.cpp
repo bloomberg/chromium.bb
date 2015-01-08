@@ -31,7 +31,7 @@ void SuspendableScriptExecutor::contextDestroyed()
     // this method can only be called if the script was not called in run()
     // and context remained suspend (method resume has never called)
     ActiveDOMObject::contextDestroyed();
-    m_callback->completed(Vector<v8::Local<v8::Value> >());
+    m_callback->completed(Vector<v8::Local<v8::Value>>());
     deref();
 }
 
@@ -68,7 +68,7 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
         indicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
 
     v8::HandleScope scope(v8::Isolate::GetCurrent());
-    Vector<v8::Local<v8::Value> > results;
+    Vector<v8::Local<v8::Value>> results;
     if (m_worldID) {
         m_frame->script().executeScriptInIsolatedWorld(m_worldID, m_sources, m_extensionGroup, &results);
     } else {

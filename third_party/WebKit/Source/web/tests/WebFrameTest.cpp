@@ -374,7 +374,7 @@ public:
     CSSCallbackWebFrameClient() : m_updateCount(0) { }
     virtual void didMatchCSS(WebLocalFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) override;
 
-    std::map<WebLocalFrame*, std::set<std::string> > m_matchedSelectors;
+    std::map<WebLocalFrame*, std::set<std::string>> m_matchedSelectors;
     int m_updateCount;
 };
 
@@ -398,7 +398,6 @@ class WebFrameCSSCallbackTest : public testing::Test {
 protected:
     WebFrameCSSCallbackTest()
     {
-
         m_frame = m_helper.initializeAndLoad("about:blank", true, &m_client)->mainFrame()->toWebLocalFrame();
     }
 
@@ -5914,7 +5913,7 @@ public:
     TestHistoryWebFrameClient()
     {
         m_replacesCurrentHistoryItem = false;
-        m_frame = 0;
+        m_frame = nullptr;
     }
 
     void didStartProvisionalLoad(WebLocalFrame* frame, bool isTransitionNavigation, double)

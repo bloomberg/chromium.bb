@@ -247,7 +247,7 @@ private:
     int m_nextInvalidateAfter;
 
     // A list of all of the pending calls to scopeStringMatches.
-    WillBeHeapVector<OwnPtrWillBeMember<DeferredScopeStringMatches> > m_deferredScopingWork;
+    WillBeHeapVector<OwnPtrWillBeMember<DeferredScopeStringMatches>> m_deferredScopingWork;
 
     // Version number incremented on the main frame only whenever the document
     // find-in-page match markers change. It should be 0 for all other frames.

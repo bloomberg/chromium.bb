@@ -108,11 +108,11 @@ void SpeechRecognitionClientProxy::didReceiveResults(const WebSpeechRecognitionH
 {
     SpeechRecognition* recognition(handle);
 
-    HeapVector<Member<SpeechRecognitionResult> > finalResultsVector(newFinalResults.size());
+    HeapVector<Member<SpeechRecognitionResult>> finalResultsVector(newFinalResults.size());
     for (size_t i = 0; i < newFinalResults.size(); ++i)
         finalResultsVector[i] = Member<SpeechRecognitionResult>(newFinalResults[i]);
 
-    HeapVector<Member<SpeechRecognitionResult> > interimResultsVector(currentInterimResults.size());
+    HeapVector<Member<SpeechRecognitionResult>> interimResultsVector(currentInterimResults.size());
     for (size_t i = 0; i < currentInterimResults.size(); ++i)
         interimResultsVector[i] = Member<SpeechRecognitionResult>(currentInterimResults[i]);
 

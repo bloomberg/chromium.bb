@@ -33,7 +33,7 @@
 namespace blink {
 
 typedef PersistentHeapHashMap<Member<Geolocation>, int> GeolocationIdMap;
-typedef PersistentHeapHashMap<int, Member<Geolocation> > IdGeolocationMap;
+typedef PersistentHeapHashMap<int, Member<Geolocation>> IdGeolocationMap;
 
 class WebGeolocationPermissionRequestManagerPrivate {
 public:

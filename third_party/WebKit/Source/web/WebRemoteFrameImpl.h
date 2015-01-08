@@ -87,7 +87,7 @@ public:
         const WebScriptSource&) override;
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
-        int extensionGroup, WebVector<v8::Local<v8::Value> >* results) override;
+        int extensionGroup, WebVector<v8::Local<v8::Value>>* results) override;
     virtual v8::Handle<v8::Value> callFunctionEvenIfScriptDisabled(
         v8::Handle<v8::Function>,
         v8::Handle<v8::Value>,
@@ -213,7 +213,7 @@ private:
     RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 
-    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner> > m_ownersForChildren;
+    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>> m_ownersForChildren;
 
 #if ENABLE(OILPAN)
     // Oilpan: to provide the guarantee of having the frame live until

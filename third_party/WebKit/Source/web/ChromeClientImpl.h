@@ -164,7 +164,7 @@ public:
     virtual bool shouldDisableDesktopWorkarounds() override;
 
     // AutofillClient pass throughs:
-    virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element> >&, LocalFrame*) override;
+    virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame*) override;
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;
     virtual void didChangeValueInTextField(HTMLFormControlElement&) override;
     virtual void didEndEditingOnTextField(HTMLInputElement&) override;

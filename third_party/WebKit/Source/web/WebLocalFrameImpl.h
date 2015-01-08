@@ -116,7 +116,7 @@ public:
         const WebScriptSource&, bool userGesture, WebScriptExecutionCallback*) override;
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
-        int extensionGroup, WebVector<v8::Local<v8::Value> >* results) override;
+        int extensionGroup, WebVector<v8::Local<v8::Value>>* results) override;
     virtual void requestExecuteScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourceIn, unsigned numSources,
         int extensionGroup, bool userGesture, WebScriptExecutionCallback*) override;

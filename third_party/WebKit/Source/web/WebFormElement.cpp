@@ -76,7 +76,7 @@ void WebFormElement::submit()
 void WebFormElement::getNamedElements(const WebString& name,
                                       WebVector<WebNode>& result)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element> > tempVector;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> tempVector;
     unwrap<HTMLFormElement>()->getNamedElements(name, tempVector);
     result.assign(tempVector);
 }

@@ -45,7 +45,7 @@ void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
 {
     ASSERT(transcripts.size() == confidences.size());
 
-    HeapVector<Member<SpeechRecognitionAlternative> > alternatives(transcripts.size());
+    HeapVector<Member<SpeechRecognitionAlternative>> alternatives(transcripts.size());
     for (size_t i = 0; i < transcripts.size(); ++i)
         alternatives[i] = SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
 

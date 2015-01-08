@@ -69,7 +69,7 @@ public:
     // WebSocketChannelClient methods proxied by WebSocketChannelClientProxy.
     void didConnect(const String& subprotocol, const String& extensions);
     void didReceiveTextMessage(const String& payload);
-    void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload);
+    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload);
     void didError();
     void didConsumeBufferedAmount(unsigned long consumed);
     void didStartClosingHandshake();

@@ -48,7 +48,7 @@ void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& node
 
 void WebSurroundingText::initialize(const WebRange& webRange, size_t maxLength)
 {
-    if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range> >(webRange))
+    if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range>>(webRange))
         m_private.reset(new SurroundingText(*range, maxLength));
 }
 

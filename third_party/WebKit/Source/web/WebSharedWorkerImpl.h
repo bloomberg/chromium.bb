@@ -145,7 +145,7 @@ private:
     RefPtr<WorkerThread> m_workerThread;
 
     // This one's initialized and bound to the main thread.
-    RefPtr<WeakReference<WebSharedWorkerClient> > m_client;
+    RefPtr<WeakReference<WebSharedWorkerClient>> m_client;
 
     // Usually WeakPtr is created by WeakPtrFactory exposed by Client
     // class itself, but here it's implemented by Chrome so we create

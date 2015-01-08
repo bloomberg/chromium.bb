@@ -142,7 +142,7 @@ void TouchActionTest::runTouchActionTest(std::string file)
     // scenario.
     WebView* webView = setupTest(file, client);
 
-    RefPtrWillBePersistent<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document>>(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
@@ -157,7 +157,7 @@ void TouchActionTest::runShadowDOMTest(std::string file)
     TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document>>(webView->mainFrame()->document());
     RefPtrWillBePersistent<StaticElementList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
@@ -187,7 +187,7 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
 
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;
-    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView->mainFrame()->document());
+    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document>>(webView->mainFrame()->document());
     document->frame()->view()->setScrollOffset(IntPoint(0, kScrollOffset));
 
     return webView;

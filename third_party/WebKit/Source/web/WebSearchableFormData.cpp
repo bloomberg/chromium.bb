@@ -81,15 +81,15 @@ bool IsHTTPFormSubmit(const HTMLFormElement* form)
 // button is returned.
 HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form)
 {
-    HTMLFormControlElement* firstSubmitButton = 0;
+    HTMLFormControlElement* firstSubmitButton = nullptr;
     const FormAssociatedElement::List& element = form->associatedElements();
     for (FormAssociatedElement::List::const_iterator i(element.begin()); i != element.end(); ++i) {
         if (!(*i)->isFormControlElement())
             continue;
         HTMLFormControlElement* control = toHTMLFormControlElement(*i);
         if (control->isActivatedSubmit()) {
-            // There's a button that is already activated for submit, return 0.
-            return 0;
+            // There's a button that is already activated for submit, return nullptr.
+            return nullptr;
         }
         if (!firstSubmitButton && control->isSuccessfulSubmitButton())
             firstSubmitButton = control;
@@ -101,9 +101,9 @@ HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form)
 // selected state.
 bool IsSelectInDefaultState(HTMLSelectElement* select)
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = select->listItems();
     if (select->multiple() || select->size() > 1) {
-        for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
+        for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
             if (!isHTMLOptionElement(*i))
                 continue;
             HTMLOptionElement* optionElement = toHTMLOptionElement(*i);
@@ -115,8 +115,8 @@ bool IsSelectInDefaultState(HTMLSelectElement* select)
 
     // The select is rendered as a combobox (called menulist in WebKit). At
     // least one item is selected, determine which one.
-    HTMLOptionElement* initialSelected = 0;
-    for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
+    HTMLOptionElement* initialSelected = nullptr;
+    for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
         if (!isHTMLOptionElement(*i))
             continue;
         HTMLOptionElement* optionElement = toHTMLOptionElement(*i);
@@ -156,7 +156,7 @@ bool IsInDefaultState(HTMLFormControlElement* formElement)
 //  - More than one text field
 HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
 {
-    HTMLInputElement* textElement = 0;
+    HTMLInputElement* textElement = nullptr;
     const FormAssociatedElement::List& element = form->associatedElements();
     for (FormAssociatedElement::List::const_iterator i(element.begin()); i != element.end(); ++i) {
         if (!(*i)->isFormControlElement())
@@ -168,20 +168,20 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
             continue;
 
         if (!IsInDefaultState(control) || isHTMLTextAreaElement(*control))
-            return 0;
+            return nullptr;
 
         if (isHTMLInputElement(*control) && control->willValidate()) {
             const HTMLInputElement& input = toHTMLInputElement(*control);
 
             // Return nothing if a file upload field or a password field are found.
             if (input.type() == InputTypeNames::file || input.type() == InputTypeNames::password)
-                return 0;
+                return nullptr;
 
             if (input.isTextField()) {
                 if (textElement) {
                     // The auto-complete bar only knows how to fill in one value.
                     // This form has multiple fields; don't treat it as searchable.
-                    return 0;
+                    return nullptr;
                 }
                 textElement = toHTMLInputElement(control);
             }
@@ -234,8 +234,8 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
 
 WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const WebInputElement& selectedInputElement)
 {
-    RefPtrWillBeRawPtr<HTMLFormElement> formElement = static_cast<PassRefPtrWillBeRawPtr<HTMLFormElement> >(form);
-    HTMLInputElement* inputElement = static_cast<PassRefPtrWillBeRawPtr<HTMLInputElement> >(selectedInputElement).get();
+    RefPtrWillBeRawPtr<HTMLFormElement> formElement = static_cast<PassRefPtrWillBeRawPtr<HTMLFormElement>>(form);
+    HTMLInputElement* inputElement = static_cast<PassRefPtrWillBeRawPtr<HTMLInputElement>>(selectedInputElement).get();
 
     // Only consider forms that GET data.
     // Allow HTTPS only when an input element is provided.

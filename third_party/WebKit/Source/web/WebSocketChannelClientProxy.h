@@ -36,7 +36,7 @@ public:
     {
         m_impl->didReceiveTextMessage(payload);
     }
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload) override
+    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
     {
         m_impl->didReceiveBinaryMessage(payload);
     }

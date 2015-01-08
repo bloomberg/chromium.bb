@@ -80,7 +80,7 @@ protected:
         v8::HandleScope scope(v8::Isolate::GetCurrent());
         Vector<ScriptSourceCode> sources;
         sources.append(ScriptSourceCode(script));
-        Vector<v8::Local<v8::Value> > results;
+        Vector<v8::Local<v8::Value>> results;
         m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources, extensionGroup, 0);
         pumpPendingRequestsDoNotUse(m_webViewHelper.webViewImpl()->mainFrame());
     }

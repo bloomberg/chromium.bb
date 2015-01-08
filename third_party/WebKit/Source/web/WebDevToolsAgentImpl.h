@@ -148,7 +148,7 @@ private:
     OwnPtr<IntPoint> m_lastPinchAnchorCss;
     OwnPtr<IntPoint> m_lastPinchAnchorDip;
 
-    typedef Vector<RefPtr<JSONObject> > FrontendMessageQueue;
+    typedef Vector<RefPtr<JSONObject>> FrontendMessageQueue;
     FrontendMessageQueue m_frontendMessageQueue;
 };
 

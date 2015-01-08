@@ -145,7 +145,7 @@ void WebSocketImpl::fail(const WebString& reason)
 void WebSocketImpl::disconnect()
 {
     m_private->disconnect();
-    m_client = 0;
+    m_client = nullptr;
 }
 
 void WebSocketImpl::didConnect(const String& subprotocol, const String& extensions)
@@ -163,7 +163,7 @@ void WebSocketImpl::didReceiveTextMessage(const String& payload)
     m_client->didReceiveMessage(WebString(payload));
 }
 
-void WebSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload)
+void WebSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
 {
     switch (m_binaryType) {
     case BinaryTypeBlob:
