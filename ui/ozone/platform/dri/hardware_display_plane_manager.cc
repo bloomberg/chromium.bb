@@ -26,6 +26,14 @@ const float kFixedPointScaleValue = 65536.0f;
 HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
 }
 HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
+  for (auto* plane : plane_list) {
+    plane->set_in_use(false);
+    plane->set_owning_crtc(0);
+  }
+  for (auto* plane : old_plane_list) {
+    plane->set_in_use(false);
+    plane->set_owning_crtc(0);
+  }
 }
 
 HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(uint32_t crtc_id,
@@ -146,6 +154,7 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
   for (auto* plane : plane_list->old_plane_list) {
     plane->set_in_use(false);
   }
+  plane_list->old_plane_list.clear();
 
   int crtc_index = LookupCrtcIndex(crtc_id);
   if (crtc_index < 0) {
@@ -172,6 +181,8 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     gfx::Rect fixed_point_rect = gfx::Rect(
         to_fixed_point(crop_rect.x()), to_fixed_point(crop_rect.y()),
         to_fixed_point(crop_rect.width()), to_fixed_point(crop_rect.height()));
+    plane_list->plane_list.push_back(hw_plane);
+    hw_plane->set_owning_crtc(crtc_id);
     if (SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect,
                      crtc)) {
       hw_plane->set_in_use(true);
@@ -180,6 +191,21 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     }
   }
   return true;
+}
+
+void HardwareDisplayPlaneManager::ResetPlanes(
+    HardwareDisplayPlaneList* plane_list,
+    uint32_t crtc_id) {
+  std::vector<HardwareDisplayPlane*> planes;
+  planes.swap(plane_list->old_plane_list);
+  for (auto* plane : planes) {
+    if (plane->owning_crtc() == crtc_id) {
+      plane->set_owning_crtc(0);
+      plane->set_in_use(false);
+    } else {
+      plane_list->old_plane_list.push_back(plane);
+    }
+  }
 }
 
 }  // namespace ui

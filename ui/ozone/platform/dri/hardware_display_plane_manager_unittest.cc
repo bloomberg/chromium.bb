@@ -73,7 +73,6 @@ class FakePlaneManager : public ui::HardwareDisplayPlaneManager {
     EXPECT_TRUE(hw_plane->CanUseForCrtc(LookupCrtcIndex(crtc_id)));
     EXPECT_FALSE(hw_plane->in_use());
     plane_count_++;
-    plane_list->plane_list.push_back(hw_plane);
     return true;
   }
 
@@ -186,11 +185,12 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultipleFrames) {
   EXPECT_EQ(1, plane_manager_->plane_count());
   // Pretend we committed the frame.
   state_.plane_list.swap(state_.old_plane_list);
+  ui::HardwareDisplayPlane* old_plane = state_.old_plane_list[0];
   // The same plane should be used.
   EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
                                                   default_crtcs_[0], nullptr));
   EXPECT_EQ(2, plane_manager_->plane_count());
-  EXPECT_EQ(state_.plane_list[0], state_.old_plane_list[0]);
+  EXPECT_EQ(state_.plane_list[0], old_plane);
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleFramesDifferentPlanes) {

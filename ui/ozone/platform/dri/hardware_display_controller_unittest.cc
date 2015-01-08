@@ -221,3 +221,22 @@ TEST_F(HardwareDisplayControllerTest,
   controller_->WaitForPageFlipEvent();
   EXPECT_EQ(2, drm_->get_handle_events_count());
 }
+
+TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
+  ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
+      new MockScanoutBuffer(kDefaultModeSize)));
+  EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
+  controller_->QueueOverlayPlane(plane1);
+  EXPECT_TRUE(controller_->SchedulePageFlip());
+  controller_->WaitForPageFlipEvent();
+
+  const ui::HardwareDisplayPlane* owned_plane = nullptr;
+  for (const auto& plane : drm_->plane_manager()->planes())
+    if (plane->in_use())
+      owned_plane = plane;
+  ASSERT_TRUE(owned_plane != nullptr);
+  EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
+  // Removing the crtc should free the plane.
+  scoped_ptr<ui::CrtcController> crtc = controller_->RemoveCrtc(kPrimaryCrtc);
+  EXPECT_FALSE(owned_plane->in_use());
+}

@@ -193,6 +193,9 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
     if ((*it)->crtc() == crtc) {
       scoped_ptr<CrtcController> controller(*it);
       crtc_controllers_.weak_erase(it);
+      // Release any planes this crtc might own.
+      HardwareDisplayPlaneManager::ResetPlanes(
+          owned_hardware_planes_.find(controller->drm())->second, crtc);
       // Remove entry from |owned_hardware_planes_| iff no other crtcs share it.
       bool found = false;
       for (ScopedVector<CrtcController>::iterator it =

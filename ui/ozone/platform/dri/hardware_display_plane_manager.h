@@ -86,6 +86,12 @@ class HardwareDisplayPlaneManager {
   // Commit the plane states in |plane_list|.
   virtual bool Commit(HardwareDisplayPlaneList* plane_list) = 0;
 
+  // Set all planes in |plane_list| owned by |crtc_id| to free.
+  static void ResetPlanes(HardwareDisplayPlaneList* plane_list,
+                          uint32_t crtc_id);
+
+  const ScopedVector<HardwareDisplayPlane>& planes() { return planes_; }
+
  protected:
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,

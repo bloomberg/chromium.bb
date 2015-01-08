@@ -35,9 +35,13 @@ class HardwareDisplayPlane {
 
   uint32_t plane_id() const { return plane_id_; }
 
+  void set_owning_crtc(uint32_t crtc) { owning_crtc_ = crtc; }
+  uint32_t owning_crtc() const { return owning_crtc_; }
+
  protected:
   uint32_t plane_id_;
   uint32_t possible_crtcs_;
+  uint32_t owning_crtc_;
   bool in_use_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlane);

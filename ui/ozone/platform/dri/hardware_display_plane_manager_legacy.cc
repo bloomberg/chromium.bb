@@ -18,6 +18,8 @@ HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     HardwareDisplayPlaneList* plane_list) {
+  if (plane_list->plane_list.empty())  // No assigned planes, nothing to do.
+    return true;
   bool ret = true;
   plane_list->plane_list.swap(plane_list->old_plane_list);
   plane_list->plane_list.clear();
@@ -56,7 +58,6 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     uint32_t crtc_id,
     const gfx::Rect& src_rect,
     CrtcController* crtc) {
-  plane_list->plane_list.push_back(hw_plane);
   if (plane_list->legacy_page_flips.empty() ||
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {
     plane_list->legacy_page_flips.push_back(
