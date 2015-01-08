@@ -172,14 +172,18 @@ void DeviceDisablingManager::UpdateFromCrosSettings() {
     return;
   }
 
-  bool device_disabled = false;
-  if (!cros_settings_->GetBoolean(kDeviceDisabled, &device_disabled) ||
-      !device_disabled) {
+  bool should_device_be_disabled = false;
+  if (!cros_settings_->GetBoolean(kDeviceDisabled,
+                                  &should_device_be_disabled) ||
+      !should_device_be_disabled) {
+    // The device should not be disabled.
+
     if (!device_disabled_) {
-      // If the device was not disabled and has not been disabled, there is
-      // nothing to do.
+      // If the device is currently not disabled, there is nothing to do.
       return;
     }
+
+    // Re-enable the device.
     device_disabled_ = false;
 
     // The device was disabled and has been re-enabled. Normal function should
