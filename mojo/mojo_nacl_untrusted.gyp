@@ -31,6 +31,7 @@
           ],
           'dependencies': [
             'mojo_nacl.gyp:monacl_codegen',
+            'mojo_public.gyp:mojo_system_placeholder',
           ],
         },
         {

@@ -49,6 +49,9 @@
           'sources': [
             '<(monacl_codegen_dir)/mojo_syscall.cc',
           ],
+          'dependencies': [
+            'mojo_public.gyp:mojo_system_placeholder',
+          ],
         },
         {
           'target_name': 'monacl_sel',
@@ -95,6 +98,9 @@
               ],
               'sources': [
                 '<(monacl_codegen_dir)/mojo_syscall.cc',
+              ],
+              'dependencies': [
+                'mojo_public.gyp:mojo_system_placeholder',
               ],
               'configurations': {
                 'Common_Base': {
