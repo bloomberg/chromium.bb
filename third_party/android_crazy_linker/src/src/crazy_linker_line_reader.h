@@ -43,7 +43,7 @@ class LineReader {
   size_t length() const;
 
  private:
-  void Reset();
+  void Reset(bool eof);
 
   FileDescriptor fd_;
   bool eof_;
@@ -52,7 +52,6 @@ class LineReader {
   size_t buff_size_;
   size_t buff_capacity_;
   char* buff_;
-  char buff0_[128];
 };
 
 }  // namespace crazy

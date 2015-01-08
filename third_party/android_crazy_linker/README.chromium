@@ -66,3 +66,5 @@ Local Modifications:
 
 - Fix unit test crash caused by use of deleted data inside an unload callback.
 
+- Fix for crbug/444714 (Chrome_Android: Crash Report - -1DB24FB5)
+

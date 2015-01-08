@@ -13,30 +13,29 @@
 
 namespace crazy {
 
-LineReader::LineReader() : fd_(), buff_(buff0_) {
-  Reset();
-  eof_ = true;
+LineReader::LineReader() : fd_(), buff_(NULL) {
+  Reset(true);
 }
 
-LineReader::LineReader(const char* path) : fd_(), buff_(buff0_) { Open(path); }
+LineReader::LineReader(const char* path) : fd_(), buff_(NULL) {
+  Open(path);
+}
 
-LineReader::~LineReader() { Reset(); }
+LineReader::~LineReader() {
+  ::free(buff_);
+}
 
 void LineReader::Open(const char* path) {
-  Reset();
-  eof_ = !fd_.OpenReadOnly(path);
+  Reset(!fd_.OpenReadOnly(path));
 }
 
-void LineReader::Reset() {
-  if (buff_ != buff0_)
-    ::free(buff_);
-
-  eof_ = false;
+void LineReader::Reset(bool eof) {
+  eof_ = eof;
   line_start_ = 0;
   line_len_ = 0;
   buff_size_ = 0;
-  buff_capacity_ = sizeof buff0_;
-  buff_ = buff0_;
+  buff_capacity_ = 128;
+  buff_ = static_cast<char*>(::realloc(buff_, buff_capacity_));
 }
 
 bool LineReader::GetNextLine() {
@@ -102,13 +101,9 @@ bool LineReader::GetNextLine() {
 
     // Before reading more data, grow the buffer if needed.
     if (buff_size_ == buff_capacity_) {
-      size_t new_capacity = buff_capacity_ * 2;
-      void* old_buff = (buff_ == buff0_) ? NULL : buff_;
-      buff_ = static_cast<char*>(::realloc(old_buff, new_capacity));
-      if (old_buff != buff_)
-        ::memcpy(buff_, buff0_, buff_capacity_);
+      buff_capacity_ *= 2;
+      buff_ = static_cast<char*>(::realloc(buff_, buff_capacity_));
 
-      buff_capacity_ = new_capacity;
       LLOG("%s: GROW buff_size=%d buff_capacity=%d '%.*s'\n",
            __FUNCTION__,
            buff_size_,
