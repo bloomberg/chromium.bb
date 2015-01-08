@@ -10,14 +10,13 @@
 namespace ios {
 
 TestChromeProviderInitializer::TestChromeProviderInitializer() {
-  chrome_browser_provider_ = new TestChromeBrowserProvider();
-  ios::SetChromeBrowserProvider(chrome_browser_provider_);
+  chrome_browser_provider_.reset(new TestChromeBrowserProvider());
+  ios::SetChromeBrowserProvider(chrome_browser_provider_.get());
 }
 
 TestChromeProviderInitializer::~TestChromeProviderInitializer() {
-  EXPECT_EQ(chrome_browser_provider_, ios::GetChromeBrowserProvider());
+  EXPECT_EQ(chrome_browser_provider_.get(), ios::GetChromeBrowserProvider());
   ios::SetChromeBrowserProvider(NULL);
-  delete chrome_browser_provider_;
 }
 
 }  // namespace ios

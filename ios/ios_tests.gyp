@@ -20,8 +20,9 @@
         'public/test/test_chrome_provider_initializer.h',
       ],
       'dependencies': [
-        '../ios/provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
+        '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        'provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
       ],
       'include_dirs': [
         '..',
