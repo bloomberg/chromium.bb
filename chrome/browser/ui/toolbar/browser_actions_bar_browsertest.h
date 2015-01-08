@@ -13,6 +13,7 @@
 
 namespace extensions {
 class Extension;
+class ExtensionToolbarModel;
 }
 
 class BrowserActionTestUtil;
@@ -30,6 +31,7 @@ class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
   BrowserActionTestUtil* browser_actions_bar() {
     return browser_actions_bar_.get();
   }
+  extensions::ExtensionToolbarModel* toolbar_model() { return toolbar_model_; }
 
   // Creates three different extensions, each with a browser action, and adds
   // them to associated ExtensionService. These can then be accessed via
@@ -48,6 +50,9 @@ class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
 
  private:
   scoped_ptr<BrowserActionTestUtil> browser_actions_bar_;
+
+  // The associated toolbar model, weak.
+  extensions::ExtensionToolbarModel* toolbar_model_;
 
   // Extensions with browser actions used for testing.
   scoped_refptr<const extensions::Extension> extension_a_;

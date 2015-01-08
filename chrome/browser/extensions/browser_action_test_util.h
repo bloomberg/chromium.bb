@@ -73,9 +73,6 @@ class BrowserActionTestUtil {
   // Hides the given popup and returns whether the hide was successful.
   bool HidePopup();
 
-  // Set how many icons should be visible.
-  void SetIconVisibilityCount(size_t icons);
-
   // Tests that the button at the given |index| is displaying that it wants
   // to run.
   bool ActionButtonWantsToRun(size_t index);
@@ -83,12 +80,6 @@ class BrowserActionTestUtil {
   // Tests that the overflow button is displaying an overflowed action wants
   // to run.
   bool OverflowedActionButtonWantsToRun();
-
-  // Disables animation.
-  static void DisableAnimations();
-
-  // Enables animation.
-  static void EnableAnimations();
 
   // Returns the minimum allowed size of an extension popup.
   static gfx::Size GetMinPopupSize();
