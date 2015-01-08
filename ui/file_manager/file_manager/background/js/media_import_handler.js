@@ -242,6 +242,12 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
   // A count of the current number of processed bytes for this entry.
   var currentBytes = 0;
 
+  /**
+   * Updates the task when the copy code reports progress.
+   * @param {string} sourceUrl
+   * @param {number} processedBytes
+   * @this {importer.MediaImportHandler.ImportTask}
+   */
   var onProgress = function(sourceUrl, processedBytes) {
     // Update the running total, then send a progress update.
     this.processedBytes_ -= currentBytes;
@@ -250,6 +256,12 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
   };
 
+  /**
+   * Updates the task when the new file has been created.
+   * @param {string} sourceUrl
+   * @param {Entry} destEntry
+   * @this {importer.MediaImportHandler.ImportTask}
+   */
   var onEntryChanged = function(sourceUrl, destEntry) {
     this.processedBytes_ -= currentBytes;
     this.processedBytes_ += entry.size;
