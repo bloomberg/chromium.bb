@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -84,15 +85,14 @@ class TouchPointView : public views::View,
       alpha = static_cast<int>(fadeout_->CurrentValueBetween(alpha, 0));
     fill_paint_.setAlpha(alpha);
     stroke_paint_.setAlpha(alpha);
-    SkShader* shader = SkGradientShader::CreateRadial(
-        gradient_center_,
-        SkIntToScalar(kPointRadius),
-        gradient_colors_,
-        gradient_pos_,
-        arraysize(gradient_colors_),
-        SkShader::kMirror_TileMode);
-    fill_paint_.setShader(shader);
-    shader->unref();
+    skia::RefPtr<SkShader> shader = skia::AdoptRef(
+        SkGradientShader::CreateRadial(gradient_center_,
+                                       SkIntToScalar(kPointRadius),
+                                       gradient_colors_,
+                                       gradient_pos_,
+                                       arraysize(gradient_colors_),
+                                       SkShader::kMirror_TileMode));
+    fill_paint_.setShader(shader.get());
     canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),
                        fill_paint_);
     canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),
