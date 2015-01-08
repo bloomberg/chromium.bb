@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -17,6 +18,13 @@
 #include "device/usb/usb_device_impl.h"
 #include "device/usb/usb_error.h"
 #include "third_party/libusb/src/libusb/libusb.h"
+
+#if defined(OS_WIN)
+#include <usbiodef.h>
+
+#include "base/scoped_observer.h"
+#include "device/core/device_monitor_win.h"
+#endif  // OS_WIN
 
 namespace device {
 
@@ -65,6 +73,11 @@ class UsbServiceImpl : public UsbService,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
+#if defined(OS_WIN)
+  class UIThreadHelper;
+  UIThreadHelper* ui_thread_helper_;
+#endif  // OS_WIN
+
   // TODO(reillyg): Figure out a better solution for device IDs.
   uint32 next_unique_id_;
 
@@ -83,8 +96,49 @@ class UsbServiceImpl : public UsbService,
       PlatformDeviceMap;
   PlatformDeviceMap platform_devices_;
 
+  base::WeakPtrFactory<UsbServiceImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(UsbServiceImpl);
 };
+
+#if defined(OS_WIN)
+// This class lives on the application main thread so that it can listen for
+// device change notification window messages. It registers for notifications
+// regarding devices implementating the "UsbDevice" interface, which represents
+// most of the devices the UsbService will enumerate.
+class UsbServiceImpl::UIThreadHelper : DeviceMonitorWin::Observer {
+ public:
+  UIThreadHelper(base::WeakPtr<UsbServiceImpl> usb_service)
+      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        usb_service_(usb_service),
+        device_observer_(this) {}
+
+  ~UIThreadHelper() {}
+
+  void Start() {
+    DeviceMonitorWin* device_monitor =
+        DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_USB_DEVICE);
+    if (device_monitor) {
+      device_observer_.Add(device_monitor);
+    }
+  }
+
+ private:
+  void OnDeviceAdded(const std::string& device_path) override {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&UsbServiceImpl::RefreshDevices, usb_service_));
+  }
+
+  void OnDeviceRemoved(const std::string& device_path) override {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&UsbServiceImpl::RefreshDevices, usb_service_));
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtr<UsbServiceImpl> usb_service_;
+  ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
+};
+#endif
 
 scoped_refptr<UsbDevice> UsbServiceImpl::GetDeviceById(uint32 unique_id) {
   DCHECK(CalledOnValidThread());
@@ -121,7 +175,8 @@ UsbServiceImpl::UsbServiceImpl(
     : context_(new UsbContext(context)),
       ui_task_runner_(ui_task_runner),
       next_unique_id_(0),
-      hotplug_enabled_(false) {
+      hotplug_enabled_(false),
+      weak_factory_(this) {
   base::MessageLoop::current()->AddDestructionObserver(this);
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   int rv = libusb_hotplug_register_callback(
@@ -133,6 +188,13 @@ UsbServiceImpl::UsbServiceImpl(
       &UsbServiceImpl::HotplugCallback, this, &hotplug_handle_);
   if (rv == LIBUSB_SUCCESS) {
     hotplug_enabled_ = true;
+  } else {
+#if defined(OS_WIN)
+    ui_thread_helper_ = new UIThreadHelper(weak_factory_.GetWeakPtr());
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&UIThreadHelper::Start,
+                                         base::Unretained(ui_thread_helper_)));
+#endif  // OS_WIN
   }
 }
 
@@ -141,6 +203,11 @@ UsbServiceImpl::~UsbServiceImpl() {
   if (hotplug_enabled_) {
     libusb_hotplug_deregister_callback(context_->context(), hotplug_handle_);
   }
+#if defined(OS_WIN)
+  if (ui_thread_helper_) {
+    ui_task_runner_->DeleteSoon(FROM_HERE, ui_thread_helper_);
+  }
+#endif  // OS_WIN
   for (const auto& map_entry : devices_) {
     map_entry.second->OnDisconnect();
   }
