@@ -815,6 +815,36 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   EXPECT_TRUE(recorder.events().empty());
 }
 
+// Tests that mouse move event has a right location
+// when there isn't the target window
+TEST_F(WindowEventDispatcherTest, MouseEventWithoutTargetWindow) {
+  EventFilterRecorder recorder_first;
+  EventFilterRecorder recorder_second;
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window_first(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(20, 10, 10, 20), root_window()));
+  window_first->Show();
+  window_first->AddPreTargetHandler(&recorder_first);
+
+  scoped_ptr<aura::Window> window_second(CreateTestWindowWithDelegate(
+      &delegate, 2, gfx::Rect(20, 30, 10, 20), root_window()));
+  window_second->Show();
+  window_second->AddPreTargetHandler(&recorder_second);
+
+  const gfx::Point event_location(22, 33);
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location, 0,
+                       0);
+  DispatchEventUsingWindowDispatcher(&mouse);
+
+  EXPECT_TRUE(recorder_first.events().empty());
+  EXPECT_EQ("MOUSE_ENTERED MOUSE_MOVED",
+            EventTypesToString(recorder_second.events()));
+  ASSERT_EQ(2u, recorder_second.mouse_locations().size());
+  EXPECT_EQ(gfx::Point(2, 3).ToString(),
+            recorder_second.mouse_locations()[0].ToString());
+}
+
 // Verifies that a direct call to ProcessedTouchEvent() with a
 // TOUCH_PRESSED event does not cause a crash.
 TEST_F(WindowEventDispatcherTest, CallToProcessedTouchEvent) {

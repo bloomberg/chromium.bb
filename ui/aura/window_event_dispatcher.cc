@@ -150,10 +150,11 @@ void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
 }
 
 DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
+    Window* window,
     const gfx::Point& point) {
   ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EF_NONE,
                        ui::EF_NONE);
-  return DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
+  return DispatchMouseEnterOrExit(window, event, ui::ET_MOUSE_EXITED);
 }
 
 void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
@@ -242,13 +243,15 @@ void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
   gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
   if (window->Contains(mouse_moved_handler_) &&
       window->ContainsPointInRoot(last_mouse_location)) {
-    DispatchDetails details = DispatchMouseExitAtPoint(last_mouse_location);
+    DispatchDetails details =
+        DispatchMouseExitAtPoint(window, last_mouse_location);
     if (details.dispatcher_destroyed)
       return;
   }
 }
 
 ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
+    Window* target,
     const ui::MouseEvent& event,
     ui::EventType type) {
   if (event.type() != ui::ET_MOUSE_CAPTURE_CHANGED &&
@@ -265,7 +268,6 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
   // system), or a synthetic event created in root-window (in which case, the
   // event's target will be NULL, and the event will be in the root-window's
   // coordinate system.
-  aura::Window* target = static_cast<Window*>(event.target());
   if (!target)
     target = window();
   ui::MouseEvent translated_event(event,
@@ -404,8 +406,8 @@ void WindowEventDispatcher::OnOtherRootGotCapture() {
     // Dispatch a mouse exit to reset any state associated with hover. This is
     // important when going from no window having capture to a window having
     // capture because we do not dispatch ET_MOUSE_CAPTURE_CHANGED in this case.
-    DispatchDetails details = DispatchMouseExitAtPoint(
-        GetLastMouseLocationInRoot());
+    DispatchDetails details =
+        DispatchMouseExitAtPoint(nullptr, GetLastMouseLocationInRoot());
     if (details.dispatcher_destroyed)
       return;
   }
@@ -785,7 +787,7 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
     case ui::ET_MOUSE_EXITED:
       if (!target || target == window()) {
         DispatchDetails details =
-            DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
+            DispatchMouseEnterOrExit(target, *event, ui::ET_MOUSE_EXITED);
         if (details.dispatcher_destroyed) {
           event->SetHandled();
           return;
@@ -802,7 +804,7 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
         WindowTracker live_window;
         live_window.Add(target);
         DispatchDetails details =
-            DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
+            DispatchMouseEnterOrExit(target, *event, ui::ET_MOUSE_EXITED);
         if (details.dispatcher_destroyed) {
           event->SetHandled();
           return;
@@ -821,7 +823,8 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
         live_window.Remove(target);
 
         mouse_moved_handler_ = target;
-        details = DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_ENTERED);
+        details =
+            DispatchMouseEnterOrExit(target, *event, ui::ET_MOUSE_ENTERED);
         if (details.dispatcher_destroyed || details.target_destroyed) {
           event->SetHandled();
           return;
