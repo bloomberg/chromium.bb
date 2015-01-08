@@ -200,7 +200,7 @@ void ToolbarActionsBarUnitTest::SetUp() {
 
   main_bar_helper_ = TestToolbarActionsBarHelper::Create(browser(), nullptr);
 
-  BrowserActionTestUtil::DisableAnimations();
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
   ToolbarActionsBar::set_send_overflowed_action_changes_for_testing(false);
   browser_action_test_util_.reset(
       new BrowserActionTestUtil(browser(),
@@ -220,6 +220,7 @@ void ToolbarActionsBarUnitTest::TearDown() {
   // we need to delete this now.
   overflow_bar_helper_.reset();
   main_bar_helper_.reset();
+  ToolbarActionsBar::disable_animations_for_testing_ = false;
   redesign_switch_.reset();
   BrowserWithTestWindowTest::TearDown();
 }

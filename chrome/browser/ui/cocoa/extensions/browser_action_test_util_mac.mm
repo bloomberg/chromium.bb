@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -20,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/rect.h"
@@ -108,11 +106,6 @@ gfx::Size BrowserActionTestUtil::GetPopupSize() {
   return gfx::Size(NSSizeToCGSize(bounds.size));
 }
 
-void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
-  extensions::ExtensionToolbarModel::Get(browser_->profile())->
-      SetVisibleIconCount(icons);
-}
-
 bool BrowserActionTestUtil::HidePopup() {
   ExtensionPopupController* controller = [ExtensionPopupController popup];
   // The window must be gone or we'll fail a unit test with windows left open.
@@ -145,16 +138,6 @@ bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {
   WrenchToolbarButtonCell* cell =
       base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton cell]);
   return [cell overflowedToolbarActionWantsToRun];
-}
-
-// static
-void BrowserActionTestUtil::DisableAnimations() {
-  ToolbarActionsBar::disable_animations_for_testing_ = true;
-}
-
-// static
-void BrowserActionTestUtil::EnableAnimations() {
-  ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
 // static
