@@ -21,6 +21,7 @@ class UirobotTestInstance(test_instance.TestInstance):
         constants.GetOutDirectory(), args.apk_under_test)
     self._minutes = args.minutes
     self._package_name = apk_helper.GetPackageName(self._apk_under_test)
+    self._suite = 'Android Uirobot'
 
   #override
   def TestType(self):
@@ -51,3 +52,7 @@ class UirobotTestInstance(test_instance.TestInstance):
   def package_name(self):
     """Returns the name of the package in the APK."""
     return self._package_name
+
+  @property
+  def suite(self):
+    return self._suite

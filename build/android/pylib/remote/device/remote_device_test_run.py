@@ -184,12 +184,11 @@ class RemoteDeviceTestRun(test_run.TestRun):
   def _UploadAppToDevice(self, app_path):
     """Upload app to device."""
     logging.info('Uploading %s to remote service.', app_path)
-    apk_name = os.path.basename(app_path)
     with open(app_path, 'rb') as apk_src:
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):
         upload_results = appurify_sanitized.api.apps_upload(
-            self._env.token, apk_src, 'raw', name=apk_name)
+            self._env.token, apk_src, 'raw', name=self._test_instance.suite)
       remote_device_helper.TestHttpResponse(
           upload_results, 'Unable to upload %s.' % app_path)
       return upload_results.json()['response']['app_id']
