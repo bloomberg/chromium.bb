@@ -104,9 +104,10 @@ class CONTENT_EXPORT TaskQueueManager {
   // avoid running any tasks.
   bool SelectWorkQueueToService(size_t* out_queue_index);
 
-  // Runs a single task from the work queue designated by |queue_index|. The
-  // queue must not be empty.
-  void RunTaskFromWorkQueue(size_t queue_index);
+  // Runs a single nestable task from the work queue designated by
+  // |queue_index|. Non-nestable task are reposted on the run loop.
+  // The queue must not be empty.
+  void ProcessTaskFromWorkQueue(size_t queue_index);
 
   bool RunsTasksOnCurrentThread() const;
   bool PostDelayedTask(const tracked_objects::Location& from_here,

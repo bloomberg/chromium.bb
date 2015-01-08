@@ -20,10 +20,15 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   bool RunsTasksOnCurrentThread() const override;
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
-                       base::TimeDelta delay) override;
+                       base::TimeDelta delay) override {
+    return PostDelayedTaskImpl(from_here, task, delay, true);
+  }
+
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
-                                  base::TimeDelta delay) override;
+                                  base::TimeDelta delay) override {
+    return PostDelayedTaskImpl(from_here, task, delay, false);
+  }
 
   // Adds a task at the end of the incoming task queue and schedules a call to
   // TaskQueueManager::DoWork() if the incoming queue was empty and automatic
@@ -48,6 +53,11 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
  private:
   ~TaskQueue() override;
+
+  bool PostDelayedTaskImpl(const tracked_objects::Location& from_here,
+                           const base::Closure& task,
+                           base::TimeDelta delay,
+                           bool nestable);
 
   void PumpQueueLocked();
   void EnqueueTaskLocked(const base::PendingTask& pending_task);
@@ -91,14 +101,15 @@ bool TaskQueue::RunsTasksOnCurrentThread() const {
   return task_queue_manager_->RunsTasksOnCurrentThread();
 }
 
-bool TaskQueue::PostDelayedTask(const tracked_objects::Location& from_here,
-                                const base::Closure& task,
-                                base::TimeDelta delay) {
+bool TaskQueue::PostDelayedTaskImpl(const tracked_objects::Location& from_here,
+                                    const base::Closure& task,
+                                    base::TimeDelta delay,
+                                    bool nestable) {
   base::AutoLock lock(lock_);
   if (!task_queue_manager_)
     return false;
 
-  base::PendingTask pending_task(from_here, task);
+  base::PendingTask pending_task(from_here, task, base::TimeTicks(), nestable);
   task_queue_manager_->DidQueueTask(&pending_task);
 
   if (delay > base::TimeDelta()) {
@@ -107,17 +118,6 @@ bool TaskQueue::PostDelayedTask(const tracked_objects::Location& from_here,
   }
   EnqueueTaskLocked(pending_task);
   return true;
-}
-
-bool TaskQueue::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
-  base::AutoLock lock(lock_);
-  if (!task_queue_manager_)
-    return false;
-  return task_queue_manager_->PostNonNestableDelayedTask(
-      from_here, task, delay);
 }
 
 bool TaskQueue::IsQueueEmpty() const {
@@ -342,7 +342,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
   if (!SelectWorkQueueToService(&queue_index))
     return;
   MaybePostDoWorkOnMainRunner();
-  RunTaskFromWorkQueue(queue_index);
+  ProcessTaskFromWorkQueue(queue_index);
 }
 
 bool TaskQueueManager::SelectWorkQueueToService(size_t* out_queue_index) {
@@ -358,12 +358,19 @@ void TaskQueueManager::DidQueueTask(base::PendingTask* pending_task) {
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", *pending_task);
 }
 
-void TaskQueueManager::RunTaskFromWorkQueue(size_t queue_index) {
+void TaskQueueManager::ProcessTaskFromWorkQueue(size_t queue_index) {
   main_thread_checker_.CalledOnValidThread();
   internal::TaskQueue* queue = Queue(queue_index);
   base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
-  task_annotator_.RunTask(
-      "TaskQueueManager::PostTask", "TaskQueueManager::RunTask", pending_task);
+  if (!pending_task.nestable) {
+    // Defer non-nestable work to the main task runner.  NOTE these tasks can be
+    // arbitrarily delayed so the additional delay should not be a problem.
+    main_task_runner_->PostNonNestableTask(pending_task.posted_from,
+                                           pending_task.task);
+  } else {
+    task_annotator_.RunTask("TaskQueueManager::PostTask",
+                            "TaskQueueManager::RunTask", pending_task);
+  }
 }
 
 bool TaskQueueManager::RunsTasksOnCurrentThread() const {
@@ -376,14 +383,6 @@ bool TaskQueueManager::PostDelayedTask(
     base::TimeDelta delay) {
   DCHECK(delay > base::TimeDelta());
   return main_task_runner_->PostDelayedTask(from_here, task, delay);
-}
-
-bool TaskQueueManager::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
-  // Defer non-nestable work to the main task runner.
-  return main_task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
 }
 
 void TaskQueueManager::SetQueueName(size_t queue_index, const char* name) {
