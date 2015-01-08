@@ -29,9 +29,26 @@ public class MonthPicker extends TwoFieldDatePicker {
         mShortMonths =
                 DateFormatSymbols.getInstance(Locale.getDefault()).getShortMonths();
 
+        // logic duplicated from android.widget.DatePicker
+        if (usingNumericMonths()) {
+            // We're in a locale where a date should either be all-numeric, or all-text.
+            // All-text would require custom NumberPicker formatters for day and year.
+            for (int i = 0; i < mShortMonths.length; ++i) {
+                mShortMonths[i] = String.format("%d", i + 1);
+            }
+        }
+
         // initialize to current date
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         init(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), null);
+    }
+
+    /**
+     * Tests whether the current locale is one where there are no real month names,
+     * such as Chinese, Japanese, or Korean locales.
+     */
+    protected boolean usingNumericMonths() {
+        return Character.isDigit(mShortMonths[Calendar.JANUARY].charAt(0));
     }
 
     /**

@@ -5,16 +5,19 @@
 package org.chromium.ui.picker;
 
 import android.content.Context;
+import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.NumberPicker.OnValueChangeListener;
 
 import org.chromium.ui.R;
 
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -107,6 +110,44 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
         mYearSpinner = (NumberPicker) findViewById(R.id.year);
         mYearSpinner.setOnLongPressUpdateInterval(100);
         mYearSpinner.setOnValueChangedListener(onChangeListener);
+
+        reorderSpinners();
+    }
+
+    /**
+     * Reorder the date picker spinners to match the order suggested by the locale.
+     * Assumes that the order of month and year in the locale is also the right order
+     * for the spinner columns.
+     */
+    private void reorderSpinners() {
+        // logic duplicated from android.widget.DatePicker
+        LinearLayout pickers = (LinearLayout) findViewById(R.id.pickers);
+        pickers.removeView(mPositionInYearSpinner);
+        pickers.removeView(mYearSpinner);
+
+        String pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMMdd");
+
+        boolean pos_inserted = false;
+        boolean year_inserted = false;
+
+        for (int i = 0; i < pattern.length(); ++i) {
+            char ch = pattern.charAt(i);
+            if (ch == '\'') {
+                i = pattern.indexOf('\'', i + 1);
+                if (i == -1) {
+                    throw new IllegalArgumentException("Bad quoting in " + pattern);
+                }
+            } else if ((ch == 'M' || ch == 'L') && !pos_inserted) {
+                pickers.addView(mPositionInYearSpinner);
+                pos_inserted = true;
+            } else if (ch == 'y' && !year_inserted) {
+                pickers.addView(mYearSpinner);
+                year_inserted = true;
+            }
+        }
+
+        if (!pos_inserted) pickers.addView(mPositionInYearSpinner);
+        if (!year_inserted) pickers.addView(mYearSpinner);
     }
 
     /**
