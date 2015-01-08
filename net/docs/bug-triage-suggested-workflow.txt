@@ -1,0 +1,118 @@
+Identifying unlabeled network bugs on the tracker:
+* Look at new uncomfirmed bugs since noon PST on the last triager's rotation:
+    https://code.google.com/p/chromium/issues/list?can=2&q=status%3Aunconfirmed&sort=-id&num=1000
+* Press "h" to bring up a preview of the bug text.
+* Use "j" and "k" to advance through bugs.
+* If a bug looks like it might be network/download/safe-browsing related, middle
+    click [or command-click on OSX] to open in new tab.
+* If a user provides a crash ID for a crasher for a bug that could be
+    net-related, look at the crash stack at go/crash, and see if it looks to be
+    network related.  Be sure to check if other bug reports have that stack
+    trace, and mark as a dupe if so.  Even if the bug isn't network related,
+    paste the stack trace in the bug, so no one else has to look up the crash
+    stack from the ID.
+  * If there's no other information than the crash ID, ask for more details and
+      add the Needs-Feedback label.
+* If network causes are possible, ask for a net-internals log (If it's not a
+    browser crash) and attach the most specific internals-network label that's
+    applicable.  If there isn't an applicable narrower label, a clear owner for
+    the issue, or there are multiple possibilities, attach the internals-network
+    label and proceed with further investigation.
+* If non-network causes also seem possible, attach those labels as well.
+
+Investigating Cr-Internals-Network bugs:
+* Look through uncomfirmed and untriaged Cr-Internals-Network bugs, prioritizing
+    those updated within the last week:
+    https://code.google.com/p/chromium/issues/list?can=2&q=Cr%3DInternals-Network+-status%3AAssigned+-status%3AStarted+-status%3AAvailable+&sort=-modified
+* While investigating a new issue, change the status to Untriaged.
+* If a bug is a potential security issue (Allows for code execution from remote
+    site, allows crossing security boundaries, unchecked array bounds, etc) mark
+    it Type-Bug-Security.  If it has privacy implication (History, cookies
+    discoverable by an entity that shouldn't be able to do so, incognito state
+    being saved in memory or on disk beyond the lifetime of incognito tabs,
+    etc), mark it Cr-Privacy.
+* For bugs that already have a more specific network label, go ahead and remove
+    the Cr-Internals-Network label and move on.
+* Try to figure out if it's really a network bug.  See common non-network labels
+    section for description of common labels needed for issues incorrectly
+    tagged as Cr-Internals-Network.
+* If it's not, attach appropriate labels and go no further.
+* If it may be a network bug, attach additional possibly relevant labels if any,
+    and continue investigating.  Once you either determine it's a non-network
+    bug, or figure out accurate more specific network labels, your job is done,
+    though you should still ask for a net-internals dump if it seems likely to
+    be useful.
+* Note that ChromeOS-specific network-related code (Captive portal detection,
+    connectivity detection, login, etc) may not all have appropriate more
+    specific labels, but are not in areas handled by the network stack team.
+    Just make sure those have the OS-Chrome label, and any more specific labels
+    if applicable, and then move on.
+* Gather data and investigate.
+  * Remember to add the Needs-Feedback label whenever waiting for the user to
+      respond with more information, and remove it when not waiting on the user.
+  * Try to reproduce locally.  If you can, and it's a regression, use
+      src/tools/bisect-builds.py to figure out when it regressed.
+  * Ask more data from the user as needed (net-internals dumps, repro case,
+      crash ID from about:crashes, run tests, etc).
+  * If asking for an about:net-internals dump, provide this link:
+      https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details.
+      Can just grab the link from about:net-internals, as needed.
+* Try to figure out what's going on, and which more specific network label is
+    most appropriate.
+* If you are having trouble with an issue, particularly for help understanding
+    net-internals logs, email the public net-dev@chromium.org list for help
+    debugging.  If it's a crasher, or for some other reason discussion needs to
+    be done in private, use chrome-network-debugging@google.com.
+    TODO(mmenke): Write up a net-internals tips and tricks docs.
+* If it appears to be a bug in the unowned core of the network stack (i.e. no
+    sublabel applies, or only the Cr-Internals-Network-HTTP sublabel applies,
+    and there's no clear owner), try to figure out the exact cause.
+
+Look for new crashers:
+* Go to go/chromecrash.
+* For each platform, go to the latest canary.  Click on browser -> limit 1000.
+    Search the page for "net::".  Ignore crashes that only occur once, as
+    memory corruption can easily cause one-off failures when the sample size is
+    large enough.
+  * Look at the stack trace to confirm it's a network bug.
+  * If it is, and there's no associated bug filed, file a new bug directly from
+      chromecrash, looking at earlier canaries to determine if it's a recent
+      regression.  Use the most specific label possible.
+* The most recent Canary may not yet have a full day of crashes, so it may be
+    worth looking at more than one version.
+* If there's been a dev, beta, or stable release in the last couple days, should
+    also look at those.
+
+Investigating crashers:
+* Only investigate crashers that are still occurring, as identified by above
+    section.
+* Particularly for Windows, look for weird dlls associated with the crashes.
+    If there are some, it may be caused by malware.  You can often figure out if
+    a dll is malware by a search, though it's harder to figure out if a dll is
+    definitively not malware.
+* See if the same users are repeatedly running into the same issue.  This can be
+    accomplished by search for (Or clicking on) the client ID associated with a
+    crash report, and seeing if there are multiple reports for the same crash.
+    If this is the case, it may be also be malware, or an issue with an unusual
+    system/chrome/network config.
+* Dig through crash reports to figure out when the crash first appeared, and dig
+    through revision history in related files to try and locate a suspect CL.
+    TODO(mmenke):  Add more detail here.
+* Load crash dumps, try to figure out a cause.
+    See http://www.chromium.org/developers/crash-reports for more information
+
+Dealing with old bugs:
+* For all network issues (Even those with owners, or a more specific labels):
+  * If the issue has had the Needs-Feedback label for over two weeks, verify it
+      is waiting on feedback from the user.  If not, remove the label.
+      Otherwise, go ahead and mark the issue WontFix due to lack of response and
+      suggest the user file a new bug if the issue is still present.
+      Needs-feedback issues:  https://code.google.com/p/chromium/issues/list?can=2&q=Cr=Internals-Network%20Needs=Feedback&sort=modified
+  * If a bug is over 2 months old, and the underlying problem was never really
+    understood, ask reporters if the issue is still present, and attach the
+    Needs-Feedback label.
+* Old unconfirmed or untriaged Cr-Internals-Network issues can be investigated
+    just like newer ones.  Crashers should generally be given higher priority,
+    since we can verify if they still occur, and then newer issues, as they're
+    more likely to still be present, and more likely to have a still responsive
+    bug reporter.
