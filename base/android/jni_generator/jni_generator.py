@@ -1037,10 +1037,8 @@ static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS});
 """
     if self.options.native_exports:
       template_str += """
-__attribute__((visibility("default")))
-${RETURN} Java_${JAVA_NAME}_native${NAME}(JNIEnv* env, ${PARAMS}) {
-  return ${NAME}(${PARAMS_IN_CALL});
-}
+__attribute__((visibility("default"), alias("${NAME}")))
+${RETURN} Java_${JAVA_NAME}_native${NAME}(JNIEnv* env, ${PARAMS});
 """
     template = Template(template_str)
     params_in_call = []
@@ -1267,7 +1265,7 @@ const char k${JAVA_CLASS}ClassPath[] = "${JNI_CLASS_PATH}";""")
     if self.options.native_exports:
       template = Template("""\
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_${JAVA_CLASS}_clazz = 0;
+base::subtle::AtomicWord g_${JAVA_CLASS}_clazz __attribute__((unused)) = 0;
 #define ${JAVA_CLASS}_clazz(env) \
 base::android::LazyGetClass(env, k${JAVA_CLASS}ClassPath, \
 &g_${JAVA_CLASS}_clazz)""")

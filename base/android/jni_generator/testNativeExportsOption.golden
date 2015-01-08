@@ -21,7 +21,7 @@ namespace {
 const char kSampleForTestsClassPath[] =
     "org/chromium/example/jni_generator/SampleForTests";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-base::subtle::AtomicWord g_SampleForTests_clazz = 0;
+base::subtle::AtomicWord g_SampleForTests_clazz __attribute__((unused)) = 0;
 #define SampleForTests_clazz(env) base::android::LazyGetClass(env, kSampleForTestsClassPath, &g_SampleForTests_clazz)
 
 }  // namespace
@@ -30,21 +30,17 @@ extern "C" {
 
 static jint Init(JNIEnv* env, jobject jcaller);
 
-__attribute__((visibility("default")))
+__attribute__((visibility("default"), alias("Init")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass_nativeInit(JNIEnv*
-    env, jobject jcaller) {
-  return Init(env, jcaller);
-}
+    env, jobject jcaller);
 
 static jint Init(JNIEnv* env, jobject jcaller);
 
-__attribute__((visibility("default")))
+__attribute__((visibility("default"), alias("Init")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_nativeInit(JNIEnv*
-    env, jobject jcaller) {
-  return Init(env, jcaller);
-}
+    env, jobject jcaller);
 
 };  // extern "C"
 
