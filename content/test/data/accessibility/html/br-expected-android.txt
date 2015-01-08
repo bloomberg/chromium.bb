@@ -1,3 +1,5 @@
-#<skip - need whitespace between lines.
 android.webkit.WebView focusable focused scrollable
-    android.view.View clickable name='Text line 1Text line 2'
+    android.view.View
+        android.view.View clickable name='Text line 1'
+        android.view.View
+        android.view.View clickable name='Text line 2'

@@ -114,6 +114,7 @@
     inline_text_box,
     label_text,
     legend,
+    line_break,
     link,
     list_box_option,
     list_box,

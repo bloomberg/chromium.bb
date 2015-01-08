@@ -103,6 +103,7 @@
     inlineTextBox,
     labelText,
     legend,
+    lineBreak,
     link,
     listBoxOption,
     listBox,

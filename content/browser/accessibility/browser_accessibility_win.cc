@@ -3813,6 +3813,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_TREE_ITEM:
       ia_role_ = ROLE_SYSTEM_OUTLINEITEM;
       break;
+    case ui::AX_ROLE_LINE_BREAK:
+      ia_role_ = ROLE_SYSTEM_WHITESPACE;
+      break;
     case ui::AX_ROLE_WINDOW:
       ia_role_ = ROLE_SYSTEM_WINDOW;
       break;
