@@ -715,12 +715,10 @@ bool ThreadState::shouldGC()
         return false;
     ASSERT(!sweepForbidden());
 
-    // Trigger garbage collection on a 50% increase in size,
+    // Trigger garbage collection on a 50% increase in size since the last GC,
     // but not for less than 512 KB.
-    if (Heap::allocatedObjectSize() < 1 << 19)
-        return false;
-    size_t limit = Heap::markedObjectSize() + Heap::markedObjectSize() / 2;
-    return Heap::allocatedObjectSize() > limit;
+    size_t newSize = Heap::allocatedObjectSize();
+    return newSize >= 512 * 1024 && newSize > Heap::markedObjectSize() / 2;
 }
 
 bool ThreadState::shouldForceConservativeGC()
@@ -735,14 +733,15 @@ bool ThreadState::shouldForceConservativeGC()
     size_t newSize = Heap::allocatedObjectSize();
     if (m_didV8GCAfterLastGC && m_collectionRate > 0.5) {
         // If we had a V8 GC after the last Oilpan GC and the last collection
-        // rate was higher than 50%, trigger a conservative GC on a 100%
-        // increase in size, but not for less than 4MB.
+        // rate was higher than 50%, trigger a conservative GC on a 200%
+        // increase in size since the last GC, but not for less than 4 MB.
         return newSize >= 4 * 1024 * 1024 && newSize > 2 * Heap::markedObjectSize();
     }
-    // Otherwise, trigger a conservative GC on a 300% increase in size, but not
-    // for less than 32MB.  We set the higher limit in this case because Oilpan
-    // GC is unlikely to collect a lot of objects without having a V8 GC.
-    // FIXME: Is 32MB reasonable?
+    // Otherwise, trigger a conservative GC on a 400% increase in size since
+    // the last GC, but not for less than 32 MB. We set the higher limit in
+    // this case because Oilpan GC is unlikely to collect a lot of objects
+    // without having a V8 GC.
+    // FIXME: Is 32 MB reasonable?
     return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
 
