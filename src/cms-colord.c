@@ -212,10 +212,11 @@ colord_device_changed_cb(CdDevice *device, struct cms_output *ocms)
 static void
 colord_notifier_output_destroy(struct wl_listener *listener, void *data)
 {
-	struct cms_colord *cms =
-		container_of(listener, struct cms_colord, destroy_listener);
+	struct cms_output *ocms =
+		container_of(listener, struct cms_output, destroy_listener);
 	struct weston_output *o = (struct weston_output *) data;
-	struct cms_output *ocms;
+	struct cms_colord *cms = ocms->cms;
+
 	gboolean ret;
 	gchar *device_id;
 	GError *error = NULL;
@@ -223,11 +224,6 @@ colord_notifier_output_destroy(struct wl_listener *listener, void *data)
 	colord_idle_cancel_for_output(cms, o);
 	device_id = get_output_id(cms, o);
 	weston_log("colord: output removed %s\n", device_id);
-	ocms = g_hash_table_lookup(cms->devices, device_id);
-	if (!ocms) {
-		weston_log("colord: failed to delete device\n");
-		goto out;
-	}
 	g_signal_handlers_disconnect_by_data(ocms->device, ocms);
 	ret = cd_client_delete_device_sync (cms->client,
 					    ocms->device,
