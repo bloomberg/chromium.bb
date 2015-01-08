@@ -29,9 +29,6 @@
 #include "WebCanvas.h"
 #include "WebCommon.h"
 
-// FIXME: Remove this after references to this macro in Chromium are removed.
-#define WEB_DISPLAY_ITEM_LIST_IS_DEFINED 1
-
 namespace blink {
 
 class WebDisplayItemList;
