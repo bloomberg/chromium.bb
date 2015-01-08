@@ -14,8 +14,10 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
+#include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_paths.h"
+#include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/global_descriptors.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/dns_prefetch/browser/net_message_filter.h"
@@ -62,6 +64,11 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       new dns_prefetch::NetMessageFilter(
           url_request_context_factory_->host_resolver()));
   host->AddFilter(net_message_filter.get());
+#if !defined(OS_ANDROID)
+  scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
+      new media::CmaMessageFilterHost(host->GetID()));
+  host->AddFilter(cma_message_filter.get());
+#endif  // !defined(OS_ANDROID)
 }
 
 net::URLRequestContextGetter* CastContentBrowserClient::CreateRequestContext(
@@ -103,6 +110,8 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 
   std::string process_type =
       command_line->GetSwitchValueNative(switches::kProcessType);
+  base::CommandLine* browser_command_line =
+      base::CommandLine::ForCurrentProcess();
 
   // Renderer process command-line
   if (process_type == switches::kRendererProcess) {
@@ -111,6 +120,9 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_ANDROID)
     command_line->AppendSwitch(switches::kForceUseOverlayEmbeddedVideo);
 #endif  // defined(OS_ANDROID)
+
+    if (browser_command_line->HasSwitch(switches::kEnableCmaMediaPipeline))
+      command_line->AppendSwitch(switches::kEnableCmaMediaPipeline);
   }
 }
 
