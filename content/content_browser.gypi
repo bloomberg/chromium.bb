@@ -149,6 +149,7 @@
       'public/browser/media_capture_devices.h',
       'public/browser/media_device_id.cc',
       'public/browser/media_device_id.h',
+      'public/browser/memory_pressure_observer.h',
       'public/browser/message_port_provider.h',
       'public/browser/native_web_keyboard_event.h',
       'public/browser/navigation_controller.cc',
@@ -1520,6 +1521,7 @@
       'browser/compositor/software_output_device_x11.cc',
       'browser/compositor/software_output_device_x11.h',
       'browser/context_factory.cc',
+      'browser/memory_pressure_observer.cc',
     ],
     'compositor_browser_surface_sources': [
       'browser/compositor/onscreen_display_client.cc',

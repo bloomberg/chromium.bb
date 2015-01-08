@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/chromeos/memory_pressure_observer_chromeos.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -40,6 +41,7 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/memory_pressure_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -101,6 +103,11 @@ void RecordLinearHistogram(const std::string& name,
       bucket_count + 2,  // Account for the underflow and overflow bins.
       base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
+}
+
+// Gets the MemoryPressureObserver - if it exists.
+base::MemoryPressureObserverChromeOS* GetMemoryPressureObserver() {
+  return content::GetMemoryPressureObserver();
 }
 
 }  // namespace
@@ -172,9 +179,13 @@ OomPriorityManager::TabStats::~TabStats() {
 
 OomPriorityManager::OomPriorityManager()
     : focused_tab_process_info_(std::make_pair(0, 0)),
-      low_memory_observer_(new LowMemoryObserver),
       discard_count_(0),
       recent_tab_discard_(false) {
+  // Use the old |LowMemoryObserver| when there is no
+  // |MemoryPressureObserverChromeOS|.
+  if (!GetMemoryPressureObserver())
+    low_memory_observer_.reset(new LowMemoryObserver);
+
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllBrowserContextsAndSources());
@@ -204,9 +215,26 @@ void OomPriorityManager::Start() {
         this,
         &OomPriorityManager::RecordRecentTabDiscard);
   }
-  if (low_memory_observer_.get())
-    low_memory_observer_->Start();
   start_time_ = TimeTicks::Now();
+  // If a |LowMemoryObserver| exists we use the old system, otherwise we create
+  // a |MemoryPressureListener| to listen for memory events.
+  if (low_memory_observer_.get()) {
+    low_memory_observer_->Start();
+  } else {
+    base::MemoryPressureObserverChromeOS* observer =
+        GetMemoryPressureObserver();
+    if (observer) {
+      memory_pressure_listener_.reset(new base::MemoryPressureListener(
+          base::Bind(&OomPriorityManager::OnMemoryPressure,
+                     base::Unretained(this))));
+      base::MemoryPressureListener::MemoryPressureLevel level =
+          observer->GetCurrentPressureLevel();
+      if (level ==
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+        OnMemoryPressure(level);
+      }
+    }
+  }
 }
 
 void OomPriorityManager::Stop() {
@@ -214,6 +242,8 @@ void OomPriorityManager::Stop() {
   recent_tab_discard_timer_.Stop();
   if (low_memory_observer_.get())
     low_memory_observer_->Stop();
+  else
+    memory_pressure_listener_.reset();
 }
 
 std::vector<base::string16> OomPriorityManager::GetTabTitles() {
@@ -401,13 +431,14 @@ void OomPriorityManager::PurgeBrowserMemory() {
   // have been too slow to use in OOM situations (V8 garbage collection) or
   // do not lead to persistent decreased usage (image/bitmap caches). This
   // function therefore only targets large blocks of memory in the browser.
+  // Note that other objects will listen to MemoryPressureListener events
+  // to release memory.
   for (TabContentsIterator it; !it.done(); it.Next()) {
     WebContents* web_contents = *it;
     // Screenshots can consume ~5 MB per web contents for platforms that do
     // touch back/forward.
     web_contents->GetController().ClearAllScreenshots();
   }
-  // TODO(jamescook): Are there other things we could flush? Drive metadata?
 }
 
 int OomPriorityManager::GetTabCount() const {
@@ -481,6 +512,21 @@ void OomPriorityManager::Observe(int type,
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
       oom_score_map_.erase(host->GetID());
+      if (!low_memory_observer_.get()) {
+        // Coming here we know that a renderer was just killed and memory should
+        // come back into the pool. However - the memory pressure observer did
+        // not yet update its status and therefore we ask it to redo the
+        // measurement, calling us again if we have to release more.
+        // Note: We do not only accelerate the discarding speed by doing another
+        // check in short succession - we also accelerate it because the timer
+        // driven MemoryPressureObserver will continue to produce timed events
+        // on top. So as longer as the cleanup phase takes, as more tabs will
+        // get discarded in parallel.
+        base::MemoryPressureObserverChromeOS* observer =
+            GetMemoryPressureObserver();
+        if (observer)
+          observer->ScheduleEarlyCheck();
+      }
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
@@ -656,6 +702,17 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
     }
     priority += priority_increment;
   }
+}
+
+void OomPriorityManager::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // For the moment we only do something when we reach a critical state.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    LogMemoryAndDiscardTab();
+  }
+  // TODO(skuhne): If more memory pressure levels are introduced, we might
+  // consider to call PurgeBrowserMemory() before CRITICAL is reached.
 }
 
 }  // namespace chromeos

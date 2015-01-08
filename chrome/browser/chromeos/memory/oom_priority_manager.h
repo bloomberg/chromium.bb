@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -138,6 +139,10 @@ class OomPriorityManager : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
 
+  // Called by the memory pressure listener when the memory pressure rises.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   base::RepeatingTimer<OomPriorityManager> timer_;
   base::OneShotTimer<OomPriorityManager> focus_tab_score_adjust_timer_;
   base::RepeatingTimer<OomPriorityManager> recent_tab_discard_timer_;
@@ -151,9 +156,16 @@ class OomPriorityManager : public content::NotificationObserver {
   // Holds the focused tab's child process host id.
   ProcessInfo focused_tab_process_info_;
 
-  // Observer for the kernel low memory signal.  NULL if tab discarding is
-  // disabled.
+  // The old observer for the kernel low memory signal. This is null if
+  // the new MemoryPressureListener is used.
+  // TODO(skuhne): Remove this when the enhanced memory observer is turned on
+  // by default.
   scoped_ptr<LowMemoryObserver> low_memory_observer_;
+
+  // A listener to global memory pressure events. This will be used if the
+  // memory pressure system was instantiated - otherwise the LowMemoryObserver
+  // will be used.
+  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Wall-clock time when the priority manager started running.
   base::TimeTicks start_time_;

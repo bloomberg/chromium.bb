@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
@@ -11,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
@@ -21,6 +24,22 @@ using content::OpenURLParams;
 namespace {
 
 typedef InProcessBrowserTest OomPriorityManagerTest;
+
+class OomPriorityManagerUsingPressureListenerTest
+    : public InProcessBrowserTest {
+ public:
+  OomPriorityManagerUsingPressureListenerTest() {}
+  ~OomPriorityManagerUsingPressureListenerTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        chromeos::switches::kUseMemoryPressureSystemChromeOS);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OomPriorityManagerUsingPressureListenerTest);
+};
+
 
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
@@ -157,6 +176,53 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   back2.Wait();
   EXPECT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_TRUE(chrome::CanGoForward(browser()));
+}
+
+// Test that the MemoryPressureListener event is properly triggering a tab
+// discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
+IN_PROC_BROWSER_TEST_F(OomPriorityManagerUsingPressureListenerTest,
+                       OomPressureListener) {
+  chromeos::OomPriorityManager* oom_priority_manager =
+      g_browser_process->platform_part()->oom_priority_manager();
+  // Get three tabs open.
+  content::WindowedNotificationObserver load1(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
+                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open1);
+  load1.Wait();
+
+  content::WindowedNotificationObserver load2(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
+                      false);
+  browser()->OpenURL(open2);
+  load2.Wait();
+  EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
+
+  // Nothing should happen with a moderate memory pressure event.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
+
+  // A critical memory pressure event should discard a tab.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  // Coming here, an asynchronous operation will collect system stats. Once in,
+  // a tab should get discarded. As such we need to give it 10s time to discard.
+  const int kTimeoutTimeInMS = 10000;
+  const int kIntervalTimeInMS = 5;
+  int timeout = kTimeoutTimeInMS / kIntervalTimeInMS;
+  while (--timeout) {
+    usleep(kIntervalTimeInMS * 1000);
+    base::RunLoop().RunUntilIdle();
+    if (oom_priority_manager->recent_tab_discard())
+      break;
+  }
+  EXPECT_TRUE(oom_priority_manager->recent_tab_discard());
 }
 
 }  // namespace
