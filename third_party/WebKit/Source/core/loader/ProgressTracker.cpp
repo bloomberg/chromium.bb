@@ -82,7 +82,6 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
 
 ProgressTracker::~ProgressTracker()
 {
-    ASSERT(!m_frame->isLoading());
 }
 
 void ProgressTracker::trace(Visitor* visitor)
@@ -94,6 +93,7 @@ void ProgressTracker::dispose()
 {
     if (m_frame->isLoading())
         progressCompleted();
+    ASSERT(!m_frame->isLoading());
 }
 
 double ProgressTracker::estimatedProgress() const
