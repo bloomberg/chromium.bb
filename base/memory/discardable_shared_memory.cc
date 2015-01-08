@@ -129,7 +129,7 @@ bool DiscardableSharedMemory::CreateAndMap(size_t size) {
       shared_memory_.mapped_size() - AlignToPageSize(sizeof(SharedState));
 
   locked_page_count_ = AlignToPageSize(mapped_size_) / base::GetPageSize();
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (size_t page = 0; page < locked_page_count_; ++page)
     locked_pages_.insert(page);
 #endif
@@ -149,7 +149,7 @@ bool DiscardableSharedMemory::Map(size_t size) {
       shared_memory_.mapped_size() - AlignToPageSize(sizeof(SharedState));
 
   locked_page_count_ = AlignToPageSize(mapped_size_) / base::GetPageSize();
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (size_t page = 0; page < locked_page_count_; ++page)
     locked_pages_.insert(page);
 #endif
@@ -200,7 +200,7 @@ bool DiscardableSharedMemory::Lock(size_t offset, size_t length) {
   // Add pages to |locked_page_count_|.
   // Note: Locking a page that is already locked is an error.
   locked_page_count_ += end - start;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // Detect incorrect usage by keeping track of exactly what pages are locked.
   for (auto page = start; page < end; ++page) {
     auto result = locked_pages_.insert(page);
@@ -252,7 +252,7 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
   // Note: Unlocking a page that is not locked is an error.
   DCHECK_GE(locked_page_count_, end - start);
   locked_page_count_ -= end - start;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // Detect incorrect usage by keeping track of exactly what pages are locked.
   for (auto page = start; page < end; ++page) {
     auto erased_count = locked_pages_.erase(page);

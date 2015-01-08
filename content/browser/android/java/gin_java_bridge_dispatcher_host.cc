@@ -144,13 +144,13 @@ GinJavaBoundObject::ObjectID GinJavaBridgeDispatcherHost::AddObject(
     base::AutoLock locker(objects_lock_);
     objects_[object_id] = new_object;
   }
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   {
     GinJavaBoundObject::ObjectID added_object_id;
     DCHECK(FindObjectId(object, &added_object_id));
     DCHECK_EQ(object_id, added_object_id);
   }
-#endif  // DCHECK_IS_ON
+#endif  // DCHECK_IS_ON()
   base::android::ScopedJavaLocalRef<jobject> retained_object_set =
         retained_object_set_.get(env);
   if (!retained_object_set.is_null()) {

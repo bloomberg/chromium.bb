@@ -248,7 +248,7 @@ void MoveAllCharsToSets(PairVector* pairs) {
   for (int i = 0; i < 4; ++i) {
     MoveRightMostCharToSet(pairs);
   }
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (PairVector::const_iterator it = pairs->begin(); it != pairs->end();
        ++it) {
     DCHECK(it->character.empty());

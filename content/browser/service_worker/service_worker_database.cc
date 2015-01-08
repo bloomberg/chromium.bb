@@ -538,7 +538,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   BumpNextVersionIdIfNeeded(registration.version_id, &batch);
 
   PutUniqueOriginToBatch(registration.scope.GetOrigin(), &batch);
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   int64_t total_size_bytes = 0;
   for (const auto& resource : resources) {
     total_size_bytes += resource.size_bytes;

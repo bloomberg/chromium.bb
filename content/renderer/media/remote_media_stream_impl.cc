@@ -213,7 +213,7 @@ class RemoteAudioTrackAdapter
   void OnChangedOnMainThread(
       webrtc::MediaStreamTrackInterface::TrackState state);
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   bool unregistered_;
 #endif
 
@@ -227,7 +227,7 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::AudioTrackInterface* webrtc_track)
     : RemoteMediaStreamTrackAdapter(main_thread, webrtc_track),
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
       unregistered_(false),
 #endif
       state_(observed_track()->state()) {
@@ -243,13 +243,13 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
 }
 
 RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(unregistered_);
 #endif
 }
 
 void RemoteAudioTrackAdapter::Unregister() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(!unregistered_);
   unregistered_ = true;
 #endif

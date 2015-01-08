@@ -91,10 +91,10 @@ class BASE_EXPORT MachLogMessage : public logging::LogMessage {
     LAZY_STREAM(MACH_VLOG_STREAM(verbose_level, mach_err), \
                 MACH_DVLOG_IS_ON(verbose_level) && (condition))
 
-#define MACH_DCHECK(condition, mach_err) \
-    LAZY_STREAM(MACH_LOG_STREAM(FATAL, mach_err), \
-                DCHECK_IS_ON && !(condition)) \
-    << "Check failed: " # condition << ". "
+#define MACH_DCHECK(condition, mach_err)        \
+  LAZY_STREAM(MACH_LOG_STREAM(FATAL, mach_err), \
+              DCHECK_IS_ON() && !(condition))   \
+      << "Check failed: " #condition << ". "
 
 #if !defined(OS_IOS)
 
@@ -157,10 +157,10 @@ class BASE_EXPORT BootstrapLogMessage : public logging::LogMessage {
     LAZY_STREAM(BOOTSTRAP_VLOG_STREAM(verbose_level, bootstrap_err), \
                 BOOTSTRAP_DVLOG_IS_ON(verbose_level) && (condition))
 
-#define BOOTSTRAP_DCHECK(condition, bootstrap_err) \
-    LAZY_STREAM(BOOTSTRAP_LOG_STREAM(FATAL, bootstrap_err), \
-                DCHECK_IS_ON && !(condition)) \
-    << "Check failed: " # condition << ". "
+#define BOOTSTRAP_DCHECK(condition, bootstrap_err)        \
+  LAZY_STREAM(BOOTSTRAP_LOG_STREAM(FATAL, bootstrap_err), \
+              DCHECK_IS_ON() && !(condition))             \
+      << "Check failed: " #condition << ". "
 
 #endif  // !OS_IOS
 

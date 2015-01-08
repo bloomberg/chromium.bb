@@ -1282,7 +1282,7 @@ ShellUtil::DefaultState ProbeProtocolHandlers(
     const base::FilePath& chrome_exe,
     const wchar_t* const* protocols,
     size_t num_protocols) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(!num_protocols || protocols);
   for (size_t i = 0; i < num_protocols; ++i)
     DCHECK(protocols[i] && *protocols[i]);

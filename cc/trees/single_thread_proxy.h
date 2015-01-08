@@ -176,13 +176,13 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 class DebugScopedSetImplThread {
  public:
   explicit DebugScopedSetImplThread(Proxy* proxy) : proxy_(proxy) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     previous_value_ = proxy_->impl_thread_is_overridden_;
     proxy_->SetCurrentThreadIsImplThread(true);
 #endif
   }
   ~DebugScopedSetImplThread() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     proxy_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
@@ -199,13 +199,13 @@ class DebugScopedSetImplThread {
 class DebugScopedSetMainThread {
  public:
   explicit DebugScopedSetMainThread(Proxy* proxy) : proxy_(proxy) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     previous_value_ = proxy_->impl_thread_is_overridden_;
     proxy_->SetCurrentThreadIsImplThread(false);
 #endif
   }
   ~DebugScopedSetMainThread() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     proxy_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }

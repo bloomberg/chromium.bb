@@ -83,7 +83,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   CHECK_LE(priority, MAXIMUM_PRIORITY);
 
   DCHECK(stream.get());
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // |stream| should not have pending writes in a queue not matching
   // its priority.
   for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {

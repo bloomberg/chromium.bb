@@ -117,13 +117,13 @@ HardwareRenderer::~HardwareRenderer() {
   root_layer_ = NULL;
   delegated_layer_ = NULL;
   frame_provider_ = NULL;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // Check collection is empty.
   cc::ReturnedResourceArray returned_resources;
   resource_collection_->TakeUnusedResourcesForChildCompositor(
       &returned_resources);
   DCHECK_EQ(0u, returned_resources.size());
-#endif  // DCHECK_IS_ON
+#endif  // DCHECK_IS_ON()
 
   resource_collection_->SetClient(NULL);
 

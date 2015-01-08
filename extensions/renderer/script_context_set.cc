@@ -22,7 +22,7 @@ int ScriptContextSet::size() const {
 }
 
 void ScriptContextSet::Add(ScriptContext* context) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // It's OK to insert the same context twice, but we should only ever have
   // one ScriptContext per v8::Context.
   for (ContextSet::iterator iter = contexts_.begin(); iter != contexts_.end();

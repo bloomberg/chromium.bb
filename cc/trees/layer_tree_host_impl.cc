@@ -875,7 +875,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
     draw_result = DRAW_SUCCESS;
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (const auto& render_pass : frame->render_passes) {
     for (const auto& quad : render_pass->quad_list)
       DCHECK(quad->shared_quad_state);

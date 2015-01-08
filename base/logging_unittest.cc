@@ -187,7 +187,7 @@ TEST_F(LoggingTest, DebugLoggingReleaseBehavior) {
 TEST_F(LoggingTest, DcheckStreamsAreLazy) {
   MockLogSource mock_log_source;
   EXPECT_CALL(mock_log_source, Log()).Times(0);
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(true) << mock_log_source.Log();
   DCHECK_EQ(0, 0) << mock_log_source.Log();
 #else
@@ -202,27 +202,27 @@ TEST_F(LoggingTest, DcheckStreamsAreLazy) {
 TEST_F(LoggingTest, Dcheck) {
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Release build.
-  EXPECT_FALSE(DCHECK_IS_ON);
+  EXPECT_FALSE(DCHECK_IS_ON());
   EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #elif defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
   // Release build with real DCHECKS.
   SetLogAssertHandler(&LogSink);
-  EXPECT_TRUE(DCHECK_IS_ON);
+  EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #else
   // Debug build.
   SetLogAssertHandler(&LogSink);
-  EXPECT_TRUE(DCHECK_IS_ON);
+  EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #endif
 
   EXPECT_EQ(0, log_sink_call_count);
   DCHECK(false);
-  EXPECT_EQ(DCHECK_IS_ON ? 1 : 0, log_sink_call_count);
+  EXPECT_EQ(DCHECK_IS_ON() ? 1 : 0, log_sink_call_count);
   DPCHECK(false);
-  EXPECT_EQ(DCHECK_IS_ON ? 2 : 0, log_sink_call_count);
+  EXPECT_EQ(DCHECK_IS_ON() ? 2 : 0, log_sink_call_count);
   DCHECK_EQ(0, 1);
-  EXPECT_EQ(DCHECK_IS_ON ? 3 : 0, log_sink_call_count);
+  EXPECT_EQ(DCHECK_IS_ON() ? 3 : 0, log_sink_call_count);
 }
 
 TEST_F(LoggingTest, DcheckReleaseBehavior) {

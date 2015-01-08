@@ -105,7 +105,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
 
   tilings_.sort(LargestToSmallestScaleFunctor());
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (PictureLayerTiling* tiling : tilings_) {
     DCHECK(tiling->tile_size() ==
            client_->CalculateTileSize(tiling->tiling_size()))

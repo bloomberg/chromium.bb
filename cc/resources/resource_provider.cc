@@ -1259,14 +1259,14 @@ void ResourceProvider::CleanUpGLIfNeeded() {
   }
 
   DCHECK(gl);
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // Check that all GL resources has been deleted.
   for (ResourceMap::const_iterator itr = resources_.begin();
        itr != resources_.end();
        ++itr) {
     DCHECK_NE(GLTexture, itr->second.type);
   }
-#endif  // DCHECK_IS_ON
+#endif  // DCHECK_IS_ON()
 
   texture_uploader_ = nullptr;
   texture_id_allocator_ = nullptr;

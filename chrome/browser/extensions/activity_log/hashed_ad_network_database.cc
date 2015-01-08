@@ -38,7 +38,7 @@ HashedAdNetworkDatabase::~HashedAdNetworkDatabase() {
 
 bool HashedAdNetworkDatabase::IsAdNetwork(const GURL& url) const {
 // The list should be sorted. Check once in debug builds.
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   static bool is_sorted = false;
   if (!is_sorted) {
     std::vector<std::string> list;

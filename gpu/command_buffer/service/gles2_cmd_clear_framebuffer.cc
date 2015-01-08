@@ -37,7 +37,7 @@ const char* g_fragment_shader_source = {
 void CompileShader(GLuint shader, const char* shader_source) {
   glShaderSource(shader, 1, &shader_source, 0);
   glCompileShader(shader);
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   GLint compile_status = GL_FALSE;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
   if (GL_TRUE != compile_status) {
@@ -119,7 +119,7 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
     glAttachShader(program_, fragment_shader);
     glBindAttribLocation(program_, kVertexPositionAttrib, "a_position");
     glLinkProgram(program_);
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     GLint linked = GL_FALSE;
     glGetProgramiv(program_, GL_LINK_STATUS, &linked);
     if (GL_TRUE != linked)
@@ -132,7 +132,7 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
   }
   glUseProgram(program_);
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   glValidateProgram(program_);
   GLint validation_status = GL_FALSE;
   glGetProgramiv(program_, GL_VALIDATE_STATUS, &validation_status);

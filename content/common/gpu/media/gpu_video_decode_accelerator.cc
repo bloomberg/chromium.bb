@@ -61,7 +61,7 @@ static bool MakeDecoderContextCurrent(
 
 // DebugAutoLock works like AutoLock but only acquires the lock when
 // DCHECK is on.
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
 typedef base::AutoLock DebugAutoLock;
 #else
 class DebugAutoLock {

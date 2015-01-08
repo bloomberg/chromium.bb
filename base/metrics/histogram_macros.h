@@ -68,24 +68,24 @@
 // a macro argument here.  The name is only used in a DCHECK, to assure that
 // callers don't try to vary the name of the histogram (which would tend to be
 // ignored by the one-time initialization of the histogtram_pointer).
-#define STATIC_HISTOGRAM_POINTER_BLOCK(constant_histogram_name, \
-                                       histogram_add_method_invocation, \
-                                       histogram_factory_get_invocation) \
-  do { \
-    static base::subtle::AtomicWord atomic_histogram_pointer = 0; \
-    base::HistogramBase* histogram_pointer( \
-        reinterpret_cast<base::HistogramBase*>( \
-            base::subtle::Acquire_Load(&atomic_histogram_pointer))); \
-    if (!histogram_pointer) { \
-      histogram_pointer = histogram_factory_get_invocation; \
-      base::subtle::Release_Store(&atomic_histogram_pointer, \
+#define STATIC_HISTOGRAM_POINTER_BLOCK(constant_histogram_name,           \
+                                       histogram_add_method_invocation,   \
+                                       histogram_factory_get_invocation)  \
+  do {                                                                    \
+    static base::subtle::AtomicWord atomic_histogram_pointer = 0;         \
+    base::HistogramBase* histogram_pointer(                               \
+        reinterpret_cast<base::HistogramBase*>(                           \
+            base::subtle::Acquire_Load(&atomic_histogram_pointer)));      \
+    if (!histogram_pointer) {                                             \
+      histogram_pointer = histogram_factory_get_invocation;               \
+      base::subtle::Release_Store(                                        \
+          &atomic_histogram_pointer,                                      \
           reinterpret_cast<base::subtle::AtomicWord>(histogram_pointer)); \
-    } \
-    if (DCHECK_IS_ON) \
-      histogram_pointer->CheckName(constant_histogram_name); \
-    histogram_pointer->histogram_add_method_invocation; \
+    }                                                                     \
+    if (DCHECK_IS_ON())                                                   \
+      histogram_pointer->CheckName(constant_histogram_name);              \
+    histogram_pointer->histogram_add_method_invocation;                   \
   } while (0)
-
 
 //------------------------------------------------------------------------------
 // Provide easy general purpose histogram in a macro, just like stats counters.

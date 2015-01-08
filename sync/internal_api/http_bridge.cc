@@ -217,7 +217,7 @@ void HttpBridge::SetExtraRequestHeaders(const char * headers) {
 }
 
 void HttpBridge::SetURL(const char* url, int port) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
   {
     base::AutoLock lock(fetch_state_lock_);
@@ -236,7 +236,7 @@ void HttpBridge::SetURL(const char* url, int port) {
 void HttpBridge::SetPostPayload(const char* content_type,
                                 int content_length,
                                 const char* content) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
   {
     base::AutoLock lock(fetch_state_lock_);
@@ -257,7 +257,7 @@ void HttpBridge::SetPostPayload(const char* content_type,
 }
 
 bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
   {
     base::AutoLock lock(fetch_state_lock_);

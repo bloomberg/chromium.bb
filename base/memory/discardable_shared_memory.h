@@ -11,7 +11,7 @@
 #include "base/threading/thread_collision_warner.h"
 #include "base/time/time.h"
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
 #include <set>
 #endif
 
@@ -119,7 +119,7 @@ class BASE_EXPORT DiscardableSharedMemory {
   SharedMemory shared_memory_;
   size_t mapped_size_;
   size_t locked_page_count_;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   std::set<size_t> locked_pages_;
 #endif
   // Implementation is not thread-safe but still usable if clients are

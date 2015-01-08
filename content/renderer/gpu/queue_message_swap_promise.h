@@ -37,7 +37,7 @@ class QueueMessageSwapPromise : public cc::SwapPromise {
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<content::FrameSwapMessageQueue> message_queue_;
   int source_frame_number_;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   bool completed_;
 #endif
 };

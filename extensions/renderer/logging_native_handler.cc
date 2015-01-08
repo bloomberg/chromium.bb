@@ -47,7 +47,7 @@ void LoggingNativeHandler::Dcheck(
 
 void LoggingNativeHandler::DcheckIsOn(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  args.GetReturnValue().Set(DCHECK_IS_ON);
+  args.GetReturnValue().Set(DCHECK_IS_ON());
 }
 
 void LoggingNativeHandler::Log(

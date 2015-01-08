@@ -873,21 +873,21 @@ TaskStopwatch::TaskStopwatch()
       current_thread_data_(NULL),
       excluded_duration_ms_(0),
       parent_(NULL) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   state_ = CREATED;
   child_ = NULL;
 #endif
 }
 
 TaskStopwatch::~TaskStopwatch() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(state_ != RUNNING);
   DCHECK(child_ == NULL);
 #endif
 }
 
 void TaskStopwatch::Start() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(state_ == CREATED);
   state_ = RUNNING;
 #endif
@@ -899,7 +899,7 @@ void TaskStopwatch::Start() {
     return;
 
   parent_ = current_thread_data_->current_stopwatch_;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   if (parent_) {
     DCHECK(parent_->state_ == RUNNING);
     DCHECK(parent_->child_ == NULL);
@@ -911,7 +911,7 @@ void TaskStopwatch::Start() {
 
 void TaskStopwatch::Stop() {
   const TrackedTime end_time = ThreadData::Now();
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(state_ == RUNNING);
   state_ = STOPPED;
   DCHECK(child_ == NULL);
@@ -929,7 +929,7 @@ void TaskStopwatch::Stop() {
   if (!parent_)
     return;
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(parent_->state_ == RUNNING);
   DCHECK(parent_->child_ == this);
   parent_->child_ = NULL;
@@ -939,7 +939,7 @@ void TaskStopwatch::Stop() {
 }
 
 TrackedTime TaskStopwatch::StartTime() const {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(state_ != CREATED);
 #endif
 
@@ -947,7 +947,7 @@ TrackedTime TaskStopwatch::StartTime() const {
 }
 
 int32 TaskStopwatch::RunDurationMs() const {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(state_ == STOPPED);
 #endif
 
@@ -955,7 +955,7 @@ int32 TaskStopwatch::RunDurationMs() const {
 }
 
 ThreadData* TaskStopwatch::GetThreadData() const {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(state_ != CREATED);
 #endif
 

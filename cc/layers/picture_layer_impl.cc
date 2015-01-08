@@ -1115,7 +1115,7 @@ bool PictureLayerImpl::CanHaveTilings() const {
 }
 
 void PictureLayerImpl::SanityCheckTilingState() const {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // Recycle tree doesn't have any restrictions.
   if (layer_tree_impl()->IsRecycleTree())
     return;

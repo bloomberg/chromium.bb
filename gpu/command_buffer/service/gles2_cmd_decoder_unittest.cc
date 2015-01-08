@@ -455,7 +455,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
     EXPECT_CALL(*gl, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
         .WillOnce(Return(kGlSync))
         .RetiresOnSaturation();
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     EXPECT_CALL(*gl, IsSync(kGlSync))
         .WillOnce(Return(GL_TRUE))
         .RetiresOnSaturation();
@@ -476,7 +476,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
         .RetiresOnSaturation();
   }
   if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     EXPECT_CALL(*gl, IsSync(kGlSync))
         .WillOnce(Return(GL_TRUE))
         .RetiresOnSaturation();
@@ -497,7 +497,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
     EXPECT_CALL(*gl, DeleteQueriesARB(1, _)).Times(1).RetiresOnSaturation();
   }
   if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     EXPECT_CALL(*gl, IsSync(kGlSync))
         .WillOnce(Return(GL_TRUE))
         .RetiresOnSaturation();
@@ -629,7 +629,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
       .WillOnce(Return(kGlSync))
       .RetiresOnSaturation();
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   EXPECT_CALL(*gl_, IsSync(kGlSync))
       .WillOnce(Return(GL_TRUE))
       .RetiresOnSaturation();
@@ -641,7 +641,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->pending());
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   EXPECT_CALL(*gl_, IsSync(kGlSync))
       .WillOnce(Return(GL_TRUE))
       .RetiresOnSaturation();
@@ -654,7 +654,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_TRUE(process_success);
   EXPECT_TRUE(query->pending());
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   EXPECT_CALL(*gl_, IsSync(kGlSync))
       .WillOnce(Return(GL_TRUE))
       .RetiresOnSaturation();
@@ -667,7 +667,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_TRUE(process_success);
   EXPECT_FALSE(query->pending());
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   EXPECT_CALL(*gl_, IsSync(kGlSync))
       .WillOnce(Return(GL_TRUE))
       .RetiresOnSaturation();

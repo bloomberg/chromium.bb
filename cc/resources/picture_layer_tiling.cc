@@ -195,7 +195,7 @@ void PictureLayerTiling::CloneTilesAndPropertiesFrom(
   }
 
   DCHECK_EQ(twin_tiling.tiles_.size(), tiles_.size());
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (const auto& tile_map_pair : tiles_)
     DCHECK(tile_map_pair.second->is_shared());
   VerifyLiveTilesRect(false);
@@ -683,7 +683,7 @@ void PictureLayerTiling::SetLiveTilesRect(
 }
 
 void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   for (auto it = tiles_.begin(); it != tiles_.end(); ++it) {
     if (!it->second.get())
       continue;

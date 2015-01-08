@@ -560,9 +560,9 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #endif
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define DCHECK_IS_ON 0
+#define DCHECK_IS_ON() 0
 #else
-#define DCHECK_IS_ON 1
+#define DCHECK_IS_ON() 1
 #endif
 
 // Definitions for DLOG et al.
@@ -616,14 +616,14 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 
 // Definitions for DCHECK et al.
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
 
 #define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
   COMPACT_GOOGLE_LOG_EX_FATAL(ClassName , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_FATAL
 const LogSeverity LOG_DCHECK = LOG_FATAL;
 
-#else  // DCHECK_IS_ON
+#else  // DCHECK_IS_ON()
 
 // These are just dummy values.
 #define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
@@ -631,7 +631,7 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_INFO
 const LogSeverity LOG_DCHECK = LOG_INFO;
 
-#endif  // DCHECK_IS_ON
+#endif  // DCHECK_IS_ON()
 
 // DCHECK et al. make sure to reference |condition| regardless of
 // whether DCHECKs are enabled; this is so that we don't get unused
@@ -653,26 +653,24 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 
 #else  // _PREFAST_
 
-#define DCHECK(condition)                                               \
-  LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON ? !(condition) : false)  \
-  << "Check failed: " #condition ". "
+#define DCHECK(condition)                                                \
+  LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON() ? !(condition) : false) \
+      << "Check failed: " #condition ". "
 
-#define DPCHECK(condition)                                              \
-  LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON ? !(condition) : false) \
-  << "Check failed: " #condition ". "
+#define DPCHECK(condition)                                                \
+  LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON() ? !(condition) : false) \
+      << "Check failed: " #condition ". "
 
 #endif  // _PREFAST_
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.
-#define DCHECK_OP(name, op, val1, val2)                         \
-  if (DCHECK_IS_ON)                                             \
-    if (std::string* _result =                                  \
-        logging::Check##name##Impl((val1), (val2),              \
-                                   #val1 " " #op " " #val2))    \
-      logging::LogMessage(                                      \
-          __FILE__, __LINE__, ::logging::LOG_DCHECK,            \
-          _result).stream()
+#define DCHECK_OP(name, op, val1, val2)                                   \
+  if (DCHECK_IS_ON())                                                     \
+    if (std::string* _result = logging::Check##name##Impl(                \
+            (val1), (val2), #val1 " " #op " " #val2))                     \
+  logging::LogMessage(__FILE__, __LINE__, ::logging::LOG_DCHECK, _result) \
+      .stream()
 
 // Equality/Inequality checks - compare two values, and log a
 // LOG_DCHECK message including the two values when the result is not
@@ -701,7 +699,7 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 #define DCHECK_GT(val1, val2) DCHECK_OP(GT, > , val1, val2)
 #define DCHECK_IMPLIES(val1, val2) DCHECK(!(val1) || (val2))
 
-#if !DCHECK_IS_ON && defined(OS_CHROMEOS)
+#if !DCHECK_IS_ON() && defined(OS_CHROMEOS)
 #define NOTREACHED() LOG(ERROR) << "NOTREACHED() hit in " << \
     __FUNCTION__ << ". "
 #else

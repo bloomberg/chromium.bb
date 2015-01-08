@@ -29,7 +29,7 @@ scoped_ptr<ExtensionReenabler> ExtensionReenabler::PromptForReenable(
     content::WebContents* web_contents,
     const GURL& referrer_url,
     const Callback& callback) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // We should only try to reenable an extension that is, in fact, disabled.
   DCHECK(ExtensionRegistry::Get(browser_context)->disabled_extensions().
              Contains(extension->id()));
@@ -38,7 +38,7 @@ scoped_ptr<ExtensionReenabler> ExtensionReenabler::PromptForReenable(
   int disable_reasons =
       ExtensionPrefs::Get(browser_context)->GetDisableReasons(extension->id());
   DCHECK_NE(0, disable_reasons & Extension::DISABLE_PERMISSIONS_INCREASE);
-#endif  // DCHECK_IS_ON
+#endif  // DCHECK_IS_ON()
 
   return make_scoped_ptr(new ExtensionReenabler(
       extension,

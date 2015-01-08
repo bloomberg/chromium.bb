@@ -16,7 +16,7 @@ QueueMessageSwapPromise::QueueMessageSwapPromise(
     : message_sender_(message_sender),
       message_queue_(message_queue),
       source_frame_number_(source_frame_number)
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
       ,
       completed_(false)
 #endif
@@ -27,13 +27,13 @@ QueueMessageSwapPromise::QueueMessageSwapPromise(
 
 QueueMessageSwapPromise::~QueueMessageSwapPromise() {
   // The promise should have either been kept or broken before it's deleted.
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(completed_);
 #endif
 }
 
 void QueueMessageSwapPromise::DidSwap(cc::CompositorFrameMetadata* metadata) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
   message_queue_->DidSwap(source_frame_number_);
@@ -42,7 +42,7 @@ void QueueMessageSwapPromise::DidSwap(cc::CompositorFrameMetadata* metadata) {
 }
 
 void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
   ScopedVector<IPC::Message> messages;
@@ -57,7 +57,7 @@ void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
 }
 
 void QueueMessageSwapPromise::PromiseCompleted() {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   completed_ = true;
 #endif
 }

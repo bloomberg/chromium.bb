@@ -918,7 +918,7 @@ void SpdySession::CancelStreamRequest(
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // |request| should not be in a queue not matching its priority.
   for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     if (priority == i)
@@ -1631,7 +1631,7 @@ int SpdySession::DoWriteComplete(int result) {
 }
 
 void SpdySession::DcheckGoingAway() const {
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
   for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     DCHECK(pending_create_stream_queues_[i].empty());
@@ -3248,7 +3248,7 @@ void SpdySession::ResumeSendStalledStreams() {
 
   while (!IsSendStalled()) {
     size_t old_size = 0;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     old_size = GetTotalSize(stream_send_unstall_queue_);
 #endif
 

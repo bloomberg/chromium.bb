@@ -78,7 +78,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   // It must be at least as big as the (eventual) actual size.
   size_t estimated_size = serialized_dispatcher_start_offset;
   size_t estimated_num_platform_handles = 0;
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   std::vector<size_t> all_max_sizes(num_handles);
   std::vector<size_t> all_max_platform_handles(num_handles);
 #endif
@@ -97,7 +97,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
       estimated_num_platform_handles += max_platform_handles;
       DCHECK_LE(estimated_num_platform_handles, GetMaxPlatformHandles());
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
       all_max_sizes[i] = max_size;
       all_max_platform_handles[i] = max_platform_handles;
 #endif
@@ -141,7 +141,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
       continue;
     }
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
     size_t old_platform_handles_size =
         platform_handles_ ? platform_handles_->size() : 0;
 #endif
@@ -156,7 +156,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
       handle_table[i].size = static_cast<uint32_t>(actual_size);
 // (Okay to not set |unused| since we cleared the entire buffer.)
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
       DCHECK_LE(actual_size, all_max_sizes[i]);
       DCHECK_LE(platform_handles_
                     ? (platform_handles_->size() - old_platform_handles_size)

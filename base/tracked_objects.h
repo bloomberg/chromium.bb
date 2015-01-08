@@ -749,7 +749,7 @@ class BASE_EXPORT TaskStopwatch {
   // duration of this stopwatch.
   TaskStopwatch* parent_;
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // State of the stopwatch. Stopwatch is first constructed in a created state
   // state, then is optionally started/stopped, then destructed.
   enum { CREATED, RUNNING, STOPPED } state_;

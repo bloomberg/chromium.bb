@@ -12,15 +12,14 @@
 // through base::subtle::Release_Store() and base::subtle::Acquire_Load().
 // If the histogram name changes between subsequent calls, use this non-cached
 // version that always calls histogram_factory_get_invocation.
-#define STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE( \
-    constant_histogram_name, \
-    histogram_add_method_invocation, \
-    histogram_factory_get_invocation) \
-  do { \
+#define STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE(                               \
+    constant_histogram_name, histogram_add_method_invocation,                  \
+    histogram_factory_get_invocation)                                          \
+  do {                                                                         \
     base::HistogramBase* histogram_pointer = histogram_factory_get_invocation; \
-    if (DCHECK_IS_ON) \
-      histogram_pointer->CheckName(constant_histogram_name); \
-    histogram_pointer->histogram_add_method_invocation; \
+    if (DCHECK_IS_ON())                                                        \
+      histogram_pointer->CheckName(constant_histogram_name);                   \
+    histogram_pointer->histogram_add_method_invocation;                        \
   } while (0)
 
 #define UMA_HISTOGRAM_CUSTOM_TIMES_NO_CACHE( \

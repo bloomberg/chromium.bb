@@ -535,7 +535,7 @@ size_t ToolbarActionsBar::GetIconCount() const {
       toolbar_actions_.size() - main_bar_->GetIconCount() :
       model_->visible_icon_count() + extra_icons;
 
-#if DCHECK_IS_ON
+#if DCHECK_IS_ON()
   // Good time for some sanity checks: We should never try to display more
   // icons than we have, and we should always have a view per item in the model.
   // (The only exception is if this is in initialization.)
