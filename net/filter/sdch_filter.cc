@@ -177,6 +177,11 @@ SdchFilter::~SdchFilter() {
       // Allow latency experiments to proceed.
       url_request_context_->sdch_manager()->SetAllowLatencyExperiment(
           url_, true);
+
+      // Notify successful dictionary usage.
+      url_request_context_->sdch_manager()->OnDictionaryUsed(
+          dictionary_->server_hash());
+
       return;
     }
     case PASS_THROUGH: {

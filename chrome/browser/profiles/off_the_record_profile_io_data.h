@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 
-class ChromeSdchPolicy;
 class ChromeURLRequestContextGetter;
 class Profile;
 
@@ -23,6 +22,7 @@ namespace net {
 class FtpTransactionFactory;
 class HttpTransactionFactory;
 class SdchManager;
+class SdchOwner;
 class URLRequestContext;
 }  // namespace net
 
@@ -151,7 +151,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
   mutable scoped_ptr<net::SdchManager> sdch_manager_;
-  mutable scoped_ptr<ChromeSdchPolicy> sdch_policy_;
+  mutable scoped_ptr<net::SdchOwner> sdch_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };

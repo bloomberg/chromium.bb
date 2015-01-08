@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_clock.h"
 #include "net/base/io_buffer.h"
+#include "net/base/sdch_observer.h"
 #include "net/filter/mock_filter_context.h"
 #include "net/filter/sdch_filter.h"
 #include "net/url_request/url_request_context.h"
@@ -68,7 +69,8 @@ class SdchFilterTest : public testing::Test {
   // failure.
   bool AddSdchDictionary(const std::string& dictionary_text,
                          const GURL& gurl) {
-    return sdch_manager_->AddSdchDictionary(dictionary_text, gurl) == SDCH_OK;
+    return sdch_manager_->AddSdchDictionary(dictionary_text, gurl, nullptr) ==
+           SDCH_OK;
   }
 
   MockFilterContext* filter_context() { return filter_context_.get(); }
@@ -100,9 +102,6 @@ class SdchFilterTest : public testing::Test {
   scoped_ptr<MockFilterContext> filter_context_;
 };
 
-//------------------------------------------------------------------------------
-
-
 TEST_F(SdchFilterTest, Hashing) {
   std::string client_hash, server_hash;
   std::string dictionary("test contents");
@@ -111,7 +110,6 @@ TEST_F(SdchFilterTest, Hashing) {
   EXPECT_EQ(client_hash, "lMQBjS3P");
   EXPECT_EQ(server_hash, "MyciMVll");
 }
-
 
 //------------------------------------------------------------------------------
 // Provide a generic helper function for trying to filter data.
@@ -154,7 +152,7 @@ static bool FilterTestData(const std::string& source,
       return true;
   } while (1);
 }
-//------------------------------------------------------------------------------
+
 static std::string NewSdchDictionary(const std::string& domain) {
   std::string dictionary;
   if (!domain.empty()) {
@@ -179,8 +177,6 @@ static std::string NewSdchExpiredDictionary(const std::string& domain) {
   dictionary.append(kTestVcdiffDictionary, sizeof(kTestVcdiffDictionary) - 1);
   return dictionary;
 }
-
-//------------------------------------------------------------------------------
 
 TEST_F(SdchFilterTest, EmptyInputOk) {
   std::vector<Filter::FilterType> filter_types;
@@ -446,15 +442,12 @@ TEST_F(SdchFilterTest, DictionaryAddOnce) {
 
   const std::string kSampleDomain2 = "sdchtest2.com";
 
-  // Don't test adding a second dictionary if our limits are tight.
-  if (SdchManager::kMaxDictionaryCount > 1) {
-    // Construct a second SDCH dictionary from a VCDIFF dictionary.
-    std::string dictionary2(NewSdchDictionary(kSampleDomain2));
+  // Construct a second SDCH dictionary from a VCDIFF dictionary.
+  std::string dictionary2(NewSdchDictionary(kSampleDomain2));
 
-    std::string url_string2 = "http://" + kSampleDomain2;
-    GURL url2(url_string2);
-    EXPECT_TRUE(AddSdchDictionary(dictionary2, url2));
-  }
+  std::string url_string2 = "http://" + kSampleDomain2;
+  GURL url2(url_string2);
+  EXPECT_TRUE(AddSdchDictionary(dictionary2, url2));
 }
 
 TEST_F(SdchFilterTest, BasicDictionary) {
@@ -691,11 +684,6 @@ TEST_F(SdchFilterTest, CrossDomainDictionaryUse) {
 }
 
 TEST_F(SdchFilterTest, DictionaryPathValidation) {
-  // Can't test path distinction between dictionaries if we aren't allowed
-  // more than one dictionary.
-  if (SdchManager::kMaxDictionaryCount <= 1)
-    return;
-
   // Construct a valid SDCH dictionary from a VCDIFF dictionary.
   const std::string kSampleDomain = "sdchtest.com";
   std::string dictionary(NewSdchDictionary(kSampleDomain));
@@ -747,11 +735,6 @@ TEST_F(SdchFilterTest, DictionaryPathValidation) {
 }
 
 TEST_F(SdchFilterTest, DictionaryPortValidation) {
-  // Can't test port distinction between dictionaries if we aren't allowed
-  // more than one dictionary.
-  if (SdchManager::kMaxDictionaryCount <= 1)
-    return;
-
   // Construct a valid SDCH dictionary from a VCDIFF dictionary.
   const std::string kSampleDomain = "sdchtest.com";
   std::string dictionary(NewSdchDictionary(kSampleDomain));
@@ -813,9 +796,7 @@ TEST_F(SdchFilterTest, DictionaryPortValidation) {
   EXPECT_EQ(SDCH_OK, sdch_manager_->IsInSupportedDomain(GURL(url_string)));
 }
 
-//------------------------------------------------------------------------------
 // Helper function to perform gzip compression of data.
-
 static std::string gzip_compress(const std::string &input) {
   z_stream zlib_stream;
   memset(&zlib_stream, 0, sizeof(zlib_stream));
@@ -992,7 +973,7 @@ TEST_F(SdchFilterTest, DefaultGzipIfSdch) {
   EXPECT_EQ(filter_types[1], Filter::FILTER_TYPE_GZIP_HELPING_SDCH);
 
   // First try with a large buffer (larger than test input, or compressed data).
-    scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
 
   // Verify that chained filter is waiting for data.
   char tiny_output_buffer[10];
@@ -1213,7 +1194,7 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
 
   // Don't use the Helper function since its insertion check is indeterminate
   // for a Max-Age: 0 dictionary.
-  sdch_manager_->AddSdchDictionary(expired_dictionary, url);
+  sdch_manager_->AddSdchDictionary(expired_dictionary, url, nullptr);
 
   std::string client_hash;
   std::string server_hash;
@@ -1241,6 +1222,76 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
   std::string output;
   EXPECT_TRUE(FilterTestData(sdch_compressed, 100, 100, filter.get(), &output));
   EXPECT_EQ(expanded_, output);
+}
+
+class SimpleSdchObserver : public SdchObserver {
+ public:
+  explicit SimpleSdchObserver(SdchManager* manager)
+      : dictionary_used_(0), manager_(manager) {
+    manager_->AddObserver(this);
+  }
+  ~SimpleSdchObserver() override { manager_->RemoveObserver(this); }
+
+  // SdchObserver
+  void OnDictionaryUsed(SdchManager* manager,
+                        const std::string& server_hash) override {
+    dictionary_used_++;
+    last_server_hash_ = server_hash;
+  }
+
+  int dictionary_used_calls() const { return dictionary_used_; }
+  std::string last_server_hash() const { return last_server_hash_; }
+
+  void OnGetDictionary(SdchManager* /* manager */,
+                       const GURL& /* request_url */,
+                       const GURL& /* dictionary_url */) override {}
+  void OnClearDictionaries(SdchManager* /* manager */) override {}
+
+ private:
+  int dictionary_used_;
+  std::string last_server_hash_;
+  SdchManager* manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleSdchObserver);
+};
+
+TEST_F(SdchFilterTest, DictionaryUsedSignaled) {
+  // Construct a valid SDCH dictionary from a VCDIFF dictionary.
+  const std::string kSampleDomain = "sdchtest.com";
+  std::string dictionary(NewSdchDictionary(kSampleDomain));
+  SimpleSdchObserver observer(sdch_manager_.get());
+
+  std::string url_string = "http://" + kSampleDomain;
+
+  GURL url(url_string);
+  EXPECT_TRUE(AddSdchDictionary(dictionary, url));
+
+  std::string client_hash;
+  std::string server_hash;
+  SdchManager::GenerateHash(dictionary, &client_hash, &server_hash);
+
+  std::string compressed(NewSdchCompressedData(dictionary));
+
+  std::vector<Filter::FilterType> filter_types;
+  filter_types.push_back(Filter::FILTER_TYPE_SDCH);
+
+  SetupFilterContextWithGURL(url);
+
+  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
+
+  size_t feed_block_size = 100;
+  size_t output_block_size = 100;
+  std::string output;
+  EXPECT_TRUE(FilterTestData(compressed, feed_block_size, output_block_size,
+                             filter.get(), &output));
+  EXPECT_EQ(output, expanded_);
+
+  filter.reset(nullptr);
+
+  // Confirm that we got a "DictionaryUsed" signal from the SdchManager
+  // for our dictionary.
+  EXPECT_EQ(1, observer.dictionary_used_calls());
+  EXPECT_EQ(server_hash, observer.last_server_hash());
 }
 
 }  // namespace net

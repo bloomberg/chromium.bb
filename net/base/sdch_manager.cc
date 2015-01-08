@@ -39,17 +39,6 @@ void StripTrailingDot(GURL* gurl) {
 
 namespace net {
 
-// Adjust SDCH limits downwards for mobile.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// static
-const size_t SdchManager::kMaxDictionaryCount = 1;
-const size_t SdchManager::kMaxDictionarySize = 500 * 1000;
-#else
-// static
-const size_t SdchManager::kMaxDictionaryCount = 20;
-const size_t SdchManager::kMaxDictionarySize = 1000 * 1000;
-#endif
-
 // Workaround for http://crbug.com/437794; remove when fixed.
 #if defined(OS_IOS)
 // static
@@ -65,6 +54,7 @@ bool SdchManager::g_secure_scheme_supported_ = true;
 SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,
                                     size_t offset,
                                     const std::string& client_hash,
+                                    const std::string& server_hash,
                                     const GURL& gurl,
                                     const std::string& domain,
                                     const std::string& path,
@@ -72,6 +62,7 @@ SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,
                                     const std::set<int>& ports)
     : text_(dictionary_text, offset),
       client_hash_(client_hash),
+      server_hash_(server_hash),
       url_(gurl),
       domain_(domain),
       path_(path),
@@ -83,12 +74,14 @@ SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,
 SdchManager::Dictionary::Dictionary(const SdchManager::Dictionary& rhs)
     : text_(rhs.text_),
       client_hash_(rhs.client_hash_),
+      server_hash_(rhs.server_hash_),
       url_(rhs.url_),
       domain_(rhs.domain_),
       path_(rhs.path_),
       expiration_(rhs.expiration_),
       ports_(rhs.ports_),
-      clock_(new base::DefaultClock) {}
+      clock_(new base::DefaultClock) {
+}
 
 SdchManager::Dictionary::~Dictionary() {}
 
@@ -271,13 +264,7 @@ SdchManager::~SdchManager() {
 void SdchManager::ClearData() {
   blacklisted_domains_.clear();
   allow_latency_experiment_.clear();
-
-  // Note that this may result in not having dictionaries we've advertised
-  // for incoming responses. The window is relatively small (as ClearData()
-  // is not expected to be called frequently), so we rely on meta-refresh
-  // to handle this case.
   dictionaries_.clear();
-
   FOR_EACH_OBSERVER(SdchObserver, observers_, OnClearDictionaries(this));
 }
 
@@ -398,6 +385,11 @@ SdchProblemCode SdchManager::OnGetDictionary(const GURL& request_url,
                     OnGetDictionary(this, request_url, dictionary_url));
 
   return SDCH_OK;
+}
+
+void SdchManager::OnDictionaryUsed(const std::string& server_hash) {
+  FOR_EACH_OBSERVER(SdchObserver, observers_,
+                    OnDictionaryUsed(this, server_hash));
 }
 
 SdchProblemCode SdchManager::CanFetchDictionary(
@@ -521,7 +513,8 @@ void SdchManager::RemoveObserver(SdchObserver* observer) {
 
 SdchProblemCode SdchManager::AddSdchDictionary(
     const std::string& dictionary_text,
-    const GURL& dictionary_url) {
+    const GURL& dictionary_url,
+    std::string* server_hash_p) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string client_hash;
   std::string server_hash;
@@ -598,25 +591,26 @@ SdchProblemCode SdchManager::AddSdchDictionary(
   if (rv != SDCH_OK)
     return rv;
 
-  // TODO(jar): Remove these hacks to preclude a DOS attack involving piles of
-  // useless dictionaries. We should probably have a cache eviction plan,
-  // instead of just blocking additions. For now, with the spec in flux, it
-  // is probably not worth doing eviction handling.
-  if (kMaxDictionarySize < dictionary_text.size())
-    return SDCH_DICTIONARY_IS_TOO_LARGE;
-
-  if (kMaxDictionaryCount <= dictionaries_.size())
-    return SDCH_DICTIONARY_COUNT_EXCEEDED;
-
   UMA_HISTOGRAM_COUNTS("Sdch3.Dictionary size loaded", dictionary_text.size());
   DVLOG(1) << "Loaded dictionary with client hash " << client_hash
            << " and server hash " << server_hash;
   Dictionary dictionary(dictionary_text, header_end + 2, client_hash,
-                        dictionary_url_normalized, domain, path, expiration,
-                        ports);
+                        server_hash, dictionary_url_normalized, domain, path,
+                        expiration, ports);
   dictionaries_[server_hash] =
       new base::RefCountedData<Dictionary>(dictionary);
+  if (server_hash_p)
+    *server_hash_p = server_hash;
 
+  return SDCH_OK;
+}
+
+SdchProblemCode SdchManager::RemoveSdchDictionary(
+    const std::string& server_hash) {
+  if (dictionaries_.find(server_hash) == dictionaries_.end())
+    return SDCH_DICTIONARY_HASH_NOT_FOUND;
+
+  dictionaries_.erase(server_hash);
   return SDCH_OK;
 }
 

@@ -610,6 +610,9 @@ class SdchBrowserTest : public InProcessBrowserTest,
   }
 
   // SdchObserver
+  void OnDictionaryUsed(net::SdchManager* manager,
+                        const std::string& server_hash) override {}
+
   void OnGetDictionary(net::SdchManager* manager,
                        const GURL& request_url,
                        const GURL& dictionary_url) override {
@@ -618,6 +621,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
     DCHECK(fetch_counts_.end() != fetch_counts_.find(manager));
     ++fetch_counts_[manager];
   }
+
   void OnClearDictionaries(net::SdchManager* manager) override {}
 
   // URLFetcherDelegate

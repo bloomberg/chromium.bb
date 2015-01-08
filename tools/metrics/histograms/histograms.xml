@@ -31400,6 +31400,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.DictionaryFate" enum="SdchDictionaryFate">
+  <owner>rdsmith@chromium.org&gt;</owner>
+  <summary>
+    The fate, both on input and output, of dictionary requests.  There is
+    intended to be two entries in this histogram for each Get-Dictionary seen
+    (except failed requests are not currently tracked).
+  </summary>
+</histogram>
+
+<histogram name="Sdch3.DictionaryUseCount">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    The number of times a dictionary has been successfully used for decoding,
+    recorded at the time it is evicted from the manager.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.Experiment2_Decode">
   <obsolete>
     Replaced by Sdch3.Experiment3_Holdback.
@@ -55556,6 +55573,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="SCT_STATUS_OK"/>
 </enum>
 
+<enum name="SdchDictionaryFate" type="int">
+  <summary>
+    Fate of an Sdch dictionary, on load and eviction. See
+    net/sdch/sdch_owner.cc.
+  </summary>
+  <int value="1" label="GET_IGNORED"/>
+  <int value="2" label="FETCH_FAILED"/>
+  <int value="3" label="FETCH_IGNORED_NO_SPACE"/>
+  <int value="4" label="FETCH_MANAGER_REFUSED"/>
+  <int value="5" label="ADDED"/>
+  <int value="6" label="EVICT_FOR_DICT"/>
+  <int value="7" label="EVICT_FOR_MEMORY"/>
+  <int value="8" label="EVICT_FOR_DESTRUCTION"/>
+</enum>
+
 <enum name="SdchProblemCode" type="int">
   <summary>
     SDCH problem codes, listed in net/base/sdch_problem_code_list.h
@@ -55589,8 +55621,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="31" label="DICTIONARY_SELECTED_FOR_SSL"/>
   <int value="32" label="DICTIONARY_ALREADY_LOADED"/>
   <int value="33" label="DICTIONARY_SELECTED_FROM_NON_HTTP"/>
-  <int value="34" label="DICTIONARY_IS_TOO_LARGE"/>
-  <int value="35" label="DICTIONARY_COUNT_EXCEEDED"/>
+  <int value="34" label="defunct (DICTIONARY_IS_TOO_LARGE)">
+    Recorded in separate histogram; see Sdch3.DictionaryFate.
+  </int>
+  <int value="35" label="defunct (DICTIONARY_COUNT_EXCEEDED)">
+    Recorded in separate histogram; see Sdch3.DictionaryFate.
+  </int>
   <int value="36" label="defunct">
     DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD used instead
   </int>
@@ -55603,6 +55639,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="39" label="DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD"/>
   <int value="40" label="ATTEMPT_TO_DECODE_NON_HTTP_DATA"/>
+  <int value="44" label="DICTIONARY_NO_ROOM"/>
   <int value="50" label="MULTIENCODING_FOR_NON_SDCH_REQUEST"/>
   <int value="51" label="SDCH_CONTENT_ENCODE_FOR_NON_SDCH_REQUEST"/>
   <int value="52" label="UNADVERTISED_DICTIONARY_USED"/>
