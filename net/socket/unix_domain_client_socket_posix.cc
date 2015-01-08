@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/socket/socket_libevent.h"
@@ -98,13 +99,25 @@ bool UnixDomainClientSocket::IsConnectedAndIdle() const {
 }
 
 int UnixDomainClientSocket::GetPeerAddress(IPEndPoint* address) const {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
+  // Unix domain sockets have no valid associated addr/port;
+  // return either not connected or address invalid.
+  DCHECK(address);
+
+  if (!IsConnected())
+    return ERR_SOCKET_NOT_CONNECTED;
+
+  return ERR_ADDRESS_INVALID;
 }
 
 int UnixDomainClientSocket::GetLocalAddress(IPEndPoint* address) const {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
+  // Unix domain sockets have no valid associated addr/port;
+  // return either not connected or address invalid.
+  DCHECK(address);
+
+  if (!socket_)
+    return ERR_SOCKET_NOT_CONNECTED;
+
+  return ERR_ADDRESS_INVALID;
 }
 
 const BoundNetLog& UnixDomainClientSocket::NetLog() const {
