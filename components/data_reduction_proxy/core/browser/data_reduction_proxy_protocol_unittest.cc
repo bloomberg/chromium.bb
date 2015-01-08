@@ -831,7 +831,10 @@ TEST_F(DataReductionProxyProtocolTest, OnResolveProxyHandler) {
   net::ProxyInfo data_reduction_proxy_info;
   std::string data_reduction_proxy;
   base::TrimString(test_params.DefaultOrigin(), "/", &data_reduction_proxy);
-  data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+  data_reduction_proxy_info.UsePacString(
+      "PROXY " +
+      HostPortPair::FromURL(GURL(test_params.DefaultOrigin())).ToString() +
+      "; DIRECT");
   EXPECT_FALSE(data_reduction_proxy_info.is_empty());
 
   // Data reduction proxy config
