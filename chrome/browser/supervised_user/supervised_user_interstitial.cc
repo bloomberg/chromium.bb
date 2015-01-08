@@ -32,7 +32,9 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
+#else
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -225,7 +227,7 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
       : base::string16());
 
   bool show_feedback = false;
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_ANDROID)
+#if defined(GOOGLE_CHROME_BUILD)
   show_feedback = is_child_account &&
                   SupervisedUserURLFilter::ReasonIsAutomatic(reason_);
 #endif
@@ -296,8 +298,10 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     return;
   }
 
-#if !defined(OS_ANDROID)
   if (command == "\"feedback\"") {
+#if defined(OS_ANDROID)
+    ReportChildAccountFeedback(web_contents_, url_);
+#else
     std::string bucket;
 #if defined(OS_CHROMEOS)
     bucket = "UnicornCrOS";
@@ -308,9 +312,9 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
         chrome::FindBrowserWithWebContents(web_contents_),
         l10n_util::GetStringUTF8(IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT),
         bucket);
+#endif
     return;
   }
-#endif
 
   NOTREACHED();
 }
