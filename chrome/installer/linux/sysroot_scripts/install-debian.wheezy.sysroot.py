@@ -41,8 +41,10 @@ SYSROOT_DIR_AMD64 = 'debian_wheezy_amd64-sysroot'
 SYSROOT_DIR_I386 = 'debian_wheezy_i386-sysroot'
 SYSROOT_DIR_ARM = 'debian_wheezy_arm-sysroot'
 
+valid_archs = ('arm', 'i386', 'amd64')
 
-def get_sha1(filename):
+
+def GetSha1(filename):
   sha1 = hashlib.sha1()
   with open(filename, 'rb') as f:
     while True:
@@ -54,10 +56,45 @@ def get_sha1(filename):
   return sha1.hexdigest()
 
 
+def DetectArch(gyp_defines):
+  # Check for optional target_arch and only install for that architecture.
+  # If target_arch is not specified, then only install for the host
+  # architecture.
+  if 'target_arch=x64' in gyp_defines:
+    return 'amd64'
+  elif 'target_arch=ia32' in gyp_defines:
+    return 'i386'
+  elif 'target_arch=arm' in gyp_defines:
+    return 'arm'
+  else:
+    # Figure out host arch using build/detect_host_arch.py and
+    # set target_arch to host arch
+    SRC_DIR = os.path.abspath(
+        os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
+    sys.path.append(os.path.join(SRC_DIR, 'build'))
+    import detect_host_arch
+
+    detected_host_arch = detect_host_arch.HostArch()
+    if detected_host_arch == 'x64':
+      return 'amd64'
+    elif detected_host_arch == 'ia32':
+      return 'i386'
+    elif detected_host_arch == 'arm':
+      return 'arm'
+
+  return None
+
+
 def main():
-  if options.arch not in ['amd64', 'i386', 'arm']:
-    print 'Unknown architecture: %s' % options.arch
-    return 1
+  gyp_defines = os.environ.get('GYP_DEFINES', '')
+
+  if options.arch:
+    target_arch = options.arch
+  else:
+    target_arch = DetectArch(gyp_defines)
+    if not target_arch:
+      print 'Unable to detect desired architecture'
+      return 1
 
   if options.linux_only:
     # This argument is passed when run from the gclient hooks.
@@ -65,11 +102,9 @@ def main():
     if not sys.platform.startswith('linux'):
       return 0
 
-    gyp_defines = os.environ.get('GYP_DEFINES', '')
-
     # Only install the sysroot for an Official Chrome Linux build, except
     # for ARM where we always use a sysroot.
-    if options.arch != 'arm':
+    if target_arch != 'arm':
       defined = ['branding=Chrome', 'buildtype=Official']
       undefined = ['chromeos=1']
       for option in defined:
@@ -79,57 +114,28 @@ def main():
         if option in gyp_defines:
           return 0
 
-    # Check for optional target_arch and only install for that architecture.
-    # If target_arch is not specified, then only install for the host
-    # architecture.
-    target_arch = ''
-    if 'target_arch=x64' in gyp_defines:
-      target_arch = 'amd64'
-    elif 'target_arch=ia32' in gyp_defines:
-      target_arch = 'i386'
-    elif 'target_arch=arm' in gyp_defines:
-      target_arch = 'arm'
-    else:
-      # Figure out host arch using build/detect_host_arch.py and
-      # set target_arch to host arch
-      SRC_DIR = os.path.abspath(
-          os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
-      sys.path.append(os.path.join(SRC_DIR, 'build'))
-      import detect_host_arch
-
-      detected_host_arch = detect_host_arch.HostArch()
-      if detected_host_arch == 'x64':
-        target_arch = 'amd64'
-      elif detected_host_arch == 'ia32':
-        target_arch = 'i386'
-      elif detected_host_arch == 'arm':
-        target_arch = 'arm'
-
-    if target_arch != options.arch:
-      return 0
-
   # The sysroot directory should match the one specified in build/common.gypi.
   # TODO(thestig) Consider putting this else where to avoid having to recreate
   # it on every build.
   linux_dir = os.path.dirname(SCRIPT_DIR)
-  if options.arch == 'amd64':
+  if target_arch == 'amd64':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_AMD64)
     tarball_filename = TARBALL_AMD64
     tarball_sha1sum = TARBALL_AMD64_SHA1SUM
     revision = REVISION_AMD64
-  elif options.arch == 'arm':
+  elif target_arch == 'arm':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_ARM)
     tarball_filename = TARBALL_ARM
     tarball_sha1sum = TARBALL_ARM_SHA1SUM
     revision = REVISION_ARM
-  elif options.arch == 'i386':
+  elif target_arch == 'i386':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_I386)
     tarball_filename = TARBALL_I386
     tarball_sha1sum = TARBALL_I386_SHA1SUM
     revision = REVISION_I386
   else:
+    print 'Unknown architecture: %s' % target_arch
     assert(False)
-
 
   url = '%s/%s/%s/%s' % (URL_PREFIX, URL_PATH, revision, tarball_filename)
 
@@ -138,10 +144,10 @@ def main():
     with open(stamp) as s:
       if s.read() == url:
         print 'Debian Wheezy %s root image already up-to-date: %s' % \
-            (options.arch, sysroot)
+            (target_arch, sysroot)
         return 0
 
-  print 'Installing Debian Wheezy %s root image: %s' % (options.arch, sysroot)
+  print 'Installing Debian Wheezy %s root image: %s' % (target_arch, sysroot)
   if os.path.isdir(sysroot):
     shutil.rmtree(sysroot)
   os.mkdir(sysroot)
@@ -150,7 +156,7 @@ def main():
   sys.stdout.flush()
   sys.stderr.flush()
   subprocess.check_call(['curl', '--fail', '-L', url, '-o', tarball])
-  sha1sum = get_sha1(tarball)
+  sha1sum = GetSha1(tarball)
   if sha1sum != tarball_sha1sum:
     print 'Tarball sha1sum is wrong.'
     print 'Expected %s, actual: %s' % (tarball_sha1sum, sha1sum)
@@ -168,6 +174,7 @@ if __name__ == '__main__':
   parser.add_option('--linux-only', action='store_true',
                     default=False, help='Only install sysroot for official '
                                         'Linux builds')
-  parser.add_option('--arch', help='Sysroot architecture: i386, amd64 or arm')
-  options, args = parser.parse_args()
+  parser.add_option('--arch', type='choice', choices=valid_archs,
+                    help='Sysroot architecture: %s' % ', '.join(valid_archs))
+  options, _ = parser.parse_args()
   sys.exit(main())
