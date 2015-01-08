@@ -1428,6 +1428,8 @@ template("android_apk") {
 #     (which will be correct unless that target specifies an "output_name".
 #     TODO(brettw) make this automatic by allowing get_target_outputs to
 #     support executables.
+#   apk_name: The name of the produced apk. If unspecified, it uses the name
+#             of the unittests_dep target postfixed with "_apk"
 #
 # Example
 #   unittest_apk("foo_unittests_apk") {
@@ -1441,14 +1443,24 @@ template("unittest_apk") {
 
   test_suite_name = get_label_info(invoker.unittests_dep, "name")
 
+  # This trivial assert is needed in case both unittests_binary and apk_name
+  # are defined, as otherwise test_suite_name would not be used.
+  assert(test_suite_name != "")
+
   if (defined(invoker.unittests_binary)) {
     unittests_binary = invoker.unittests_binary
   } else {
     unittests_binary = "lib" + test_suite_name + ".so"
   }
 
+  if (defined(invoker.apk_name)) {
+    apk_name = invoker.apk_name
+  } else {
+    apk_name = test_suite_name
+  }
+
   android_apk(target_name) {
-    _apk_name = test_suite_name
+    _apk_name = apk_name
     final_apk_path = "$root_build_dir/${_apk_name}_apk/${_apk_name}-debug.apk"
     java_files = [
       "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java",
