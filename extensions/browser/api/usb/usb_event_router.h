@@ -47,10 +47,10 @@ class UsbEventRouter : public BrowserContextKeyedAPI,
                      const base::string16& serial_number);
 
   content::BrowserContext* const browser_context_;
-  base::WeakPtrFactory<UsbEventRouter> weak_factory_;
-
   scoped_ptr<FileThreadHelper, content::BrowserThread::DeleteOnFileThread>
       helper_;
+
+  base::WeakPtrFactory<UsbEventRouter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbEventRouter);
 };
