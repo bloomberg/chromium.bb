@@ -119,8 +119,8 @@ class CacheReference(object):
     self._cache._InsertText(self.key, text)
 
   @WriteLock
-  def _Remove(self, key):
-    self._cache._Remove(key)
+  def _Remove(self):
+    self._cache._Remove(self.key)
 
   def _Exists(self):
     return self._cache._KeyExists(self.key)
@@ -140,9 +140,9 @@ class CacheReference(object):
     self._AssignText(text)
 
   @EntryLock
-  def Remove(self, key):
-    """Removes the key entry from the cache."""
-    self._Remove(key)
+  def Remove(self):
+    """Removes the entry from the cache."""
+    self._Remove()
 
   @EntryLock
   def Exists(self, lock=False):
@@ -169,10 +169,6 @@ class CacheReference(object):
       self._Assign(default_path)
     if lock:
       self._ReadLock()
-
-  def Unlock(self):
-    """Release read lock on the reference."""
-    self._lock.unlock()
 
 
 class DiskCache(object):
