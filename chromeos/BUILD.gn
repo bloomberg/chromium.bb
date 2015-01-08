@@ -129,7 +129,6 @@ test("chromeos_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/onc",
-    "//content/test:test_support",
     "//crypto",
     "//crypto:test_support",
     "//dbus:test_support",
@@ -146,9 +145,6 @@ test("chromeos_unittests") {
   sources = gypi_values.chromeos_test_sources
   if (use_allocator != "none") {
     deps += [ "//base/allocator" ]
-  }
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
   }
 }
 
