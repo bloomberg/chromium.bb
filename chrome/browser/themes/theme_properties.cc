@@ -95,17 +95,17 @@ const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
 // ----------------------------------------------------------------------------
 
 // Strings used in alignment properties.
-const char* kAlignmentCenter = "center";
-const char* kAlignmentTop = "top";
-const char* kAlignmentBottom = "bottom";
-const char* kAlignmentLeft = "left";
-const char* kAlignmentRight = "right";
+const char kAlignmentCenter[] = "center";
+const char kAlignmentTop[] = "top";
+const char kAlignmentBottom[] = "bottom";
+const char kAlignmentLeft[] = "left";
+const char kAlignmentRight[] = "right";
 
 // Strings used in background tiling repetition properties.
-const char* kTilingNoRepeat = "no-repeat";
-const char* kTilingRepeatX = "repeat-x";
-const char* kTilingRepeatY = "repeat-y";
-const char* kTilingRepeat = "repeat";
+const char kTilingNoRepeat[] = "no-repeat";
+const char kTilingRepeatX[] = "repeat-x";
+const char kTilingRepeatY[] = "repeat-y";
+const char kTilingRepeat[] = "repeat";
 
 // The image resources that will be tinted by the 'button' tint value.
 // If you change this list, you must increment the version number in
@@ -157,13 +157,11 @@ int ThemeProperties::StringToAlignment(const std::string& alignment) {
 
 // static
 int ThemeProperties::StringToTiling(const std::string& tiling) {
-  const char* component = tiling.c_str();
-
-  if (base::strcasecmp(component, kTilingRepeatX) == 0)
+  if (LowerCaseEqualsASCII(tiling, kTilingRepeatX))
     return REPEAT_X;
-  if (base::strcasecmp(component, kTilingRepeatY) == 0)
+  if (LowerCaseEqualsASCII(tiling, kTilingRepeatY))
     return REPEAT_Y;
-  if (base::strcasecmp(component, kTilingRepeat) == 0)
+  if (LowerCaseEqualsASCII(tiling, kTilingRepeat))
     return REPEAT;
   // NO_REPEAT is the default choice.
   return NO_REPEAT;

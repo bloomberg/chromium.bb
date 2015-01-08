@@ -91,7 +91,7 @@ struct PersistingImagesTable {
 
   // String to check for when parsing theme manifests or NULL if this isn't
   // supposed to be changeable by the user.
-  const char* key;
+  const char* const key;
 };
 
 // IDR_* resource names change whenever new resources are added; use persistent
@@ -204,8 +204,7 @@ int GetPersistentIDByNameHelper(const std::string& key,
                                 const PersistingImagesTable* image_table,
                                 size_t image_table_size) {
   for (size_t i = 0; i < image_table_size; ++i) {
-    if (image_table[i].key != NULL &&
-        base::strcasecmp(key.c_str(), image_table[i].key) == 0) {
+    if (image_table[i].key && LowerCaseEqualsASCII(key, image_table[i].key)) {
       return image_table[i].persistent_id;
     }
   }
@@ -286,7 +285,7 @@ std::string GetScaleFactorsAsString(
 }
 
 struct StringToIntTable {
-  const char* key;
+  const char* const key;
   ThemeProperties::OverwritableByUserThemeProperty id;
 };
 
@@ -340,7 +339,7 @@ int GetIntForString(const std::string& key,
                     StringToIntTable* table,
                     size_t table_length) {
   for (size_t i = 0; i < table_length; ++i) {
-    if (base::strcasecmp(key.c_str(), table[i].key) == 0) {
+    if (LowerCaseEqualsASCII(key, table[i].key)) {
       return table[i].id;
     }
   }
