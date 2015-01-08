@@ -26,6 +26,8 @@ namespace {
 // Returns true if the entry's URL or any of the URLs in entry's redirect chain
 // match |url|.
 bool DoesEntryMatchURL(NavigationEntry* entry, const GURL& url) {
+  if (!entry)
+    return false;
   if (entry->GetURL() == url)
     return true;
   const std::vector<GURL>& redirect_chain = entry->GetRedirectChain();
