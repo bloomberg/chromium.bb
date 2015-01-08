@@ -24,9 +24,6 @@ var BandwidthView = (function() {
     // Register to receive data reduction proxy info.
     g_browser.addDataReductionProxyInfoObserver(this, true);
 
-    // Register to receive proxy settings.
-    g_browser.addProxySettingsObserver(this, true);
-
     // Register to receive bad proxy info.
     g_browser.addBadProxiesObserver(this, true);
 
@@ -59,12 +56,10 @@ var BandwidthView = (function() {
 
     data_reduction_proxy_config_: null,
     last_bypass_: null,
-    proxy_config_: null,
     bad_proxy_config_: null,
 
     onLoadLogFinish: function(data) {
       return this.onBadProxiesChanged(data.badProxies) &&
-          this.onProxySettingsChanged(data.proxySettings) &&
           this.onDataReductionProxyInfoChanged(data.dataReductionProxyInfo) &&
           (this.onSessionNetworkStatsChanged(data.sessionNetworkStats) ||
               this.onHistoricNetworkStatsChanged(data.historicNetworkStats));
@@ -144,34 +139,6 @@ var BandwidthView = (function() {
             break;
         }
       }
-
-      return true;
-    },
-
-    /**
-     * Updates the UI based on receiving changes in information about the
-     * proxy settings.
-     */
-    onProxySettingsChanged: function(proxySettings) {
-      if (!proxySettings)
-        return false;
-
-      var newProxySettings = [];
-      var effectiveSettings = proxySettings.effective;
-      if (effectiveSettings && effectiveSettings.proxy_per_scheme) {
-        for (var scheme in effectiveSettings.proxy_per_scheme) {
-          var schemeSettings = effectiveSettings.proxy_per_scheme[scheme];
-          if (scheme != 'fallback') {
-            for (var i = 0; i < schemeSettings.length; ++i) {
-              var proxyUri = schemeSettings[i];
-              if (proxyUri != 'direct://')
-                newProxySettings.push(proxyUri);
-            }
-          }
-        }
-      }
-      this.proxy_config_ = newProxySettings;
-      this.updateDataReductionProxyConfig_();
 
       return true;
     },
@@ -430,12 +397,11 @@ var BandwidthView = (function() {
      * string.
      */
     buildProxyString_: function(proxy, restricted) {
-      var configured = this.isConfigured_(proxy);
       var markedAsBad = this.isMarkedAsBad_(proxy);
       var proxyString = '';
       if (restricted) {
         proxyString += proxy + ' (RESTRICTED)';
-      } else if (configured) {
+      } else {
         proxyString += proxy;
         if (markedAsBad) {
           proxyString += ' (BYPASSED)';
@@ -445,19 +411,6 @@ var BandwidthView = (function() {
       }
 
       return proxyString;
-    },
-
-    /**
-     * Checks to see if a proxy server is in the current configuration.
-     */
-    isConfigured_: function(proxy) {
-      for (var index in this.proxy_config_) {
-        var entry = this.proxy_config_[index];
-        if (entry == proxy)
-          return true;
-      }
-
-      return false;
     },
 
     /**
