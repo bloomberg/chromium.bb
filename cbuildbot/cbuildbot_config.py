@@ -534,7 +534,7 @@ _settings = dict(
 # separate_debug_symbols -- Do not package the debug symbols in the binary
 # package. The debug symbols will be in an archive with the name cpv.debug.tbz2
 # in /build/${BOARD}/packages and uploaded with the prebuilt.
-  separate_debug_symbols=False,
+  separate_debug_symbols=True,
 
 # archive_build_debug -- Include *.debug files for debugging core files with
 #                        gdb in debug.tgz. These are very large. This option
