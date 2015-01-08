@@ -310,6 +310,7 @@ void WebMediaPlayerImpl::seek(double seconds) {
 
   ended_ = false;
 
+  ReadyState old_state = ready_state_;
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
@@ -326,16 +327,13 @@ void WebMediaPlayerImpl::seek(double seconds) {
   media_log_->AddEvent(media_log_->CreateSeekEvent(seconds));
 
   // Update our paused time.
-  // In paused state ignore the seek operations to current time and generate
-  // OnPipelineSeeked and OnPipelineBufferingStateChanged events
-  // to eventually fire seeking and seeked events
+  // In paused state ignore the seek operations to current time if the loading
+  // is completed and generate OnPipelineBufferingStateChanged event to
+  // eventually fire seeking and seeked events
   if (paused_) {
     if (paused_time_ != seek_time) {
       paused_time_ = seek_time;
-    } else {
-      main_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked,
-                                AsWeakPtr(), false, PIPELINE_OK));
+    } else if (old_state == ReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
