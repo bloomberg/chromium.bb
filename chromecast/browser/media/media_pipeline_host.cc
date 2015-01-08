@@ -57,7 +57,7 @@ void MediaPipelineHost::Initialize(
   media_pipeline_.reset(new MediaPipelineImpl());
   MediaPipelineDeviceParams default_parameters;
   if (load_type == kLoadTypeMediaStream)
-    default_parameters.disable_synchronization = true;
+    default_parameters.sync_type = MediaPipelineDeviceParams::kModeIgnorePts;
   media_pipeline_->Initialize(
       load_type,
       CreateMediaPipelineDevice(default_parameters).Pass());

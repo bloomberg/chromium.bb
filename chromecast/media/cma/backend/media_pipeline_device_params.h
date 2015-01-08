@@ -12,17 +12,25 @@ namespace media {
 
 class MediaPipelineDeviceParams {
  public:
+  enum MediaSyncType {
+    // Default operation, synchronize playback using PTS with higher latency.
+    kModeSyncPts = 0,
+    // With this mode, synchronization is disabled and audio/video frames are
+    // rendered "right away":
+    // - for audio, frames are still rendered based on the sampling frequency
+    // - for video, frames are rendered as soon as available at the output of
+    //   the video decoder.
+    //   The assumption is that no B frames are used when synchronization is
+    //   disabled, otherwise B frames would always be skipped.
+    kModeIgnorePts = 1,
+    // In addition to the constraints above, also do not wait for vsync.
+    kModeIgnorePtsAndVSync = 2,
+  };
+
   MediaPipelineDeviceParams();
   ~MediaPipelineDeviceParams();
 
-  // When set to true, synchronization is disabled and audio/video frames are
-  // rendered "right away":
-  // - for audio, frames are still rendered based on the sampling frequency
-  // - for video, frames are rendered as soon as available at the output of
-  //   the video decoder.
-  //   The assumption is that no B frames are used when synchronization is
-  //   disabled, otherwise B frames would always be skipped.
-  bool disable_synchronization;
+  MediaSyncType sync_type;
 };
 
 }  // namespace media

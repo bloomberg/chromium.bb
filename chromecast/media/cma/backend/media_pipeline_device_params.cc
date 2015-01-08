@@ -8,7 +8,7 @@ namespace chromecast {
 namespace media {
 
 MediaPipelineDeviceParams::MediaPipelineDeviceParams()
-    : disable_synchronization(false) {
+    : sync_type(kModeSyncPts) {
 }
 
 MediaPipelineDeviceParams::~MediaPipelineDeviceParams() {
