@@ -1331,6 +1331,7 @@ _x86_internal_release_boards = frozenset([
   'fox_wtm2',
   'glimmer',
   'gnawty',
+  'guado',
   'jecht',
   'kip',
   'lemmings',
@@ -1360,6 +1361,7 @@ _x86_internal_release_boards = frozenset([
   'stumpy',
   'stumpy_moblab',
   'swanky',
+  'tidus',
   'tricky',
   'tricky_freon',
   'winky',
@@ -1479,6 +1481,7 @@ _freon_boards = frozenset([
   'auron_paine',
   'auron_yuna',
   'cid',
+  'guado',
   'jecht',
   'link_freon',
   'lulu',
@@ -1486,6 +1489,7 @@ _freon_boards = frozenset([
   'monroe_freon',
   'panther_freon',
   'peppy_freon',
+  'tidus',
   'tricky_freon',
   'zako_freon',
   'samus',
@@ -2850,7 +2854,10 @@ _AddGroupConfig('veyron-b', 'veyron_speedy', (
 )
 
 # jecht-based boards
-_AddGroupConfig('jecht', 'jecht',
+_AddGroupConfig('jecht', 'jecht', (
+    'guado',
+    'tidus',
+    ),
     important=False,
 )
 
