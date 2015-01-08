@@ -45,6 +45,9 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
             const blink::WebFindOptions& options) override;
 
   // WebContentsDelegate implementation.
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override;
   void ContentsZoomChange(bool zoom_in) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void HandleKeyboardEvent(

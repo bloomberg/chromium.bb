@@ -383,12 +383,10 @@ PDFViewer.prototype = {
         this.updateProgress_(message.data.progress);
         break;
       case 'navigate':
-        if (message.data.newTab) {
-          chrome.tabs.create({ url: message.data.url });
-        } else {
-          chrome.tabs.update(
-              this.streamDetails.tabId, { url: message.data.url });
-        }
+        if (message.data.newTab)
+          window.open(message.data.url);
+        else
+          window.location.href = message.data.url;
         break;
       case 'setScrollPosition':
         var position = this.viewport_.position;

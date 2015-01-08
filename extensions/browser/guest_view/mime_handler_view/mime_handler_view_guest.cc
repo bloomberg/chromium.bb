@@ -147,6 +147,13 @@ bool MimeHandlerViewGuest::Find(int request_id,
   return false;
 }
 
+content::WebContents* MimeHandlerViewGuest::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  return embedder_web_contents()->GetDelegate()->OpenURLFromTab(
+      embedder_web_contents(), params);
+}
+
 void MimeHandlerViewGuest::ContentsZoomChange(bool zoom_in) {
   if (delegate_)
     delegate_->ChangeZoom(zoom_in);
