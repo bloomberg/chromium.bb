@@ -47,15 +47,6 @@ RectF SkRectToRectF(const SkRect& rect) {
                SkScalarToFloat(rect.height()));
 }
 
-SkSize SizeFToSkSize(const SizeF& size) {
-  return SkSize::Make(SkFloatToScalar(size.width()),
-                      SkFloatToScalar(size.height()));
-}
-
-SizeF SkSizeToSizeF(const SkSize& size) {
-  return SizeF(SkScalarToFloat(size.width()), SkScalarToFloat(size.height()));
-}
-
 void TransformToFlattenedSkMatrix(const gfx::Transform& transform,
                                   SkMatrix* flattened) {
   // Convert from 4x4 to 3x3 by dropping the third row and column.
