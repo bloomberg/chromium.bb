@@ -201,7 +201,14 @@ def GetPackageIndex(binhost, binhost_cache=None):
       temp_file.file.close()
       binhost_cache.Lookup(key).Assign(temp_file.name)
   elif pkgindex is None:
-    binhost = urlparse.urlsplit(binhost).path
+    urlparts = urlparse.urlsplit(binhost)
+    if urlparts.scheme not in ('file', ''):
+      # Don't fail the build on network errors. Print a warning message and
+      # continue.
+      cros_build_lib.Warning('Could not get package index %s' % binhost)
+      return None
+
+    binhost = urlparts.path
     if not os.path.isdir(binhost):
       raise ValueError('unrecognized binhost format for %s.')
     pkgindex = binpkg.GrabLocalPackageIndex(binhost)
@@ -227,6 +234,9 @@ def ListBinhost(binhost, binhost_cache=None):
 
   symbols = {}
   pkgindex = GetPackageIndex(binhost, binhost_cache)
+  if pkgindex is None:
+    return symbols
+
   for p in pkgindex.packages:
     if p.get('DEBUG_SYMBOLS') == 'yes':
       path = p.get('PATH', p['CPV'] + '.tbz2')
