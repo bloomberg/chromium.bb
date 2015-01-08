@@ -601,6 +601,7 @@ public:
         SRIElementWithNonMatchingIntegrityType = 660,
         MixedContentInNonHTTPSFrameThatRestrictsMixedContent = 661,
         MixedContentInSecureFrameThatDoesNotRestrictMixedContent = 662,
+        MixedContentWebSocket = 663,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

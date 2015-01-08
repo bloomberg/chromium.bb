@@ -81,6 +81,34 @@ bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const K
 }
 
 // static
+LocalFrame* MixedContentChecker::inWhichFrameIsContentMixed(LocalFrame* frame, WebURLRequest::FrameType frameType, const KURL& url)
+{
+    // We only care about subresource loads; top-level navigations cannot be mixed content. Neither can frameless requests.
+    if (frameType == WebURLRequest::FrameTypeTopLevel || !frame)
+        return nullptr;
+
+    // Check the top frame first.
+    if (Frame* top = frame->tree().top()) {
+        // FIXME: We need a way to access the top-level frame's SecurityOrigin when that frame
+        // is in a different process from the current frame. Until that is done, we bail out.
+        if (!top->isLocalFrame())
+            return nullptr;
+
+        LocalFrame* localTop = toLocalFrame(top);
+        measureStricterVersionOfIsMixedContent(localTop, url);
+        if (isMixedContent(localTop->document()->securityOrigin(), url))
+            return localTop;
+    }
+
+    measureStricterVersionOfIsMixedContent(frame, url);
+    if (isMixedContent(frame->document()->securityOrigin(), url))
+        return frame;
+
+    // No mixed content, no problem.
+    return nullptr;
+}
+
+// static
 MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(WebURLRequest::RequestContext context)
 {
     switch (context) {
@@ -271,42 +299,20 @@ void MixedContentChecker::count(LocalFrame* frame, WebURLRequest::RequestContext
 // static
 bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
 {
-    // No frame, no mixed content:
-    if (!frame)
+    LocalFrame* mixedFrame = inWhichFrameIsContentMixed(frame, frameType, url);
+    if (!mixedFrame)
         return false;
 
-    // Check the top frame first.
-    if (Frame* top = frame->tree().top()) {
-        // FIXME: We need a way to access the top-level frame's SecurityOrigin when that frame
-        // is in a different process from the current frame. Until that is done, we bail out
-        // early and allow the load.
-        if (!top->isLocalFrame())
-            return false;
+    MixedContentChecker::count(mixedFrame, requestContext);
 
-        LocalFrame* localTop = toLocalFrame(top);
-        if (frame != localTop && shouldBlockFetch(localTop, requestContext, frameType, url, reportingStatus))
-            return true;
-    }
-
-    // We only care about subresource loads; top-level navigations cannot be mixed content.
-    if (frameType == WebURLRequest::FrameTypeTopLevel)
-        return false;
-
-    // No mixed content, no problem.
-    measureStricterVersionOfIsMixedContent(frame, url);
-    if (!isMixedContent(frame->document()->securityOrigin(), url))
-        return false;
-
-    MixedContentChecker::count(frame, requestContext);
-
-    Settings* settings = frame->settings();
-    FrameLoaderClient* client = frame->loader().client();
-    SecurityOrigin* securityOrigin = frame->document()->securityOrigin();
+    Settings* settings = mixedFrame->settings();
+    FrameLoaderClient* client = mixedFrame->loader().client();
+    SecurityOrigin* securityOrigin = mixedFrame->document()->securityOrigin();
     bool allowed = false;
 
     // If we're in strict mode, we'll automagically fail everything, and intentionally skip
     // the client checks in order to prevent degrading the site's security UI.
-    bool strictMode = frame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
+    bool strictMode = mixedFrame->document()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
 
     ContextType contextType = contextTypeFromContext(requestContext);
 
@@ -343,6 +349,38 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
     return !allowed;
 }
 
+// static
+bool MixedContentChecker::shouldBlockConnection(LocalFrame* frame, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
+{
+    LocalFrame* mixedFrame = inWhichFrameIsContentMixed(frame, WebURLRequest::FrameTypeNone, url);
+    if (!mixedFrame)
+        return false;
+
+    UseCounter::count(mixedFrame, UseCounter::MixedContentPresent);
+    UseCounter::count(mixedFrame, UseCounter::MixedContentWebSocket);
+
+    // If we're in strict mode, we'll automagically fail everything, and intentionally skip
+    // the client checks in order to prevent degrading the site's security UI.
+    bool strictMode = mixedFrame->document()->shouldEnforceStrictMixedContentChecking();
+
+    Settings* settings = mixedFrame->settings();
+    FrameLoaderClient* client = mixedFrame->loader().client();
+    SecurityOrigin* securityOrigin = mixedFrame->document()->securityOrigin();
+    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || settings->allowConnectingInsecureWebSocket());
+    bool allowed = !strictMode && client->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
+
+    if (reportingStatus == SendReport) {
+        String message = String::format(
+            "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted to connect to the insecure WebSocket endpoint '%s'. %s",
+            frame->document()->url().elidedString().utf8().data(), url.elidedString().utf8().data(),
+            allowed ? "This endpoint should be available via WSS. Insecure access is deprecated." : "This request has been blocked; this endpoint must be available over WSS.");
+        MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
+        mixedFrame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
+    }
+
+    return !allowed;
+}
+
 bool MixedContentChecker::canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
 {
     // Check the top frame if it differs from MixedContentChecker's m_frame.
@@ -372,43 +410,6 @@ bool MixedContentChecker::canDisplayInsecureContent(SecurityOrigin* securityOrig
         client()->didDisplayInsecureContent();
 
     return allowed;
-}
-
-bool MixedContentChecker::canRunInsecureContent(SecurityOrigin* securityOrigin, const KURL& url, const MixedContentType type) const
-{
-    // Check the top frame if it differs from MixedContentChecker's m_frame.
-    if (!m_frame->tree().top()->isLocalFrame()) {
-        // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
-        // is in a different process from the current frame. Until that is done, we always allow
-        // loads in remote frames.
-        return true;
-    }
-    Frame* top = m_frame->tree().top();
-    if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url, type))
-        return false;
-
-    // Just count these for the moment, don't block them.
-    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, securityOrigin->toString())))
-        UseCounter::count(m_frame->document(), UseCounter::MixedContentPrivateIPInPublicWebsiteActive);
-
-    // Then check the current frame:
-    if (!isMixedContent(securityOrigin, url))
-        return true;
-
-    Settings* settings = m_frame->settings();
-    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || ((type == WebSocket) && settings->allowConnectingInsecureWebSocket()));
-    bool allowed = client()->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
-    logWarning(allowed, url, type);
-
-    if (allowed)
-        client()->didRunInsecureContent(securityOrigin, url);
-
-    return allowed;
-}
-
-bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
-{
-    return canRunInsecureContent(securityOrigin, url, MixedContentChecker::WebSocket);
 }
 
 bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const

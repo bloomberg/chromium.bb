@@ -54,6 +54,8 @@ public:
         return shouldBlockFetch(frame, request.requestContext(), request.frameType(), url, status);
     }
 
+    static bool shouldBlockConnection(LocalFrame*, const KURL&, ReportingStatus = SendReport);
+
     static bool isMixedContent(SecurityOrigin*, const KURL&);
 
     static void checkMixedPrivatePublic(LocalFrame*, const AtomicString& resourceIPAddress);
@@ -61,7 +63,6 @@ public:
     // FIXME: Get rid of these non-static bits. https://crbug.com/305811
     explicit MixedContentChecker(LocalFrame*);
     bool canSubmitToInsecureForm(SecurityOrigin*, const KURL&) const;
-    bool canConnectInsecureWebSocket(SecurityOrigin*, const KURL&) const;
     void trace(Visitor*);
 
 private:
@@ -78,6 +79,8 @@ private:
         ContextTypeShouldBeBlockable,
     };
 
+    static LocalFrame* inWhichFrameIsContentMixed(LocalFrame*, WebURLRequest::FrameType, const KURL&);
+
     static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
     static void logToConsole(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
@@ -86,7 +89,6 @@ private:
     // FIXME: Get rid of these non-static bits. https://crbug.com/305811
     FrameLoaderClient* client() const;
     bool canDisplayInsecureContent(SecurityOrigin*, const KURL&, const MixedContentType) const;
-    bool canRunInsecureContent(SecurityOrigin*, const KURL&, const MixedContentType) const;
     void logWarning(bool allowed, const KURL& i, const MixedContentType) const;
 
     RawPtrWillBeMember<LocalFrame> m_frame;
