@@ -706,6 +706,8 @@ Mutex& ThreadState::globalRootsMutex()
     return mutex;
 }
 
+// FIXME: We should improve the GC heuristics.
+// These heuristics affect performance significantly.
 bool ThreadState::shouldGC()
 {
     // Trigger garbage collection on a 50% increase in size since the last GC,
@@ -714,9 +716,17 @@ bool ThreadState::shouldGC()
     return newSize >= 512 * 1024 && newSize > Heap::markedObjectSize() / 2;
 }
 
+// FIXME: We should improve the GC heuristics.
+// These heuristics affect performance significantly.
 bool ThreadState::shouldForceConservativeGC()
 {
     size_t newSize = Heap::allocatedObjectSize();
+    if (newSize >= 300 * 1024 * 1024) {
+        // If we consume too much memory, trigger a conservative GC
+        // on a 50% increase in size since the last GC. This is a safe guard
+        // to avoid OOM.
+        return newSize > Heap::markedObjectSize() / 2;
+    }
     if (m_didV8GCAfterLastGC && m_collectionRate > 0.5) {
         // If we had a V8 GC after the last Oilpan GC and the last collection
         // rate was higher than 50%, trigger a conservative GC on a 200%
@@ -727,7 +737,6 @@ bool ThreadState::shouldForceConservativeGC()
     // the last GC, but not for less than 32 MB. We set the higher limit in
     // this case because Oilpan GC is unlikely to collect a lot of objects
     // without having a V8 GC.
-    // FIXME: Is 32 MB reasonable?
     return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
 
