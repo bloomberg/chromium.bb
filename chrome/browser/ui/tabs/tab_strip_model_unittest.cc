@@ -184,6 +184,12 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     return retval;
   }
 
+  WebContents* CreateWebContentsWithID(int id) {
+    WebContents* contents = CreateWebContents();
+    SetID(contents, id);
+    return contents;
+  }
+
   // Sets the id of the specified contents.
   void SetID(WebContents* contents, int id) {
     contents->SetUserData(&kTabStripModelTestIDUserDataKey,
@@ -238,11 +244,8 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
                                        int tab_count,
                                        int pinned_count,
                                        const std::string& selected_tabs) {
-    for (int i = 0; i < tab_count; ++i) {
-      WebContents* contents = CreateWebContents();
-      SetID(contents, i);
-      model->AppendWebContents(contents, true);
-    }
+    for (int i = 0; i < tab_count; ++i)
+      model->AppendWebContents(CreateWebContentsWithID(i), true);
     for (int i = 0; i < pinned_count; ++i)
       model->SetTabPinned(i, true);
 
@@ -438,8 +441,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   typedef MockTabStripModelObserver::State State;
 
-  WebContents* contents1 = CreateWebContents();
-  SetID(contents1, 1);
+  WebContents* contents1 = CreateWebContentsWithID(1);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -466,8 +468,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   EXPECT_EQ("1", GetTabStripStateString(tabstrip));
 
   // Test InsertWebContentsAt, foreground tab.
-  WebContents* contents2 = CreateWebContents();
-  SetID(contents2, 2);
+  WebContents* contents2 = CreateWebContentsWithID(2);
   {
     tabstrip.InsertWebContentsAt(1, contents2, TabStripModel::ADD_ACTIVE);
 
@@ -490,8 +491,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
 
   // Test InsertWebContentsAt, background tab.
-  WebContents* contents3 = CreateWebContents();
-  SetID(contents3, 3);
+  WebContents* contents3 = CreateWebContentsWithID(3);
   {
     tabstrip.InsertWebContentsAt(2, contents3, TabStripModel::ADD_NONE);
 
@@ -1817,19 +1817,15 @@ TEST_F(TabStripModelTest, Apps) {
   scoped_refptr<Extension> extension_app(
       Extension::Create(path, extensions::Manifest::INVALID_LOCATION,
                         manifest, Extension::NO_FLAGS, &error));
-  WebContents* contents1 = CreateWebContents();
+  WebContents* contents1 = CreateWebContentsWithID(1);
   extensions::TabHelper::CreateForWebContents(contents1);
   extensions::TabHelper::FromWebContents(contents1)
       ->SetExtensionApp(extension_app.get());
-  WebContents* contents2 = CreateWebContents();
+  WebContents* contents2 = CreateWebContentsWithID(2);
   extensions::TabHelper::CreateForWebContents(contents2);
   extensions::TabHelper::FromWebContents(contents2)
       ->SetExtensionApp(extension_app.get());
-  WebContents* contents3 = CreateWebContents();
-
-  SetID(contents1, 1);
-  SetID(contents2, 2);
-  SetID(contents3, 3);
+  WebContents* contents3 = CreateWebContentsWithID(3);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -1939,13 +1935,9 @@ TEST_F(TabStripModelTest, Pinning) {
 
   typedef MockTabStripModelObserver::State State;
 
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
-
-  SetID(contents1, 1);
-  SetID(contents2, 2);
-  SetID(contents3, 3);
+  WebContents* contents1 = CreateWebContentsWithID(1);
+  WebContents* contents2 = CreateWebContentsWithID(2);
+  WebContents* contents3 = CreateWebContentsWithID(3);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -2074,8 +2066,7 @@ TEST_F(TabStripModelTest, Pinning) {
     observer.ClearStates();
   }
 
-  WebContents* contents4 = CreateWebContents();
-  SetID(contents4, 4);
+  WebContents* contents4 = CreateWebContentsWithID(4);
 
   // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
   // up after them.
