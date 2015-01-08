@@ -580,7 +580,8 @@ THROTTLED_CQ_READY_QUERY = (
 PRECQ_READY_QUERY = (
     '%(open)s AND (%(approved)s AND label:Commit-Queue>=1 OR '
     'label:Code-Review=+2 AND -age:2h OR label:Trybot-Ready=+1)' % _QUERIES,
-    lambda change: (change.HasApproval('CRVW', '2') or
+    lambda change: (not change.IsBeingMerged() and
+                    change.HasApproval('CRVW', '2') or
                     change.HasApproval('TRY', '1')))
 
 GERRIT_ON_BORG_LABELS = {
