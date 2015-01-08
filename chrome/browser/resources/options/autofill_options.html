@@ -28,6 +28,28 @@
             i18n-content="autofillAddCreditCard"></button>
       </div>
     </div>
+    <!-- TODO(estade): This section shouldn't show if you're not signed into
+         sync. -->
+    <div id="autofill-wallet-card-area" class="settings-row" hidden>
+      <!-- A reminder not to launch this UI. -->
+      <span>Warning, these strings are not translated!</span>
+      <div>
+        Chrome will also suggest
+        <a target="_blank" i18n-values="href:manageWalletAddressesUrl">
+          addresses</a>
+        and
+        <a target="_blank" i18n-values="href:manageWalletPaymentMethodsUrl">
+          cards</a>
+        stored in your Wallet.
+      </div>
+      <div>
+        <span>Credit cards from Wallet require authentication once and
+            then remain unlocked.
+        </span>
+        <a id="remask-server-cards-link"
+            is="action-link">Reset authenticated cards</a>
+      </div>
+    </div>
   </div>
   <div class="action-area">
     <a id="autofill-help" target="_blank" i18n-values="href:helpUrl"

@@ -89,6 +89,13 @@ cr.define('options', function() {
         return true;  // Always follow the href
       };
 
+      $('autofill-wallet-card-area').hidden =
+          !loadTimeData.getBoolean('enableAutofillWalletIntegration');
+      // TODO(estade): there should probably be some indication of success.
+      $('remask-server-cards-link').onclick = function(event) {
+        chrome.send('remaskServerCards');
+      };
+
       // TODO(jhawkins): What happens when Autofill is disabled whilst on the
       // Autofill options page?
     },

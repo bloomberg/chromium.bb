@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -20,12 +21,14 @@
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/libaddressinput/messages.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
@@ -331,6 +334,17 @@ void AutofillOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("helpUrl", autofill::kHelpURL);
   SetAddressOverlayStrings(localized_strings);
   SetCreditCardOverlayStrings(localized_strings);
+
+  localized_strings->SetBoolean(
+      "enableAutofillWalletIntegration",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          autofill::switches::kEnableWalletCardImport));
+  localized_strings->SetString(
+      "manageWalletAddressesUrl",
+      autofill::wallet::GetManageAddressesUrl(0).spec());
+  localized_strings->SetString(
+      "manageWalletPaymentMethodsUrl",
+      autofill::wallet::GetManageInstrumentsUrl(0).spec());
 }
 
 void AutofillOptionsHandler::InitializeHandler() {
@@ -380,6 +394,10 @@ void AutofillOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "validatePhoneNumbers",
       base::Bind(&AutofillOptionsHandler::ValidatePhoneNumbers,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "remaskServerCards",
+      base::Bind(&AutofillOptionsHandler::RemaskServerCards,
                  base::Unretained(this)));
 }
 
@@ -673,6 +691,18 @@ void AutofillOptionsHandler::ValidatePhoneNumbers(const base::ListValue* args) {
 
   web_ui()->CallJavascriptFunction(
     "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
+}
+
+void AutofillOptionsHandler::RemaskServerCards(const base::ListValue* args) {
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
+  for (const auto card : cards) {
+    CreditCard card_copy = *card;
+    if (card_copy.record_type() == CreditCard::FULL_SERVER_CARD) {
+      card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
+      card_copy.SetNumber(card->LastFourDigits());
+      personal_data_->UpdateServerCreditCard(card_copy);
+    }
+  }
 }
 
 bool AutofillOptionsHandler::IsPersonalDataLoaded() const {
