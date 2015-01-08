@@ -1016,12 +1016,12 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     }
   }
 
-  DCHECK(status->ok() || !is_schema_known || leveldb_env::IsIOError(*status) ||
+  DCHECK(status->ok() || !is_schema_known || status->IsIOError() ||
          status->IsCorruption());
 
   if (db) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin_url);
-  } else if (leveldb_env::IsIOError(*status)) {
+  } else if (status->IsIOError()) {
     LOG(ERROR) << "Unable to open backing store, not trying to recover - "
                << status->ToString();
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY, origin_url);

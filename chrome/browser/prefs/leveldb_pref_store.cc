@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -116,7 +115,7 @@ void LevelDBPrefStore::OpenDB(const base::FilePath& path,
       reading_results->error |= OPENED;
       break;
     }
-    if (leveldb_env::IsIOError(status)) {
+    if (status.IsIOError()) {
       reading_results->error |= IO_ERROR;
       break;
     }

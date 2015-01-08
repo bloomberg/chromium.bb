@@ -516,14 +516,6 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
          (result == leveldb_env::METHOD_AND_ERRNO && error == ENOSPC);
 }
 
-bool IsIOError(const leveldb::Status& status) {
-  leveldb_env::MethodID method;
-  int error = -1;
-  leveldb_env::ErrorParsingResult result =
-      leveldb_env::ParseMethodAndError(status, &method, &error);
-  return result != leveldb_env::NONE;
-}
-
 bool ChromiumEnv::MakeBackup(const std::string& fname) {
   FilePath original_table_name = FilePath::FromUTF8Unsafe(fname);
   FilePath backup_table_name =

@@ -71,7 +71,6 @@ int GetCorruptionCode(const leveldb::Status& status);
 int GetNumCorruptionCodes();
 std::string GetCorruptionMessage(const leveldb::Status& status);
 bool IndicatesDiskFull(const leveldb::Status& status);
-bool IsIOError(const leveldb::Status& status);
 
 class UMALogger {
  public:
