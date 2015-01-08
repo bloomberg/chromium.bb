@@ -1394,8 +1394,10 @@ class GerritPatch(GerritFetchOnlyPatch):
     self._approvals = []
     if 'currentPatchSet' in self.patch_dict:
       self._approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
-    self.approval_timestamp = \
-        max(x['grantedOn'] for x in self._approvals) if self._approvals else 0
+    self.commit_timestamp = current_patch_set.get('date', 0)
+    self.approval_timestamp = max(
+        self.commit_timestamp,
+        max(x['grantedOn'] for x in self._approvals) if self._approvals else 0)
     self.commit_message = patch_dict.get('commitMessage')
 
   @staticmethod
@@ -1451,11 +1453,13 @@ class GerritPatch(GerritFetchOnlyPatch):
               'by': _convert_user(review_data),
           })
 
+      date = current_revision_info['commit']['committer']['date']
       patch_dict['currentPatchSet'] = {
           'approvals': approvals,
           'ref': current_revision_info['fetch']['http']['ref'],
           'revision': current_revision,
           'number': str(current_revision_info['_number']),
+          'date': _convert_tm(date),
           'draft': current_revision_info.get('draft', False),
       }
 

@@ -333,6 +333,27 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     gob_util.ResetReviewLabels(helper.host, gpatch.gerrit_number,
                                label='Code-Review', notify='OWNER')
 
+  @cros_test_lib.NetworkTest()
+  def test013ApprovalTime(self):
+    """Approval timestamp should be reset when a new patchset is created."""
+    # Create a change.
+    project = self.createProject('test012')
+    helper = self._GetHelper()
+    clone_path = self.cloneProject(project, 'p1')
+    gpatch = self.createPatch(clone_path, project, msg='Init')
+    helper.SetReview(gpatch.gerrit_number, labels={'Code-Review':'+2'})
+
+    # Update the change.
+    new_msg = 'New %s' % gpatch.commit_message
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '--amend', '-m', new_msg], cwd=clone_path, quiet=True)
+    self.uploadChange(clone_path)
+    gpatch2 = self._GetHelper().QuerySingleRecord(
+        change=gpatch.change_id, project=gpatch.project, branch='master')
+    self.assertNotEqual(gpatch2.approval_timestamp, 0)
+    self.assertNotEqual(gpatch2.commit_timestamp, 0)
+    self.assertEqual(gpatch2.approval_timestamp, gpatch2.commit_timestamp)
+
 
 @cros_test_lib.NetworkTest()
 class DirectGerritHelperTest(cros_test_lib.TestCase):
