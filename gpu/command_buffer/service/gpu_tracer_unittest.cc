@@ -527,9 +527,6 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
       ASSERT_TRUE(tracer.Begin(source_category, source_trace_name, source));
-
-      ASSERT_EQ(source_category, tracer.CurrentCategory());
-      ASSERT_EQ(source_trace_name, tracer.CurrentName());
     }
 
     for (int i = 0; i < NUM_TRACER_SOURCES; ++i) {
@@ -550,6 +547,11 @@ class BaseGpuTracerTest : public BaseGpuTest {
                               GetTracerType() != kTracerTypeInvalid);
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
+
+      // Check if the current category/name are correct for this source.
+      ASSERT_EQ(source_category, tracer.CurrentCategory(source));
+      ASSERT_EQ(source_trace_name, tracer.CurrentName(source));
+
       ASSERT_TRUE(tracer.End(source));
     }
 

@@ -89,8 +89,8 @@ class GPU_EXPORT GPUTracer
 
   // Retrieve the name of the current open trace.
   // Returns empty string if no current open trace.
-  const std::string& CurrentCategory() const;
-  const std::string& CurrentName() const;
+  const std::string& CurrentCategory(GpuTracerSource source) const;
+  const std::string& CurrentName(GpuTracerSource source) const;
 
  protected:
   // Trace Processing.
@@ -117,7 +117,6 @@ class GPU_EXPORT GPUTracer
   gles2::GLES2Decoder* decoder_;
 
   int64 timer_offset_;
-  GpuTracerSource last_tracer_source_;
 
   GpuTracerType tracer_type_;
   bool gpu_timing_synced_;
@@ -185,9 +184,6 @@ class GPU_EXPORT GPUTrace
            GpuTracerType tracer_type);
 
   bool IsEnabled() { return tracer_type_ != kTracerTypeInvalid; }
-
-  const std::string& category() { return category_; }
-  const std::string& name() { return name_; }
 
   void Start(bool trace_service);
   void End(bool tracing_service);

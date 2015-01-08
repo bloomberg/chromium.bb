@@ -1878,7 +1878,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   scoped_ptr<GPUStateTracer> gpu_state_tracer_;
   const unsigned char* cb_command_trace_category_;
   const unsigned char* gpu_decoder_category_;
-  const unsigned char* gpu_group_marker_category_;
   int gpu_trace_level_;
   bool gpu_trace_commands_;
   bool gpu_debug_commands_;
@@ -2396,8 +2395,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
           TRACE_DISABLED_BY_DEFAULT("cb_command"))),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
-      gpu_group_marker_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
-          TRACE_DISABLED_BY_DEFAULT("gpu_group_marker"))),
       gpu_trace_level_(2),
       gpu_trace_commands_(false),
       gpu_debug_commands_(false),
@@ -11006,17 +11003,13 @@ void GLES2DecoderImpl::DoPushGroupMarkerEXT(
   }
   std::string name = length ? std::string(marker, length) : std::string(marker);
   debug_marker_manager_.PushGroup(name);
-  if (*gpu_group_marker_category_) {
-    gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu_group_marker"), name,
-                       kTraceGroupMarker);
-  }
+  gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu_group_marker"), name,
+                     kTraceGroupMarker);
 }
 
 void GLES2DecoderImpl::DoPopGroupMarkerEXT(void) {
   debug_marker_manager_.PopGroup();
-  if (*gpu_group_marker_category_) {
-    gpu_tracer_->End(kTraceGroupMarker);
-  }
+  gpu_tracer_->End(kTraceGroupMarker);
 }
 
 void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
@@ -11124,8 +11117,6 @@ error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(
     return error::kInvalidArguments;
   }
 
-  TRACE_EVENT_COPY_ASYNC_BEGIN0(category_name.c_str(), trace_name.c_str(),
-                                this);
   if (!gpu_tracer_->Begin(category_name, trace_name, kTraceCHROMIUM)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
@@ -11136,16 +11127,11 @@ error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(
 }
 
 void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
-  if (gpu_tracer_->CurrentCategory().empty() ||
-      gpu_tracer_->CurrentName().empty()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTraceEndCHROMIUM", "no trace begin found");
+  if (!gpu_tracer_->End(kTraceCHROMIUM)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glTraceEndCHROMIUM", "no trace begin found");
     return;
   }
-  TRACE_EVENT_COPY_ASYNC_END0(gpu_tracer_->CurrentCategory().c_str(),
-                              gpu_tracer_->CurrentName().c_str(), this);
-  gpu_tracer_->End(kTraceCHROMIUM);
 }
 
 void GLES2DecoderImpl::DoDrawBuffersEXT(

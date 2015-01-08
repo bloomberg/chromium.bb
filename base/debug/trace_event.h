@@ -395,6 +395,11 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
         TRACE_EVENT_PHASE_ASYNC_BEGIN, category_group, name, id, thread_id, \
         timestamp, TRACE_EVENT_FLAG_COPY)
+#define TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP1( \
+        category_group, name, id, thread_id, timestamp, arg1_name, arg1_val) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_BEGIN, category_group, name, id, thread_id, \
+        timestamp, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
 
 // Records a single END event for "name" immediately. If the category
 // is not enabled, then this does nothing.
@@ -439,6 +444,11 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
         TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id, thread_id, \
         timestamp, TRACE_EVENT_FLAG_COPY)
+#define TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP1( \
+        category_group, name, id, thread_id, timestamp, arg1_name, arg1_val) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id, thread_id, \
+        timestamp, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
 
 // Records the value of a counter called "name" immediately. Value
 // must be representable as a 32 bit integer.
