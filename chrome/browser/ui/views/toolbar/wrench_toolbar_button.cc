@@ -50,6 +50,7 @@ void WrenchToolbarButton::SetOverflowedToolbarActionWantsToRun(
     ToolbarActionView::DecorateWantsToRunBorder(border.get());
   }
   SetBorder(border.Pass());
+  SchedulePaint();
 }
 
 gfx::Size WrenchToolbarButton::GetPreferredSize() const {
