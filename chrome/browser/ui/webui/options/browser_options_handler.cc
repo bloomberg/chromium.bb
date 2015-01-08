@@ -1665,13 +1665,12 @@ void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
 void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(
     bool always_on, const base::string16& audio_history_state,
     bool success, bool logging_enabled) {
+  bool visible = logging_enabled && success;
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setAudioHistorySectionVisible",
-      base::FundamentalValue(logging_enabled),
+      base::FundamentalValue(visible),
       base::FundamentalValue(always_on),
       base::StringValue(audio_history_state));
-
-  // TODO(rlp): Add version with error display if !success.
 }
 
 void BrowserOptionsHandler::HandleRequestHotwordAvailable(
