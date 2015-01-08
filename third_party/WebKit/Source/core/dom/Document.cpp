@@ -1896,6 +1896,8 @@ void Document::updateRenderTreeForNodeIfNeeded(Node* node)
     ASSERT(node);
     if (!node->canParticipateInComposedTree())
         return;
+    if (!needsRenderTreeUpdate())
+        return;
 
     bool needsRecalc = needsFullRenderTreeUpdate() || node->needsStyleRecalc() || node->needsStyleInvalidation();
 
