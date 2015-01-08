@@ -22,7 +22,7 @@ class ServiceWorkerClient : public GarbageCollectedFinalized<ServiceWorkerClient
 public:
     static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
 
-    ~ServiceWorkerClient();
+    virtual ~ServiceWorkerClient();
 
     // Client.idl
     String url() const { return m_url; }
