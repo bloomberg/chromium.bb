@@ -28,6 +28,11 @@ class DataDrivenTest {
                          const base::FilePath& output_directory,
                          const base::FilePath::StringType& file_name_pattern);
 
+  // As above, but runs a test for a single file, the full path of which is
+  // given by |test_file_name|.
+  void RunOneDataDrivenTest(const base::FilePath& test_file_name,
+                            const base::FilePath& output_directory);
+
   // Given the |input| data, generates the |output| results. The output results
   // must be stable across runs.
   // Note: The return type is |void| so that googletest |ASSERT_*| macros will

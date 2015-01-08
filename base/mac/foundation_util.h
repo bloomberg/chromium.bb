@@ -64,6 +64,15 @@ namespace mac {
 BASE_EXPORT bool AmIBundled();
 BASE_EXPORT void SetOverrideAmIBundled(bool value);
 
+#if defined(UNIT_TEST)
+// This is required because instantiating some tests requires checking the
+// directory structure, which sets the AmIBundled cache state. Individual tests
+// may or may not be bundled, and this would trip them up if the cache weren't
+// cleared. This should not be called from individual tests, just from test
+// instantiation code that gets a path from PathService.
+BASE_EXPORT void ClearAmIBundledCache();
+#endif
+
 // Returns true if this process is marked as a "Background only process".
 BASE_EXPORT bool IsBackgroundOnlyProcess();
 

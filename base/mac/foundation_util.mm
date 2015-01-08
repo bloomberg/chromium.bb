@@ -26,6 +26,8 @@ namespace mac {
 
 namespace {
 
+bool g_cached_am_i_bundled_called = false;
+bool g_cached_am_i_bundled_value = false;
 bool g_override_am_i_bundled = false;
 bool g_override_am_i_bundled_value = false;
 
@@ -48,12 +50,15 @@ bool AmIBundled() {
   // If the return value is not cached, this function will return different
   // values depending on when it's called. This confuses some client code, see
   // http://crbug.com/63183 .
-  static bool result = UncachedAmIBundled();
-  DCHECK_EQ(result, UncachedAmIBundled())
+  if (!g_cached_am_i_bundled_called) {
+    g_cached_am_i_bundled_called = true;
+    g_cached_am_i_bundled_value = UncachedAmIBundled();
+  }
+  DCHECK_EQ(g_cached_am_i_bundled_value, UncachedAmIBundled())
       << "The return value of AmIBundled() changed. This will confuse tests. "
       << "Call SetAmIBundled() override manually if your test binary "
       << "delay-loads the framework.";
-  return result;
+  return g_cached_am_i_bundled_value;
 }
 
 void SetOverrideAmIBundled(bool value) {
@@ -64,6 +69,10 @@ void SetOverrideAmIBundled(bool value) {
 #endif
   g_override_am_i_bundled = true;
   g_override_am_i_bundled_value = value;
+}
+
+BASE_EXPORT void ClearAmIBundledCache() {
+  g_cached_am_i_bundled_called = false;
 }
 
 bool IsBackgroundOnlyProcess() {
