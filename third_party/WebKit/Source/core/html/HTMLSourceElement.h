@@ -59,12 +59,15 @@ public:
 private:
     explicit HTMLSourceElement(Document&);
 
+    virtual void didMoveToNewDocument(Document& oldDocument) override;
+
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void removedFrom(ContainerNode*) override;
     virtual bool isURLAttribute(const Attribute&) const override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     void notifyMediaQueryChanged();
+    void createMediaQueryList(const AtomicString& media);
 
     RefPtrWillBeMember<MediaQueryList> m_mediaQueryList;
     RefPtrWillBeMember<Listener> m_listener;

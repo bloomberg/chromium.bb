@@ -83,6 +83,24 @@ HTMLSourceElement::~HTMLSourceElement()
 #endif
 }
 
+void HTMLSourceElement::createMediaQueryList(const AtomicString& media)
+{
+    if (media.isEmpty())
+        return;
+
+    if (m_mediaQueryList)
+        m_mediaQueryList->removeListener(m_listener);
+    RefPtrWillBeRawPtr<MediaQuerySet> set = MediaQuerySet::create(media);
+    m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set.release());
+    m_mediaQueryList->addListener(m_listener);
+}
+
+void HTMLSourceElement::didMoveToNewDocument(Document& oldDocument)
+{
+    createMediaQueryList(fastGetAttribute(mediaAttr));
+    HTMLElement::didMoveToNewDocument(oldDocument);
+}
+
 Node::InsertionNotificationRequest HTMLSourceElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
@@ -156,13 +174,8 @@ bool HTMLSourceElement::isURLAttribute(const Attribute& attribute) const
 void HTMLSourceElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     HTMLElement::parseAttribute(name, value);
-    if (name == mediaAttr) {
-        if (m_mediaQueryList)
-            m_mediaQueryList->removeListener(m_listener);
-        RefPtrWillBeRawPtr<MediaQuerySet> set = MediaQuerySet::create(value);
-        m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set.release());
-        m_mediaQueryList->addListener(m_listener);
-    }
+    if (name == mediaAttr)
+        createMediaQueryList(value);
     if (name == srcsetAttr || name == sizesAttr || name == mediaAttr || name == typeAttr) {
         Element* parent = parentElement();
         if (isHTMLPictureElement(parent))
