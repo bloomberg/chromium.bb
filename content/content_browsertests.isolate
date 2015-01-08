@@ -33,7 +33,18 @@
         ],
       },
     }],
-    ['OS=="linux"', {
+    ['use_x11==0', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--lsan=<(lsan)',
+        ],
+      },
+    }],
+    ['use_x11==1', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -45,17 +56,17 @@
         ],
         'files': [
           '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
-        ],
-      },
-    }],
-    ['OS=="linux" and use_ozone==0', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
@@ -81,17 +92,6 @@
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin/',
           '<(PRODUCT_DIR)/plugins/test_netscape_plugin.plugin/',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
-        ],
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--lsan=<(lsan)',
         ],
       },
     }],

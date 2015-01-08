@@ -37,6 +37,7 @@ def DefaultConfigVariables():
     'target_arch': 'arm',
     'use_openssl': '0',
     'use_ozone': '0',
+    'use_x11': '0',
     'v8_use_external_startup_data': '0',
   }
 
