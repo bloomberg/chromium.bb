@@ -5,6 +5,8 @@
 #ifndef DEVICE_BATTERY_BATTERY_MONITOR_IMPL_H_
 #define DEVICE_BATTERY_BATTERY_MONITOR_IMPL_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "device/battery/battery_export.h"
 #include "device/battery/battery_monitor.mojom.h"
@@ -19,14 +21,23 @@ class BatteryMonitorImpl : public BatteryMonitor {
       mojo::InterfaceRequest<BatteryMonitor> request);
 
  private:
+  typedef mojo::Callback<void(BatteryStatusPtr)> BatteryStatusCallback;
+
   explicit BatteryMonitorImpl(mojo::InterfaceRequest<BatteryMonitor> request);
   ~BatteryMonitorImpl() override;
 
+  // BatteryMonitor methods:
+  void QueryNextStatus(const BatteryStatusCallback& callback) override;
+
   void RegisterSubscription();
   void DidChange(const BatteryStatus& battery_status);
+  void ReportStatus();
 
   mojo::StrongBinding<BatteryMonitor> binding_;
   scoped_ptr<BatteryStatusService::BatteryUpdateSubscription> subscription_;
+  std::vector<BatteryStatusCallback> callbacks_;
+  BatteryStatus status_;
+  bool status_to_report_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryMonitorImpl);
 };

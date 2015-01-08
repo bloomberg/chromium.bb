@@ -30,6 +30,7 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
 
   // Adds a callback to receive battery status updates.  Must be called on the
   // main thread. The callback itself will be called on the main thread as well.
+  // NOTE: The callback may be run before AddCallback returns!
   scoped_ptr<BatteryUpdateSubscription> AddCallback(
       const BatteryUpdateCallback& callback);
 

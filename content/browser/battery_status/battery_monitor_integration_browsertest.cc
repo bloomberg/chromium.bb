@@ -50,23 +50,38 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
   }
 
  private:
+  typedef mojo::Callback<void(device::BatteryStatusPtr)> BatteryStatusCallback;
+
   FakeBatteryMonitor(mojo::InterfaceRequest<BatteryMonitor> request)
-      : subscription_(
-            g_callback_list.Get().Add(base::Bind(&FakeBatteryMonitor::DidChange,
-                                                 base::Unretained(this)))),
-        binding_(this, request.Pass()) {
-    DidChange(g_battery_status);
+      : binding_(this, request.Pass()) {
   }
   ~FakeBatteryMonitor() override {}
 
+  void QueryNextStatus(const BatteryStatusCallback& callback) override {
+    // We don't expect overlapped calls to QueryNextStatus.
+    DCHECK(callback_.is_null());
+
+    callback_ = callback;
+
+    if (!subscription_) {
+      subscription_ =
+          g_callback_list.Get().Add(base::Bind(&FakeBatteryMonitor::DidChange,
+                                               base::Unretained(this)));
+      // Report initial value.
+      DidChange(g_battery_status);
+    }
+  }
+
   void DidChange(const device::BatteryStatus& battery_status) {
-    device::BatteryStatusPtr status(device::BatteryStatus::New());
-    *status = battery_status;
-    binding_.client()->DidChange(status.Pass());
+    if (!callback_.is_null()) {
+      callback_.Run(battery_status.Clone());
+      callback_.reset();
+    }
   }
 
   scoped_ptr<BatteryUpdateSubscription> subscription_;
   mojo::StrongBinding<BatteryMonitor> binding_;
+  BatteryStatusCallback callback_;
 };
 
 // Overrides the default service implementation with the test implementation

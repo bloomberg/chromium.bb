@@ -6,11 +6,10 @@ module device;
 
 import "device/battery/battery_status.mojom";
 
-// A BatteryMonitor will periodically call its client's DidChange method.
-[Client=BatteryStatusObserver]
 interface BatteryMonitor {
-};
-
-interface BatteryStatusObserver {
-  DidChange(BatteryStatus status);
+  // Battery status is reported once it changes or immediately if this is the
+  // first call to QueryNextStatus on this instance. QueryNextStatus calls may
+  // be throttled by the service. Overlapping calls to QueryNextStatus are
+  // supported.
+  QueryNextStatus() => (BatteryStatus status);
 };

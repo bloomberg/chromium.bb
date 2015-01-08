@@ -18,16 +18,26 @@ BatteryStatusDispatcher::BatteryStatusDispatcher(
   if (ServiceRegistry* registry = RenderThread::Get()->GetServiceRegistry()) {
     // registry can be null during testing.
     registry->ConnectToRemoteService(&monitor_);
-    monitor_.set_client(this);
+    QueryNextStatus();
   }
 }
 
 BatteryStatusDispatcher::~BatteryStatusDispatcher() {
 }
 
+void BatteryStatusDispatcher::QueryNextStatus() {
+  monitor_->QueryNextStatus(
+      base::Bind(&BatteryStatusDispatcher::DidChange, base::Unretained(this)));
+}
+
 void BatteryStatusDispatcher::DidChange(
     device::BatteryStatusPtr battery_status) {
+  // monitor_ can be null during testing.
+  if (monitor_)
+    QueryNextStatus();
+
   DCHECK(battery_status);
+
   blink::WebBatteryStatus web_battery_status;
   web_battery_status.charging = battery_status->charging;
   web_battery_status.chargingTime = battery_status->charging_time;

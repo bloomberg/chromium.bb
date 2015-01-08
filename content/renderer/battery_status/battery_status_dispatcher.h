@@ -16,17 +16,16 @@ class WebBatteryStatusListener;
 
 namespace content {
 
-class CONTENT_EXPORT BatteryStatusDispatcher
-    : public NON_EXPORTED_BASE(device::BatteryStatusObserver) {
+class CONTENT_EXPORT BatteryStatusDispatcher {
  public:
   explicit BatteryStatusDispatcher(blink::WebBatteryStatusListener* listener);
-  ~BatteryStatusDispatcher() override;
+  ~BatteryStatusDispatcher();
 
  private:
   friend class BatteryStatusDispatcherTest;
 
-  // BatteryStatusObserver method.
-  void DidChange(device::BatteryStatusPtr battery_status) override;
+  void QueryNextStatus();
+  void DidChange(device::BatteryStatusPtr battery_status);
 
   device::BatteryMonitorPtr monitor_;
   blink::WebBatteryStatusListener* listener_;

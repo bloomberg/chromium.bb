@@ -58,6 +58,9 @@ class BatteryStatusDispatcherTest : public testing::Test {
 };
 
 TEST_F(BatteryStatusDispatcherTest, UpdateListener) {
+  // TODO(darin): This test isn't super interesting. It just exercises
+  // conversion b/w device::BatteryStatus and blink::WebBatteryStatus.
+
   device::BatteryStatus status;
   status.charging = true;
   status.charging_time = 100;
