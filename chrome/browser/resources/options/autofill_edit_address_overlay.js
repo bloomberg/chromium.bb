@@ -242,7 +242,7 @@ cr.define('options', function() {
         inputFields['state'] || '',
         inputFields['postalCode'] || '',
         inputFields['sortingCode'] || '',
-        inputFields['country'] || '',
+        inputFields['country'] || loadTimeData.getString('defaultCountryCode'),
         inputFields['phone'] || [],
         inputFields['email'] || [],
         this.languageCode_,
