@@ -276,13 +276,6 @@ _settings = dict(
 # entry does not overwrite this value to at least an empty list.
   boards=None,
 
-# TODO(mtennant): The description sounds independent of anything to do with a
-# paladin.  See if this should just be: "builder_waterfall_name".
-# paladin_builder_name -- Used by paladin logic. The name of the builder on the
-#                         buildbot waterfall if it differs from the config name.
-#                         If None is used, defaults to config name.
-  paladin_builder_name=None,
-
 # profile -- The profile of the variant to set up and build.
   profile=None,
 
@@ -1734,7 +1727,6 @@ incremental.add_config('x32-generic-incremental',
 paladin.add_config('x86-generic-asan-paladin',
   _base_configs['x86-generic'],
   asan,
-  paladin_builder_name='x86-generic asan-paladin',
   description='Paladin build with Address Sanitizer (Clang)',
   important=False,
 )
@@ -1742,7 +1734,6 @@ paladin.add_config('x86-generic-asan-paladin',
 incremental.add_config('amd64-generic-asan-paladin',
   _base_configs['amd64-generic'],
   asan,
-  paladin_builder_name='amd64-generic asan-paladin',
   description='Paladin build with Address Sanitizer (Clang)',
   important=False,
 )
@@ -1841,19 +1832,16 @@ internal_nowithdebug_paladin = internal_paladin.derive(
 
 internal_nowithdebug_paladin.add_config('x86-generic-nowithdebug-paladin',
   boards=['x86-generic'],
-  paladin_builder_name='x86-generic nowithdebug-paladin',
   important=False,
 )
 
 internal_nowithdebug_paladin.add_config('amd64-generic-nowithdebug-paladin',
   boards=['amd64-generic'],
-  paladin_builder_name='amd64-generic nowithdebug-paladin',
   important=False,
 )
 
 internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
   boards=['x86-mario'],
-  paladin_builder_name='x86-mario nowithdebug-paladin',
 )
 
 pre_cq = paladin.derive(
@@ -1945,7 +1933,6 @@ internal_paladin.add_config('master-paladin',
   # build_internals/masters/master.chromeos/board_config.py.
   # TODO(mtennant): Fix this.  There should be some amount of auto-
   # configuration in the board_config.py code.
-  paladin_builder_name='CQ master',
   health_threshold=3,
   health_alert_recipients=['chromeos-build-alerts@google.com',
                            'tree', 'build', 'lab'],
@@ -1967,7 +1954,6 @@ internal_paladin.add_config('master-paladin',
 # TODO(dnj): Remove this once wolf-tot-paladin is removed from the waterfall.
 internal_paladin.add_config('link-tot-paladin',
   boards=['link'],
-  paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
   important=False,
@@ -1977,7 +1963,6 @@ internal_paladin.add_config('link-tot-paladin',
 # under test.
 internal_paladin.add_config('wolf-tot-paladin',
   boards=['wolf'],
-  paladin_builder_name='wolf ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
   hw_tests=HWTestConfig.SharedPoolCQ(suite_min_duts=20),
@@ -2078,7 +2063,6 @@ def _CreatePaladinConfigs():
   for board in _paladin_boards:
     assert board in _base_configs, '%s not in _base_configs' % board
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
-    paladin_builder_name = '%s %s' % (board, constants.PALADIN_TYPE)
     customizations = _config()
     base_config = _base_configs[board]
     if board in _paladin_hwtest_boards:
@@ -2115,15 +2099,13 @@ def _CreatePaladinConfigs():
       customizations.update(prebuilts=constants.PUBLIC)
     paladin.add_config(config_name,
                        customizations,
-                       base_config,
-                       paladin_builder_name=paladin_builder_name)
+                       base_config)
 
 _CreatePaladinConfigs()
 
 
 internal_paladin.add_config('lumpy-incremental-paladin',
   boards=['lumpy'],
-  paladin_builder_name='lumpy incremental paladin',
   build_before_patching=True,
   chroot_replace=False,
   prebuilts=False,
@@ -2141,7 +2123,6 @@ external_brillo_paladin = paladin.derive(brillo)
 
 external_brillo_paladin.add_config('panther_embedded-minimal-paladin',
   boards=['panther_embedded'],
-  paladin_builder_name='panther_embedded-minimal paladin',
   profile='minimal',
   important=False,
   trybot_list=True,
@@ -2151,13 +2132,11 @@ internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
 internal_beaglebone_paladin.add_config('beaglebone-paladin',
   boards=['beaglebone'],
-  paladin_builder_name='beaglebone paladin',
   trybot_list=True,
 )
 
 internal_beaglebone_paladin.add_config('beaglebone_servo-paladin',
   boards=['beaglebone_servo'],
-  paladin_builder_name='beaglebone_servo paladin',
   important=False,
 )
 

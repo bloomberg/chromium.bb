@@ -706,9 +706,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
   def __init__(self, builder_run, **kwargs):
     super(CommitQueueSyncStage, self).__init__(builder_run, **kwargs)
-    # Figure out the builder's name from the buildbot waterfall.
-    builder_name = self._run.config.paladin_builder_name
-    self.builder_name = builder_name if builder_name else self._run.config.name
 
     # The pool of patches to be picked up by the commit queue.
     # - For the master commit queue, it's initialized in GetNextManifest.
@@ -762,7 +759,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # AcquirePoolFromManifest does not need to sync.
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
         manifest, self._run.config.overlays, self.repo,
-        self._run.buildnumber, self.builder_name,
+        self._run.buildnumber, self._run.GetBuilderName(),
         self._run.config.master, self._run.options.debug,
         builder_run=self._run)
 
@@ -796,7 +793,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
         self.pool = pool = validation_pool.ValidationPool.AcquirePool(
             self._run.config.overlays, self.repo,
-            self._run.buildnumber, self.builder_name,
+            self._run.buildnumber, self._run.GetBuilderName(),
             query,
             dryrun=self._run.options.debug,
             check_tree_open=(not self._run.options.debug or

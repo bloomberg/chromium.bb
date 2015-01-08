@@ -664,6 +664,10 @@ class _BuilderRunBase(object):
             os.environ.get('BUILDBOT_MASTERNAME') or
             constants.WATERFALL_TRYBOT)
 
+  def GetBuilderName(self):
+    """Get the name of this builder on the current waterfall."""
+    return os.environ.get('BUILDBOT_BUILDERNAME', self.config.name)
+
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
 
@@ -677,7 +681,7 @@ class _BuilderRunBase(object):
     """
     return tree_status.ConstructDashboardURL(
         self.GetWaterfall(),
-        os.environ.get('BUILDBOT_BUILDERNAME', self.config.name),
+        self.GetBuilderName(),
         self.options.buildnumber, stage=stage)
 
   def ShouldBuildAutotest(self):
