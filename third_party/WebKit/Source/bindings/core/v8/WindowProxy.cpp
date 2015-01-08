@@ -250,7 +250,10 @@ bool WindowProxy::initialize()
 
 void WindowProxy::createContext()
 {
-    ASSERT(m_frame->client());
+    // This can get called after a frame is already detached...
+    // FIXME: Fix the code so we don't need this check.
+    if (m_frame->isLocalFrame() && !toLocalFrame(m_frame)->loader().documentLoader())
+        return;
 
     // Create a new environment using an empty template for the shadow
     // object. Reuse the global object if one has been created earlier.
