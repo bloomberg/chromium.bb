@@ -1741,7 +1741,6 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     self.verified_mock = self.PatchObject(
         triage_lib.CalculateSuspects, 'GetFullyVerifiedChanges',
         return_value=[])
-    self.PatchObject(validation_pool.ValidationPool, '_GetShouldSubmitChanges')
 
   def _MarkPatchesVerified(self, patches):
     """Set up to mark |patches| as verified."""

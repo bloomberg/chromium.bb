@@ -719,16 +719,6 @@ class StatsManager(object):
       total_passed = len([b for b in self.builds if b.Passed()])
       cros_build_lib.Info('%d of %d runs passed.', total_passed,
                           len(self.builds))
-
-      # TODO(yjhong): Remove this once there is sufficent data to
-      # compare Board-Aware Submission with the baseline. This count
-      # may not be entirely accurate because the to-be-submitted
-      # changes may fail to submit due to other reasons (e.g., patch
-      # modified during the CQ run).
-      count = sum(x.get('bs_submission_diff_count', 0) for x in self.builds)
-      cros_build_lib.Info(
-          'BAS submitted %d more changes than the baseline in the %s failed '
-          'builds.', count, len(self.builds) - total_passed)
     else:
       cros_build_lib.Info('No runs included.')
     return {}

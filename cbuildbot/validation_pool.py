@@ -2041,57 +2041,6 @@ class ValidationPool(object):
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
-  @classmethod
-  def _GetShouldSubmitChanges(cls, changes, messages, build_root, no_stat):
-    """Examine failure |messages| to filter a set of |changes| to submit.
-
-    This function has been factored out from SubmitPartialPool() so
-    that we can switch to using _GetFullyVerifiedChanges() in the near
-    future. There is no functional change at all.
-
-    TODO(yjhong): Deprecate this function once crbug.com/422639 is completed.
-
-    Args:
-      changes: A list of GerritPatch instances to examine.
-      messages: A list of BuildFailureMessage or NoneType objects from
-        the failed slaves.
-      build_root: Build root directory.
-      no_stat: Set of builder names of slave builders that had status None.
-
-    Returns:
-      A set of changes to submit.
-    """
-    if no_stat:
-      # If a builder did not return any status, we do not have
-      # sufficient information about the failure. Don't submit any
-      # changes.
-      return set()
-
-    # Create a list of the failing stage prefixes.
-    failing_stages = set()
-    for message in messages:
-      stages = None if not message else message.GetFailingStages()
-      if not stages:
-        # If there are no tracebacks, that means that the builder did not
-        # report its status properly. Don't submit anything.
-        return set()
-      failing_stages.update(stages)
-
-    # For each CL, look at whether it cares about the failures. Based on this,
-    # filter out CLs that don't care about the failure.
-    rejection_candidates = []
-    for change in changes:
-      ignored_stages = triage_lib.GetStagesToIgnoreForChange(build_root, change)
-      if not ignored_stages or not failing_stages.issubset(ignored_stages):
-        rejection_candidates.append(change)
-
-    # Filter out innocent internal overlay changes from our list of candidates.
-    rejected = triage_lib.CalculateSuspects.FilterOutInnocentChanges(
-        build_root, rejection_candidates, messages)
-
-    should_submit = set(changes) - set(rejected)
-    return should_submit
-
   def SubmitPartialPool(self, changes, messages, changes_by_config, failing,
                         inflight, no_stat):
     """If the build failed, push any CLs that don't care about the failure.
@@ -2116,31 +2065,13 @@ class ValidationPool(object):
     Returns:
       A set of the non-submittable changes.
     """
-    # TODO(yjhong): Deprecate _GetShouldSubmitChanges() and the
-    # related code (crbug.com/422639).
-
-    should_submit = self._GetShouldSubmitChanges(
-        changes, messages, self.build_root, no_stat)
     fully_verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
-
-    if should_submit:
-      logging.info('The following changes would have been submitted using '
-                   'deprecated logic: %s',
-                   cros_patch.GetChangesAsString(should_submit))
     if fully_verified:
       logging.info('The following changes will be submitted using '
                    'board-aware submission logic: %s',
                    cros_patch.GetChangesAsString(fully_verified))
-
-    # Record the difference of CL submission count between the old and
-    # the new board-specific submission logic in metadata.json.
-    # TODO(yjhong): Remove this counter once we have enough stats to
-    # show that the board-specific submission logic is superior.
-    self._run.attrs.metadata.UpdateWithDict(
-        {'bs_submission_diff_count': len(fully_verified) - len(should_submit)})
-
     self.SubmitChanges(fully_verified)
 
     # Return the list of non-submittable changes.
