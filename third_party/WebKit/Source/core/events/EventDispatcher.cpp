@@ -59,7 +59,7 @@ EventDispatcher::EventDispatcher(Node& node, PassRefPtrWillBeRawPtr<Event> event
     ASSERT(m_event.get());
     ASSERT(!m_event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
     m_view = node.document().view();
-    m_event->ensureEventPath().resetWith(*m_node);
+    m_event->initEventPath(*m_node);
 }
 
 void EventDispatcher::dispatchScopedEvent(Node& node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
@@ -114,25 +114,27 @@ bool EventDispatcher::dispatch()
         // eventPath() can be empty if event path is shrinked by relataedTarget retargeting.
         return true;
     }
+    m_event->eventPath().ensureWindowEventContext();
 
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(m_event->target());
-    WindowEventContext windowEventContext(*m_event, topNodeEventContext());
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EventDispatch", "data", InspectorEventDispatchEvent::data(*m_event));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEvent(&m_node->document(), *m_event, windowEventContext.window(), m_node.get(), m_event->eventPath());
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEvent(&m_node->document(), *m_event, m_event->eventPath().windowEventContext().window(), m_node.get(), m_event->eventPath());
 
     void* preDispatchEventHandlerResult;
-    if (dispatchEventPreProcess(preDispatchEventHandlerResult) == ContinueDispatching)
-        if (dispatchEventAtCapturing(windowEventContext) == ContinueDispatching)
+    if (dispatchEventPreProcess(preDispatchEventHandlerResult) == ContinueDispatching) {
+        if (dispatchEventAtCapturing() == ContinueDispatching) {
             if (dispatchEventAtTarget() == ContinueDispatching)
-                dispatchEventAtBubbling(windowEventContext);
+                dispatchEventAtBubbling();
+        }
+    }
     dispatchEventPostProcess(preDispatchEventHandlerResult);
 
     // Ensure that after event dispatch, the event's target object is the
     // outermost shadow DOM boundary.
-    m_event->setTarget(windowEventContext.target());
+    m_event->setTarget(m_event->eventPath().windowEventContext().target());
     m_event->setCurrentTarget(0);
     InspectorInstrumentation::didDispatchEvent(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
@@ -147,12 +149,12 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(void*&
     return (m_event->eventPath().isEmpty() || m_event->propagationStopped()) ? DoneDispatching : ContinueDispatching;
 }
 
-inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing(WindowEventContext& windowEventContext)
+inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing()
 {
     // Trigger capturing event handlers, starting at the top and working our way down.
     m_event->setEventPhase(Event::CAPTURING_PHASE);
 
-    if (windowEventContext.handleLocalEvents(*m_event) && m_event->propagationStopped())
+    if (m_event->eventPath().windowEventContext().handleLocalEvents(*m_event) && m_event->propagationStopped())
         return DoneDispatching;
 
     for (size_t i = m_event->eventPath().size() - 1; i > 0; --i) {
@@ -174,7 +176,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtTarget()
     return m_event->propagationStopped() ? DoneDispatching : ContinueDispatching;
 }
 
-inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowContext)
+inline void EventDispatcher::dispatchEventAtBubbling()
 {
     // Trigger bubbling event handlers, starting at the bottom and working our way up.
     size_t size = m_event->eventPath().size();
@@ -192,7 +194,7 @@ inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowC
     }
     if (m_event->bubbles() && !m_event->cancelBubble()) {
         m_event->setEventPhase(Event::BUBBLING_PHASE);
-        windowContext.handleLocalEvents(*m_event);
+        m_event->eventPath().windowEventContext().handleLocalEvents(*m_event);
     }
 }
 
@@ -228,12 +230,6 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
             }
         }
     }
-}
-
-const NodeEventContext& EventDispatcher::topNodeEventContext()
-{
-    ASSERT(!m_event->eventPath().isEmpty());
-    return m_event->eventPath().last();
 }
 
 }

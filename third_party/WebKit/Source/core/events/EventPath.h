@@ -29,6 +29,7 @@
 
 #include "core/events/NodeEventContext.h"
 #include "core/events/TreeScopeEventContext.h"
+#include "core/events/WindowEventContext.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -44,13 +45,14 @@ class TreeScope;
 
 class EventPath final : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
 public:
-    explicit EventPath(Event&);
-    explicit EventPath(Node&);
-    void resetWith(Node&);
+    explicit EventPath(Node&, Event* = 0);
 
     NodeEventContext& operator[](size_t index) { return m_nodeEventContexts[index]; }
     const NodeEventContext& operator[](size_t index) const { return m_nodeEventContexts[index]; }
     NodeEventContext& last() { return m_nodeEventContexts[size() - 1]; }
+
+    WindowEventContext& windowEventContext() { ASSERT(m_windowEventContext); return *m_windowEventContext; }
+    void ensureWindowEventContext();
 
     bool isEmpty() const { return m_nodeEventContexts.isEmpty(); }
     size_t size() const { return m_nodeEventContexts.size(); }
@@ -73,7 +75,7 @@ private:
     void calculateAdjustedTargets();
     void calculateTreeScopePrePostOrderNumbers();
 
-    void shrink(size_t newSize) { m_nodeEventContexts.shrink(newSize); }
+    void shrink(size_t newSize) { ASSERT(!m_windowEventContext); m_nodeEventContexts.shrink(newSize); }
     void shrinkIfNeeded(const Node& target, const EventTarget& relatedTarget);
 
     void adjustTouchList(const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes);
@@ -90,10 +92,13 @@ private:
     static void checkReachability(TreeScope&, TouchList&);
 #endif
 
+    const NodeEventContext& topNodeEventContext();
+
     WillBeHeapVector<NodeEventContext, 64> m_nodeEventContexts;
     RawPtrWillBeMember<Node> m_node;
     RawPtrWillBeMember<Event> m_event;
     WillBeHeapVector<RefPtrWillBeMember<TreeScopeEventContext>> m_treeScopeEventContexts;
+    OwnPtrWillBeRawPtr<WindowEventContext> m_windowEventContext;
 };
 
 } // namespace

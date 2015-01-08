@@ -35,6 +35,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
+#include "core/events/WindowEventContext.h"
 
 namespace blink {
 
@@ -64,24 +65,10 @@ static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, 
             || eventType == EventTypeNames::selectstart);
 }
 
-EventPath::EventPath(Event& event)
-    : m_node(nullptr)
-    , m_event(&event)
-{
-}
-
-EventPath::EventPath(Node& node)
+EventPath::EventPath(Node& node, Event* event)
     : m_node(node)
-    , m_event(nullptr)
+    , m_event(event)
 {
-    resetWith(node);
-}
-
-void EventPath::resetWith(Node& node)
-{
-    m_node = &node;
-    m_nodeEventContexts.clear();
-    m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
     calculateTreeScopePrePostOrderNumbers();
@@ -316,6 +303,19 @@ void EventPath::adjustTouchList(const TouchList* touchList, WillBeHeapVector<Raw
             adjustedTouchList[j]->append(touch.cloneWithNewTarget(findRelatedNode(*treeScopes[j], relatedNodeMap)));
         }
     }
+}
+
+const NodeEventContext& EventPath::topNodeEventContext()
+{
+    ASSERT(!isEmpty());
+    return last();
+}
+
+void EventPath::ensureWindowEventContext()
+{
+    ASSERT(m_event);
+    if (!m_windowEventContext)
+        m_windowEventContext = adoptPtrWillBeNoop(new WindowEventContext(*m_event, topNodeEventContext()));
 }
 
 #if ENABLE(ASSERT)

@@ -59,12 +59,11 @@ public:
 
 private:
     EventDispatcher(Node&, PassRefPtrWillBeRawPtr<Event>);
-    const NodeEventContext& topNodeEventContext();
 
     EventDispatchContinuation dispatchEventPreProcess(void*& preDispatchEventHandlerResult);
-    EventDispatchContinuation dispatchEventAtCapturing(WindowEventContext&);
+    EventDispatchContinuation dispatchEventAtCapturing();
     EventDispatchContinuation dispatchEventAtTarget();
-    void dispatchEventAtBubbling(WindowEventContext&);
+    void dispatchEventAtBubbling();
     void dispatchEventPostProcess(void* preDispatchEventHandlerResult);
 
     RefPtrWillBeMember<Node> m_node;

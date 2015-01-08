@@ -231,11 +231,9 @@ void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
     m_underlyingEvent = ue;
 }
 
-EventPath& Event::ensureEventPath()
+void Event::initEventPath(Node& node)
 {
-    if (!m_eventPath)
-        m_eventPath = adoptPtrWillBeNoop(new EventPath(*this));
-    return *m_eventPath;
+    m_eventPath = adoptPtrWillBeNoop(new EventPath(node, this));
 }
 
 PassRefPtrWillBeRawPtr<StaticNodeList> Event::path() const
