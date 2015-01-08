@@ -1648,14 +1648,20 @@ class ValidationPool(object):
       inputs = [[change, self.build_log] for change in applied]
       parallel.RunTasksInProcessPool(self.HandleApplySuccess, inputs)
 
-    failed_tot = self._FilterDependencyErrors(failed_tot)
+    # We only filter out dependency errors in the CQ and Pre-CQ masters.
+    # On Pre-CQ trybots, we want to reject patches immediately, because
+    # otherwise the pre-cq master will think we just dropped the patch
+    # on the floor and never tested it.
+    if not self.pre_cq_trybot:
+      failed_tot = self._FilterDependencyErrors(failed_tot)
+      failed_inflight = self._FilterDependencyErrors(failed_inflight)
+
     if failed_tot:
       logging.info(
           'The following changes could not cleanly be applied to ToT: %s',
           ' '.join([c.patch.id for c in failed_tot]))
       self._HandleApplyFailure(failed_tot)
 
-    failed_inflight = self._FilterDependencyErrors(failed_inflight)
     if failed_inflight:
       logging.info(
           'The following changes could not cleanly be applied against the '
