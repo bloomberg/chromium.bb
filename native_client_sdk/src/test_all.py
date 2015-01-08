@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Top level script for running all python unittests in the NaCl SDK
+"""Top level script for running all python unittests in the NaCl SDK.
 """
 
 from __future__ import print_function
@@ -35,6 +35,9 @@ PKG_VER = os.path.join(PKG_VER_DIR, 'package_version.py')
 EXTRACT_PACKAGES = ['nacl_x86_glibc']
 TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
 
+# List of modules containing unittests. The goal is to keep the total
+# runtime of these tests under 2 seconds. Any slower tests should go
+# in TEST_MODULES_BIG.
 TEST_MODULES = [
     'build_artifacts_test',
     'build_version_test',
@@ -50,25 +53,35 @@ TEST_MODULES = [
     'oshelpers_test',
     'parse_dsc_test',
     'quote_test',
-    'sdktools_commands_test',
     'sdktools_config_test',
-    'sdktools_test',
     'sel_ldr_test',
     'update_nacl_manifest_test',
     'verify_filelist_test',
     'verify_ppapi_test',
 ]
 
+
+# Slower tests. For example the 'sdktools' are mostly slower system tests
+# that longer to run.  If --quick is passed then we don't run these.
+TEST_MODULES_BIG = [
+    'sdktools_commands_test',
+    'sdktools_test',
+]
+
+
 def ExtractToolchains():
-  subprocess.check_output([sys.executable, PKG_VER,
-                           '--packages', ','.join(EXTRACT_PACKAGES),
-                           '--tar-dir', TAR_DIR,
-                           '--dest-dir', TOOLCHAIN_OUT,
-                           'extract'])
+  cmd = [sys.executable, PKG_VER,
+         '--packages', ','.join(EXTRACT_PACKAGES),
+         '--tar-dir', TAR_DIR,
+         '--dest-dir', TOOLCHAIN_OUT,
+         'extract']
+  subprocess.check_call(cmd)
+
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('-v', '--verbose', action='store_true')
+  parser.add_argument('--quick', action='store_true')
   options = parser.parse_args(args)
 
   # Some of the unit tests use parts of toolchains. Extract to TOOLCHAIN_OUT.
@@ -76,7 +89,11 @@ def main(args):
   ExtractToolchains()
 
   suite = unittest.TestSuite()
-  for module_name in TEST_MODULES:
+  modules = TEST_MODULES
+  if not options.quick:
+    modules += TEST_MODULES_BIG
+
+  for module_name in modules:
     module = __import__(module_name)
     suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
 
@@ -88,6 +105,7 @@ def main(args):
   print('Running unittests...')
   result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
   return int(not result.wasSuccessful())
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

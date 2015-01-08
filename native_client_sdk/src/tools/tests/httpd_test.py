@@ -63,13 +63,14 @@ class RunTest(unittest.TestCase):
     thread.daemon = True
     thread.start()
     thread.join(timeout)
-    if not thread.is_alive():
-      returncode, stdout, stderr = queue.get(False)
-      return returncode, stdout, stderr
+    self.assertFalse(thread.is_alive(), "Thread still running after timeout")
 
-    return -1, None, None
+    returncode, stdout, stderr = queue.get(False)
+    return returncode, stdout, stderr
 
-  def _GetChromeMockArgs(self, page, http_request_type, sleep,
+
+  @staticmethod
+  def _GetChromeMockArgs(page, http_request_type, sleep,
                          expect_to_be_killed=True):
     args = []
     if page:
