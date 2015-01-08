@@ -66,11 +66,17 @@ namespace address_parser {
 
 namespace internal {
 
+Word::Word() {
+}
+
 Word::Word(const base::string16::const_iterator& begin,
            const base::string16::const_iterator& end)
     : begin(begin),
       end(end) {
   DCHECK(begin <= end);
+}
+
+HouseNumberParser::HouseNumberParser() {
 }
 
 bool HouseNumberParser::IsPreDelimiter(base::char16 character) {

@@ -22,7 +22,7 @@ struct CONTENT_EXPORT Word {
   base::string16::const_iterator begin;
   base::string16::const_iterator end;
 
-  Word() {}
+  Word();
   Word(const base::string16::const_iterator& begin,
        const base::string16::const_iterator& end);
 };
@@ -30,7 +30,7 @@ struct CONTENT_EXPORT Word {
 // Exposed for tests.
 class CONTENT_EXPORT HouseNumberParser {
  public:
-  HouseNumberParser() {}
+  HouseNumberParser();
 
   bool Parse(const base::string16::const_iterator& begin,
              const base::string16::const_iterator& end,
