@@ -70,7 +70,7 @@ class TestRevisionInfo(unittest.TestCase):
                                                    hash='hash_value'))
 
     revision = revision_info.RevisionInfo(self._packages)
-    revision.SetRevisionNumber(100)
+    revision.SetRevisionNumber('123abc')
     package_targets = self._packages.GetPackageTargetsForPackage(
         TEST_SINGLE_PACKAGE_PACKAGE_TARGET
     )
@@ -127,7 +127,7 @@ class TestRevisionInfo(unittest.TestCase):
                                                    hash='hash_value'))
 
     revision = revision_info.RevisionInfo(self._packages)
-    revision.SetRevisionNumber(100)
+    revision.SetRevisionNumber('123abc')
     package_targets = self._packages.GetPackageTargetsForPackage(
         TEST_SINGLE_PACKAGE_PACKAGE_TARGET
     )
@@ -171,7 +171,7 @@ class TestRevisionInfo(unittest.TestCase):
     )
 
     revision = revision_info.RevisionInfo(self._packages)
-    revision.SetRevisionNumber(100)
+    revision.SetRevisionNumber('123abc')
     revision.SetTargetRevision(
         TEST_MULTI_PACKAGE_PACKAGE_TARGET,
         package_targets[0],
@@ -201,7 +201,7 @@ class TestRevisionInfo(unittest.TestCase):
     )
 
     revision = revision_info.RevisionInfo(self._packages)
-    revision.SetRevisionNumber(100)
+    revision.SetRevisionNumber('123abc')
     for package_target in package_targets:
       revision.SetTargetRevision(
           TEST_MULTI_PACKAGE_PACKAGE_TARGET,

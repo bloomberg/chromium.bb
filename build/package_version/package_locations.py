@@ -17,7 +17,7 @@ def GetRemotePackageKey(is_shared, rev_num, package_target, package_name):
 
   Args:
     is_shared: Whether or not the package is marked as shared.
-    rev_num: The SVN revision number of when the package was built.
+    rev_num: The revision identifier of when the package was built.
     package_target: The package target which this package belongs to.
     package_name: The name of the package.
   Returns:

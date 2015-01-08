@@ -39,7 +39,7 @@ class RevisionInfo(object):
     """
     assert isinstance(packages_desc, packages_info.PackagesInfo)
     self._packages_desc = packages_desc
-    self._revision_num = -1
+    self._revision_num = None
     self._package_name = None
 
     # A revision describes all the package_info's for each package target.
@@ -76,9 +76,9 @@ class RevisionInfo(object):
     if self._package_name is None:
       raise error.Error('Invalid revision information - '
                                   'no package name.')
-    elif self._revision_num == -1:
+    elif self._revision_num is None:
       raise error.Error('Invalid revision information - '
-                                  'no revision number')
+                                  'no revision identifier')
 
     package_targets = self._packages_desc.GetPackageTargetsForPackage(
         self._package_name

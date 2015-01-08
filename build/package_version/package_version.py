@@ -17,8 +17,8 @@ Glossary:
     be something such as "win_x86_nacl_x86" or "mac_x86_nacl_x86". In that case,
     "win_x86_nacl_x86" and "mac_x86_nacl_x86" would each have their own version
     of "nacl_x86_glibc" and "nacl_x86_newlib" for windows and mac respectively.
-  Revision Number: The SVN revision number of a sanctioned version. This number
-    is used to synchronize packages to sanctioned versions.
+  Revision: The revision identifier of a sanctioned version.
+    This is used to synchronize packages to sanctioned versions.
 
 JSON Files:
   Packages File - A file which describes the various package targets for each
@@ -347,7 +347,7 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
 
   Args:
     storage: Cloud storage object which supports PutFile and GetFile.
-    revision: SVN Revision number the package should be associated with.
+    revision: Revision identifier the package should be associated with.
     tar_dir: Root tar directory where archives live.
     package_target: Package target of the package to archive.
     package_name: Package name of the package to archive.
@@ -752,8 +752,8 @@ def _UploadCmdArgParser(subparser):
     '--upload-package', metavar='NAME', dest='upload__package', required=True,
     help='Package to upload.')
   subparser.add_argument(
-    '--revision', metavar='NUM', dest='upload__revision', required=True,
-    help='SVN Revision of the package to upload.')
+    '--revision', metavar='ID', dest='upload__revision', required=True,
+    help='Revision of the package to upload.')
   subparser.add_argument(
     '--package-file', metavar='FILE', dest='upload__file',
     default=None,
@@ -791,9 +791,9 @@ def _DoUploadCmd(arguments):
 def _SyncCmdArgParser(subparser):
   subparser.description = 'Download package archives to the tar directory.'
   subparser.add_argument(
-    '--revision', metavar='NUM', dest='sync__revision',
+    '--revision', metavar='ID', dest='sync__revision',
     default=None,
-    help='SVN Revision of the packages to download.')
+    help='Revision identifier of the packages to download.')
   subparser.add_argument(
     '--include-logs', dest='sync__include_logs',
     action='store_true', default=False,
@@ -867,9 +867,9 @@ def _SetRevisionCmdArgParser(subparser):
     action='append', default=[],
     help='Revision set to set revision for.')
   subparser.add_argument(
-    '--revision', metavar='NUM', dest='setrevision__revision',
-    type=int, required=True,
-    help='SVN Revision of the package to set.')
+    '--revision', metavar='ID', dest='setrevision__revision',
+    required=True,
+    help='Revision identifier of the package to set.')
 
 
 def _DoSetRevisionCmd(arguments):
