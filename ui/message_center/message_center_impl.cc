@@ -110,6 +110,8 @@ class ChangeQueue {
   void Replace(const std::string& id, scoped_ptr<Change> change);
 
   ScopedVector<Change> changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChangeQueue);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,8 +135,8 @@ ChangeQueue::Change::Change(ChangeType type,
       notification_list_id_(id),
       by_user_(false),
       notification_(notification.Pass()) {
-  DCHECK(!id.empty() &&
-         (type != CHANGE_TYPE_DELETE || notification_.get() == NULL));
+  DCHECK(!id.empty());
+  DCHECK(type != CHANGE_TYPE_DELETE || notification_.get() == NULL);
 }
 
 ChangeQueue::Change::~Change() {}
@@ -262,7 +264,7 @@ void PopupTimer::Start() {
 }
 
 void PopupTimer::Pause() {
-  if (!timer_.get() || !timer_->IsRunning())
+  if (!timer_ || !timer_->IsRunning())
     return;
 
   timer_->Stop();
@@ -303,10 +305,8 @@ void PopupTimersController::StartTimer(const std::string& id,
 }
 
 void PopupTimersController::StartAll() {
-  std::map<std::string, PopupTimer*>::iterator iter;
-  for (iter = popup_timers_.begin(); iter != popup_timers_.end(); iter++) {
-    iter->second->Start();
-  }
+  for (auto& iter : popup_timers_)
+    iter.second->Start();
 }
 
 void PopupTimersController::ResetTimer(const std::string& id,
@@ -323,10 +323,8 @@ void PopupTimersController::PauseTimer(const std::string& id) {
 }
 
 void PopupTimersController::PauseAll() {
-  std::map<std::string, PopupTimer*>::iterator iter;
-  for (iter = popup_timers_.begin(); iter != popup_timers_.end(); iter++) {
-    iter->second->Pause();
-  }
+  for (auto& iter : popup_timers_)
+    iter.second->Pause();
 }
 
 void PopupTimersController::CancelTimer(const std::string& id) {
@@ -334,20 +332,16 @@ void PopupTimersController::CancelTimer(const std::string& id) {
   if (iter == popup_timers_.end())
     return;
 
-  PopupTimer* timer = iter->second;
-  delete timer;
-
+  delete iter->second;
   popup_timers_.erase(iter);
 }
 
 void PopupTimersController::CancelAll() {
   STLDeleteValues(&popup_timers_);
-  popup_timers_.clear();
 }
 
 void PopupTimersController::TimerFinished(const std::string& id) {
-  PopupTimerCollection::iterator iter = popup_timers_.find(id);
-  if (iter == popup_timers_.end())
+  if (!ContainsKey(popup_timers_, id))
     return;
 
   CancelTimer(id);
@@ -371,7 +365,7 @@ void PopupTimersController::OnNotificationUpdated(const std::string& id) {
 
   NotificationList::PopupNotifications::const_iterator iter =
       popup_notifications.begin();
-  for (; iter != popup_notifications.end(); iter++) {
+  for (; iter != popup_notifications.end(); ++iter) {
     if ((*iter)->id() == id)
       break;
   }
@@ -409,10 +403,8 @@ void MessageCenterImpl::NotificationCache::Rebuild(
 
 void MessageCenterImpl::NotificationCache::RecountUnread() {
   unread_count = 0;
-  for (NotificationList::Notifications::const_iterator iter =
-           visible_notifications.begin();
-       iter != visible_notifications.end(); ++iter) {
-    if (!(*iter)->IsRead())
+  for (const auto& notification : visible_notifications) {
+    if (!notification->IsRead())
       ++unread_count;
   }
 }
@@ -464,16 +456,15 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
   NotificationList::PopupNotifications popups =
       notification_list_->GetPopupNotifications(blockers_, &blocked_ids);
 
-  for (std::list<std::string>::const_iterator iter = blocked_ids.begin();
-       iter != blocked_ids.end(); ++iter) {
+  for (const auto& id : blocked_ids) {
     // Do not call MessageCenterImpl::MarkSinglePopupAsShown() directly here
     // just for performance reason. MessageCenterImpl::MarkSinglePopupAsShown()
     // calls NotificationList::MarkSinglePopupAsShown() and then updates the
     // unread count, but the whole cache will be recreated below.
-    notification_list_->MarkSinglePopupAsShown((*iter), true);
+    notification_list_->MarkSinglePopupAsShown(id, true);
     FOR_EACH_OBSERVER(MessageCenterObserver,
                       observer_list_,
-                      OnNotificationUpdated(*iter));
+                      OnNotificationUpdated(id));
   }
   notification_cache_.Rebuild(
       notification_list_->GetVisibleNotifications(blockers_));
@@ -483,12 +474,12 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
 }
 
 void MessageCenterImpl::UpdateIconImage(
-  const NotifierId& notifier_id,const gfx::Image& icon) {}
+    const NotifierId& notifier_id, const gfx::Image& icon) {}
 
 void MessageCenterImpl::NotifierGroupChanged() {}
 
 void MessageCenterImpl::NotifierEnabledChanged(
-  const NotifierId& notifier_id, bool enabled) {
+    const NotifierId& notifier_id, bool enabled) {
   if (!enabled) {
     RemoveNotificationsForNotifierId(notifier_id);
   }
@@ -500,11 +491,9 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
       (visibility == VISIBILITY_MESSAGE_CENTER), &updated_ids);
   notification_cache_.RecountUnread();
 
-  for (std::set<std::string>::const_iterator iter = updated_ids.begin();
-       iter != updated_ids.end();
-       ++iter) {
+  for (const auto& id : updated_ids) {
     FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationUpdated(*iter));
+        MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
   }
 
   if (visibility == VISIBILITY_TRANSIENT)
@@ -560,7 +549,7 @@ NotificationList::PopupNotifications
 //------------------------------------------------------------------------------
 // Client code interface.
 void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
-  DCHECK(notification.get());
+  DCHECK(notification);
   const std::string id = notification->id();
   for (size_t i = 0; i < blockers_.size(); ++i)
     blockers_[i]->CheckState();
@@ -664,10 +653,8 @@ void MessageCenterImpl::RemoveNotificationsForNotifierId(
     const NotifierId& notifier_id) {
   NotificationList::Notifications notifications =
       notification_list_->GetNotificationsByNotifierId(notifier_id);
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
-    RemoveNotification((*iter)->id(), false);
-  }
+  for (const auto& notification : notifications)
+    RemoveNotification(notification->id(), false);
   if (!notifications.empty()) {
     notification_cache_.Rebuild(
         notification_list_->GetVisibleNotifications(blockers_));
@@ -690,29 +677,27 @@ void MessageCenterImpl::RemoveNotifications(
   const NotificationList::Notifications notifications =
       notification_list_->GetVisibleNotifications(blockers);
   std::set<std::string> ids;
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
-    ids.insert((*iter)->id());
-    scoped_refptr<NotificationDelegate> delegate = (*iter)->delegate();
+  for (const auto& notification : notifications) {
+    ids.insert(notification->id());
+    scoped_refptr<NotificationDelegate> delegate = notification->delegate();
     if (delegate.get())
       delegate->Close(by_user);
-    notification_list_->RemoveNotification((*iter)->id());
+    notification_list_->RemoveNotification(notification->id());
   }
 
   if (!ids.empty()) {
     notification_cache_.Rebuild(
         notification_list_->GetVisibleNotifications(blockers_));
   }
-  for (std::set<std::string>::const_iterator iter = ids.begin();
-       iter != ids.end(); ++iter) {
+  for (const auto& id : ids) {
     FOR_EACH_OBSERVER(MessageCenterObserver,
                       observer_list_,
-                      OnNotificationRemoved(*iter, by_user));
+                      OnNotificationRemoved(id, by_user));
   }
 }
 
 void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
-                                        const gfx::Image& image) {
+                                            const gfx::Image& image) {
   bool updated = false;
   Notification* queue_notification = notification_queue_->GetLatestNotification(
       notification_id);
@@ -731,7 +716,7 @@ void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
 }
 
 void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
-                                         const gfx::Image& image) {
+                                             const gfx::Image& image) {
   bool updated = false;
   Notification* queue_notification = notification_queue_->GetLatestNotification(
       notification_id);
@@ -797,7 +782,7 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
 }
 
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
-                                              int button_index) {
+                                                  int button_index) {
   if (FindVisibleNotificationById(id) == NULL)
     return;
   if (HasPopupNotifications())
@@ -867,7 +852,7 @@ void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {
 
 void MessageCenterImpl::EnterQuietModeWithExpire(
     const base::TimeDelta& expires_in) {
-  if (quiet_mode_timer_.get()) {
+  if (quiet_mode_timer_) {
     // Note that the capital Reset() is the method to restart the timer, not
     // scoped_ptr::reset().
     quiet_mode_timer_->Reset();
@@ -886,12 +871,12 @@ void MessageCenterImpl::EnterQuietModeWithExpire(
 }
 
 void MessageCenterImpl::RestartPopupTimers() {
-  if (popup_timers_controller_.get())
+  if (popup_timers_controller_)
     popup_timers_controller_->StartAll();
 }
 
 void MessageCenterImpl::PausePopupTimers() {
-  if (popup_timers_controller_.get())
+  if (popup_timers_controller_)
     popup_timers_controller_->PauseAll();
 }
 
