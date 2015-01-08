@@ -1,113 +1,60 @@
 <form method="post" action="/gp/buy/shipaddressselect/handlers/continue.html/ref=ox_shipaddress_add_new_addr?ie=UTF8&amp;fromAnywhere=1&amp;hasWorkingJavascript=" class="checkout-page-form">
-      
-      <noscript>&lt;input type="hidden" name="javascriptEnabled" value="0"&gt;</noscript>
-  
+
       <div id="identity-add-new-address" class="a-input-text-group a-spacing-medium">
-        
- 
-    <script type="text/javascript">
-    if (!window.amznJQ) {
-
-      window.amznJQ = {
-        onReady:function(waitingFor, payload) {
-          P.when(waitingFor, 'shim', 'ready').execute(payload);
-        }
-      };
-
-      P.when('A').execute(function(A) {
-        window.jQuery = A.$;
-        window.amznJQ.jQuery = A.$;
-        P.register('shim', function() { });
-      });
-    }
-    </script>
-
-        
-<script type="text/javascript">
-P.when("jQuery","ready").execute(function($) {
-var errantErrorString="Please check that the address you've entered is correct.";  $(".identity-protect-from-errant").closest("form").submit(function(formSubmitEvent) {
-    var $form = $(this);
-    var $fieldsInError = $();
-    $form.find(".identity-protect-from-errant").each(function() {
-      var $e = $(this).removeClass("a-form-error");
-      if (!$e.is("input")) $e = $e.find("input:first");
-      if ($e.val().search(/(\d[ -]?){13}/) != -1) {
-        $fieldsInError = $fieldsInError.add($e);
-      }
-    });
-    if ($fieldsInError.length > 0) {
-      var errorEventObject = {};
-      errorEventObject.formSubmitEvent = formSubmitEvent;
-      errorEventObject.errorList = [{errorMsg: errantErrorString, fields: $fieldsInError, errorType:"errant-card"}];
-      $form.trigger("identity-form-validation-error", [errorEventObject]);
-    }
-  });
-
-  $("body").bind("identity-form-validation-error", function(errantFoundEvent, errorEventObject) {
-    //If this handler is ran it's because nobody catched that event.
-    errorEventObject.formSubmitEvent.preventDefault(); //Make sure that form is not submitted;
-      errorEventObject.formSubmitEvent.stopPropagation(); //Make sure that form is not submitted;
-    alert(errorEventObject.errorList[0].errorMsg);        //Alert is ugly but tells the user why we won't let the form being submitted.
-  });
-});
-</script>
-
-
-        
 
 
 <div id="enterAddressFullNameContainer" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field identity-protect-from-errant"><input type="text" maxlength="50" id="enterAddressFullName" placeholder="Full name" name="enterAddressFullName"></div>
 
 
-        
+
 
 
 <div id="enterAddressAddressLine1Container" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field identity-protect-from-errant"><input type="text" maxlength="60" id="enterAddressAddressLine1" placeholder="Address line 1" name="enterAddressAddressLine1"></div>
 
 
-        
+
 
 
 <div id="enterAddressAddressLine2Container" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field identity-protect-from-errant"><input type="text" maxlength="60" id="enterAddressAddressLine2" placeholder="Address line 2" name="enterAddressAddressLine2"></div>
 
 
-        
+
 
 
 <div id="enterAddressCityContainer" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field identity-protect-from-errant"><input type="text" maxlength="50" id="enterAddressCity" placeholder="City" name="enterAddressCity"></div>
 
 
-        
+
 
 
 <div id="enterAddressStateOrRegionContainer" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field identity-protect-from-errant"><input type="text" maxlength="50" id="enterAddressStateOrRegion" placeholder="State/Province/Region" name="enterAddressStateOrRegion"></div>
 
 
-        
+
 
 
 <div id="enterAddressPostalCodeContainer" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field identity-protect-from-errant"><input type="text" maxlength="20" id="enterAddressPostalCode" placeholder="ZIP" name="enterAddressPostalCode"></div>
 
 
-        
-  
+
+
 
 
         <div data-inputid="enterAddressTaxId" class="a-row country-specific-config-container">
           <div class="country-specific-config" data-labelcountryconfig="{&quot;CN&quot;:{&quot;label&quot;:&quot;<b>Citizen ID Number:&nbsp;</b>&quot;},&quot;EC&quot;:{&quot;label&quot;:&quot;<b>ID:&nbsp;</b>&quot;},&quot;TW&quot;:{&quot;label&quot;:&quot;<b>ID Number:&nbsp;</b>&quot;},&quot;AR&quot;:{&quot;label&quot;:&quot;<b>CUIL:&nbsp;</b>&quot;},&quot;KR&quot;:{&quot;label&quot;:&quot;<b>Customs ID Number:&nbsp;</b>&quot;},&quot;ZA&quot;:{&quot;label&quot;:&quot;<b>ID Number:&nbsp;</b>&quot;},&quot;BR&quot;:{&quot;label&quot;:&quot;<b>CPF Number:&nbsp;</b>&quot;},&quot;IL&quot;:{&quot;label&quot;:&quot;<b>ID Number:&nbsp;</b>&quot;},&quot;QA&quot;:{&quot;label&quot;:&quot;<b>ID Number:&nbsp;</b>&quot;},&quot;PE&quot;:{&quot;label&quot;:&quot;<b>DNI:&nbsp;</b>&quot;},&quot;TR&quot;:{&quot;label&quot;:&quot;<b>ID Number:&nbsp;</b>&quot;},&quot;CL&quot;:{&quot;label&quot;:&quot;<b>RUT:&nbsp;</b>&quot;},&quot;DO&quot;:{&quot;label&quot;:&quot;<b>RNC:&nbsp;</b>&quot;}}"></div>
         </div>
-        
+
 
 
 <div id="enterAddressTaxIdContainer" data-hash(0x88655c54)="" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field  hidden country-specific-form-input-mobile initial-edit-value" style="display: none;"><input type="text" maxlength="50" id="enterAddressTaxId" name="enterAddressTaxId"></div>
 
 
-        
+
 
 
 <div id="enterAddressPhoneNumberContainer" data-testid="" class="a-input-text-wrapper enterAddressFormField one-new-address-form-field"><input type="text" maxlength="20" id="enterAddressPhoneNumber" placeholder="Phone number" name="enterAddressPhoneNumber"></div>
 
-      
+
 
 
 
@@ -115,7 +62,7 @@ var errantErrorString="Please check that the address you've entered is correct."
 
       </div>
       <div id="address-country-container" data-testid="" class="a-row"><div id="enterAddressCountryCodeContainer" data-testid="" class="a-row one-new-address-form-field a-spacing-medium">
-    
+
 
 
 
@@ -372,12 +319,12 @@ var errantErrorString="Please check that the address you've entered is correct."
 
 
   </div></div>
-  
+
       <div aria-live="polite" class="a-row a-expander-container a-spacing-base a-expander-inline-container">
         <a href="javascript:void(0)" data-action="a-expander-toggle" class="a-expander-header a-declarative a-expander-section-header a-padding-none a-spacing-base a-link-section-expander a-size-medium" data-a-expander-toggle="{&quot;allowLinkDefault&quot;:true, &quot;expand_prompt&quot;:&quot;&quot;, &quot;collapse_prompt&quot;:&quot;&quot;}"><i class="a-icon a-icon-section-collapse"></i><span class="a-expander-prompt">Optional Delivery Preferences</span></a>
         <div aria-expanded="true" class="a-expander-content a-padding-none a-expander-inline-content a-expander-inner">
               <div class="" data-testid="">
-        
+
 
 
 
@@ -392,7 +339,7 @@ var errantErrorString="Please check that the address you've entered is correct."
 
     </div>
     <div class="" data-testid="">
-        
+
 
 
 <div class="a-input-text-wrapper enterDeliveryPrefsField"><input type="text" maxlength="27" id="GateCode" placeholder="Security Access Code" name="GateCode"></div>
@@ -401,26 +348,26 @@ var errantErrorString="Please check that the address you've entered is correct."
 
         </div>
       </div>
-  
-      <span class="a-button a-button-primary" role="button" id="a-autoid-2" aria-labelledby="a-autoid-2-announce"><span class="a-button-inner"><input name="shipToThisAddress" data-testid="" class="a-button-input submit-button-with-name" type="submit" value="1" aria-labelledby="a-autoid-2-announce"><span class="a-button-text" aria-hidden="true" id="a-autoid-2-announce">Continue</span></span></span>
-  
-  
-      
-      
-      
-      
-      
 
-    
+      <span class="a-button a-button-primary" role="button" id="a-autoid-2" aria-labelledby="a-autoid-2-announce"><span class="a-button-inner"><input name="shipToThisAddress" data-testid="" class="a-button-input submit-button-with-name" type="submit" value="1" aria-labelledby="a-autoid-2-announce"><span class="a-button-text" aria-hidden="true" id="a-autoid-2-announce">Continue</span></span></span>
+
+
+
+
+
+
+
+
+
     <input type="hidden" name="enterAddressIsDomestic" value="0"><input type="hidden" name="requestToken"><input type="hidden" name="purchaseId" value="106-0333725-4562604"><input type="hidden" name="isBilling" value="0"><input type="hidden" name="numberOfDistinctItems" value="1"><input type="hidden" name="hasWorkingJavascript" value="1"></form>
 <form id="form-add-credit-card" method="post" action="/gp/buy/payselect/handlers/submit.html/ref=ox_pay_page_submit_new_payment">
 
-      
+
       <input type="hidden" name="hasWorkingJavascript" value="1"><input type="hidden" name="forceResponsive" value=""><input type="hidden" name="fromAnywhere" value="1"><input type="hidden" name="isDebug" value="">
-      
+
       <input type="hidden" name="handler" value="add-credit-card" id="newCCHandler">
       <input type="hidden" name="newPaymentType" value="cc" id="newPaymentType">
-      
+
       <a data-testid="" href="javascript:void(0)" data-action="a-expander-toggle" class="a-expander-header a-declarative a-expander-inline-header a-spacing-base a-link-expander" data-a-expander-toggle="{&quot;allowLinkDefault&quot;:true, &quot;expand_prompt&quot;:&quot;&quot;, &quot;collapse_prompt&quot;:&quot;&quot;}"><i class="a-icon a-icon-collapse"></i><span class="a-expander-prompt">
         <span class="a-size-medium">
           Add a credit or debit card
@@ -430,7 +377,7 @@ var errantErrorString="Please check that the address you've entered is correct."
       <hr class="a-divider-normal">
 
       <div aria-expanded="true" class="a-expander-content a-expander-inline-content a-expander-inner">
-        
+
 
 
 <div id="cardErrors" class="a-box a-alert a-alert-error hidden a-spacing-base a-spacing-top-small"><div class="a-box-inner a-alert-container"><h4 class="a-alert-heading">There was a problem</h4><div class="a-alert-content">
@@ -448,13 +395,13 @@ var errantErrorString="Please check that the address you've entered is correct."
       Maestro or Solo card issue number is not correct.
     </span></li>
     <li id="addCreditCard_RegisterFailed" class="error-message hidden"><span class="a-list-item">
-      
+
     </span></li>
     <li id="addCreditCard_BadNumber" class="error-message hidden"><span class="a-list-item">
       Card number is not correct.
     </span></li>
     <li id="addCreditCard_BadPincode" class="error-message hidden"><span class="a-list-item">
-      
+
     </span></li>
     <li id="addCreditCard_BadNumberLength" class="error-message hidden"><span class="a-list-item">
       Length of card number is not correct.
@@ -466,7 +413,7 @@ var errantErrorString="Please check that the address you've entered is correct."
       Please enter a valid card verification number.
     </span></li>
     <li id="addCreditCard_CheckStatusTimeout" class="error-message hidden"><span class="a-list-item">
-      
+
     </span></li>
     <li id="addCreditCard_NoNumber" class="error-message hidden"><span class="a-list-item">
       Card number is required.
@@ -478,7 +425,7 @@ var errantErrorString="Please check that the address you've entered is correct."
       This card is not supported in United States.
     </span></li>
     <li id="addCreditCard_BadMobileNumber" class="error-message hidden"><span class="a-list-item">
-      
+
     </span></li>
     <li id="addCreditCard_BadStartDate" class="error-message hidden"><span class="a-list-item">
       The start date for your Switch, Solo or Maestro card should precede the current date and occur within the last 3 years.
@@ -489,7 +436,7 @@ var errantErrorString="Please check that the address you've entered is correct."
           <span class="a-text-bold"> Enter your credit card information </span>
         </div>
 
-        
+
         <div class="a-input-text-group a-spacing-base">
           <div data-account-name="" data-testid="" class="a-input-text-wrapper first-child"><input type="text" id="ccName" autocomplete="off" placeholder="Name on card" name="name"></div>
           <span class="a-declarative" data-action="check-card-type" data-check-card-type="{&quot;url&quot;:&quot;/gp/buy/payselect/handlers/get-credit-card-type.html&quot;,&quot;type&quot;:&quot;cc&quot;}">
@@ -501,8 +448,8 @@ var errantErrorString="Please check that the address you've entered is correct."
         </div>
         <div class="a-row a-spacing-medium">
           <div class="a-column a-span6 card-date">
-            
-        
+
+
 <span class="a-dropdown-container"><select name="month" autocomplete="off" id="ccMonth" class="a-native-dropdown">
     <option value="1">
         01
@@ -543,11 +490,11 @@ var errantErrorString="Please check that the address you've entered is correct."
 </select><span tabindex="-1" data-action="" data-testid="" class="a-button a-button-dropdown"><span class="a-button-inner"><span class="a-button-text a-declarative" data-action="a-dropdown-button" aria-haspopup="true" role="button" tabindex="0"><span class="a-dropdown-prompt">01</span></span><i class="a-icon a-icon-dropdown"></i></span></span></span>
 
 
-        
+
           </div>
           <div class="a-column a-span6 card-date a-span-last">
-            
-        
+
+
 <span class="a-dropdown-container"><select name="year" autocomplete="off" id="ccYear" class="a-native-dropdown">
     <option value="2014" selected="">
         2014
@@ -615,7 +562,7 @@ var errantErrorString="Please check that the address you've entered is correct."
 </select><span tabindex="-1" data-action="" data-testid="" class="a-button a-button-dropdown"><span class="a-button-inner"><span class="a-button-text a-declarative" data-action="a-dropdown-button" aria-haspopup="true" role="button" tabindex="0"><span class="a-dropdown-prompt">2014</span></span><i class="a-icon a-icon-dropdown"></i></span></span></span>
 
 
-        
+
           </div>
         </div>
 
