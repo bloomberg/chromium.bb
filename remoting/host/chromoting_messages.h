@@ -160,8 +160,8 @@ IPC_STRUCT_BEGIN(SerializedDesktopFrame)
   // Time spent in capture. Unit is in milliseconds.
   IPC_STRUCT_MEMBER(int64, capture_time_ms)
 
-  // Sequence number supplied by client for performance tracking.
-  IPC_STRUCT_MEMBER(int64, client_sequence_number)
+  // Latest event timestamp supplied by the client for performance tracking.
+  IPC_STRUCT_MEMBER(int64, latest_event_timestamp)
 
   // DPI for this frame.
   IPC_STRUCT_MEMBER(webrtc::DesktopVector, dpi)

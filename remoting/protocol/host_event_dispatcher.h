@@ -18,7 +18,7 @@ class InputStub;
 // channel to InputStub.
 class HostEventDispatcher : public ChannelDispatcherBase {
  public:
-  typedef base::Callback<void(int64)> SequenceNumberCallback;
+  typedef base::Callback<void(int64)> EventTimestampCallback;
 
   HostEventDispatcher();
   ~HostEventDispatcher() override;
@@ -30,8 +30,8 @@ class HostEventDispatcher : public ChannelDispatcherBase {
 
   // Set callback to notify of each message's sequence number. The
   // callback cannot tear down this object.
-  void set_sequence_number_callback(const SequenceNumberCallback& value) {
-    sequence_number_callback_ = value;
+  void set_event_timestamp_callback(const EventTimestampCallback& value) {
+    event_timestamp_callback_ = value;
   }
 
  protected:
@@ -43,7 +43,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
                          const base::Closure& done_task);
 
   InputStub* input_stub_;
-  SequenceNumberCallback sequence_number_callback_;
+  EventTimestampCallback event_timestamp_callback_;
 
   ProtobufMessageReader<EventMessage> reader_;
 

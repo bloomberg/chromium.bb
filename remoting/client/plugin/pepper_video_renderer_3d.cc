@@ -193,12 +193,12 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
     stats_.video_capture_ms()->Record(packet->capture_time_ms());
   if (packet->has_encode_time_ms())
     stats_.video_encode_ms()->Record(packet->encode_time_ms());
-  if (packet->has_client_sequence_number() &&
-      packet->client_sequence_number() > latest_input_event_timestamp_) {
-    latest_input_event_timestamp_ = packet->client_sequence_number();
+  if (packet->has_latest_event_timestamp() &&
+      packet->latest_event_timestamp() > latest_input_event_timestamp_) {
+    latest_input_event_timestamp_ = packet->latest_event_timestamp();
     base::TimeDelta round_trip_latency =
         base::Time::Now() -
-        base::Time::FromInternalValue(packet->client_sequence_number());
+        base::Time::FromInternalValue(packet->latest_event_timestamp());
     stats_.round_trip_ms()->Record(round_trip_latency.InMilliseconds());
   }
 

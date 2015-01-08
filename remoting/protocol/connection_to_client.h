@@ -51,8 +51,8 @@ class ConnectionToClient : public base::NonThreadSafe,
                                     ErrorCode error) = 0;
 
     // Called when sequence number is updated.
-    virtual void OnSequenceNumberUpdated(ConnectionToClient* connection,
-                                         int64 sequence_number) = 0;
+    virtual void OnEventTimestamp(ConnectionToClient* connection,
+                                  int64 timestamp) = 0;
 
     // Called on notification of a route change event, which happens when a
     // channel is connected.
@@ -79,9 +79,9 @@ class ConnectionToClient : public base::NonThreadSafe,
   // Disconnect the client connection.
   virtual void Disconnect();
 
-  // Update the sequence number when received from the client. EventHandler
-  // will be called.
-  virtual void UpdateSequenceNumber(int64 sequence_number);
+  // Callback for HostEventDispatcher to be called with a timestamp for each
+  // received event.
+  virtual void OnEventTimestamp(int64 timestamp);
 
   // Get the stubs used by the host to transmit messages to the client.
   // The stubs must not be accessed before OnConnectionAuthenticated(), or

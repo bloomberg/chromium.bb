@@ -34,7 +34,7 @@ static void PrepareData(uint8** buffer, int* size) {
   // Then append 10 update sequences to the data.
   for (int i = 0; i < 10; ++i) {
     EventMessage msg;
-    msg.set_sequence_number(i);
+    msg.set_timestamp(i);
     msg.mutable_key_event()->set_usb_keycode(kTestKey + i);
     msg.mutable_key_event()->set_pressed((i % 2) != 0);
     AppendMessage(msg, &encoded_data);

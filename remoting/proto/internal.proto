@@ -29,7 +29,8 @@ message ControlMessage {
 
 // Defines an event message on the event channel.
 message EventMessage {
-  optional int64 sequence_number = 1;  // Client timestamp for event.
+  // Client's timestamp used to estimate roundtrip latency.
+  optional int64 timestamp = 1;
 
   optional KeyEvent key_event = 3;
   optional MouseEvent mouse_event = 4;

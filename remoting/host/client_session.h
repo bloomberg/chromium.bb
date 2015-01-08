@@ -123,8 +123,8 @@ class ClientSession
       protocol::ConnectionToClient* connection) override;
   void OnConnectionClosed(protocol::ConnectionToClient* connection,
                           protocol::ErrorCode error) override;
-  void OnSequenceNumberUpdated(protocol::ConnectionToClient* connection,
-                               int64 sequence_number) override;
+  void OnEventTimestamp(protocol::ConnectionToClient* connection,
+                        int64 timestamp) override;
   void OnRouteChange(protocol::ConnectionToClient* connection,
                      const std::string& channel_name,
                      const protocol::TransportRoute& route) override;

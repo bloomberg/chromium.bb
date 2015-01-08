@@ -114,9 +114,9 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // only affects capture scheduling and does not stop/start the capturer.
   void Pause(bool pause);
 
-  // Updates the sequence number embedded in VideoPackets.
-  // Sequence numbers are used for performance measurements.
-  void UpdateSequenceNumber(int64 sequence_number);
+  // Updates event timestamp from the last event received from the client. This
+  // value is sent back to the client for roundtrip latency estimates.
+  void SetLatestEventTimestamp(int64 latest_event_timestamp);
 
   // Sets whether the video encoder should be requested to encode losslessly,
   // or to use a lossless color space (typically requiring higher bandwidth).
@@ -166,10 +166,10 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Encode a frame, passing generated VideoPackets to SendVideoPacket().
   void EncodeFrame(scoped_ptr<webrtc::DesktopFrame> frame,
-                   int64 sequence_number,
+                   int64 latest_event_timestamp,
                    base::TimeTicks timestamp);
 
-  void EncodedDataAvailableCallback(int64 sequence_number,
+  void EncodedDataAvailableCallback(int64 latest_event_timestamp,
                                     scoped_ptr<VideoPacket> packet);
 
   // Task runners used by this class.
@@ -213,7 +213,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   bool is_paused_;
 
   // Number updated by the caller to trace performance.
-  int64 sequence_number_;
+  int64 latest_event_timestamp_;
 
   // An object to schedule capturing.
   CaptureScheduler scheduler_;

@@ -383,13 +383,13 @@ void ClientSession::OnConnectionClosed(
   event_handler_->OnSessionClosed(this);
 }
 
-void ClientSession::OnSequenceNumberUpdated(
-    protocol::ConnectionToClient* connection, int64 sequence_number) {
+void ClientSession::OnEventTimestamp(protocol::ConnectionToClient* connection,
+                                     int64 timestamp) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
   if (video_scheduler_.get())
-    video_scheduler_->UpdateSequenceNumber(sequence_number);
+    video_scheduler_->SetLatestEventTimestamp(timestamp);
 }
 
 void ClientSession::OnRouteChange(

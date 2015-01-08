@@ -55,9 +55,9 @@ message VideoPacket {
   // Time in milliseconds spent in encoding this video frame.
   optional int64 encode_time_ms = 8;
 
-  // The most recent sequence number received from the client on the event
-  // channel.
-  optional int64 client_sequence_number = 9;
+  // The client's timestamp of the latest event received by the host before
+  // starting to capture this video frame.
+  optional int64 latest_event_timestamp = 9;
 
   repeated Rect desktop_shape_rects = 10;
 

@@ -33,8 +33,8 @@ void HostEventDispatcher::OnMessageReceived(
 
   base::ScopedClosureRunner done_runner(done_task);
 
-  if (message->has_sequence_number() && !sequence_number_callback_.is_null())
-    sequence_number_callback_.Run(message->sequence_number());
+  if (message->has_timestamp() && !event_timestamp_callback_.is_null())
+    event_timestamp_callback_.Run(message->timestamp());
 
   if (message->has_key_event()) {
     const KeyEvent& event = message->key_event();

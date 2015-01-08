@@ -64,7 +64,7 @@ VideoScheduler::VideoScheduler(
       capture_pending_(false),
       did_skip_frame_(false),
       is_paused_(false),
-      sequence_number_(0) {
+      latest_event_timestamp_(0) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(capturer_);
   DCHECK(mouse_cursor_monitor_);
@@ -96,7 +96,7 @@ void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   // that we don't start capturing frame n+2 before frame n is freed.
   encode_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this,
-                            base::Passed(&owned_frame), sequence_number_,
+                            base::Passed(&owned_frame), latest_event_timestamp_,
                             base::TimeTicks::Now()));
 
   // If a frame was skipped, try to capture it again.
@@ -181,16 +181,16 @@ void VideoScheduler::Pause(bool pause) {
   }
 }
 
-void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
+void VideoScheduler::SetLatestEventTimestamp(int64 latest_event_timestamp) {
   if (!capture_task_runner_->BelongsToCurrentThread()) {
     DCHECK(network_task_runner_->BelongsToCurrentThread());
     capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoScheduler::UpdateSequenceNumber,
-                              this, sequence_number));
+        FROM_HERE, base::Bind(&VideoScheduler::SetLatestEventTimestamp,
+                              this, latest_event_timestamp));
     return;
   }
 
-  sequence_number_ = sequence_number;
+  latest_event_timestamp_ = latest_event_timestamp;
 }
 
 void VideoScheduler::SetLosslessEncode(bool want_lossless) {
@@ -369,7 +369,7 @@ void VideoScheduler::SendCursorShape(
 
 void VideoScheduler::EncodeFrame(
     scoped_ptr<webrtc::DesktopFrame> frame,
-    int64 sequence_number,
+    int64 latest_event_timestamp,
     base::TimeTicks timestamp) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
@@ -377,7 +377,7 @@ void VideoScheduler::EncodeFrame(
   if (!frame || frame->updated_region().is_empty()) {
     capture_task_runner_->DeleteSoon(FROM_HERE, frame.release());
     scoped_ptr<VideoPacket> packet(new VideoPacket());
-    packet->set_client_sequence_number(sequence_number);
+    packet->set_latest_event_timestamp(latest_event_timestamp);
     network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
@@ -386,7 +386,7 @@ void VideoScheduler::EncodeFrame(
   }
 
   scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame);
-  packet->set_client_sequence_number(sequence_number);
+  packet->set_latest_event_timestamp(latest_event_timestamp);
 
   if (g_enable_timestamps) {
     packet->set_timestamp(timestamp.ToInternalValue());
