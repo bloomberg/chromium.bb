@@ -1226,7 +1226,13 @@ void Instance::NavigateTo(const std::string& url, bool open_in_new_tab) {
     // If |url_copy| starts with '#', then it's for the same URL with a
     // different URL fragment.
     if (url_copy[0] == '#') {
-      url_copy = url_ + url_copy;
+      // if '#' is already present in |url_| then remove old fragment and add
+      // new |url_copy| fragment.
+      std::size_t index = url_.find('#');
+      if (index != std::string::npos)
+        url_copy = url_.substr(0, index) + url_copy;
+      else
+        url_copy = url_ + url_copy;
       // Changing the href does not actually do anything when navigating in the
       // same tab, so do the actual page scroll here. Then fall through so the
       // href gets updated.
