@@ -247,13 +247,6 @@ void PushMessagingServiceImpl::RegisterFromDocument(
     return;
   }
 
-  // TODO(johnme): This is probably redundant due to
-  // https://codereview.chromium.org/756063002, or even if it isn't it'll
-  // interfere with auto-removing the app handler, so should be removed.
-  // If this is registering for the first time then the driver does not have
-  // this as an app handler and registration would fail.
-  AddAppHandlerIfNecessary();
-
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(renderer_id, render_frame_id);
   if (!render_frame_host)
@@ -314,10 +307,6 @@ void PushMessagingServiceImpl::RegisterFromWorker(
                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
     return;
   }
-
-  // If this is registering for the first time then the driver does not have
-  // this as an app handler and registration would fail.
-  AddAppHandlerIfNecessary();
 
   GURL embedding_origin = requesting_origin;
   blink::WebPushPermissionStatus permission_status =
@@ -454,13 +443,6 @@ bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
 
   return permission_context->GetPermissionStatus(origin, origin) ==
       CONTENT_SETTING_ALLOW;
-}
-
-void PushMessagingServiceImpl::AddAppHandlerIfNecessary() {
-  if (gcm_profile_service_->driver()->GetAppHandler(
-          kPushMessagingApplicationIdPrefix) != this)
-    gcm_profile_service_->driver()->AddAppHandler(
-        kPushMessagingApplicationIdPrefix, this);
 }
 
 }  // namespace gcm
