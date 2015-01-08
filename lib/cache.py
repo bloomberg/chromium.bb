@@ -9,6 +9,7 @@ from __future__ import print_function
 import logging
 import os
 import shutil
+import tempfile
 import urlparse
 
 from chromite.lib import cros_build_lib
@@ -232,17 +233,8 @@ class DiskCache(object):
     return CacheReference(self, key)
 
 
-def Untar(path, cwd, sudo=False):
-  """Untar a tarball."""
-  functor = cros_build_lib.SudoRunCommand if sudo else cros_build_lib.RunCommand
-  functor(['tar', '-xpf', path], cwd=cwd, debug_level=logging.DEBUG)
-
-
-class TarballCache(DiskCache):
-  """Supports caching of extracted tarball contents."""
-
-  def __init__(self, cache_dir):
-    DiskCache.__init__(self, cache_dir)
+class RemoteCache(DiskCache):
+  """Supports caching of remote objects via URI."""
 
   def _Fetch(self, url, local_path):
     """Fetch a remote file."""
@@ -255,7 +247,30 @@ class TarballCache(DiskCache):
       ctx = gs.GSContext()
       ctx.Copy(url, local_path)
     else:
+      # Note: unittests assume local_path is at the end.
       retry_util.RunCurl([url, '-o', local_path], debug_level=logging.DEBUG)
+
+  def _Insert(self, key, url):
+    """Insert a remote file into the cache."""
+    o = urlparse.urlparse(url)
+    if o.scheme in ('file', ''):
+      DiskCache._Insert(self, key, o.path)
+      return
+
+    with tempfile.NamedTemporaryFile(dir=self.staging_dir,
+                                     delete=False) as local_path:
+      self._Fetch(url, local_path.name)
+      DiskCache._Insert(self, key, local_path.name)
+
+
+def Untar(path, cwd, sudo=False):
+  """Untar a tarball."""
+  functor = cros_build_lib.SudoRunCommand if sudo else cros_build_lib.RunCommand
+  functor(['tar', '-xpf', path], cwd=cwd, debug_level=logging.DEBUG)
+
+
+class TarballCache(RemoteCache):
+  """Supports caching of extracted tarball contents."""
 
   def _Insert(self, key, tarball_path):
     """Insert a tarball and its extracted contents into the cache.
