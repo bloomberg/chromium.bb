@@ -14,12 +14,11 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.3.3'
+__version__ = '0.4'
 
 import logging
 import optparse
 import os
-import subprocess
 import sys
 import tempfile
 
@@ -27,6 +26,7 @@ from third_party.depot_tools import fix_encoding
 
 from utils import file_path
 from utils import on_error
+from utils import subprocess42
 from utils import tools
 from utils import zip_package
 
@@ -177,17 +177,18 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     if MAIN_DIR:
       env.setdefault('RUN_TEST_CASES_LOG_FILE',
           os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
-    try:
-      sys.stdout.flush()
-      with tools.Profiler('RunTest'):
-        result = subprocess.call(command, cwd=cwd, env=env)
-        logging.info(
-            'Command finished with exit code %d (%s)',
-            result, hex(0xffffffff & result))
-    except OSError:
-      on_error.report('Failed to run %s; cwd=%s' % (command, cwd))
-      result = 1
-
+    sys.stdout.flush()
+    with tools.Profiler('RunTest'):
+      try:
+        with subprocess42.Popen_with_handler(command, cwd=cwd, env=env) as p:
+          p.communicate()
+          result = p.returncode
+      except OSError:
+        on_error.report('Failed to run %s; cwd=%s' % (command, cwd))
+        result = 1
+    logging.info(
+        'Command finished with exit code %d (%s)',
+        result, hex(0xffffffff & result))
   finally:
     try:
       if leak_temp_dir:

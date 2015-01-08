@@ -707,6 +707,7 @@ class TestSwarmingCollection(NetTestCase):
     self.assertEqual(expected, summary_dump)
 
   def test_ensures_same_server(self):
+    self.mock(logging, 'error', lambda *_: None)
     # Two shard results, attempt to use different servers.
     actual_calls = []
     self.mock(

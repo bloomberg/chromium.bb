@@ -109,8 +109,8 @@ class MockIsolateServer(object):
     self._server = BaseHTTPServer.HTTPServer(
         ('127.0.0.1', 0), IsolateServerHandler)
     self._server.contents = {}
-    self._server.url = self.url = 'http://%s:%d' % (
-        self._server.server_name, self._server.server_port)
+    self._server.url = self.url = 'http://localhost:%d' % (
+        self._server.server_port)
     self._thread = threading.Thread(target=self._run, name='httpd')
     self._thread.daemon = True
     self._thread.start()

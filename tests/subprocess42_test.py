@@ -24,6 +24,25 @@ ENV = os.environ.copy()
 ENV.pop('PYTHONUNBUFFERED', None)
 
 
+SCRIPT = (
+  'import signal, sys, time;\n'
+  'l = [];\n'
+  'def handler(signum, _):\n'
+  '  l.append(signum);\n'
+  '  print(\'got signal %%d\' %% signum);\n'
+  '  sys.stdout.flush();\n'
+  'signal.signal(%s, handler);\n'
+  'print(\'hi\');\n'
+  'sys.stdout.flush();\n'
+  'while not l:\n'
+  '  try:\n'
+  '    time.sleep(0.01);\n'
+  '  except IOError:\n'
+  '    print(\'ioerror\');\n'
+  'print(\'bye\')') % (
+    'signal.SIGBREAK' if sys.platform == 'win32' else 'signal.SIGTERM')
+
+
 def to_native_eol(string):
   if string is None:
     return string
@@ -365,6 +384,69 @@ class Subprocess42Test(unittest.TestCase):
           print('Sleeping rocks. Trying slower.')
           continue
         raise
+
+  def test_detached(self):
+    is_win = (sys.platform == 'win32')
+    cmd = [sys.executable, '-c', SCRIPT]
+    # TODO(maruel): Make universal_newlines=True work and not hang.
+    proc = subprocess42.Popen(cmd, detached=True, stdout=subprocess42.PIPE)
+    try:
+      if is_win:
+        # There's something extremely weird happening on the Swarming bots in
+        # the sense that they return 'hi\n' on Windows, while running the script
+        # locally on Windows results in 'hi\r\n'. Author raises fist.
+        self.assertIn(proc.recv_out(), ('hi\r\n', 'hi\n'))
+      else:
+        self.assertEqual('hi\n', proc.recv_out())
+
+      proc.terminate()
+
+      if is_win:
+        # What happens on Windows is that the process is immediately killed
+        # after handling SIGBREAK.
+        self.assertEqual(0, proc.wait())
+        # Windows...
+        self.assertIn(
+            proc.recv_any(),
+            (
+              ('stdout', 'got signal 21\r\nioerror\r\nbye\r\n'),
+              ('stdout', 'got signal 21\nioerror\nbye\n'),
+              ('stdout', 'got signal 21\r\nbye\r\n'),
+              ('stdout', 'got signal 21\nbye\n'),
+            ))
+      else:
+        self.assertEqual(0, proc.wait())
+        self.assertEqual(('stdout', 'got signal 15\nbye\n'), proc.recv_any())
+    finally:
+      # In case the test fails.
+      proc.kill()
+
+  def test_attached(self):
+    is_win = (sys.platform == 'win32')
+    cmd = [sys.executable, '-c', SCRIPT]
+    # TODO(maruel): Make universal_newlines=True work and not hang.
+    proc = subprocess42.Popen(cmd, detached=False, stdout=subprocess42.PIPE)
+    try:
+      if is_win:
+        # There's something extremely weird happening on the Swarming bots in
+        # the sense that they return 'hi\n' on Windows, while running the script
+        # locally on Windows results in 'hi\r\n'. Author raises fist.
+        self.assertIn(proc.recv_out(), ('hi\r\n', 'hi\n'))
+      else:
+        self.assertEqual('hi\n', proc.recv_out())
+
+      proc.terminate()
+
+      if is_win:
+        # If attached, it's hard killed.
+        self.assertEqual(1, proc.wait())
+        self.assertEqual((None, None), proc.recv_any())
+      else:
+        self.assertEqual(0, proc.wait())
+        self.assertEqual(('stdout', 'got signal 15\nbye\n'), proc.recv_any())
+    finally:
+      # In case the test fails.
+      proc.kill()
 
 
 if __name__ == '__main__':
