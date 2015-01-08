@@ -97,13 +97,8 @@ Cache.prototype = {
     * @return {boolean} If the nodes is reachable.
     */
   isNodeReachable_: function(node) {
-    var nodeRoot = getNodeRoot(node);
-    if (nodeRoot == document)
-      return true;
-    else if (SHADOW_DOM_ENABLED && nodeRoot instanceof ShadowRoot)
-      return true;
-
-    return false;
+    var nodeRoot = getNodeRootThroughAnyShadows(node);
+    return (nodeRoot == document);
   }
 };
 
@@ -118,6 +113,18 @@ function getNodeRoot(node) {
     node = node.parentNode;
   }
   return node;
+}
+
+/**
+ * Returns the root element of the node, jumping up through shadow roots if
+ * any are found.
+ */
+function getNodeRootThroughAnyShadows(node) {
+  var root = getNodeRoot(node);
+  while (SHADOW_DOM_ENABLED && root instanceof ShadowRoot) {
+    root = getNodeRoot(root.host);
+  }
+  return root;
 }
 
 /**
@@ -147,7 +154,7 @@ function wrap(value) {
     if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT
         || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {
       var wrapped = {};
-      var root = getNodeRoot(value);
+      var root = getNodeRootThroughAnyShadows(value);
       wrapped[ELEMENT_KEY] = getPageCache(root).storeItem(value);
       return wrapped;
     }
