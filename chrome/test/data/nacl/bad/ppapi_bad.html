@@ -55,7 +55,11 @@ function declareTests(tester) {
       'ppapi_bad_magic.nmf',
       mime_type,
       is_pnacl
-        ? 'NaCl module load failed: PnaclCoordinator: PNaCl Translator Error: Invalid PNaCl bitcode header'
+          // Use a regular expression here: the translator outputs debug
+          // information in the error message.
+        ? new RegExp('NaCl module load failed: PnaclCoordinator: ' +
+                     'PNaCl Translator Error: .*' +
+                     'Invalid PNaCl bitcode header')
         : 'NaCl module load failed: Bad ELF header magic number');
 
   // 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe.

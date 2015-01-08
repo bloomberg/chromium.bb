@@ -37,7 +37,10 @@ function badLoadTest(tester, id, src, type, error_string) {
     });
     test.expectEvent(module, 'error', function(e) {
       test.assertEqual(module.readyState, 4);
-      test.assertEqual(module.lastError, error_string);
+      if (error_string instanceof RegExp)
+        test.assertRegexMatches(module.lastError, error_string);
+      else
+        test.assertEqual(module.lastError, error_string);
       test.expectEvent(module, 'loadend', function(e) {
         removeModule(module);
         test.pass();

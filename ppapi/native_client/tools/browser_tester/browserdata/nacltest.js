@@ -410,6 +410,14 @@ function assertArraysEqual(a, b, message, test_status) {
 }
 
 
+function assertRegexMatches(str, re, message, test_status) {
+  if (!str.match(re)) {
+    fail(message, toString(str) + ' doesn\'t match ' + toString(re.toString()),
+         test_status);
+  }
+}
+
+
 // Ideally there'd be some way to identify what exception was thrown, but JS
 // exceptions are fairly ad-hoc.
 // TODO(ncbray) allow manual validation of exception types?
