@@ -539,10 +539,17 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
 namespace {
 
 DisplayInfo CreateDisplayInfo(int64 id,
-                              const gfx::Rect& bounds,
-                              float device_scale_factor) {
+                              int y,
+                              gfx::Display::Rotation rotation) {
   DisplayInfo info(id, "", false);
-  info.SetBounds(bounds);
+  info.SetBounds(gfx::Rect(0, y, 500, 500));
+  info.set_rotation(rotation);
+  return info;
+}
+
+DisplayInfo CreateMirroredDisplayInfo(int64 id,
+                                      float device_scale_factor) {
+  DisplayInfo info = CreateDisplayInfo(id, 0, gfx::Display::ROTATE_0);
   info.set_device_scale_factor(device_scale_factor);
   return info;
 }
@@ -561,9 +568,9 @@ TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   const DisplayInfo internal_display_info =
-      CreateDisplayInfo(1, gfx::Rect(0, 0, 500, 500), 2.0f);
+      CreateMirroredDisplayInfo(1, 2.0f);
   const DisplayInfo external_display_info =
-      CreateDisplayInfo(2, gfx::Rect(0, 0, 500, 500), 1.0f);
+      CreateMirroredDisplayInfo(2, 1.0f);
 
   std::vector<DisplayInfo> display_info_list;
   // Mirror.
@@ -1264,19 +1271,6 @@ TEST_F(DisplayControllerTest, ConvertHostToRootCoords) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-namespace {
-
-DisplayInfo CreateDisplayInfo(int64 id,
-                              int y,
-                              gfx::Display::Rotation rotation) {
-  DisplayInfo info(id, "", false);
-  info.SetBounds(gfx::Rect(0, y, 500, 500));
-  info.set_rotation(rotation);
-  return info;
-}
-
-}  // namespace
-
 // Make sure that the compositor based mirroring can switch
 // from/to dock mode.
 TEST_F(DisplayControllerTest, DockToSingle) {
@@ -1318,6 +1312,40 @@ TEST_F(DisplayControllerTest, DockToSingle) {
   display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(Shell::GetPrimaryRootWindow()->GetHost()->
               GetRootTransform().IsIdentityOrIntegerTranslation());
+}
+
+// Tests if switching two displays at the same time while the primary display
+// is swapped should not cause a crash. (crbug.com/426292)
+TEST_F(DisplayControllerTest, ReplaceSwappedPrimary) {
+  if (!SupportsMultipleDisplays())
+    return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  const DisplayInfo first_display_info =
+      CreateDisplayInfo(10, 0, gfx::Display::ROTATE_0);
+  const DisplayInfo second_display_info =
+      CreateDisplayInfo(11, 1, gfx::Display::ROTATE_0);
+
+  std::vector<DisplayInfo> display_info_list;
+  // Extended
+  display_info_list.push_back(first_display_info);
+  display_info_list.push_back(second_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+
+  Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
+
+  EXPECT_EQ(11, Shell::GetScreen()->GetPrimaryDisplay().id());
+
+  display_info_list.clear();
+  const DisplayInfo new_first_display_info =
+      CreateDisplayInfo(20, 0, gfx::Display::ROTATE_0);
+  const DisplayInfo new_second_display_info =
+      CreateDisplayInfo(21, 1, gfx::Display::ROTATE_0);
+  display_info_list.push_back(new_first_display_info);
+  display_info_list.push_back(new_second_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_EQ(20, Shell::GetScreen()->GetPrimaryDisplay().id());
 }
 
 #if defined(USE_X11)

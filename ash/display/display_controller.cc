@@ -630,10 +630,8 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
       primary_tree_host_for_replace_ = host_to_delete;
       return;
     }
-    primary_display_id = ScreenUtil::GetSecondaryDisplay().id();
+    primary_display_id = window_tree_hosts_.begin()->first;
     CHECK_NE(gfx::Display::kInvalidDisplayID, primary_display_id);
-
-    CHECK_EQ(1U, window_tree_hosts_.count(primary_display_id));
 
     AshWindowTreeHost* primary_host = host_to_delete;
     // Delete the other host instead.
