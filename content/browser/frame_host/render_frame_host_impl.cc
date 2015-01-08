@@ -550,7 +550,9 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
   int32 resolved_level =
       HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ? level : 0;
 
-  if (resolved_level >= ::logging::GetMinLogLevel()) {
+  // LogMessages can be persisted so this shouldn't be logged in incognito mode.
+  if (resolved_level >= ::logging::GetMinLogLevel()
+      && !GetSiteInstance()->GetBrowserContext()->IsOffTheRecord()) {
     logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
         message << "\", source: " << source_id << " (" << line_no << ")";
   }
