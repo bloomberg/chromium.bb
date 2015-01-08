@@ -155,13 +155,6 @@ bool IsTestKeyboard(const std::string& name) {
 }
 
 base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
-#if !defined(OS_CHROMEOS)
-  return base::FilePath();
-#else
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return base::FilePath();
-#endif
-
   // Skip the main pointer and keyboard since XOpenDevice() generates a
   // BadDevice error when passed these devices.
   if (device.use == XIMasterPointer || device.use == XIMasterKeyboard)
