@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/platform_thread.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/compression_utils.h"
+#include "components/metrics/metrics_hashes.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -41,6 +43,7 @@ class TestMetricsProvider : public MetricsProvider {
   bool HasStabilityMetrics() override { return has_stability_metrics_; }
   void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto) override {
+    UMA_STABILITY_HISTOGRAM_ENUMERATION("TestMetricsProvider.Metric", 1, 2);
     provide_stability_metrics_called_ = true;
   }
 
@@ -131,13 +134,40 @@ class MetricsServiceTest : public testing::Test {
       const std::string& trial_group) {
     uint32 trial_name_hash = HashName(trial_name);
     uint32 trial_group_hash = HashName(trial_group);
-    for (std::vector<variations::ActiveGroupId>::const_iterator it =
-             synthetic_trials.begin();
-         it != synthetic_trials.end(); ++it) {
-      if ((*it).name == trial_name_hash && (*it).group == trial_group_hash)
+    for (const variations::ActiveGroupId& trial : synthetic_trials) {
+      if (trial.name == trial_name_hash && trial.group == trial_group_hash)
         return true;
     }
     return false;
+  }
+
+  // Finds a histogram with the specified |name_hash| in |histograms|.
+  const base::HistogramBase* FindHistogram(
+      const base::StatisticsRecorder::Histograms& histograms,
+      uint64 name_hash) {
+    for (const base::HistogramBase* histogram : histograms) {
+      if (name_hash == HashMetricName(histogram->histogram_name()))
+        return histogram;
+    }
+    return nullptr;
+  }
+
+  // Checks whether |uma_log| contains any histograms that are not flagged
+  // with kUmaStabilityHistogramFlag. Stability logs should only contain such
+  // histograms.
+  void CheckForNonStabilityHistograms(
+      const ChromeUserMetricsExtension& uma_log) {
+    const int kStabilityFlags = base::HistogramBase::kUmaStabilityHistogramFlag;
+    base::StatisticsRecorder::Histograms histograms;
+    base::StatisticsRecorder::GetHistograms(&histograms);
+    for (int i = 0; i < uma_log.histogram_event_size(); ++i) {
+      const uint64 hash = uma_log.histogram_event(i).name_hash();
+
+      const base::HistogramBase* histogram = FindHistogram(histograms, hash);
+      EXPECT_TRUE(histogram) << hash;
+
+      EXPECT_EQ(kStabilityFlags, histogram->flags() & kStabilityFlags) << hash;
+    }
   }
 
  private:
@@ -221,8 +251,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(log_manager->has_staged_log());
 
   std::string uncompressed_log;
-  EXPECT_TRUE(GzipUncompress(log_manager->staged_log(),
-                                      &uncompressed_log));
+  EXPECT_TRUE(GzipUncompress(log_manager->staged_log(), &uncompressed_log));
 
   ChromeUserMetricsExtension uma_log;
   EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
@@ -232,9 +261,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(uma_log.has_system_profile());
   EXPECT_EQ(0, uma_log.user_action_event_size());
   EXPECT_EQ(0, uma_log.omnibox_event_size());
-  EXPECT_EQ(0, uma_log.histogram_event_size());
   EXPECT_EQ(0, uma_log.profiler_event_size());
   EXPECT_EQ(0, uma_log.perf_data_size());
+  CheckForNonStabilityHistograms(uma_log);
 
   // As there wasn't an unclean shutdown, this log has zero crash count.
   EXPECT_EQ(0, uma_log.system_profile().stability().crash_count());
@@ -287,9 +316,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(uma_log.has_system_profile());
   EXPECT_EQ(0, uma_log.user_action_event_size());
   EXPECT_EQ(0, uma_log.omnibox_event_size());
-  EXPECT_EQ(0, uma_log.histogram_event_size());
   EXPECT_EQ(0, uma_log.profiler_event_size());
   EXPECT_EQ(0, uma_log.perf_data_size());
+  CheckForNonStabilityHistograms(uma_log);
 
   EXPECT_EQ(1, uma_log.system_profile().stability().crash_count());
 }
