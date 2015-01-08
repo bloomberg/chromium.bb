@@ -1788,6 +1788,7 @@ void FrameView::handleLoadCompleted()
     // reduce the size of the frame.
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
+    maintainScrollPositionAtAnchor(0);
 }
 
 void FrameView::scheduleRelayout()

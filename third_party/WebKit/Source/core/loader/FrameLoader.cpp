@@ -481,9 +481,6 @@ void FrameLoader::checkCompleted()
 {
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
-    if (m_frame->view())
-        m_frame->view()->handleLoadCompleted();
-
     if (m_frame->document()->isLoadCompleted() && m_stateMachine.committedFirstRealDocumentLoad())
         return;
 
@@ -636,9 +633,6 @@ void FrameLoader::completed()
     Frame* parent = m_frame->tree().parent();
     if (parent && parent->isLocalFrame())
         toLocalFrame(parent)->loader().checkCompleted();
-
-    if (m_frame->view())
-        m_frame->view()->maintainScrollPositionAtAnchor(0);
 }
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
