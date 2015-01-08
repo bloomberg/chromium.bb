@@ -51,6 +51,11 @@ public:
         return LayoutUnit(m_value);
     }
 
+    int round() const
+    {
+        return lroundf(m_value);
+    }
+
 private:
     float m_value;
 };
@@ -680,6 +685,12 @@ public:
     operator FloatRect() const { return toFloatRect(); }
     operator LayoutRect() const { return toLayoutRect(); }
 
+    FloatRect rawValue() const
+    {
+        return m_value;
+    }
+
+
     FloatRect toFloatRect() const
     {
         return m_value;
@@ -731,10 +742,10 @@ using LineLayoutRect = FloatRectLineLayoutRect;
 using LineLayoutSize = FloatSizeLineLayoutSize;
 #endif // ENABLE(LAYOUT_UNIT_IN_INLINE_BOXES)
 
-using FloatWillBeLayoutUnit = float;
-using FloatPointWillBeLayoutPoint = FloatPoint;
-using FloatRectWillBeLayoutRect = FloatRect;
-using FloatSizeWillBeLayoutSize = FloatSize;
+using FloatWillBeLayoutUnit = LineLayoutUnit;
+using FloatPointWillBeLayoutPoint = LineLayoutPoint;
+using FloatRectWillBeLayoutRect = LineLayoutRect;
+using FloatSizeWillBeLayoutSize = LineLayoutSize;
 
 } // namespace blink
 

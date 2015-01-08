@@ -1190,12 +1190,12 @@ FloatPoint RenderText::firstRunOrigin() const
 
 float RenderText::firstRunX() const
 {
-    return m_firstTextBox ? m_firstTextBox->x() : 0;
+    return m_firstTextBox ? m_firstTextBox->x().toFloat() : 0;
 }
 
 float RenderText::firstRunY() const
 {
-    return m_firstTextBox ? m_firstTextBox->y() : 0;
+    return m_firstTextBox ? m_firstTextBox->y().toFloat() : 0;
 }
 
 void RenderText::setSelectionState(SelectionState state)
@@ -1558,8 +1558,8 @@ IntRect RenderText::linesBoundingBox() const
 
         bool isHorizontal = style()->isHorizontalWritingMode();
 
-        float x = isHorizontal ? logicalLeftSide : firstTextBox()->x();
-        float y = isHorizontal ? firstTextBox()->y() : logicalLeftSide;
+        float x = isHorizontal ? logicalLeftSide : firstTextBox()->x().toFloat();
+        float y = isHorizontal ? firstTextBox()->y().toFloat() : logicalLeftSide;
         float width = isHorizontal ? logicalRightSide - logicalLeftSide : lastTextBox()->logicalBottom() - x;
         float height = isHorizontal ? lastTextBox()->logicalBottom() - y : logicalRightSide - logicalLeftSide;
         result = enclosingIntRect(FloatRect(x, y, width, height));

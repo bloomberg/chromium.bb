@@ -101,7 +101,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     GraphicsContext* context = paintInfo.context;
     RenderStyle* styleToUse = m_inlineTextBox.renderer().style(m_inlineTextBox.isFirstLineStyle());
 
-    adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? 0 : -m_inlineTextBox.logicalHeight());
+    adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? LayoutUnit() : -m_inlineTextBox.logicalHeight().toLayoutUnit());
 
     FloatPoint boxOrigin = m_inlineTextBox.locationIncludingFlipping();
     boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
@@ -752,7 +752,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext* ctx, const
     float start = paintStart == static_cast<unsigned>(m_inlineTextBox.start()) ? 0 :
         m_inlineTextBox.renderer().width(m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     // how much line to draw
-    float width = (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) ? m_inlineTextBox.logicalWidth() :
+    float width = (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) ? m_inlineTextBox.logicalWidth().toFloat() :
         m_inlineTextBox.renderer().width(paintStart, paintEnd - paintStart, m_inlineTextBox.textPos() + start, m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
 
     // Thick marked text underlines are 2px thick as long as there is room for the 2px line under the baseline.

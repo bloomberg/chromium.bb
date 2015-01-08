@@ -118,7 +118,7 @@ FloatWillBeLayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisS
 {
     // Create an ellipsis box.
     EllipsisBox* ellipsisBox = new EllipsisBox(renderer(), ellipsisStr, this,
-        ellipsisWidth - (markupBox ? markupBox->logicalWidth() : 0), logicalHeight(),
+        ellipsisWidth - (markupBox ? markupBox->logicalWidth().toFloat() : 0), logicalHeight().toFloat(),
         x(), y(), !prevRootBox(), isHorizontal(), markupBox);
 
     if (!gEllipsisBoxMap)
@@ -247,7 +247,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
 
 FloatWillBeLayoutUnit RootInlineBox::maxLogicalTop() const
 {
-    FloatWillBeLayoutUnit maxLogicalTop = 0;
+    FloatWillBeLayoutUnit maxLogicalTop;
     computeMaxLogicalTop(maxLogicalTop);
     return maxLogicalTop;
 }

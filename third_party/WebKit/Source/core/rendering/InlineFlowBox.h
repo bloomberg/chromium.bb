@@ -246,7 +246,7 @@ public:
     {
         return m_overflow ? m_overflow->visualOverflowRect() : enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
     }
-    LayoutUnit logicalLeftVisualOverflow() const { return m_overflow ? (isHorizontal() ? m_overflow->visualOverflowRect().x() : m_overflow->visualOverflowRect().y()) : static_cast<LayoutUnit>(logicalLeft()); }
+    LayoutUnit logicalLeftVisualOverflow() const { return m_overflow ? (isHorizontal() ? m_overflow->visualOverflowRect().x() : m_overflow->visualOverflowRect().y()) : logicalLeft().toLayoutUnit(); }
     LayoutUnit logicalRightVisualOverflow() const { return m_overflow ? (isHorizontal() ? m_overflow->visualOverflowRect().maxX() : m_overflow->visualOverflowRect().maxY()) : static_cast<LayoutUnit>(ceilf(logicalRight())); }
     LayoutUnit logicalTopVisualOverflow(LayoutUnit lineTop) const
     {

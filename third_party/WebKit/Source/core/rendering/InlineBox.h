@@ -44,7 +44,7 @@ public:
         , m_prev(0)
         , m_parent(0)
         , m_renderer(obj)
-        , m_logicalWidth(0)
+        , m_logicalWidth()
 #if ENABLE(ASSERT)
         , m_hasBadParent(false)
 #endif
@@ -131,7 +131,7 @@ public:
     virtual FloatWillBeLayoutUnit virtualLogicalHeight() const
     {
         ASSERT_NOT_REACHED();
-        return 0;
+        return FloatWillBeLayoutUnit();
     }
 
     bool isHorizontal() const { return m_bitfields.isHorizontal(); }

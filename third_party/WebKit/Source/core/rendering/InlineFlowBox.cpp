@@ -385,7 +385,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* f
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
             RenderText& rt = text->renderer();
-            FloatWillBeLayoutUnit space = 0;
+            FloatWillBeLayoutUnit space;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
                     space = rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
@@ -754,7 +754,7 @@ void InlineFlowBox::computeMaxLogicalTop(FloatWillBeLayoutUnit& maxLogicalTop) c
             continue;
 
         maxLogicalTop = std::max<FloatWillBeLayoutUnit>(maxLogicalTop, curr->y());
-        FloatWillBeLayoutUnit localMaxLogicalTop = 0;
+        FloatWillBeLayoutUnit localMaxLogicalTop;
         if (curr->isInlineFlowBox())
             toInlineFlowBox(curr)->computeMaxLogicalTop(localMaxLogicalTop);
         maxLogicalTop = std::max<FloatWillBeLayoutUnit>(maxLogicalTop, localMaxLogicalTop);
@@ -799,7 +799,7 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
         logicalOutsets.setBottom(oldLogicalTop);
     }
 
-    LayoutRect shadowBounds(logicalFrameRect());
+    LayoutRect shadowBounds(logicalFrameRect().toLayoutRect());
     shadowBounds.expand(logicalOutsets);
     logicalVisualOverflow.unite(shadowBounds);
 }

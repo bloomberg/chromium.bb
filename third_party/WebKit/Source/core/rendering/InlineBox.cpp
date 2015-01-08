@@ -111,7 +111,7 @@ void InlineBox::showBox(int printedCharacters) const
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
     fprintf(stderr, "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i\n",
-        renderer().renderName(), &renderer(), x(), y(), width(), height(),
+        renderer().renderName(), &renderer(), x().toFloat(), y().toFloat(), width().toFloat(), height().toFloat(),
         baselinePosition(AlphabeticBaseline),
         baselinePosition(IdeographicBaseline));
 }
@@ -123,9 +123,9 @@ FloatWillBeLayoutUnit InlineBox::logicalHeight() const
         return virtualLogicalHeight();
 
     if (renderer().isText())
-        return m_bitfields.isText() ? renderer().style(isFirstLineStyle())->fontMetrics().height() : 0;
+        return m_bitfields.isText() ? FloatWillBeLayoutUnit(renderer().style(isFirstLineStyle())->fontMetrics().height()) : FloatWillBeLayoutUnit();
     if (renderer().isBox() && parent())
-        return isHorizontal() ? toRenderBox(renderer()).size().height().toFloat() : toRenderBox(renderer()).size().width().toFloat();
+        return isHorizontal() ? toRenderBox(renderer()).size().height() : toRenderBox(renderer()).size().width();
 
     ASSERT(isInlineFlowBox());
     RenderBoxModelObject* flowObject = boxModelObject();

@@ -894,8 +894,8 @@ IntRect RenderInline::linesBoundingBox() const
 
         bool isHorizontal = style()->isHorizontalWritingMode();
 
-        float x = isHorizontal ? logicalLeftSide : firstLineBox()->x();
-        float y = isHorizontal ? firstLineBox()->y() : logicalLeftSide;
+        float x = isHorizontal ? logicalLeftSide : firstLineBox()->x().toFloat();
+        float y = isHorizontal ? firstLineBox()->y().toFloat() : logicalLeftSide;
         float width = isHorizontal ? logicalRightSide - logicalLeftSide : lastLineBox()->logicalBottom() - x;
         float height = isHorizontal ? lastLineBox()->logicalBottom() - y : logicalRightSide - logicalLeftSide;
         result = enclosingIntRect(FloatRect(x, y, width, height));

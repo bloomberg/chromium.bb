@@ -340,7 +340,7 @@ static void updateLogicalWidthForCenterAlignedBlock(bool isLeftToRightDirection,
     float trailingSpaceWidth = 0;
     if (trailingSpaceRun) {
         totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
-        trailingSpaceWidth = std::min(trailingSpaceRun->m_box->logicalWidth(), (availableLogicalWidth - totalLogicalWidth + 1) / 2);
+        trailingSpaceWidth = std::min(trailingSpaceRun->m_box->logicalWidth().toFloat(), (availableLogicalWidth - totalLogicalWidth + 1) / 2);
         trailingSpaceRun->m_box->setLogicalWidth(std::max<float>(0, trailingSpaceWidth));
     }
     if (isLeftToRightDirection)

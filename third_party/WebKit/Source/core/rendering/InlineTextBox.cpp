@@ -81,8 +81,13 @@ void InlineTextBox::markDirty()
 
 LayoutRect InlineTextBox::logicalOverflowRect() const
 {
-    if (knownToHaveNoOverflow() || !gTextBoxesWithOverflow)
-        return enclosingIntRect(logicalFrameRect());
+    if (knownToHaveNoOverflow() || !gTextBoxesWithOverflow) {
+        // FIXME: the call to rawValue() below is temporary and should be removed once the transition
+        // to LayoutUnit-based types is complete (crbug.com/321237). The call to enclosingIntRect()
+        // should also likely be switched to LayoutUnit pixel-snapping.
+        return enclosingIntRect(logicalFrameRect().rawValue());
+    }
+
     return gTextBoxesWithOverflow->get(this);
 }
 
@@ -190,10 +195,13 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 
     FloatPointWillBeLayoutPoint startingPoint = FloatPointWillBeLayoutPoint(logicalLeft(), selTop.toFloat());
     LayoutRect r;
-    if (sPos || ePos != static_cast<int>(m_len))
+    if (sPos || ePos != static_cast<int>(m_len)) {
         r = enclosingIntRect(font.selectionRectForText(textRun, startingPoint, selHeight, sPos, ePos));
-    else // Avoid computing the font width when the entire line box is selected as an optimization.
-        r = enclosingIntRect(FloatRectWillBeLayoutRect(startingPoint, FloatSizeWillBeLayoutSize(m_logicalWidth, selHeight.toFloat())));
+    } else { // Avoid computing the font width when the entire line box is selected as an optimization.
+        // FIXME: the call to rawValue() below is temporary and should be removed once the transition
+        // to LayoutUnit-based types is complete (crbug.com/321237)
+        r = enclosingIntRect(FloatRectWillBeLayoutRect(startingPoint, FloatSizeWillBeLayoutSize(m_logicalWidth, selHeight.toFloat())).rawValue());
+    }
 
     LayoutUnit logicalWidth = r.width();
     if (r.x() > logicalRight())
@@ -311,9 +319,11 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     FloatPointWillBeLayoutPoint boxOrigin = locationIncludingFlipping();
     boxOrigin.moveBy(accumulatedOffset);
     FloatRectWillBeLayoutRect rect(boxOrigin, size());
-    if (m_truncation != cFullTruncation && visibleToHitTestRequest(request) && locationInContainer.intersects(rect)) {
+    // FIXME: both calls to rawValue() below is temporary and should be removed once the transition
+    // to LayoutUnit-based types is complete (crbug.com/321237)
+    if (m_truncation != cFullTruncation && visibleToHitTestRequest(request) && locationInContainer.intersects(rect.rawValue())) {
         renderer().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset)));
-        if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, rect))
+        if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
             return true;
     }
     return false;
@@ -462,7 +472,7 @@ void InlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
     TextRun textRun = constructTextRun(styleToUse, font);
 
     SimpleShaper shaper(&font, textRun);
-    FloatWillBeLayoutUnit lastWidth = 0;
+    FloatWillBeLayoutUnit lastWidth;
     widths.resize(m_len);
     for (unsigned i = 0; i < m_len; i++) {
         shaper.advance(i + 1);
