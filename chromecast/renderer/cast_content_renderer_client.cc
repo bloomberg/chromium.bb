@@ -27,6 +27,46 @@ namespace shell {
 
 namespace {
 
+#if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
+// These memory thresholds are set for Chromecast. See the UMA histogram
+// Platform.MeminfoMemFree when tuning.
+// TODO(gunsch): These should be platform/product-dependent. Look into a way
+// to move these to platform-specific repositories.
+const int kCriticalMinFreeMemMB = 24;
+const int kModerateMinFreeMemMB = 48;
+const int kPollingIntervalMS = 5000;
+
+void PlatformPollFreemem(void) {
+  struct sysinfo sys;
+
+  if (sysinfo(&sys) == -1) {
+    LOG(ERROR) << "platform_poll_freemem(): sysinfo failed";
+  } else {
+    int free_mem_mb = static_cast<int64_t>(sys.freeram) *
+        sys.mem_unit / (1024 * 1024);
+
+    if (free_mem_mb <= kModerateMinFreeMemMB) {
+      if (free_mem_mb <= kCriticalMinFreeMemMB) {
+        // Memory is getting really low, we need to do whatever we can to
+        // prevent deadlocks and interfering with other processes.
+        base::MemoryPressureListener::NotifyMemoryPressure(
+            base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
+      } else {
+        // There is enough memory, but it is starting to get low.
+        base::MemoryPressureListener::NotifyMemoryPressure(
+            base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
+      }
+    }
+  }
+
+  // Setup next poll.
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&PlatformPollFreemem),
+      base::TimeDelta::FromMilliseconds(kPollingIntervalMS));
+}
+#endif
+
 // Default background color to set for WebViews. WebColor is in ARGB format
 // though the comment of WebColor says it is in RGBA.
 const blink::WebColor kColorBlack = 0xFF000000;
@@ -49,6 +89,10 @@ void CastContentRendererClient::RenderThreadStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
+#endif
+
+#if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
+  PlatformPollFreemem();
 #endif
 
   cast_observer_.reset(new CastRenderProcessObserver());
