@@ -1499,6 +1499,7 @@ void HeapPage::sweep(ThreadHeap* heap)
 {
     clearObjectStartBitMap();
 
+    size_t markedObjectSize = 0;
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < payloadEnd(); ) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1539,11 +1540,13 @@ void HeapPage::sweep(ThreadHeap* heap)
             heap->addToFreeList(startOfGap, headerAddress - startOfGap);
         header->unmark();
         headerAddress += header->size();
-        Heap::increaseMarkedObjectSize(header->size());
+        markedObjectSize += header->size();
         startOfGap = headerAddress;
     }
     if (startOfGap != payloadEnd())
         heap->addToFreeList(startOfGap, payloadEnd() - startOfGap);
+
+    Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
 void HeapPage::markUnmarkedObjectsDead()
