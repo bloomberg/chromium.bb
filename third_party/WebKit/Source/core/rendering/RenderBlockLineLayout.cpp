@@ -1164,17 +1164,28 @@ static LayoutUnit getBorderPaddingMargin(RenderBoxModelObject* child, bool endOf
         child->borderStart();
 }
 
-static inline void stripTrailingSpace(float& inlineMax, float& inlineMin, RenderObject* trailingSpaceChild)
+static inline void stripTrailingSpace(float& inlineMax, float& inlineMin,
+    RenderObject* trailingSpaceChild)
 {
     if (trailingSpaceChild && trailingSpaceChild->isText()) {
-        // Collapse away the trailing space at the end of a block.
+        // Collapse away the trailing space at the end of a block by finding
+        // the first white-space character and subtracting its width. Subsequent
+        // white-space characters have been collapsed into the first one (which
+        // can be either a space or a tab character).
         RenderText* text = toRenderText(trailingSpaceChild);
-        bool useComplexCodePath = !text->canUseSimpleFontCodePath();
-        const UChar space = ' ';
-        const Font& font = text->style()->font(); // FIXME: This ignores first-line.
-        TextRun run = constructTextRun(text, font, &space, 1, text->style(), LTR);
-        if (useComplexCodePath)
-            run.setUseComplexCodePath(true);
+        UChar trailingWhitespaceChar = ' ';
+        for (unsigned i = text->textLength(); i > 0; i--) {
+            UChar c = text->characterAt(i - 1);
+            if (!Character::treatAsSpace(c))
+                break;
+            trailingWhitespaceChar = c;
+        }
+
+        // FIXME: This ignores first-line.
+        const Font& font = text->style()->font();
+        TextRun run = constructTextRun(text, font, &trailingWhitespaceChar, 1,
+            text->style(), text->style()->direction());
+        run.setUseComplexCodePath(!text->canUseSimpleFontCodePath());
         float spaceWidth = font.width(run);
         inlineMax -= spaceWidth + font.fontDescription().wordSpacing();
         if (inlineMin > inlineMax)
