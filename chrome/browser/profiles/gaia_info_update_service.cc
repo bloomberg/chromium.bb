@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -48,6 +49,9 @@ GAIAInfoUpdateService::~GAIAInfoUpdateService() {
 }
 
 void GAIAInfoUpdateService::Update() {
+  // UMA Profile Metrics should be logged regularly.
+  ProfileMetrics::LogNumberOfProfiles(g_browser_process->profile_manager());
+
   // The user must be logged in.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);

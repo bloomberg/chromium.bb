@@ -27701,8 +27701,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Profile.NumberOfManagedProfiles">
   <owner>pam@chromium.org</owner>
   <summary>
-    Counts the number of locally managed profiles on a user's machine when
-    Chrome starts up, among cases with at least one profile.
+    Counts the number of locally managed profiles on a user's machine at least
+    every 24 hours while Chrome is running, among cases with at least one
+    profile. Always de-dupe the results with Show User Counts.
   </summary>
 </histogram>
 
@@ -27710,7 +27711,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>bcwhite@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <summary>
-    Counts the number of profiles on a user's machine when Chrome starts up.
+    Counts the number of profiles on a user's machine at least every 24 hours
+    while Chrome is running. Always de-dupe the results with Show User Counts.
   </summary>
 </histogram>
 
@@ -27742,8 +27744,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>bcwhite@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <summary>
-    Counts the number of signed-in profiles on a user's machine when Chrome
-    starts up.
+    Counts the number of signed-in profiles on a user's machine at least every
+    24 hours while Chrome is running. Always de-dupe the results with Show User
+    Counts.
   </summary>
 </histogram>
 
@@ -27763,8 +27766,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>mlerman@chromium.org</owner>
   <summary>
     Counts the number of signed-in profiles that are using the GAIA image as the
-    avatar icon. This is counted when a profile is loaded, including when Chrome
-    starts up.
+    avatar icon. This is counted at least every 24 hours while Chrome is
+    running, so always de-dupe the results with Show User Counts.
   </summary>
 </histogram>
 
@@ -27772,7 +27775,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>mlerman@chromium.org</owner>
   <summary>
     Counts the number of profiles unused within the past 28 days on a user's
-    machine when Chrome starts up.
+    machine. This is counts at least every 24 hours while Chrome is running, so
+    always de-dupe the results with Show User Counts.
   </summary>
 </histogram>
 
