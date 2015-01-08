@@ -152,6 +152,8 @@ void NineImagePainter::Paint(Canvas* canvas,
   SkPaint paint;
   paint.setAlpha(alpha);
 
+  Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
+
   canvas->DrawImageIntInPixel(images_[0], 0, 0, i0w, i0h,
                               0, 0, i0w, i0h, false, paint);
 
@@ -160,8 +162,6 @@ void NineImagePainter::Paint(Canvas* canvas,
   Fill(canvas, images_[2], width_in_pixels - i2w, 0, i2w, i2h, paint);
 
   Fill(canvas, images_[3], 0, i0h, i3w, height_in_pixels - i0h - i6h, paint);
-
-  Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
 
   Fill(canvas, images_[5], width_in_pixels - i5w, i2h, i5w,
        height_in_pixels - i2h - i8h, paint);
