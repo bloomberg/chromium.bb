@@ -368,6 +368,12 @@ void RenderQuote::detachQuote()
     ASSERT(!m_previous || m_previous->m_attached);
     if (!m_attached)
         return;
+
+    // Reset our attached status at this point because it's possible for
+    // updateDepth() to call into attachQuote(). Attach quote walks the render
+    // tree looking for quotes that are attached and does work on them.
+    m_attached = false;
+
     if (m_previous)
         m_previous->m_next = m_next;
     else if (view())
@@ -378,7 +384,6 @@ void RenderQuote::detachQuote()
         for (RenderQuote* quote = m_next; quote; quote = quote->m_next)
             quote->updateDepth();
     }
-    m_attached = false;
     m_next = nullptr;
     m_previous = nullptr;
     m_depth = 0;
