@@ -39,7 +39,6 @@ ExtensionPrefValueMap::~ExtensionPrefValueMap() {
     destroyed_ = true;
   }
   STLDeleteValues(&entries_);
-  entries_.clear();
 }
 
 void ExtensionPrefValueMap::Shutdown() {

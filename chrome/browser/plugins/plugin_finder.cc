@@ -241,7 +241,6 @@ void PluginFinder::ReinitializePlugins(
   version_ = version;
 
   STLDeleteValues(&identifier_plugin_);
-  identifier_plugin_.clear();
 
   for (base::DictionaryValue::Iterator plugin_it(*plugin_list);
       !plugin_it.IsAtEnd(); plugin_it.Advance()) {

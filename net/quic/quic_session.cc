@@ -748,7 +748,6 @@ bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) const {
 
 void QuicSession::PostProcessAfterData() {
   STLDeleteElements(&closed_streams_);
-  closed_streams_.clear();
 
   if (connection()->connected() &&
       locally_closed_streams_highest_offset_.size() > max_open_streams_) {

@@ -90,7 +90,6 @@ void SyncInvalidationScheduler::Stop() {
   is_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
   STLDeleteElements(&posted_tasks_);
-  posted_tasks_.clear();
 }
 
 void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,

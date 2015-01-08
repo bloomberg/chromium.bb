@@ -155,7 +155,6 @@ DataReductionProxyEventStore::DataReductionProxyEventStore(
 
 DataReductionProxyEventStore::~DataReductionProxyEventStore() {
   STLDeleteElements(&stored_events_);
-  stored_events_.clear();
 }
 
 void DataReductionProxyEventStore::AddProxyEnabledEvent(

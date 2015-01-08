@@ -128,12 +128,10 @@ TemplateURLTableModel::TemplateURLTableModel(
 TemplateURLTableModel::~TemplateURLTableModel() {
   template_url_service_->RemoveObserver(this);
   STLDeleteElements(&entries_);
-  entries_.clear();
 }
 
 void TemplateURLTableModel::Reload() {
   STLDeleteElements(&entries_);
-  entries_.clear();
 
   TemplateURLService::TemplateURLVector urls =
       template_url_service_->GetTemplateURLs();

@@ -361,5 +361,4 @@ void ExtensionSpecialStoragePolicy::SpecialCollection::Clear() {
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::ClearCache() {
   STLDeleteValues(&cached_results_);
-  cached_results_.clear();
 }

@@ -37,10 +37,9 @@ class CrosSettingsTest : public testing::Test {
 
   virtual ~CrosSettingsTest() {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ASSERT_TRUE(expected_props_.empty());
     STLDeleteValues(&expected_props_);
-    expected_props_.clear();
   }
 
   void FetchPref(const std::string& pref) {

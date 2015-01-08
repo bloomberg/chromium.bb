@@ -67,7 +67,6 @@ bool PrefValueMap::RemoveValue(const std::string& key) {
 
 void PrefValueMap::Clear() {
   STLDeleteValues(&prefs_);
-  prefs_.clear();
 }
 
 void PrefValueMap::Swap(PrefValueMap* other) {

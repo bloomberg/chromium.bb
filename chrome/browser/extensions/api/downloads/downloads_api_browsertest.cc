@@ -94,7 +94,6 @@ class DownloadsEventsListener : public content::NotificationObserver {
 
   void ClearEvents() {
     STLDeleteElements(&events_);
-    events_.clear();
   }
 
   class Event {

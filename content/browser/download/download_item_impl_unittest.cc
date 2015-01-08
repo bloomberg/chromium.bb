@@ -53,7 +53,7 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl*));
 
-  virtual void ResumeInterruptedDownload(
+  void ResumeInterruptedDownload(
       scoped_ptr<DownloadUrlParameters> params, uint32 id) override {
     MockResumeInterruptedDownload(params.get(), id);
   }
@@ -207,7 +207,6 @@ class DownloadItemTest : public testing::Test {
   virtual void TearDown() {
     ui_thread_.DeprecatedGetThreadObject()->message_loop()->RunUntilIdle();
     STLDeleteElements(&allocated_downloads_);
-    allocated_downloads_.clear();
   }
 
   // This class keeps ownership of the created download item; it will
