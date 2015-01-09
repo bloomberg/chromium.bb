@@ -111,6 +111,16 @@ void DriWindowDelegateImpl::SetCursor(const std::vector<SkBitmap>& bitmaps,
   ResetCursor(false);
 }
 
+void DriWindowDelegateImpl::SetCursorWithoutAnimations(
+    const std::vector<SkBitmap>& bitmaps,
+    const gfx::Point& location) {
+  cursor_bitmaps_ = bitmaps;
+  cursor_location_ = location;
+  cursor_frame_ = 0;
+  cursor_frame_delay_ms_ = 0;
+  ResetCursor(false);
+}
+
 void DriWindowDelegateImpl::MoveCursor(const gfx::Point& location) {
   cursor_location_ = location;
 

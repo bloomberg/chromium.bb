@@ -48,6 +48,8 @@ class MockDriWindowDelegate : public ui::DriWindowDelegate {
   void SetCursor(const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& location,
                  int frame_delay_ms) override {}
+  void SetCursorWithoutAnimations(const std::vector<SkBitmap>& bitmaps,
+                                  const gfx::Point& location) override {}
   void MoveCursor(const gfx::Point& location) override {}
 
  private:

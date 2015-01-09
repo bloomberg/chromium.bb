@@ -33,7 +33,8 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
       : window_manager_(window_manager),
         main_thread_listener_(main_thread_listener),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        pending_main_thread_operations_(0) {}
+        pending_main_thread_operations_(0),
+        cursor_animating_(false) {}
 
   void OnFilterAdded(IPC::Sender* sender) override {
     io_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -48,9 +49,12 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     // the main thread. If a cursor move message arrives but we haven't
     // processed the previous main thread message, keep processing on main
     // until nothing is pending.
+    bool cursor_was_animating = cursor_animating_;
+    UpdateAnimationState(message);
     bool process_move_on_main = pending_main_thread_operations_ &&
                                 MessageAffectsCursorPosition(message.type());
-    if (MessageAffectsCursorState(message.type()) || process_move_on_main) {
+    if (MessageAffectsCursorState(message.type()) || process_move_on_main ||
+        cursor_animating_ || cursor_was_animating) {
       pending_main_thread_operations_++;
 
       base::Closure main_thread_message_handler =
@@ -77,6 +81,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(DriGpuPlatformSupportMessageFilter, message)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorMove, OnCursorMove)
+    IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorSet, OnCursorSet)
     IPC_MESSAGE_UNHANDLED(handled = false);
     IPC_END_MESSAGE_MAP()
 
@@ -90,6 +95,14 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     window_manager_->GetWindowDelegate(widget)->MoveCursor(location);
   }
 
+  void OnCursorSet(gfx::AcceleratedWidget widget,
+                   const std::vector<SkBitmap>& bitmaps,
+                   const gfx::Point& location,
+                   int frame_delay_ms) {
+    window_manager_->GetWindowDelegate(widget)
+        ->SetCursorWithoutAnimations(bitmaps, location);
+  }
+
   void DecrementPendingOperationsOnIO() { pending_main_thread_operations_--; }
 
   bool MessageAffectsCursorState(uint32 message_type) {
@@ -99,7 +112,6 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
       case OzoneGpuMsg_WindowBoundsChanged::ID:
       case OzoneGpuMsg_ConfigureNativeDisplay::ID:
       case OzoneGpuMsg_DisableNativeDisplay::ID:
-      case OzoneGpuMsg_CursorSet::ID:
         return true;
       default:
         return false;
@@ -109,10 +121,23 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
   bool MessageAffectsCursorPosition(uint32 message_type) {
     switch (message_type) {
       case OzoneGpuMsg_CursorMove::ID:
+      case OzoneGpuMsg_CursorSet::ID:
         return true;
       default:
         return false;
     }
+  }
+
+  void UpdateAnimationState(const IPC::Message& message) {
+    if (message.type() != OzoneGpuMsg_CursorSet::ID)
+      return;
+
+    OzoneGpuMsg_CursorSet::Param param;
+    if (!OzoneGpuMsg_CursorSet::Read(&message, &param))
+      return;
+
+    int frame_delay_ms = get<3>(param);
+    cursor_animating_ = frame_delay_ms != 0;
   }
 
   DriWindowDelegateManager* window_manager_;
@@ -120,6 +145,7 @@ class DriGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   int32 pending_main_thread_operations_;
+  bool cursor_animating_;
 };
 }
 

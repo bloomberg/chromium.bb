@@ -57,6 +57,11 @@ class DriWindowDelegate {
                          const gfx::Point& location,
                          int frame_delay_ms) = 0;
 
+  // Update the HW cursor bitmap & move to specified location. If
+  // the bitmap is empty, the cursor is hidden.
+  virtual void SetCursorWithoutAnimations(const std::vector<SkBitmap>& bitmaps,
+                                          const gfx::Point& location) = 0;
+
   // Move the HW cursor to the specified location.
   virtual void MoveCursor(const gfx::Point& location) = 0;
 };
