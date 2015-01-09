@@ -51,6 +51,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // configuration is provided along with the resolution for this URL, in
   // |result|, whch may be modified. Retry info is presumed to be from the proxy
   // service.
+  // TODO(sclittle): Remove this, see http://crbug.com/447346.
   typedef base::Callback<void(
       const GURL& url,
       int load_flags,
@@ -158,12 +159,26 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   DataReductionProxyStatisticsPrefs* data_reduction_proxy_statistics_prefs_;
 
+  // TODO(sclittle): Factor this out, see http://crbug.com/447346.
   OnResolveProxyHandler on_resolve_proxy_handler_;
 
   ProxyConfigGetter proxy_config_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);
 };
+
+// Adds data reduction proxies to |result|, where applicable, if result
+// otherwise uses a direct connection for |url|, and the data reduction proxy is
+// not bypassed. Also, configures |result| to proceed directly to the origin if
+// |result|'s current proxy is the data reduction proxy, the
+// |net::LOAD_BYPASS_DATA_REDUCTION_PROXY| |load_flag| is set, and the
+// DataCompressionProxyCriticalBypass Finch trial is set.
+void OnResolveProxyHandler(const GURL& url,
+                           int load_flags,
+                           const net::ProxyConfig& data_reduction_proxy_config,
+                           const net::ProxyRetryInfoMap& proxy_retry_info,
+                           const DataReductionProxyParams* params,
+                           net::ProxyInfo* result);
 
 }  // namespace data_reduction_proxy
 

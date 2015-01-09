@@ -4,7 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -23,8 +23,9 @@ DataReductionProxyInterceptor::DataReductionProxyInterceptor(
     DataReductionProxyEventStore* event_store)
     : params_(params),
       usage_stats_(stats),
-      event_store_(event_store) {
-}
+      event_store_(event_store),
+      bypass_protocol_(
+          new DataReductionProxyBypassProtocol(params, event_store)) {}
 
 DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {
 }
@@ -41,8 +42,8 @@ net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptResponse(
   if (request->response_info().was_cached)
     return nullptr;
   DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
-  bool should_retry = data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
-      params_, request, &bypass_type, event_store_);
+  bool should_retry = bypass_protocol_->MaybeBypassProxyAndPrepareToRetry(
+      request, &bypass_type);
   if (usage_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
     usage_stats_->SetBypassType(bypass_type);
   if (!should_retry)

@@ -22,7 +22,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"

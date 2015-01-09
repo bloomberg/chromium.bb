@@ -84,6 +84,13 @@ bool DataReductionProxyParams::
 }
 
 // static
+bool DataReductionProxyParams::
+    IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() {
+  return FieldTrialList::FindFullName(
+      "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == "Relaxed";
+}
+
+// static
 bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
     const char* build_fingerprint) {
   base::StringPiece fingerprint(build_fingerprint);

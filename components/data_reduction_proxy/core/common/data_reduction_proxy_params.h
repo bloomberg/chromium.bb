@@ -86,6 +86,13 @@ class DataReductionProxyParams {
   // the data reduction proxy via header is missing.
   static bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial();
 
+  // Returns true if this client is part of a field trial that relaxes the
+  // |MISSING_VIA_HEADER_OTHER| proxy bypass case. In this experiment, if a
+  // response with a data reduction proxy via header has been received through
+  // the proxy since the last network change, then don't bypass on missing via
+  // headers in responses with non-4xx response codes.
+  static bool IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial();
+
   // Returns true if this client is part of the field trial that should display
   // a promotion for the data reduction proxy on Android One devices.
   static bool IsIncludedInAndroidOnePromoFieldTrial(

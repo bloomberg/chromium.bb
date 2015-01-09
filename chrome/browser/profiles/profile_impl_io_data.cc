@@ -38,7 +38,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"

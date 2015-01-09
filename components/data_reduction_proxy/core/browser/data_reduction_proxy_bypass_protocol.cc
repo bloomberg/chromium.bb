@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 
-#include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
@@ -37,155 +36,10 @@ bool SetProxyServerFromGURL(const GURL& gurl,
   return true;
 }
 
-}  // namespace
-
-namespace data_reduction_proxy {
-
-bool MaybeBypassProxyAndPrepareToRetry(
-    const DataReductionProxyParams* data_reduction_proxy_params,
-    net::URLRequest* request,
-    DataReductionProxyBypassType* proxy_bypass_type,
-    DataReductionProxyEventStore* event_store) {
-  DCHECK(request);
-  if (!data_reduction_proxy_params)
-    return false;
-
-  const net::HttpResponseHeaders* response_headers =
-      request->response_info().headers.get();
-  if (!response_headers)
-    return false;
-
-  // Empty implies either that the request was served from cache or that
-  // request was served directly from the origin.
-  if (request->proxy_server().IsEmpty())
-    return false;
-
-  DataReductionProxyTypeInfo data_reduction_proxy_type_info;
-  if (!data_reduction_proxy_params->WasDataReductionProxyUsed(
-          request, &data_reduction_proxy_type_info)) {
-    return false;
-  }
-  // TODO(bengr): Implement bypass for CONNECT tunnel.
-  if (data_reduction_proxy_type_info.is_ssl)
-    return false;
-
-  if (data_reduction_proxy_type_info.proxy_servers.first.is_empty())
-    return false;
-
-  // At this point, the response is expected to have the data reduction proxy
-  // via header, so detect and report cases where the via header is missing.
-  DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
-      !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
-      response_headers);
-
-  // GetDataReductionProxyBypassType will only log a net_log event if a bypass
-  // command was sent via the data reduction proxy headers
-  bool event_logged = false;
-  DataReductionProxyInfo data_reduction_proxy_info;
-  DataReductionProxyBypassType bypass_type =
-      GetDataReductionProxyBypassType(
-          response_headers, request->url(), request->net_log(),
-          &data_reduction_proxy_info, event_store, &event_logged);
-
-  if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER &&
-      DataReductionProxyParams::
-          IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial()) {
-    // Ignore MISSING_VIA_HEADER_OTHER proxy bypass events if the client is part
-    // of the field trial to remove these kinds of bypasses.
-    bypass_type = BYPASS_EVENT_TYPE_MAX;
-  }
-
-  if (proxy_bypass_type)
-    *proxy_bypass_type = bypass_type;
-  if (bypass_type == BYPASS_EVENT_TYPE_MAX)
-    return false;
-
-  if (!event_logged) {
-    event_store->AddBypassTypeEvent(
-        request->net_log(), bypass_type, request->url(),
-        data_reduction_proxy_info.bypass_duration);
-  }
-
-  DCHECK(request->context());
-  DCHECK(request->context()->proxy_service());
-  net::ProxyServer proxy_server;
-  SetProxyServerFromGURL(
-      data_reduction_proxy_type_info.proxy_servers.first, &proxy_server);
-
-  // Only record UMA if the proxy isn't already on the retry list.
-  if (!data_reduction_proxy_params->IsProxyBypassed(
-          request->context()->proxy_service()->proxy_retry_info(),
-          proxy_server,
-          NULL)) {
-    DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
-        !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
-        data_reduction_proxy_info.bypass_all,
-        proxy_server,
-        bypass_type);
-  }
-
-  if (data_reduction_proxy_info.mark_proxies_as_bad) {
-    MarkProxiesAsBadUntil(request,
-                          data_reduction_proxy_info.bypass_duration,
-                          data_reduction_proxy_info.bypass_all,
-                          data_reduction_proxy_type_info.proxy_servers);
-  } else {
-    request->SetLoadFlags(request->load_flags() |
-                          net::LOAD_DISABLE_CACHE |
-                          net::LOAD_BYPASS_PROXY);
-  }
-
-  // Only retry idempotent methods.
-  if (!IsRequestIdempotent(request))
-    return false;
-  return true;
-}
-
-void OnResolveProxyHandler(const GURL& url,
-                           int load_flags,
-                           const net::ProxyConfig& data_reduction_proxy_config,
-                           const net::ProxyRetryInfoMap& proxy_retry_info,
-                           const DataReductionProxyParams* params,
-                           net::ProxyInfo* result) {
-  DCHECK(params);
-  DCHECK(result->is_empty() || result->is_direct() ||
-         !params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
-                                       NULL));
-  if (data_reduction_proxy_config.is_valid() &&
-      result->proxy_server().is_direct() &&
-      result->proxy_list().size() == 1 &&
-      !url.SchemeIsWSOrWSS()) {
-    net::ProxyInfo data_reduction_proxy_info;
-    data_reduction_proxy_config.proxy_rules().Apply(
-        url, &data_reduction_proxy_info);
-    data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
-    if (!data_reduction_proxy_info.proxy_server().is_direct())
-      result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
-  }
-
-  if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
-      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial()) {
-    if (!result->is_empty() &&
-        !result->is_direct() &&
-        params->IsDataReductionProxy(result->proxy_server().host_port_pair(),
-                                     NULL)) {
-      result->RemoveProxiesWithoutScheme(net::ProxyServer::SCHEME_DIRECT);
-    }
-  }
-}
-
-bool IsRequestIdempotent(const net::URLRequest* request) {
-  DCHECK(request);
-  if (request->method() == "GET" ||
-      request->method() == "OPTIONS" ||
-      request->method() == "HEAD" ||
-      request->method() == "PUT" ||
-      request->method() == "DELETE" ||
-      request->method() == "TRACE")
-    return true;
-  return false;
-}
-
+// Adds non-empty entries in |data_reduction_proxies| to the retry map
+// maintained by the proxy service of the request. Adds
+// |data_reduction_proxies.second| to the retry list only if |bypass_all| is
+// true.
 void MarkProxiesAsBadUntil(
     net::URLRequest* request,
     const base::TimeDelta& bypass_duration,
@@ -217,6 +71,150 @@ void MarkProxiesAsBadUntil(
                                        bypass_duration,
                                        fallback,
                                        request->net_log());
+}
+
+}  // namespace
+
+namespace data_reduction_proxy {
+
+DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol(
+    DataReductionProxyParams* params, DataReductionProxyEventStore* event_store)
+    : params_(params), event_store_(event_store) {
+  DCHECK(params_);
+  DCHECK(event_store_);
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+}
+
+DataReductionProxyBypassProtocol::~DataReductionProxyBypassProtocol() {
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
+bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
+    net::URLRequest* request,
+    DataReductionProxyBypassType* proxy_bypass_type) {
+  DCHECK(request);
+  const net::HttpResponseHeaders* response_headers =
+      request->response_info().headers.get();
+  if (!response_headers)
+    return false;
+
+  // Empty implies either that the request was served from cache or that
+  // request was served directly from the origin.
+  if (request->proxy_server().IsEmpty())
+    return false;
+
+  DataReductionProxyTypeInfo data_reduction_proxy_type_info;
+  if (!params_->WasDataReductionProxyUsed(
+          request, &data_reduction_proxy_type_info)) {
+    return false;
+  }
+  // TODO(bengr): Implement bypass for CONNECT tunnel.
+  if (data_reduction_proxy_type_info.is_ssl)
+    return false;
+
+  if (data_reduction_proxy_type_info.proxy_servers.first.is_empty())
+    return false;
+
+  // At this point, the response is expected to have the data reduction proxy
+  // via header, so detect and report cases where the via header is missing.
+  DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
+      !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
+      response_headers);
+
+  if (DataReductionProxyParams::
+          IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
+      HasDataReductionProxyViaHeader(response_headers, NULL)) {
+    DCHECK(params_->IsDataReductionProxy(request->proxy_server(), NULL));
+    via_header_producing_proxies_.insert(request->proxy_server());
+  }
+
+  // GetDataReductionProxyBypassType will only log a net_log event if a bypass
+  // command was sent via the data reduction proxy headers
+  bool event_logged = false;
+  DataReductionProxyInfo data_reduction_proxy_info;
+  DataReductionProxyBypassType bypass_type =
+      GetDataReductionProxyBypassType(
+          response_headers, request->url(), request->net_log(),
+          &data_reduction_proxy_info, event_store_, &event_logged);
+
+  if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER) {
+    if (DataReductionProxyParams::
+            IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() ||
+        (DataReductionProxyParams::
+             IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
+         via_header_producing_proxies_.find(request->proxy_server()) !=
+             via_header_producing_proxies_.end())) {
+      // Ignore MISSING_VIA_HEADER_OTHER proxy bypass events if the client is
+      // part of the field trial to remove these kinds of bypasses, or if the
+      // client is part of the field trial to relax this bypass rule and Chrome
+      // has previously seen a data reduction proxy via header on a response
+      // through this proxy since the last network change.
+      bypass_type = BYPASS_EVENT_TYPE_MAX;
+    }
+  }
+
+  if (proxy_bypass_type)
+    *proxy_bypass_type = bypass_type;
+  if (bypass_type == BYPASS_EVENT_TYPE_MAX)
+    return false;
+
+  if (!event_logged) {
+    event_store_->AddBypassTypeEvent(
+        request->net_log(), bypass_type, request->url(),
+        data_reduction_proxy_info.bypass_duration);
+  }
+
+  DCHECK(request->context());
+  DCHECK(request->context()->proxy_service());
+  net::ProxyServer proxy_server;
+  SetProxyServerFromGURL(
+      data_reduction_proxy_type_info.proxy_servers.first, &proxy_server);
+
+  // Only record UMA if the proxy isn't already on the retry list.
+  if (!params_->IsProxyBypassed(
+          request->context()->proxy_service()->proxy_retry_info(),
+          proxy_server,
+          NULL)) {
+    DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
+        !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
+        data_reduction_proxy_info.bypass_all,
+        proxy_server,
+        bypass_type);
+  }
+
+  if (data_reduction_proxy_info.mark_proxies_as_bad) {
+    MarkProxiesAsBadUntil(request,
+                          data_reduction_proxy_info.bypass_duration,
+                          data_reduction_proxy_info.bypass_all,
+                          data_reduction_proxy_type_info.proxy_servers);
+  } else {
+    request->SetLoadFlags(request->load_flags() |
+                          net::LOAD_DISABLE_CACHE |
+                          net::LOAD_BYPASS_PROXY);
+  }
+
+  // Only retry idempotent methods.
+  if (!IsRequestIdempotent(request))
+    return false;
+  return true;
+}
+
+// static
+bool DataReductionProxyBypassProtocol::IsRequestIdempotent(
+    const net::URLRequest* request) {
+  DCHECK(request);
+  if (request->method() == "GET" ||
+      request->method() == "OPTIONS" ||
+      request->method() == "HEAD" ||
+      request->method() == "PUT" ||
+      request->method() == "DELETE" ||
+      request->method() == "TRACE")
+    return true;
+  return false;
+}
+
+void DataReductionProxyBypassProtocol::OnIPAddressChanged() {
+  via_header_producing_proxies_.clear();
 }
 
 }  // namespace data_reduction_proxy
