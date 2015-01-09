@@ -43,6 +43,7 @@ private:
     URLInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
     virtual void countUsage() override;
     virtual const AtomicString& formControlType() const override;
+    virtual String sanitizeValue(const String&) const override;
     virtual bool typeMismatchFor(const String&) const override;
     virtual bool typeMismatch() const override;
     virtual String typeMismatchText() const override;

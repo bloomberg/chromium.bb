@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<input type="url" id="input1" value=" homepage " />
+<input type="url" id="input2" value="home&#x000D;&#x000A;page" />
+<script>
+test(function()
+{
+    var input = document.getElementById("input1");
+    assert_equals(input.value, "homepage");
+    input.value = " home page ";
+    assert_equals(input.value, "home page");
+    input.value = "home\u000Apage";
+    assert_equals(input.value, "homepage");
+    input.value = "home\u000Dpage";
+    assert_equals(input.value, "homepage");
+    input.value = "home\u000D\u000Apage";
+    assert_equals(input.value, "homepage");
+    input = document.getElementById("input2");
+    assert_equals(input.value, "homepage");
+}, "Input type url with line break and leading-trailing whitespace should be stripped");
+</script>

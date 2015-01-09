@@ -33,6 +33,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -51,6 +52,12 @@ void URLInputType::countUsage()
 const AtomicString& URLInputType::formControlType() const
 {
     return InputTypeNames::url;
+}
+
+String URLInputType::sanitizeValue(const String& proposedValue) const
+{
+    String value = proposedValue.removeCharacters(isHTMLLineBreak);
+    return stripLeadingAndTrailingHTMLSpaces(value);
 }
 
 bool URLInputType::typeMismatchFor(const String& value) const
