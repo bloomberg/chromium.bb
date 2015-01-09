@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
@@ -378,6 +379,8 @@ class ExtensionDownloadsEventRouter
     Profile* profile;
   };
 
+  void CheckForHistoryFilesRemoval();
+
  private:
   void DispatchEvent(
       const std::string& event_name,
@@ -394,6 +397,8 @@ class ExtensionDownloadsEventRouter
   Profile* profile_;
   AllDownloadItemNotifier notifier_;
   std::set<const extensions::Extension*> shelf_disabling_extensions_;
+
+  base::Time last_checked_removal_;
 
   // Listen to extension unloaded notifications.
   ScopedObserver<extensions::ExtensionRegistry,
