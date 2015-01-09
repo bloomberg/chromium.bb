@@ -71,12 +71,34 @@ CubicBezier::CubicBezier(double x1, double y1, double x2, double y2)
       y1_(y1),
       x2_(x2),
       y2_(y2) {
+  InitGradients();
 }
 
 CubicBezier::~CubicBezier() {
 }
 
+void CubicBezier::InitGradients() {
+  if (x1_ > 0)
+    start_gradient_ = y1_ / x1_;
+  else if (!y1_ && x2_ > 0)
+    start_gradient_ = y2_ / x2_;
+  else
+    start_gradient_ = 0;
+
+  if (x2_ < 1)
+    end_gradient_ = (y2_ - 1) / (x2_ - 1);
+  else if (x2_ == 1 && x1_ < 1)
+    end_gradient_ = (y1_ - 1) / (x1_ - 1);
+  else
+    end_gradient_ = 0;
+}
+
 double CubicBezier::Solve(double x) const {
+  if (x < 0)
+    return start_gradient_ * x;
+  if (x > 1)
+    return 1.0 + end_gradient_ * (x - 1.0);
+
   return eval_bezier(y1_, y2_, bezier_interp(x1_, x2_, x));
 }
 

@@ -26,10 +26,15 @@ class GFX_EXPORT CubicBezier {
   void Range(double* min, double* max) const;
 
  private:
+  void InitGradients();
+
   double x1_;
   double y1_;
   double x2_;
   double y2_;
+
+  double start_gradient_;
+  double end_gradient_;
 
   DISALLOW_ASSIGN(CubicBezier);
 };

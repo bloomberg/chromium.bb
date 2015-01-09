@@ -164,5 +164,32 @@ TEST(CubicBezierTest, Slope) {
   EXPECT_NEAR(function.Slope(1), 0, epsilon);
 }
 
+TEST(CubicBezierTest, InputOutOfRange) {
+  CubicBezier simple(0.5, 1.0, 0.5, 1.0);
+  EXPECT_EQ(-2.0, simple.Solve(-1.0));
+  EXPECT_EQ(1.0, simple.Solve(2.0));
+
+  CubicBezier coincidentEndpoints(0.0, 0.0, 1.0, 1.0);
+  EXPECT_EQ(-1.0, coincidentEndpoints.Solve(-1.0));
+  EXPECT_EQ(2.0, coincidentEndpoints.Solve(2.0));
+
+  CubicBezier verticalGradient(0.0, 1.0, 1.0, 0.0);
+  EXPECT_EQ(0.0, verticalGradient.Solve(-1.0));
+  EXPECT_EQ(1.0, verticalGradient.Solve(2.0));
+
+  CubicBezier distinctEndpoints(0.1, 0.2, 0.8, 0.8);
+  EXPECT_EQ(-2.0, distinctEndpoints.Solve(-1.0));
+  EXPECT_EQ(2.0, distinctEndpoints.Solve(2.0));
+
+  CubicBezier coincidentEndpoint(0.0, 0.0, 0.8, 0.8);
+  EXPECT_EQ(-1.0, coincidentEndpoint.Solve(-1.0));
+  EXPECT_EQ(2.0, coincidentEndpoint.Solve(2.0));
+
+  CubicBezier threeCoincidentPoints(0.0, 0.0, 0.0, 0.0);
+  EXPECT_EQ(0, threeCoincidentPoints.Solve(-1.0));
+  EXPECT_EQ(2.0, threeCoincidentPoints.Solve(2.0));
+
+}
+
 }  // namespace
 }  // namespace gfx
