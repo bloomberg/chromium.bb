@@ -125,19 +125,30 @@ public class NotificationUIManager {
 
         String notificationId = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_ID);
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
-            return sInstance.onNotificationClicked(notificationId);
-        } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
-            return sInstance.onNotificationClosed(notificationId);
-        } else {
-            Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
-            return false;
+            if (!intent.hasExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA)) {
+                Log.e(TAG, "No notification data has been provided.");
+                return false;
+            }
+
+            byte[] notificationData =
+                    intent.getByteArrayExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA);
+            return sInstance.onNotificationClicked(notificationId, notificationData);
         }
+
+        if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
+            return sInstance.onNotificationClosed(notificationId);
+        }
+
+        Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
+        return false;
     }
 
-    private PendingIntent getPendingIntent(String notificationId, int platformId, String action) {
+    private PendingIntent getPendingIntent(String action, String notificationId, int platformId,
+                                           byte[] notificationData) {
         Intent intent = new Intent(action);
         intent.setClass(mAppContext, NotificationService.Receiver.class);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA, notificationData);
 
         return PendingIntent.getBroadcast(mAppContext, platformId, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
@@ -153,11 +164,12 @@ public class NotificationUIManager {
      * @param icon Icon to be displayed in the notification. When this isn't a valid Bitmap, a
      *             default icon will be generated instead.
      * @param origin Full text of the origin, including the protocol, owning this notification.
+     * @param notificationData Serialized data associated with the notification.
      * @return The id using which the notification can be identified.
      */
     @CalledByNative
     private int displayNotification(String notificationId, String title, String body, Bitmap icon,
-                                    String origin) {
+                                    String origin, byte[] notificationData) {
         if (icon == null || icon.getWidth() == 0) {
             icon = getIconGenerator().generateIconForUrl(origin);
         }
@@ -169,11 +181,11 @@ public class NotificationUIManager {
                 .setLargeIcon(icon)
                 .setSmallIcon(R.drawable.notification_badge)
                 .setContentIntent(getPendingIntent(
-                        notificationId, mLastNotificationId,
-                        NotificationConstants.ACTION_CLICK_NOTIFICATION))
+                        NotificationConstants.ACTION_CLICK_NOTIFICATION,
+                        notificationId, mLastNotificationId, notificationData))
                 .setDeleteIntent(getPendingIntent(
-                        notificationId, mLastNotificationId,
-                        NotificationConstants.ACTION_CLOSE_NOTIFICATION))
+                        NotificationConstants.ACTION_CLOSE_NOTIFICATION,
+                        notificationId, mLastNotificationId, notificationData))
                 .setSubText(origin);
 
         if (sObserver != null) {
@@ -219,8 +231,9 @@ public class NotificationUIManager {
         mNotificationManager.cancel(platformId);
     }
 
-    private boolean onNotificationClicked(String notificationId) {
-        return nativeOnNotificationClicked(mNativeNotificationManager, notificationId);
+    private boolean onNotificationClicked(String notificationId, byte[] notificationData) {
+        return nativeOnNotificationClicked(
+                mNativeNotificationManager, notificationId, notificationData);
     }
 
     private boolean onNotificationClosed(String notificationId) {
@@ -230,7 +243,8 @@ public class NotificationUIManager {
     private static native void nativeInitializeNotificationUIManager();
 
     private native boolean nativeOnNotificationClicked(
-            long nativeNotificationUIManagerAndroid, String notificationId);
+            long nativeNotificationUIManagerAndroid, String notificationId,
+            byte[] notificationData);
     private native boolean nativeOnNotificationClosed(
             long nativeNotificationUIManagerAndroid, String notificationId);
 }

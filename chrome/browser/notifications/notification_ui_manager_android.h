@@ -25,7 +25,8 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   // Called by the Java implementation when a notification has been clicked on.
   bool OnNotificationClicked(JNIEnv* env,
                              jobject java_object,
-                             jstring notification_id);
+                             jstring notification_id,
+                             jbyteArray serialized_notification_data);
 
   // Called by the Java implementation when a notification has been closed.
   bool OnNotificationClosed(JNIEnv* env,

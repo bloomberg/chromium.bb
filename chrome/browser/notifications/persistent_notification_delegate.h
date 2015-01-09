@@ -26,6 +26,14 @@ class PersistentNotificationDelegate : public NotificationDelegate {
       const GURL& origin,
       const content::PlatformNotificationData& notification_data);
 
+  int64 service_worker_registration_id() const {
+    return service_worker_registration_id_;
+  }
+
+  const content::PlatformNotificationData& notification_data() const {
+    return notification_data_;
+  }
+
   // NotificationDelegate implementation.
   void Display() override;
   void Close(bool by_user) override;

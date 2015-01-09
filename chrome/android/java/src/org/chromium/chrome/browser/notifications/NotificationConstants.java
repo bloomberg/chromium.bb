@@ -15,6 +15,7 @@ public class NotificationConstants {
             "org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION";
 
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
+    public static final String EXTRA_NOTIFICATION_DATA = "notification_data";
 
     /**
      * Unique identifier for a single sync notification. Since the notification ID is reused,
