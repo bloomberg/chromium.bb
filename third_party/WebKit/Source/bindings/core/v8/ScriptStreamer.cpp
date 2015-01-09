@@ -89,9 +89,8 @@ private:
 class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     WTF_MAKE_NONCOPYABLE(SourceStream);
 public:
-    SourceStream(ScriptStreamer* streamer)
+    SourceStream()
         : v8::ScriptCompiler::ExternalSourceStream()
-        , m_streamer(streamer)
         , m_cancelled(false)
         , m_dataPosition(0) { }
 
@@ -124,10 +123,10 @@ public:
         m_dataQueue.finish();
     }
 
-    void didReceiveData(size_t lengthOfBOM)
+    void didReceiveData(ScriptStreamer* streamer, size_t lengthOfBOM)
     {
         ASSERT(isMainThread());
-        prepareDataOnMainThread(lengthOfBOM);
+        prepareDataOnMainThread(streamer, lengthOfBOM);
     }
 
     void cancel()
@@ -146,22 +145,22 @@ public:
     }
 
 private:
-    void prepareDataOnMainThread(size_t lengthOfBOM)
+    void prepareDataOnMainThread(ScriptStreamer* streamer, size_t lengthOfBOM)
     {
         ASSERT(isMainThread());
         // The Resource must still be alive; otherwise we should've cancelled
         // the streaming (if we have cancelled, the background thread is not
         // waiting).
-        ASSERT(m_streamer->resource());
+        ASSERT(streamer->resource());
 
         // BOM can only occur at the beginning of the data.
         ASSERT(lengthOfBOM == 0 || m_dataPosition == 0);
 
-        if (m_streamer->resource()->cachedMetadata(V8ScriptRunner::tagForCodeCache(m_streamer->resource()))) {
+        if (streamer->resource()->cachedMetadata(V8ScriptRunner::tagForCodeCache(streamer->resource()))) {
             // The resource has a code cache, so it's unnecessary to stream and
             // parse the code. Cancel the streaming and resume the non-streaming
             // code path.
-            m_streamer->suppressStreaming();
+            streamer->suppressStreaming();
             {
                 MutexLocker locker(m_mutex);
                 m_cancelled = true;
@@ -172,7 +171,7 @@ private:
 
         if (!m_resourceBuffer) {
             // We don't have a buffer yet. Try to get it from the resource.
-            SharedBuffer* buffer = m_streamer->resource()->resourceBuffer();
+            SharedBuffer* buffer = streamer->resource()->resourceBuffer();
             m_resourceBuffer = RefPtr<SharedBuffer>(buffer);
         }
 
@@ -205,8 +204,6 @@ private:
             m_dataQueue.produce(copiedData, dataLength);
         }
     }
-
-    ScriptStreamer* m_streamer;
 
     // For coordinating between the main thread and background thread tasks.
     // Guarded by m_mutex.
@@ -351,7 +348,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
 
         ASSERT(!m_stream);
         ASSERT(!m_source);
-        m_stream = new SourceStream(this);
+        m_stream = new SourceStream();
         // m_source takes ownership of m_stream.
         m_source = adoptPtr(new v8::ScriptCompiler::StreamedSource(m_stream, m_encoding));
 
@@ -376,7 +373,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         blink::Platform::current()->histogramEnumeration(histogramName, 1, 2);
     }
     if (m_stream)
-        m_stream->didReceiveData(lengthOfBOM);
+        m_stream->didReceiveData(this, lengthOfBOM);
 }
 
 void ScriptStreamer::notifyFinished(Resource* resource)
