@@ -75,12 +75,6 @@ struct CC_EXPORT BeginFrameArgs {
   // magic numbers.
   static base::TimeDelta DefaultInterval();
 
-  // This is the default amount of time after the frame_time to retroactively
-  // send a BeginFrame that had been skipped. This only has an effect if the
-  // deadline has passed, since the deadline is also used to trigger BeginFrame
-  // retroactively.
-  static base::TimeDelta DefaultRetroactiveBeginFramePeriod();
-
   bool IsValid() const { return interval >= base::TimeDelta(); }
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;

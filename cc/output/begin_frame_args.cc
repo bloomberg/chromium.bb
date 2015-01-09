@@ -92,8 +92,4 @@ base::TimeDelta BeginFrameArgs::DefaultInterval() {
   return base::TimeDelta::FromMicroseconds(16666);
 }
 
-base::TimeDelta BeginFrameArgs::DefaultRetroactiveBeginFramePeriod() {
-  return base::TimeDelta::FromMicroseconds(4444);
-}
-
 }  // namespace cc
