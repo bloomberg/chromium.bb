@@ -845,7 +845,10 @@ void DeleteSelectionCommand::doApply()
     if (placeholder) {
         if (m_sanitizeMarkup)
             removeRedundantBlocks();
-        insertNodeAt(placeholder.get(), m_endingPosition);
+        // handleGeneralDelete cause DOM mutation events so |m_endingPosition|
+        // can be out of document.
+        if (m_endingPosition.inDocument())
+            insertNodeAt(placeholder.get(), m_endingPosition);
     }
 
     rebalanceWhitespaceAt(m_endingPosition);
