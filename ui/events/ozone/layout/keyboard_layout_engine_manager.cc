@@ -26,7 +26,10 @@ KeyboardLayoutEngineManager::~KeyboardLayoutEngineManager() {
 
 void KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
     scoped_ptr<KeyboardLayoutEngine> engine) {
-  new KeyboardLayoutEngineManager(engine.release());
+  if (instance_)
+    instance_->keyboard_layout_engine_.reset(engine.release());
+  else
+    new KeyboardLayoutEngineManager(engine.release());
 }
 
 KeyboardLayoutEngine* KeyboardLayoutEngineManager::GetKeyboardLayoutEngine() {
