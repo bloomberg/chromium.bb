@@ -11,6 +11,7 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/virtual_keyboard_test_helper.h"
 #include "base/command_line.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
@@ -69,6 +70,8 @@ void TrayKeyboardLockTest::TearDownViews() {
 }
 
 void TrayKeyboardLockTest::SetUp() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      keyboard::switches::kEnableAutoVirtualKeyboard);
   test::AshTestBase::SetUp();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
 }
