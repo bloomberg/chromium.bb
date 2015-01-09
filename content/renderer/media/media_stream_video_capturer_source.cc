@@ -41,7 +41,8 @@ VideoCapturerDelegate::VideoCapturerDelegate(
     const StreamDeviceInfo& device_info)
     : session_id_(device_info.session_id),
       is_screen_cast_(device_info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-                      device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+                      device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE),
+      weak_factory_(this) {
   DVLOG(3) << "VideoCapturerDelegate::ctor";
 
   // NULL in unit test.
@@ -54,6 +55,7 @@ VideoCapturerDelegate::VideoCapturerDelegate(
 }
 
 VideoCapturerDelegate::~VideoCapturerDelegate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "VideoCapturerDelegate::dtor";
   if (!release_device_cb_.is_null())
     release_device_cb_.Run();
@@ -96,7 +98,8 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
       session_id_,
       media::BindToCurrentLoop(
           base::Bind(
-              &VideoCapturerDelegate::OnDeviceFormatsInUseReceived, this)));
+              &VideoCapturerDelegate::OnDeviceFormatsInUseReceived,
+              weak_factory_.GetWeakPtr())));
 }
 
 void VideoCapturerDelegate::StartCapture(
@@ -119,7 +122,8 @@ void VideoCapturerDelegate::StartCapture(
           session_id_,
           params,
           media::BindToCurrentLoop(base::Bind(
-              &VideoCapturerDelegate::OnStateUpdateOnRenderThread, this)),
+              &VideoCapturerDelegate::OnStateUpdateOnRenderThread,
+              weak_factory_.GetWeakPtr())),
           new_frame_callback);
 }
 
@@ -171,12 +175,13 @@ void VideoCapturerDelegate::OnDeviceFormatsInUseReceived(
       RenderThreadImpl::current()->video_capture_impl_manager();
   if (!manager)
     return;
+
   manager->GetDeviceSupportedFormats(
       session_id_,
       media::BindToCurrentLoop(
           base::Bind(
               &VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated,
-              this)));
+              weak_factory_.GetWeakPtr())));
 }
 
 void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
@@ -189,7 +194,7 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
   if (source_formats_callback_.is_null())
     return;
   if (formats.size()) {
-    source_formats_callback_.Run(formats);
+    base::ResetAndReturn(&source_formats_callback_).Run(formats);
   } else {
     // The capture device doesn't seem to support capability enumeration,
     // compose a fallback list of capabilities.
@@ -201,16 +206,15 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
             kVideoFrameRates[j], media::PIXEL_FORMAT_I420));
       }
     }
-    source_formats_callback_.Run(default_formats);
+    base::ResetAndReturn(&source_formats_callback_).Run(default_formats);
   }
-  source_formats_callback_.Reset();
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const StreamDeviceInfo& device_info,
     const SourceStoppedCallback& stop_callback,
-    const scoped_refptr<VideoCapturerDelegate>& delegate)
-    : delegate_(delegate) {
+    scoped_ptr<VideoCapturerDelegate> delegate)
+    : delegate_(delegate.Pass()) {
   SetDeviceInfo(device_info);
   SetStopCallback(stop_callback);
 }

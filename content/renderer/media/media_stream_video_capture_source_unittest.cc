@@ -30,7 +30,6 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
                     const RunningCallback& running_callback));
   MOCK_METHOD0(StopCapture, void());
 
- private:
   virtual ~MockVideoCapturerDelegate() {}
 };
 
@@ -39,6 +38,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   MediaStreamVideoCapturerSourceTest()
      : child_process_(new ChildProcess()),
        source_(NULL),
+       delegate_(NULL),
        source_stopped_(false) {
   }
 
@@ -48,12 +48,14 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
   void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
-    delegate_ = new MockVideoCapturerDelegate(device_info);
+    scoped_ptr<MockVideoCapturerDelegate> delegate(
+        new MockVideoCapturerDelegate(device_info));
+    delegate_ = delegate.get();
     source_ = new MediaStreamVideoCapturerSource(
         device_info,
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                     base::Unretained(this)),
-        delegate_);
+        delegate.Pass());
 
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
@@ -76,7 +78,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
   MockVideoCapturerDelegate& mock_delegate() {
-    return *static_cast<MockVideoCapturerDelegate*>(delegate_.get());
+    return *delegate_;
   }
 
   void OnSourceStopped(const blink::WebMediaStreamSource& source) {
@@ -93,8 +95,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource webkit_source_;
-  MediaStreamVideoCapturerSource* source_;  // owned by webkit_source.
-  scoped_refptr<VideoCapturerDelegate> delegate_;
+  MediaStreamVideoCapturerSource* source_;  // owned by |webkit_source_|.
+  MockVideoCapturerDelegate* delegate_; // owned by |source|.
   blink::WebString webkit_source_id_;
   bool source_stopped_;
 };
@@ -133,12 +135,14 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
 TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
-  delegate_ = new VideoCapturerDelegate(device_info);
+  scoped_ptr<VideoCapturerDelegate> delegate(
+      new VideoCapturerDelegate(device_info));
+  VideoCapturerDelegate* delegate_ptr = delegate.get();
   source_ = new MediaStreamVideoCapturerSource(
       device_info,
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
-      delegate_);
+      delegate.Pass());
   webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeVideo,
                             base::UTF8ToUTF16("dummy_source_name"),
@@ -148,13 +152,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   blink::WebMediaStreamTrack track = StartSource();
   message_loop_.RunUntilIdle();
 
-  delegate_->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_STARTED);
+  delegate_ptr->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_STARTED);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             webkit_source_.readyState());
 
   EXPECT_FALSE(source_stopped_);
-  delegate_->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_ERROR);
+  delegate_ptr->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_ERROR);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             webkit_source_.readyState());

@@ -583,7 +583,7 @@ MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
   return new content::MediaStreamVideoCapturerSource(
       device,
       stop_callback,
-      new VideoCapturerDelegate(device));
+      scoped_ptr<VideoCapturerDelegate>(new VideoCapturerDelegate(device)));
 }
 
 void UserMediaClientImpl::CreateVideoTracks(
