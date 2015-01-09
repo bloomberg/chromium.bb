@@ -494,6 +494,17 @@ void ContentsView::Layout() {
 
   if (rect.IsEmpty())
     return;
+  // TODO(mgiuca): Temporary work-around for http://crbug.com/441962 and
+  // http://crbug.com/446978. This will first be called while ContentsView is
+  // 0x0, which means that the child views will be positioned incorrectly in RTL
+  // mode (the position is based on the parent's size). When the parent is later
+  // resized, the children are not repositioned due to http://crbug.com/446407.
+  // Therefore, we must not position the children until the parent is the
+  // correct size.
+  // NOTE: There is a similar hack in AppsGridView::CalculateIdealBounds; both
+  // should be removed once http://crbug.com/446407 is resolved.
+  if (GetContentsBounds().IsEmpty())
+    return;
 
   gfx::Rect offscreen_target(rect);
   offscreen_target.set_x(-rect.width());

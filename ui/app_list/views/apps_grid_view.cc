@@ -1168,8 +1168,9 @@ void AppsGridView::MoveSelected(int page_delta,
 }
 
 void AppsGridView::CalculateIdealBounds() {
-  // TODO(calamity): This fixes http://crbug.com/422604 on ChromeOS but it's
-  // unclear why. This should be investigated to fix the issue on Linux Ash.
+  // TODO(mgiuca): This is a work-around for http://crbug.com/422604. See
+  // comment in ContentsView::Layout for details. This should be removed once
+  // http://crbug.com/446407 is resolved.
   if (GetContentsBounds().IsEmpty())
     return;
 
