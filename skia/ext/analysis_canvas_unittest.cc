@@ -199,7 +199,7 @@ TEST(AnalysisCanvasTest, ClipPath) {
   // this optimization and truly test clipPath's behavior.
   SkPath path;
   path.moveTo(0, 0);
-  path.lineTo(128, 50); 
+  path.lineTo(128, 50);
   path.lineTo(255, 0);
   path.lineTo(255, 255);
   path.lineTo(0, 255);
@@ -228,7 +228,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   SkColor outputColor;
   SolidColorFill(canvas);
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
-  
+
   SkRect bounds = SkRect::MakeWH(255, 255);
   SkPaint paint;
   paint.setColor(SkColorSetARGB(255, 255, 255, 255));
@@ -257,7 +257,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
 
   SolidColorFill(canvas);
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
-  
+
   canvas.restore();
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
 
@@ -282,11 +282,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
 }
 
 TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
-  SkTileGridFactory::TileGridInfo tile_grid_info;
-  tile_grid_info.fTileInterval.set(256, 256);
-  tile_grid_info.fOffset.setZero();
-  tile_grid_info.fMargin.setEmpty();
-  SkTileGridFactory factory(tile_grid_info);
+  SkRTreeFactory factory;
   SkPictureRecorder recorder;
 
   // Create a picture with 3 commands, last of which is non-solid.
