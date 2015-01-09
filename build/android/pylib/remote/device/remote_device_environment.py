@@ -62,6 +62,12 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._runner_type = args.runner_type
     self._device = ''
     self._verbose_count = args.verbose_count
+    self._timeouts = {
+        'queueing': 60 * 10,
+        'installing': 60 * 10,
+        'in-progress': 60 * 30,
+        'unknown': 60 * 5
+    }
 
     if not args.trigger and not args.collect:
       self._trigger = True
@@ -190,3 +196,7 @@ class RemoteDeviceEnvironment(environment.Environment):
   @property
   def verbose_count(self):
     return self._verbose_count
+
+  @property
+  def timeouts(self):
+    return self._timeouts

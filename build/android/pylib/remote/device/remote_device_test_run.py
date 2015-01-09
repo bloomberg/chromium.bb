@@ -22,6 +22,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
   WAIT_TIME = 5
   COMPLETE = 'complete'
+  HEARTBEAT_INTERVAL = 300
 
   def __init__(self, env, test_instance):
     """Constructor.
@@ -37,7 +38,6 @@ class RemoteDeviceTestRun(test_run.TestRun):
     self._test_id = ''
     self._results = ''
     self._test_run_id = ''
-    self._current_status = ''
 
   #override
   def RunTests(self):
@@ -63,8 +63,28 @@ class RemoteDeviceTestRun(test_run.TestRun):
                           'File for storing test_run_id must be a string.')
         with open(self._env.collect, 'r') as test_run_id_file:
           self._test_run_id = test_run_id_file.read().strip()
+      current_status = ''
+      timeout_counter = 0
+      heartbeat_counter = 0
       while self._GetTestStatus(self._test_run_id) != self.COMPLETE:
+        if self._results['detailed_status'] != current_status:
+          logging.info('Test status: %s', self._results['detailed_status'])
+          current_status = self._results['detailed_status']
+          timeout_counter = 0
+          heartbeat_counter = 0
+        if heartbeat_counter > self.HEARTBEAT_INTERVAL:
+          logging.info('Test status: %s', self._results['detailed_status'])
+          heartbeat_counter = 0
+
+        timeout = self._env.timeouts.get(
+            current_status, self._env.timeouts['unknown'])
+        if timeout_counter > timeout:
+          raise remote_device_helper.RemoteDeviceError(
+              'Timeout while in %s state for %s seconds'
+              % (current_status, timeout))
         time.sleep(self.WAIT_TIME)
+        timeout_counter += self.WAIT_TIME
+        heartbeat_counter += self.WAIT_TIME
       self._DownloadTestResults(self._env.results_path)
       return self._ParseTestResults()
 
@@ -148,9 +168,6 @@ class RemoteDeviceTestRun(test_run.TestRun):
     remote_device_helper.TestHttpResponse(test_check_res,
                                           'Unable to get test status.')
     self._results = test_check_res.json()['response']
-    if self._results['detailed_status'] != self._current_status:
-      logging.info('Test status: %s', self._results['detailed_status'])
-      self._current_status = self._results['detailed_status']
     return self._results['status']
 
   def _AmInstrumentTestSetup(self, app_path, test_path, runner_package):
