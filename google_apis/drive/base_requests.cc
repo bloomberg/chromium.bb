@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -61,11 +62,11 @@ const char kMessageFormatBeforeFile[] =
     "--%s\nContent-Type: %s\n\n%s\n--%s\nContent-Type: %s\n\n";
 const char kMessageFormatAfterFile[] = "\n--%s--";
 
-// The predetermined boundary string for multipart/related.
-// TODO(hirono): Generates the boundary string randomly and ensure the string
-// does not appears in the content parts.
-const char kBoundaryForPrototype[] =
-    "LJx6AFbwBL94CmojDJBcmXpl1WfnvCUOenZqWrpI1Ua3l7xv8Y";
+// Characters to be used for multipart/related boundary.
+const char kBoundaryCharacters[] =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+// Size of multipart/related's boundary.
+const char kBoundarySize = 70;
 
 // Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
 // the calling thread when finished with either success or failure.
@@ -140,8 +141,6 @@ std::string CreateMultipartUploadMetadataJson(
 
 // Obtains the multipart body for the metadata string and file contents. If
 // predetermined_boundary is empty, the function generates the boundary string.
-// TODO(hirono): Generates the boundary string randomly and ensure the string
-// does not appears in the content parts.
 bool GetMultipartContent(const std::string& predetermined_boundary,
                          const std::string& metadata_json,
                          const std::string& content_type,
@@ -152,18 +151,32 @@ bool GetMultipartContent(const std::string& predetermined_boundary,
   if (!ReadFileToString(path, &file_content))
     return false;
 
-  const std::string boundary = predetermined_boundary.empty()
-                                   ? kBoundaryForPrototype
-                                   : predetermined_boundary;
-
-  *upload_content_type = kMultipartMimeTypePrefix + boundary;
+  std::string boundary;
+  if (predetermined_boundary.empty()) {
+    while (true) {
+      boundary.resize(kBoundarySize);
+      for (int i = 0; i < kBoundarySize; ++i) {
+        // Subtract 2 from the array size to exclude '\0', and to turn the size
+        // into the last index.
+        const int last_char_index = arraysize(kBoundaryCharacters) - 2;
+        boundary[i] = kBoundaryCharacters[base::RandInt(0,  last_char_index)];
+      }
+      if (metadata_json.find(boundary, 0) == std::string::npos &&
+          file_content.find(boundary, 0) == std::string::npos) {
+        break;
+      }
+    }
+  } else {
+    boundary = predetermined_boundary;
+  }
   const std::string body_before_file = base::StringPrintf(
       kMessageFormatBeforeFile, boundary.c_str(), "application/json",
       metadata_json.c_str(), boundary.c_str(), content_type.c_str());
   const std::string body_after_file =
       base::StringPrintf(kMessageFormatAfterFile, boundary.c_str());
-  *upload_content_data = body_before_file + file_content + body_after_file;
 
+  *upload_content_type = kMultipartMimeTypePrefix + boundary;
+  *upload_content_data = body_before_file + file_content + body_after_file;
   return true;
 }
 
