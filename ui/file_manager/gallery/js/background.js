@@ -166,8 +166,13 @@ function launch(selectedEntriesPromise) {
               'load', fulfill.bind(null, appWindow));
           appWindow.onClosed.addListener(function() {
             appWindowPromise = null;
-            if (reopenEntriesPromsie)
-              launch(reopenEntriesPromsie);
+            if (reopenEntriesPromsie) {
+              // TODO(hirono): This is workaround for crbug.com/442217. Remove
+              // this after fixing it.
+              setTimeout(function() {
+                launch(reopenEntriesPromsie);
+              }, 500);
+            }
           });
         });
   });
