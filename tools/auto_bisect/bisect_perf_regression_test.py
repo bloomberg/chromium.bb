@@ -430,6 +430,32 @@ class BisectPerfRegressionTest(unittest.TestCase):
     ss = re.compile('["\']%s["\']: ["\']%s["\']' % (deps_key, git_revision))
     self.assertIsNotNone(re.search(ss, updated_content))
 
+  @mock.patch('bisect_utils.RunGClient')
+  def testSyncToRevisionForChromium(self, mock_RunGClient):
+    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
+    bisect_instance._SyncRevision(
+        'chromium', 'e6db23a037cad47299a94b155b95eebd1ee61a58', 'gclient')
+    expected_params = [
+        'sync',
+        '--verbose',
+        '--nohooks',
+        '--force',
+        '--delete_unversioned_trees',
+        '--revision',
+        'src@e6db23a037cad47299a94b155b95eebd1ee61a58'
+        ]
+
+    mock_RunGClient.assert_called_with(expected_params, cwd=None)
+
+  @mock.patch('bisect_utils.RunGit')
+  def testSyncToRevisionForWebKit(self, mock_RunGit):
+    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
+    mock_RunGit.return_value = None, None
+    bisect_instance._SyncRevision(
+        'webkit', 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61' , None)
+    expected_params = ['checkout', 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61']
+    mock_RunGit.assert_called_with(expected_params)
+
 
 class DepotDirectoryRegistryTest(unittest.TestCase):
 

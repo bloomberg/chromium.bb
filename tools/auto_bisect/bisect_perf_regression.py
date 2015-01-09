@@ -1409,7 +1409,7 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if successful.
     """
-    if self.opts.target_platform == 'android':
+    if 'android' in self.opts.target_platform:
       if not builder.SetupAndroidBuildEnvironment(self.opts,
           path_to_src=self.src_cwd):
         return False
@@ -1540,8 +1540,31 @@ class BisectPerformanceMetrics(object):
     if sync_client == 'gclient' and revision:
       revision = '%s@%s' % (bisect_utils.DEPOT_DEPS_NAME[depot]['src'],
           revision)
+      if depot == 'chromium' and self.opts.target_platform == 'android-chrome':
+        return self._SyncRevisionsForAndroidChrome(revision)
 
     return source_control.SyncToRevision(revision, sync_client)
+
+  def _SyncRevisionsForAndroidChrome(self, revision):
+    """Syncs android-chrome and chromium repos to particular revision.
+
+    This is a special case for android-chrome as the gclient sync for chromium
+    overwrites the android-chrome revision to TOT. Therefore both the repos
+    are synced to known revisions.
+
+    Args:
+      revision: Git hash of the Chromium to sync.
+
+    Returns:
+      True if successful, False otherwise.
+    """
+    revisions_list = [revision]
+    current_android_rev = source_control.GetCurrentRevision(
+        self.depot_registry.GetDepotDir('android-chrome'))
+    revisions_list.append(
+        '%s@%s' % (bisect_utils.DEPOT_DEPS_NAME['android-chrome']['src'],
+                   current_android_rev))
+    return not bisect_utils.RunGClientAndSync(revisions_list)
 
   def _CheckIfRunPassed(self, current_value, known_good_value, known_bad_value):
     """Given known good and bad values, decide if the current_value passed

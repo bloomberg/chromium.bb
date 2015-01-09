@@ -352,11 +352,12 @@ def _CleanupPreviousGitRuns(cwd=os.getcwd()):
         os.remove(path_to_file)
 
 
-def RunGClientAndSync(revision=None, cwd=None):
+def RunGClientAndSync(revisions=None, cwd=None):
   """Runs gclient and does a normal sync.
 
   Args:
-    revision: Revision that need to be synced.
+    revisions: List of revisions that need to be synced.
+        E.g., "src@2ae43f...", "src/third_party/webkit@asr1234" etc.
     cwd: Working directory to run from.
 
   Returns:
@@ -364,8 +365,9 @@ def RunGClientAndSync(revision=None, cwd=None):
   """
   params = ['sync', '--verbose', '--nohooks', '--force',
             '--delete_unversioned_trees']
-  if revision:
-    params.extend(['--revision', revision])
+  if revisions is not None:
+    for revision in revisions:
+      params.extend(['--revision', revision])
   return RunGClient(params, cwd=cwd)
 
 

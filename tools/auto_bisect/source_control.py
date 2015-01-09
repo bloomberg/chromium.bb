@@ -34,14 +34,30 @@ def GetRevisionList(end_revision_hash, start_revision_hash, cwd=None):
 
 
 def SyncToRevision(revision, sync_client=None):
+  """Syncs or checks out a revision based on sync_client argument.
+
+  Args:
+    revision: Git hash for the solutions with the format <repo>@rev.
+        E.g., "src@2ae43f...", "src/third_party/webkit@asr1234" etc.
+    sync_client: Syncs to revision when this is True otherwise checks out
+        the revision.
+
+  Returns:
+    True if sync or checkout is successful, False otherwise.
+  """
   if not sync_client:
     _, return_code = bisect_utils.RunGit(['checkout', revision])
   elif sync_client == 'gclient':
-    return_code = bisect_utils.RunGClientAndSync(revision)
+    return_code = bisect_utils.RunGClientAndSync([revision])
   else:
     raise NotImplementedError('Unsupported sync_client: "%s"' % sync_client)
 
   return not return_code
+
+
+def GetCurrentRevision(cwd=None):
+  """Gets current revision of the given repository."""
+  return bisect_utils.CheckRunGit(['rev-parse', 'HEAD'], cwd=cwd).strip()
 
 
 def ResolveToRevision(revision_to_check, depot, depot_deps_dict,
