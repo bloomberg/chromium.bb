@@ -150,9 +150,7 @@ bool URLRequestJobManager::SupportsScheme(const std::string& scheme) {
   return false;
 }
 
-URLRequestJobManager::URLRequestJobManager()
-    : allowed_thread_(0),
-      allowed_thread_initialized_(false) {
+URLRequestJobManager::URLRequestJobManager() {
 }
 
 URLRequestJobManager::~URLRequestJobManager() {}

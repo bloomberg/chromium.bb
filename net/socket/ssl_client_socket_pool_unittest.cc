@@ -132,7 +132,6 @@ class SSLClientSocketPoolTest
                                 &host_resolver_,
                                 &transport_socket_pool_,
                                 NULL,
-                                NULL,
                                 NULL),
         enable_ssl_connect_job_waiting_(false) {
     scoped_refptr<SSLConfigService> ssl_config_service(

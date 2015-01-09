@@ -195,8 +195,7 @@ void MDnsConnection::OnDatagramReceived(
   delegate_->HandlePacket(response, bytes_read);
 }
 
-MDnsClientImpl::Core::Core(MDnsClientImpl* client)
-    : client_(client), connection_(new MDnsConnection(this)) {
+MDnsClientImpl::Core::Core() : connection_(new MDnsConnection(this)) {
 }
 
 MDnsClientImpl::Core::~Core() {
@@ -424,7 +423,7 @@ MDnsClientImpl::~MDnsClientImpl() {
 
 bool MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
-  core_.reset(new Core(this));
+  core_.reset(new Core());
   if (!core_->Init(socket_factory)) {
     core_.reset();
     return false;

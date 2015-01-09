@@ -190,7 +190,6 @@ class SSLConnectJob : public ConnectJob {
                 SOCKSClientSocketPool* socks_pool,
                 HttpProxyClientSocketPool* http_proxy_pool,
                 ClientSocketFactory* client_socket_factory,
-                HostResolver* host_resolver,
                 const SSLClientSocketContext& context,
                 const GetMessengerCallback& get_messenger_callback,
                 Delegate* delegate,
@@ -250,7 +249,6 @@ class SSLConnectJob : public ConnectJob {
   SOCKSClientSocketPool* const socks_pool_;
   HttpProxyClientSocketPool* const http_proxy_pool_;
   ClientSocketFactory* const client_socket_factory_;
-  HostResolver* const host_resolver_;
 
   const SSLClientSocketContext context_;
 

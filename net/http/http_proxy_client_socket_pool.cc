@@ -86,7 +86,6 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     const base::TimeDelta& timeout_duration,
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
-    HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
     : ConnectJob(group_name, timeout_duration, priority, delegate,
@@ -94,7 +93,6 @@ HttpProxyConnectJob::HttpProxyConnectJob(
       params_(params),
       transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
-      resolver_(host_resolver),
       using_spdy_(false),
       protocol_negotiated_(kProtoUnknown),
       weak_ptr_factory_(this) {
@@ -395,12 +393,10 @@ HttpProxyConnectJobFactory::HttpProxyConnectJobFactory(
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
     HostResolver* host_resolver,
-    const ProxyDelegate* proxy_delegate,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
       host_resolver_(host_resolver),
-      proxy_delegate_(proxy_delegate),
       net_log_(net_log) {
   base::TimeDelta max_pool_timeout = base::TimeDelta();
 
@@ -430,7 +426,6 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
                                                         ConnectionTimeout(),
                                                         transport_pool_,
                                                         ssl_pool_,
-                                                        host_resolver_,
                                                         delegate,
                                                         net_log_));
 }
@@ -448,7 +443,6 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
     HostResolver* host_resolver,
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
-    const ProxyDelegate* proxy_delegate,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
@@ -458,7 +452,6 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
             new HttpProxyConnectJobFactory(transport_pool,
                                            ssl_pool,
                                            host_resolver,
-                                           proxy_delegate,
                                            net_log)) {
   // We should always have a |transport_pool_| except in unit tests.
   if (transport_pool_)

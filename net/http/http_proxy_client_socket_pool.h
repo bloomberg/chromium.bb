@@ -108,7 +108,6 @@ class HttpProxyConnectJob : public ConnectJob {
                       const base::TimeDelta& timeout_duration,
                       TransportClientSocketPool* transport_pool,
                       SSLClientSocketPool* ssl_pool,
-                      HostResolver* host_resolver,
                       Delegate* delegate,
                       NetLog* net_log);
   ~HttpProxyConnectJob() override;
@@ -164,7 +163,6 @@ class HttpProxyConnectJob : public ConnectJob {
   scoped_refptr<HttpProxySocketParams> params_;
   TransportClientSocketPool* const transport_pool_;
   SSLClientSocketPool* const ssl_pool_;
-  HostResolver* const resolver_;
 
   State next_state_;
   CompletionCallback callback_;
@@ -196,7 +194,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
       HostResolver* host_resolver,
       TransportClientSocketPool* transport_pool,
       SSLClientSocketPool* ssl_pool,
-      const ProxyDelegate* proxy_delegate,
       NetLog* net_log);
 
   ~HttpProxyClientSocketPool() override;
@@ -260,7 +257,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
         TransportClientSocketPool* transport_pool,
         SSLClientSocketPool* ssl_pool,
         HostResolver* host_resolver,
-        const ProxyDelegate* proxy_delegate,
         NetLog* net_log);
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
@@ -275,7 +271,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
     TransportClientSocketPool* const transport_pool_;
     SSLClientSocketPool* const ssl_pool_;
     HostResolver* const host_resolver_;
-    const ProxyDelegate* proxy_delegate_;
     NetLog* net_log_;
     base::TimeDelta timeout_;
 

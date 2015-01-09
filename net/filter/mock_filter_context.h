@@ -78,7 +78,6 @@ class MockFilterContext : public FilterContext {
   const BoundNetLog& GetNetLog() const override;
 
  private:
-  int buffer_size_;
   std::string mime_type_;
   std::string content_disposition_;
   GURL gurl_;

@@ -109,7 +109,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   // invalidate the core.
   class Core : public base::SupportsWeakPtr<Core>, MDnsConnection::Delegate {
    public:
-    explicit Core(MDnsClientImpl* client);
+    Core();
     ~Core() override;
 
     // Initialize the core. Returns true on success.
@@ -157,7 +157,6 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
 
     ListenerMap listeners_;
 
-    MDnsClientImpl* client_;
     MDnsCache cache_;
 
     base::CancelableClosure cleanup_callback_;

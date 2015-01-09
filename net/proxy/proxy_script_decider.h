@@ -160,7 +160,6 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   void DidComplete();
   void Cancel();
 
-  ProxyResolver* resolver_;
   ProxyScriptFetcher* proxy_script_fetcher_;
   DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher_;
 

@@ -128,7 +128,6 @@ class NET_EXPORT ParsedCookie {
   void ClearAttributePair(size_t index);
 
   PairList pairs_;
-  bool is_valid_;
   // These will default to 0, but that should never be valid since the
   // 0th index is the user supplied token/value, not an attribute.
   // We're really never going to have more than like 8 attributes, so we

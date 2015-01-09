@@ -189,7 +189,6 @@ class HttpProxyClientSocketPoolTest
               NULL,
               &transport_socket_pool_,
               &ssl_socket_pool_,
-              NULL,
               NULL) {}
 
   virtual ~HttpProxyClientSocketPoolTest() {

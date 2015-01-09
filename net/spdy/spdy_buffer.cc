@@ -41,8 +41,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
   SharedFrameIOBuffer(const scoped_refptr<SharedFrame>& shared_frame,
                       size_t offset)
       : IOBuffer(shared_frame->data->data() + offset),
-        shared_frame_(shared_frame),
-        offset_(offset) {}
+        shared_frame_(shared_frame) {}
 
  private:
   ~SharedFrameIOBuffer() override {
@@ -51,7 +50,6 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
   }
 
   const scoped_refptr<SharedFrame> shared_frame_;
-  const size_t offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedFrameIOBuffer);
 };

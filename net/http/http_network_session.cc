@@ -44,8 +44,8 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
       params.host_resolver, params.cert_verifier, params.channel_id_service,
       params.transport_security_state, params.cert_transparency_verifier,
       params.cert_policy_enforcer, params.ssl_session_cache_shard,
-      params.proxy_service, params.ssl_config_service,
-      params.enable_ssl_connect_job_waiting, params.proxy_delegate, pool_type);
+      params.ssl_config_service, params.enable_ssl_connect_job_waiting,
+      pool_type);
 }
 
 }  // unnamed namespace
