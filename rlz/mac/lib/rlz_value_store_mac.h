@@ -18,39 +18,36 @@ namespace rlz_lib {
 // plist file in the user's Application Support folder.
 class RlzValueStoreMac : public RlzValueStore {
  public:
-  virtual bool HasAccess(AccessType type) override;
+  bool HasAccess(AccessType type) override;
 
-  virtual bool WritePingTime(Product product, int64 time) override;
-  virtual bool ReadPingTime(Product product, int64* time) override;
-  virtual bool ClearPingTime(Product product) override;
+  bool WritePingTime(Product product, int64 time) override;
+  bool ReadPingTime(Product product, int64* time) override;
+  bool ClearPingTime(Product product) override;
 
-  virtual bool WriteAccessPointRlz(AccessPoint access_point,
-                                   const char* new_rlz) override;
-  virtual bool ReadAccessPointRlz(AccessPoint access_point,
-                                  char* rlz,
-                                  size_t rlz_size) override;
-  virtual bool ClearAccessPointRlz(AccessPoint access_point) override;
+  bool WriteAccessPointRlz(AccessPoint access_point,
+                           const char* new_rlz) override;
+  bool ReadAccessPointRlz(AccessPoint access_point,
+                          char* rlz,
+                          size_t rlz_size) override;
+  bool ClearAccessPointRlz(AccessPoint access_point) override;
 
-  virtual bool AddProductEvent(Product product, const char* event_rlz) override;
-  virtual bool ReadProductEvents(Product product,
-                                 std::vector<std::string>* events) override;
-  virtual bool ClearProductEvent(Product product,
-                                 const char* event_rlz) override;
-  virtual bool ClearAllProductEvents(Product product) override;
+  bool AddProductEvent(Product product, const char* event_rlz) override;
+  bool ReadProductEvents(Product product,
+                         std::vector<std::string>* events) override;
+  bool ClearProductEvent(Product product, const char* event_rlz) override;
+  bool ClearAllProductEvents(Product product) override;
 
-  virtual bool AddStatefulEvent(Product product,
-                                const char* event_rlz) override;
-  virtual bool IsStatefulEvent(Product product,
-                               const char* event_rlz) override;
-  virtual bool ClearAllStatefulEvents(Product product) override;
+  bool AddStatefulEvent(Product product, const char* event_rlz) override;
+  bool IsStatefulEvent(Product product, const char* event_rlz) override;
+  bool ClearAllStatefulEvents(Product product) override;
 
-  virtual void CollectGarbage() override;
+  void CollectGarbage() override;
 
  private:
   // |dict| is the dictionary that backs all data. plist_path is the name of the
   // plist file, used solely for implementing HasAccess().
   RlzValueStoreMac(NSMutableDictionary* dict, NSString* plist_path);
-  virtual ~RlzValueStoreMac();
+  ~RlzValueStoreMac() override;
   friend class ScopedRlzValueStoreLock;
 
   // Returns the backing dictionary that should be written to disk.
