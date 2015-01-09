@@ -76,9 +76,8 @@ QuicClient::~QuicClient() {
     session()->connection()->SendConnectionClosePacket(
         QUIC_PEER_GOING_AWAY, "");
   }
-  if (fd_ > 0) {
-    epoll_server_->UnregisterFD(fd_);
-  }
+
+  CleanUpUDPSocket();
 }
 
 bool QuicClient::Initialize() {
@@ -87,10 +86,6 @@ bool QuicClient::Initialize() {
   // If an initial flow control window has not explicitly been set, then use the
   // same value that Chrome uses: 10 Mb.
   const uint32 kInitialFlowControlWindow = 10 * 1024 * 1024;  // 10 Mb
-  if (config_.GetInitialFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
-    config_.SetInitialFlowControlWindowToSend(kInitialFlowControlWindow);
-  }
   if (config_.GetInitialStreamFlowControlWindowToSend() ==
       kMinimumFlowControlSendWindow) {
     config_.SetInitialStreamFlowControlWindowToSend(kInitialFlowControlWindow);
@@ -236,10 +231,18 @@ void QuicClient::Disconnect() {
   if (connected()) {
     session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
   }
-  epoll_server_->UnregisterFD(fd_);
-  close(fd_);
-  fd_ = -1;
+
+  CleanUpUDPSocket();
+
   initialized_ = false;
+}
+
+void QuicClient::CleanUpUDPSocket() {
+  if (fd_ > -1) {
+    epoll_server_->UnregisterFD(fd_);
+    close(fd_);
+    fd_ = -1;
+  }
 }
 
 void QuicClient::SendRequestsAndWaitForResponse(

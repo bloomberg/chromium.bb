@@ -240,7 +240,6 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
     bool done = false;
     switch (it->first) {
       case kICSL:
-      case kIFCW:
       case kCFCW:
       case kSFCW:
       case kIRTT:

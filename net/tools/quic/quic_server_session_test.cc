@@ -71,8 +71,6 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
                        QuicRandom::GetInstance()) {
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest,
                                        kMaxStreamsForTest);
-    config_.SetInitialFlowControlWindowToSend(
-        kInitialSessionFlowControlWindowForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     config_.SetInitialSessionFlowControlWindowToSend(

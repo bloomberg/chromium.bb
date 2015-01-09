@@ -76,3 +76,6 @@ bool FLAGS_quic_empty_data_no_fin_early_return = true;
 // If true, if min RTT and/or SRTT have not yet been set then initial RTT is
 // used to initialize them in a call to QuicConnection::GetStats.
 bool FLAGS_quic_use_initial_rtt_for_stats = true;
+
+// If true, uses the last sent packet for the RTO timer instead of the earliest.
+bool FLAGS_quic_rto_uses_last_sent = true;

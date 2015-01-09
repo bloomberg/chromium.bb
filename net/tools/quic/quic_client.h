@@ -204,6 +204,9 @@ class QuicClient : public EpollCallbackInterface,
   // and binds the socket to our address.
   bool CreateUDPSocket();
 
+  // If the socket has been created, then unregister and close() the FD.
+  void CleanUpUDPSocket();
+
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
 

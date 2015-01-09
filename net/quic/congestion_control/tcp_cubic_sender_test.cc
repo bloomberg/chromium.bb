@@ -450,6 +450,27 @@ TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 }
 
+TEST_F(TcpCubicSenderTest, RTOTwiceOnlyHalvesSsthresh) {
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
+
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  EXPECT_EQ(5u, sender_->slowstart_threshold());
+
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  EXPECT_EQ(5u, sender_->slowstart_threshold());
+
+  AckNPackets(2);
+
+  EXPECT_EQ(4 * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  EXPECT_EQ(5u, sender_->slowstart_threshold());
+
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  EXPECT_EQ(2u, sender_->slowstart_threshold());
+}
+
 TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   const int64 kRttMs = 10;
   const int64 kDeviationMs = 3;

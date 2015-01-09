@@ -310,7 +310,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_19 = 19,  // Connection level flow control.
   QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
   QUIC_VERSION_22 = 22,  // Send Server Config Update messages on crypto stream.
   QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
@@ -324,8 +323,7 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_23,
-                                                     QUIC_VERSION_22,
-                                                     QUIC_VERSION_19};
+                                                     QUIC_VERSION_22};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 

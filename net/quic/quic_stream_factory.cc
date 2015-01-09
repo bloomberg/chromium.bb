@@ -1049,7 +1049,6 @@ int QuicStreamFactory::CreateSession(
 
   QuicConfig config = config_;
   config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
-  config.SetInitialFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
   int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);

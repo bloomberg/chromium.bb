@@ -332,17 +332,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32 GetInitialRoundTripTimeUsToSend() const;
 
-  // TODO(rjshade): Remove all InitialFlowControlWindow methods when removing
-  // QUIC_VERSION_19.
-  // Sets an initial stream flow control window size to transmit to the peer.
-  void SetInitialFlowControlWindowToSend(uint32 window_bytes);
-
-  uint32 GetInitialFlowControlWindowToSend() const;
-
-  bool HasReceivedInitialFlowControlWindowBytes() const;
-
-  uint32 ReceivedInitialFlowControlWindowBytes() const;
-
   // Sets an initial stream flow control window size to transmit to the peer.
   void SetInitialStreamFlowControlWindowToSend(uint32 window_bytes);
 
@@ -410,10 +399,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicFixedUint32 bytes_for_connection_id_;
   // Initial round trip time estimate in microseconds.
   QuicFixedUint32 initial_round_trip_time_us_;
-
-  // TODO(rjshade): Remove when removing QUIC_VERSION_19.
-  // Initial flow control receive window in bytes.
-  QuicFixedUint32 initial_flow_control_window_bytes_;
 
   // Initial stream flow control receive window in bytes.
   QuicFixedUint32 initial_stream_flow_control_window_bytes_;

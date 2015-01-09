@@ -193,6 +193,25 @@ TEST_F(TcpLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
+TEST_F(TcpLossAlgorithmTest, AlwaysLosePacketSent1RTTEarlier) {
+  // Transmit 1 packet and then wait an rtt plus 1ms.
+  SendDataPacket(1);
+  clock_.AdvanceTime(
+      rtt_stats_.smoothed_rtt().Add(QuicTime::Delta::FromMilliseconds(1)));
+
+  // Transmit 2 packets.
+  SendDataPacket(2);
+  SendDataPacket(3);
+
+  // Wait another RTT and ack 2.
+  clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
+  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.RemoveFromInFlight(2);
+  unacked_packets_.NackPacket(1, 1);
+  QuicPacketSequenceNumber lost[] = {1};
+  VerifyLosses(2, lost, arraysize(lost));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

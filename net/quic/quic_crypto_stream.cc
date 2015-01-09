@@ -25,11 +25,6 @@ QuicCryptoStream::QuicCryptoStream(QuicSession* session)
       encryption_established_(false),
       handshake_confirmed_(false) {
   crypto_framer_.set_visitor(this);
-  if (version() < QUIC_VERSION_21) {
-    // Prior to QUIC_VERSION_21 the crypto stream is not subject to any flow
-    // control.
-    DisableFlowControl();
-  }
   // The crypto stream is exempt from connection level flow control.
   DisableConnectionFlowControlForThisStream();
 }

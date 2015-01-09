@@ -138,6 +138,8 @@ void TcpCubicSender::OnPacketAcked(
     QuicByteCount bytes_in_flight) {
   largest_acked_sequence_number_ = max(acked_sequence_number,
                                        largest_acked_sequence_number_);
+  // As soon as a packet is acked, ensure we're no longer in RTO mode.
+  previous_congestion_window_ = 0;
   if (InRecovery()) {
     // PRR is used when in recovery.
     prr_.OnPacketAcked(acked_bytes);
@@ -345,6 +347,10 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   }
   cubic_.Reset();
   hybrid_slow_start_.Restart();
+  // Only reduce ssthresh once over multiple retransmissions.
+  if (previous_congestion_window_ != 0) {
+    return;
+  }
   previous_slowstart_threshold_ = slowstart_threshold_;
   slowstart_threshold_ = congestion_window_ / 2;
   previous_congestion_window_ = congestion_window_;

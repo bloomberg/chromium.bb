@@ -68,7 +68,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   void OnBlockedFrames(const std::vector<QuicBlockedFrame>& frames) override;
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
   void OnWriteBlocked() override {}
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
+  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override {}
   void OnCanWrite() override;
   void OnCongestionWindowChange(QuicTime now) override {}
   bool WillingAndAbleToWrite() const override;
@@ -322,6 +322,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // The latched error with which the connection was closed.
   QuicErrorCode error_;
 
+  // Used for session level flow control.
+  scoped_ptr<QuicFlowController> flow_controller_;
+
   // Whether a GoAway has been received.
   bool goaway_received_;
   // Whether a GoAway has been sent.
@@ -329,12 +332,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Indicate if there is pending data for the crypto stream.
   bool has_pending_handshake_;
-
-  // Used for session level flow control.
-  scoped_ptr<QuicFlowController> flow_controller_;
-
-  // True if this is a secure (HTTPS) QUIC session.
-  bool is_secure_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

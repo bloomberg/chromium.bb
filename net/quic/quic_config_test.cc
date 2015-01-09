@@ -26,8 +26,6 @@ class QuicConfigTest : public ::testing::Test {
 };
 
 TEST_F(QuicConfigTest, ToHandshakeMessage) {
-  config_.SetInitialFlowControlWindowToSend(
-      kInitialSessionFlowControlWindowForTest);
   config_.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
   config_.SetInitialSessionFlowControlWindowToSend(
@@ -47,10 +45,6 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
   error = msg.GetUint32(kMSPC, &value);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_EQ(4u, value);
-
-  error = msg.GetUint32(kIFCW, &value);
-  EXPECT_EQ(QUIC_NO_ERROR, error);
-  EXPECT_EQ(kInitialSessionFlowControlWindowForTest, value);
 
   error = msg.GetUint32(kSFCW, &value);
   EXPECT_EQ(QUIC_NO_ERROR, error);
@@ -82,8 +76,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.SetMaxStreamsPerConnection(
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
   client_config.SetInitialRoundTripTimeUsToSend(10 * kNumMicrosPerMilli);
-  client_config.SetInitialFlowControlWindowToSend(
-      2 * kInitialSessionFlowControlWindowForTest);
   client_config.SetInitialStreamFlowControlWindowToSend(
       2 * kInitialStreamFlowControlWindowForTest);
   client_config.SetInitialSessionFlowControlWindowToSend(
@@ -111,8 +103,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
   EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kTBBR);
   EXPECT_EQ(config_.ReceivedConnectionOptions()[1], kFHDR);
-  EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
-            2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),
             2 * kInitialStreamFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
@@ -133,8 +123,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
       kDefaultMaxStreamsPerConnection / 2,
       kDefaultMaxStreamsPerConnection / 2);
   server_config.SetInitialRoundTripTimeUsToSend(10 * kNumMicrosPerMilli);
-  server_config.SetInitialFlowControlWindowToSend(
-      2 * kInitialSessionFlowControlWindowForTest);
   server_config.SetInitialStreamFlowControlWindowToSend(
       2 * kInitialStreamFlowControlWindowForTest);
   server_config.SetInitialSessionFlowControlWindowToSend(
@@ -153,8 +141,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.MaxStreamsPerConnection());
   EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
-  EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
-            2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),
             2 * kInitialStreamFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
@@ -179,8 +165,6 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
-
-  EXPECT_FALSE(config_.HasReceivedInitialFlowControlWindowBytes());
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
@@ -197,8 +181,6 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
       config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
-
-  EXPECT_FALSE(config_.HasReceivedInitialFlowControlWindowBytes());
 }
 
 TEST_F(QuicConfigTest, MissingValueInCHLO) {
@@ -272,11 +254,11 @@ TEST_F(QuicConfigTest, InvalidFlowControlWindow) {
   // peer: the receive window must be at least the default of 16 Kb.
   QuicConfig config;
   const uint64 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
-  EXPECT_DFATAL(config.SetInitialFlowControlWindowToSend(kInvalidWindow),
-                "Initial flow control receive window");
+  EXPECT_DFATAL(config.SetInitialStreamFlowControlWindowToSend(kInvalidWindow),
+                "Initial stream flow control receive window");
 
   EXPECT_EQ(kMinimumFlowControlSendWindow,
-            config.GetInitialFlowControlWindowToSend());
+            config.GetInitialStreamFlowControlWindowToSend());
 }
 
 }  // namespace

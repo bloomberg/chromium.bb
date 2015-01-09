@@ -102,11 +102,7 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
 }
 
 TEST_F(QuicCryptoStreamTest, NoConnectionLevelFlowControl) {
-  if (connection_->version() < QUIC_VERSION_21) {
-    EXPECT_FALSE(stream_.flow_controller()->IsEnabled());
-  } else {
-    EXPECT_TRUE(stream_.flow_controller()->IsEnabled());
-  }
+  EXPECT_TRUE(stream_.flow_controller()->IsEnabled());
   EXPECT_FALSE(ReliableQuicStreamPeer::StreamContributesToConnectionFlowControl(
       &stream_));
 }

@@ -799,6 +799,9 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
   }
+  QuicTime rto_packet_time = clock_.Now();
+  // Advance the time.
+  clock_.AdvanceTime(manager_.GetRetransmissionTime().Subtract(clock_.Now()));
 
   // The first tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
@@ -813,6 +816,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  clock_.AdvanceTime(manager_.GetRetransmissionTime().Subtract(clock_.Now()));
 
   // The second tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
@@ -826,6 +830,15 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
       QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+
+  // Ensure the RTO is set based on the correct packet.
+  if (FLAGS_quic_rto_uses_last_sent) {
+    rto_packet_time = clock_.Now();
+  }
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay())
+      .WillOnce(Return(QuicTime::Delta::FromSeconds(1)));
+  EXPECT_EQ(rto_packet_time.Add(QuicTime::Delta::FromSeconds(1)),
+            manager_.GetRetransmissionTime());
 
   // Advance the time enough to ensure all packets are RTO'd.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));

@@ -17,12 +17,6 @@ void QuicConfigPeer::SetReceivedSocketReceiveBuffer(
 }
 
 // static
-void QuicConfigPeer::SetReceivedInitialFlowControlWindow(QuicConfig* config,
-                                                         uint32 window_bytes) {
-  config->initial_flow_control_window_bytes_.SetReceivedValue(window_bytes);
-}
-
-// static
 void QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
     QuicConfig* config,
     uint32 window_bytes) {

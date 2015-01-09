@@ -1682,92 +1682,134 @@ TEST_P(QuicConnectionTest, FECQueueing) {
   EXPECT_EQ(2u, connection_.NumQueuedPackets());
 }
 
-TEST_P(QuicConnectionTest, AbandonFECFromCongestionWindow) {
+TEST_P(QuicConnectionTest, RemoveFECFromInflightOnRetransmissionTimeout) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
       &connection_)->IsFecEnabled());
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager));
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(2);
   connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
+  size_t data_and_fec = QuicSentPacketManagerPeer::GetBytesInFlight(manager);
+  EXPECT_LT(0u, data_and_fec);
 
-  const QuicTime::Delta retransmission_time =
-      QuicTime::Delta::FromMilliseconds(5000);
-  clock_.AdvanceTime(retransmission_time);
-
-  // Abandon FEC packet and data packet.
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  EXPECT_CALL(visitor_, OnCanWrite());
-  connection_.OnRetransmissionTimeout();
-}
-
-TEST_P(QuicConnectionTest, DontAbandonAckedFEC) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
-      &connection_)->IsFecEnabled());
-
-  // 3 Data and 3 FEC packets.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(6);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
-  // Send some more data afterwards to ensure early retransmit doesn't trigger.
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 3, !kFin, nullptr);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 6, !kFin, nullptr);
-
-  QuicAckFrame ack_fec = InitAckFrame(2);
-  // Data packet missing.
-  // TODO(ianswett): Note that this is not a sensible ack, since if the FEC was
-  // received, it would cause the covered packet to be acked as well.
-  NackPacket(1, &ack_fec);
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  ProcessAckPacket(&ack_fec);
   clock_.AdvanceTime(DefaultRetransmissionTime());
 
-  // Don't abandon the acked FEC packet, but it will abandon 2 the subsequent
-  // FEC packets.
+  // On RTO, both data and FEC packets are removed from inflight,
+  // and retransmission of the data (but not FEC) gets added into the inflight.
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(3);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.GetRetransmissionAlarm()->Fire();
-}
+  ;
 
-TEST_P(QuicConnectionTest, AbandonAllFEC) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
-      &connection_)->IsFecEnabled());
+  size_t data_only = QuicSentPacketManagerPeer::GetBytesInFlight(manager);
+  EXPECT_LT(0u, data_only);
+  EXPECT_GE(data_and_fec, 2 * data_only);
 
-  // 3 Data and 3 FEC packet.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(6);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
-  // Send some more data afterwards to ensure early retransmit doesn't trigger.
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 3, !kFin, nullptr);
-  // Advance the time so not all the FEC packets are abandoned.
-  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 6, !kFin, nullptr);
-
-  QuicAckFrame ack_fec = InitAckFrame(5);
-  // Ack all data packets, but no fec packets.
-  NackPacket(2, &ack_fec);
-  NackPacket(4, &ack_fec);
-
-  // Lose the first FEC packet and ack the three data packets.
+  // Receive ack for the retransmission. No data should be outstanding.
+  QuicAckFrame ack = InitAckFrame(3);
+  NackPacket(1, &ack);
+  NackPacket(2, &ack);
   SequenceNumberSet lost_packets;
-  lost_packets.insert(2);
   EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(lost_packets));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  ProcessAckPacket(&ack_fec);
+  ProcessAckPacket(&ack);
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager));
 
-  clock_.AdvanceTime(DefaultRetransmissionTime().Subtract(
-      QuicTime::Delta::FromMilliseconds(1)));
-
-  // Abandon all packets
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(false));
-  connection_.GetRetransmissionAlarm()->Fire();
-
-  // Ensure the alarm is not set since all packets have been abandoned.
+  // Ensure the alarm is not set since all packets have been acked or abandoned.
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager));
+}
+
+TEST_P(QuicConnectionTest, RemoveFECFromInflightOnLossRetransmission) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
+      &connection_)->IsFecEnabled());
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+
+  // 1 Data packet and 1 FEC packet, followed by more data to trigger NACKs.
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(6);
+  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
+  connection_.SendStreamDataWithString(3, "foo", 3, !kFin, nullptr);
+  connection_.SendStreamDataWithString(3, "foo", 6, !kFin, nullptr);
+  connection_.SendStreamDataWithString(3, "foo", 9, !kFin, nullptr);
+  connection_.SendStreamDataWithString(3, "foo", 12, !kFin, nullptr);
+  size_t multiple_data_and_fec =
+      QuicSentPacketManagerPeer::GetBytesInFlight(manager);
+  EXPECT_LT(0u, multiple_data_and_fec);
+
+  // Ack data packets, and NACK 1 data packet and FEC packet. Triggers
+  // NACK-based loss detection of data and FEC packet, but only data is
+  // retransmitted and considered oustanding.
+  QuicAckFrame ack = InitAckFrame(6);
+  NackPacket(2, &ack);
+  NackPacket(3, &ack);
+  SequenceNumberSet lost_packets;
+  lost_packets.insert(2);
+  lost_packets.insert(3);
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(1);
+  ProcessAckPacket(&ack);
+  size_t data_only = QuicSentPacketManagerPeer::GetBytesInFlight(manager);
+  EXPECT_GT(multiple_data_and_fec, data_only);
+  EXPECT_LT(0u, data_only);
+
+  // Receive ack for the retransmission. No data should be outstanding.
+  QuicAckFrame ack2 = InitAckFrame(7);
+  NackPacket(2, &ack2);
+  NackPacket(3, &ack2);
+  SequenceNumberSet lost_packets2;
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets2));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&ack2);
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager));
+}
+
+TEST_P(QuicConnectionTest, NoTLPForFECPacket) {
+  // Turn on TLP for this test.
+  QuicSentPacketManagerPeer::SetMaxTailLossProbes(
+      QuicConnectionPeer::GetSentPacketManager(&connection_), 1);
+
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
+      &connection_)->IsFecEnabled());
+  QuicSentPacketManager* manager =
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
+
+  // 1 Data packet and 1 FEC packet.
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(2);
+  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
+
+  // Ack data packet, but not FEC packet.
+  QuicAckFrame ack = InitAckFrame(1);
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&ack);
+
+  // No TLP alarm for FEC, so when retransmission alarm fires, it is an RTO.
+  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_LT(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager));
+  QuicTime rto_time = connection_.GetRetransmissionAlarm()->deadline();
+  EXPECT_NE(QuicTime::Zero(), rto_time);
+
+  // Simulate the retransmission alarm firing. FEC packet is no longer
+  // outstanding.
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(false));
+  clock_.AdvanceTime(rto_time.Subtract(clock_.Now()));
+  connection_.GetRetransmissionAlarm()->Fire();
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager));
 }
 
 TEST_P(QuicConnectionTest, FramePacking) {
@@ -3026,8 +3068,6 @@ TEST_P(QuicConnectionTest, TimeoutAfterSendSilentClose) {
   CryptoHandshakeMessage msg;
   string error_details;
   QuicConfig client_config;
-  client_config.SetInitialFlowControlWindowToSend(
-      kInitialSessionFlowControlWindowForTest);
   client_config.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
   client_config.SetInitialSessionFlowControlWindowToSend(

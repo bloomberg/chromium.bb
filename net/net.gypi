@@ -1732,6 +1732,7 @@
       'quic/quic_end_to_end_unittest.cc',
       'tools/quic/end_to_end_test.cc',
       'tools/quic/quic_client_session_test.cc',
+      'tools/quic/quic_client_test.cc',
       'tools/quic/quic_dispatcher_test.cc',
       'tools/quic/quic_epoll_clock_test.cc',
       'tools/quic/quic_epoll_connection_helper_test.cc',

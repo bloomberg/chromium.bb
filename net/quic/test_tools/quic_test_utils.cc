@@ -619,8 +619,6 @@ MockEntropyCalculator::~MockEntropyCalculator() {}
 
 QuicConfig DefaultQuicConfig() {
   QuicConfig config;
-  config.SetInitialFlowControlWindowToSend(
-      kInitialSessionFlowControlWindowForTest);
   config.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
   config.SetInitialSessionFlowControlWindowToSend(

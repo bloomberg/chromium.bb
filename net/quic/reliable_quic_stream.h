@@ -167,11 +167,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   const QuicStreamSequencer* sequencer() const { return &sequencer_; }
   QuicStreamSequencer* sequencer() { return &sequencer_; }
 
-  // TODO(rjshade): Remove this method when removing QUIC_VERSION_19.
-  void DisableFlowControl() {
-    flow_controller_.Disable();
-  }
-
   void DisableConnectionFlowControlForThisStream() {
     stream_contributes_to_connection_flow_control_ = false;
   }

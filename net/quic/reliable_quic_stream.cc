@@ -27,26 +27,10 @@ struct iovec MakeIovec(StringPiece data) {
 }
 
 size_t GetInitialStreamFlowControlWindowToSend(QuicSession* session) {
-  QuicVersion version = session->connection()->version();
-  if (version <= QUIC_VERSION_19) {
-    return session->config()->GetInitialFlowControlWindowToSend();
-  }
-
   return session->config()->GetInitialStreamFlowControlWindowToSend();
 }
 
 size_t GetReceivedFlowControlWindow(QuicSession* session) {
-  QuicVersion version = session->connection()->version();
-  if (version <= QUIC_VERSION_19) {
-    if (session->config()->HasReceivedInitialFlowControlWindowBytes()) {
-      return session->config()->ReceivedInitialFlowControlWindowBytes();
-    }
-
-    return kMinimumFlowControlSendWindow;
-  }
-
-  // Version must be >= QUIC_VERSION_21, so we check for stream specific flow
-  // control window.
   if (session->config()->HasReceivedInitialStreamFlowControlWindowBytes()) {
     return session->config()->ReceivedInitialStreamFlowControlWindowBytes();
   }
@@ -365,10 +349,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
   if (flow_controller_.IsEnabled()) {
     // How much data we are allowed to write from flow control.
     QuicByteCount send_window = flow_controller_.SendWindowSize();
-    // TODO(rjshade): Remove connection_flow_controller_->IsEnabled() check when
-    // removing QUIC_VERSION_19.
-    if (stream_contributes_to_connection_flow_control_ &&
-        connection_flow_controller_->IsEnabled()) {
+    if (stream_contributes_to_connection_flow_control_) {
       send_window =
           min(send_window, connection_flow_controller_->SendWindowSize());
     }

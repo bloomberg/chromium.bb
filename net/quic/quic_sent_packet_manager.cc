@@ -848,7 +848,9 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
     case RTO_MODE: {
       // The RTO is based on the first outstanding packet.
       const QuicTime sent_time =
-          unacked_packets_.GetFirstInFlightPacketSentTime();
+          FLAGS_quic_rto_uses_last_sent
+              ? unacked_packets_.GetLastPacketSentTime()
+              : unacked_packets_.GetFirstInFlightPacketSentTime();
       QuicTime rto_time = sent_time.Add(GetRetransmissionDelay());
       // Wait for TLP packets to be acked before an RTO fires.
       QuicTime tlp_time =
