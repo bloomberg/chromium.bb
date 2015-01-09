@@ -805,7 +805,12 @@
         },
       ],
     }],
-    ['chromeos==1 and ((target_arch=="arm" and use_x11==1) or use_v4l2_codec==1)', {
+    ['chromeos==1 and use_v4l2_codec==1', {
+      'defines': [
+        'USE_V4L2_CODEC',
+      ],
+    }],
+    ['chromeos==1 and (target_arch=="arm" or (use_ozone==1 and use_v4l2_codec==1))', {
       'dependencies': [
         '../media/media.gyp:media',
       ],
