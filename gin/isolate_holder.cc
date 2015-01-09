@@ -55,11 +55,16 @@ bool MapV8Files(base::FilePath* natives_path,
 
   g_mapped_natives = new base::MemoryMappedFile;
   if (!g_mapped_natives->IsValid()) {
+#if !defined(OS_WIN)
     if (natives_fd == -1
             ? !g_mapped_natives->Initialize(base::File(*natives_path, flags),
                                             natives_region)
             : !g_mapped_natives->Initialize(base::File(natives_fd),
                                             natives_region)) {
+#else
+    if (!g_mapped_natives->Initialize(base::File(*natives_path, flags),
+                                      natives_region)) {
+#endif  // !OS_WIN
       delete g_mapped_natives;
       g_mapped_natives = NULL;
       LOG(FATAL) << "Couldn't mmap v8 natives data file";
@@ -69,11 +74,16 @@ bool MapV8Files(base::FilePath* natives_path,
 
   g_mapped_snapshot = new base::MemoryMappedFile;
   if (!g_mapped_snapshot->IsValid()) {
+#if !defined(OS_WIN)
     if (snapshot_fd == -1
             ? !g_mapped_snapshot->Initialize(base::File(*snapshot_path, flags),
                                              snapshot_region)
             : !g_mapped_snapshot->Initialize(base::File(snapshot_fd),
                                              snapshot_region)) {
+#else
+    if (!g_mapped_snapshot->Initialize(base::File(*snapshot_path, flags),
+                                       snapshot_region)) {
+#endif  // !OS_WIN
       delete g_mapped_snapshot;
       g_mapped_snapshot = NULL;
       LOG(ERROR) << "Couldn't mmap v8 snapshot data file";
@@ -102,6 +112,8 @@ const int v8_snapshot_dir =
     base::DIR_ANDROID_APP_DATA;
 #elif defined(OS_POSIX)
     base::DIR_EXE;
+#elif defined(OS_WIN)
+    base::DIR_MODULE;
 #endif  // OS_ANDROID
 #endif  // !OS_MACOSX
 
