@@ -58,6 +58,7 @@
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
+#include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
@@ -671,26 +672,15 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
 void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
-  metrics::MetricsService* metrics = g_browser_process->metrics_service();
 
-  const bool only_do_metrics_recording =
-      parsed_command_line_.HasSwitch(switches::kMetricsRecordingOnly) ||
-      parsed_command_line_.HasSwitch(switches::kEnableBenchmarking);
-  if (only_do_metrics_recording) {
-    // If we're testing then we don't care what the user preference is, we turn
-    // on recording, but not reporting, otherwise tests fail.
-    metrics->StartRecordingForTests();
-    return;
-  }
-
-  metrics->CheckForClonedInstall(
+  g_browser_process->metrics_service()->CheckForClonedInstall(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  const bool metrics_enabled = metrics->StartIfMetricsReportingEnabled();
-  // TODO(asvitkine): Since this function is not run on Android, RAPPOR is
-  // currently disabled there. http://crbug.com/370041
-  browser_process_->rappor_service()->Start(
-      browser_process_->system_request_context(),
-      metrics_enabled);
+
+  bool may_record = g_browser_process->GetMetricsServicesManager()->
+      IsMetricsReportingEnabled();
+
+  g_browser_process->GetMetricsServicesManager()->UpdatePermissions(
+      may_record, true);
 }
 
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {

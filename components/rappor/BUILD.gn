@@ -11,6 +11,7 @@ static_library("rappor") {
     "byte_vector_utils.h",
     "log_uploader.cc",
     "log_uploader.h",
+    "log_uploader_interface.h",
     "rappor_metric.cc",
     "rappor_metric.h",
     "rappor_parameters.cc",
@@ -36,6 +37,8 @@ static_library("rappor") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "test_log_uploader.cc",
+    "test_log_uploader.h",
     "test_rappor_service.cc",
     "test_rappor_service.h",
   ]

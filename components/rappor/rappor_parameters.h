@@ -18,9 +18,9 @@ enum Probability {
 
 // A metric is reported when it's reporting level is >= the reporting level
 // passed in to RapporService::Start()
-enum ReportingLevel {
+enum RecordingLevel {
   // No metrics are reported at this level.
-  REPORTING_DISABLED = 0,
+  RECORDING_DISABLED = 0,
   // Metrics suitable for broader populations.
   COARSE_LEVEL,
   // Metrics suitable for UMA opt-in users.
@@ -59,7 +59,7 @@ struct RapporParameters {
   Probability zero_coin_prob;
 
   // The reporting level this metric is reported at.
-  ReportingLevel reporting_level;
+  RecordingLevel recording_level;
 };
 
 }  // namespace rappor

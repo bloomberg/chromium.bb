@@ -21,6 +21,7 @@ class TestLogUploader : public LogUploader {
  public:
   TestLogUploader(net::URLRequestContextGetter* request_context) :
       LogUploader(GURL(kTestServerURL), kTestMimeType, request_context) {
+    Start();
   }
 
   base::TimeDelta last_interval_set() const { return last_interval_set_; };

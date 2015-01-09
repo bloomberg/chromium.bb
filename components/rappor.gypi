@@ -27,6 +27,7 @@
         'rappor/byte_vector_utils.h',
         'rappor/log_uploader.cc',
         'rappor/log_uploader.h',
+        'rappor/log_uploader_interface.h',
         'rappor/proto/rappor_metric.proto',
         'rappor/rappor_metric.cc',
         'rappor/rappor_metric.h',
@@ -54,6 +55,8 @@
         'rappor',
       ],
       'sources': [
+        'rappor/test_log_uploader.cc',
+        'rappor/test_log_uploader.h',
         'rappor/test_rappor_service.cc',
         'rappor/test_rappor_service.h',
       ],

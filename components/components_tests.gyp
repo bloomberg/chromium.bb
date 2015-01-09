@@ -453,6 +453,7 @@
 
             # Dependencies of rappor
             'components.gyp:rappor',
+            'components.gyp:rappor_test_support',
 
             # Dependencies of search
             'components.gyp:search',

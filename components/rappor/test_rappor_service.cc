@@ -7,22 +7,28 @@
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
+#include "components/rappor/test_log_uploader.h"
 
 namespace rappor {
 
 namespace {
 
-bool MockIsIncognito() {
-  return false;
+bool MockIsIncognito(bool* is_incognito) {
+  return *is_incognito;
 }
 
 }  // namespace
 
 TestRapporService::TestRapporService()
-    : RapporService(&prefs_, base::Bind(&MockIsIncognito)) {
-  Initialize(0,
-             HmacByteVectorGenerator::GenerateEntropyInput(),
-             FINE_LEVEL);
+    : RapporService(&test_prefs_, base::Bind(&MockIsIncognito, &is_incognito_)),
+      next_rotation_(base::TimeDelta()),
+      is_incognito_(false) {
+  RegisterPrefs(test_prefs_.registry());
+  test_uploader_ = new TestLogUploader();
+  InitializeInternal(make_scoped_ptr(test_uploader_),
+                     0,
+                     HmacByteVectorGenerator::GenerateEntropyInput());
+  Update(FINE_LEVEL, true);
 }
 
 TestRapporService::~TestRapporService() {}
@@ -31,6 +37,28 @@ int TestRapporService::GetReportsCount() {
   RapporReports reports;
   ExportMetrics(&reports);
   return reports.report_size();
+}
+
+void TestRapporService::GetReports(RapporReports* reports) {
+  ExportMetrics(reports);
+}
+
+int32_t TestRapporService::LoadCohortForTesting() {
+  return LoadCohort();
+}
+
+std::string TestRapporService::LoadSecretForTesting() {
+  return LoadSecret();
+}
+
+// Cancel the next call to OnLogInterval.
+void TestRapporService::CancelNextLogRotation() {
+  next_rotation_ = base::TimeDelta();
+}
+
+// Schedule the next call to OnLogInterval.
+void TestRapporService::ScheduleNextLogRotation(base::TimeDelta interval) {
+  next_rotation_ = interval;
 }
 
 }  // namespace rappor

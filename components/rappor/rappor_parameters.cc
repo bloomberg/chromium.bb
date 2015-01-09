@@ -18,7 +18,7 @@ std::string RapporParameters::ToString() const {
       fake_one_prob,
       one_coin_prob,
       zero_coin_prob,
-      reporting_level);
+      recording_level);
 }
 
 const int RapporParameters::kMaxCohorts = 512;

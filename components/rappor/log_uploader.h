@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/rappor/log_uploader_interface.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -28,7 +29,8 @@ namespace rappor {
 // fixed interval after the successful upload of the previous logs.  If an
 // upload fails, the uploader will keep retrying the upload with an exponential
 // backoff interval.
-class LogUploader : public net::URLFetcherDelegate {
+class LogUploader : public net::URLFetcherDelegate,
+                    public LogUploaderInterface {
  public:
   // Constructor takes the |server_url| that logs should be uploaded to, the
   // |mime_type| of the uploaded data, and |request_context| to create uploads
@@ -41,10 +43,10 @@ class LogUploader : public net::URLFetcherDelegate {
   // queued, the logs are lost.
   ~LogUploader() override;
 
-  // Adds an entry to the queue of logs to be uploaded to the server.  The
-  // uploader makes no assumptions about the format of |log| and simply sends
-  // it verbatim to the server.
-  void QueueLog(const std::string& log);
+  // LogUploaderInterface:
+  void Start() override;
+  void Stop() override;
+  void QueueLog(const std::string& log) override;
 
  protected:
   // Checks if an upload has been scheduled.
@@ -62,12 +64,18 @@ class LogUploader : public net::URLFetcherDelegate {
   static base::TimeDelta BackOffUploadInterval(base::TimeDelta);
 
  private:
+  // Returns true if the uploader is allowed to start another upload.
+  bool CanStartUpload() const;
+
+  // Drops excess logs until we are under the size limit.
+  void DropExcessLogs();
+
   // Implements net::URLFetcherDelegate. Called after transmission completes
   // (whether successful or not).
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Called when the upload is completed.
-  void OnUploadFinished(bool server_is_healthy, bool more_logs_remaining);
+  void OnUploadFinished(bool server_is_healthy);
 
   // The server URL to upload logs to.
   const GURL server_url_;
@@ -77,6 +85,9 @@ class LogUploader : public net::URLFetcherDelegate {
 
   // The request context used to send uploads.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // True if the uploader is currently running.
+  bool is_running_;
 
   // The outstanding transmission that appears as a URL Fetch operation.
   scoped_ptr<net::URLFetcher> current_fetch_;

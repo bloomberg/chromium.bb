@@ -10,84 +10,52 @@
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
 #include "components/rappor/rappor_pref_names.h"
+#include "components/rappor/test_log_uploader.h"
+#include "components/rappor/test_rappor_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace rappor {
 
-namespace {
-
-bool MockIsIncognito(bool is_incognito) {
-  return is_incognito;
-}
-
-}  // namespace
-
-class TestRapporService : public RapporService {
- public:
-  TestRapporService(ReportingLevel reporting_level, bool is_incognito)
-      : RapporService(&prefs, base::Bind(&MockIsIncognito, is_incognito)) {
-    RegisterPrefs(prefs.registry());
-    Initialize(0,
-               HmacByteVectorGenerator::GenerateEntropyInput(),
-               reporting_level);
-  }
-
-  void GetReports(RapporReports* reports) {
-    ExportMetrics(reports);
-  }
-
-  int32_t TestLoadCohort() {
-    return LoadCohort();
-  }
-
-  std::string TestLoadSecret() {
-    return LoadSecret();
-  }
-
-  void TestRecordSample(const std::string& metric_name,
-                        const RapporParameters& parameters,
-                        const std::string& sample) {
-    RecordSampleInternal(metric_name, parameters, sample);
-  }
-
-  TestingPrefServiceSimple prefs;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestRapporService);
-};
-
 TEST(RapporServiceTest, LoadCohort) {
-  TestRapporService rappor_service(REPORTING_DISABLED, false);
-  rappor_service.prefs.SetInteger(prefs::kRapporCohortSeed, 1);
-  EXPECT_EQ(1, rappor_service.TestLoadCohort());
+  TestRapporService rappor_service;
+  rappor_service.test_prefs()->SetInteger(prefs::kRapporCohortSeed, 1);
+  EXPECT_EQ(1, rappor_service.LoadCohortForTesting());
 }
 
 TEST(RapporServiceTest, LoadSecret) {
-  TestRapporService rappor_service(REPORTING_DISABLED, false);
+  TestRapporService rappor_service;
   std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
   std::string secret_base64;
   base::Base64Encode(secret, &secret_base64);
-  rappor_service.prefs.SetString(prefs::kRapporSecret, secret_base64);
-  EXPECT_EQ(secret, rappor_service.TestLoadSecret());
+  rappor_service.test_prefs()->SetString(prefs::kRapporSecret, secret_base64);
+  EXPECT_EQ(secret, rappor_service.LoadSecretForTesting());
+}
+
+TEST(RapporServiceTest, Update) {
+  TestRapporService rappor_service;
+  EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
+  EXPECT_TRUE(rappor_service.test_uploader()->is_running());
+
+  rappor_service.Update(RECORDING_DISABLED, false);
+  EXPECT_EQ(base::TimeDelta(), rappor_service.next_rotation());
+  EXPECT_FALSE(rappor_service.test_uploader()->is_running());
+
+  rappor_service.Update(FINE_LEVEL, false);
+  EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
+  EXPECT_FALSE(rappor_service.test_uploader()->is_running());
+
+  rappor_service.Update(COARSE_LEVEL, true);
+  EXPECT_LT(base::TimeDelta(), rappor_service.next_rotation());
+  EXPECT_TRUE(rappor_service.test_uploader()->is_running());
 }
 
 // Check that samples can be recorded and exported.
 TEST(RapporServiceTest, RecordAndExportMetrics) {
-  const RapporParameters kTestRapporParameters = {
-      1 /* Num cohorts */,
-      16 /* Bloom filter size bytes */,
-      4 /* Bloom filter hash count */,
-      PROBABILITY_75 /* Fake data probability */,
-      PROBABILITY_50 /* Fake one probability */,
-      PROBABILITY_75 /* One coin probability */,
-      PROBABILITY_50 /* Zero coin probability */,
-      COARSE_LEVEL};
-
-  TestRapporService rappor_service(COARSE_LEVEL, false);
+  TestRapporService rappor_service;
 
   // Multiple samples for the same metric should only generate one report.
-  rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "foo");
-  rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "bar");
+  rappor_service.RecordSample("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "foo");
+  rappor_service.RecordSample("MyMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "bar");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -95,24 +63,17 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
 
   const RapporReports::Report& report = reports.report(0);
   EXPECT_TRUE(report.name_hash());
+  // ETLD_PLUS_ONE_RAPPOR_TYPE has 128 bits
   EXPECT_EQ(16u, report.bits().size());
 }
 
 // Check that the reporting level is respected.
-TEST(RapporServiceTest, ReportingLevel) {
-  const RapporParameters kFineRapporParameters = {
-      1 /* Num cohorts */,
-      16 /* Bloom filter size bytes */,
-      4 /* Bloom filter hash count */,
-      PROBABILITY_75 /* Fake data probability */,
-      PROBABILITY_50 /* Fake one probability */,
-      PROBABILITY_75 /* One coin probability */,
-      PROBABILITY_50 /* Zero coin probability */,
-      FINE_LEVEL};
+TEST(RapporServiceTest, RecordingLevel) {
+  TestRapporService rappor_service;
+  rappor_service.Update(COARSE_LEVEL, false);
 
-  TestRapporService rappor_service(COARSE_LEVEL, false);
-
-  rappor_service.TestRecordSample("FineMetric", kFineRapporParameters, "foo");
+  // ETLD_PLUS_ONE_RAPPOR_TYPE is a FINE_LEVEL metric
+  rappor_service.RecordSample("FineMetric", ETLD_PLUS_ONE_RAPPOR_TYPE, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);
@@ -121,19 +82,10 @@ TEST(RapporServiceTest, ReportingLevel) {
 
 // Check that the incognito is respected.
 TEST(RapporServiceTest, Incognito) {
-  const RapporParameters kFineRapporParameters = {
-      1 /* Num cohorts */,
-      16 /* Bloom filter size bytes */,
-      4 /* Bloom filter hash count */,
-      PROBABILITY_75 /* Fake data probability */,
-      PROBABILITY_50 /* Fake one probability */,
-      PROBABILITY_75 /* One coin probability */,
-      PROBABILITY_50 /* Zero coin probability */,
-      COARSE_LEVEL};
+  TestRapporService rappor_service;
+  rappor_service.set_is_incognito(true);
 
-  TestRapporService rappor_service(COARSE_LEVEL, true);
-
-  rappor_service.TestRecordSample("MyMetric", kFineRapporParameters, "foo");
+  rappor_service.RecordSample("MyMetric", COARSE_RAPPOR_TYPE, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);

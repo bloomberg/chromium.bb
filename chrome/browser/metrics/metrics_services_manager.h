@@ -51,15 +51,19 @@ class MetricsServicesManager {
   // Should be called when a plugin loading error occurs.
   void OnPluginLoadingError(const base::FilePath& plugin_path);
 
+  // Update the managed services when permissions for recording/uploading
+  // metrics change.
+  void UpdatePermissions(bool may_record, bool may_upload);
+
+  // Returns true iff metrics reporting is enabled.
+  bool IsMetricsReportingEnabled() const;
+
  private:
   // Returns the ChromeMetricsServiceClient, creating it if it hasn't been
   // created yet (and additionally creating the MetricsService in that case).
   ChromeMetricsServiceClient* GetChromeMetricsServiceClient();
 
   metrics::MetricsStateManager* GetMetricsStateManager();
-
-  // Returns true iff metrics reporting is enabled.
-  bool IsMetricsReportingEnabled() const;
 
   // Ensures that all functions are called from the same thread.
   base::ThreadChecker thread_checker_;

@@ -35,6 +35,12 @@ enum DiscardReason {
   NUM_DISCARD_REASONS
 };
 
+void RecordDiscardReason(DiscardReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Rappor.DiscardReason",
+                            reason,
+                            NUM_DISCARD_REASONS);
+}
+
 }  // namespace
 
 namespace rappor {
@@ -45,6 +51,7 @@ LogUploader::LogUploader(const GURL& server_url,
     : server_url_(server_url),
       mime_type_(mime_type),
       request_context_(request_context),
+      is_running_(false),
       has_callback_pending_(false),
       upload_interval_(base::TimeDelta::FromSeconds(
           kUnsentLogsIntervalSeconds)) {
@@ -52,10 +59,32 @@ LogUploader::LogUploader(const GURL& server_url,
 
 LogUploader::~LogUploader() {}
 
+void LogUploader::Start() {
+  is_running_ = true;
+  StartScheduledUpload();
+}
+
+void LogUploader::Stop() {
+  is_running_ = false;
+  // Rather than interrupting the current upload, just let it finish/fail and
+  // then inhibit any retry attempts.
+}
+
 void LogUploader::QueueLog(const std::string& log) {
   queued_logs_.push(log);
-  if (!IsUploadScheduled() && !has_callback_pending_)
-    StartScheduledUpload();
+  // Don't drop logs yet if an upload is in progress.  They will be dropped
+  // when it finishes.
+  if (!has_callback_pending_)
+    DropExcessLogs();
+  StartScheduledUpload();
+}
+
+void LogUploader::DropExcessLogs() {
+  while (queued_logs_.size() > kMaxQueuedLogs) {
+    DVLOG(2) << "Dropping excess log.";
+    RecordDiscardReason(QUEUE_OVERFLOW);
+    queued_logs_.pop();
+  }
 }
 
 bool LogUploader::IsUploadScheduled() const {
@@ -63,15 +92,21 @@ bool LogUploader::IsUploadScheduled() const {
 }
 
 void LogUploader::ScheduleNextUpload(base::TimeDelta interval) {
-  if (IsUploadScheduled() || has_callback_pending_)
-    return;
-
   upload_timer_.Start(
       FROM_HERE, interval, this, &LogUploader::StartScheduledUpload);
 }
 
+bool LogUploader::CanStartUpload() const {
+  return is_running_ &&
+         !queued_logs_.empty() &&
+         !IsUploadScheduled() &&
+         !has_callback_pending_;
+}
+
 void LogUploader::StartScheduledUpload() {
-  DCHECK(!has_callback_pending_);
+  if (!CanStartUpload())
+    return;
+  DVLOG(2) << "Upload to " << server_url_.spec() << " starting.";
   has_callback_pending_ = true;
   current_fetch_.reset(
       net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this));
@@ -106,6 +141,7 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   const net::URLRequestStatus& request_status = source->GetStatus();
 
   const int response_code = source->GetResponseCode();
+  DVLOG(2) << "Upload fetch complete response code: " << response_code;
 
   if (request_status.status() != net::URLRequestStatus::SUCCESS) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Rappor.FailedUploadErrorCode",
@@ -127,25 +163,23 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
     reason = UPLOAD_SUCCESS;
   } else if (response_code == 400) {
     reason = UPLOAD_REJECTED;
-  } else if (queued_logs_.size() > kMaxQueuedLogs) {
-    reason = QUEUE_OVERFLOW;
   }
 
   if (reason != NUM_DISCARD_REASONS) {
-    UMA_HISTOGRAM_ENUMERATION("Rappor.DiscardReason",
-                              reason,
-                              NUM_DISCARD_REASONS);
+    DVLOG(2) << "Log discarded.";
+    RecordDiscardReason(reason);
     queued_logs_.pop();
   }
+
+  DropExcessLogs();
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   const bool server_is_healthy = upload_succeeded || response_code == 400;
-  OnUploadFinished(server_is_healthy, !queued_logs_.empty());
+  OnUploadFinished(server_is_healthy);
 }
 
-void LogUploader::OnUploadFinished(bool server_is_healthy,
-                                   bool more_logs_remaining) {
+void LogUploader::OnUploadFinished(bool server_is_healthy) {
   DCHECK(has_callback_pending_);
   has_callback_pending_ = false;
   // If the server is having issues, back off. Otherwise, reset to default.
@@ -154,7 +188,7 @@ void LogUploader::OnUploadFinished(bool server_is_healthy,
   else
     upload_interval_ = base::TimeDelta::FromSeconds(kUnsentLogsIntervalSeconds);
 
-  if (more_logs_remaining)
+  if (CanStartUpload())
     ScheduleNextUpload(upload_interval_);
 }
 

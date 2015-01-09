@@ -59,7 +59,7 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
      rappor::PROBABILITY_50 /* Fake one probability */,
      rappor::PROBABILITY_75 /* One coin probability */,
      rappor::PROBABILITY_25 /* Zero coin probability */,
-     FINE_LEVEL /* Reporting level */},
+     FINE_LEVEL /* Recording level */},
     // COARSE_RAPPOR_TYPE
     {128 /* Num cohorts */,
      1 /* Bloom filter size bytes */,
@@ -68,7 +68,7 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
      rappor::PROBABILITY_50 /* Fake one probability */,
      rappor::PROBABILITY_75 /* One coin probability */,
      rappor::PROBABILITY_25 /* Zero coin probability */,
-     COARSE_LEVEL /* Reporting level */},
+     COARSE_LEVEL /* Recording level */},
 };
 
 }  // namespace
@@ -82,7 +82,7 @@ RapporService::RapporService(
       daily_event_(pref_service,
                    prefs::kRapporLastDailySample,
                    kRapporDailyEventHistogram),
-      reporting_level_(REPORTING_DISABLED) {
+      recording_level_(RECORDING_DISABLED) {
 }
 
 RapporService::~RapporService() {
@@ -94,40 +94,74 @@ void RapporService::AddDailyObserver(
   daily_event_.AddObserver(observer.Pass());
 }
 
-void RapporService::Start(net::URLRequestContextGetter* request_context,
-                          bool metrics_enabled) {
+void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
+  DCHECK(!IsInitialized());
   const GURL server_url = GetServerUrl();
   if (!server_url.is_valid()) {
     DVLOG(1) << server_url.spec() << " is invalid. "
              << "RapporService not started.";
     return;
   }
-  // TODO(holte): Consider moving this logic once we've determined the
-  // conditions for COARSE metrics.
-  ReportingLevel reporting_level = metrics_enabled ?
-                                   FINE_LEVEL : REPORTING_DISABLED;
-  DVLOG(1) << "RapporService reporting_level_? " << reporting_level;
-  if (reporting_level <= REPORTING_DISABLED)
-    return;
-  DVLOG(1) << "RapporService started. Reporting to " << server_url.spec();
-  DCHECK(!uploader_);
-  Initialize(LoadCohort(), LoadSecret(), reporting_level);
-  uploader_.reset(new LogUploader(server_url, kMimeType, request_context));
-  log_rotation_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kInitialLogIntervalSeconds),
-      this,
-      &RapporService::OnLogInterval);
+  DVLOG(1) << "RapporService reporting to " << server_url.spec();
+  InitializeInternal(make_scoped_ptr(new LogUploader(server_url,
+                                                     kMimeType,
+                                                     request_context)),
+                     LoadCohort(),
+                     LoadSecret());
 }
 
-void RapporService::Initialize(int32_t cohort,
-                               const std::string& secret,
-                               const ReportingLevel& reporting_level) {
+void RapporService::Update(RecordingLevel recording_level, bool may_upload) {
+  DCHECK(IsInitialized());
+  if (recording_level_ != recording_level) {
+    if (recording_level == RECORDING_DISABLED) {
+      DVLOG(1) << "Rappor service stopped due to RECORDING_DISABLED.";
+      recording_level_ = RECORDING_DISABLED;
+      CancelNextLogRotation();
+    } else if (recording_level_ == RECORDING_DISABLED) {
+      DVLOG(1) << "RapporService started at recording level: "
+               << recording_level;
+      recording_level_ = recording_level;
+      ScheduleNextLogRotation(
+          base::TimeDelta::FromSeconds(kInitialLogIntervalSeconds));
+    } else {
+      DVLOG(1) << "RapporService recording_level changed:" << recording_level;
+      recording_level_ = recording_level;
+    }
+  }
+
+  DVLOG(1) << "RapporService may_upload=" << may_upload;
+  if (may_upload) {
+    uploader_->Start();
+  } else {
+    uploader_->Stop();
+  }
+}
+
+void RapporService::InitializeInternal(
+    scoped_ptr<LogUploaderInterface> uploader,
+    int32_t cohort,
+    const std::string& secret) {
   DCHECK(!IsInitialized());
   DCHECK(secret_.empty());
+  uploader_.swap(uploader);
   cohort_ = cohort;
   secret_ = secret;
-  reporting_level_ = reporting_level;
+}
+
+void RapporService::SetRecordingLevel(RecordingLevel recording_level) {
+  recording_level_ = recording_level;
+}
+
+void RapporService::CancelNextLogRotation() {
+  STLDeleteValues(&metrics_map_);
+  log_rotation_timer_.Stop();
+}
+
+void RapporService::ScheduleNextLogRotation(base::TimeDelta interval) {
+  log_rotation_timer_.Start(FROM_HERE,
+                            interval,
+                            this,
+                            &RapporService::OnLogInterval);
 }
 
 void RapporService::OnLogInterval() {
@@ -143,10 +177,7 @@ void RapporService::OnLogInterval() {
              << reports.report_size() << " value(s).";
     uploader_->QueueLog(log_text);
   }
-  log_rotation_timer_.Start(FROM_HERE,
-                            base::TimeDelta::FromSeconds(kLogIntervalSeconds),
-                            this,
-                            &RapporService::OnLogInterval);
+  ScheduleNextLogRotation(base::TimeDelta::FromSeconds(kLogIntervalSeconds));
 }
 
 // static
@@ -154,8 +185,7 @@ void RapporService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRapporSecret, std::string());
   registry->RegisterIntegerPref(prefs::kRapporCohortDeprecated, -1);
   registry->RegisterIntegerPref(prefs::kRapporCohortSeed, -1);
-  metrics::DailyEvent::RegisterPref(registry,
-                                       prefs::kRapporLastDailySample);
+  metrics::DailyEvent::RegisterPref(registry, prefs::kRapporLastDailySample);
 }
 
 int32_t RapporService::LoadCohort() {
@@ -245,9 +275,9 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
   }
   // Skip this metric if it's reporting level is less than the enabled
   // reporting level.
-  if (reporting_level_ < parameters.reporting_level) {
-    DVLOG(2) << "Metric not logged due to reporting_level "
-             << reporting_level_ << " < " << parameters.reporting_level;
+  if (recording_level_ < parameters.recording_level) {
+    DVLOG(2) << "Metric not logged due to recording_level "
+             << recording_level_ << " < " << parameters.recording_level;
     return;
   }
   RapporMetric* metric = LookUpMetric(metric_name, parameters);
