@@ -1018,7 +1018,7 @@ void LocalDOMWindow::close(ExecutionContext* context)
         if (!activeDocument)
             return;
 
-        if (!activeDocument->canNavigate(*frame()))
+        if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*frame()))
             return;
     }
 
@@ -1715,7 +1715,7 @@ void LocalDOMWindow::setLocation(const String& urlString, LocalDOMWindow* callin
         return;
 
     ASSERT(frame());
-    if (!activeDocument->canNavigate(*frame()))
+    if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*frame()))
         return;
 
     LocalFrame* firstFrame = enteredWindow->frame();
@@ -1883,7 +1883,7 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
     // FIXME: Navigating RemoteFrames is not yet supported.
     if (targetFrame && targetFrame->isLocalFrame()) {
         LocalFrame* localTargetFrame = toLocalFrame(targetFrame);
-        if (!activeDocument->canNavigate(*localTargetFrame))
+        if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*localTargetFrame))
             return nullptr;
 
         KURL completedURL = firstFrame->document()->completeURL(urlString);

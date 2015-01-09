@@ -30,6 +30,7 @@ public:
     virtual void detach() override;
     virtual RemoteSecurityContext* securityContext() const override;
     bool checkLoadComplete() override;
+    void printNavigationErrorMessage(const Frame&, const char* reason) { }
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.

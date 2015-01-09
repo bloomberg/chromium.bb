@@ -163,8 +163,6 @@ public:
 
     FrameLoaderStateMachine* stateMachine() const { return &m_stateMachine; }
 
-    LocalFrame* findFrameForNavigation(const AtomicString& name, Document* activeDocument);
-
     void applyUserAgent(ResourceRequest&);
 
     bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&, unsigned long requestIdentifier);

@@ -248,12 +248,12 @@ void Location::reload(LocalDOMWindow* callingWindow)
 void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow)
 {
     ASSERT(m_frame);
-    LocalFrame* frame = m_frame->loader().findFrameForNavigation(nullAtom, callingWindow->document());
-    if (!frame)
+    Frame* frame = m_frame->findFrameForNavigation(nullAtom, *callingWindow->frame());
+    if (!frame || !frame->isLocalFrame())
         return;
     // FIXME: setLocation() probably belongs on DOMWindow, since you can trigger
     // navigations across different origins.
-    frame->localDOMWindow()->setLocation(url, callingWindow, enteredWindow);
+    toLocalFrame(frame)->localDOMWindow()->setLocation(url, callingWindow, enteredWindow);
 }
 
 } // namespace blink

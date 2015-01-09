@@ -434,7 +434,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
         return;
     }
 
-    LocalFrame* targetFrame = document().frame()->loader().findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
+    Frame* targetFrame = document().frame()->findFrameForNavigation(submission->target(), *submission->state()->sourceDocument()->frame());
     if (!targetFrame) {
         if (!LocalDOMWindow::allowPopUp(*document().frame()) && !UserGestureIndicator::processingUserGesture())
             return;
@@ -442,7 +442,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
     } else {
         submission->clearTarget();
     }
-    if (!targetFrame->page())
+    if (!targetFrame->host())
         return;
 
     if (MixedContentChecker::isMixedContent(document().securityOrigin(), submission->action())) {
@@ -453,7 +453,9 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
         UseCounter::count(document(), UseCounter::FormsSubmitted);
     }
 
-    targetFrame->navigationScheduler().scheduleFormSubmission(submission);
+    // FIXME: Plumb form submission for remote frames.
+    if (targetFrame->isLocalFrame())
+        toLocalFrame(targetFrame)->navigationScheduler().scheduleFormSubmission(submission);
 }
 
 void HTMLFormElement::reset()

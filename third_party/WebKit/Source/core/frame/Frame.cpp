@@ -150,6 +150,104 @@ ChromeClient& Frame::chromeClient() const
     return emptyChromeClient();
 }
 
+Frame* Frame::findFrameForNavigation(const AtomicString& name, Frame& activeFrame)
+{
+    Frame* frame = tree().find(name);
+    if (!frame || !activeFrame.canNavigate(*frame))
+        return nullptr;
+    return frame;
+}
+
+static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, const Frame* targetFrame)
+{
+    // targetFrame can be 0 when we're trying to navigate a top-level frame
+    // that has a 0 opener.
+    if (!targetFrame)
+        return false;
+
+    const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
+    for (const Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
+        const SecurityOrigin* ancestorSecurityOrigin = ancestorFrame->securityContext()->securityOrigin();
+        if (activeSecurityOrigin.canAccess(ancestorSecurityOrigin))
+            return true;
+
+        // Allow file URL descendant navigation even when allowFileAccessFromFileURLs is false.
+        // FIXME: It's a bit strange to special-case local origins here. Should we be doing
+        // something more general instead?
+        if (isLocalActiveOrigin && ancestorSecurityOrigin->isLocal())
+            return true;
+    }
+
+    return false;
+}
+
+bool Frame::canNavigate(const Frame& targetFrame)
+{
+    // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
+    if (!securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top())
+        return true;
+
+    if (securityContext()->isSandboxed(SandboxNavigation)) {
+        if (targetFrame.tree().isDescendantOf(this))
+            return true;
+
+        const char* reason = "The frame attempting navigation is sandboxed, and is therefore disallowed from navigating its ancestors.";
+        if (securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top())
+            reason = "The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.";
+
+        printNavigationErrorMessage(targetFrame, reason);
+        return false;
+    }
+
+    ASSERT(securityContext()->securityOrigin());
+    SecurityOrigin& origin = *securityContext()->securityOrigin();
+
+    // This is the normal case. A document can navigate its decendant frames,
+    // or, more generally, a document can navigate a frame if the document is
+    // in the same origin as any of that frame's ancestors (in the frame
+    // hierarchy).
+    //
+    // See http://www.adambarth.com/papers/2008/barth-jackson-mitchell.pdf for
+    // historical information about this security check.
+    if (canAccessAncestor(origin, &targetFrame))
+        return true;
+
+    // Top-level frames are easier to navigate than other frames because they
+    // display their URLs in the address bar (in most browsers). However, there
+    // are still some restrictions on navigation to avoid nuisance attacks.
+    // Specifically, a document can navigate a top-level frame if that frame
+    // opened the document or if the document is the same-origin with any of
+    // the top-level frame's opener's ancestors (in the frame hierarchy).
+    //
+    // In both of these cases, the document performing the navigation is in
+    // some way related to the frame being navigate (e.g., by the "opener"
+    // and/or "parent" relation). Requiring some sort of relation prevents a
+    // document from navigating arbitrary, unrelated top-level frames.
+    if (!targetFrame.tree().parent()) {
+        if (targetFrame == client()->opener())
+            return true;
+        if (canAccessAncestor(origin, targetFrame.client()->opener()))
+            return true;
+    }
+
+    printNavigationErrorMessage(targetFrame, "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
+    return false;
+}
+
+Frame* Frame::findUnsafeParentScrollPropagationBoundary()
+{
+    Frame* currentFrame = this;
+    Frame* ancestorFrame = tree().parent();
+
+    while (ancestorFrame) {
+        if (!ancestorFrame->securityContext()->securityOrigin()->canAccess(securityContext()->securityOrigin()))
+            return currentFrame;
+        currentFrame = ancestorFrame;
+        ancestorFrame = ancestorFrame->tree().parent();
+    }
+    return nullptr;
+}
+
 RenderPart* Frame::ownerRenderer() const
 {
     if (!deprecatedLocalOwner())

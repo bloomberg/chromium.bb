@@ -87,6 +87,7 @@ namespace blink {
         virtual void disconnectOwnerElement() override;
         virtual SecurityContext* securityContext() const override;
         bool checkLoadComplete() override;
+        void printNavigationErrorMessage(const Frame&, const char* reason) override;
 
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);

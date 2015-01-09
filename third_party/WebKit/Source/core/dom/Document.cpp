@@ -327,47 +327,6 @@ static bool acceptsEditingFocus(const Element& element)
     return element.document().frame() && element.rootEditableElement();
 }
 
-static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, const Frame* targetFrame)
-{
-    // targetFrame can be 0 when we're trying to navigate a top-level frame
-    // that has a 0 opener.
-    if (!targetFrame)
-        return false;
-
-    const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
-    for (const Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
-        // FIXME: SecurityOrigins need to be refactored to work with out-of-process iframes.
-        // For now we prevent navigation between cross-process frames.
-        if (!ancestorFrame->isLocalFrame())
-            return false;
-
-        Document* ancestorDocument = toLocalFrame(ancestorFrame)->document();
-        // FIXME: Should be an ASSERT? Frames should alway have documents.
-        if (!ancestorDocument)
-            return true;
-
-        const SecurityOrigin* ancestorSecurityOrigin = ancestorDocument->securityOrigin();
-        if (activeSecurityOrigin.canAccess(ancestorSecurityOrigin))
-            return true;
-
-        // Allow file URL descendant navigation even when allowFileAccessFromFileURLs is false.
-        // FIXME: It's a bit strange to special-case local origins here. Should we be doing
-        // something more general instead?
-        if (isLocalActiveOrigin && ancestorSecurityOrigin->isLocal())
-            return true;
-    }
-
-    return false;
-}
-
-static void printNavigationErrorMessage(const LocalFrame& frame, const KURL& activeURL, const char* reason)
-{
-    String message = "Unsafe JavaScript attempt to initiate navigation for frame with URL '" + frame.document()->url().string() + "' from frame with URL '" + activeURL.string() + "'. " + reason + "\n";
-
-    // FIXME: should we print to the console of the document performing the navigation instead?
-    frame.localDOMWindow()->printErrorMessage(message);
-}
-
 uint64_t Document::s_globalTreeVersion = 0;
 
 #ifndef NDEBUG
@@ -2894,80 +2853,6 @@ void Document::disableEval(const String& errorMessage)
     frame()->script().disableEval(errorMessage);
 }
 
-bool Document::canNavigate(const Frame& targetFrame)
-{
-    if (!m_frame)
-        return false;
-
-    // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
-    if (!isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
-        return true;
-
-    if (isSandboxed(SandboxNavigation)) {
-        if (targetFrame.tree().isDescendantOf(m_frame))
-            return true;
-
-        const char* reason = "The frame attempting navigation is sandboxed, and is therefore disallowed from navigating its ancestors.";
-        if (isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
-            reason = "The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.";
-
-        printNavigationErrorMessage(toLocalFrameTemporary(targetFrame), url(), reason);
-        return false;
-    }
-
-    ASSERT(securityOrigin());
-    SecurityOrigin& origin = *securityOrigin();
-
-    // This is the normal case. A document can navigate its decendant frames,
-    // or, more generally, a document can navigate a frame if the document is
-    // in the same origin as any of that frame's ancestors (in the frame
-    // hierarchy).
-    //
-    // See http://www.adambarth.com/papers/2008/barth-jackson-mitchell.pdf for
-    // historical information about this security check.
-    if (canAccessAncestor(origin, &targetFrame))
-        return true;
-
-    // Top-level frames are easier to navigate than other frames because they
-    // display their URLs in the address bar (in most browsers). However, there
-    // are still some restrictions on navigation to avoid nuisance attacks.
-    // Specifically, a document can navigate a top-level frame if that frame
-    // opened the document or if the document is the same-origin with any of
-    // the top-level frame's opener's ancestors (in the frame hierarchy).
-    //
-    // In both of these cases, the document performing the navigation is in
-    // some way related to the frame being navigate (e.g., by the "opener"
-    // and/or "parent" relation). Requiring some sort of relation prevents a
-    // document from navigating arbitrary, unrelated top-level frames.
-    if (!targetFrame.tree().parent()) {
-        if (targetFrame == m_frame->loader().opener())
-            return true;
-
-        // FIXME: We don't have access to RemoteFrame's opener yet.
-        if (targetFrame.isLocalFrame() && canAccessAncestor(origin, toLocalFrame(targetFrame).loader().opener()))
-            return true;
-    }
-
-    printNavigationErrorMessage(toLocalFrameTemporary(targetFrame), url(), "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
-    return false;
-}
-
-LocalFrame* Document::findUnsafeParentScrollPropagationBoundary()
-{
-    LocalFrame* currentFrame = m_frame;
-    Frame* ancestorFrame = currentFrame->tree().parent();
-
-    while (ancestorFrame) {
-        // FIXME: We don't yet have access to a RemoteFrame's security origin.
-        if (!ancestorFrame->isLocalFrame())
-            return currentFrame;
-        if (!toLocalFrame(ancestorFrame)->document()->securityOrigin()->canAccess(securityOrigin()))
-            return currentFrame;
-        currentFrame = toLocalFrame(ancestorFrame);
-        ancestorFrame = ancestorFrame->tree().parent();
-    }
-    return 0;
-}
 
 void Document::didLoadAllImports()
 {

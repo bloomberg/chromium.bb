@@ -88,6 +88,12 @@ public:
 
     virtual SecurityContext* securityContext() const = 0;
 
+    Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
+    Frame* findUnsafeParentScrollPropagationBoundary();
+
+    bool canNavigate(const Frame&);
+    virtual void printNavigationErrorMessage(const Frame&, const char* reason) = 0;
+
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
     // FIXME: These should move to RemoteFrame when that is instantiated.

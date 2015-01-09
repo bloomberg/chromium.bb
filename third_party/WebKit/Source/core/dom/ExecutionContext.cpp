@@ -68,8 +68,7 @@ public:
 };
 
 ExecutionContext::ExecutionContext()
-    : m_sandboxFlags(SandboxNone)
-    , m_circularSequentialID(0)
+    : m_circularSequentialID(0)
     , m_timerNestingLevel(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
@@ -261,17 +260,6 @@ ContextLifecycleNotifier& ExecutionContext::lifecycleNotifier()
 bool ExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
-}
-
-void ExecutionContext::enforceSandboxFlags(SandboxFlags mask)
-{
-    m_sandboxFlags |= mask;
-
-    // The SandboxOrigin is stored redundantly in the security origin.
-    if (isSandboxed(SandboxOrigin) && securityContext().securityOrigin() && !securityContext().securityOrigin()->isUnique()) {
-        securityContext().setSecurityOrigin(SecurityOrigin::createUnique());
-        didUpdateSecurityOrigin();
-    }
 }
 
 void ExecutionContext::allowWindowFocus()

@@ -91,7 +91,7 @@ private:
 
     // FrameOwner overrides:
     virtual bool isLocal() const { return true; }
-    virtual SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
+    virtual SandboxFlags sandboxFlags() const override;
     virtual void dispatchLoad() override;
 
     RawPtrWillBeMember<Frame> m_contentFrame;

@@ -14,6 +14,9 @@ public:
     static PassRefPtr<RemoteSecurityContext> create();
     void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);
 
+    // FIXME: implement
+    void didUpdateSecurityOrigin() override { }
+
 private:
     RemoteSecurityContext();
 };

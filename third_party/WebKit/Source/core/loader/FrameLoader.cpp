@@ -772,7 +772,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RefPtrWillBeRawPtr<LocalFrame> targetFrame = request.formState() ? 0 : findFrameForNavigation(AtomicString(request.frameName()), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
+    RefPtrWillBeRawPtr<LocalFrame> targetFrame = toLocalFrame(request.formState() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame));
     if (targetFrame && targetFrame.get() != m_frame) {
         request.setFrameName("_self");
         targetFrame->loader().load(request);
@@ -1163,15 +1163,16 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
         return;
 
     // Leaking scroll position to a cross-origin ancestor would permit the so-called "framesniffing" attack.
-    RefPtrWillBeRawPtr<LocalFrame> boundaryFrame = url.hasFragmentIdentifier() ? m_frame->document()->findUnsafeParentScrollPropagationBoundary() : 0;
+    RefPtrWillBeRawPtr<Frame> boundaryFrame = url.hasFragmentIdentifier() ? m_frame->findUnsafeParentScrollPropagationBoundary() : 0;
 
-    if (boundaryFrame)
-        boundaryFrame->view()->setSafeToPropagateScrollToParent(false);
+    // FIXME: Handle RemoteFrames
+    if (boundaryFrame && boundaryFrame->isLocalFrame())
+        toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
 
     view->scrollToFragment(url);
 
-    if (boundaryFrame)
-        boundaryFrame->view()->setSafeToPropagateScrollToParent(true);
+    if (boundaryFrame && boundaryFrame->isLocalFrame())
+        toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
 }
 
 bool FrameLoader::shouldClose()
@@ -1371,15 +1372,6 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
     return ownerElement->fastHasAttribute(srcdocAttr);
 }
 
-LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* activeDocument)
-{
-    ASSERT(activeDocument);
-    Frame* frame = m_frame->tree().find(name);
-    if (!frame || !frame->isLocalFrame() || !activeDocument->canNavigate(toLocalFrame(*frame)))
-        return 0;
-    return toLocalFrame(frame);
-}
-
 void FrameLoader::loadHistoryItem(HistoryItem* item, FrameLoadType frameLoadType, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
 {
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
@@ -1429,9 +1421,6 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
 {
     SandboxFlags flags = m_forcedSandboxFlags;
     // FIXME: We need a way to propagate sandbox flags to out-of-process frames.
-    Frame* parentFrame = m_frame->tree().parent();
-    if (parentFrame && parentFrame->isLocalFrame())
-        flags |= toLocalFrame(parentFrame)->document()->sandboxFlags();
     if (FrameOwner* frameOwner = m_frame->owner())
         flags |= frameOwner->sandboxFlags();
     return flags;

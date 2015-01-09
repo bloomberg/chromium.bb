@@ -29,7 +29,6 @@
 #define ExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
@@ -68,7 +67,6 @@ public:
     virtual bool isJSExecutionForbidden() const { return false; }
     SecurityOrigin* securityOrigin();
     ContentSecurityPolicy* contentSecurityPolicy();
-    virtual void didUpdateSecurityOrigin() = 0;
     const KURL& url() const;
     KURL completeURL(const String& url) const;
     virtual void disableEval(const String& errorMessage) = 0;
@@ -124,10 +122,6 @@ public:
     int timerNestingLevel() { return m_timerNestingLevel; }
     void setTimerNestingLevel(int level) { m_timerNestingLevel = level; }
 
-    SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
-    bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
-    void enforceSandboxFlags(SandboxFlags mask);
-
     PassOwnPtr<LifecycleNotifier<ExecutionContext> > createLifecycleNotifier();
 
     virtual EventTarget* errorEventTarget() = 0;
@@ -163,8 +157,6 @@ private:
     // Implementation details for DOMTimer. No other classes should call these functions.
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
     void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
-
-    SandboxFlags m_sandboxFlags;
 
     int m_circularSequentialID;
     typedef WillBeHeapHashMap<int, RefPtrWillBeMember<DOMTimer> > TimeoutMap;

@@ -558,9 +558,6 @@ public:
     virtual String userAgent(const KURL&) const override final;
     virtual void disableEval(const String& errorMessage) override final;
 
-    bool canNavigate(const Frame& targetFrame);
-    LocalFrame* findUnsafeParentScrollPropagationBoundary();
-
     CSSStyleSheet& elementSheet();
 
     virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser();

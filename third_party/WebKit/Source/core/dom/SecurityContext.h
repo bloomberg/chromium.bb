@@ -27,6 +27,7 @@
 #ifndef SecurityContext_h
 #define SecurityContext_h
 
+#include "core/dom/SandboxFlags.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -48,6 +49,11 @@ public:
     // Note: It is dangerous to change the security origin of a script context
     //       that already contains content.
     void setSecurityOrigin(PassRefPtr<SecurityOrigin>);
+    virtual void didUpdateSecurityOrigin() = 0;
+
+    SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
+    bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
+    void enforceSandboxFlags(SandboxFlags mask);
 
 protected:
     SecurityContext();
@@ -62,6 +68,8 @@ private:
     bool m_haveInitializedSecurityOrigin;
     RefPtr<SecurityOrigin> m_securityOrigin;
     RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+
+    SandboxFlags m_sandboxFlags;
 };
 
 } // namespace blink
