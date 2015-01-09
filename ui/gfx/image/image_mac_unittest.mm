@@ -78,9 +78,6 @@ class ImageMacTest : public testing::Test {
     gfx::ImageSkia::SetSupportedScales(gfx::test::Get1xAnd2xScales());
   }
 
-  virtual ~ImageMacTest() {
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageMacTest);
 };

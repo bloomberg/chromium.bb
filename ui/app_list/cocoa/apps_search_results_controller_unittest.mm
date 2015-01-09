@@ -116,8 +116,8 @@ class AppsSearchResultsControllerTest : public ui::CocoaTest {
   void ExpectConsistent();
 
   // ui::CocoaTest overrides:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   base::scoped_nsobject<TestAppsSearchResultsDelegate> delegate_;

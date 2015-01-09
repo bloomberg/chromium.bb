@@ -13,12 +13,12 @@ class StatusItemViewTest : public ui::CocoaTest {
       : view_([[MCStatusItemView alloc] init]) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ui::CocoaTest::SetUp();
     [[test_window() contentView] addSubview:view_];
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     [view_ removeItem];
     ui::CocoaTest::TearDown();
   }

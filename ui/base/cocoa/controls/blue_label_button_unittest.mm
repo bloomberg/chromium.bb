@@ -16,7 +16,7 @@ class BlueLabelButtonTest : public ui::CocoaTest {
   BlueLabelButtonTest() {}
 
   // ui::CocoaTest override:
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   base::scoped_nsobject<BlueLabelButton> blue_label_button_;

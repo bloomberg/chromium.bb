@@ -22,7 +22,7 @@ class AppsGridControllerTestHelper : public ui::CocoaTest {
   static const size_t kItemsPerPage;
 
   AppsGridControllerTestHelper();
-  virtual ~AppsGridControllerTestHelper();
+  ~AppsGridControllerTestHelper() override;
 
   void SetUpWithGridController(AppsGridController* grid_controller);
 

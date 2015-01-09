@@ -14,7 +14,7 @@ namespace {
 
 class ColorProfileTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ui::CocoaTest::SetUp();
 
     // Verify the primary screen origin.

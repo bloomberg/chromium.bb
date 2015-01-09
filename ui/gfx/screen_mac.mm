@@ -91,7 +91,7 @@ class ScreenMac : public gfx::Screen {
         ScreenMac::DisplayReconfigurationCallBack, this);
   }
 
-  virtual ~ScreenMac() {
+  ~ScreenMac() override {
     CGDisplayRemoveReconfigurationCallback(
         ScreenMac::DisplayReconfigurationCallBack, this);
   }

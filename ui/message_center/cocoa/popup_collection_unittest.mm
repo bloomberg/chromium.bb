@@ -35,14 +35,12 @@ class PopupCollectionTest : public ui::CocoaTest {
     }];
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     collection_.reset();  // Close all popups.
     ui::CocoaTest::TearDown();
   }
 
-  virtual ~PopupCollectionTest() {
-    message_center::MessageCenter::Shutdown();
-  }
+  ~PopupCollectionTest() override { message_center::MessageCenter::Shutdown(); }
 
   message_center::NotifierId DummyNotifierId() {
     return message_center::NotifierId();

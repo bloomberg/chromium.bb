@@ -14,7 +14,7 @@ namespace {
 
 class FocusTrackerTest : public ui::CocoaTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ui::CocoaTest::SetUp();
     base::scoped_nsobject<NSView> view(
         [[NSView alloc] initWithFrame:NSZeroRect]);
