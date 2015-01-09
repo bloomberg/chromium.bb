@@ -6,10 +6,25 @@
 
 namespace ui {
 
+namespace {
+
+float GetRefreshRate(const drmModeModeInfo& mode) {
+  if (!mode.htotal || !mode.vtotal)
+    return mode.vrefresh;
+
+  float clock = mode.clock;
+  float htotal = mode.htotal;
+  float vtotal = mode.vtotal;
+
+  return (clock * 1000.0f) / (htotal * vtotal);
+}
+
+}  // namespace
+
 DisplayModeDri::DisplayModeDri(const drmModeModeInfo& mode)
     : DisplayMode(gfx::Size(mode.hdisplay, mode.vdisplay),
                   mode.flags & DRM_MODE_FLAG_INTERLACE,
-                  mode.vrefresh),
+                  GetRefreshRate(mode)),
       mode_info_(mode) {
 }
 
