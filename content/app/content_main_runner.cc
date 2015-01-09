@@ -716,10 +716,14 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(OS_ANDROID)
     int icudata_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
         kAndroidICUDataDescriptor);
-    if (icudata_fd != -1)
-      CHECK(base::i18n::InitializeICUWithFileDescriptor(icudata_fd));
-    else
+    if (icudata_fd != -1) {
+      auto icudata_region = base::GlobalDescriptors::GetInstance()->GetRegion(
+          kAndroidICUDataDescriptor);
+      CHECK(base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
+                                                        icudata_region));
+    } else {
       CHECK(base::i18n::InitializeICU());
+    }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     int v8_natives_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
@@ -727,8 +731,15 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     int v8_snapshot_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
         kV8SnapshotDataDescriptor);
     if (v8_natives_fd != -1 && v8_snapshot_fd != -1) {
-      CHECK(gin::IsolateHolder::LoadV8SnapshotFD(v8_natives_fd,
-                                                 v8_snapshot_fd));
+      auto v8_natives_region =
+          base::GlobalDescriptors::GetInstance()->GetRegion(
+              kV8NativesDataDescriptor);
+      auto v8_snapshot_region =
+          base::GlobalDescriptors::GetInstance()->GetRegion(
+              kV8SnapshotDataDescriptor);
+      CHECK(gin::IsolateHolder::LoadV8SnapshotFd(
+          v8_natives_fd, v8_natives_region.offset, v8_natives_region.size,
+          v8_snapshot_fd, v8_snapshot_region.offset, v8_snapshot_region.size));
     } else {
       CHECK(gin::IsolateHolder::LoadV8Snapshot());
     }

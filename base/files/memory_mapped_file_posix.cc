@@ -16,6 +16,7 @@ namespace base {
 MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
 }
 
+#if !defined(OS_NACL)
 bool MemoryMappedFile::MapFileRegionToMemory(
     const MemoryMappedFile::Region& region) {
   ThreadRestrictions::AssertIOAllowed();
@@ -74,6 +75,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
   data_ += data_offset;
   return true;
 }
+#endif
 
 void MemoryMappedFile::CloseHandles() {
   ThreadRestrictions::AssertIOAllowed();

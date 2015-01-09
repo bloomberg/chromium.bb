@@ -108,6 +108,7 @@
         '../components/components.gyp:web_contents_delegate_android',
         '../content/content.gyp:content_app_both',
         '../content/content.gyp:content_browser',
+        '../gin/gin.gyp:gin',
         '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../gpu/gpu.gyp:command_buffer_service',
@@ -300,25 +301,6 @@
             'shared_resources': 1,
           },
           'includes': [ 'apk/system_webview_apk_common.gypi' ],
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/android_webview_assets',
-              'files': [],
-              'conditions': [
-                ['icu_use_data_file_flag==1', {
-                  'files': [
-                    '<(PRODUCT_DIR)/icudtl.dat',
-                  ],
-                }],
-                ['v8_use_external_startup_data==1', {
-                  'files': [
-                    '<(PRODUCT_DIR)/natives_blob.bin',
-                    '<(PRODUCT_DIR)/snapshot_blob.bin',
-                  ],
-                }],
-              ],
-            },
-          ],
         },
       ],
      }, {  # android_webview_build==1

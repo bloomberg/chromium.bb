@@ -8,6 +8,7 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
+#include "android_webview/native/aw_assets.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
@@ -16,6 +17,7 @@
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,7 +26,9 @@
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
+#include "gin/public/isolate_holder.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media_switches.h"
@@ -80,6 +84,23 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
+
+  // This is needed to be able to mmap the V8 snapshot and ICU data file
+  // directly from the WebView .apk.
+  // This needs to be here so that it gets to run before the code in
+  // content_main_runner that reads these values tries to do so.
+  // In multi-process mode this code would live in
+  // AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess.
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
+      kV8NativesDataDescriptor, gin::IsolateHolder::kNativesFileName));
+  CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
+      kV8SnapshotDataDescriptor, gin::IsolateHolder::kSnapshotFileName));
+#endif
+  // TODO(mkosiba): make this CHECK when the android_webview_build uses an asset
+  // from the .apk too.
+  AwAssets::RegisterAssetWithGlobalDescriptors(
+      kAndroidICUDataDescriptor, base::i18n::kIcuDataFileName);
 
   return false;
 }

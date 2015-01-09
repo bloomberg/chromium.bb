@@ -98,6 +98,7 @@ include_rules = [
   "+extensions/components/javascript_dialog_extensions_client",
   "+extensions/grit",
   "+extensions/test",
+  "+gin/public/isolate_holder.h",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",

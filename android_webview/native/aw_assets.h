@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/android/jni_android.h"
+#include "base/posix/global_descriptors.h"
 
 namespace android_webview {
 namespace AwAssets {
@@ -22,6 +23,9 @@ bool OpenAsset(const std::string& filename,
                int* fd,
                int64* offset,
                int64* size);
+
+bool RegisterAssetWithGlobalDescriptors(base::GlobalDescriptors::Key key,
+                                        const std::string& asset_filename);
 
 }  // namespace AwAssets
 

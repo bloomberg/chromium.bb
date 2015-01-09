@@ -16,29 +16,51 @@
     'never_lint': 1,
     'R_package': 'com.android.webview.chromium',
     'R_package_relpath': 'com/android/webview/chromium',
-    'extensions_to_not_compress': 'pak',
-    'asset_location': '<(PRODUCT_DIR)/android_webview_assets',
+    'extensions_to_not_compress': 'pak,bin,dat',
+    'asset_location': '<(INTERMEDIATE_DIR)/assets/',
     # TODO: crbug.com/442348 Update proguard.flags and re-enable.
     'proguard_enabled': 'false',
     'proguard_flags_paths': ['<(DEPTH)/android_webview/apk/java/proguard.flags'],
     # TODO: crbug.com/405035 Find a better solution for WebView .pak files.
     'additional_input_paths': [
-      '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
-      '<(PRODUCT_DIR)/android_webview_assets/en-US.pak',
+      '<(asset_location)/webviewchromium.pak',
+      '<(asset_location)/en-US.pak',
     ],
     'conditions': [
       ['icu_use_data_file_flag==1', {
         'additional_input_paths': [
-          '<(PRODUCT_DIR)/icudtl.dat',
+          '<(asset_location)/icudtl.dat',
         ],
       }],
       ['v8_use_external_startup_data==1', {
         'additional_input_paths': [
-          '<(PRODUCT_DIR)/natives_blob.bin',
-          '<(PRODUCT_DIR)/snapshot_blob.bin',
+          '<(asset_location)/natives_blob.bin',
+          '<(asset_location)/snapshot_blob.bin',
         ],
       }],
     ],
   },
+  'copies': [
+    {
+      'destination': '<(asset_location)',
+      'files': [
+        '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
+        '<(PRODUCT_DIR)/android_webview_assets/en-US.pak',
+      ],
+      'conditions': [
+        ['icu_use_data_file_flag==1', {
+          'files': [
+            '<(PRODUCT_DIR)/icudtl.dat',
+          ],
+        }],
+        ['v8_use_external_startup_data==1', {
+          'files': [
+            '<(PRODUCT_DIR)/natives_blob.bin',
+            '<(PRODUCT_DIR)/snapshot_blob.bin',
+          ],
+        }],
+      ],
+    },
+  ],
   'includes': [ '../../build/java_apk.gypi' ],
 }

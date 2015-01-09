@@ -51,8 +51,8 @@ void SIGCHLDHandler(int signal) {
 
 int LookUpFd(const base::GlobalDescriptors::Mapping& fd_mapping, uint32_t key) {
   for (size_t index = 0; index < fd_mapping.size(); ++index) {
-    if (fd_mapping[index].first == key)
-      return fd_mapping[index].second;
+    if (fd_mapping[index].key == key)
+      return fd_mapping[index].fd;
   }
   return -1;
 }
@@ -506,10 +506,10 @@ base::ProcessId Zygote::ReadArgsAndFork(PickleIterator iter,
     base::GlobalDescriptors::Key key;
     if (!iter.ReadUInt32(&key))
       return -1;
-    mapping.push_back(std::make_pair(key, fds[i]->get()));
+    mapping.push_back(base::GlobalDescriptors::Descriptor(key, fds[i]->get()));
   }
 
-  mapping.push_back(std::make_pair(
+  mapping.push_back(base::GlobalDescriptors::Descriptor(
       static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 
   // Returns twice, once per process.

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -122,6 +123,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
+#include "gin/public/isolate_holder.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -2482,7 +2484,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
   flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath icudata_path =
-      app_data_path.AppendASCII("icudtl.dat");
+      app_data_path.AppendASCII(base::i18n::kIcuDataFileName);
   base::File icudata_file(icudata_path, flags);
   DCHECK(icudata_file.IsValid());
   mappings->Transfer(kAndroidICUDataDescriptor,
@@ -2495,9 +2497,9 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
   int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath v8_natives_data_path =
-      v8_data_path.AppendASCII("natives_blob.bin");
+      v8_data_path.AppendASCII(gin::IsolateHolder::kNativesFileName);
   base::FilePath v8_snapshot_data_path =
-      v8_data_path.AppendASCII("snapshot_blob.bin");
+      v8_data_path.AppendASCII(gin::IsolateHolder::kSnapshotFileName);
   base::File v8_natives_data_file(v8_natives_data_path, file_flags);
   base::File v8_snapshot_data_file(v8_snapshot_data_path, file_flags);
   DCHECK(v8_natives_data_file.IsValid());

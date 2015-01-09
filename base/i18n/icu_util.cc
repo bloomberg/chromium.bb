@@ -27,20 +27,20 @@
 #define ICU_UTIL_DATA_SHARED 1
 #define ICU_UTIL_DATA_STATIC 2
 
-#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
+namespace base {
+namespace i18n {
+
 // Use an unversioned file name to simplify a icu version update down the road.
 // No need to change the filename in multiple places (gyp files, windows
 // build pkg configurations, etc). 'l' stands for Little Endian.
-#define ICU_UTIL_DATA_FILE_NAME "icudtl.dat"
-#elif ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED
+// This variable is exported through the header file.
+const char kIcuDataFileName[] = "icudtl.dat";
+#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED
 #define ICU_UTIL_DATA_SYMBOL "icudt" U_ICU_VERSION_SHORT "_dat"
 #if defined(OS_WIN)
 #define ICU_UTIL_DATA_SHARED_MODULE_NAME "icudt.dll"
 #endif
 #endif
-
-namespace base {
-namespace i18n {
 
 namespace {
 
@@ -53,9 +53,10 @@ bool g_check_called_once = true;
 #endif
 }
 
-
 #if defined(OS_ANDROID)
-bool InitializeICUWithFileDescriptor(int data_fd) {
+bool InitializeICUWithFileDescriptor(
+    int data_fd,
+    base::MemoryMappedFile::Region data_region) {
 #if !defined(NDEBUG)
   DCHECK(!g_check_called_once || !g_called_once);
   g_called_once = true;
@@ -67,7 +68,7 @@ bool InitializeICUWithFileDescriptor(int data_fd) {
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
   CR_DEFINE_STATIC_LOCAL(base::MemoryMappedFile, mapped_file, ());
   if (!mapped_file.IsValid()) {
-    if (!mapped_file.Initialize(base::File(data_fd))) {
+    if (!mapped_file.Initialize(base::File(data_fd), data_region)) {
       LOG(ERROR) << "Couldn't mmap icu data file";
       return false;
     }
@@ -135,13 +136,15 @@ bool InitializeICU() {
     bool path_ok = PathService::Get(base::DIR_EXE, &data_path);
 #endif
     DCHECK(path_ok);
-    data_path = data_path.AppendASCII(ICU_UTIL_DATA_FILE_NAME);
+    data_path = data_path.AppendASCII(kIcuDataFileName);
 #else
     // Assume it is in the framework bundle's Resources directory.
+    base::ScopedCFTypeRef<CFStringRef> data_file_name(
+        SysUTF8ToCFStringRef(kIcuDataFileName));
     FilePath data_path =
-      base::mac::PathForFrameworkBundleResource(CFSTR(ICU_UTIL_DATA_FILE_NAME));
+      base::mac::PathForFrameworkBundleResource(data_file_name);
     if (data_path.empty()) {
-      LOG(ERROR) << ICU_UTIL_DATA_FILE_NAME << " not found in bundle";
+      LOG(ERROR) << kIcuDataFileName << " not found in bundle";
       return false;
     }
 #endif  // OS check

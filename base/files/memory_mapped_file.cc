@@ -31,6 +31,7 @@ MemoryMappedFile::~MemoryMappedFile() {
   CloseHandles();
 }
 
+#if !defined(OS_NACL)
 bool MemoryMappedFile::Initialize(const FilePath& file_name) {
   if (IsValid())
     return false;
@@ -85,5 +86,6 @@ void MemoryMappedFile::CalculateVMAlignedBoundaries(int64 start,
   *aligned_start = start & ~mask;
   *aligned_size = (size + *offset + mask) & ~mask;
 }
+#endif
 
 }  // namespace base

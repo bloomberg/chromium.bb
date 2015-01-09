@@ -17,11 +17,11 @@
         'java_in_dir': 'test/shell',
         'native_lib_target': 'libstandalonelibwebviewchromium',
         'resource_dir': 'test/shell/res',
-        'extensions_to_not_compress': 'pak',
+        'extensions_to_not_compress': 'pak,dat,bin',
         'extra_native_libs': ['<(SHARED_LIB_DIR)/libdrawgl.>(android_product_extension)'],
         'additional_input_paths': [
-          '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
-          '<(PRODUCT_DIR)/android_webview_assets/en-US.pak',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/en-US.pak',
           '<(PRODUCT_DIR)/android_webview_apk/assets/asset_file.html',
           '<(PRODUCT_DIR)/android_webview_apk/assets/cookie_test.html',
           '<(PRODUCT_DIR)/android_webview_apk/assets/asset_icon.png',
@@ -58,7 +58,7 @@
             '<(java_in_dir)/assets/full_screen_video_inside_div_test.html',
             '<(java_in_dir)/assets/video.mp4',
           ],
-	  'conditions': [
+          'conditions': [
             ['icu_use_data_file_flag==1', {
               'files': [
                 '<(PRODUCT_DIR)/icudtl.dat',

@@ -32,6 +32,20 @@ bool OpenAsset(const std::string& filename,
   return *fd != -1;
 }
 
+bool RegisterAssetWithGlobalDescriptors(base::GlobalDescriptors::Key key,
+                                        const std::string& asset_filename) {
+  int asset_fd = 0;
+  int64 asset_off = 0;
+  int64 asset_len = 0;
+  bool result =
+      AwAssets::OpenAsset(asset_filename, &asset_fd, &asset_off, &asset_len);
+  if (result) {
+    base::GlobalDescriptors::GetInstance()->Set(
+        key, asset_fd, base::MemoryMappedFile::Region(asset_off, asset_len));
+  }
+  return result;
+}
+
 }  // namespace AwAssets
 
 bool RegisterAwAssets(JNIEnv* env) {
