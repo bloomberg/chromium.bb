@@ -29,9 +29,11 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
  public:
   enum TestingState {
     NOT_TESTING,
-    DISABLED_FOR_TESTING,  // The service is always disabled.
-    SKIP_OS_CHECK_FOR_TESTING  // The service can be enabled even if the OS has
-                               // native captive portal detection.
+    DISABLED_FOR_TESTING,        // The service is always disabled.
+    SKIP_OS_CHECK_FOR_TESTING,   // The service can be enabled even if the OS
+                                 // has native captive portal detection.
+    IGNORE_REQUESTS_FOR_TESTING  // Disables actual portal checks. This also
+                                 // implies SKIP_OS_CHECK_FOR_TESTING.
   };
 
   // The details sent via a NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT.

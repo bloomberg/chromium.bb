@@ -70,6 +70,8 @@
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
+#include "chrome/browser/ssl/ssl_error_handler.h"
+#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -1771,13 +1773,6 @@ void ChromeContentBrowserClient::AllowCertificateError(
     return;
   }
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalTabHelper* captive_portal_tab_helper =
-      CaptivePortalTabHelper::FromWebContents(tab);
-  if (captive_portal_tab_helper)
-    captive_portal_tab_helper->OnSSLCertError(ssl_info);
-#endif
-
   // Otherwise, display an SSL blocking page. The interstitial page takes
   // ownership of ssl_blocking_page.
   int options_mask = 0;
@@ -1787,9 +1782,9 @@ void ChromeContentBrowserClient::AllowCertificateError(
     options_mask |= SSLBlockingPage::STRICT_ENFORCEMENT;
   if (expired_previous_decision)
     options_mask |= SSLBlockingPage::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
-  SSLBlockingPage* ssl_blocking_page = new SSLBlockingPage(
+
+  SSLErrorHandler::HandleSSLError(
       tab, cert_error, ssl_info, request_url, options_mask, callback);
-  ssl_blocking_page->Show();
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

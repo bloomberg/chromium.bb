@@ -210,6 +210,10 @@ CaptivePortalService::~CaptivePortalService() {
 void CaptivePortalService::DetectCaptivePortal() {
   DCHECK(CalledOnValidThread());
 
+  // Detection should be disabled only in tests.
+  if (testing_state_ == IGNORE_REQUESTS_FOR_TESTING)
+    return;
+
   // If a request is pending or running, do nothing.
   if (state_ == STATE_CHECKING_FOR_PORTAL || state_ == STATE_TIMER_RUNNING)
     return;
@@ -352,6 +356,7 @@ void CaptivePortalService::UpdateEnabledState() {
              resolve_errors_with_web_service_.GetValue();
 
   if (testing_state_ != SKIP_OS_CHECK_FOR_TESTING &&
+      testing_state_ != IGNORE_REQUESTS_FOR_TESTING &&
       ShouldDeferToNativeCaptivePortalDetection()) {
     enabled_ = false;
   }

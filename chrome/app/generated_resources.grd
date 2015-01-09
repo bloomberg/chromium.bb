@@ -9857,6 +9857,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- Captive portal interstitial -->
+      <message name="IDS_CAPTIVE_PORTAL_TITLE" desc="Title in the error page when a secure request is blocked because the network is redirecting the request to another page until the user logs in">
+        Connect to Network
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_HEADING" desc="Heading in the error page when a secure request is blocked because a captive portal is manipulating a connection">
+        Connect to network
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the captive portal error page for network connections.">
+        The network you are using may require you to visit its login page.
+      </message>
+      <message name="IDS_CAPTIVE_PORTAL_BUTTON_OPEN_LOGIN_PAGE" desc="Text for the open login page button">
+        Connect
+      </message>
+
       <!-- Misc strings for SSL UI -->
       <message name="IDS_UNSAFE_FRAME_MESSAGE" desc="The text displayed in the content that is subsituted to an unsafe frame.">
         This frame was blocked because it contains some insecure content.

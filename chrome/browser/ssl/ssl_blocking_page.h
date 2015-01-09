@@ -43,8 +43,16 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   };
 
   enum SSLBlockingPageOptionsMask {
+    // Indicates whether or not the user could (assuming perfect knowledge)
+    // successfully override the error and still get the security guarantees
+    // of TLS.
     OVERRIDABLE = 1 << 0,
+    // Indicates whether or not the site the user is trying to connect to has
+    // requested strict enforcement of certificate validation (e.g. with HTTP
+    // Strict-Transport-Security).
     STRICT_ENFORCEMENT = 1 << 1,
+    // Indicates whether a user decision had been previously made but the
+    // decision has expired.
     EXPIRED_BUT_PREVIOUSLY_ALLOWED = 1 << 2
   };
 
@@ -73,6 +81,9 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // Note: there can be up to 5 strings in |extra_info|.
   static void SetExtraInfo(base::DictionaryValue* strings,
                            const std::vector<base::string16>& extra_info);
+
+  // Returns true if |options_mask| refers to an overridable SSL error.
+  static bool IsOptionsOverridable(int options_mask);
 
  protected:
   // InterstitialPageDelegate implementation.

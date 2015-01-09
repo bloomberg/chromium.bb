@@ -174,6 +174,12 @@ input[type=checkbox] {
       url(images/2x/brokenssl_red.png) 2x);
 }
 
+.captive-portal .icon {
+  background-image: -webkit-image-set(
+      url(../../../app/theme/default_100_percent/common/error_network_offline.png) 1x,
+      url(../../../app/theme/default_200_percent/common/error_network_offline.png) 2x);
+}
+
 .styled-checkbox {
   float: left;
   height: 16px;

@@ -156,10 +156,8 @@ SSLErrorClassification::SSLErrorClassification(
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
-  CaptivePortalService* captive_portal_service =
-      CaptivePortalServiceFactory::GetForProfile(profile);
-  captive_portal_detection_enabled_ = captive_portal_service->enabled();
-  captive_portal_service->DetectCaptivePortal();
+  captive_portal_detection_enabled_ =
+      CaptivePortalServiceFactory::GetForProfile(profile)->enabled();
   registrar_.Add(this,
                  chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
                  content::Source<Profile>(profile));
@@ -634,8 +632,7 @@ void SSLErrorClassification::Observe(
   if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
     captive_portal_probe_completed_ = true;
     CaptivePortalService::Results* results =
-        content::Details<CaptivePortalService::Results>(
-            details).ptr();
+        content::Details<CaptivePortalService::Results>(details).ptr();
     // If a captive portal was detected at any point when the interstitial was
     // displayed, assume that the interstitial was caused by a captive portal.
     // Example scenario:

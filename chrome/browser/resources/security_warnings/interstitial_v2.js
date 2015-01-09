@@ -65,7 +65,9 @@ function toggleDebuggingInfo() {
 
 function setupEvents() {
   var overridable = loadTimeData.getBoolean('overridable');
-  var ssl = loadTimeData.getString('type') === 'SSL';
+  var interstitialType = loadTimeData.getString('type');
+  var ssl = interstitialType == 'SSL';
+  var captivePortal = interstitialType == 'CAPTIVE_PORTAL';
   var badClock = ssl && loadTimeData.getBoolean('bad_clock');
   var hidePrimaryButton = badClock && loadTimeData.getBoolean(
       'hide_primary_button');
@@ -74,6 +76,8 @@ function setupEvents() {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
     $('error-code').textContent = loadTimeData.getString('errorCode');
     $('error-code').classList.remove('hidden');
+  } else if (captivePortal) {
+    $('body').classList.add('captive-portal');
   } else {
     $('body').classList.add('safe-browsing');
   }
@@ -82,18 +86,32 @@ function setupEvents() {
     $('primary-button').classList.add('hidden');
   } else {
     $('primary-button').addEventListener('click', function() {
-      if (!ssl)
-        sendCommand(SB_CMD_TAKE_ME_BACK);
-      else if (badClock)
-        sendCommand(SSL_CMD_CLOCK);
-      else if (overridable)
-        sendCommand(SSL_CMD_DONT_PROCEED);
-      else
-        sendCommand(SSL_CMD_RELOAD);
+      switch (interstitialType) {
+        case 'CAPTIVE_PORTAL':
+          sendCommand(CAPTIVEPORTAL_CMD_OPEN_LOGIN_PAGE);
+          break;
+
+        case 'SSL':
+          if (badClock)
+            sendCommand(SSL_CMD_CLOCK);
+          else if (overridable)
+            sendCommand(SSL_CMD_DONT_PROCEED);
+          else
+            sendCommand(SSL_CMD_RELOAD);
+          break;
+
+        case 'SAFEBROWSING':
+          sendCommand(SB_CMD_TAKE_ME_BACK);
+          break;
+
+        default:
+          throw 'Invalid interstitial type';
+      }
     });
   }
 
   if (overridable) {
+    // Captive portal page isn't overridable.
     $('proceed-link').addEventListener('click', function(event) {
       sendCommand(ssl ? SSL_CMD_PROCEED : SB_CMD_PROCEED);
     });
@@ -115,17 +133,22 @@ function setupEvents() {
     });
   }
 
-  $('details-button').addEventListener('click', function(event) {
-    var hiddenDetails = $('details').classList.toggle('hidden');
-    $('details-button').innerText = hiddenDetails ?
-        loadTimeData.getString('openDetails') :
-        loadTimeData.getString('closeDetails');
-    if (!expandedDetails) {
-      // Record a histogram entry only the first time that details is opened.
-      sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
-      expandedDetails = true;
-    }
-  });
+  if (captivePortal) {
+    // Captive portal page doesn't have details button.
+    $('details-button').classList.add('hidden');
+  } else {
+    $('details-button').addEventListener('click', function(event) {
+      var hiddenDetails = $('details').classList.toggle('hidden');
+      $('details-button').innerText = hiddenDetails ?
+          loadTimeData.getString('openDetails') :
+          loadTimeData.getString('closeDetails');
+      if (!expandedDetails) {
+        // Record a histogram entry only the first time that details is opened.
+        sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
+        expandedDetails = true;
+      }
+    });
+  }
 
   preventDefaultOnPoundLinkClicks();
   setupCheckbox();

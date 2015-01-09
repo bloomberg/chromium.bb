@@ -11287,6 +11287,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.captive_portal"
+    enum="CaptivePortalBlockingPageEvent">
+  <owner>meacer@chromium.org</owner>
+  <summary>
+    User action when the user is shown a captive portal error page.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.common_name_invalid_time" units="milliseconds">
   <obsolete>
     Removed on 8/1/13.
@@ -11486,6 +11494,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     the user accepts the SSL warning.  This is only recorded for overridable SSL
     warnings.  Timing begins when user first focuses on the page.
   </summary>
+</histogram>
+
+<histogram name="interstitial.ssl_error_handler" enum="SSLErrorHandlerEvent">
+  <owner>meacer@chromium.org</owner>
+  <summary>The type of action that the SSL error handler takes.</summary>
 </histogram>
 
 <histogram name="interstitial.ssl_error_type" enum="SSLErrorTypes">
@@ -43041,6 +43054,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="webgl"/>
 </enum>
 
+<enum name="CaptivePortalBlockingPageEvent" type="int">
+  <int value="0" label="SHOW_ALL"/>
+  <int value="1" label="OPEN_LOGIN_PAGE"/>
+</enum>
+
 <enum name="CaptivePortalDetectResult" type="int">
   <int value="0" label="INTERNET_CONNECTED"/>
   <int value="1" label="NO_RESPONSE"/>
@@ -56935,6 +56953,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="52243" label="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"/>
   <int value="52244" label="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305"/>
   <int value="52245" label="TLS_DHE_RSA_WITH_CHACHA20_POLY1305"/>
+</enum>
+
+<enum name="SSLErrorHandlerEvent" type="int">
+  <int value="0" label="HANDLE_ALL"/>
+  <int value="1" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE"/>
+  <int value="2" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE"/>
+  <int value="3" label="SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE"/>
+  <int value="4" label="SHOW_SSL_INTERSTITIAL_OVERRIDABLE"/>
 </enum>
 
 <enum name="SSLErrorTypes" type="int">

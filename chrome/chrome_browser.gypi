@@ -1221,6 +1221,8 @@
       'browser/captive_portal/captive_portal_tab_helper.h',
       'browser/captive_portal/captive_portal_tab_reloader.cc',
       'browser/captive_portal/captive_portal_tab_reloader.h',
+      'browser/ssl/captive_portal_blocking_page.cc',
+      'browser/ssl/captive_portal_blocking_page.h',
     ],
     'chrome_browser_content_settings_sources': [
       'browser/content_settings/chrome_content_settings_client.cc',
@@ -2555,6 +2557,8 @@
       'browser/ssl/ssl_client_certificate_selector.h',
       'browser/ssl/ssl_error_classification.cc',
       'browser/ssl/ssl_error_classification.h',
+      'browser/ssl/ssl_error_handler.cc',
+      'browser/ssl/ssl_error_handler.h',
       'browser/ssl/ssl_error_info.cc',
       'browser/ssl/ssl_error_info.h',
     ],

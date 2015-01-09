@@ -331,8 +331,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       callback_(callback),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
-      overridable_(options_mask & OVERRIDABLE &&
-                   !(options_mask & STRICT_ENFORCEMENT)),
+      overridable_(IsOptionsOverridable(options_mask)),
       danger_overridable_(true),
       strict_enforcement_((options_mask & STRICT_ENFORCEMENT) != 0),
       internal_(false),
@@ -719,6 +718,12 @@ void SSLBlockingPage::SetExtraInfo(
   for (; i < 5; i++) {
     strings->SetString(keys[i], std::string());
   }
+}
+
+// static
+bool SSLBlockingPage::IsOptionsOverridable(int options_mask) {
+  return (options_mask & SSLBlockingPage::OVERRIDABLE) &&
+         !(options_mask & SSLBlockingPage::STRICT_ENFORCEMENT);
 }
 
 void SSLBlockingPage::OnGotHistoryCount(bool success,

@@ -20,7 +20,7 @@ class GURL;
 class Profile;
 
 namespace content {
-  class WebContents;
+class WebContents;
 }
 
 namespace net {
@@ -95,6 +95,10 @@ class CaptivePortalTabHelper
   // page.  This is set to false when a captive portal is no longer detected.
   bool IsLoginTab() const;
 
+  // Opens a login tab if the profile's active window doesn't have one already.
+  static void OpenLoginTabForWebContents(content::WebContents* web_contents,
+                                         bool focus);
+
  private:
   friend class CaptivePortalBrowserTest;
   friend class CaptivePortalTabHelperTest;
@@ -126,9 +130,6 @@ class CaptivePortalTabHelper
   }
 
   CaptivePortalTabReloader* GetTabReloaderForTest();
-
-  // Opens a login tab if the profile's active window doesn't have one already.
-  void OpenLoginTab();
 
   Profile* profile_;
 
