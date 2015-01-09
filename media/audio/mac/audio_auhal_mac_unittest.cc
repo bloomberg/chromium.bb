@@ -39,9 +39,7 @@ class AUHALStreamTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual ~AUHALStreamTest() {
-    base::RunLoop().RunUntilIdle();
-  }
+  ~AUHALStreamTest() override { base::RunLoop().RunUntilIdle(); }
 
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(

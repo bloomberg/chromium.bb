@@ -355,7 +355,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
   }
 
  private:
-  virtual ~AppleAacImpl() { Teardown(); }
+  ~AppleAacImpl() override { Teardown(); }
 
   // Destroys the existing audio converter and file, if any.
   void Teardown() {

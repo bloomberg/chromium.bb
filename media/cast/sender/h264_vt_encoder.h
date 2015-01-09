@@ -25,7 +25,7 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   H264VideoToolboxEncoder(scoped_refptr<CastEnvironment> cast_environment,
                           const VideoSenderConfig& video_config,
                           const CastInitializationCallback& initialization_cb);
-  virtual ~H264VideoToolboxEncoder();
+  ~H264VideoToolboxEncoder() override;
 
   // media::cast::VideoEncoder implementation
   bool EncodeVideoFrame(

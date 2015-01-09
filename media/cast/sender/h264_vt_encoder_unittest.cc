@@ -192,8 +192,6 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     frame_->set_timestamp(base::TimeDelta());
   }
 
-  virtual ~H264VideoToolboxEncoderTest() {}
-
   void SetUp() override {
     clock_ = new base::SimpleTestTickClock();
     clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());

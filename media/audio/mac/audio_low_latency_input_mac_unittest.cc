@@ -110,9 +110,7 @@ class MacAudioInputTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual ~MacAudioInputTest() {
-    base::RunLoop().RunUntilIdle();
-  }
+  ~MacAudioInputTest() override { base::RunLoop().RunUntilIdle(); }
 
   // Convenience method which ensures that we are not running on the build
   // bots and that at least one valid input device can be found.
