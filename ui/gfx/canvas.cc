@@ -407,11 +407,11 @@ void Canvas::DrawImageIntInPixel(const ImageSkia& image,
   // 3. Round off the X and Y translation components in the matrix. This is to
   //    reduce floating point errors during rect transformation. This is needed
   //    for fractional scale factors like 1.25/1.5, etc.
-  // 4. Save the current state of the canvas.
+  // 4. Save the current state of the canvas and restore the state when going
+  //    out of scope with ScopedCanvas.
   // 5. Set the modified matrix in the canvas. This ensures that no scaling
   //    will be done for draw operations on the canvas.
   // 6. Draw the image.
-  // 7. Restore the state of the canvas and the SkCanvas matrix stack.
   SkMatrix matrix = canvas_->getTotalMatrix();
 
   // Ensure that the direction of the x and y scales is preserved. This is
