@@ -112,6 +112,7 @@ namespace WTF {
         template<typename Predicate>
         iterator findIf(Predicate&);
 
+        typedef int HasInlinedTraceMethodMarker;
         template<typename VisitorDispatcher> void trace(VisitorDispatcher);
 
     private:

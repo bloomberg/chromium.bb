@@ -164,16 +164,28 @@ template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
 
-template <typename T, typename = void>
-struct HasInlinedTraceMethod {
-public:
-    static const bool value = false;
-};
-
+// HasInlinedTraceMethod<T>::value is true for T supporting
+// T::trace(InlinedGlobalMarkingVisitor).
+// The template works by checking if T::HasInlinedTraceMethodMarker type is
+// available using SFINAE. The HasInlinedTraceMethodMarker type is defined
+// by DECLARE_TRACE and DEFINE_INLINE_TRACE helper macros, which are used to
+// define trace methods supporting both inlined/uninlined tracing.
 template <typename T>
-struct HasInlinedTraceMethod<T, typename T::HasInlinedTraceMethod> {
+struct HasInlinedTraceMethod {
+#if ENABLE(INLINED_TRACE)
+private:
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
+    };
+
+    template <typename U> static YesType checkMarker(typename U::HasInlinedTraceMethodMarker*);
+    template <typename U> static NoType checkMarker(...);
 public:
-    static const bool value = true;
+    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+#else
+    static const bool value = false;
+#endif
 };
 
 template <typename T, bool = HasInlinedTraceMethod<T>::value>
@@ -221,7 +233,7 @@ template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
 #define DECLARE_TRACE(maybevirtual, maybeoverride)                           \
 public:                                                                      \
-    typedef HasInlinedTraceMethod int;                                       \
+    typedef int HasInlinedTraceMethodMarker;                                 \
     maybevirtual void trace(Visitor*) maybeoverride;                         \
     maybevirtual void trace(InlinedGlobalMarkingVisitor) maybeoverride;      \
 private:                                                                     \
@@ -235,6 +247,7 @@ public:
     ALWAYS_INLINE void T::traceImpl(VisitorDispatcher visitor)
 
 #define DEFINE_INLINE_TRACE(maybevirtual, maybeoverride)                                               \
+    typedef int HasInlinedTraceMethodMarker;                                                           \
     maybevirtual void trace(Visitor* visitor) maybeoverride { traceImpl(visitor); }                    \
     maybevirtual void trace(InlinedGlobalMarkingVisitor visitor) maybeoverride { traceImpl(visitor); } \
     template <typename VisitorDispatcher>                                                              \

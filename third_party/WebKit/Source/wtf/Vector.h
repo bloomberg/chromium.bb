@@ -745,6 +745,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void reverse();
 
+        typedef int HasInlinedTraceMethodMarker;
         template<typename VisitorDispatcher> void trace(VisitorDispatcher);
 
     private:
