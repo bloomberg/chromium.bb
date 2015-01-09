@@ -96,6 +96,9 @@
       <message desc="Warning shown when the app tries to create a private browsing WebView, which is not supported. [CHAR-LIMIT=NONE]" name="IDS_PRIVATE_BROWSING_WARNING">
         This functionality is not supported in this version of Android.
       </message>
+      <message desc="The title of the activity that displays licenses of WebView. [CHAR-LIMIT=50]" name="IDS_LICENSE_ACTIVITY_TITLE">
+        System WebView licenses
+      </message>
     </messages>
   </release>
 </grit>
