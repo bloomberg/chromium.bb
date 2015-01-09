@@ -14,7 +14,7 @@ PASS Cache.match with ignoreSearch option (request with no search parameters)
 FAIL Cache.matchAll with ignoreSearch option (request with search parameter) promise_test: Unhandled rejection with value: object "TypeError: undefined is not a function"
 PASS Cache.match with ignoreSearch option (request with search parameter) 
 FAIL Cache.matchAll with URL containing fragment promise_test: Unhandled rejection with value: object "TypeError: undefined is not a function"
-FAIL Cache.match with URL containing fragment assert_equals: Cache.match should ignore URL fragment.: Response expected (object) object "[object Response]" but got (undefined) undefined
+PASS Cache.match with URL containing fragment 
 FAIL Cache.matchAll with string fragment "http" as query promise_test: Unhandled rejection with value: object "TypeError: undefined is not a function"
 PASS Cache.match with string fragment "http" as query 
 FAIL Cache.matchAll with prefixMatch option promise_test: Unhandled rejection with value: object "TypeError: undefined is not a function"

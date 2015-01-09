@@ -101,5 +101,18 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     EXPECT_EQ(webRequest.headers(), secondWebRequest.headers());
 }
 
+TEST_F(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment)
+{
+    TrackExceptionState exceptionState;
+    String urlWithoutFragment = "http://www.example.com/";
+    String url = urlWithoutFragment + "#fragment";
+    Request* request = Request::create(executionContext(), url, exceptionState);
+    ASSERT(request);
+
+    WebServiceWorkerRequest webRequest;
+    request->populateWebServiceWorkerRequest(webRequest);
+    EXPECT_EQ(urlWithoutFragment, KURL(webRequest.url()));
+}
+
 } // namespace
 } // namespace blink

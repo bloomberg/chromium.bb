@@ -280,7 +280,7 @@ String Request::method() const
     return m_request->method();
 }
 
-String Request::url() const
+KURL Request::url() const
 {
     // The url attribute's getter must return request's url, serialized with the exclude fragment flag set.
     if (!m_request->url().hasFragmentIdentifier())
@@ -353,7 +353,8 @@ Request* Request::clone(ExceptionState& exceptionState) const
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const
 {
     webRequest.setMethod(method());
-    webRequest.setURL(m_request->url());
+    // This strips off the fragment part.
+    webRequest.setURL(url());
 
     const FetchHeaderList* headerList = m_headers->headerList();
     for (size_t i = 0, size = headerList->size(); i < size; ++i) {

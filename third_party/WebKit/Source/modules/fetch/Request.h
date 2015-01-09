@@ -47,7 +47,7 @@ public:
 
     // From Request.idl:
     String method() const;
-    String url() const;
+    KURL url() const;
     Headers* headers() const { return m_headers; }
     String referrer() const;
     String mode() const;
