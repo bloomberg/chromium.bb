@@ -51,7 +51,7 @@ class GIN_EXPORT IsolateHolder {
   // thread.
   void RemoveRunMicrotasksObserver();
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   static bool LoadV8SnapshotFD(int natives_fd, int snapshot_fd);
   static bool LoadV8Snapshot();
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA

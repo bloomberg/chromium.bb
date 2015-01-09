@@ -721,7 +721,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     else
       CHECK(base::i18n::InitializeICU());
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     int v8_natives_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
         kV8NativesDataDescriptor);
     int v8_snapshot_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
@@ -736,10 +736,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #else
     CHECK(base::i18n::InitializeICU());
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     CHECK(gin::IsolateHolder::LoadV8Snapshot());
-#endif // V8_USE_EXTERNAL_STARTUP_DATA
-#endif // OS_ANDROID
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+#endif  // OS_ANDROID
 
     InitializeStatsTable(command_line);
 

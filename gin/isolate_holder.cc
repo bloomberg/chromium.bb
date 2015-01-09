@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
+#include "crypto/sha2.h"
 #include "gin/array_buffer.h"
 #include "gin/debug_impl.h"
 #include "gin/function_template.h"
@@ -19,8 +20,8 @@
 #include "gin/public/v8_platform.h"
 #include "gin/run_microtasks_observer.h"
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#ifdef OS_MACOSX
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #endif  // OS_MACOSX
 #include "base/path_service.h"
@@ -40,7 +41,7 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
 base::MemoryMappedFile* g_mapped_natives = NULL;
 base::MemoryMappedFile* g_mapped_snapshot = NULL;
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 bool MapV8Files(base::FilePath* natives_path, base::FilePath* snapshot_path,
                 int natives_fd = -1, int snapshot_fd = -1) {
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
@@ -72,21 +73,39 @@ bool MapV8Files(base::FilePath* natives_path, base::FilePath* snapshot_path,
   return true;
 }
 
+#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
+bool VerifyV8SnapshotFile(base::MemoryMappedFile* snapshot_file,
+                          const unsigned char* fingerprint) {
+  unsigned char output[crypto::kSHA256Length];
+  crypto::SHA256HashString(
+      base::StringPiece(reinterpret_cast<const char*>(snapshot_file->data()),
+                        snapshot_file->length()),
+      output, sizeof(output));
+  return !memcmp(fingerprint, output, sizeof(output));
+}
+#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
+
 #if !defined(OS_MACOSX)
 const int v8_snapshot_dir =
 #if defined(OS_ANDROID)
     base::DIR_ANDROID_APP_DATA;
 #elif defined(OS_POSIX)
     base::DIR_EXE;
-#endif  // defined(OS_ANDROID)
-#endif  // !defined(OS_MACOSX)
+#endif  // OS_ANDROID
+#endif  // !OS_MACOSX
 
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
 }  // namespace
 
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
+// Defined in gen/gin/v8_snapshot_fingerprint.cc
+extern const unsigned char g_natives_fingerprint[];
+extern const unsigned char g_snapshot_fingerprint[];
+#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
+
 // static
 bool IsolateHolder::LoadV8Snapshot() {
   if (g_mapped_natives && g_mapped_snapshot)
@@ -108,7 +127,15 @@ bool IsolateHolder::LoadV8Snapshot() {
   DCHECK(!snapshot_path.empty());
 #endif  // !defined(OS_MACOSX)
 
-  return MapV8Files(&natives_path, &snapshot_path);
+  if (!MapV8Files(&natives_path, &snapshot_path))
+    return false;
+
+#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
+  return VerifyV8SnapshotFile(g_mapped_natives, g_natives_fingerprint) &&
+         VerifyV8SnapshotFile(g_mapped_snapshot, g_snapshot_fingerprint);
+#else
+  return true;
+#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
 }
 
 //static
@@ -193,7 +220,7 @@ void IsolateHolder::Initialize(ScriptMode mode,
     v8::V8::SetFlagsFromString(v8_flags, sizeof(v8_flags) - 1);
   }
   v8::V8::SetEntropySource(&GenerateEntropy);
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   v8::StartupData natives;
   natives.data = reinterpret_cast<const char*>(g_mapped_natives->data());
   natives.raw_size = static_cast<int>(g_mapped_natives->length());
