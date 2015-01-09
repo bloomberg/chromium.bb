@@ -29,8 +29,12 @@
 
 namespace storage {
 
-IsolatedFileSystemBackend::IsolatedFileSystemBackend()
-    : isolated_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
+IsolatedFileSystemBackend::IsolatedFileSystemBackend(
+    bool use_for_type_native_local,
+    bool use_for_type_platform_app)
+    : use_for_type_native_local_(use_for_type_native_local),
+      use_for_type_platform_app_(use_for_type_platform_app),
+      isolated_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
       dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())),
       transient_file_util_(new AsyncFileUtilAdapter(new TransientFileUtil())) {
 }
@@ -44,11 +48,10 @@ bool IsolatedFileSystemBackend::CanHandleType(FileSystemType type) const {
     case kFileSystemTypeDragged:
     case kFileSystemTypeForTransientFile:
       return true;
-#if !defined(OS_CHROMEOS)
     case kFileSystemTypeNativeLocal:
+      return use_for_type_native_local_;
     case kFileSystemTypeNativeForPlatformApp:
-      return true;
-#endif
+      return use_for_type_platform_app_;
     default:
       return false;
   }

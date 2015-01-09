@@ -15,7 +15,8 @@ class AsyncFileUtilAdapter;
 
 class IsolatedFileSystemBackend : public FileSystemBackend {
  public:
-  IsolatedFileSystemBackend();
+  IsolatedFileSystemBackend(bool use_for_type_native_local,
+                            bool use_for_type_platform_app);
   ~IsolatedFileSystemBackend() override;
 
   // FileSystemBackend implementation.
@@ -55,6 +56,14 @@ class IsolatedFileSystemBackend : public FileSystemBackend {
       FileSystemType type) const override;
 
  private:
+  // Whether this object should handle native local filesystem types. Some
+  // platforms (e.g. Chrome OS) may provide a different FileSystemBackend to
+  // handle those types.
+  const bool use_for_type_native_local_;
+
+  // As above but for platform webapps.
+  const bool use_for_type_platform_app_;
+
   scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;
   scoped_ptr<AsyncFileUtilAdapter> dragged_file_util_;
   scoped_ptr<AsyncFileUtilAdapter> transient_file_util_;
