@@ -12,7 +12,10 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"
@@ -20,6 +23,17 @@
 namespace ui {
 
 namespace {
+
+struct PageFlipPayload {
+  PageFlipPayload(const scoped_refptr<base::TaskRunner>& task_runner,
+                  const DriWrapper::PageFlipCallback& callback)
+      : task_runner(task_runner), callback(callback) {}
+
+  // Task runner for the thread scheduling the page flip event. This is used to
+  // run the callback on the same thread the callback was created on.
+  scoped_refptr<base::TaskRunner> task_runner;
+  DriWrapper::PageFlipCallback callback;
+};
 
 bool DrmCreateDumbBuffer(int fd,
                          const SkImageInfo& info,
@@ -55,16 +69,95 @@ void DrmDestroyDumbBuffer(int fd, uint32_t handle) {
   drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
 
+void HandlePageFlipEventOnIO(int fd,
+                             unsigned int frame,
+                             unsigned int seconds,
+                             unsigned int useconds,
+                             void* data) {
+  scoped_ptr<PageFlipPayload> payload(static_cast<PageFlipPayload*>(data));
+  payload->task_runner->PostTask(
+      FROM_HERE, base::Bind(payload->callback, frame, seconds, useconds));
+}
+
+void HandlePageFlipEventOnUI(int fd,
+                             unsigned int frame,
+                             unsigned int seconds,
+                             unsigned int useconds,
+                             void* data) {
+  scoped_ptr<PageFlipPayload> payload(static_cast<PageFlipPayload*>(data));
+  payload->callback.Run(frame, seconds, useconds);
+}
+
 }  // namespace
 
-DriWrapper::DriWrapper(const char* device_path)
-    : fd_(-1), device_path_(device_path) {
+class DriWrapper::IOWatcher
+    : public base::RefCountedThreadSafe<DriWrapper::IOWatcher>,
+      public base::MessagePumpLibevent::Watcher {
+ public:
+  IOWatcher(int fd,
+            const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      : io_task_runner_(io_task_runner) {
+    io_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&IOWatcher::RegisterOnIO, this, fd));
+  }
+
+  void Shutdown() {
+    io_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&IOWatcher::UnregisterOnIO, this));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<IOWatcher>;
+
+  ~IOWatcher() override {}
+
+  void RegisterOnIO(int fd) {
+    DCHECK(base::MessageLoopForIO::IsCurrent());
+    base::MessageLoopForIO::current()->WatchFileDescriptor(
+        fd, true, base::MessageLoopForIO::WATCH_READ, &controller_, this);
+  }
+
+  void UnregisterOnIO() {
+    DCHECK(base::MessageLoopForIO::IsCurrent());
+    controller_.StopWatchingFileDescriptor();
+  }
+
+  // base::MessagePumpLibevent::Watcher overrides:
+  void OnFileCanReadWithoutBlocking(int fd) override {
+    DCHECK(base::MessageLoopForIO::IsCurrent());
+    TRACE_EVENT1("dri", "OnDrmEvent", "socket", fd);
+
+    drmEventContext event;
+    event.version = DRM_EVENT_CONTEXT_VERSION;
+    event.page_flip_handler = HandlePageFlipEventOnIO;
+    event.vblank_handler = nullptr;
+
+    drmHandleEvent(fd, &event);
+  }
+
+  void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(IOWatcher);
+};
+
+DriWrapper::DriWrapper(const char* device_path, bool software_mode)
+    : fd_(-1),
+      software_mode_(software_mode),
+      device_path_(device_path),
+      io_thread_("DriIOThread") {
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
 
 DriWrapper::~DriWrapper() {
   if (fd_ >= 0)
     close(fd_);
+
+  if (watcher_)
+    watcher_->Shutdown();
 }
 
 void DriWrapper::Initialize() {
@@ -73,6 +166,16 @@ void DriWrapper::Initialize() {
     PLOG(FATAL) << "open: " << device_path_;
   if (!plane_manager_->Initialize(this))
     LOG(ERROR) << "Failed to initialize the plane manager";
+}
+
+void DriWrapper::InitializeIOWatcher() {
+  if (!software_mode_ && !watcher_) {
+    if (!io_thread_.StartWithOptions(
+            base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
+      LOG(FATAL) << "Failed to start the IO helper thread";
+
+    watcher_ = new IOWatcher(fd_, io_thread_.task_runner());
+  }
 }
 
 ScopedDrmCrtcPtr DriWrapper::GetCrtc(uint32_t crtc_id) {
@@ -161,16 +264,37 @@ bool DriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
 
 bool DriWrapper::PageFlip(uint32_t crtc_id,
                           uint32_t framebuffer,
-                          void* data) {
+                          const PageFlipCallback& callback) {
   DCHECK(fd_ >= 0);
   TRACE_EVENT2("dri", "DriWrapper::PageFlip",
                "crtc", crtc_id,
                "framebuffer", framebuffer);
-  return !drmModePageFlip(fd_,
-                          crtc_id,
-                          framebuffer,
-                          DRM_MODE_PAGE_FLIP_EVENT,
-                          data);
+
+  // NOTE: Calling drmModeSetCrtc will immediately update the state, though
+  // callbacks to already scheduled page flips will be honored by the kernel.
+  scoped_ptr<PageFlipPayload> payload(
+      new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
+  if (!drmModePageFlip(fd_, crtc_id, framebuffer, DRM_MODE_PAGE_FLIP_EVENT,
+                       payload.get())) {
+    // If successful the payload will be removed by a PageFlip event.
+    ignore_result(payload.release());
+    if (software_mode_) {
+      TRACE_EVENT1("dri", "OnDrmEvent", "socket", fd_);
+
+      drmEventContext event;
+      event.version = DRM_EVENT_CONTEXT_VERSION;
+      event.page_flip_handler = HandlePageFlipEventOnUI;
+      event.vblank_handler = nullptr;
+
+      drmHandleEvent(fd_, &event);
+    } else {
+      InitializeIOWatcher();
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 bool DriWrapper::PageFlipOverlay(uint32_t crtc_id,
@@ -255,12 +379,6 @@ bool DriWrapper::SetCursor(uint32_t crtc_id,
 bool DriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
   DCHECK(fd_ >= 0);
   return !drmModeMoveCursor(fd_, crtc_id, point.x(), point.y());
-}
-
-void DriWrapper::HandleEvent(drmEventContext& event) {
-  DCHECK(fd_ >= 0);
-  TRACE_EVENT0("dri", "DriWrapper::HandleEvent");
-  drmHandleEvent(fd_, &event);
 }
 
 bool DriWrapper::CreateDumbBuffer(const SkImageInfo& info,

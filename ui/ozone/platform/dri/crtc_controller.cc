@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/page_flip_observer.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
@@ -41,11 +42,17 @@ bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
     return false;
   }
 
-  current_planes_ = std::vector<OverlayPlane>(1, plane);
   mode_ = mode;
   pending_planes_.clear();
   is_disabled_ = false;
-  page_flip_pending_ = false;
+
+  // drmModeSetCrtc has an immediate effect, so we can assume that the current
+  // planes have been updated. However if a page flip is still pending, set the
+  // pending planes to the same values so that the callback keeps the correct
+  // state.
+  current_planes_ = std::vector<OverlayPlane>(1, plane);
+  if (page_flip_pending_)
+    pending_planes_ = current_planes_;
 
   return true;
 }
@@ -55,7 +62,6 @@ bool CrtcController::Disable() {
     return true;
 
   is_disabled_ = true;
-  page_flip_pending_ = false;
   return drm_->DisableCrtc(crtc_);
 }
 
@@ -66,6 +72,7 @@ bool CrtcController::SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
   const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(overlays);
   if (!primary) {
     LOG(ERROR) << "No primary plane to display on crtc " << crtc_;
+    FOR_EACH_OBSERVER(PageFlipObserver, observers_, OnPageFlipEvent());
     return true;
   }
   DCHECK(primary->buffer.get());
@@ -75,6 +82,7 @@ bool CrtcController::SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
                  << mode_.hdisplay << "x" << mode_.vdisplay << " got "
                  << primary->buffer->GetSize().ToString() << " for"
                  << " crtc=" << crtc_ << " connector=" << connector_;
+    FOR_EACH_OBSERVER(PageFlipObserver, observers_, OnPageFlipEvent());
     return true;
   }
 
@@ -105,6 +113,8 @@ void CrtcController::OnPageFlipEvent(unsigned int frame,
 
   current_planes_.clear();
   current_planes_.swap(pending_planes_);
+
+  FOR_EACH_OBSERVER(PageFlipObserver, observers_, OnPageFlipEvent());
 }
 
 bool CrtcController::SetCursor(const scoped_refptr<ScanoutBuffer>& buffer) {
@@ -122,6 +132,14 @@ bool CrtcController::UnsetCursor() {
 bool CrtcController::MoveCursor(const gfx::Point& location) {
   DCHECK(!is_disabled_);
   return drm_->MoveCursor(crtc_, location);
+}
+
+void CrtcController::AddObserver(PageFlipObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CrtcController::RemoveObserver(PageFlipObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ui

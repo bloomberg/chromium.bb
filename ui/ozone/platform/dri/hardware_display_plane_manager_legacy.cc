@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/dri/hardware_display_plane_manager_legacy.h"
 
+#include "base/bind.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
@@ -25,7 +26,9 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
   plane_list->plane_list.clear();
   for (const auto& flip : plane_list->legacy_page_flips) {
     // Permission Denied is a legitimate error
-    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, flip.crtc)) {
+    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer,
+                        base::Bind(&CrtcController::OnPageFlipEvent,
+                                   flip.crtc->AsWeakPtr()))) {
       if (errno != EACCES) {
         LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
                    << " crtc=" << flip.crtc_id

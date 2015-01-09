@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <xf86drmMode.h>
 
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
@@ -16,13 +18,14 @@
 namespace ui {
 
 class DriWrapper;
+class PageFlipObserver;
 
 // Wrapper around a CRTC.
 //
 // One CRTC can be paired up with one or more connectors. The simplest
 // configuration represents one CRTC driving one monitor, while pairing up a
 // CRTC with multiple connectors results in hardware mirroring.
-class CrtcController {
+class CrtcController : public base::SupportsWeakPtr<CrtcController> {
  public:
   CrtcController(DriWrapper* drm, uint32_t crtc, uint32_t connector);
   ~CrtcController();
@@ -64,6 +67,9 @@ class CrtcController {
   bool UnsetCursor();
   bool MoveCursor(const gfx::Point& location);
 
+  void AddObserver(PageFlipObserver* observer);
+  void RemoveObserver(PageFlipObserver* observer);
+
  private:
   DriWrapper* drm_;  // Not owned.
 
@@ -96,6 +102,8 @@ class CrtcController {
 
   // The time of the last page flip event as reported by the kernel callback.
   uint64_t time_of_last_flip_;
+
+  ObserverList<PageFlipObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CrtcController);
 };

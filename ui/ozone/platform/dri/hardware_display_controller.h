@@ -8,16 +8,19 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+#include <deque>
 #include <map>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/ozone/platform/dri/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/dri/overlay_plane.h"
+#include "ui/ozone/platform/dri/page_flip_observer.h"
 
 namespace gfx {
 class Point;
@@ -84,10 +87,11 @@ class DriWrapper;
 // framebuffers. Though, in this case, it would be possible to have all
 // connectors active if some use the same CRTC to mirror the display.
 class HardwareDisplayController
-    : public base::SupportsWeakPtr<HardwareDisplayController> {
+    : public base::SupportsWeakPtr<HardwareDisplayController>,
+      public PageFlipObserver {
  public:
   explicit HardwareDisplayController(scoped_ptr<CrtcController> controller);
-  ~HardwareDisplayController();
+  ~HardwareDisplayController() override;
 
   // Performs the initial CRTC configuration. If successful, it will display the
   // framebuffer for |primary| with |mode|.
@@ -118,11 +122,7 @@ class HardwareDisplayController
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
-  bool SchedulePageFlip();
-
-  // TODO(dnicoara) This should be on the MessageLoop when Ozone can have
-  // BeginFrame can be triggered explicitly by Ozone.
-  void WaitForPageFlipEvent();
+  bool SchedulePageFlip(const base::Closure& callback);
 
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
@@ -151,10 +151,32 @@ class HardwareDisplayController
   }
 
  private:
+  // Returns true if any of the CRTCs is waiting for a page flip.
+  bool HasPendingPageFlips() const;
+
+  bool ActualSchedulePageFlip();
+
+  void ProcessPageFlipRequest();
+
+  void ClearPendingRequests();
+
+  // PageFlipObserver:
+  void OnPageFlipEvent() override;
+
+  struct PageFlipRequest {
+    PageFlipRequest(const OverlayPlaneList& planes,
+                    const base::Closure& callback);
+    ~PageFlipRequest();
+
+    OverlayPlaneList planes;
+    base::Closure callback;
+  };
+
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.
   OverlayPlaneList current_planes_;
   OverlayPlaneList pending_planes_;
+  std::deque<PageFlipRequest> requests_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
 
   base::ScopedPtrHashMap<DriWrapper*, HardwareDisplayPlaneList>

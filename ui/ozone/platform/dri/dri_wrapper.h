@@ -9,7 +9,10 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
+#include "base/threading/thread.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
@@ -30,7 +33,11 @@ class HardwareDisplayPlaneManager;
 // would be called. In unit tests this interface would be stubbed.
 class DriWrapper {
  public:
-  DriWrapper(const char* device_path);
+  typedef base::Callback<void(unsigned int /* frame */,
+                              unsigned int /* seconds */,
+                              unsigned int /* useconds */)> PageFlipCallback;
+
+  DriWrapper(const char* device_path, bool software_mode);
   virtual ~DriWrapper();
 
   // Open device.
@@ -79,9 +86,10 @@ class DriWrapper {
   // Schedules a pageflip for CRTC |crtc_id|. This function will return
   // immediately. Upon completion of the pageflip event, the CRTC will be
   // displaying the buffer with ID |framebuffer| and will have a DRM event
-  // queued on |fd_|. |data| is a generic pointer to some information the user
-  // will receive when processing the pageflip event.
-  virtual bool PageFlip(uint32_t crtc_id, uint32_t framebuffer, void* data);
+  // queued on |fd_|.
+  virtual bool PageFlip(uint32_t crtc_id,
+                        uint32_t framebuffer,
+                        const PageFlipCallback& callback);
 
   // Schedule an overlay to be show during the page flip for CRTC |crtc_id|.
   // |source| location from |framebuffer| will be shown on overlay
@@ -125,8 +133,6 @@ class DriWrapper {
   // Move the cursor on CRTC |crtc_id| to (x, y);
   virtual bool MoveCursor(uint32_t crtc_id, const gfx::Point& point);
 
-  virtual void HandleEvent(drmEventContext& event);
-
   virtual bool CreateDumbBuffer(const SkImageInfo& info,
                                 uint32_t* handle,
                                 uint32_t* stride,
@@ -146,15 +152,35 @@ class DriWrapper {
   HardwareDisplayPlaneManager* plane_manager() { return plane_manager_.get(); }
 
  protected:
+  // Responsible for late initialization of the IO thread. This needs to happen
+  // after the sandbox is up, thus the late initialization.
+  virtual void InitializeIOWatcher();
+
   // The file descriptor associated with this wrapper. All DRM operations will
   // be performed using this FD.
+  // TODO(dnicoara) Make this a base::File
   int fd_;
 
   scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
+  // If we're running in software mode this is true. In software mode we can't
+  // use the async page flip callbacks, so we need to block until the kernel
+  // responds to the page flip.
+  bool software_mode_;
+
  private:
+  class IOWatcher;
+
   // Path to DRM device.
   const char* device_path_;
+
+  // Helper thread to perform IO listener operations.
+  // TODO(dnicoara) This should really be supported by the main thread.
+  // Alternatively we should have a way to access the IO thread's task runner.
+  base::Thread io_thread_;
+
+  // Watcher for |fd_| listening for page flip events.
+  scoped_refptr<IOWatcher> watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWrapper);
 };

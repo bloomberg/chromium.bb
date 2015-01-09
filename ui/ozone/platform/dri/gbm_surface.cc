@@ -6,6 +6,7 @@
 
 #include <gbm.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
@@ -82,7 +83,8 @@ GbmSurface::GbmSurface(DriWindowDelegate* window_delegate,
       gbm_device_(device),
       dri_(dri),
       native_surface_(NULL),
-      current_buffer_(NULL) {
+      current_buffer_(NULL),
+      weak_factory_(this) {
 }
 
 GbmSurface::~GbmSurface() {
@@ -130,6 +132,11 @@ bool GbmSurface::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurface::OnSwapBuffers() {
+  NOTREACHED();
+  return false;
+}
+
+bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
   DCHECK(native_surface_);
 
   gbm_bo* pending_buffer = gbm_surface_lock_front_buffer(native_surface_);
@@ -139,6 +146,7 @@ bool GbmSurface::OnSwapBuffers() {
     primary = GbmSurfaceBuffer::CreateBuffer(dri_, pending_buffer);
     if (!primary.get()) {
       LOG(ERROR) << "Failed to associate the buffer with the controller";
+      callback.Run();
       return false;
     }
   }
@@ -147,21 +155,24 @@ bool GbmSurface::OnSwapBuffers() {
   if (window_delegate_->GetController())
     window_delegate_->GetController()->QueueOverlayPlane(OverlayPlane(primary));
 
-  if (!GbmSurfaceless::OnSwapBuffers())
+  if (!GbmSurfaceless::OnSwapBuffersAsync(
+          base::Bind(&GbmSurface::OnSwapBuffersCallback,
+                     weak_factory_.GetWeakPtr(), callback, pending_buffer))) {
+    callback.Run();
     return false;
+  }
 
+  return true;
+}
+
+void GbmSurface::OnSwapBuffersCallback(const SwapCompletionCallback& callback,
+                                       gbm_bo* pending_buffer) {
   // If there was a frontbuffer, it is no longer active. Release it back to GBM.
   if (current_buffer_)
     gbm_surface_release_buffer(native_surface_, current_buffer_);
 
   current_buffer_ = pending_buffer;
-  return true;
-}
-
-bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
-  bool success = OnSwapBuffers();
   callback.Run();
-  return success;
 }
 
 }  // namespace ui
