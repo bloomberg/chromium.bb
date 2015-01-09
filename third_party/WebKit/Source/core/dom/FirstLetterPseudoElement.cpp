@@ -140,7 +140,7 @@ RenderObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
             || firstLetterTextRenderer->isMenuList()) {
             return nullptr;
         } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isRenderGrid()) {
-            return nullptr;
+            firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
         } else if (firstLetterTextRenderer->style()->hasPseudoStyle(FIRST_LETTER)
             && firstLetterTextRenderer->canHaveGeneratedChildren())  {
             // There is a renderer further down the tree which has FIRST_LETTER set. When that node

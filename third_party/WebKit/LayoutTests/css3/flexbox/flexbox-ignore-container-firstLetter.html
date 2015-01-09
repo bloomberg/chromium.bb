@@ -8,7 +8,7 @@
 </style>
 
 <script src="../../resources/check-layout.js"></script>
-<body onload="checkLayout('.flexbox')">
+<body onload="checkLayout('.container')">
 <p>This test flex item should ignore container's firstLetter pseudo element.</p>
 
 <div class="container">
@@ -16,6 +16,7 @@
         <p data-expected-height=20>The first item.</p>
         <p data-expected-height=20>The second item.</p>
     </div>
+    <p data-expected-height=100>Out of flex.</p>
 </div>
 
 <div class="container">
@@ -23,6 +24,7 @@
         <p data-expected-height=20>The first item.</p>
         <p data-expected-height=20>The second item.</p>
     </div>
+    <p data-expected-height=100>Out of flex.</p>
 </div>
 </body>
 </html>
