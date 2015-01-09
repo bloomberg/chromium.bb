@@ -183,12 +183,16 @@ void DisplayManager::InitDefaultDisplay() {
 
 void DisplayManager::RefreshFontParams() {
 #if defined(OS_CHROMEOS)
-  float device_scale_factor = 1.0f;
-  if (HasInternalDisplay()) {
-    device_scale_factor = GetDisplayInfo(gfx::Display::InternalDisplayId())
-                              .GetEffectiveDeviceScaleFactor();
+  // Use the largest device scale factor among currently active displays. Non
+  // internal display may have bigger scale factor in case the external display
+  // is an 4K display.
+  float largest_device_scale_factor = 1.0f;
+  for (const gfx::Display& display : displays_) {
+    const ash::DisplayInfo& info = display_info_[display.id()];
+    largest_device_scale_factor = std::max(
+        largest_device_scale_factor, info.GetEffectiveDeviceScaleFactor());
   }
-  gfx::SetFontRenderParamsDeviceScaleFactor(device_scale_factor);
+  gfx::SetFontRenderParamsDeviceScaleFactor(largest_device_scale_factor);
 #endif  // OS_CHROMEOS
 }
 

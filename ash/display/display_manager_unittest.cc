@@ -1650,16 +1650,16 @@ TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125External) {
   FontTestHelper helper(1.25f, FontTestHelper::EXTERNAL);
   ASSERT_DOUBLE_EQ(
       1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
-  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
   FontTestHelper helper(2.0f, FontTestHelper::EXTERNAL);
   ASSERT_DOUBLE_EQ(
       2.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
-  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
 TEST_F(DisplayManagerFontTest,
