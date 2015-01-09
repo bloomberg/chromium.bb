@@ -355,6 +355,20 @@ class GerritHelper(object):
     gob_util.SetReview(self.host, self._to_changenum(change),
                        msg=msg, labels=labels, notify='ALL')
 
+  def SetTopic(self, change, topic, dryrun=False):
+    """Update the topic on a gerrit change.
+
+    Args:
+      change: A gerrit change number.
+      topic: The topic to set the review to.
+      dryrun: If True, don't actually set the topic.
+    """
+    if dryrun:
+      cros_build_lib.Info('Would have set topic "%s" for change "%s".',
+                          topic, change)
+      return
+    gob_util.SetTopic(self.host, self._to_changenum(change), topic=topic)
+
   def RemoveReady(self, change, dryrun=False):
     """Set the 'Commit-Queue' and 'Trybot-Ready' labels on a |change| to '0'."""
     if dryrun:

@@ -339,6 +339,13 @@ def UserActMessage(opts, cl, message):
   helper.SetReview(cl, msg=message, dryrun=opts.dryrun)
 
 
+def UserActTopic(opts, topic, *args):
+  """Set |topic| for CL number <n> [n ...]"""
+  for arg in args:
+    helper, arg = GetGerrit(opts, arg)
+    helper.SetTopic(arg, topic, dryrun=opts.dryrun)
+
+
 def UserActDeletedraft(opts, *args):
   """Delete draft patch set <n> [n ...]"""
   for arg in args:

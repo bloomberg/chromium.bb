@@ -438,6 +438,13 @@ def SetReview(host, change, revision='current', msg=None, labels=None,
             key, change))
 
 
+def SetTopic(host, change, topic):
+  """Set |topic| for a change. If |topic| is empty, it will be deleted"""
+  path = '%s/topic' % _GetChangePath(change)
+  body = {'topic': topic}
+  return FetchUrlJson(host, path, reqtype='PUT', body=body, ignore_404=False)
+
+
 def ResetReviewLabels(host, change, label, value='0', revision='current',
                       message=None, notify=None):
   """Reset the value of a given label for all reviewers on a change."""
