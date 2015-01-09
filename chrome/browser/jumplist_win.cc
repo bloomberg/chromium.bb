@@ -275,8 +275,10 @@ JumpList::JumpList(Profile* profile)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   avatar_menu_.reset(new AvatarMenu(
       &profile_manager->GetProfileInfoCache(), this, NULL));
-  avatar_menu_->RebuildMenu();
-  UpdateProfileSwitcher();
+  if (use_profiles_category_) {
+    avatar_menu_->RebuildMenu();
+    UpdateProfileSwitcher();
+  }
 }
 
 JumpList::~JumpList() {
@@ -405,6 +407,9 @@ void JumpList::TabRestoreServiceDestroyed(TabRestoreService* service) {
 }
 
 void JumpList::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
+  if (!use_profiles_category_)
+    return;
+
   UpdateProfileSwitcher();
   PostRunUpdate();
 }
@@ -555,7 +560,8 @@ void JumpList::RunUpdateOnFileThread(
 
   // Create temporary icon files for the profile avatars in the "People"
   // category.
-  CreateIconFiles(local_profile_switcher);
+  if (use_profiles_category_)
+    CreateIconFiles(local_profile_switcher);
 
   // We finished collecting all resources needed for updating an application
   // JumpList. So, create a new JumpList and replace the current JumpList
@@ -578,6 +584,7 @@ void JumpList::CreateIconFiles(const ShellLinkItemList& item_list) {
 }
 
 void JumpList::UpdateProfileSwitcher() {
+  DCHECK(use_profiles_category_);
   ShellLinkItemList new_profile_switcher;
 
   // Don't display a menu in the single profile case.
