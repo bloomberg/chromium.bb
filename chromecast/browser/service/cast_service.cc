@@ -5,6 +5,7 @@
 #include "chromecast/browser/service/cast_service.h"
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
 
 namespace chromecast {
@@ -25,9 +26,20 @@ CastService::~CastService() {
   DCHECK(stopped_);
 }
 
-void CastService::Start() {
+void CastService::Initialize() {
   DCHECK(thread_checker_->CalledOnValidThread());
   InitializeInternal();
+}
+
+void CastService::Finalize() {
+  DCHECK(thread_checker_->CalledOnValidThread());
+  FinalizeInternal();
+  // Consume any pending tasks which may access components being destroyed soon.
+  base::RunLoop().RunUntilIdle();
+}
+
+void CastService::Start() {
+  DCHECK(thread_checker_->CalledOnValidThread());
   stopped_ = false;
   StartInternal();
 }
@@ -35,8 +47,10 @@ void CastService::Start() {
 void CastService::Stop() {
   DCHECK(thread_checker_->CalledOnValidThread());
   StopInternal();
+  // Consume any pending tasks which should be done before destroying in-process
+  // renderer process, for example, destroying web_contents.
+  base::RunLoop().RunUntilIdle();
   stopped_ = true;
-  FinalizeInternal();
 }
 
 }  // namespace chromecast

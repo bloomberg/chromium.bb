@@ -45,6 +45,10 @@ class CastService {
 
   virtual ~CastService();
 
+  // Initializes/finalizes the cast service.
+  void Initialize();
+  void Finalize();
+
   // Starts/stops the cast service.
   void Start();
   void Stop();
@@ -55,9 +59,9 @@ class CastService {
               metrics::CastMetricsServiceClient* metrics_service_client);
 
   // Implementation-specific initialization. Initialization of cast service's
-  // sub-components should go here. Anything that should happen before cast
-  // service is started but doesn't need the sub-components to finish
-  // initializing should also go here.
+  // sub-components, and anything that requires IO operations should go here.
+  // Anything that should happen before cast service is started but doesn't need
+  // the sub-components to finish initializing should also go here.
   virtual void InitializeInternal() = 0;
 
   // Implementation-specific finalization. Any initializations done by

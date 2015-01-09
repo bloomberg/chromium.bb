@@ -4,11 +4,14 @@
 
 #include "chromecast/browser/cast_browser_main_parts.h"
 
+#include <signal.h>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/run_loop.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
@@ -32,7 +35,45 @@
 #include "chromecast/crash/android/crash_handler.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
-#endif  // defined(OS_ANDROID)
+#endif
+
+namespace {
+
+int kSignalsToRunClosure[] = { SIGTERM, SIGINT, };
+
+// Closure to run on SIGTERM and SIGINT.
+base::Closure* g_signal_closure = NULL;
+
+void RunClosureOnSignal(int signum) {
+  LOG(ERROR) << "Got signal " << signum;
+  DCHECK(g_signal_closure);
+  // Expect main thread got this signal. Otherwise, weak_ptr of run_loop will
+  // crash the process.
+  g_signal_closure->Run();
+}
+
+void RegisterClosureOnSignal(const base::Closure& closure) {
+  DCHECK(!g_signal_closure);
+  // Allow memory leak by intention.
+  g_signal_closure = new base::Closure(closure);
+
+  struct sigaction sa_new;
+  memset(&sa_new, 0, sizeof(sa_new));
+  sa_new.sa_handler = RunClosureOnSignal;
+  sigfillset(&sa_new.sa_mask);
+  sa_new.sa_flags = SA_RESTART;
+
+  for (size_t i = 0; i < arraysize(kSignalsToRunClosure); i++) {
+    struct sigaction sa_old;
+    if (sigaction(kSignalsToRunClosure[i], &sa_new, &sa_old) == -1) {
+      NOTREACHED();
+    } else {
+      DCHECK_EQ(sa_old.sa_handler, SIG_DFL);
+    }
+  }
+}
+
+}  // namespace
 
 namespace chromecast {
 namespace shell {
@@ -179,22 +220,31 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   // Initializing network delegates must happen after Cast service is created.
   url_request_context_factory_->InitializeNetworkDelegates();
 
-  cast_browser_process_->cast_service()->Start();
+  cast_browser_process_->cast_service()->Initialize();
 }
 
 bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  // If parameters_.ui_task is not NULL, we are running browser tests. In this
-  // case, the browser's main message loop will not run.
+  cast_browser_process_->cast_service()->Start();
+
+  base::RunLoop run_loop;
+  base::Closure quit_closure(run_loop.QuitClosure());
+  RegisterClosureOnSignal(quit_closure);
+
+  // If parameters_.ui_task is not NULL, we are running browser tests.
   if (parameters_.ui_task) {
-    parameters_.ui_task->Run();
-  } else {
-    base::MessageLoopForUI::current()->Run();
+    base::MessageLoop* message_loop = base::MessageLoopForUI::current();
+    message_loop->PostTask(FROM_HERE, *parameters_.ui_task);
+    message_loop->PostTask(FROM_HERE, quit_closure);
   }
+
+  run_loop.Run();
+
+  cast_browser_process_->cast_service()->Stop();
   return true;
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
-  cast_browser_process_->cast_service()->Stop();
+  cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_.reset();
 }
 
