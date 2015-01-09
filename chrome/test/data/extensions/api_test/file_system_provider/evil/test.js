@@ -78,9 +78,9 @@ function onOpenFileRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (options.filePath != '/' + TESTING_TOO_LARGE_CHUNK_FILE.name ||
-      options.filePath != '/' + TESTING_INVALID_CALLBACK_FILE.name ||
-      options.filePath != '/' + TESTING_NEGATIVE_SIZE_FILE.name ||
+  if (options.filePath != '/' + TESTING_TOO_LARGE_CHUNK_FILE.name &&
+      options.filePath != '/' + TESTING_INVALID_CALLBACK_FILE.name &&
+      options.filePath != '/' + TESTING_NEGATIVE_SIZE_FILE.name &&
       options.filePath != '/' + TESTING_RELATIVE_NAME_FILE.name) {
     onError('NOT_FOUND');  // enum ProviderError.
     return;
