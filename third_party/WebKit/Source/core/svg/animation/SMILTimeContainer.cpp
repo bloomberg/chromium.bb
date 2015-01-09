@@ -360,6 +360,14 @@ bool SMILTimeContainer::handleAnimationPolicy(AnimationPolicyOnceAction onceActi
             break;
         }
     }
+    if (policy == ImageAnimationPolicyAllowed) {
+        // When the SVG owner element becomes detached from its document,
+        // the policy defaults to ImageAnimationPolicyAllowed; there's
+        // no way back. If the policy had been "once" prior to that,
+        // ensure cancellation of its timer.
+        if (onceAction == CancelOnceTimer)
+            cancelAnimationPolicyTimer();
+    }
     return true;
 }
 
