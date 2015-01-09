@@ -310,6 +310,21 @@ media::CdmKeyInformation::KeyStatus PpCdmKeyStatusToCdmKeyInformationKeyStatus(
   }
 }
 
+MediaKeys::MessageType PpCdmMessageTypeToMediaMessageType(
+    PP_CdmMessageType message_type) {
+  switch (message_type) {
+    case PP_CDMMESSAGETYPE_LICENSE_REQUEST:
+      return MediaKeys::LICENSE_REQUEST;
+    case PP_CDMMESSAGETYPE_LICENSE_RENEWAL:
+      return MediaKeys::LICENSE_RENEWAL;
+    case PP_CDMMESSAGETYPE_LICENSE_RELEASE:
+      return MediaKeys::LICENSE_RELEASE;
+    default:
+      NOTREACHED();
+      return MediaKeys::LICENSE_REQUEST;
+  }
+}
+
 // TODO(xhwang): Unify EME UMA reporting code when prefixed EME is deprecated.
 // See http://crbug.com/412987 for details.
 void ReportSystemCodeUMA(const std::string& key_system, uint32 system_code) {
@@ -751,7 +766,6 @@ void ContentDecryptorDelegate::OnPromiseRejected(
   }
 }
 
-// TODO(jrummell): Pass |message_type| to the callback.
 void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
                                                 PP_CdmMessageType message_type,
                                                 PP_Var message) {
@@ -768,8 +782,9 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
     message_vector.assign(data, data + message_array_buffer->ByteLength());
   }
 
-  session_message_cb_.Run(web_session_id_string->value(), message_vector,
-                          GURL::EmptyGURL());
+  session_message_cb_.Run(web_session_id_string->value(),
+                          PpCdmMessageTypeToMediaMessageType(message_type),
+                          message_vector);
 }
 
 void ContentDecryptorDelegate::OnSessionKeysChange(

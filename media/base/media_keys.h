@@ -73,6 +73,15 @@ class MEDIA_EXPORT MediaKeys{
     PERSISTENT_RELEASE_MESSAGE_SESSION
   };
 
+  // Type of message being sent to the application.
+  // Must be consistent with the values specified in the spec:
+  // https://w3c.github.io/encrypted-media/#idl-def-MediaKeyMessageType
+  enum MessageType {
+      LICENSE_REQUEST,
+      LICENSE_RENEWAL,
+      LICENSE_RELEASE
+  };
+
   virtual ~MediaKeys();
 
   // Provides a server certificate to be used to encrypt messages to the
@@ -129,8 +138,9 @@ class MEDIA_EXPORT MediaKeys{
 // Key event callbacks. See the spec for details:
 // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#event-summary
 typedef base::Callback<void(const std::string& web_session_id,
-                            const std::vector<uint8>& message,
-                            const GURL& destination_url)> SessionMessageCB;
+                            MediaKeys::MessageType message_type,
+                            const std::vector<uint8>& message)>
+    SessionMessageCB;
 
 typedef base::Callback<void(const std::string& web_session_id)> SessionClosedCB;
 

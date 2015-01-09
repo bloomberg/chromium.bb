@@ -246,6 +246,16 @@ ASSERT_CDM_KEY_STATUS(INTERNAL_ERROR);
 ASSERT_CDM_KEY_STATUS(EXPIRED);
 ASSERT_CDM_KEY_STATUS(OUTPUT_NOT_ALLOWED);
 
+// CDM Message Type
+#define ASSERT_CDM_MESSAGE_TYPE(value)                                       \
+  static_assert(                                                             \
+      media::MediaKeys::value == static_cast<media::MediaKeys::MessageType>( \
+                                     CDM_MESSAGE_TYPE_##value),              \
+      "Mismatched CDM Message Type")
+ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
+ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);
+ASSERT_CDM_MESSAGE_TYPE(LICENSE_RELEASE);
+
 // static
 SubsampleEntryPtr
 TypeConverter<SubsampleEntryPtr, media::SubsampleEntry>::Convert(

@@ -121,16 +121,11 @@ CdmContext* MojoCdm::GetCdmContext() {
 }
 
 void MojoCdm::OnSessionMessage(const mojo::String& session_id,
-                               mojo::Array<uint8_t> message,
-                               const mojo::String& destination_url) {
-  GURL verified_gurl = GURL(destination_url);
-  if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
-    DLOG(WARNING) << "SessionMessage destination_url is invalid : "
-                  << verified_gurl.possibly_invalid_spec();
-    verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
-  }
-
-  session_message_cb_.Run(session_id, message.storage(), verified_gurl);
+                               mojo::CdmMessageType message_type,
+                               mojo::Array<uint8_t> message) {
+  session_message_cb_.Run(session_id,
+                          static_cast<MediaKeys::MessageType>(message_type),
+                          message.storage());
 }
 
 void MojoCdm::OnSessionClosed(const mojo::String& session_id) {

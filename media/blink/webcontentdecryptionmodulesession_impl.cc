@@ -29,6 +29,25 @@ const char kPersistentLicenseSessionType[] = "persistent-license";
 const char kPersistentReleaseMessageSessionType[] =
     "persistent-release-message";
 
+static blink::WebContentDecryptionModuleSession::Client::MessageType
+convertMessageType(MediaKeys::MessageType message_type) {
+  switch (message_type) {
+    case media::MediaKeys::LICENSE_REQUEST:
+      return blink::WebContentDecryptionModuleSession::Client::MessageType::
+          LicenseRequest;
+    case media::MediaKeys::LICENSE_RENEWAL:
+      return blink::WebContentDecryptionModuleSession::Client::MessageType::
+          LicenseRenewal;
+    case media::MediaKeys::LICENSE_RELEASE:
+      return blink::WebContentDecryptionModuleSession::Client::MessageType::
+          LicenseRelease;
+  }
+
+  NOTREACHED();
+  return blink::WebContentDecryptionModuleSession::Client::MessageType::
+      LicenseRequest;
+}
+
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter), is_closed_(false), weak_ptr_factory_(this) {
@@ -165,11 +184,11 @@ void WebContentDecryptionModuleSessionImpl::release(
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
-    const std::vector<uint8>& message,
-    const GURL& destination_url) {
+    MediaKeys::MessageType message_type,
+    const std::vector<uint8>& message) {
   DCHECK(client_) << "Client not set before message event";
-  client_->message(message.empty() ? NULL : &message[0], message.size(),
-                   destination_url);
+  client_->message(convertMessageType(message_type),
+                   message.empty() ? NULL : &message[0], message.size());
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(

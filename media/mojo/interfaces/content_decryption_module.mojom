@@ -50,6 +50,13 @@ struct CdmKeyInformation {
   uint32 system_code;
 };
 
+// See media::MediaKeys::MessageType
+enum CdmMessageType {
+  LICENSE_REQUEST,
+  LICENSE_RENEWAL,
+  LICENSE_RELEASE
+};
+
 // An interface that represents a CDM in the Encrypted Media Extensions (EME)
 // spec (https://w3c.github.io/encrypted-media/). See media/base/media_keys.h.
 [Client=ContentDecryptionModuleClient]
@@ -110,8 +117,7 @@ interface ContentDecryptionModule {
 
 // Session callbacks. See media/base/media_keys.h for details.
 interface ContentDecryptionModuleClient {
-  OnSessionMessage(string session_id, array<uint8> message,
-                   string destination_url);
+  OnSessionMessage(string session_id, CdmMessageType message_type, array<uint8> message);
 
   OnSessionClosed(string session_id);
 

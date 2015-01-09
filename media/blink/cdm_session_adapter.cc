@@ -118,13 +118,13 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
 }
 
 void CdmSessionAdapter::OnSessionMessage(const std::string& web_session_id,
-                                         const std::vector<uint8>& message,
-                                         const GURL& destination_url) {
+                                         MediaKeys::MessageType message_type,
+                                         const std::vector<uint8>& message) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << web_session_id;
   if (session)
-    session->OnSessionMessage(message, destination_url);
+    session->OnSessionMessage(message_type, message);
 }
 
 void CdmSessionAdapter::OnSessionKeysChange(const std::string& web_session_id,

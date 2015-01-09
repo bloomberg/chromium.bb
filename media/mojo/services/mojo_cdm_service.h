@@ -52,8 +52,8 @@ class MojoCdmService
  private:
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
-                        const std::vector<uint8_t>& message,
-                        const GURL& destination_url);
+                        MediaKeys::MessageType message_type,
+                        const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);

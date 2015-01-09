@@ -162,8 +162,13 @@ void ProxyMediaKeys::OnSessionCreated(uint32 session_id,
 void ProxyMediaKeys::OnSessionMessage(uint32 session_id,
                                       const std::vector<uint8>& message,
                                       const GURL& destination_url) {
-  session_message_cb_.Run(
-      LookupWebSessionId(session_id), message, destination_url);
+  // TODO(jrummell): Once |message_type| is passed, use it rather than
+  // guessing from the URL.
+  media::MediaKeys::MessageType message_type =
+      destination_url.is_empty() ? media::MediaKeys::LICENSE_REQUEST
+                                 : media::MediaKeys::LICENSE_RENEWAL;
+  session_message_cb_.Run(LookupWebSessionId(session_id), message_type,
+                          message);
 }
 
 void ProxyMediaKeys::OnSessionReady(uint32 session_id) {

@@ -55,8 +55,8 @@ class WebContentDecryptionModuleSessionImpl
   virtual void release(blink::WebContentDecryptionModuleResult result);
 
   // Callbacks.
-  void OnSessionMessage(const std::vector<uint8>& message,
-                        const GURL& destination_url);
+  void OnSessionMessage(MediaKeys::MessageType message_type,
+                        const std::vector<uint8>& message);
   void OnSessionKeysChange(bool has_additional_usable_key);
   void OnSessionExpirationUpdate(const base::Time& new_expiry_time);
   void OnSessionClosed();

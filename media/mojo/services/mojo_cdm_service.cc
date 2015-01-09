@@ -107,10 +107,11 @@ void MojoCdmService::GetCdmContext(
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,
-                                      const std::vector<uint8_t>& message,
-                                      const GURL& destination_url) {
-  client()->OnSessionMessage(session_id, mojo::Array<uint8_t>::From(message),
-                             mojo::String::From(destination_url));
+                                      MediaKeys::MessageType message_type,
+                                      const std::vector<uint8_t>& message) {
+  client()->OnSessionMessage(session_id,
+                             static_cast<mojo::CdmMessageType>(message_type),
+                             mojo::Array<uint8_t>::From(message));
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
