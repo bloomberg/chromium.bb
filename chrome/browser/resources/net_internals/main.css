@@ -13,8 +13,10 @@ ul {
   padding-left: 2em;
 }
 
-/* This class is used to create the splitter widget in
-   ResizbleVerticalSplitView */
+/**
+ * This class is used to create the splitter widget in
+ * ResizbleVerticalSplitView.
+ */
 .vertical-splitter {
   -webkit-user-select: none;
   border-left: 1px solid #afafaf;
@@ -32,16 +34,11 @@ ul {
   margin: 5px;
 }
 
-.log-source-entry * p {
-  font-size: 75%;
-  font-weight: bold;
+pre {
+  font-size: 133%;
 }
 
-.log-source-entry * td {
-  font-size: 62%;
-}
-
-/*
+/**
  * This class should be given to top-level content boxes (like the view's main
  * DIV). It gives them a consistent padding, and makes them scrollable.
  */
@@ -60,7 +57,7 @@ ul {
   margin-left: -10px;
 }
 
-/*
+/**
  * Styles for TABLE that uses a thin collapsed border.
  */
 table.styled-table {
@@ -112,7 +109,6 @@ table.styled-table,
 .mouse-over-help {
   background: #EEE;
   border: 1px solid black;
-  font-size: 80%;
   padding: 5px;
   z-index: 1;
 }

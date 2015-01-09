@@ -6,7 +6,6 @@
 #events-view-filter-box {
   background: #efefef;
   border-bottom: 1px solid #aaa;
-  font-size: 75%;
   overflow: hidden;
   padding: 5px;
   white-space: nowrap;
@@ -41,7 +40,6 @@
 #events-view-source-list-table td {
   border-bottom: 1px solid #afafaf;
   border-left: 1px solid #afafaf;
-  font-size: 75%;
   padding: 3px;
   text-overflow: ellipsis;
   white-space: nowrap;

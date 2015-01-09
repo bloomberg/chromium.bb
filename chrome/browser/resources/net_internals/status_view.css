@@ -5,6 +5,7 @@
 
 .capture-status-view {
   background: rgb(238, 0, 0);
+  font-size: 133%;
 }
 
 .halted-status-view {
