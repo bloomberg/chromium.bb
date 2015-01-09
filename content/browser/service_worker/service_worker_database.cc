@@ -505,7 +505,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
   DCHECK(resources);
 
   Status status = LazyOpen(false);
-  if (IsNewOrNonexistentDatabase(status) || status != STATUS_OK)
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_ERROR_NOT_FOUND;
+  if (status != STATUS_OK)
     return status;
 
   RegistrationData value;
@@ -708,7 +710,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserData(
   DCHECK(user_data);
 
   Status status = LazyOpen(false);
-  if (IsNewOrNonexistentDatabase(status) || status != STATUS_OK)
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_ERROR_NOT_FOUND;
+  if (status != STATUS_OK)
     return status;
 
   const std::string key = CreateUserDataKey(registration_id, user_data_name);
@@ -729,7 +733,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
   DCHECK(!user_data_name.empty());
 
   Status status = LazyOpen(false);
-  if (IsNewOrNonexistentDatabase(status) || status != STATUS_OK)
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_ERROR_NOT_FOUND;
+  if (status != STATUS_OK)
     return status;
 
   // There should be the registration specified by |registration_id|.

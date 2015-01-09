@@ -498,7 +498,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   std::vector<Resource> resources_out;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->ReadRegistration(
-      data.registration_id, origin, &data_out, &resources_out));
+                data.registration_id, origin, &data_out, &resources_out));
   VerifyRegistrationData(data, data_out);
   VerifyResourceRecords(resources, resources_out);
 
@@ -741,18 +741,50 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   VerifyResourceRecords(resources2, resources_out);
 }
 
+TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  const GURL origin("http://example.com");
+
+  // Should be failed because the database does not exist.
+  RegistrationData data_out;
+  std::vector<Resource> resources_out;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadRegistration(
+                100, origin, &data_out, &resources_out));
+  EXPECT_EQ(kInvalidServiceWorkerRegistrationId, data_out.registration_id);
+  EXPECT_TRUE(resources_out.empty());
+
+  // Deleting non-existent registration should succeed.
+  RegistrationData deleted_version;
+  std::vector<int64> newly_purgeable_resources;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteRegistration(
+                100, origin, &deleted_version, &newly_purgeable_resources));
+  EXPECT_EQ(kInvalidServiceWorkerVersionId, deleted_version.version_id);
+  EXPECT_TRUE(newly_purgeable_resources.empty());
+
+  // Actually create a new database, but not initialized yet.
+  database->LazyOpen(true);
+
+  // Should be failed because the database is not initialized.
+  ASSERT_EQ(ServiceWorkerDatabase::UNINITIALIZED, database->state_);
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadRegistration(
+                100, origin, &data_out, &resources_out));
+  EXPECT_EQ(kInvalidServiceWorkerRegistrationId, data_out.registration_id);
+  EXPECT_TRUE(resources_out.empty());
+
+  // Deleting non-existent registration should succeed.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteRegistration(
+                100, origin, &deleted_version, &newly_purgeable_resources));
+  EXPECT_EQ(kInvalidServiceWorkerVersionId, deleted_version.version_id);
+  EXPECT_TRUE(newly_purgeable_resources.empty());
+}
+
 TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL kOrigin("http://example.com");
-
-  // Should be failed because the database does not exist.
-  std::string user_data_out;
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->WriteUserData(100, kOrigin, "key1", "data"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(100, "key1", &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteUserData(100, "key1"));
 
   // Add a registration.
   RegistrationData data;
@@ -769,6 +801,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
                 data, resources, &deleted_version, &newly_purgeable_resources));
 
   // Write user data associated with the stored registration.
+  std::string user_data_out;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->WriteUserData(
                 data.registration_id, kOrigin, "key1", "data"));
@@ -976,6 +1009,38 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
             database->ReadUserData(
                 data2.registration_id, "key3", &user_data_out));
   EXPECT_EQ("data3", user_data_out);
+}
+
+TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  const GURL kOrigin("http://example.com");
+
+  // Should be failed because the database does not exist.
+  std::string user_data_out;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadUserData(100, "key", &user_data_out));
+
+  // Should be failed because the associated registration does not exist.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->WriteUserData(100, kOrigin, "key", "data"));
+
+  // Deleting non-existent entry should succeed.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteUserData(100, "key"));
+
+  // Actually create a new database, but not initialized yet.
+  database->LazyOpen(true);
+
+  // Should be failed because the database is not initialized.
+  ASSERT_EQ(ServiceWorkerDatabase::UNINITIALIZED, database->state_);
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadUserData(100, "key", &user_data_out));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->WriteUserData(100, kOrigin, "key", "data"));
+
+  // Deleting non-existent entry should succeed.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteUserData(100, "key"));
 }
 
 TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
