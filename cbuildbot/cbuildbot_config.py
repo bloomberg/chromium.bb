@@ -2194,40 +2194,32 @@ ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 # Add a pre-cq config for every board.
 _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
+_CreateConfigsForBoards(compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
 
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 # TODO(davidjames): Update daisy_spring to build images again.
 _config.add_group('mixed-a-pre-cq',
   # daisy_spring w/kernel 3.8.
-  compile_only_pre_cq.add_config('daisy_spring-grouped-pre-cq',
-                                 _base_configs['daisy_spring'],
-                                 build_packages_in_background=False),
+  config['daisy_spring-compile-only-pre-cq'],
   # lumpy w/kernel 3.8.
-  compile_only_pre_cq.add_config('lumpy-grouped-pre-cq',
-                                 _base_configs['lumpy']),
+  config['lumpy-compile-only-pre-cq'],
 )
 
 _config.add_group('mixed-b-pre-cq',
-  # arm64 w/kernel 3.4.
-  compile_only_pre_cq.add_config('rush_ryu-grouped-pre-cq',
-                                 _base_configs['rush_ryu'],
-                                 build_packages_in_background=False),
+  # arm64 w/kernel 3.14.
+  config['rush_ryu-compile-only-pre-cq'],
   # samus w/kernel 3.14.
-  compile_only_pre_cq.add_config('samus-grouped-pre-cq',
-                                 _base_configs['samus']),
+  config['samus-compile-only-pre-cq'],
 )
 
 _config.add_group('mixed-c-pre-cq',
   # brillo
-  compile_only_pre_cq.add_config('duck-grouped-pre-cq',
-                                 _base_configs['duck']),
+  config['duck-compile-only-pre-cq'],
 )
 
 _config.add_group('external-mixed-pre-cq',
-  no_vmtest_pre_cq.add_config('x86-generic-grouped-pre-cq',
-                              _base_configs['x86-generic']),
-  no_vmtest_pre_cq.add_config('amd64-generic-grouped-pre-cq',
-                              _base_configs['amd64-generic'])
+  config['x86-generic-no-vmtest-pre-cq'],
+  config['amd64-generic-no-vmtest-pre-cq'],
 )
 
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
@@ -2236,11 +2228,10 @@ _config.add_group('external-mixed-pre-cq',
 _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
-  pre_cq.add_config('rambi-deprecated-pre-cq', _base_configs['rambi']),
+  config['rambi-pre-cq'],
 
   # daisy_spring w/kernel 3.8.
-  compile_only_pre_cq.add_config('daisy_spring-deprecated-pre-cq',
-                                 _base_configs['daisy_spring']),
+  config['daisy_spring-compile-only-pre-cq'],
 
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
@@ -2250,16 +2241,13 @@ _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
                                   build_packages_in_background=False),
 
   # samus w/kernel 3.14.
-  compile_only_pre_cq.add_config('samus-deprecated-pre-cq',
-                                 _base_configs['samus']),
+  config['samus-compile-only-pre-cq'],
 
   # lumpy w/kernel 3.8.
-  compile_only_pre_cq.add_config('lumpy-deprecated-pre-cq',
-                                 _base_configs['lumpy']),
+  config['lumpy-compile-only-pre-cq'],
 
   # arm64 w/kernel 3.4.
-  compile_only_pre_cq.add_config('rush_ryu-deprecated-pre-cq',
-                                 _base_configs['rush_ryu']),
+  config['rush_ryu-compile-only-pre-cq'],
 )
 
 internal_paladin.add_config('pre-cq-launcher',
