@@ -92,6 +92,16 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // persisitent store. Should only be called from IO thread.
   void SetSupportsSpdy(const HostPortPair& server, bool support_spdy) override;
 
+  // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
+  bool RequiresHTTP11(const HostPortPair& server) override;
+
+  // Require HTTP/1.1 on subsequent connections.  Not persisted.
+  void SetHTTP11Required(const HostPortPair& server) override;
+
+  // Modify SSLConfig to force HTTP/1.1 if necessary.
+  void MaybeForceHTTP11(const HostPortPair& server,
+                        SSLConfig* ssl_config) override;
+
   // Returns true if |server| has an Alternate-Protocol header.
   bool HasAlternateProtocol(const HostPortPair& server) override;
 

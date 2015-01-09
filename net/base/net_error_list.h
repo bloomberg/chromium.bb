@@ -618,6 +618,12 @@ NET_ERROR(SPDY_COMPRESSION_ERROR, -363)
 // Proxy Auth Requested without a valid Client Socket Handle.
 NET_ERROR(PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION, -364)
 
+// HTTP_1_1_REQUIRED error code received on HTTP/2 session.
+NET_ERROR(HTTP_1_1_REQUIRED, -365)
+
+// HTTP_1_1_REQUIRED error code received on HTTP/2 session to proxy.
+NET_ERROR(PROXY_HTTP_1_1_REQUIRED, -366)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

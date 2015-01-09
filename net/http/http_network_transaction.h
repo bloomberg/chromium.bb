@@ -185,6 +185,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Called to handle a client certificate request.
   int HandleCertificateRequest(int error);
 
+  // Called wherever ERR_HTTP_1_1_REQUIRED or
+  // ERR_PROXY_HTTP_1_1_REQUIRED has to be handled.
+  int HandleHttp11Required(int error);
+
   // Called to possibly handle a client authentication error.
   void HandleClientAuthError(int error);
 

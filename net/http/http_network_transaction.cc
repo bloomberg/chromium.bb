@@ -746,6 +746,9 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
     // Return OK and let the caller read the proxy's error page
     next_state_ = STATE_NONE;
     return OK;
+  } else if (result == ERR_HTTP_1_1_REQUIRED ||
+             result == ERR_PROXY_HTTP_1_1_REQUIRED) {
+    return HandleHttp11Required(result);
   }
 
   // Handle possible handshake errors that may have occurred if the stream
@@ -959,6 +962,11 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     result = HandleCertificateRequest(result);
     if (result == OK)
       return result;
+  }
+
+  if (result == ERR_HTTP_1_1_REQUIRED ||
+      result == ERR_PROXY_HTTP_1_1_REQUIRED) {
+    return HandleHttp11Required(result);
   }
 
   // ERR_CONNECTION_CLOSED is treated differently at this point; if partial
@@ -1192,6 +1200,19 @@ int HttpNetworkTransaction::HandleCertificateRequest(int error) {
   // Reset the other member variables.
   // Note: this is necessary only with SSL renegotiation.
   ResetStateForRestart();
+  return OK;
+}
+
+int HttpNetworkTransaction::HandleHttp11Required(int error) {
+  DCHECK(error == ERR_HTTP_1_1_REQUIRED ||
+         error == ERR_PROXY_HTTP_1_1_REQUIRED);
+
+  if (error == ERR_HTTP_1_1_REQUIRED) {
+    HttpServerProperties::ForceHTTP11(&server_ssl_config_);
+  } else {
+    HttpServerProperties::ForceHTTP11(&proxy_ssl_config_);
+  }
+  ResetConnectionAndRequestForResend();
   return OK;
 }
 

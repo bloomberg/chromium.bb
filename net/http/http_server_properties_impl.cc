@@ -198,6 +198,31 @@ void HttpServerPropertiesImpl::SetSupportsSpdy(
   spdy_servers_map_.Put(host_port_pair.ToString(), support_spdy);
 }
 
+bool HttpServerPropertiesImpl::RequiresHTTP11(
+    const net::HostPortPair& host_port_pair) {
+  DCHECK(CalledOnValidThread());
+  if (host_port_pair.host().empty())
+    return false;
+
+  return (http11_servers_.find(host_port_pair) != http11_servers_.end());
+}
+
+void HttpServerPropertiesImpl::SetHTTP11Required(
+    const net::HostPortPair& host_port_pair) {
+  DCHECK(CalledOnValidThread());
+  if (host_port_pair.host().empty())
+    return;
+
+  http11_servers_.insert(host_port_pair);
+}
+
+void HttpServerPropertiesImpl::MaybeForceHTTP11(const HostPortPair& server,
+                                                SSLConfig* ssl_config) {
+  if (RequiresHTTP11(server)) {
+    ForceHTTP11(ssl_config);
+  }
+}
+
 bool HttpServerPropertiesImpl::HasAlternateProtocol(
     const HostPortPair& server) {
   if (g_forced_alternate_protocol)

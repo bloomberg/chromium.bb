@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_config.h"
 
 namespace net {
 
@@ -104,6 +106,12 @@ std::string AlternateProtocolInfo::ToString() const {
                             AlternateProtocolToString(protocol),
                             probability,
                             is_broken ? " (broken)" : "");
+}
+
+// static
+void HttpServerProperties::ForceHTTP11(SSLConfig* ssl_config) {
+  ssl_config->next_protos.clear();
+  ssl_config->next_protos.push_back(kProtoHTTP11);
 }
 
 }  // namespace net

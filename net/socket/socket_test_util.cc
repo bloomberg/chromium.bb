@@ -702,11 +702,17 @@ scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
-  scoped_ptr<MockSSLClientSocket> socket(
-      new MockSSLClientSocket(transport_socket.Pass(),
-                              host_and_port,
-                              ssl_config,
-                              mock_ssl_data_.GetNext()));
+  SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
+  if (!next_ssl_data->next_protos_expected_in_ssl_config.empty()) {
+    EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.size(),
+              ssl_config.next_protos.size());
+    EXPECT_TRUE(
+        std::equal(next_ssl_data->next_protos_expected_in_ssl_config.begin(),
+                   next_ssl_data->next_protos_expected_in_ssl_config.end(),
+                   ssl_config.next_protos.begin()));
+  }
+  scoped_ptr<MockSSLClientSocket> socket(new MockSSLClientSocket(
+      transport_socket.Pass(), host_and_port, ssl_config, next_ssl_data));
   ssl_client_sockets_.push_back(socket.get());
   return socket.Pass();
 }

@@ -328,6 +328,7 @@ struct SSLSocketDataProvider {
   std::string next_proto;
   bool was_npn_negotiated;
   NextProto protocol_negotiated;
+  NextProtoVector next_protos_expected_in_ssl_config;
   bool client_cert_sent;
   SSLCertRequestInfo* cert_request_info;
   scoped_refptr<X509Certificate> cert;

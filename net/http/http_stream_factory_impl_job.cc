@@ -817,6 +817,16 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
                   false /* not a proxy server */);
   }
 
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session_->http_server_properties();
+  if (http_server_properties) {
+    http_server_properties->MaybeForceHTTP11(origin_, &server_ssl_config_);
+    if (proxy_info_.is_http() || proxy_info_.is_https()) {
+      http_server_properties->MaybeForceHTTP11(
+          proxy_info_.proxy_server().host_port_pair(), &proxy_ssl_config_);
+    }
+  }
+
   if (IsPreconnecting()) {
     DCHECK(!stream_factory_->for_websockets_);
     return PreconnectSocketsForHttpRequest(

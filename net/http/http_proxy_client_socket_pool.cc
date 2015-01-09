@@ -306,6 +306,9 @@ int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
     SetSocket(transport_socket_.Pass());
   }
 
+  if (result == ERR_HTTP_1_1_REQUIRED)
+    return ERR_PROXY_HTTP_1_1_REQUIRED;
+
   return result;
 }
 

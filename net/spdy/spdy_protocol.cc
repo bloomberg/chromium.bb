@@ -542,9 +542,9 @@ bool SpdyConstants::IsValidGoAwayStatus(SpdyMajorVersion version,
         return false;
       }
 
-      // GOAWAY_INADEQUATE_SECURITY is the last valid status.
+      // GOAWAY_HTTP_1_1_REQUIRED is the last valid status.
       if (goaway_status_field >
-          SerializeGoAwayStatus(version, GOAWAY_INADEQUATE_SECURITY)) {
+          SerializeGoAwayStatus(version, GOAWAY_HTTP_1_1_REQUIRED)) {
         return false;
       }
 

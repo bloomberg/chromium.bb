@@ -263,6 +263,12 @@ class SpdyNetworkTransactionTest
       output_.rv = ReadTransaction(trans_.get(), &output_.response_data);
     }
 
+    void FinishDefaultTestWithoutVerification() {
+      output_.rv = callback_.WaitForResult();
+      if (output_.rv != OK)
+        session_->spdy_session_pool()->CloseCurrentSessions(net::ERR_ABORTED);
+    }
+
     // Most tests will want to call this function. In particular, the MockReads
     // should end with an empty read, and that read needs to be processed to
     // ensure proper deletion of the spdy_session_pool.
@@ -4548,6 +4554,208 @@ TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
+}
+
+// Retry with HTTP/1.1 when receiving HTTP_1_1_REQUIRED.  Note that no actual
+// protocol negotiation happens, instead this test forces protocols for both
+// sockets.
+TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
+  // HTTP_1_1_REQUIRED is only supported by SPDY4.
+  if (spdy_util_.spdy_version() < SPDY4)
+    return;
+  // HTTP_1_1_REQUIRED implementation relies on the assumption that HTTP/2 is
+  // only spoken over SSL.
+  if (GetParam().ssl_type != SPDYSSL)
+    return;
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.google.com/");
+  scoped_ptr<SpdySessionDependencies> session_deps(
+      CreateSpdySessionDependencies(GetParam()));
+  // Do not force SPDY so that second socket can negotiate HTTP/1.1.
+  session_deps->force_spdy_over_ssl = false;
+  session_deps->force_spdy_always = false;
+  session_deps->next_protos = SpdyNextProtos();
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     GetParam(), session_deps.release());
+
+  // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
+  const char* url = "https://www.google.com/";
+  scoped_ptr<SpdyHeaderBlock> headers(spdy_util_.ConstructGetHeaderBlock(url));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
+  MockWrite writes0[] = {CreateMockWrite(*req)};
+  scoped_ptr<SpdyFrame> go_away(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
+  MockRead reads0[] = {CreateMockRead(*go_away)};
+  DelayedSocketData data0(1, reads0, arraysize(reads0), writes0,
+                          arraysize(writes0));
+
+  scoped_ptr<SSLSocketDataProvider> ssl_provider0(
+      new SSLSocketDataProvider(ASYNC, OK));
+  // Expect HTTP/2 protocols too in SSLConfig.
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_14);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_15);
+  // Force SPDY.
+  ssl_provider0->SetNextProto(GetParam().protocol);
+  helper.AddDataWithSSLSocketDataProvider(&data0, ssl_provider0.Pass());
+
+  // Second socket: falling back to HTTP/1.1.
+  MockWrite writes1[] = {MockWrite(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.google.com\r\n"
+      "Connection: keep-alive\r\n\r\n")};
+  MockRead reads1[] = {MockRead(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 5\r\n\r\n"
+      "hello")};
+  DelayedSocketData data1(1, reads1, arraysize(reads1), writes1,
+                          arraysize(writes1));
+
+  scoped_ptr<SSLSocketDataProvider> ssl_provider1(
+      new SSLSocketDataProvider(ASYNC, OK));
+  // Expect only HTTP/1.1 protocol in SSLConfig.
+  ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  // Force HTTP/1.1.
+  ssl_provider1->SetNextProto(kProtoHTTP11);
+  helper.AddDataWithSSLSocketDataProvider(&data1, ssl_provider1.Pass());
+
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      helper.session()->spdy_session_pool()->http_server_properties();
+  const HostPortPair host_port_pair = HostPortPair::FromURL(GURL(url));
+  EXPECT_FALSE(http_server_properties->RequiresHTTP11(host_port_pair));
+
+  helper.RunPreTestSetup();
+  helper.StartDefaultTest();
+  helper.FinishDefaultTestWithoutVerification();
+  helper.VerifyDataConsumed();
+  EXPECT_TRUE(http_server_properties->RequiresHTTP11(host_port_pair));
+
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  ASSERT_TRUE(response != nullptr);
+  ASSERT_TRUE(response->headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1, response->connection_info);
+  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(request.url.SchemeIs("https"));
+  EXPECT_EQ("127.0.0.1", response->socket_address.host());
+  EXPECT_EQ(443, response->socket_address.port());
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(helper.trans(), &response_data));
+  EXPECT_EQ("hello", response_data);
+}
+
+// Retry with HTTP/1.1 to the proxy when receiving HTTP_1_1_REQUIRED from the
+// proxy.  Note that no actual protocol negotiation happens, instead this test
+// forces protocols for both sockets.
+TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
+  // HTTP_1_1_REQUIRED is only supported by SPDY4.
+  if (spdy_util_.spdy_version() < SPDY4)
+    return;
+  // HTTP_1_1_REQUIRED implementation relies on the assumption that HTTP/2 is
+  // only spoken over SSL.
+  if (GetParam().ssl_type != SPDYSSL)
+    return;
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.google.com/");
+  scoped_ptr<SpdySessionDependencies> session_deps(
+      CreateSpdySessionDependencies(
+          GetParam(),
+          ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70")));
+  // Do not force SPDY so that second socket can negotiate HTTP/1.1.
+  session_deps->force_spdy_over_ssl = false;
+  session_deps->force_spdy_always = false;
+  session_deps->next_protos = SpdyNextProtos();
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     GetParam(), session_deps.release());
+
+  // First socket: HTTP/2 CONNECT rejected with HTTP_1_1_REQUIRED.
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyConnect(
+      nullptr, 0, 1, LOWEST, HostPortPair("www.google.com", 443)));
+  MockWrite writes0[] = {CreateMockWrite(*req)};
+  scoped_ptr<SpdyFrame> go_away(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
+  MockRead reads0[] = {CreateMockRead(*go_away)};
+  DelayedSocketData data0(1, reads0, arraysize(reads0), writes0,
+                          arraysize(writes0));
+
+  scoped_ptr<SSLSocketDataProvider> ssl_provider0(
+      new SSLSocketDataProvider(ASYNC, OK));
+  // Expect HTTP/2 protocols too in SSLConfig.
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_14);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_15);
+  // Force SPDY.
+  ssl_provider0->SetNextProto(GetParam().protocol);
+  helper.AddDataWithSSLSocketDataProvider(&data0, ssl_provider0.Pass());
+
+  // Second socket: retry using HTTP/1.1.
+  MockWrite writes1[] = {
+      MockWrite(ASYNC, 1,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 3,
+                "GET / HTTP/1.1\r\n"
+                "Host: www.google.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead reads1[] = {
+      MockRead(ASYNC, 2, "HTTP/1.1 200 OK\r\n\r\n"),
+      MockRead(ASYNC, 4,
+               "HTTP/1.1 200 OK\r\n"
+               "Content-Length: 5\r\n\r\n"
+               "hello"),
+  };
+  DelayedSocketData data1(1, reads1, arraysize(reads1), writes1,
+                          arraysize(writes1));
+
+  scoped_ptr<SSLSocketDataProvider> ssl_provider1(
+      new SSLSocketDataProvider(ASYNC, OK));
+  // Expect only HTTP/1.1 protocol in SSLConfig.
+  ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
+  // Force HTTP/1.1.
+  ssl_provider1->SetNextProto(kProtoHTTP11);
+  helper.AddDataWithSSLSocketDataProvider(&data1, ssl_provider1.Pass());
+
+  // A third socket is needed for the tunnelled connection.
+  scoped_ptr<SSLSocketDataProvider> ssl_provider2(
+      new SSLSocketDataProvider(ASYNC, OK));
+  helper.session_deps()->socket_factory->AddSSLSocketDataProvider(
+      ssl_provider2.get());
+
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      helper.session()->spdy_session_pool()->http_server_properties();
+  const HostPortPair proxy_host_port_pair = HostPortPair("myproxy", 70);
+  EXPECT_FALSE(http_server_properties->RequiresHTTP11(proxy_host_port_pair));
+
+  helper.RunPreTestSetup();
+  helper.StartDefaultTest();
+  helper.FinishDefaultTestWithoutVerification();
+  helper.VerifyDataConsumed();
+  EXPECT_TRUE(http_server_properties->RequiresHTTP11(proxy_host_port_pair));
+
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  ASSERT_TRUE(response != nullptr);
+  ASSERT_TRUE(response->headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1, response->connection_info);
+  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_TRUE(request.url.SchemeIs("https"));
+  EXPECT_EQ("127.0.0.1", response->socket_address.host());
+  EXPECT_EQ(70, response->socket_address.port());
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(helper.trans(), &response_data));
+  EXPECT_EQ("hello", response_data);
 }
 
 // Test to make sure we can correctly connect through a proxy.
