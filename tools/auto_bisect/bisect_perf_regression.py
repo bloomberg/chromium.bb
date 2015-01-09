@@ -2031,7 +2031,7 @@ class BisectPerformanceMetrics(object):
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart(
           'Reverting culprit CL: %s' % culprit_revision)
-    output, return_code = bisect_utils.RunGit(
+    _, return_code = bisect_utils.RunGit(
         ['revert', '--no-commit', culprit_revision],
         cwd=self.depot_registry.GetDepotDir(culprit_depot))
     if return_code:
