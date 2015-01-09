@@ -16,7 +16,7 @@ namespace device {
 
 HidConnectionMac::HidConnectionMac(
     IOHIDDeviceRef device,
-    HidDeviceInfo device_info,
+    scoped_refptr<HidDeviceInfo> device_info,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : HidConnection(device_info),
       device_(device, base::scoped_policy::RETAIN),
@@ -27,8 +27,8 @@ HidConnectionMac::HidConnectionMac(
   IOHIDDeviceScheduleWithRunLoop(
       device_.get(), CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 
-  size_t expected_report_size = device_info.max_input_report_size;
-  if (device_info.has_report_id) {
+  size_t expected_report_size = device_info->max_input_report_size();
+  if (device_info->has_report_id()) {
     expected_report_size++;
   }
   inbound_buffer_.resize(expected_report_size);
@@ -126,7 +126,7 @@ void HidConnectionMac::InputReportCallback(void* context,
   }
 
   scoped_refptr<net::IOBufferWithSize> buffer;
-  if (connection->device_info().has_report_id) {
+  if (connection->device_info()->has_report_id()) {
     // report_id is already contained in report_bytes
     buffer = new net::IOBufferWithSize(report_length);
     memcpy(buffer->data(), report_bytes, report_length);
@@ -165,7 +165,7 @@ void HidConnectionMac::ProcessReadQueue() {
 void HidConnectionMac::GetFeatureReportAsync(uint8_t report_id,
                                              const ReadCallback& callback) {
   scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(device_info().max_feature_report_size + 1));
+      new net::IOBufferWithSize(device_info()->max_feature_report_size() + 1));
   CFIndex report_size = buffer->size();
 
   // The IOHIDDevice object is shared with the UI thread and so this function

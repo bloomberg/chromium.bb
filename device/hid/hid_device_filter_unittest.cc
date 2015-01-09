@@ -8,22 +8,21 @@
 
 namespace device {
 
-namespace {
-
 class HidFilterTest : public testing::Test {
  public:
   void SetUp() override {
-    device_info_.vendor_id = 0x046d;
-    device_info_.product_id = 0xc31c;
+    device_info_ = new HidDeviceInfo();
+    device_info_->vendor_id_ = 0x046d;
+    device_info_->product_id_ = 0xc31c;
 
     HidCollectionInfo collection;
     collection.usage.usage_page = HidUsageAndPage::kPageKeyboard;
     collection.usage.usage = 0x01;
-    device_info_.collections.push_back(collection);
+    device_info_->collections_.push_back(collection);
   }
 
  protected:
-  HidDeviceInfo device_info_;
+  scoped_refptr<HidDeviceInfo> device_info_;
 };
 
 TEST_F(HidFilterTest, MatchAny) {
@@ -110,7 +109,5 @@ TEST_F(HidFilterTest, MatchFilterListNegative) {
   filters.push_back(filter);
   ASSERT_FALSE(HidDeviceFilter::MatchesAny(device_info_, filters));
 }
-
-}  // namespace
 
 }  // namespace device

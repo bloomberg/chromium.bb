@@ -18,7 +18,7 @@ struct PendingHidTransfer;
 
 class HidConnectionWin : public HidConnection {
  public:
-  HidConnectionWin(const HidDeviceInfo& device_info,
+  HidConnectionWin(scoped_refptr<HidDeviceInfo> device_info,
                    base::win::ScopedHandle file);
 
  private:

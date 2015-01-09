@@ -102,7 +102,7 @@ void PendingHidTransfer::WillDestroyCurrentMessageLoop() {
   callback_.Run(this, false);
 }
 
-HidConnectionWin::HidConnectionWin(const HidDeviceInfo& device_info,
+HidConnectionWin::HidConnectionWin(scoped_refptr<HidDeviceInfo> device_info,
                                    base::win::ScopedHandle file)
     : HidConnection(device_info) {
   file_ = file.Pass();
@@ -120,7 +120,7 @@ void HidConnectionWin::PlatformRead(
   // Windows will always include the report ID (including zero if report IDs
   // are not in use) in the buffer.
   scoped_refptr<net::IOBufferWithSize> buffer = new net::IOBufferWithSize(
-      base::checked_cast<int>(device_info().max_input_report_size + 1));
+      base::checked_cast<int>(device_info()->max_input_report_size() + 1));
   scoped_refptr<PendingHidTransfer> transfer(new PendingHidTransfer(
       buffer,
       base::Bind(&HidConnectionWin::OnReadComplete, this, buffer, callback)));
@@ -152,7 +152,7 @@ void HidConnectionWin::PlatformGetFeatureReport(uint8_t report_id,
                                                 const ReadCallback& callback) {
   // The first byte of the destination buffer is the report ID being requested.
   scoped_refptr<net::IOBufferWithSize> buffer = new net::IOBufferWithSize(
-      base::checked_cast<int>(device_info().max_feature_report_size + 1));
+      base::checked_cast<int>(device_info()->max_feature_report_size() + 1));
   buffer->data()[0] = report_id;
 
   scoped_refptr<PendingHidTransfer> transfer(new PendingHidTransfer(

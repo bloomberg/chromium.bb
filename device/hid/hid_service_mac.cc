@@ -127,57 +127,6 @@ bool GetCollectionInfos(IOHIDDeviceRef device,
   return true;
 }
 
-bool PopulateDeviceInfo(io_service_t service, HidDeviceInfo* device_info) {
-  io_string_t service_path;
-  IOReturn result =
-      IORegistryEntryGetPath(service, kIOServicePlane, service_path);
-  if (result != kIOReturnSuccess) {
-    VLOG(1) << "Failed to get IOService path: "
-            << base::StringPrintf("0x%04x", result);
-    return false;
-  }
-
-  base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
-      IOHIDDeviceCreate(kCFAllocatorDefault, service));
-  if (!hid_device) {
-    VLOG(1) << "Unable to create IOHIDDevice object for " << service_path
-            << ".";
-    return false;
-  }
-
-  device_info->device_id = service_path;
-  device_info->vendor_id =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
-  device_info->product_id =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey));
-  device_info->product_name =
-      GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey));
-  device_info->serial_number =
-      GetHidStringProperty(hid_device, CFSTR(kIOHIDSerialNumberKey));
-  if (!GetCollectionInfos(hid_device, &device_info->has_report_id,
-                          &device_info->collections)) {
-    VLOG(1) << "Unable to get collection info for " << service_path << ".";
-    return false;
-  }
-  device_info->max_input_report_size =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
-  if (device_info->has_report_id && device_info->max_input_report_size > 0) {
-    device_info->max_input_report_size--;
-  }
-  device_info->max_output_report_size =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
-  if (device_info->has_report_id && device_info->max_output_report_size > 0) {
-    device_info->max_output_report_size--;
-  }
-  device_info->max_feature_report_size =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
-  if (device_info->has_report_id && device_info->max_feature_report_size > 0) {
-    device_info->max_feature_report_size--;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 HidServiceMac::HidServiceMac(
@@ -228,6 +177,49 @@ HidServiceMac::HidServiceMac(
   FirstEnumerationComplete();
 }
 
+void HidServiceMac::Connect(const HidDeviceId& device_id,
+                            const ConnectCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const auto& map_entry = devices().find(device_id);
+  if (map_entry == devices().end()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+  scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
+
+  io_string_t service_path;
+  strncpy(service_path, device_id.c_str(), sizeof service_path);
+  base::mac::ScopedIOObject<io_service_t> service(
+      IORegistryEntryFromPath(kIOMasterPortDefault, service_path));
+  if (!service.get()) {
+    VLOG(1) << "IOService not found for path: " << device_id;
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+
+  base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
+      IOHIDDeviceCreate(kCFAllocatorDefault, service));
+  if (!hid_device) {
+    VLOG(1) << "Unable to create IOHIDDevice object.";
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+
+  IOReturn result = IOHIDDeviceOpen(hid_device, kIOHIDOptionsTypeNone);
+  if (result != kIOReturnSuccess) {
+    VLOG(1) << "Failed to open device: " << base::StringPrintf("0x%04x",
+                                                               result);
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback, make_scoped_refptr(new HidConnectionMac(
+                                          hid_device.release(), device_info,
+                                          file_task_runner_))));
+}
+
 HidServiceMac::~HidServiceMac() {
 }
 
@@ -252,12 +244,14 @@ void HidServiceMac::AddDevices() {
 
   io_service_t device;
   while ((device = IOIteratorNext(devices_added_iterator_)) != IO_OBJECT_NULL) {
-    HidDeviceInfo device_info;
-    if (PopulateDeviceInfo(device, &device_info)) {
+    scoped_refptr<HidDeviceInfo> device_info = CreateDeviceInfo(device);
+    if (device_info) {
       AddDevice(device_info);
+      // The reference retained by IOIteratorNext is released below in
+      // RemoveDevices when the device is removed.
+    } else {
+      IOObjectRelease(device);
     }
-    // The reference retained by IOIteratorNext is released below in
-    // RemoveDevices when the device is removed.
   }
 }
 
@@ -281,48 +275,61 @@ void HidServiceMac::RemoveDevices() {
   }
 }
 
-void HidServiceMac::Connect(const HidDeviceId& device_id,
-                            const ConnectCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  const auto& map_entry = devices().find(device_id);
-  if (map_entry == devices().end()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
-  }
-  const HidDeviceInfo& device_info = map_entry->second;
-
+// static
+scoped_refptr<HidDeviceInfo> HidServiceMac::CreateDeviceInfo(
+    io_service_t service) {
+  scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
   io_string_t service_path;
-  strncpy(service_path, device_id.c_str(), sizeof service_path);
-  base::mac::ScopedIOObject<io_service_t> service(
-      IORegistryEntryFromPath(kIOMasterPortDefault, service_path));
-  if (!service.get()) {
-    VLOG(1) << "IOService not found for path: " << device_id;
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+  IOReturn result =
+      IORegistryEntryGetPath(service, kIOServicePlane, service_path);
+  if (result != kIOReturnSuccess) {
+    VLOG(1) << "Failed to get IOService path: " << base::StringPrintf("0x%04x",
+                                                                      result);
+    return nullptr;
   }
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
       IOHIDDeviceCreate(kCFAllocatorDefault, service));
   if (!hid_device) {
-    VLOG(1) << "Unable to create IOHIDDevice object.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+    VLOG(1) << "Unable to create IOHIDDevice object for " << service_path
+            << ".";
+    return nullptr;
   }
 
-  IOReturn result = IOHIDDeviceOpen(hid_device, kIOHIDOptionsTypeNone);
-  if (result != kIOReturnSuccess) {
-    VLOG(1) << "Failed to open device: "
-            << base::StringPrintf("0x%04x", result);
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    return;
+  device_info->device_id_ = service_path;
+  device_info->vendor_id_ =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
+  device_info->product_id_ =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey));
+  device_info->product_name_ =
+      GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey));
+  device_info->serial_number_ =
+      GetHidStringProperty(hid_device, CFSTR(kIOHIDSerialNumberKey));
+  if (!GetCollectionInfos(hid_device, &device_info->has_report_id_,
+                          &device_info->collections_)) {
+    VLOG(1) << "Unable to get collection info for " << service_path << ".";
+    return nullptr;
+  }
+  device_info->max_input_report_size_ =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
+  if (device_info->has_report_id() &&
+      device_info->max_input_report_size() > 0) {
+    device_info->max_input_report_size_--;
+  }
+  device_info->max_output_report_size_ =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
+  if (device_info->has_report_id() &&
+      device_info->max_output_report_size_ > 0) {
+    device_info->max_output_report_size_--;
+  }
+  device_info->max_feature_report_size_ =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
+  if (device_info->has_report_id() &&
+      device_info->max_feature_report_size_ > 0) {
+    device_info->max_feature_report_size_--;
   }
 
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 make_scoped_refptr(new HidConnectionMac(
-                     hid_device.release(), device_info, file_task_runner_))));
+  return device_info;
 }
 
 }  // namespace device

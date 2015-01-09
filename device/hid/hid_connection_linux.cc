@@ -32,15 +32,15 @@ namespace device {
 class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
  public:
   Helper(base::PlatformFile platform_file,
-         const HidDeviceInfo& device_info,
+         scoped_refptr<HidDeviceInfo> device_info,
          base::WeakPtr<HidConnectionLinux> connection,
          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : platform_file_(platform_file),
         connection_(connection),
         task_runner_(task_runner) {
     // Report buffers must always have room for the report ID.
-    report_buffer_size_ = device_info.max_input_report_size + 1;
-    has_report_id_ = device_info.has_report_id;
+    report_buffer_size_ = device_info->max_input_report_size() + 1;
+    has_report_id_ = device_info->has_report_id();
   }
 
   ~Helper() override { DCHECK(thread_checker_.CalledOnValidThread()); }
@@ -111,7 +111,7 @@ class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
 };
 
 HidConnectionLinux::HidConnectionLinux(
-    const HidDeviceInfo& device_info,
+    scoped_refptr<HidDeviceInfo> device_info,
     base::File device_file,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : HidConnection(device_info),
@@ -175,9 +175,9 @@ void HidConnectionLinux::PlatformGetFeatureReport(
     const ReadCallback& callback) {
   // The first byte of the destination buffer is the report ID being requested
   // and is overwritten by the feature report.
-  DCHECK_GT(device_info().max_feature_report_size, 0u);
+  DCHECK_GT(device_info()->max_feature_report_size(), 0u);
   scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(device_info().max_feature_report_size + 1));
+      new net::IOBufferWithSize(device_info()->max_feature_report_size() + 1));
   buffer->data()[0] = report_id;
 
   file_task_runner_->PostTask(

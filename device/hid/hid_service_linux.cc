@@ -43,7 +43,7 @@ const char kSysfsReportDescriptorKey[] = "report_descriptor";
 }  // namespace
 
 struct HidServiceLinux::ConnectParams {
-  ConnectParams(const HidDeviceInfo& device_info,
+  ConnectParams(scoped_refptr<HidDeviceInfo> device_info,
                 const ConnectCallback& callback,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
@@ -53,7 +53,7 @@ struct HidServiceLinux::ConnectParams {
         file_task_runner(file_task_runner) {}
   ~ConnectParams() {}
 
-  HidDeviceInfo device_info;
+  scoped_refptr<HidDeviceInfo> device_info;
   ConnectCallback callback;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner;
@@ -90,14 +90,14 @@ class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
       return;
     }
 
-    HidDeviceInfo device_info;
-    device_info.device_id = device_path;
+    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
+    device_info->device_id_ = device_path;
 
     const char* str_property = udev_device_get_devnode(device);
     if (!str_property) {
       return;
     }
-    device_info.device_node = str_property;
+    device_info->device_node_ = str_property;
 
     udev_device* parent = udev_device_get_parent(device);
     if (!parent) {
@@ -117,21 +117,21 @@ class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
 
     uint32_t int_property = 0;
     if (HexStringToUInt(base::StringPiece(parts[1]), &int_property)) {
-      device_info.vendor_id = int_property;
+      device_info->vendor_id_ = int_property;
     }
 
     if (HexStringToUInt(base::StringPiece(parts[2]), &int_property)) {
-      device_info.product_id = int_property;
+      device_info->product_id_ = int_property;
     }
 
     str_property = udev_device_get_property_value(parent, kHIDUnique);
     if (str_property != NULL) {
-      device_info.serial_number = str_property;
+      device_info->serial_number_ = str_property;
     }
 
     str_property = udev_device_get_property_value(parent, kHIDName);
     if (str_property != NULL) {
-      device_info.product_name = str_property;
+      device_info->product_name_ = str_property;
     }
 
     const char* parent_sysfs_path = udev_device_get_syspath(parent);
@@ -149,10 +149,11 @@ class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
     HidReportDescriptor report_descriptor(
         reinterpret_cast<uint8_t*>(&report_descriptor_str[0]),
         report_descriptor_str.length());
-    report_descriptor.GetDetails(
-        &device_info.collections, &device_info.has_report_id,
-        &device_info.max_input_report_size, &device_info.max_output_report_size,
-        &device_info.max_feature_report_size);
+    report_descriptor.GetDetails(&device_info->collections_,
+                                 &device_info->has_report_id_,
+                                 &device_info->max_input_report_size_,
+                                 &device_info->max_output_report_size_,
+                                 &device_info->max_feature_report_size_);
 
     task_runner_->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::AddDevice,
                                                  service_, device_info));
@@ -213,7 +214,7 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
-  const HidDeviceInfo& device_info = map_entry->second;
+  scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
 
   scoped_ptr<ConnectParams> params(new ConnectParams(
       device_info, callback, task_runner_, file_task_runner_));
@@ -225,7 +226,7 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
     DCHECK(client) << "Could not get permission broker client.";
     if (client) {
       client->RequestPathAccess(
-          device_info.device_node, -1,
+          device_info->device_node(), -1,
           base::Bind(&HidServiceLinux::OnRequestPathAccessComplete,
                      base::Passed(&params)));
     } else {
@@ -265,7 +266,7 @@ void HidServiceLinux::OnRequestPathAccessComplete(
 void HidServiceLinux::OpenDevice(scoped_ptr<ConnectParams> params) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner = params->task_runner;
-  base::FilePath device_path(params->device_info.device_node);
+  base::FilePath device_path(params->device_info->device_node());
   base::File& device_file = params->device_file;
   int flags =
       base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE;
@@ -280,7 +281,8 @@ void HidServiceLinux::OpenDevice(scoped_ptr<ConnectParams> params) {
     }
   }
   if (!device_file.IsValid()) {
-    LOG(ERROR) << "Failed to open '" << params->device_info.device_node << "': "
+    LOG(ERROR) << "Failed to open '" << params->device_info->device_node()
+               << "': "
                << base::File::ErrorToString(device_file.error_details());
     task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
     return;

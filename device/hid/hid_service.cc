@@ -25,6 +25,14 @@ namespace {
 HidService* g_service;
 }
 
+void HidService::Observer::OnDeviceAdded(
+    scoped_refptr<HidDeviceInfo> device_info) {
+}
+
+void HidService::Observer::OnDeviceRemoved(
+    scoped_refptr<HidDeviceInfo> device_info) {
+}
+
 HidService* HidService::GetInstance(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   if (g_service == NULL) {
@@ -53,7 +61,7 @@ void HidService::SetInstanceForTest(HidService* instance) {
 void HidService::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (enumeration_ready_) {
-    std::vector<HidDeviceInfo> devices;
+    std::vector<scoped_refptr<HidDeviceInfo>> devices;
     for (const auto& map_entry : devices_) {
       devices.push_back(map_entry.second);
     }
@@ -73,14 +81,14 @@ void HidService::RemoveObserver(HidService::Observer* observer) {
 }
 
 // Fills in the device info struct of the given device_id.
-bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
-                               HidDeviceInfo* info) const {
+scoped_refptr<HidDeviceInfo> HidService::GetDeviceInfo(
+    const HidDeviceId& device_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DeviceMap::const_iterator it = devices_.find(device_id);
-  if (it == devices_.end())
-    return false;
-  *info = it->second;
-  return true;
+  if (it == devices_.end()) {
+    return nullptr;
+  }
+  return it->second;
 }
 
 HidService::HidService() : enumeration_ready_(false) {
@@ -90,13 +98,13 @@ HidService::~HidService() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void HidService::AddDevice(const HidDeviceInfo& info) {
+void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!ContainsKey(devices_, info.device_id)) {
-    devices_[info.device_id] = info;
+  if (!ContainsKey(devices_, device_info->device_id())) {
+    devices_[device_info->device_id()] = device_info;
 
     if (enumeration_ready_) {
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(info));
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device_info));
     }
   }
 }
@@ -116,7 +124,7 @@ void HidService::FirstEnumerationComplete() {
   enumeration_ready_ = true;
 
   if (!pending_enumerations_.empty()) {
-    std::vector<HidDeviceInfo> devices;
+    std::vector<scoped_refptr<HidDeviceInfo>> devices;
     for (const auto& map_entry : devices_) {
       devices.push_back(map_entry.second);
     }

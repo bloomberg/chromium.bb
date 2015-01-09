@@ -47,9 +47,9 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
-  const HidDeviceInfo& device_info = map_entry->second;
+  scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
 
-  base::win::ScopedHandle file(OpenDevice(device_info.device_id));
+  base::win::ScopedHandle file(OpenDevice(device_info->device_id()));
   if (!file.IsValid()) {
     PLOG(ERROR) << "Failed to open device";
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
@@ -156,9 +156,6 @@ void HidServiceWin::CollectInfoFromValueCaps(
 }
 
 void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
-  HidDeviceInfo device_info;
-  device_info.device_id = device_path;
-
   // Try to open the device.
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
@@ -172,8 +169,10 @@ void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
     return;
   }
 
-  device_info.vendor_id = attrib.VendorID;
-  device_info.product_id = attrib.ProductID;
+  scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
+  device_info->device_id_ = device_path;
+  device_info->vendor_id_ = attrib.VendorID;
+  device_info->product_id_ = attrib.ProductID;
 
   // Get usage and usage page (optional).
   PHIDP_PREPARSED_DATA preparsed_data;
@@ -181,9 +180,10 @@ void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
       preparsed_data) {
     HIDP_CAPS capabilities = {0};
     if (HidP_GetCaps(preparsed_data, &capabilities) == HIDP_STATUS_SUCCESS) {
-      device_info.max_input_report_size = capabilities.InputReportByteLength;
-      device_info.max_output_report_size = capabilities.OutputReportByteLength;
-      device_info.max_feature_report_size =
+      device_info->max_input_report_size_ = capabilities.InputReportByteLength;
+      device_info->max_output_report_size_ =
+          capabilities.OutputReportByteLength;
+      device_info->max_feature_report_size_ =
           capabilities.FeatureReportByteLength;
       HidCollectionInfo collection_info;
       collection_info.usage = HidUsageAndPage(
@@ -214,21 +214,21 @@ void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
                                capabilities.NumberFeatureValueCaps,
                                &collection_info);
       if (!collection_info.report_ids.empty()) {
-        device_info.has_report_id = true;
+        device_info->has_report_id_ = true;
       }
-      device_info.collections.push_back(collection_info);
+      device_info->collections_.push_back(collection_info);
     }
     // Whether or not the device includes report IDs in its reports the size
     // of the report ID is included in the value provided by Windows. This
     // appears contrary to the MSDN documentation.
-    if (device_info.max_input_report_size > 0) {
-      device_info.max_input_report_size--;
+    if (device_info->max_input_report_size() > 0) {
+      device_info->max_input_report_size_--;
     }
-    if (device_info.max_output_report_size > 0) {
-      device_info.max_output_report_size--;
+    if (device_info->max_output_report_size() > 0) {
+      device_info->max_output_report_size_--;
     }
-    if (device_info.max_feature_report_size > 0) {
-      device_info.max_feature_report_size--;
+    if (device_info->max_feature_report_size() > 0) {
+      device_info->max_feature_report_size_--;
     }
     HidD_FreePreparsedData(preparsed_data);
   }

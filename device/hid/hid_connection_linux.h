@@ -20,7 +20,7 @@ namespace device {
 class HidConnectionLinux : public HidConnection {
  public:
   HidConnectionLinux(
-      const HidDeviceInfo& device_info,
+      scoped_refptr<HidDeviceInfo> device_info,
       base::File device_file,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_runner);
 

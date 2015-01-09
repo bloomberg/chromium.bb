@@ -121,8 +121,9 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
     return RespondNow(Error(kErrorServiceUnavailable));
   }
 
-  HidDeviceInfo device_info;
-  if (!device_manager->GetDeviceInfo(parameters->device_id, &device_info)) {
+  scoped_refptr<HidDeviceInfo> device_info =
+      device_manager->GetDeviceInfo(parameters->device_id);
+  if (!device_info) {
     return RespondNow(Error(kErrorInvalidDeviceId));
   }
 
@@ -136,7 +137,7 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
   }
 
   hid_service->Connect(
-      device_info.device_id,
+      device_info->device_id(),
       base::Bind(&HidConnectFunction::OnConnectComplete, this));
   return RespondLater();
 }

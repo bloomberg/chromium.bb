@@ -14,10 +14,6 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/base/io_buffer.h"
 
-namespace extensions {
-
-namespace {
-
 using base::ThreadTaskRunnerHandle;
 using device::HidCollectionInfo;
 using device::HidConnection;
@@ -27,16 +23,18 @@ using device::HidService;
 using device::HidUsageAndPage;
 using net::IOBuffer;
 
+namespace device {
+
 class MockHidConnection : public HidConnection {
  public:
-  MockHidConnection(const HidDeviceInfo& device_info)
+  MockHidConnection(scoped_refptr<HidDeviceInfo> device_info)
       : HidConnection(device_info) {}
 
   void PlatformClose() override {}
 
   void PlatformRead(const ReadCallback& callback) override {
     const char kResult[] = "This is a HID input report.";
-    uint8_t report_id = device_info().has_report_id ? 1 : 0;
+    uint8_t report_id = device_info()->has_report_id() ? 1 : 0;
     scoped_refptr<IOBuffer> buffer(new IOBuffer(sizeof(kResult)));
     buffer->data()[0] = report_id;
     memcpy(buffer->data() + 1, kResult, sizeof(kResult) - 1);
@@ -51,7 +49,7 @@ class MockHidConnection : public HidConnection {
     bool result = false;
     if (size == sizeof(kExpected)) {
       uint8_t report_id = buffer->data()[0];
-      uint8_t expected_report_id = device_info().has_report_id ? 1 : 0;
+      uint8_t expected_report_id = device_info()->has_report_id() ? 1 : 0;
       if (report_id == expected_report_id) {
         if (memcmp(buffer->data() + 1, kExpected, sizeof(kExpected) - 1) == 0) {
           result = true;
@@ -67,7 +65,7 @@ class MockHidConnection : public HidConnection {
     const char kResult[] = "This is a HID feature report.";
     scoped_refptr<IOBuffer> buffer(new IOBuffer(sizeof(kResult)));
     size_t offset = 0;
-    if (device_info().has_report_id) {
+    if (device_info()->has_report_id()) {
       buffer->data()[offset++] = report_id;
     }
     memcpy(buffer->data() + offset, kResult, sizeof(kResult) - 1);
@@ -83,7 +81,7 @@ class MockHidConnection : public HidConnection {
     bool result = false;
     if (size == sizeof(kExpected)) {
       uint8_t report_id = buffer->data()[0];
-      uint8_t expected_report_id = device_info().has_report_id ? 1 : 0;
+      uint8_t expected_report_id = device_info()->has_report_id() ? 1 : 0;
       if (report_id == expected_report_id &&
           memcmp(buffer->data() + 1, kExpected, sizeof(kExpected) - 1) == 0) {
         result = true;
@@ -130,22 +128,22 @@ class MockHidService : public HidService {
                  int vendor_id,
                  int product_id,
                  bool report_id) {
-    HidDeviceInfo device_info;
-    device_info.device_id = device_id;
-    device_info.vendor_id = vendor_id;
-    device_info.product_id = product_id;
-    device_info.max_input_report_size = 128;
-    device_info.max_output_report_size = 128;
-    device_info.max_feature_report_size = 128;
+    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo());
+    device_info->device_id_ = device_id;
+    device_info->vendor_id_ = vendor_id;
+    device_info->product_id_ = product_id;
+    device_info->max_input_report_size_ = 128;
+    device_info->max_output_report_size_ = 128;
+    device_info->max_feature_report_size_ = 128;
     {
       HidCollectionInfo collection_info;
       if (report_id) {
         collection_info.usage =
             HidUsageAndPage(0, HidUsageAndPage::kPageVendor);
         collection_info.report_ids.insert(1);
-        device_info.has_report_id = true;
+        device_info->has_report_id_ = true;
       }
-      device_info.collections.push_back(collection_info);
+      device_info->collections_.push_back(collection_info);
     }
     HidService::AddDevice(device_info);
   }
@@ -155,18 +153,20 @@ class MockHidService : public HidService {
   }
 };
 
-}  // namespace
+}  // namespace device
+
+namespace extensions {
 
 class HidApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    hid_service_ = new MockHidService();
+    hid_service_ = new device::MockHidService();
     HidService::SetInstanceForTest(hid_service_);
   }
 
  protected:
-  MockHidService* hid_service_;
+  device::MockHidService* hid_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {

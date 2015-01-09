@@ -26,11 +26,11 @@ class HidService {
  public:
   class Observer {
    public:
-    virtual void OnDeviceAdded(const HidDeviceInfo& info) {}
-    virtual void OnDeviceRemoved(const HidDeviceInfo& info) {}
+    virtual void OnDeviceAdded(scoped_refptr<HidDeviceInfo> info);
+    virtual void OnDeviceRemoved(scoped_refptr<HidDeviceInfo> info);
   };
 
-  typedef base::Callback<void(const std::vector<HidDeviceInfo>&)>
+  typedef base::Callback<void(const std::vector<scoped_refptr<HidDeviceInfo>>&)>
       GetDevicesCallback;
   typedef base::Callback<void(scoped_refptr<HidConnection> connection)>
       ConnectCallback;
@@ -51,8 +51,9 @@ class HidService {
   void RemoveObserver(Observer* observer);
 
   // Fills in a DeviceInfo struct with info for the given device_id.
-  // Returns |true| if successful or |false| if |device_id| is invalid.
-  bool GetDeviceInfo(const HidDeviceId& device_id, HidDeviceInfo* info) const;
+  // Returns |nullptr| if |device_id| is invalid.
+  scoped_refptr<HidDeviceInfo> GetDeviceInfo(
+      const HidDeviceId& device_id) const;
 
   // Opens a connection to a device. The callback will be run with null on
   // failure.
@@ -63,12 +64,12 @@ class HidService {
   friend void base::DeletePointer<HidService>(HidService* service);
   friend class HidConnectionTest;
 
-  typedef std::map<HidDeviceId, HidDeviceInfo> DeviceMap;
+  typedef std::map<HidDeviceId, scoped_refptr<HidDeviceInfo>> DeviceMap;
 
   HidService();
   virtual ~HidService();
 
-  void AddDevice(const HidDeviceInfo& info);
+  void AddDevice(scoped_refptr<HidDeviceInfo> info);
   void RemoveDevice(const HidDeviceId& device_id);
   void FirstEnumerationComplete();
 

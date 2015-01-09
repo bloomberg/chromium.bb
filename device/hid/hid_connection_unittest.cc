@@ -62,19 +62,20 @@ class DeviceCatcher : HidService::Observer {
   }
 
  private:
-  void OnEnumerationComplete(const std::vector<HidDeviceInfo>& devices) {
-    for (const HidDeviceInfo& device_info : devices) {
-      if (device_info.serial_number == serial_number_) {
-        device_id_ = device_info.device_id;
+  void OnEnumerationComplete(
+      const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
+    for (const scoped_refptr<HidDeviceInfo>& device_info : devices) {
+      if (device_info->serial_number() == serial_number_) {
+        device_id_ = device_info->device_id();
         run_loop_.Quit();
         break;
       }
     }
   }
 
-  void OnDeviceAdded(const HidDeviceInfo& device_info) override {
-    if (device_info.serial_number == serial_number_) {
-      device_id_ = device_info.device_id;
+  void OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) override {
+    if (device_info->serial_number() == serial_number_) {
+      device_id_ = device_info->device_id();
       run_loop_.Quit();
     }
   }

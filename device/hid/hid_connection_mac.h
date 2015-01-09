@@ -26,9 +26,9 @@ namespace device {
 
 class HidConnectionMac : public HidConnection {
  public:
-  explicit HidConnectionMac(
+  HidConnectionMac(
       IOHIDDeviceRef device,
-      HidDeviceInfo device_info,
+      scoped_refptr<HidDeviceInfo> device_info,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
  private:

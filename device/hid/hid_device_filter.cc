@@ -38,24 +38,21 @@ void HidDeviceFilter::SetUsage(uint16_t usage) {
   usage_ = usage;
 }
 
-bool HidDeviceFilter::Matches(const HidDeviceInfo& device_info) const {
+bool HidDeviceFilter::Matches(
+    scoped_refptr<const HidDeviceInfo> device_info) const {
   if (vendor_id_set_) {
-    if (device_info.vendor_id != vendor_id_) {
+    if (device_info->vendor_id() != vendor_id_) {
       return false;
     }
 
-    if (product_id_set_ && device_info.product_id != product_id_) {
+    if (product_id_set_ && device_info->product_id() != product_id_) {
       return false;
     }
   }
 
   if (usage_page_set_) {
     bool found_matching_collection = false;
-    for (std::vector<HidCollectionInfo>::const_iterator i =
-             device_info.collections.begin();
-         i != device_info.collections.end() && !found_matching_collection;
-         ++i) {
-      const HidCollectionInfo& collection = *i;
+    for (const HidCollectionInfo& collection : device_info->collections()) {
       if (collection.usage.usage_page != usage_page_) {
         continue;
       }
@@ -73,13 +70,10 @@ bool HidDeviceFilter::Matches(const HidDeviceInfo& device_info) const {
 }
 
 // static
-bool HidDeviceFilter::MatchesAny(
-    const HidDeviceInfo& device_info,
-    const std::vector<HidDeviceFilter>& filters) {
-  for (std::vector<HidDeviceFilter>::const_iterator i = filters.begin();
-       i != filters.end();
-       ++i) {
-    if (i->Matches(device_info)) {
+bool HidDeviceFilter::MatchesAny(scoped_refptr<const HidDeviceInfo> device_info,
+                                 const std::vector<HidDeviceFilter>& filters) {
+  for (const HidDeviceFilter& filter : filters) {
+    if (filter.Matches(device_info)) {
       return true;
     }
   }

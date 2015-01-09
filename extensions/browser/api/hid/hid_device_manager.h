@@ -55,10 +55,10 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
                      const std::vector<device::HidDeviceFilter>& filters,
                      const GetApiDevicesCallback& callback);
 
-  bool GetDeviceInfo(int resource_id, device::HidDeviceInfo* device_info);
+  scoped_refptr<device::HidDeviceInfo> GetDeviceInfo(int resource_id);
 
   static bool HasPermission(const Extension* extension,
-                            const device::HidDeviceInfo& device_info);
+                            scoped_refptr<device::HidDeviceInfo> device_info);
 
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
@@ -80,8 +80,9 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   void OnListenerAdded(const EventListenerInfo& details) override;
 
   // HidService::Observer:
-  void OnDeviceAdded(const device::HidDeviceInfo& device_info) override;
-  void OnDeviceRemoved(const device::HidDeviceInfo& device_info) override;
+  void OnDeviceAdded(scoped_refptr<device::HidDeviceInfo> device_info) override;
+  void OnDeviceRemoved(
+      scoped_refptr<device::HidDeviceInfo> device_info) override;
 
   // Wait to perform an initial enumeration and register a HidService::Observer
   // until the first API customer makes a request or registers an event
@@ -94,11 +95,12 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   scoped_ptr<base::ListValue> CreateApiDeviceList(
       const Extension* extension,
       const std::vector<device::HidDeviceFilter>& filters);
-  void OnEnumerationComplete(const std::vector<device::HidDeviceInfo>& devices);
+  void OnEnumerationComplete(
+      const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
 
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args,
-                     const device::HidDeviceInfo& device_info);
+                     scoped_refptr<device::HidDeviceInfo> device_info);
 
   base::ThreadChecker thread_checker_;
   EventRouter* event_router_;

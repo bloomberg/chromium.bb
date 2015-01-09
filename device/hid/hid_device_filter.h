@@ -8,9 +8,11 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+
 namespace device {
 
-struct HidDeviceInfo;
+class HidDeviceInfo;
 
 class HidDeviceFilter {
  public:
@@ -22,9 +24,9 @@ class HidDeviceFilter {
   void SetUsagePage(uint16_t usage_page);
   void SetUsage(uint16_t usage);
 
-  bool Matches(const HidDeviceInfo& device_info) const;
+  bool Matches(scoped_refptr<const HidDeviceInfo> device_info) const;
 
-  static bool MatchesAny(const HidDeviceInfo& device_info,
+  static bool MatchesAny(scoped_refptr<const HidDeviceInfo> device_info,
                          const std::vector<HidDeviceFilter>& filters);
 
  private:
