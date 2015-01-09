@@ -270,9 +270,9 @@ gbm_bo_get_fd(struct gbm_bo *bo)
 				gbm_bo_get_handle(bo).u32,
 				DRM_CLOEXEC,
 				&fd))
-		return fd;
-	else
 		return -1;
+	else
+		return fd;
 }
 
 PUBLIC void
