@@ -1830,12 +1830,6 @@ Mosaic.Tile = function(container, item, opt_locationInfo) {
   this.item_ = item;
 
   /**
-   * @type {boolean}
-   * @private
-   */
-  this.hidpiEmbedded_ = !!opt_locationInfo && opt_locationInfo.isDriveBased;
-
-  /**
    * @type {?number}
    * @private
    */
@@ -2059,23 +2053,28 @@ Mosaic.Tile.prototype.init = function() {
       ThumbnailLoader.LoaderType.CANVAS,
       metadata,
       undefined,  // Media type.
-      this.hidpiEmbedded_ ?
-          ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-          ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
-      priority);
+      [
+        ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
+        ThumbnailLoader.LoadTarget.FILE_ENTRY
+      ]);
 
   // If no hidpi embedded thumbnail available, then use the low resolution
   // for preloading.
-  if (!this.hidpiEmbedded_) {
+  if (this.thumbnailLoader_.getLoadTarget() ===
+      ThumbnailLoader.LoadTarget.FILE_ENTRY) {
     this.thumbnailPreloader_ = new ThumbnailLoader(
         this.getItem().getEntry(),
         ThumbnailLoader.LoaderType.CANVAS,
         metadata,
         undefined,  // Media type.
-        ThumbnailLoader.UseEmbedded.USE_EMBEDDED,
+        [
+          ThumbnailLoader.LoadTarget.CONTENT_METADATA
+        ],
         // Preloaders have always higher priotity, so the preload images
         // are loaded as soon as possible.
         2);
+    if (!this.thumbnailPreloader_.getLoadTarget())
+      this.thumbnailPreloader_ = null;
   }
 
   // Dimensions are always acquired from the metadata. For local files, it is

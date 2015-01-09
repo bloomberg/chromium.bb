@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 function testImageView() {
-  assertTrue(!!ImageView);
+  var mockFileSystem = new MockFileSystem('volumeId');
+  var mockEntry = new MockEntry(mockFileSystem, '/test.jpg');
 
   // Item has full size cache.
-  var itemWithFullCache = new Gallery.Item(null, null, {}, null, false);
+  var itemWithFullCache = new Gallery.Item(mockEntry, null, {}, null, false);
   itemWithFullCache.contentImage = document.createElement('canvas');
   assertEquals(
       ImageView.LoadTarget.CACHED_MAIN_IMAGE,
       ImageView.getLoadTarget(itemWithFullCache, new ImageView.Effect.None()));
 
   // Item has screen size cache.
-  var itemWithScreenCache = new Gallery.Item(null, null, {}, null, false);
+  var itemWithScreenCache = new Gallery.Item(mockEntry, null, {}, null, false);
   itemWithScreenCache.screenImage = document.createElement('canvas');
   assertEquals(
       ImageView.LoadTarget.CACHED_THUMBNAIL,
@@ -22,7 +23,7 @@ function testImageView() {
 
   // Item with content thumbnail.
   var itemWithContentThumbnail = new Gallery.Item(
-      null, null, {thumbnail: {url: 'url'}}, null, false);
+      mockEntry, null, {thumbnail: {url: 'url'}}, null, false);
   assertEquals(
       ImageView.LoadTarget.THUMBNAIL,
       ImageView.getLoadTarget(
@@ -30,15 +31,24 @@ function testImageView() {
 
   // Item with external thumbnail.
   var itemWithExternalThumbnail = new Gallery.Item(
-      null, null, {external: {thumbnailUrl: 'url'}}, null, false);
+      mockEntry, null, {external: {thumbnailUrl: 'url'}}, null, false);
   assertEquals(
       ImageView.LoadTarget.THUMBNAIL,
       ImageView.getLoadTarget(
           itemWithExternalThumbnail, new ImageView.Effect.None()));
 
+  // Item with external thumbnail but present localy.
+  var itemWithExternalThumbnailPresent = new Gallery.Item(
+      mockEntry, null, {external: {thumbnailUrl: 'url', dirty: true}}, null,
+      false);
+  assertEquals(
+      ImageView.LoadTarget.MAIN_IMAGE,
+      ImageView.getLoadTarget(
+          itemWithExternalThumbnailPresent, new ImageView.Effect.None()));
+
   // Item with external thumbnail shown by slide effect.
   var itemWithExternalThumbnailSlide = new Gallery.Item(
-      null, null, {external: {thumbnailUrl: 'url'}}, null, false);
+      mockEntry, null, {external: {thumbnailUrl: 'url'}}, null, false);
   assertEquals(
       ImageView.LoadTarget.THUMBNAIL,
       ImageView.getLoadTarget(
@@ -46,7 +56,7 @@ function testImageView() {
 
   // Item with external thumbnail shown by zoom effect.
   var itemWithExternalThumbnailZoom = new Gallery.Item(
-      null, null, {external: {thumbnailUrl: 'url'}}, null, false);
+      mockEntry, null, {external: {thumbnailUrl: 'url'}}, null, false);
   assertEquals(
       ImageView.LoadTarget.MAIN_IMAGE,
       ImageView.getLoadTarget(
@@ -55,7 +65,7 @@ function testImageView() {
 
   // Item without cache/thumbnail.
   var itemWithoutCacheOrThumbnail = new Gallery.Item(
-      null, null, {}, null, false);
+      mockEntry, null, {}, null, false);
   assertEquals(
       ImageView.LoadTarget.MAIN_IMAGE,
       ImageView.getLoadTarget(

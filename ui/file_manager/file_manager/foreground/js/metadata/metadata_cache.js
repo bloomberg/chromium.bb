@@ -880,6 +880,7 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
     present: data.isPresent,
     pinned: data.isPinned,
     hosted: data.isHosted,
+    dirty: data.isDirty,
     imageWidth: data.imageWidth,
     imageHeight: data.imageHeight,
     imageRotation: data.imageRotation,

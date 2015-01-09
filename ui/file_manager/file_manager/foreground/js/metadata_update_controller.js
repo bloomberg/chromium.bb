@@ -171,9 +171,10 @@ MetadataUpdateController.prototype.onEntriesChanged_ = function(event) {
               ThumbnailLoader.LoaderType.CANVAS,
               metadata,
               undefined,  // Media type.
-              locationInfo.isDriveBased ?
-                  ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                  ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+              [
+                ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
+                ThumbnailLoader.LoadTarget.FILE_ENTRY
+              ],
               10);  // Very low priority.
           thumbnailLoader.loadDetachedImage(function(success) {});
         });

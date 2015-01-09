@@ -150,9 +150,12 @@ ImageView.getLoadTarget = function(item, effect) {
 
   // Only show thumbnails if there is no effect or the effect is Slide.
   var metadata = item.getMetadata();
+  var thumbnailLoader = new ThumbnailLoader(
+      item.getEntry(), ThumbnailLoader.LoaderType.CANVAS, item.getMetadata());
   if ((effect instanceof ImageView.Effect.None ||
        effect instanceof ImageView.Effect.Slide) &&
-      ThumbnailLoader.hasThumbnailInMetadata(metadata)) {
+      thumbnailLoader.getLoadTarget() !==
+      ThumbnailLoader.LoadTarget.FILE_ENTRY) {
     return ImageView.LoadTarget.THUMBNAIL;
   }
 
