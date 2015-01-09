@@ -211,6 +211,8 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
         return consumeMediaRule(prelude, block);
     if (equalIgnoringCase(name, "viewport"))
         return consumeViewportRule(prelude, block);
+    if (equalIgnoringCase(name, "font-face"))
+        return consumeFontFaceRule(prelude, block);
     if (equalIgnoringCase(name, "-webkit-keyframes"))
         return consumeKeyframesRule(true, prelude, block);
     if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && equalIgnoringCase(name, "keyframes"))
@@ -306,6 +308,33 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
     RefPtrWillBeRawPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
     rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
     m_parsedProperties.clear();
+    return rule.release();
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
+{
+    prelude.consumeWhitespaceAndComments();
+    if (!prelude.atEnd())
+        return nullptr; // Parse error; @font-face prelude should be empty
+    consumeDeclarationList(block, CSSRuleSourceData::FONT_FACE_RULE);
+
+    // FIXME: This logic should be in CSSPropertyParser
+    // FIXME: Shouldn't we fail if font-family or src aren't specified?
+    for (unsigned i = 0; i < m_parsedProperties.size(); ++i) {
+        CSSProperty& property = m_parsedProperties[i];
+        if (property.id() == CSSPropertyFontVariant && property.value()->isPrimitiveValue()) {
+            property.wrapValueInCommaSeparatedList();
+        } else if (property.id() == CSSPropertyFontFamily && (!property.value()->isValueList() || toCSSValueList(property.value())->length() != 1)) {
+            m_parsedProperties.clear();
+            return nullptr;
+        }
+    }
+
+    RefPtrWillBeRawPtr<StyleRuleFontFace> rule = StyleRuleFontFace::create();
+    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
+    m_parsedProperties.clear();
+    if (m_styleSheet)
+        m_styleSheet->setHasFontFaceRule(true);
     return rule.release();
 }
 
