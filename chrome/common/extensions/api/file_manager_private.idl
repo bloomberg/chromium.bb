@@ -563,6 +563,9 @@ callback GetProfilesCallback = void(ProfileInfo[] profiles,
 callback ResolveEntriesCallback =
     void([instanceOf=FileEntry] object[] entries);
 
+// |checksum| Result checksum.
+callback ComputeChecksumCallback = void(DOMString checksum);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -819,6 +822,12 @@ interface Functions {
   // Opens inspector window.
   // |type| InspectionType which specifies how to open inspector.
   static void openInspector(InspectionType type);
+
+  // Computes an MD5 checksum for the given file.
+  // |fileURL| The URL of the file to checksum.
+  // |callback|
+  static void computeChecksum(DOMString fileURL,
+                              ComputeChecksumCallback callback);
 };
 
 interface Events {

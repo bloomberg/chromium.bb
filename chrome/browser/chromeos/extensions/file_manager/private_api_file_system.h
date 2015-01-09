@@ -229,6 +229,22 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
       file_manager::util::EntryDefinitionList> entry_definition_list);
 };
 
+class FileManagerPrivateComputeChecksumFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.computeChecksum",
+                             FILEMANAGERPRIVATE_COMPUTECHECKSUM)
+
+ protected:
+  virtual ~FileManagerPrivateComputeChecksumFunction() {}
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() override;
+
+ private:
+  void Respond(const std::string& hash);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_

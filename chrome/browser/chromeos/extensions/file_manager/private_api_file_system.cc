@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -709,4 +710,40 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
       ResolveIsolatedEntries::Results::Create(entries);
   SendResponse(true);
 }
+
+bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
+  using extensions::api::file_manager_private::ComputeChecksum::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->file_url.empty()) {
+    // TODO(kenobi): call SetError()
+    return false;
+  }
+
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          GetProfile(), render_view_host());
+
+  storage::FileSystemURL file_url(
+      file_system_context->CrackURL(GURL(params->file_url)));
+  if (!file_url.is_valid()) {
+    // TODO(kenobi): Call SetError()
+    return false;
+  }
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&drive::util::GetMd5Digest, file_url.path()),
+      base::Bind(&FileManagerPrivateComputeChecksumFunction::Respond, this));
+
+  return true;
+}
+
+void FileManagerPrivateComputeChecksumFunction::Respond(
+    const std::string& hash) {
+  SetResult(new base::StringValue(hash));
+  SendResponse(true);
+}
+
 }  // namespace extensions

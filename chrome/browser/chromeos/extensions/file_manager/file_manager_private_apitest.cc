@@ -15,6 +15,8 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
+#include "google_apis/drive/test_util.h"
+#include "storage/browser/fileapi/external_mount_points.h"
 
 using ::testing::_;
 using ::testing::ReturnRef;
@@ -127,6 +129,29 @@ void DispatchDirectoryChangeEventImpl(
 }
 
 void AddFileWatchCallback(bool success) {}
+
+bool InitializeLocalFileSystem(std::string mount_point_name,
+                               base::ScopedTempDir* temp_dir,
+                               base::FilePath* mount_point_dir) {
+  const char kTestFileContent[] = "The five boxing wizards jumped quickly";
+  if (!temp_dir->CreateUniqueTempDir())
+    return false;
+
+  *mount_point_dir = temp_dir->path().AppendASCII(mount_point_name);
+  // Create the mount point.
+  if (!base::CreateDirectory(*mount_point_dir))
+    return false;
+
+  const base::FilePath test_dir = mount_point_dir->AppendASCII("test_dir");
+  if (!base::CreateDirectory(test_dir))
+    return false;
+
+  const base::FilePath test_file = test_dir.AppendASCII("test_file.txt");
+  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
+    return false;
+
+  return true;
+}
 
 }  // namespace
 
@@ -383,4 +408,25 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
   // event_router->removeFileWatch create some tasks which are performed on
   // message loop of BrowserThread::FILE. Wait until they are done.
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
+  base::ScopedTempDir temp_dir;
+  base::FilePath mount_point_dir;
+  const char kLocalMountPointName[] = "local";
+
+  ASSERT_TRUE(InitializeLocalFileSystem(kLocalMountPointName, &temp_dir,
+                                        &mount_point_dir))
+      << "Failed to initialize test file system";
+
+  EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
+                  ->RegisterFileSystem(
+                      kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
+                      storage::FileSystemMountOption(), mount_point_dir));
+  file_manager::VolumeManager::Get(browser()->profile())
+      ->AddVolumeInfoForTesting(mount_point_dir,
+                                file_manager::VOLUME_TYPE_TESTING,
+                                chromeos::DEVICE_TYPE_UNKNOWN);
+
+  ASSERT_TRUE(RunComponentExtensionTest("file_browser/content_checksum_test"));
 }
