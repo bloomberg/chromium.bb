@@ -154,16 +154,30 @@ int ExtensionOptionsGuest::GetTaskPrefix() const {
 void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
     const gfx::Size& old_size,
     const gfx::Size& new_size) {
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetInteger(extensionoptions::kNewWidth, new_size.width());
-  args->SetInteger(extensionoptions::kNewHeight, new_size.height());
-  args->SetInteger(extensionoptions::kOldWidth, old_size.width());
-  args->SetInteger(extensionoptions::kOldHeight, old_size.height());
+  extension_options_internal::SizeChangedOptions options;
+  options.old_width = old_size.width();
+  options.old_height = old_size.height();
+  options.new_width = new_size.width();
+  options.new_height = new_size.height();
   DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
-      extension_options_internal::OnSizeChanged::kEventName, args.Pass()));
+      extension_options_internal::OnSizeChanged::kEventName,
+      options.ToValue()));
+}
+
+void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
+  extension_options_internal::PreferredSizeChangedOptions options;
+  options.width = pref_size.width();
+  options.height = pref_size.height();
+  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
+      extension_options_internal::OnPreferredSizeChanged::kEventName,
+      options.ToValue()));
 }
 
 bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
+  return true;
+}
+
+bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
   return true;
 }
 

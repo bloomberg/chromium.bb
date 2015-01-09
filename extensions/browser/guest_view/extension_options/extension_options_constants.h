@@ -12,12 +12,6 @@ extern const char kAPINamespace[];
 
 extern const char kExtensionId[];
 
-// SizeChanged event properties.
-extern const char kNewHeight[];
-extern const char kNewWidth[];
-extern const char kOldHeight[];
-extern const char kOldWidth[];
-
 }  // namespace extensionoptions
 
 #endif  // EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_CONSTANTS_H_

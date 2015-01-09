@@ -11,9 +11,4 @@ extern const char kAPINamespace[] = "extensionOptionsInternal";
 
 const char kExtensionId[] = "extensionId";
 
-const char kNewHeight[] = "newHeight";
-const char kNewWidth[] = "newWidth";
-const char kOldHeight[] = "oldHeight";
-const char kOldWidth[] = "oldWidth";
-
 }  // namespace extensionoptions

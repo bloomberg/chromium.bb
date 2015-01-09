@@ -24,6 +24,10 @@ var EXTENSION_OPTIONS_EVENTS = {
       handler.handleSizeChangedEvent(event, extensionOptionsEvent);
     },
     fields:['newWidth', 'newHeight', 'oldWidth', 'oldHeight']
+  },
+  'preferredsizechanged': {
+    evt: CreateEvent('extensionOptionsInternal.onPreferredSizeChanged'),
+    fields:['width', 'height']
   }
 }
 

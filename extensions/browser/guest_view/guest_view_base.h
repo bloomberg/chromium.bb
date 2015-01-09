@@ -124,6 +124,15 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // behavior to support autosize.
   virtual bool IsAutoSizeSupported() const;
 
+  // This method is invoked when the contents preferred size changes. This will
+  // only ever fire if IsPreferredSizeSupported returns true.
+  virtual void OnPreferredSizeChanged(const gfx::Size& pref_size) {}
+
+  // This method queries whether preferred size events are enabled for this
+  // view. By default, preferred size events are disabled, since they add a
+  // small amount of overhead.
+  virtual bool IsPreferredSizeModeEnabled() const;
+
   // This method queries whether drag-and-drop is enabled for this particular
   // view. By default, drag-and-drop is disabled. Derived classes can override
   // this behavior to enable drag-and-drop.
@@ -297,7 +306,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool ShouldFocusPageAfterCrash() final;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) final;
-
+  void UpdatePreferredSize(content::WebContents* web_contents,
+                           const gfx::Size& pref_size) final;
 
   // This guest tracks the lifetime of the WebContents specified by
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this

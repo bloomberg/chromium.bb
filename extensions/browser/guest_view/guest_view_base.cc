@@ -303,6 +303,10 @@ bool GuestViewBase::IsAutoSizeSupported() const {
   return false;
 }
 
+bool GuestViewBase::IsPreferredSizeModeEnabled() const {
+  return false;
+}
+
 bool GuestViewBase::IsDragAndDropEnabled() const {
   return false;
 }
@@ -434,6 +438,9 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
 }
 
 void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
+  if (IsPreferredSizeModeEnabled()) {
+    render_view_host->EnablePreferredSizeMode();
+  }
   if (!IsDragAndDropEnabled()) {
     const char script[] = "window.addEventListener('dragstart', function() { "
                           "  window.event.preventDefault(); "
@@ -494,6 +501,18 @@ bool GuestViewBase::PreHandleGestureEvent(content::WebContents* source,
   return event.type == blink::WebGestureEvent::GesturePinchBegin ||
       event.type == blink::WebGestureEvent::GesturePinchUpdate ||
       event.type == blink::WebGestureEvent::GesturePinchEnd;
+}
+
+void GuestViewBase::UpdatePreferredSize(
+    content::WebContents* target_web_contents,
+    const gfx::Size& pref_size) {
+  // In theory it's not necessary to check IsPreferredSizeModeEnabled() because
+  // there will only be events if it was enabled in the first place. However,
+  // something else may have turned on preferred size mode, so double check.
+  DCHECK_EQ(web_contents(), target_web_contents);
+  if (IsPreferredSizeModeEnabled()) {
+    OnPreferredSizeChanged(pref_size);
+  }
 }
 
 GuestViewBase::~GuestViewBase() {

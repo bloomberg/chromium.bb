@@ -4,9 +4,22 @@
 
 // Internal API for the &lt;extensiontoptions&gt; tag
 namespace extensionOptionsInternal {
+  dictionary SizeChangedOptions {
+    long oldWidth;
+    long oldHeight;
+    long newWidth;
+    long newHeight;
+  };
+
+  dictionary PreferredSizeChangedOptions {
+    long width;
+    long height;
+  };
+
   interface Events {
     static void onClose();
     static void onLoad();
-    static void onSizeChanged(long width, long height);
+    static void onSizeChanged(SizeChangedOptions options);
+    static void onPreferredSizeChanged(PreferredSizeChangedOptions options);
   };
 };
