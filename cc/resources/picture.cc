@@ -142,7 +142,7 @@ Picture::Picture(const skia::RefPtr<SkPicture>& picture,
 
 Picture::~Picture() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-    TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::Picture", this);
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.picture"), "cc::Picture", this);
 }
 
 bool Picture::IsSuitableForGpuRasterization(const char** reason) const {
@@ -347,8 +347,8 @@ scoped_ptr<base::Value> Picture::AsValue() const {
 
 void Picture::EmitTraceSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
-          "devtools.timeline.picture"),
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
+          TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
       "cc::Picture",
       this,
       TracedPicture::AsTraceablePicture(this));
@@ -356,8 +356,8 @@ void Picture::EmitTraceSnapshot() const {
 
 void Picture::EmitTraceSnapshotAlias(Picture* original) const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
-          "devtools.timeline.picture"),
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
+          TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
       "cc::Picture",
       this,
       TracedPicture::AsTraceablePictureAlias(original));
