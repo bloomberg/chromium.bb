@@ -8,6 +8,7 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserValues.h"
@@ -187,6 +188,10 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
             // have error logging yet so it doesn't matter.
             return nullptr;
         }
+        if (allowedRules <= AllowImportRules && equalIgnoringCase(name, "import")) {
+            allowedRules = AllowImportRules;
+            return consumeImportRule(prelude);
+        }
         if (allowedRules <= AllowNamespaceRules && equalIgnoringCase(name, "namespace")) {
             allowedRules = AllowNamespaceRules;
             consumeNamespaceRule(prelude);
@@ -237,24 +242,32 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSPar
     return nullptr;
 }
 
-// Takes a single component value
-static String consumeStringOrURI(CSSParserTokenRange range)
+// This may still consume tokens if it fails
+static String consumeStringOrURI(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
 
     if (token.type() == StringToken || token.type() == UrlToken)
-        return AtomicString(range.consume().value());
+        return AtomicString(range.consumeIncludingWhitespaceAndComments().value());
 
     if (token.type() != FunctionToken || !equalIgnoringCase(token.value(), "url"))
         return AtomicString();
 
     CSSParserTokenRange contents = range.consumeBlock();
-    contents.consumeWhitespaceAndComments();
-    const CSSParserToken& uri = contents.consume();
-    contents.consumeWhitespaceAndComments();
-    if (!contents.atEnd() || uri.type() != StringToken)
+    const CSSParserToken& uri = contents.consumeIncludingWhitespaceAndComments();
+    ASSERT(uri.type() == StringToken);
+    if (!contents.atEnd())
         return AtomicString();
     return AtomicString(uri.value());
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleImport> CSSParserImpl::consumeImportRule(CSSParserTokenRange prelude)
+{
+    prelude.consumeWhitespaceAndComments();
+    AtomicString uri(consumeStringOrURI(prelude));
+    if (uri.isNull())
+        return nullptr; // Parse error, expected string or URI
+    return StyleRuleImport::create(uri, MediaQueryParser::parseMediaQuerySet(prelude));
 }
 
 void CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
@@ -264,9 +277,7 @@ void CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
     if (prelude.peek().type() == IdentToken)
         namespacePrefix = AtomicString(prelude.consumeIncludingWhitespaceAndComments().value());
 
-    const CSSParserToken* uriStart = &prelude.peek();
-    prelude.consumeComponentValue();
-    AtomicString uri(consumeStringOrURI(prelude.makeSubRange(uriStart, &prelude.peek())));
+    AtomicString uri(consumeStringOrURI(prelude));
     prelude.consumeWhitespaceAndComments();
     if (uri.isNull() || !prelude.atEnd())
         return; // Parse error, expected string or URI
