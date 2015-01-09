@@ -121,6 +121,12 @@ class CdmAdapter : public pp::Instance,
                            bool has_additional_usable_key,
                            const cdm::KeyInformation* keys_info,
                            uint32_t keys_info_count) override;
+  void OnLegacySessionError(const char* session_id,
+                            uint32_t session_id_size,
+                            cdm::Error error,
+                            uint32_t system_code,
+                            const char* error_message,
+                            uint32_t error_message_size) override;
 
   // cdm::Host_6 implementation.
   void OnResolveKeyIdsPromise(uint32_t promise_id,

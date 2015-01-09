@@ -812,6 +812,17 @@ void CdmAdapter::OnSessionError(const char* session_id,
                    std::string(error_message, error_message_size))));
 }
 
+// cdm::Host_7 only.
+void CdmAdapter::OnLegacySessionError(const char* session_id,
+                                      uint32_t session_id_size,
+                                      cdm::Error error,
+                                      uint32_t system_code,
+                                      const char* error_message,
+                                      uint32_t error_message_size) {
+  OnSessionError(session_id, session_id_size, error, system_code, error_message,
+                 error_message_size);
+}
+
 // Helpers to pass the event to Pepper.
 
 void CdmAdapter::SendPromiseResolvedInternal(int32_t result,
