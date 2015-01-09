@@ -406,8 +406,14 @@ void CreditCard::SetRawInfo(ServerFieldType type,
 base::string16 CreditCard::GetInfo(const AutofillType& type,
                                    const std::string& app_locale) const {
   ServerFieldType storable_type = type.GetStorableType();
-  if (storable_type == CREDIT_CARD_NUMBER)
+  if (storable_type == CREDIT_CARD_NUMBER) {
+    // Web pages should never actually be filled by a masked server card,
+    // but this function is used at the preview stage.
+    if (record_type() == MASKED_SERVER_CARD)
+      return TypeAndLastFourDigits();
+
     return StripSeparators(number_);
+  }
 
   return GetRawInfo(storable_type);
 }
