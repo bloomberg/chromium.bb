@@ -41,6 +41,7 @@ class CONTENT_EXPORT MediaAudioConstraints {
   static const char kGoogExperimentalAutoGainControl[];
   static const char kGoogNoiseSuppression[];
   static const char kGoogExperimentalNoiseSuppression[];
+  static const char kGoogBeamforming[];
   static const char kGoogHighpassFilter[];
   static const char kGoogTypingNoiseDetection[];
   static const char kGoogAudioMirroring[];

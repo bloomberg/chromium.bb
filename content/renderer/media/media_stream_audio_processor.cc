@@ -20,6 +20,10 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/sys_info.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -445,13 +449,15 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       MediaAudioConstraints::kGoogNoiseSuppression);
   const bool goog_experimental_ns = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogExperimentalNoiseSuppression);
+  const bool goog_beamforming = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogBeamforming);
  const bool goog_high_pass_filter = audio_constraints.GetProperty(
      MediaAudioConstraints::kGoogHighpassFilter);
 
   // Return immediately if no goog constraint is enabled.
   if (!echo_cancellation && !goog_experimental_aec && !goog_ns &&
       !goog_high_pass_filter && !goog_typing_detection &&
-      !goog_agc && !goog_experimental_ns) {
+      !goog_agc && !goog_experimental_ns && !goog_beamforming) {
     RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
@@ -466,6 +472,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (base::FieldTrialList::FindFullName("NoReportedDelayOnMac") == "Enabled")
     config.Set<webrtc::ReportedDelay>(new webrtc::ReportedDelay(false));
 #endif
+  if (goog_beamforming) {
+    ConfigureBeamforming(&config);
+  }
 
   // Create and configure the webrtc::AudioProcessing.
   audio_processing_.reset(webrtc::AudioProcessing::Create(config));
@@ -499,6 +508,23 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableAutomaticGainControl(audio_processing_.get());
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
+}
+
+void MediaStreamAudioProcessor::ConfigureBeamforming(webrtc::Config* config) {
+  bool enabled = false;
+  std::vector<webrtc::Point> geometry(1, webrtc::Point(0.f, 0.f, 0.f));
+#if defined(OS_CHROMEOS)
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
+  if (board == "peach_pi") {
+    enabled = true;
+    geometry.push_back(webrtc::Point(0.050f, 0.f, 0.f));
+  } else if (board == "swanky") {
+    // TODO(aluebs): Verify beamforming works on Swanky and enable.
+    enabled = false;
+    geometry.push_back(webrtc::Point(0.052f, 0.f, 0.f));
+  }
+#endif
+  config->Set<webrtc::Beamforming>(new webrtc::Beamforming(enabled, geometry));
 }
 
 void MediaStreamAudioProcessor::InitializeCaptureFifo(
