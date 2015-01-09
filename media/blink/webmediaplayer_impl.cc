@@ -273,7 +273,7 @@ void WebMediaPlayerImpl::pause() {
   pipeline_.SetPlaybackRate(0.0f);
   if (data_source_)
     data_source_->MediaIsPaused();
-  paused_time_ = pipeline_.GetMediaTime();
+  UpdatePausedTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
 
@@ -713,7 +713,7 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
 
   // Update our paused time.
   if (paused_)
-    paused_time_ = pipeline_.GetMediaTime();
+    UpdatePausedTime();
 
   should_notify_time_changed_ = time_changed;
 }
@@ -991,6 +991,17 @@ WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
                                                &event));
   event.Wait();
   return video_frame;
+}
+
+void WebMediaPlayerImpl::UpdatePausedTime() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  // pause() may be called after playback has ended and the HTMLMediaElement
+  // requires that currentTime() == duration() after ending.  We want to ensure
+  // |paused_time_| matches currentTime() in this case or a future seek() may
+  // incorrectly discard what it thinks is a seek to the existing time.
+  paused_time_ =
+      ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
 }
 
 }  // namespace media

@@ -218,6 +218,10 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   void OnCdmAttached(blink::WebContentDecryptionModuleResult result,
                      bool success);
 
+  // Updates |paused_time_| to the current media time with consideration for the
+  // |ended_| state by clamping current time to duration upon |ended_|.
+  void UpdatePausedTime();
+
   blink::WebLocalFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.

@@ -163,17 +163,8 @@ void Pipeline::SetVolume(float volume) {
 
 TimeDelta Pipeline::GetMediaTime() const {
   base::AutoLock auto_lock(lock_);
-  if (!renderer_)
-    return TimeDelta();
-
-  // TODO(sriram): In some cases GetMediaTime() returns a value few
-  // milliseconds less than duration, even though playback has ended
-  // http://crbug.com/438581
-  TimeDelta media_time = renderer_->GetMediaTime();
-  if (renderer_ended_)
-    return duration_;
-
-  return std::min(media_time, duration_);
+  return renderer_ ? std::min(renderer_->GetMediaTime(), duration_)
+                   : TimeDelta();
 }
 
 Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() const {
