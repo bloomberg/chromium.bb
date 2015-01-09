@@ -1167,6 +1167,11 @@ qcms_bool qcms_profile_match(qcms_profile *p1, qcms_profile *p2)
     return memcmp(p1->description, p2->description, sizeof p1->description) == 0;
 }
 
+const char* qcms_profile_get_description(qcms_profile *profile)
+{
+    return profile->description;
+}
+
 qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
 {
 	return profile->rendering_intent;

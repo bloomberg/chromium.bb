@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..69b7141 100644
+index 36b7011..aca19d3 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -164,7 +164,7 @@ index 36b7011..69b7141 100644
  	if (find_tag(index, TAG_CHAD)) {
  		profile->chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD);
  	} else {
-@@ -1098,6 +1162,11 @@ invalid_profile:
+@@ -1098,6 +1162,16 @@ invalid_profile:
  	return INVALID_PROFILE;
  }
  
@@ -173,11 +173,16 @@ index 36b7011..69b7141 100644
 +    return memcmp(p1->description, p2->description, sizeof p1->description) == 0;
 +}
 +
++const char* qcms_profile_get_description(qcms_profile *profile)
++{
++    return profile->description;
++}
++
  qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
  {
  	return profile->rendering_intent;
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
-index 7d83623..e59528a 100644
+index 7d83623..c69a772 100644
 --- a/third_party/qcms/src/qcms.h
 +++ b/third_party/qcms/src/qcms.h
 @@ -40,6 +40,12 @@ sale, use or other dealings in this Software without written
@@ -206,16 +211,17 @@ index 7d83623..e59528a 100644
  /* the names for the following two types are sort of ugly */
  typedef struct
  {
-@@ -136,6 +148,8 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
+@@ -136,6 +148,9 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
  qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile);
  icColorSpaceSignature qcms_profile_get_color_space(qcms_profile *profile);
  
 +qcms_bool qcms_profile_match(qcms_profile *p1, qcms_profile *p2);
++const char* qcms_profile_get_description(qcms_profile *profile);
 +
  void qcms_profile_precache_output_transform(qcms_profile *profile);
  
  qcms_transform* qcms_transform_create(
-@@ -146,6 +160,7 @@ qcms_transform* qcms_transform_create(
+@@ -146,6 +161,7 @@ qcms_transform* qcms_transform_create(
  void qcms_transform_release(qcms_transform *);
  
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);
