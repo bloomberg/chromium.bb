@@ -10,6 +10,9 @@ enum ContextFrameType {
     "none"
 };
 
+// http://www.w3.org/TR/page-visibility/#VisibilityState
+enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
+
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#window-client-interface
 [
     Exposed=ServiceWorker,
@@ -18,7 +21,7 @@ enum ContextFrameType {
     TypeChecking=Interface,
     ImplementedAs=ServiceWorkerWindowClient,
 ] interface WindowClient : Client {
-    readonly attribute DOMString visibilityState;
+    readonly attribute VisibilityState visibilityState;
     readonly attribute boolean focused;
     readonly attribute ContextFrameType frameType;
     [CallWith=ScriptState] Promise<boolean> focus();

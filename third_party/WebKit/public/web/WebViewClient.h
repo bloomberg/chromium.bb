@@ -32,6 +32,7 @@
 #define WebViewClient_h
 
 #include "../platform/WebGraphicsContext3D.h"
+#include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "WebAXEnums.h"
 #include "WebContentDetectionResult.h"
@@ -40,7 +41,6 @@
 #include "WebFileChooserParams.h"
 #include "WebFrame.h"
 #include "WebNavigatorContentUtilsClient.h"
-#include "WebPageVisibilityState.h"
 #include "WebPopupType.h"
 #include "WebTextAffinity.h"
 #include "WebTextDirection.h"

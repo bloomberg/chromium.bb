@@ -21,7 +21,7 @@ public:
     ~ServiceWorkerWindowClient() override;
 
     // WindowClient.idl
-    String visibilityState() const { return m_visibilityState; }
+    String visibilityState() const;
     bool focused() const { return m_isFocused; }
     String frameType() const;
     ScriptPromise focus(ScriptState*);
@@ -31,7 +31,10 @@ public:
 private:
     explicit ServiceWorkerWindowClient(const WebServiceWorkerClientInfo&);
 
+    // FIXME: remove m_visibilityState when m_pageVisibilityState will be used
+    // by Chromium.
     String m_visibilityState;
+    WebPageVisibilityState m_pageVisibilityState;
     bool m_isFocused;
     WebURLRequest::FrameType m_frameType;
 };

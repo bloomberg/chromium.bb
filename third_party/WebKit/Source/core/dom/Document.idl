@@ -22,6 +22,9 @@ callback CustomElementConstructor = Element ();
 
 typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
+// http://www.w3.org/TR/page-visibility/#VisibilityState
+enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
+
 interface Document : Node {
 
     // DOM Level 1 Core
@@ -196,7 +199,7 @@ interface Document : Node {
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, DOMString? typeExtension);
 
     // Page visibility API.
-    readonly attribute DOMString visibilityState;
+    readonly attribute VisibilityState visibilityState;
     readonly attribute boolean hidden;
 
     // Deprecated prefixed page visibility API.

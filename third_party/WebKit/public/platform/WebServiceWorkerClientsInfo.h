@@ -6,6 +6,7 @@
 #define WebServiceWorkerClientsInfo_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
@@ -17,15 +18,16 @@ struct WebServiceWorkerError;
 struct WebServiceWorkerClientInfo {
     WebServiceWorkerClientInfo()
         : clientID(0)
+        , pageVisibilityState(WebPageVisibilityStateLast)
         , isFocused(false)
         , frameType(WebURLRequest::FrameTypeNone)
     {
     }
 
     int clientID;
-    // FIXME: Use WebPageVisibilityState? That will require moving
-    // WebPageVisibilityState from public/web to public/platform.
+    // FIXME: remove when the Chromium code will be updated.
     WebString visibilityState;
+    WebPageVisibilityState pageVisibilityState;
     bool isFocused;
     WebURL url;
     WebURLRequest::FrameType frameType;

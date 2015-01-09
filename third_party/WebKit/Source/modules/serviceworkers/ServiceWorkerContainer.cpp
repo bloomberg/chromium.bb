@@ -49,6 +49,7 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerProvider.h"
@@ -290,7 +291,9 @@ bool ServiceWorkerContainer::getClientInfo(WebServiceWorkerClientInfo* info)
     if (!context || !context->isDocument())
         return false;
     Document* document = toDocument(context);
+    // FIXME: remove info->visibilityState when Chromium is updated.
     info->visibilityState = document->visibilityState();
+    info->pageVisibilityState = static_cast<WebPageVisibilityState>(document->pageVisibilityState());
     info->isFocused = document->hasFocus();
     info->url = document->url();
     if (!document->frame())
