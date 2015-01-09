@@ -869,9 +869,9 @@ ExternalProvider.prototype.callApi_ = function() {
 
 /**
  * Converts API metadata to internal format.
- * @param {Object} data Metadata from API call.
- * @param {Entry} entry File entry.
- * @return {Object} Metadata in internal format.
+ * @param {!EntryProperties} data Metadata from API call.
+ * @param {!Entry} entry File entry.
+ * @return {!Object} Metadata in internal format.
  * @private
  */
 ExternalProvider.prototype.convert_ = function(data, entry) {
