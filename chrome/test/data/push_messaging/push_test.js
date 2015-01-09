@@ -91,11 +91,13 @@ function removeManifest() {
 
 function registerPush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.pushManager.register()
+    var registerMethodName =
+        swRegistration.pushManager.register ? 'register' : 'subscribe';
+    return swRegistration.pushManager[registerMethodName]()
         .then(function(registration) {
-          pushRegistration = registration
-          sendResultToTest(pushRegistration.endpoint + ' - ' +
-                           pushRegistration.registrationId);
+          pushRegistration = registration;
+          sendResultToTest(registration.endpoint + ' - ' +
+              (registration.registrationId || registration.subscriptionId));
         });
   }).catch(sendErrorToTest);
 }
@@ -123,7 +125,9 @@ function unregister() {
     return;
   }
 
-  pushRegistration.unregister().then(function(result) {
+  var unregisterMethodName =
+      pushRegistration.unregister ? 'unregister' : 'unsubscribe';
+  pushRegistration[unregisterMethodName]().then(function(result) {
     sendResultToTest('unregister result: ' + result);
   }, function(error) {
     sendResultToTest('unregister error: ' + error.name + ': ' + error.message);
