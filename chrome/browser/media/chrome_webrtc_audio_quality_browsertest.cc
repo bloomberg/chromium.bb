@@ -634,8 +634,17 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
   HangUp(left_tab);
 }
 
+#if defined(OS_MACOSX)
+// Broken on Mac for some reason: http://crbug.com/446859.
+#define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
+    DISABLED_MANUAL_TestCallQualityWithAudioFromFakeDevice
+#else
+#define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
+    MANUAL_TestCallQualityWithAudioFromFakeDevice
+#endif
+
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestCallQualityWithAudioFromFakeDevice) {
+                       MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice) {
   if (OnWinXp() || OnWin8()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
