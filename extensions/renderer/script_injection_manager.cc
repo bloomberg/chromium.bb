@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "extensions/common/extension.h"
@@ -146,7 +147,7 @@ void ScriptInjectionManager::RVOHelper::DidFinishDocumentLoad(
   // particularly slow subresource, so we set a delayed task from here - but if
   // we finish everything before that point (i.e., DidFinishLoad() is
   // triggered), then there's no reason to keep waiting.
-  base::MessageLoop::current()->PostDelayedTask(
+  content::RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RVOHelper::RunIdle,
                  weak_factory_.GetWeakPtr(),
@@ -161,7 +162,7 @@ void ScriptInjectionManager::RVOHelper::DidFinishLoad(
   // DidFinishDocumentLoad should strictly come before DidFinishLoad, so the
   // first posted task to RunIdle() pops it out of the set. This ensures we
   // don't try to run idle twice.
-  base::MessageLoop::current()->PostTask(
+  content::RenderThread::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RVOHelper::RunIdle,
                  weak_factory_.GetWeakPtr(),

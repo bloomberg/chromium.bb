@@ -20,12 +20,6 @@ RendererScheduler::~RendererScheduler() {
 
 // static
 scoped_ptr<RendererScheduler> RendererScheduler::Create() {
-  // FIXME: Some chromeos browser tests timeout with the scheduler enabled.
-  // See crbug.com/444574
-#ifdef OS_CHROMEOS
-  return make_scoped_ptr(new NullRendererScheduler());
-#endif
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableBlinkScheduler)) {
     return make_scoped_ptr(new NullRendererScheduler());
