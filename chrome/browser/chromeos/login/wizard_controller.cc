@@ -1241,7 +1241,6 @@ void WizardController::OnLocationResolved(const Geoposition& position,
   // cancelled on destruction.
   GetTimezoneProvider()->RequestTimezone(
       position,
-      false,  // sensor
       timeout - elapsed,
       base::Bind(&WizardController::OnTimezoneResolved,
                  base::Unretained(this)));

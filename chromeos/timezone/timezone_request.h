@@ -69,12 +69,10 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
 
   // |url| is the server address to which the request wil be sent.
   // |geoposition| is the location to query timezone for.
-  // |sensor| if this location was determined using hardware sensor.
   // |retry_timeout| retry request on error until timeout.
   TimeZoneRequest(net::URLRequestContextGetter* url_context_getter,
                   const GURL& service_url,
                   const Geoposition& geoposition,
-                  bool sensor,
                   base::TimeDelta retry_timeout);
 
   virtual ~TimeZoneRequest();
@@ -107,7 +105,6 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
   const GURL service_url_;
   Geoposition geoposition_;
-  const bool sensor_;
 
   TimeZoneResponseCallback callback_;
 

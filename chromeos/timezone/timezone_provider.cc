@@ -28,11 +28,10 @@ TimeZoneProvider::~TimeZoneProvider() {
 
 void TimeZoneProvider::RequestTimezone(
     const Geoposition& position,
-    bool sensor,
     base::TimeDelta timeout,
     TimeZoneRequest::TimeZoneResponseCallback callback) {
   TimeZoneRequest* request(new TimeZoneRequest(
-      url_context_getter_.get(), url_, position, sensor, timeout));
+      url_context_getter_.get(), url_, position,timeout));
   requests_.push_back(request);
 
   // TimeZoneProvider owns all requests. It is safe to pass unretained "this"

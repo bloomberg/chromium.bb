@@ -35,7 +35,6 @@ class CHROMEOS_EXPORT TimeZoneProvider {
 
   // Initiates new request (See TimeZoneRequest for parameters description.)
   void RequestTimezone(const Geoposition& position,
-                       bool sensor,
                        base::TimeDelta timeout,
                        TimeZoneRequest::TimeZoneResponseCallback callback);
 

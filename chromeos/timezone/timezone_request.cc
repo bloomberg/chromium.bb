@@ -117,6 +117,7 @@ void RecordUmaResult(TimeZoneRequestResult result, unsigned retries) {
 }
 
 // Creates the request url to send to the server.
+// |sensor| if this location was determined using hardware sensor.
 GURL TimeZoneRequestURL(const GURL& url,
                         const Geoposition& geoposition,
                         bool sensor) {
@@ -305,12 +306,10 @@ TimeZoneRequest::TimeZoneRequest(
     net::URLRequestContextGetter* url_context_getter,
     const GURL& service_url,
     const Geoposition& geoposition,
-    bool sensor,
     base::TimeDelta retry_timeout)
     : url_context_getter_(url_context_getter),
       service_url_(service_url),
       geoposition_(geoposition),
-      sensor_(sensor),
       retry_timeout_abs_(base::Time::Now() + retry_timeout),
       retry_sleep_on_server_error_(base::TimeDelta::FromSeconds(
           kResolveTimeZoneRetrySleepOnServerErrorSeconds)),

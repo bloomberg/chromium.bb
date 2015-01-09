@@ -31,8 +31,7 @@ class ModemMessagingProxy {
   ModemMessagingProxy(dbus::Bus* bus,
            const std::string& service_name,
            const dbus::ObjectPath& object_path)
-      : bus_(bus),
-        proxy_(bus->GetObjectProxy(service_name, object_path)),
+      : proxy_(bus->GetObjectProxy(service_name, object_path)),
         service_name_(service_name),
         weak_ptr_factory_(this) {
     proxy_->ConnectToSignal(
@@ -121,7 +120,6 @@ class ModemMessagingProxy {
                               << signal << " failed.";
   }
 
-  dbus::Bus* bus_;
   dbus::ObjectProxy* proxy_;
   std::string service_name_;
   SmsReceivedHandler sms_received_handler_;

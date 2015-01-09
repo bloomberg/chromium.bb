@@ -23,7 +23,6 @@ namespace chromeos {
 FakeCryptohomeClient::FakeCryptohomeClient()
     : service_is_available_(true),
       async_call_id_(1),
-      tpm_is_ready_counter_(0),
       unmount_result_(true),
       system_salt_(GetStubSystemSalt()),
       weak_ptr_factory_(this) {

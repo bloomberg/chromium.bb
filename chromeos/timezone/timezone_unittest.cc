@@ -210,7 +210,6 @@ TEST_F(TimeZoneTest, ResponseOK) {
   TimeZoneReceiver receiver;
 
   provider.RequestTimezone(simple_request.position,
-                           false,
                            base::TimeDelta::FromSeconds(1),
                            base::Bind(&TimeZoneReceiver::OnRequestDone,
                                       base::Unretained(&receiver)));
@@ -234,7 +233,6 @@ TEST_F(TimeZoneTest, ResponseOKWithRetries) {
   TimeZoneReceiver receiver;
 
   provider.RequestTimezone(simple_request.position,
-                           false,
                            base::TimeDelta::FromSeconds(1),
                            base::Bind(&TimeZoneReceiver::OnRequestDone,
                                       base::Unretained(&receiver)));
@@ -262,7 +260,6 @@ TEST_F(TimeZoneTest, InvalidResponse) {
   ASSERT_GE(expected_retries, 2U);
 
   provider.RequestTimezone(simple_request.position,
-                           false,
                            base::TimeDelta::FromSeconds(timeout_seconds),
                            base::Bind(&TimeZoneReceiver::OnRequestDone,
                                       base::Unretained(&receiver)));

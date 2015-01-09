@@ -205,7 +205,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
 
   // Sets the unmount result of Unmount() call.
   void set_unmount_result(bool result) {
-    unmount_result_= result;
+    unmount_result_ = result;
   }
 
   // Sets the system salt which will be returned from GetSystemSalt(). By
@@ -236,7 +236,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   int async_call_id_;
   AsyncCallStatusHandler async_call_status_handler_;
   AsyncCallStatusWithDataHandler async_call_status_data_handler_;
-  int tpm_is_ready_counter_;
   bool unmount_result_;
   std::vector<uint8> system_salt_;
 
