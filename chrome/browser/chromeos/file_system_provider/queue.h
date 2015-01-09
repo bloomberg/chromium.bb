@@ -72,7 +72,17 @@ class Queue {
   void Remove(size_t token);
 
  private:
-  struct Task;
+  // Information about an enqueued task which hasn't been removed, nor aborted.
+  struct Task {
+    Task();
+    Task(size_t token, const AbortableCallback& callback);
+    ~Task();
+
+    size_t token;
+    bool completed;
+    AbortableCallback callback;
+    AbortCallback abort_callback;
+  };
 
   // Runs the next task from the pending queue if there is less than
   // |max_in_parallel_| tasks running at once.

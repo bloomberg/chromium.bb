@@ -12,16 +12,15 @@
 namespace chromeos {
 namespace file_system_provider {
 
-struct Queue::Task {
-  Task() : token(0), completed(false) {}
-  Task(size_t token, const AbortableCallback& callback)
-      : token(token), completed(false), callback(callback) {}
+Queue::Task::Task() : token(0), completed(false) {
+}
 
-  size_t token;
-  bool completed;
-  AbortableCallback callback;
-  AbortCallback abort_callback;
-};
+Queue::Task::Task(size_t token, const AbortableCallback& callback)
+    : token(token), completed(false), callback(callback) {
+}
+
+Queue::Task::~Task() {
+}
 
 Queue::Queue(size_t max_in_parallel)
     : max_in_parallel_(max_in_parallel),
