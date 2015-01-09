@@ -25,6 +25,7 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
       allocator_(allocator) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
+  capabilities_.can_force_reclaim_resources = true;
 }
 
 SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
@@ -73,6 +74,15 @@ bool SurfaceDisplayOutputSurface::BindToClient(
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
   return display_client_->Initialize();
+}
+
+void SurfaceDisplayOutputSurface::ForceReclaimResources() {
+  if (!surface_id_.is_null()) {
+    scoped_ptr<cc::CompositorFrame> empty_frame(new cc::CompositorFrame());
+    empty_frame->delegated_frame_data.reset(new cc::DelegatedFrameData);
+    factory_.SubmitFrame(surface_id_, empty_frame.Pass(),
+                         cc::SurfaceFactory::DrawCallback());
+  }
 }
 
 void SurfaceDisplayOutputSurface::ReturnResources(

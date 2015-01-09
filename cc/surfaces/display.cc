@@ -168,10 +168,16 @@ void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   client_->SetMemoryPolicy(policy);
 }
 
-void Display::OnSurfaceDamaged(SurfaceId surface) {
+void Display::OnSurfaceDamaged(SurfaceId surface_id) {
   if (aggregator_ &&
-      aggregator_->previous_contained_surfaces().count(surface)) {
-    aggregator_->ReleaseResources(surface);
+      aggregator_->previous_contained_surfaces().count(surface_id)) {
+    Surface* surface = manager_->GetSurfaceForId(surface_id);
+    if (surface) {
+      const CompositorFrame* current_frame = surface->GetEligibleFrame();
+      if (!current_frame || !current_frame->delegated_frame_data ||
+          !current_frame->delegated_frame_data->resource_list.size())
+        aggregator_->ReleaseResources(surface_id);
+    }
     client_->DisplayDamaged();
   }
 }

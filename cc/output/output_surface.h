@@ -64,7 +64,8 @@ class CC_EXPORT OutputSurface {
           draw_and_swap_full_viewport_every_frame(false),
           adjust_deadline_for_parent(true),
           uses_default_gl_framebuffer(true),
-          flipped_output_surface(false) {}
+          flipped_output_surface(false),
+          can_force_reclaim_resources(false) {}
     bool delegated_rendering;
     int max_frames_pending;
     bool deferred_gl_initialization;
@@ -77,6 +78,9 @@ class CC_EXPORT OutputSurface {
     bool uses_default_gl_framebuffer;
     // Whether this OutputSurface is flipped or not.
     bool flipped_output_surface;
+    // Whether ForceReclaimResources can be called to reclaim all resources
+    // from the OutputSurface.
+    bool can_force_reclaim_resources;
   };
 
   const Capabilities& capabilities() const {
@@ -110,6 +114,10 @@ class CC_EXPORT OutputSurface {
 
   virtual void Reshape(const gfx::Size& size, float scale_factor);
   virtual gfx::Size SurfaceSize() const;
+
+  // If supported, this causes a ReclaimResources for all resources that are
+  // currently in use.
+  virtual void ForceReclaimResources() {}
 
   virtual void BindFramebuffer();
 

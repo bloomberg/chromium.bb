@@ -293,6 +293,12 @@ void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
 void LayerTreeHostImpl::BeginCommit() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BeginCommit");
 
+  // Ensure all textures are returned so partial texture updates can happen
+  // during the commit. Impl-side-painting doesn't upload during commits, so
+  // is unaffected.
+  if (!settings_.impl_side_painting)
+    output_surface_->ForceReclaimResources();
+
   if (UsePendingTreeForSync())
     CreatePendingTree();
 }
