@@ -22,8 +22,8 @@ public:
         return new PushManager(registration);
     }
 
-    ScriptPromise registerPushMessaging(ScriptState*);
-    ScriptPromise getRegistration(ScriptState*);
+    ScriptPromise subscribe(ScriptState*);
+    ScriptPromise getSubscription(ScriptState*);
     ScriptPromise hasPermission(ScriptState*);
 
     void trace(Visitor*);

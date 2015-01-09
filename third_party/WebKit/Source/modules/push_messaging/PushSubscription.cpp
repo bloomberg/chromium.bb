@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/push_messaging/PushRegistration.h"
+#include "modules/push_messaging/PushSubscription.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -11,35 +11,35 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPushProvider.h"
-#include "public/platform/WebPushRegistration.h"
+#include "public/platform/WebPushSubscription.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
-PushRegistration* PushRegistration::take(ScriptPromiseResolver*, WebPushRegistration* pushRegistration, ServiceWorkerRegistration* serviceWorkerRegistration)
+PushSubscription* PushSubscription::take(ScriptPromiseResolver*, WebPushSubscription* pushSubscription, ServiceWorkerRegistration* serviceWorkerRegistration)
 {
-    OwnPtr<WebPushRegistration> registration = adoptPtr(pushRegistration);
-    return new PushRegistration(registration->endpoint, registration->registrationId, serviceWorkerRegistration);
+    OwnPtr<WebPushSubscription> subscription = adoptPtr(pushSubscription);
+    return new PushSubscription(subscription->endpoint, subscription->subscriptionId, serviceWorkerRegistration);
 }
 
-void PushRegistration::dispose(WebPushRegistration* pushRegistration)
+void PushSubscription::dispose(WebPushSubscription* pushSubscription)
 {
-    if (pushRegistration)
-        delete pushRegistration;
+    if (pushSubscription)
+        delete pushSubscription;
 }
 
-PushRegistration::PushRegistration(const String& endpoint, const String& registrationId, ServiceWorkerRegistration* serviceWorkerRegistration)
+PushSubscription::PushSubscription(const String& endpoint, const String& subscriptionId, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_endpoint(endpoint)
-    , m_registrationId(registrationId)
+    , m_subscriptionId(subscriptionId)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
 }
 
-PushRegistration::~PushRegistration()
+PushSubscription::~PushSubscription()
 {
 }
 
-ScriptPromise PushRegistration::unregister(ScriptState* scriptState)
+ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -51,7 +51,7 @@ ScriptPromise PushRegistration::unregister(ScriptState* scriptState)
     return promise;
 }
 
-void PushRegistration::trace(Visitor* visitor)
+void PushSubscription::trace(Visitor* visitor)
 {
     visitor->trace(m_serviceWorkerRegistration);
 }

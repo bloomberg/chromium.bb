@@ -5,20 +5,12 @@
 #ifndef WebPushRegistration_h
 #define WebPushRegistration_h
 
-#include "WebString.h"
+#include "WebPushSubscription.h"
 
 namespace blink {
 
-struct WebPushRegistration {
-    WebPushRegistration(const WebString& endpoint, const WebString& registrationId)
-        : endpoint(endpoint)
-        , registrationId(registrationId)
-    {
-    }
-
-    WebString endpoint;
-    WebString registrationId;
-};
+// FIXME: Delete this file when no longer used - https://crbug.com/446883.
+using WebPushRegistration = WebPushSubscription;
 
 } // namespace blink
 

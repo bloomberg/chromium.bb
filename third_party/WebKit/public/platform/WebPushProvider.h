@@ -13,11 +13,15 @@ namespace blink {
 
 class WebServiceWorkerRegistration;
 struct WebPushError;
-struct WebPushRegistration;
+struct WebPushSubscription;
 
-typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
-typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionStatusCallbacks;
-typedef WebCallbacks<bool, WebPushError> WebPushUnregisterCallbacks;
+using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription, WebPushError>;
+// FIXME: Remove when no longer used by the embedder - https://crbug.com/446883.
+using WebPushRegistrationCallbacks = WebPushSubscriptionCallbacks;
+using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus, void>;
+using WebPushUnsubscribeCallbacks = WebCallbacks<bool, WebPushError>;
+// FIXME: Remove when no longer used by the embedder - https://crbug.com/446883.
+using WebPushUnregisterCallbacks = WebPushUnsubscribeCallbacks;
 
 class WebPushProvider {
 public:

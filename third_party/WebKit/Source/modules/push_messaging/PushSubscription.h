@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushRegistration_h
-#define PushRegistration_h
+#ifndef PushSubscription_h
+#define PushSubscription_h
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -15,30 +15,30 @@ namespace blink {
 class ServiceWorkerRegistration;
 class ScriptPromiseResolver;
 class ScriptState;
-struct WebPushRegistration;
+struct WebPushSubscription;
 
-class PushRegistration final : public GarbageCollectedFinalized<PushRegistration>, public ScriptWrappable {
+class PushSubscription final : public GarbageCollectedFinalized<PushSubscription>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PushRegistration* take(ScriptPromiseResolver*, WebPushRegistration*, ServiceWorkerRegistration*);
-    static void dispose(WebPushRegistration* registrationRaw);
+    static PushSubscription* take(ScriptPromiseResolver*, WebPushSubscription*, ServiceWorkerRegistration*);
+    static void dispose(WebPushSubscription* subscriptionRaw);
 
-    virtual ~PushRegistration();
+    virtual ~PushSubscription();
 
     const String& endpoint() const { return m_endpoint; }
-    const String& registrationId() const { return m_registrationId; }
-    ScriptPromise unregister(ScriptState*);
+    const String& subscriptionId() const { return m_subscriptionId; }
+    ScriptPromise unsubscribe(ScriptState*);
 
     void trace(Visitor*);
 
 private:
-    PushRegistration(const String& endpoint, const String& registrationId, ServiceWorkerRegistration*);
+    PushSubscription(const String& endpoint, const String& subscriptionId, ServiceWorkerRegistration*);
 
     String m_endpoint;
-    String m_registrationId;
+    String m_subscriptionId;
     Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
 } // namespace blink
 
-#endif // PushRegistration_h
+#endif // PushSubscription_h

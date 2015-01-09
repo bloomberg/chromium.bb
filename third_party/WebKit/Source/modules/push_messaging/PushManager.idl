@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://w3c.github.io/push-api/#pushregistrationmanager-interface
+// https://w3c.github.io/push-api/#pushmanager-interface
 
 [
     GarbageCollected,
     RuntimeEnabled=PushMessaging,
 ] interface PushManager {
-    [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register();
-    [CallWith=ScriptState] Promise<PushRegistration?> getRegistration();
+    [CallWith=ScriptState] Promise<PushSubscription> subscribe();
+    [CallWith=ScriptState] Promise<PushSubscription?> getSubscription();
     [CallWith=ScriptState] Promise hasPermission();
 };

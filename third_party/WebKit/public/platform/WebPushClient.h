@@ -11,9 +11,11 @@
 namespace blink {
 
 class WebServiceWorkerRegistration;
-struct WebPushRegistration;
+struct WebPushSubscription;
 
-typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
+using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription, WebPushError>;
+// FIXME: Remove when no longer used by the embedder - https://crbug.com/446883.
+using WebPushRegistrationCallbacks = WebPushSubscriptionCallbacks;
 
 class WebPushClient {
 public:
@@ -21,7 +23,7 @@ public:
 
     // Ownership of the WebServiceWorkerRegistration is not transferred.
     // Ownership of the callbacks is transferred to the client.
-    virtual void registerPushMessaging(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { }
+    virtual void registerPushMessaging(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>register() is rejected when permission has been denied</title>
+<title>subscribe() succeeds when permission is granted and resolves with a valid subscription</title>
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -19,20 +19,27 @@ async_test(function(test) {
             return wait_for_state(test, swRegistration.installing, 'activated');
         })
         .then(function() {
-            // If running manually, deny permission when prompted.
+            // If running manually, grant permission when prompted.
             if (self.testRunner)
-                testRunner.setPushMessagingPermission(location.origin, false);
-            return swRegistration.pushManager.register();
+                testRunner.setPushMessagingPermission(location.origin, true);
+            return swRegistration.pushManager.subscribe();
         })
-        .then(function(pushRegistration) {
-            assert_unreached('Registration must not succeed after permission is denied.');
-        }, function(e) {
-            assert_equals(e.name, 'AbortError');
-            assert_equals(e.message, 'Registration failed - permission denied');
+        .then(function(pushSubscription) {
+            assert_own_property(pushSubscription, 'subscriptionId');
+            assert_equals(typeof pushSubscription.subscriptionId, 'string');
+
+            assert_own_property(pushSubscription, 'endpoint');
+            assert_equals(typeof pushSubscription.endpoint, 'string');
+            try {
+              var endpointUrl = new URL(pushSubscription.endpoint);
+            } catch(e) {
+              assert_unreached('Constructing a URL from the endpoint should not throw.');
+            }
+
             return service_worker_unregister_and_done(test, workerScope);
         })
         .catch(unreached_rejection(test));
-}, 'register() is rejected when permission has been denied');
+}, 'subscribe() succeeds when permission is granted and resolves with a valid subscription');
 </script>
 </body>
 </html>

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushRegistrationCallbacks_h
-#define PushRegistrationCallbacks_h
+#ifndef PushSubscriptionCallbacks_h
+#define PushSubscriptionCallbacks_h
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
@@ -16,19 +16,19 @@ namespace blink {
 class ServiceWorkerRegistration;
 class ScriptPromiseResolver;
 struct WebPushError;
-struct WebPushRegistration;
+struct WebPushSubscription;
 
-// PushRegistrationCallbacks is an implementation of WebPushRegistrationCallbacks
+// PushSubscriptionCallbacks is an implementation of WebPushSubscriptionCallbacks
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
-// will pass it to the PushRegistration.
-class PushRegistrationCallbacks final : public WebCallbacks<WebPushRegistration, WebPushError> {
-    WTF_MAKE_NONCOPYABLE(PushRegistrationCallbacks);
+// will pass it to the PushSubscription.
+class PushSubscriptionCallbacks final : public WebCallbacks<WebPushSubscription, WebPushError> {
+    WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
 public:
-    PushRegistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
-    ~PushRegistrationCallbacks() override;
+    PushSubscriptionCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
+    ~PushSubscriptionCallbacks() override;
 
-    void onSuccess(WebPushRegistration*) override;
+    void onSuccess(WebPushSubscription*) override;
     void onError(WebPushError*) override;
 
 private:
@@ -38,4 +38,4 @@ private:
 
 } // namespace blink
 
-#endif // PushRegistrationCallbacks_h
+#endif // PushSubscriptionCallbacks_h

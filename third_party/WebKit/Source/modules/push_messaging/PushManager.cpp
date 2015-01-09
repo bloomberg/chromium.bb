@@ -16,8 +16,8 @@
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushPermissionStatusCallbacks.h"
-#include "modules/push_messaging/PushRegistration.h"
-#include "modules/push_messaging/PushRegistrationCallbacks.h"
+#include "modules/push_messaging/PushSubscription.h"
+#include "modules/push_messaging/PushSubscriptionCallbacks.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPushClient.h"
@@ -42,10 +42,10 @@ PushManager::PushManager(ServiceWorkerRegistration* registration)
     ASSERT(registration);
 }
 
-ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
+ScriptPromise PushManager::subscribe(ScriptState* scriptState)
 {
     if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Subscription failed - no active Service Worker"));
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -58,23 +58,23 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
         // FIXME: add test coverage for this condition - https://crbug.com/440431
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
-        PushController::clientFrom(document->frame()).registerPushMessaging(m_registration->webRegistration(), new PushRegistrationCallbacks(resolver, m_registration));
+        PushController::clientFrom(document->frame()).registerPushMessaging(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
     } else {
-        pushProvider()->registerPushMessaging(m_registration->webRegistration(), new PushRegistrationCallbacks(resolver, m_registration));
+        pushProvider()->registerPushMessaging(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
     }
 
     return promise;
 }
 
-ScriptPromise PushManager::getRegistration(ScriptState* scriptState)
+ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
 {
     if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Could not get subscription - no active Service Worker"));
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    pushProvider()->getRegistration(m_registration->webRegistration(), new PushRegistrationCallbacks(resolver, m_registration));
+    pushProvider()->getRegistration(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
     return promise;
 }
 

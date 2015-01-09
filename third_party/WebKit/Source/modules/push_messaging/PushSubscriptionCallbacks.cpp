@@ -3,42 +3,42 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/push_messaging/PushRegistrationCallbacks.h"
+#include "modules/push_messaging/PushSubscriptionCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushRegistration.h"
+#include "modules/push_messaging/PushSubscription.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
 namespace blink {
 
-PushRegistrationCallbacks::PushRegistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* registration)
+PushSubscriptionCallbacks::PushSubscriptionCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
-    , m_serviceWorkerRegistration(registration)
+    , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
     ASSERT(m_resolver);
     ASSERT(m_serviceWorkerRegistration);
 }
 
-PushRegistrationCallbacks::~PushRegistrationCallbacks()
+PushSubscriptionCallbacks::~PushSubscriptionCallbacks()
 {
 }
 
-void PushRegistrationCallbacks::onSuccess(WebPushRegistration* webPushRegistration)
+void PushSubscriptionCallbacks::onSuccess(WebPushSubscription* webPushSubscription)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PushRegistration::dispose(webPushRegistration);
+        PushSubscription::dispose(webPushSubscription);
         return;
     }
 
-    if (!webPushRegistration) {
+    if (!webPushSubscription) {
         m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
         return;
     }
-    m_resolver->resolve(PushRegistration::take(m_resolver.get(), webPushRegistration, m_serviceWorkerRegistration));
+    m_resolver->resolve(PushSubscription::take(m_resolver.get(), webPushSubscription, m_serviceWorkerRegistration));
 }
 
-void PushRegistrationCallbacks::onError(WebPushError* error)
+void PushSubscriptionCallbacks::onError(WebPushError* error)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         PushError::dispose(error);

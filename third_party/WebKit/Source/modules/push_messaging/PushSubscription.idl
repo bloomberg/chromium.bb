@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/push-api/#pushregistration-interface
+// http://w3c.github.io/push-api/#pushsubscription-interface
 
 [
     GarbageCollected,
     RuntimeEnabled=PushMessaging,
-] interface PushRegistration {
+] interface PushSubscription {
     readonly attribute DOMString endpoint;
-    readonly attribute DOMString registrationId;
-    [CallWith=ScriptState] Promise<boolean> unregister();
+    readonly attribute DOMString subscriptionId;
+    [CallWith=ScriptState] Promise<boolean> unsubscribe();
 };
