@@ -1868,6 +1868,7 @@ pre_cq = paladin.derive(
 unittest_only_pre_cq = pre_cq.derive(
   description='Verifies compilation and unit tests only',
   compilecheck=True,
+  vm_tests=[],
 )
 
 # Pre-CQ targets that don't run VMTests.

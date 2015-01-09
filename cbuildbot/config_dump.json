@@ -232,9 +232,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "amd64-generic-full": {
         "archive_build_debug": true,
@@ -468,9 +466,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "amd64-generic_freon-full": {
         "archive_build_debug": true,
@@ -3064,9 +3060,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "bayleybay-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -4292,9 +4286,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "beltino-firmware": {
         "archive_build_debug": true,
@@ -5216,9 +5208,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "bobcat-full": {
         "archive_build_debug": true,
@@ -5706,9 +5696,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "butterfly-firmware": {
         "archive_build_debug": true,
@@ -6227,9 +6215,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "candy-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -7310,9 +7296,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "clapper-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -7951,9 +7935,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "cranky-full": {
         "archive_build_debug": true,
@@ -11853,9 +11835,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "enguarde-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -12438,9 +12418,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "expresso-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -13075,9 +13053,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "falco-firmware": {
         "archive_build_debug": true,
@@ -13622,9 +13598,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "falco_li-full": {
         "archive_build_debug": true,
@@ -14105,9 +14079,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "fox_wtm2-full": {
         "archive_build_debug": true,
@@ -14758,9 +14730,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "glimmer-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -15343,9 +15313,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "gnawty-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -18048,9 +18016,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "kip-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -19088,9 +19054,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "leon-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -19674,9 +19638,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "link-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -21269,9 +21231,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "lumpy-firmware": {
         "archive_build_debug": true,
@@ -21981,9 +21941,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "mccloud-full": {
         "archive_build_debug": true,
@@ -23937,9 +23895,7 @@
                 "useflags": [
                     "chrome_internal"
                 ],
-                "vm_tests": [
-                    "smoke_suite"
-                ]
+                "vm_tests": []
             }
         ],
         "name": "mixed-a-pre-cq"
@@ -24115,9 +24071,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "monroe-firmware": {
         "archive_build_debug": true,
@@ -27900,9 +27854,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "panther-firmware": {
         "archive_build_debug": true,
@@ -29459,9 +29411,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "parrot-firmware": {
         "archive_build_debug": true,
@@ -30090,9 +30040,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "parrot_ivb-full": {
         "archive_build_debug": true,
@@ -30571,9 +30519,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "parry-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -32377,9 +32323,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "peppy-firmware": {
         "archive_build_debug": true,
@@ -33855,9 +33799,7 @@
                 "useflags": [
                     "chrome_internal"
                 ],
-                "vm_tests": [
-                    "smoke_suite"
-                ]
+                "vm_tests": []
             },
             {
                 "archive": false,
@@ -33987,9 +33929,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "quawks-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -35562,9 +35502,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "rambi-d-full-group": {
         "child_configs": [
@@ -38181,9 +38119,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "slippy-firmware": {
         "archive_build_debug": true,
@@ -39109,9 +39045,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "squawks-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -40215,9 +40149,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "stout-firmware": {
         "archive_build_debug": true,
@@ -40737,9 +40669,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "stumpy-firmware": {
         "archive_build_debug": true,
@@ -41746,9 +41676,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "swanky-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -42884,9 +42812,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "tricky-full": {
         "archive_build_debug": true,
@@ -48210,9 +48136,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "winky-depthcharge-firmware": {
         "archive_build_debug": true,
@@ -48795,9 +48719,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "wolf-firmware": {
         "archive_build_debug": true,
@@ -49320,9 +49242,7 @@
         "unittests": false,
         "upload_standalone_images": false,
         "usepkg_toolchain": false,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x32-generic-full": {
         "archive_build_debug": true,
@@ -49522,9 +49442,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-alex-full": {
         "archive_build_debug": true,
@@ -50112,9 +50030,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-alex_he-full": {
         "archive_build_debug": true,
@@ -50597,9 +50513,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-generic-full": {
         "archive_build_debug": true,
@@ -50861,9 +50775,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-mario-factory": {
         "archive_build_debug": true,
@@ -51419,9 +51331,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-pineview-full": {
         "archive_build_debug": true,
@@ -51607,9 +51517,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-zgb-full": {
         "archive_build_debug": true,
@@ -52197,9 +52105,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "x86-zgb_he-full": {
         "archive_build_debug": true,
@@ -52674,9 +52580,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "zako-depthcharge-firmware": {
         "archive_build_debug": true,
