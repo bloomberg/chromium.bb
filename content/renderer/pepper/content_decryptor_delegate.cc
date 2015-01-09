@@ -292,6 +292,23 @@ MediaKeys::Exception PpExceptionTypeToMediaException(
   }
 }
 
+media::CdmKeyInformation::KeyStatus PpCdmKeyStatusToCdmKeyInformationKeyStatus(
+    PP_CdmKeyStatus status) {
+  switch (status) {
+    case PP_CDMKEYSTATUS_USABLE:
+      return media::CdmKeyInformation::USABLE;
+    case PP_CDMKEYSTATUS_INVALID:
+      return media::CdmKeyInformation::INTERNAL_ERROR;
+    case PP_CDMKEYSTATUS_EXPIRED:
+      return media::CdmKeyInformation::EXPIRED;
+    case PP_CDMKEYSTATUS_OUTPUTNOTALLOWED:
+      return media::CdmKeyInformation::OUTPUT_NOT_ALLOWED;
+    default:
+      NOTREACHED();
+      return media::CdmKeyInformation::INTERNAL_ERROR;
+  }
+}
+
 // TODO(xhwang): Unify EME UMA reporting code when prefixed EME is deprecated.
 // See http://crbug.com/412987 for details.
 void ReportSystemCodeUMA(const std::string& key_system, uint32 system_code) {
@@ -754,7 +771,6 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
                           GURL::EmptyGURL());
 }
 
-// TODO(jrummell): Decode |key_information| and pass it to the callback.
 void ContentDecryptorDelegate::OnSessionKeysChange(
     PP_Var web_session_id,
     PP_Bool has_additional_usable_key,
@@ -766,10 +782,21 @@ void ContentDecryptorDelegate::OnSessionKeysChange(
   StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
   DCHECK(web_session_id_string);
 
-  // TODO(jrummell): Pass key information through Pepper.
+  media::CdmKeysInfo keys_info;
+  keys_info.reserve(key_count);
+  for (uint32_t i = 0; i < key_count; ++i) {
+    scoped_ptr<media::CdmKeyInformation> key_info(new media::CdmKeyInformation);
+    const auto& info = key_information[i];
+    key_info->key_id.assign(info.key_id, info.key_id + info.key_id_size);
+    key_info->status =
+        PpCdmKeyStatusToCdmKeyInformationKeyStatus(info.key_status);
+    key_info->system_code = info.system_code;
+    keys_info.push_back(key_info.release());
+  }
+
   session_keys_change_cb_.Run(web_session_id_string->value(),
                               PP_ToBool(has_additional_usable_key),
-                              media::CdmKeysInfo());
+                              keys_info.Pass());
 }
 
 void ContentDecryptorDelegate::OnSessionExpirationChange(
