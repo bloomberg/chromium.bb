@@ -776,8 +776,7 @@ private:
     void allocatePage();
     Address allocateLargeObject(size_t, size_t gcInfoIndex);
 
-    inline Address allocateSize(size_t allocationSize, size_t gcInfoIndex);
-    inline Address allocateAtAddress(Address, size_t allocationSize, size_t gcInfoIndex);
+    inline Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
 
 #if ENABLE(ASSERT)
     bool pagesToBeSweptContains(Address);
@@ -1295,34 +1294,29 @@ size_t ThreadHeap::allocationSizeFromSize(size_t size)
     return allocationSize;
 }
 
-inline Address ThreadHeap::allocateAtAddress(Address headerAddress, size_t allocationSize, size_t gcInfoIndex)
-{
-    ASSERT(gcInfoIndex > 0);
-    new (NotNull, headerAddress) HeapObjectHeader(allocationSize, gcInfoIndex);
-    Address result = headerAddress + sizeof(HeapObjectHeader);
-    ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
-
-    // Unpoison the memory used for the object (payload).
-    ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(HeapObjectHeader));
-    FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(HeapObjectHeader));
-    ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
-    return result;
-}
-
-Address ThreadHeap::allocateSize(size_t allocationSize, size_t gcInfoIndex)
+Address ThreadHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
     if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
         Address headerAddress = m_currentAllocationPoint;
         m_currentAllocationPoint += allocationSize;
         m_remainingAllocationSize -= allocationSize;
-        return allocateAtAddress(headerAddress, allocationSize, gcInfoIndex);
+        ASSERT(gcInfoIndex > 0);
+        new (NotNull, headerAddress) HeapObjectHeader(allocationSize, gcInfoIndex);
+        Address result = headerAddress + sizeof(HeapObjectHeader);
+        ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
+
+        // Unpoison the memory used for the object (payload).
+        ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(HeapObjectHeader));
+        FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(HeapObjectHeader));
+        ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
+        return result;
     }
     return outOfLineAllocate(allocationSize, gcInfoIndex);
 }
 
 Address ThreadHeap::allocate(size_t size, size_t gcInfoIndex)
 {
-    return allocateSize(allocationSizeFromSize(size), gcInfoIndex);
+    return allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
 // We use four heaps for general type objects depending on their object sizes.
