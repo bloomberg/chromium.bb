@@ -30,6 +30,7 @@ extern const char kPrefKeyWatcherEntryPath[];
 extern const char kPrefKeyWatcherRecursive[];
 extern const char kPrefKeyWatcherPersistentOrigins[];
 extern const char kPrefKeyWatcherLastTag[];
+extern const char kPrefKeyOpenedFilesLimit[];
 
 class ProvidedFileSystemInfo;
 

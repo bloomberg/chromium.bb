@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
+#include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -32,7 +33,8 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info) {
   DCHECK(profile);
-  return new ProvidedFileSystem(profile, file_system_info);
+  return new ThrottledFileSystem(
+      make_scoped_ptr(new ProvidedFileSystem(profile, file_system_info)));
 }
 
 }  // namespace

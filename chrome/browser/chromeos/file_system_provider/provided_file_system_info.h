@@ -24,6 +24,7 @@ struct MountOptions {
   std::string display_name;
   bool writable;
   bool supports_notify_tag;
+  int opened_files_limit;
 };
 
 // Contains information about the provided file system instance.
@@ -42,6 +43,7 @@ class ProvidedFileSystemInfo {
   const std::string& display_name() const { return display_name_; }
   bool writable() const { return writable_; }
   bool supports_notify_tag() const { return supports_notify_tag_; }
+  int opened_files_limit() const { return opened_files_limit_; }
   const base::FilePath& mount_path() const { return mount_path_; }
 
  private:
@@ -59,6 +61,9 @@ class ProvidedFileSystemInfo {
 
   // Supports tags for file/directory change notifications.
   bool supports_notify_tag_;
+
+  // Limit of opened files in parallel. If unlimited, then 0.
+  int opened_files_limit_;
 
   // Mount path of the underlying file system.
   base::FilePath mount_path_;

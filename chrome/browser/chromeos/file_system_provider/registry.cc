@@ -32,6 +32,7 @@ const char kPrefKeyWatcherEntryPath[] = "entry-path";
 const char kPrefKeyWatcherRecursive[] = "recursive";
 const char kPrefKeyWatcherLastTag[] = "last-tag";
 const char kPrefKeyWatcherPersistentOrigins[] = "persistent-origins";
+const char kPrefKeyOpenedFilesLimit[] = "opened-files-limit";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -57,6 +58,8 @@ void Registry::RememberFileSystem(
                                               file_system_info.writable());
   file_system->SetBooleanWithoutPathExpansion(
       kPrefKeySupportsNotifyTag, file_system_info.supports_notify_tag());
+  file_system->SetIntegerWithoutPathExpansion(
+      kPrefKeyOpenedFilesLimit, file_system_info.opened_files_limit());
 
   base::DictionaryValue* const watchers_value = new base::DictionaryValue();
   file_system->SetWithoutPathExpansion(kPrefKeyWatchers, watchers_value);
@@ -149,17 +152,23 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     std::string display_name;
     bool writable = false;
     bool supports_notify_tag = false;
+    int opened_files_limit = 0;
 
-    if (!file_system_value->GetAsDictionary(&file_system) ||
-        !file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                                    &file_system_id) ||
-        !file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
-                                                    &display_name) ||
-        !file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                                     &writable) ||
-        !file_system->GetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
-                                                     &supports_notify_tag) ||
-        file_system_id.empty() || display_name.empty()) {
+    // TODO(mtomasz): Move opened files limit to the mandatory list above in
+    // M42.
+    if ((!file_system_value->GetAsDictionary(&file_system) ||
+         !file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
+                                                     &file_system_id) ||
+         !file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
+                                                     &display_name) ||
+         !file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable,
+                                                      &writable) ||
+         !file_system->GetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
+                                                      &supports_notify_tag) ||
+         file_system_id.empty() || display_name.empty()) ||
+        (file_system->GetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
+                                                     &opened_files_limit) &&
+         opened_files_limit < 0)) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
@@ -170,6 +179,7 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     options.display_name = display_name;
     options.writable = writable;
     options.supports_notify_tag = supports_notify_tag;
+    options.opened_files_limit = opened_files_limit;
 
     RestoredFileSystem restored_file_system;
     restored_file_system.extension_id = extension_id;

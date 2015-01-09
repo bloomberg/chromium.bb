@@ -1,21 +1,21 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_THROTTLED_FILE_SYSTEM_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_THROTTLED_FILE_SYSTEM_H_
 
+#include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
-#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
@@ -30,63 +30,18 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace extensions {
-class EventRouter;
-}  // namespace extensions
-
 namespace chromeos {
 namespace file_system_provider {
 
-class NotificationManagerInterface;
+class Queue;
+class RequestManager;
 
-// Automatically calls the |update_callback| after all of the callbacks created
-// with |CreateCallback| are called.
-//
-// It's used to update tags of watchers once a notification about a change is
-// handled. It is to make sure that the change notification is fully handled
-// before remembering the new tag.
-//
-// It is necessary to update the tag after all observers handle it fully, so
-// in case of shutdown or a crash we get the notifications again.
-class AutoUpdater : public base::RefCounted<AutoUpdater> {
+// Decorates ProvidedFileSystemInterface with throttling capabilities.
+class ThrottledFileSystem : public ProvidedFileSystemInterface {
  public:
-  explicit AutoUpdater(const base::Closure& update_callback);
-
-  // Creates a new callback which needs to be called before the update callback
-  // is called.
-  base::Closure CreateCallback();
-
- private:
-  friend class base::RefCounted<AutoUpdater>;
-
-  // Called once the callback created with |CreateCallback| is executed. Once
-  // all of such callbacks are called, then the update callback is invoked.
-  void OnPendingCallback();
-
-  virtual ~AutoUpdater();
-
-  base::Closure update_callback_;
-  int created_callbacks_;
-  int pending_callbacks_;
-};
-
-// Provided file system implementation. Forwards requests between providers and
-// clients.
-class ProvidedFileSystem : public ProvidedFileSystemInterface {
- public:
-  ProvidedFileSystem(Profile* profile,
-                     const ProvidedFileSystemInfo& file_system_info);
-  virtual ~ProvidedFileSystem();
-
-  // Sets a custom event router. Used in unit tests to mock out the real
-  // extension.
-  void SetEventRouterForTesting(extensions::EventRouter* event_router);
-
-  // Sets a custom notification manager. It will recreate the request manager,
-  // so is must be called just after creating ProvideFileSystem instance.
-  // Used by unit tests.
-  void SetNotificationManagerForTesting(
-      scoped_ptr<NotificationManagerInterface> notification_manager);
+  explicit ThrottledFileSystem(
+      scoped_ptr<ProvidedFileSystemInterface> file_system);
+  virtual ~ThrottledFileSystem();
 
   // ProvidedFileSystemInterface overrides.
   virtual AbortCallback RequestUnmount(
@@ -167,43 +122,29 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
-  // Aborts an operation executed with a request id equal to
-  // |operation_request_id|. The request is removed immediately on the C++ side
-  // despite being handled by the providing extension or not.
-  void Abort(int operation_request_id,
-             const storage::AsyncFileUtil::StatusCallback& callback);
+  // Called when opening a file is completed with either a success or an error.
+  void OnOpenFileCompleted(int queue_token,
+                           const OpenFileCallback& callback,
+                           int file_handle,
+                           base::File::Error result);
 
-  // Called when adding a watcher is completed with either success or en error.
-  void OnAddWatcherCompleted(
-      const base::FilePath& entry_path,
-      bool recursive,
-      const Subscriber& subscriber,
+  // Called when closing a file is completed with either a success or an error.
+  void OnCloseFileCompleted(
+      int file_handle,
       const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result);
 
-  // Called when all observers finished handling the change notification. It
-  // updates the tag to |tag| for the entry at |entry_path|.
-  void OnNotifyCompleted(
-      const base::FilePath& entry_path,
-      bool recursive,
-      storage::WatcherManager::ChangeType change_type,
-      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-      const std::string& tag,
-      const storage::AsyncFileUtil::StatusCallback& callback);
+  scoped_ptr<ProvidedFileSystemInterface> file_system_;
+  scoped_ptr<Queue> open_queue_;
 
-  Profile* profile_;                       // Not owned.
-  extensions::EventRouter* event_router_;  // Not owned. May be NULL.
-  ProvidedFileSystemInfo file_system_info_;
-  scoped_ptr<NotificationManagerInterface> notification_manager_;
-  scoped_ptr<RequestManager> request_manager_;
-  Watchers watchers_;
-  ObserverList<ProvidedFileSystemObserver> observers_;
+  // Map from file handles to open queue tokens.
+  std::map<int, int> opened_files_;
 
-  base::WeakPtrFactory<ProvidedFileSystem> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystem);
+  base::WeakPtrFactory<ThrottledFileSystem> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(ThrottledFileSystem);
 };
 
 }  // namespace file_system_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_THROTTLED_FILE_SYSTEM_H_

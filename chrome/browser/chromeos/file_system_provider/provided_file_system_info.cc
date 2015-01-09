@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "base/logging.h"
 
 namespace chromeos {
 namespace file_system_provider {
 
-MountOptions::MountOptions() : writable(false), supports_notify_tag(false) {
+MountOptions::MountOptions()
+    : writable(false), supports_notify_tag(false), opened_files_limit(0) {
 }
 
 MountOptions::MountOptions(const std::string& file_system_id,
@@ -15,7 +17,8 @@ MountOptions::MountOptions(const std::string& file_system_id,
     : file_system_id(file_system_id),
       display_name(display_name),
       writable(false),
-      supports_notify_tag(false) {
+      supports_notify_tag(false),
+      opened_files_limit(0) {
 }
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo()
@@ -31,7 +34,9 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
       display_name_(mount_options.display_name),
       writable_(mount_options.writable),
       supports_notify_tag_(mount_options.supports_notify_tag),
+      opened_files_limit_(mount_options.opened_files_limit),
       mount_path_(mount_path) {
+  DCHECK_LE(0, mount_options.opened_files_limit);
 }
 
 ProvidedFileSystemInfo::~ProvidedFileSystemInfo() {}

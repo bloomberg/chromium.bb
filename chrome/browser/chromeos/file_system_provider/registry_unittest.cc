@@ -35,6 +35,8 @@ const char kDisplayName[] = "Camera Pictures";
 // a base::DictionaryValue, so it has to be stored without path expansion.
 const char kFileSystemId[] = "camera/pictures/id .!@#$%^&*()_+";
 
+const int kOpenedFilesLimit = 5;
+
 // Stores a provided file system information in preferences together with a
 // fake watcher.
 void RememberFakeFileSystem(TestingProfile* profile,
@@ -43,6 +45,7 @@ void RememberFakeFileSystem(TestingProfile* profile,
                             const std::string& display_name,
                             bool writable,
                             bool supports_notify_tag,
+                            int opened_files_limit,
                             const Watcher& watcher) {
   // Warning. Updating this code means that backward compatibility may be
   // broken, what is unexpected and should be avoided.
@@ -59,6 +62,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
   file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable, writable);
   file_system->SetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
                                               supports_notify_tag);
+  file_system->SetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
+                                              opened_files_limit);
   file_systems->SetWithoutPathExpansion(kFileSystemId, file_system);
   extensions.SetWithoutPathExpansion(kExtensionId, file_systems);
 
@@ -118,13 +123,9 @@ class FileSystemProviderRegistryTest : public testing::Test {
 
 TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
   // Create a fake entry in the preferences.
-  RememberFakeFileSystem(profile_,
-                         kExtensionId,
-                         kFileSystemId,
-                         kDisplayName,
-                         true /* writable */,
-                         true /* supports_notify_tag */,
-                         fake_watcher_);
+  RememberFakeFileSystem(profile_, kExtensionId, kFileSystemId, kDisplayName,
+                         true /* writable */, true /* supports_notify_tag */,
+                         kOpenedFilesLimit, fake_watcher_);
 
   scoped_ptr<RegistryInterface::RestoredFileSystems> restored_file_systems =
       registry_->RestoreFileSystems(kExtensionId);
@@ -137,6 +138,7 @@ TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
   EXPECT_EQ(kDisplayName, restored_file_system.options.display_name);
   EXPECT_TRUE(restored_file_system.options.writable);
   EXPECT_TRUE(restored_file_system.options.supports_notify_tag);
+  EXPECT_EQ(kOpenedFilesLimit, restored_file_system.options.opened_files_limit);
 
   ASSERT_EQ(1u, restored_file_system.watchers.size());
   const auto& restored_watcher_it = restored_file_system.watchers.find(
@@ -152,6 +154,7 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   MountOptions options(kFileSystemId, kDisplayName);
   options.writable = true;
   options.supports_notify_tag = true;
+  options.opened_files_limit = kOpenedFilesLimit;
 
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
@@ -201,6 +204,11 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
       kPrefKeySupportsNotifyTag, &supports_notify_tag));
   EXPECT_TRUE(supports_notify_tag);
 
+  int opened_files_limit = 0;
+  EXPECT_TRUE(file_system->GetIntegerWithoutPathExpansion(
+      kPrefKeyOpenedFilesLimit, &opened_files_limit));
+  EXPECT_EQ(kOpenedFilesLimit, opened_files_limit);
+
   const base::DictionaryValue* watchers_value = NULL;
   ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(kPrefKeyWatchers,
                                                              &watchers_value));
@@ -239,13 +247,9 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
 
 TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
   // Create a fake file systems in the preferences.
-  RememberFakeFileSystem(profile_,
-                         kExtensionId,
-                         kFileSystemId,
-                         kDisplayName,
-                         true /* writable */,
-                         true /* supports_notify_tag */,
-                         fake_watcher_);
+  RememberFakeFileSystem(profile_, kExtensionId, kFileSystemId, kDisplayName,
+                         true /* writable */, true /* supports_notify_tag */,
+                         kOpenedFilesLimit, fake_watcher_);
 
   registry_->ForgetFileSystem(kExtensionId, kFileSystemId);
 

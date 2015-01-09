@@ -79,13 +79,12 @@ const FakeEntry* FakeProvidedFileSystem::GetEntry(
   return entry_it->second.get();
 }
 
-ProvidedFileSystemInterface::AbortCallback
-FakeProvidedFileSystem::RequestUnmount(
+AbortCallback FakeProvidedFileSystem::RequestUnmount(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::GetMetadata(
+AbortCallback FakeProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     ProvidedFileSystemInterface::MetadataFieldMask fields,
     const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
@@ -110,8 +109,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::GetMetadata(
       base::Bind(callback, base::Passed(&metadata), base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback
-FakeProvidedFileSystem::ReadDirectory(
+AbortCallback FakeProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
   storage::AsyncFileUtil::EntryList entry_list;
@@ -134,7 +132,7 @@ FakeProvidedFileSystem::ReadDirectory(
       callback, base::File::FILE_OK, entry_list, false /* has_more */));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::OpenFile(
+AbortCallback FakeProvidedFileSystem::OpenFile(
     const base::FilePath& entry_path,
     OpenFileMode mode,
     const OpenFileCallback& callback) {
@@ -151,7 +149,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::OpenFile(
       base::Bind(callback, file_handle, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::CloseFile(
+AbortCallback FakeProvidedFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const OpenedFilesMap::iterator opened_file_it =
@@ -166,7 +164,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::CloseFile(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::ReadFile(
+AbortCallback FakeProvidedFileSystem::ReadFile(
     int file_handle,
     net::IOBuffer* buffer,
     int64 offset,
@@ -227,8 +225,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::ReadFile(
                     task_ids);
 }
 
-ProvidedFileSystemInterface::AbortCallback
-FakeProvidedFileSystem::CreateDirectory(
+AbortCallback FakeProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -236,7 +233,7 @@ FakeProvidedFileSystem::CreateDirectory(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::DeleteEntry(
+AbortCallback FakeProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -244,7 +241,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::DeleteEntry(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::CreateFile(
+AbortCallback FakeProvidedFileSystem::CreateFile(
     const base::FilePath& file_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const base::File::Error result = file_path.AsUTF8Unsafe() != kFakeFilePath
@@ -254,7 +251,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::CreateFile(
   return PostAbortableTask(base::Bind(callback, result));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::CopyEntry(
+AbortCallback FakeProvidedFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -262,7 +259,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::CopyEntry(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::MoveEntry(
+AbortCallback FakeProvidedFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -270,7 +267,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::MoveEntry(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::Truncate(
+AbortCallback FakeProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64 length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -278,7 +275,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::Truncate(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::WriteFile(
+AbortCallback FakeProvidedFileSystem::WriteFile(
     int file_handle,
     net::IOBuffer* buffer,
     int64 offset,
@@ -316,7 +313,7 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::WriteFile(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::AddWatcher(
+AbortCallback FakeProvidedFileSystem::AddWatcher(
     const GURL& origin,
     const base::FilePath& entry_watcher,
     bool recursive,
@@ -384,8 +381,8 @@ FakeProvidedFileSystem::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-ProvidedFileSystemInterface::AbortCallback
-FakeProvidedFileSystem::PostAbortableTask(const base::Closure& callback) {
+AbortCallback FakeProvidedFileSystem::PostAbortableTask(
+    const base::Closure& callback) {
   const int task_id = tracker_.PostTask(
       base::MessageLoopProxy::current().get(), FROM_HERE, callback);
   return base::Bind(

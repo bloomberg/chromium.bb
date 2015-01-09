@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -79,9 +80,6 @@ class ProvidedFileSystemInterface {
 
   typedef base::Callback<void(scoped_ptr<EntryMetadata> entry_metadata,
                               base::File::Error result)> GetMetadataCallback;
-
-  typedef base::Callback<void(
-      const storage::AsyncFileUtil::StatusCallback& callback)> AbortCallback;
 
   // Mask of fields requested from the GetMetadata() call.
   typedef int MetadataFieldMask;

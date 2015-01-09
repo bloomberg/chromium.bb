@@ -108,7 +108,7 @@ void ProvidedFileSystem::SetNotificationManagerForTesting(
   request_manager_.reset(new RequestManager(notification_manager_.get()));
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::RequestUnmount(
+AbortCallback ProvidedFileSystem::RequestUnmount(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       REQUEST_UNMOUNT,
@@ -123,7 +123,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::RequestUnmount(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::GetMetadata(
+AbortCallback ProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     MetadataFieldMask fields,
     const GetMetadataCallback& callback) {
@@ -141,7 +141,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::GetMetadata(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadDirectory(
+AbortCallback ProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
@@ -160,7 +160,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadDirectory(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadFile(
+AbortCallback ProvidedFileSystem::ReadFile(
     int file_handle,
     net::IOBuffer* buffer,
     int64 offset,
@@ -189,10 +189,9 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadFile(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::OpenFile(
-    const base::FilePath& file_path,
-    OpenFileMode mode,
-    const OpenFileCallback& callback) {
+AbortCallback ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
+                                           OpenFileMode mode,
+                                           const OpenFileCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       OPEN_FILE,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::OpenFile(
@@ -206,7 +205,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::OpenFile(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::CloseFile(
+AbortCallback ProvidedFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
@@ -222,7 +221,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CloseFile(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
+AbortCallback ProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -243,7 +242,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::DeleteEntry(
+AbortCallback ProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -260,7 +259,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::DeleteEntry(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateFile(
+AbortCallback ProvidedFileSystem::CreateFile(
     const base::FilePath& file_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
@@ -276,7 +275,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateFile(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::CopyEntry(
+AbortCallback ProvidedFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -297,7 +296,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CopyEntry(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::WriteFile(
+AbortCallback ProvidedFileSystem::WriteFile(
     int file_handle,
     net::IOBuffer* buffer,
     int64 offset,
@@ -326,7 +325,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::WriteFile(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::MoveEntry(
+AbortCallback ProvidedFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -347,7 +346,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::MoveEntry(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::Truncate(
+AbortCallback ProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64 length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -364,7 +363,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::Truncate(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-ProvidedFileSystem::AbortCallback ProvidedFileSystem::AddWatcher(
+AbortCallback ProvidedFileSystem::AddWatcher(
     const GURL& origin,
     const base::FilePath& entry_path,
     bool recursive,
