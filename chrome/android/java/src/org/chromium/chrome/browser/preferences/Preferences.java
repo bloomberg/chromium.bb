@@ -11,6 +11,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.nfc.NfcAdapter;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -142,6 +143,18 @@ public abstract class Preferences extends ActionBarActivity implements
         intent.putExtra(EXTRA_SHOW_FRAGMENT, fragmentClass);
         intent.putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
         startActivity(intent);
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Fragment fragment = getFragmentManager().findFragmentById(android.R.id.content);
+            if (fragment instanceof PreferenceFragment && fragment.getView() != null) {
+                // Set list view padding to 0 so dividers are the full width of the screen.
+                fragment.getView().findViewById(android.R.id.list).setPadding(0, 0, 0, 0);
+            }
+        }
     }
 
     @Override

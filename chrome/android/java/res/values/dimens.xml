@@ -98,6 +98,9 @@
     <dimen name="pref_button_horizontal_padding">16dp</dimen>
     <dimen name="pref_button_vertical_padding">10dp</dimen>
 
+    <!-- Minimum height/width for a touchable item -->
+    <dimen name="min_touch_target_size">48dp</dimen>
+
     <!-- Text bubble dimensions -->
     <!-- Tooltip min distance from the edge of the screen. -->
     <dimen name="tooltip_min_edge_margin">3dp</dimen>
