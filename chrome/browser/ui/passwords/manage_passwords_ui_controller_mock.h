@@ -55,7 +55,7 @@ class ManagePasswordsUIControllerMock
   void SetPasswordFormMap(const autofill::ConstPasswordFormMap& map) {
     password_form_map_ = map;
   }
-  void SetState(password_manager::ui::State state) { state_ = state; }
+  using ManagePasswordsUIController::SetState;
 
   void SetElapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
 

@@ -119,6 +119,7 @@ class SavePasswordProgressLogger {
     STRING_ENABLED_FOR_CURRENT_PAGE_METHOD,
     STRING_CLIENT_CHECK_PRESENT,
     STRING_SHOW_LOGIN_PROMPT_METHOD,
+    STRING_NEW_UI_STATE,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

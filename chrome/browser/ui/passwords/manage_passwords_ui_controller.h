@@ -145,6 +145,9 @@ class ManagePasswordsUIController
       const content::FrameNavigateParams& params) override;
   void WasHidden() override;
 
+  // Sets |state_|. Protected so we can manipulate the value in tests.
+  void SetState(password_manager::ui::State state);
+
   // We create copies of PasswordForm objects that come in with unclear lifetime
   // and store them in this vector as well as in |password_form_map_| to ensure
   // that we destroy them correctly. If |new_password_forms_| gets cleared then
@@ -156,10 +159,6 @@ class ManagePasswordsUIController
   // ManagePasswordsUIControllerMock.
   autofill::ConstPasswordFormMap password_form_map_;
 
-  // The current state of the password manager. Protected so we can manipulate
-  // the value in tests.
-  password_manager::ui::State state_;
-
  private:
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
@@ -169,6 +168,9 @@ class ManagePasswordsUIController
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
+
+  // The current state of the password manager UI.
+  password_manager::ui::State state_;
 
   // Used to measure the amount of time on a page; if it's less than some
   // reasonable limit, then don't close the bubble upon navigation. We create
