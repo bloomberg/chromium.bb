@@ -18,6 +18,65 @@ from telemetry.page import profile_creator
 
 import page_sets
 
+from telemetry import benchmark
+from telemetry.page import page_test
+from telemetry.page import test_expectations
+from telemetry.results import results_options
+from telemetry.user_story import user_story_runner
+
+class _ExtensionPageTest(page_test.PageTest):
+  """This page test verified that extensions were automatically installed."""
+  def __init__(self):
+    super(_ExtensionPageTest, self).__init__()
+    self._page_set = page_sets.Typical25PageSet()
+
+    # Have the extensions been installed yet?
+    self._extensions_installed = False
+
+    # Expected
+    self._expected_extension_count = 0
+
+  def CanRunForPage(self, page):
+    # Superclass override.
+    # No matter how many pages in the pageset, just perform two test
+    # iterations.
+    return page.page_set.pages.index(page) < 2
+
+  def ValidateAndMeasurePage(self, _, tab, results):
+    # Superclass override.
+    # Profile setup works in 2 phases:
+    # Phase 1: When the first page is loaded: we wait for a timeout to allow
+    #     all extensions to install and to prime safe browsing and other
+    #     caches.  Extensions may open tabs as part of the install process.
+    # Phase 2: When the second page loads, user_story_runner closes all tabs -
+    #     we are left with one open tab, wait for that to finish loading.
+
+    # Sleep for a bit to allow safe browsing and other data to load +
+    # extensions to install.
+    if not self._extensions_installed:
+      sleep_seconds = 5 * 60
+      logging.info("Sleeping for %d seconds." % sleep_seconds)
+      time.sleep(sleep_seconds)
+      self._extensions_installed = True
+    else:
+      # Phase 2: Wait for tab to finish loading.
+      for i in xrange(len(tab.browser.tabs)):
+        t = tab.browser.tabs[i]
+        t.WaitForDocumentReadyStateToBeComplete()
+
+  def DidRunTest(self, browser, results):
+    """Superclass override."""
+    super(_ExtensionPageTest, self).DidRunTest(browser,
+        results)
+    # Do some basic sanity checks to make sure the profile is complete.
+    installed_extensions = browser.extensions.keys()
+    if not len(installed_extensions) == self._expected_extension_count:
+      # Diagnosing errors:
+      # Too many extensions: Managed environment may be installing additional
+      # extensions.
+      raise Exception("Unexpected number of extensions installed in browser",
+          installed_extensions)
+
 
 def _ExternalExtensionsPath():
   """Returns the OS-dependent path at which to install the extension deployment
@@ -30,6 +89,7 @@ def _ExternalExtensionsPath():
   else:
     raise NotImplementedError('Extension install on %s is not yet supported' %
         platform.system())
+
 
 def _DownloadExtension(extension_id, output_dir):
   """Download an extension to disk.
@@ -51,6 +111,7 @@ def _DownloadExtension(extension_id, output_dir):
     f.write(response.read())
 
   return extension_download_path
+
 
 def _GetExtensionInfoFromCRX(crx_path):
   """Parse an extension archive and return information.
@@ -74,23 +135,18 @@ def _GetExtensionInfoFromCRX(crx_path):
 
   return (crx_version, extension_name)
 
+
 class ExtensionsProfileCreator(profile_creator.ProfileCreator):
-  """Virtual base class for profile creators that install extensions.
+  """Abstract base class for profile creators that install extensions.
 
   Extensions are installed using the mechanism described in
   https://developer.chrome.com/extensions/external_extensions.html .
 
   Subclasses are meant to be run interactively.
   """
-
   def __init__(self, extensions_to_install=None, theme_to_install=None):
     self._CheckTestEnvironment()
-
     super(ExtensionsProfileCreator, self).__init__()
-    self._page_set = page_sets.Typical25()
-
-    # Directory into which the output profile is written.
-    self._output_profile_path = None
 
     # List of extensions to install.
     self._extensions_to_install = list(extensions_to_install or [])
@@ -101,13 +157,8 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
     # Directory to download extension files into.
     self._extension_download_dir = None
 
-    # Have the extensions been installed yet?
-    self._extensions_installed = False
-
     # List of files to delete after run.
     self._files_to_cleanup = []
-
-    self._PrepareExtensionInstallFiles()
 
   def _CheckTestEnvironment(self):
     # Running this script on a corporate network or other managed environment
@@ -123,6 +174,35 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
         "continue? (y/N) ")
     if (raw_input(prompt).lower() != 'y'):
       sys.exit(-1)
+
+  def Run(self, options):
+    self._PrepareExtensionInstallFiles()
+
+    expectations = test_expectations.TestExpectations()
+    results = results_options.CreateResults(
+        benchmark.BenchmarkMetadata(profile_creator.__class__.__name__),
+        options)
+    extension_page_test = _ExtensionPageTest()
+    extension_page_test._expected_extension_count = len(
+        self._extensions_to_install)
+    user_story_runner.Run(extension_page_test, extension_page_test._page_set,
+        expectations, options, results)
+
+    self._CleanupExtensionInstallFiles()
+
+    # Check that files on this list exist and have content.
+    expected_files = [
+        os.path.join('Default', 'Network Action Predictor')]
+    for filename in expected_files:
+      filename = os.path.join(options.output_profile_path, filename)
+      if not os.path.getsize(filename) > 0:
+        raise Exception("Profile not complete: %s is zero length." % filename)
+
+    if results.failures:
+      logging.warning('Some pages failed.')
+      logging.warning('Failed pages:\n%s',
+                      '\n'.join(map(str, results.pages_that_failed)))
+      raise Exception('ExtensionsProfileCreator failed.')
 
   def _PrepareExtensionInstallFiles(self):
     """Download extension archives and create extension install files."""
@@ -168,53 +248,3 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
         raise Exception("Path too shallow: %s" % self._extension_download_dir)
       shutil.rmtree(self._extension_download_dir)
       self._extension_download_dir = None
-
-  def CustomizeBrowserOptions(self, options):
-    self._output_profile_path = options.output_profile_path
-
-  def DidRunTest(self, browser, results):
-    """Run before exit."""
-    super(ExtensionsProfileCreator, self).DidRunTest()
-    # Do some basic sanity checks to make sure the profile is complete.
-    installed_extensions = browser.extensions.keys()
-    if not len(installed_extensions) == len(self._extensions_to_install):
-      # Diagnosing errors:
-      # Too many extensions: Managed environment may be installing additional
-      # extensions.
-      raise Exception("Unexpected number of extensions installed in browser",
-          installed_extensions)
-
-    # Check that files on this list exist and have content.
-    expected_files = [
-        os.path.join('Default', 'Network Action Predictor')]
-    for filename in expected_files:
-      filename = os.path.join(self._output_profile_path, filename)
-      if not os.path.getsize(filename) > 0:
-        raise Exception("Profile not complete: %s is zero length." % filename)
-
-    self._CleanupExtensionInstallFiles()
-
-  def CanRunForPage(self, page):
-    # No matter how many pages in the pageset, just perform two test iterations.
-    return page.page_set.pages.index(page) < 2
-
-  def ValidateAndMeasurePage(self, _, tab, results):
-    # Profile setup works in 2 phases:
-    # Phase 1: When the first page is loaded: we wait for a timeout to allow
-    #     all extensions to install and to prime safe browsing and other
-    #     caches.  Extensions may open tabs as part of the install process.
-    # Phase 2: When the second page loads, user_story_runner closes all tabs -
-    #     we are left with one open tab, wait for that to finish loading.
-
-    # Sleep for a bit to allow safe browsing and other data to load +
-    # extensions to install.
-    if not self._extensions_installed:
-      sleep_seconds = 5 * 60
-      logging.info("Sleeping for %d seconds." % sleep_seconds)
-      time.sleep(sleep_seconds)
-      self._extensions_installed = True
-    else:
-      # Phase 2: Wait for tab to finish loading.
-      for i in xrange(len(tab.browser.tabs)):
-        t = tab.browser.tabs[i]
-        t.WaitForDocumentReadyStateToBeComplete()
