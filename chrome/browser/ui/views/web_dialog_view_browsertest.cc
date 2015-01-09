@@ -86,7 +86,9 @@ class WebDialogBrowserTest : public InProcessBrowserTest {
 
 // Windows has some issues resizing windows. An off by one problem, and a
 // minimum size that seems too big. See http://crbug.com/52602.
-#if defined(OS_WIN)
+// On Mac with toolkit_views, this test compiles but crashes at
+// CreateWindowWithParent. See http://crbug.com/447086.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_SizeWindow DISABLED_SizeWindow
 #else
 #define MAYBE_SizeWindow SizeWindow
