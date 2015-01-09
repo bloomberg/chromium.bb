@@ -128,7 +128,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
       const blink::WebMediaConstraints& constraints, int effects);
-  void ConfigureBeamforming(webrtc::Config* config);
 
   // Helper to initialize the capture converter.
   void InitializeCaptureFifo(const media::AudioParameters& input_format);

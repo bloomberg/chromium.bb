@@ -35,7 +35,6 @@ const char MediaAudioConstraints::kGoogNoiseSuppression[] =
     "googNoiseSuppression";
 const char MediaAudioConstraints::kGoogExperimentalNoiseSuppression[] =
     "googNoiseSuppression2";
-const char MediaAudioConstraints::kGoogBeamforming[] = "googBeamforming";
 const char MediaAudioConstraints::kGoogHighpassFilter[] = "googHighpassFilter";
 const char MediaAudioConstraints::kGoogTypingNoiseDetection[] =
     "googTypingNoiseDetection";
@@ -63,7 +62,6 @@ struct {
   { MediaAudioConstraints::kGoogHighpassFilter, true },
   { MediaAudioConstraints::kGoogTypingNoiseDetection, true },
   { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, false },
-  { MediaAudioConstraints::kGoogBeamforming, false },
 #if defined(OS_WIN)
   { kMediaStreamAudioDucking, true },
 #else
