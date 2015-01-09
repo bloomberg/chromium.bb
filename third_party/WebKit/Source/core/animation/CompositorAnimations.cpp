@@ -173,20 +173,6 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, 0, out, playerPlaybackRate))
         return false;
 
-    if (timing.timingFunction->type() == TimingFunction::CubicBezierFunction) {
-        // FIXME: Fix compositor timing functions to accept inputs outside of
-        // [0,1].
-        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timing.timingFunction);
-        const KeyframeVector& keyframes = keyframeEffect.getFrames();
-        double startRange = 0;
-        double endRange = 1;
-        cubic.range(&startRange, &endRange);
-
-        ASSERT(keyframes.size() >= 2);
-        if ((startRange < 0 || endRange > 1) && (keyframes.first()->easing().type() != TimingFunction::LinearFunction || keyframes[keyframes.size() - 2]->easing().type() != TimingFunction::LinearFunction))
-            return false;
-    }
-
     return true;
 }
 
