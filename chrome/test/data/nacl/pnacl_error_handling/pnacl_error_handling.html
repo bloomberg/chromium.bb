@@ -27,8 +27,11 @@ function declareTests(tester) {
       'bad_pexe',
       'pnacl_bad_pexe.nmf',
       'application/x-pnacl',
-      'NaCl module load failed: PnaclCoordinator: PNaCl Translator Error: ' +
-      'Error: Invalid PNaCl bitcode header\nError in bitstream format');
+      // Use a regular expression here: the translator outputs debug information
+      // in the error message.
+      new RegExp('NaCl module load failed: PnaclCoordinator: ' +
+                 'PNaCl Translator Error: .*' +
+                 'Invalid PNaCl bitcode header'));
 
   // 'nonexistent_pexe' loads a manifest, then tries to to load a nonexistent
   // pexe and fails.

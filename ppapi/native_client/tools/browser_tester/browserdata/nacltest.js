@@ -735,6 +735,10 @@ function TestStatus(tester, name, async) {
     assertEqual(a, b, message, this);
   }
 
+  this.assertRegexMatches = function(a, b, message) {
+    assertRegexMatches(a, b, message, this);
+  }
+
   this.callbackWrapper = function(callback, args) {
     // A stale callback?
     if (!this.running)
