@@ -52,6 +52,10 @@ public class ChromeShellApplication extends ChromiumApplication {
         UmaUtils.recordMainEntryPointTime();
         super.onCreate();
 
+        // Assume that application start always leads to meaningful UMA startup metrics. This is not
+        // the case for the official Chrome on Android.
+        UmaUtils.setRunningApplicationStart(true);
+
         mObservers = new ArrayList<ChromeShellApplicationObserver>();
 
         // Initialize the invalidations ID, just like we would in the downstream code.

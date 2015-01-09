@@ -36090,6 +36090,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.FirstCommitNavigationTime" units="milliseconds">
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    The time from the earliest entry point in the browser process to the moment
+    the first navigation is committed, i.e. when renderer gets the first byte of
+    the document.
+  </summary>
+</histogram>
+
 <histogram name="Startup.FirstWebContents.MainFrameLoad" units="milliseconds">
   <owner>erikchen@chromium.org</owner>
   <summary>

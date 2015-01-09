@@ -521,6 +521,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void didCommitProvisionalLoadForFrame(long frameId, boolean isMainFrame, String url,
                 int transitionType) {
+            if (isMainFrame && UmaUtils.isRunningApplicationStart()) {
+                nativeRecordStartupToCommitUma();
+                UmaUtils.setRunningApplicationStart(false);
+            }
+
             if (isMainFrame) {
                 mIsTabStateDirty = true;
                 updateTitle();
@@ -2373,4 +2378,5 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
             InterceptNavigationDelegate delegate);
+    private static native void nativeRecordStartupToCommitUma();
 }
