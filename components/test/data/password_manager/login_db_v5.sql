@@ -2,7 +2,7 @@ PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY, value LONGVARCHAR);
 INSERT INTO "meta" VALUES('last_compatible_version','1');
-INSERT INTO "meta" VALUES('version','8');
+INSERT INTO "meta" VALUES('version','5');
 CREATE TABLE logins (
 origin_url VARCHAR NOT NULL,
 action_url VARCHAR,
@@ -22,11 +22,6 @@ possible_usernames BLOB,
 times_used INTEGER,
 form_data BLOB,
 use_additional_auth INTEGER,
-date_synced INTEGER,
-display_name VARCHAR,
-avatar_url VARCHAR,
-federation_url VARCHAR,
-is_zero_click INTEGER,
 UNIQUE (origin_url, username_element, username_value, password_element, submit_element, signon_realm));
 INSERT INTO "logins" VALUES(
 'https://accounts.google.com/ServiceLogin', /* origin_url */
@@ -46,12 +41,7 @@ X'', /* password_value */
 X'00000000', /* possible_usernames */
 1, /* times_used */
 X'18000000020000000000000000000000000000000000000000000000', /* form_data */
-NULL, /* use_additional_auth */
-0, /* date_synced */
-'', /* display_name */
-'', /* avatar_url */
-'', /* federation_url */
-0  /* is_zero_click */
+NULL /* use_additional_auth */
 );
 INSERT INTO "logins" VALUES(
 'https://accounts.google.com/ServiceLogin', /* origin_url */
@@ -71,12 +61,7 @@ X'', /* password_value */
 X'00000000', /* possible_usernames */
 1, /* times_used */
 X'18000000020000000000000000000000000000000000000000000000', /* form_data */
-NULL, /* use_additional_auth */
-0, /* date_synced */
-'', /* display_name */
-'', /* avatar_url */
-'', /* federation_url */
-0  /* is_zero_click */
+NULL /* use_additional_auth */
 );
 CREATE INDEX logins_signon ON logins (signon_realm);
 COMMIT;

@@ -28,7 +28,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-static const int kCurrentVersionNumber = 9;
+const int kCurrentVersionNumber = 9;
 static const int kCompatibleVersionNumber = 1;
 
 Pickle SerializeVector(const std::vector<base::string16>& vec) {

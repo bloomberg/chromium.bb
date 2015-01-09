@@ -18,6 +18,8 @@
 
 namespace password_manager {
 
+extern const int kCurrentVersionNumber;
+
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
