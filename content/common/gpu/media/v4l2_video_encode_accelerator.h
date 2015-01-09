@@ -190,6 +190,9 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
 
+  // Set controls in |ctrls| and return true if successful.
+  bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
+
   // Our original calling message loop for the child thread.
   const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
 
