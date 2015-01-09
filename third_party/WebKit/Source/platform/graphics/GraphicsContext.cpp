@@ -1217,6 +1217,36 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
         m_trackedRegion.didDrawRect(this, dst, *paint, &bitmap);
 }
 
+void GraphicsContext::drawImage(const SkImage* image, SkScalar left, SkScalar top, const SkPaint* paint)
+{
+    ASSERT(m_canvas);
+    if (contextDisabled())
+        return;
+
+    m_canvas->drawImage(image, left, top, paint);
+
+    if (regionTrackingEnabled()) {
+        SkPaint tmp;
+        const SkPaint* paintPtr = paint ? paint : &tmp;
+        m_trackedRegion.didDrawUnbounded(this, *paintPtr, RegionTracker::FillOnly);
+    }
+}
+
+void GraphicsContext::drawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint)
+{
+    ASSERT(m_canvas);
+    if (contextDisabled())
+        return;
+
+    m_canvas->drawImageRect(image, src, dst, paint);
+
+    if (regionTrackingEnabled()) {
+        SkPaint tmp;
+        const SkPaint* paintPtr = paint ? paint : &tmp;
+        m_trackedRegion.didDrawUnbounded(this, *paintPtr, RegionTracker::FillOnly);
+    }
+}
+
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
 {
     ASSERT(m_canvas);

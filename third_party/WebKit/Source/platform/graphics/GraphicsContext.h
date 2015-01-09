@@ -47,6 +47,7 @@
 #include "wtf/PassOwnPtr.h"
 
 class SkBitmap;
+class SkImage;
 class SkPaint;
 class SkPath;
 class SkPicture;
@@ -285,6 +286,8 @@ public:
     void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void drawBitmap(const SkBitmap&, SkScalar, SkScalar, const SkPaint* = 0);
     void drawBitmapRect(const SkBitmap&, const SkRect*, const SkRect&, const SkPaint* = 0);
+    void drawImage(const SkImage*, SkScalar, SkScalar, const SkPaint* = 0);
+    void drawImageRect(const SkImage*, const SkRect*, const SkRect&, const SkPaint* = 0);
     void drawOval(const SkRect&, const SkPaint&);
     void drawPath(const SkPath&, const SkPaint&);
     void drawRect(const SkRect&, const SkPaint&);
