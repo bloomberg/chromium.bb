@@ -357,53 +357,6 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
   return [output_api.PresubmitPromptWarning('UNIT_TEST is only for headers.\n' +
       '\n'.join(problems))]
 
-def _CheckUmaHistogramChanges(input_api, output_api):
-  """Check that UMA histogram names in touched lines can still be found in other
-  lines of the patch or in histograms.xml. Note that this check would not catch
-  the reverse: changes in histograms.xml not matched in the code itself."""
-
-  touched_histograms = []
-  histograms_xml_modifications = []
-  pattern = input_api.re.compile('UMA_HISTOGRAM.*\("(.*)"')
-  for f in input_api.AffectedFiles():
-    # If histograms.xml itself is modified, keep the modified lines for later.
-    if (f.LocalPath().endswith(('histograms.xml'))):
-      histograms_xml_modifications = f.ChangedContents()
-      continue
-    if (not f.LocalPath().endswith(('cc', 'mm', 'cpp'))):
-      continue
-    for line_num, line in f.ChangedContents():
-      found = pattern.search(line)
-      if found:
-        touched_histograms.append([found.group(1), f, line_num])
-
-  # Search for the touched histogram names in the local modifications to
-  # histograms.xml, and if not found on the base file.
-  problems = []
-  for histogram_name, f, line_num in touched_histograms:
-    histogram_name_found = False
-    for line_num, line in histograms_xml_modifications:
-      if histogram_name in line:
-        histogram_name_found = True;
-        break;
-    if histogram_name_found:
-      continue
-
-    with open('tools/metrics/histograms/histograms.xml') as histograms_xml:
-      for line in histograms_xml:
-        if histogram_name in line:
-          histogram_name_found = True;
-          break;
-    if histogram_name_found:
-      continue
-    problems.append(' [%s:%d] %s' % (f.LocalPath(), line_num, histogram_name))
-
-  if not problems:
-    return []
-  return [output_api.PresubmitPromptWarning('Some UMA_HISTOGRAM lines have '
-    'been modified and the associated histogram name has no match in either '
-    'metrics/histograms.xml or the modifications of it:',  problems)]
-
 
 def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
@@ -1628,7 +1581,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CommonChecks(input_api, output_api))
   results.extend(_CheckValidHostsInDEPS(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
-  results.extend(_CheckUmaHistogramChanges(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckGNFormatted(input_api, output_api))
   return results

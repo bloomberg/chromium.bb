@@ -270,28 +270,6 @@ class VersionControlConflictsTest(unittest.TestCase):
     self.assertTrue('3' in errors[1])
     self.assertTrue('5' in errors[2])
 
-class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
-  def testTypicalNotMatchedChange(self):
-    diff = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('some/path/foo.cc', diff)]
-    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
-                                                   MockOutputApi())
-    self.assertEqual(1, len(warnings))
-    self.assertEqual('warning', warnings[0].type)
-
-  def testTypicalCorrectlyMatchedChange(self):
-    diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
-    diff_xml = ['<histogram name="Bla.Foo.Dummy"> </histogram>']
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [
-      MockFile('some/path/foo.cc', diff_cc),
-      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
-    ]
-    warnings = []
-    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
-                                                   MockOutputApi())
-    self.assertEqual(0, len(warnings))
 
 class BadExtensionsTest(unittest.TestCase):
   def testBadRejFile(self):
