@@ -70,10 +70,9 @@ class TestITunesDataProvider : public ITunesDataProvider {
 class ITunesDataProviderTest : public InProcessBrowserTest {
  public:
   ITunesDataProviderTest() {}
-  virtual ~ITunesDataProviderTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(library_dir_.CreateUniqueTempDir());
     WriteLibraryInternal(SetUpLibrary());
     // The ImportedMediaGalleryRegistry is created on which ever thread calls
@@ -214,7 +213,6 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
 class ITunesDataProviderBasicTest : public ITunesDataProviderTest {
  public:
   ITunesDataProviderBasicTest() {}
-  virtual ~ITunesDataProviderBasicTest() {}
 
   std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
@@ -282,7 +280,6 @@ class ITunesDataProviderBasicTest : public ITunesDataProviderTest {
 class ITunesDataProviderRefreshTest : public ITunesDataProviderTest {
  public:
   ITunesDataProviderRefreshTest() {}
-  virtual ~ITunesDataProviderRefreshTest() {}
 
   std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
@@ -332,7 +329,6 @@ class ITunesDataProviderRefreshTest : public ITunesDataProviderTest {
 class ITunesDataProviderInvalidTest : public ITunesDataProviderTest {
  public:
   ITunesDataProviderInvalidTest() {}
-  virtual ~ITunesDataProviderInvalidTest() {}
 
   std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
@@ -364,7 +360,6 @@ class ITunesDataProviderInvalidTest : public ITunesDataProviderTest {
 class ITunesDataProviderUniqueNameTest : public ITunesDataProviderTest {
  public:
   ITunesDataProviderUniqueNameTest() {}
-  virtual ~ITunesDataProviderUniqueNameTest() {}
 
   std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track.mp3");
@@ -408,7 +403,6 @@ class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
  // never happen in practice.
  public:
   ITunesDataProviderEscapeTest() {}
-  virtual ~ITunesDataProviderEscapeTest() {}
 
   std::vector<LibraryEntry> SetUpLibrary() override {
     base::FilePath track = library_dir().AppendASCII("Track:1.mp3");

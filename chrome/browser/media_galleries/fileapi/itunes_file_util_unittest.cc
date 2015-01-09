@@ -135,7 +135,6 @@ class ItunesFileUtilTest : public testing::Test {
   ItunesFileUtilTest()
       : io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
-  virtual ~ItunesFileUtilTest() {}
 
   void SetUpDataProvider() {
     ASSERT_TRUE(fake_library_dir_.CreateUniqueTempDir());
@@ -150,7 +149,7 @@ class ItunesFileUtilTest : public testing::Test {
         new TestITunesDataProvider(fake_library_dir_.path()));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 

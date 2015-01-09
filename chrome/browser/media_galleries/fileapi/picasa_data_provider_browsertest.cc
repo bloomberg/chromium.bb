@@ -177,7 +177,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
 class PicasaDataProviderTest : public InProcessBrowserTest {
  public:
   PicasaDataProviderTest() {}
-  virtual ~PicasaDataProviderTest() {}
+  ~PicasaDataProviderTest() override {}
 
  protected:
   // Runs on the MediaTaskRunner and designed to be overridden by subclasses.

@@ -50,10 +50,9 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
 class IPhotoDataProviderTest : public InProcessBrowserTest {
  public:
   IPhotoDataProviderTest() {}
-  virtual ~IPhotoDataProviderTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(library_dir_.CreateUniqueTempDir());
     WriteLibraryInternal();
     // The ImportedMediaGalleryRegistry is created on which ever thread calls
@@ -155,7 +154,6 @@ class IPhotoDataProviderTest : public InProcessBrowserTest {
 class IPhotoDataProviderBasicTest : public IPhotoDataProviderTest {
  public:
   IPhotoDataProviderBasicTest() {}
-  virtual ~IPhotoDataProviderBasicTest() {}
 
   std::string GetLibraryString() override {
     return "<plist><dict>\n"
@@ -341,7 +339,6 @@ class IPhotoDataProviderBasicTest : public IPhotoDataProviderTest {
 class IPhotoDataProviderRefreshTest : public IPhotoDataProviderTest {
  public:
   IPhotoDataProviderRefreshTest() {}
-  virtual ~IPhotoDataProviderRefreshTest() {}
 
   std::string another_album;
 
@@ -440,7 +437,6 @@ class IPhotoDataProviderRefreshTest : public IPhotoDataProviderTest {
 class IPhotoDataProviderInvalidTest : public IPhotoDataProviderTest {
  public:
   IPhotoDataProviderInvalidTest() {}
-  virtual ~IPhotoDataProviderInvalidTest() {}
 
   void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);

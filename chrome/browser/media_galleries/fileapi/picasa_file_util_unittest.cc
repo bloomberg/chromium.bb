@@ -223,9 +223,8 @@ class PicasaFileUtilTest : public testing::Test {
   PicasaFileUtilTest()
       : io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
-  virtual ~PicasaFileUtilTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
@@ -255,7 +254,7 @@ class PicasaFileUtilTest : public testing::Test {
         content::CreateAllowFileAccessOptions());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     SynchronouslyRunOnMediaTaskRunner(
         base::Bind(&PicasaFileUtilTest::TearDownOnMediaTaskRunner,
                    base::Unretained(this)));

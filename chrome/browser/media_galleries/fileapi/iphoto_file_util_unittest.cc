@@ -161,7 +161,6 @@ class IPhotoFileUtilTest : public testing::Test {
   IPhotoFileUtilTest()
       : io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
-  virtual ~IPhotoFileUtilTest() {}
 
   void SetUpDataProvider() {
     ASSERT_TRUE(fake_library_dir_.CreateUniqueTempDir());
@@ -182,7 +181,7 @@ class IPhotoFileUtilTest : public testing::Test {
         new TestIPhotoDataProvider(fake_library_dir_.path()));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
