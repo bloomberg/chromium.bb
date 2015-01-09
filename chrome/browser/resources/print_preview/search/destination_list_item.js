@@ -88,9 +88,12 @@ cr.define('print_preview', function() {
 
     /**
      * Updates the list item UI state.
+     * @param {!print_preview.Destination} destination Destination data object
+     *     to render.
      * @param {RegExp} query Active filter query.
      */
-    update: function(query) {
+    update: function(destination, query) {
+      this.destination_ = destination;
       this.query_ = query;
       this.updateUi_();
     },
