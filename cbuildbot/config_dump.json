@@ -13151,6 +13151,7 @@
         "cpe_export": false,
         "debug_symbols": false,
         "description": "Commit Queue",
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13194,12 +13195,10 @@
         "vm_tests": []
     },
     "falco-paladin": {
-        "board_replace": true,
         "boards": [
             "falco"
         ],
         "build_type": "paladin",
-        "chrome_binhost_only": true,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
@@ -25159,6 +25158,7 @@
         "cpe_export": false,
         "debug_symbols": false,
         "description": "Commit Queue",
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -25329,12 +25329,10 @@
         "vm_tests": []
     },
     "nyan-paladin": {
-        "board_replace": true,
         "boards": [
             "nyan"
         ],
         "build_type": "paladin",
-        "chrome_binhost_only": true,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",

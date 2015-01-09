@@ -1119,12 +1119,6 @@ paladin = _config(
   chrome_sdk_build_chrome=False,
 )
 
-# Used for paladin builders that build from source.
-full_paladin = _config(
-  board_replace=True,
-  chrome_binhost_only=True,
-)
-
 # If a board has a newer instruction set, then the unit tests and VM tests
 # cannot run on the builders, at least until we've implemented an emulator.
 # Disable the VM tests and unit tests to be safe.
@@ -1847,7 +1841,8 @@ internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
 
 # Used for builders which build completely from source except Chrome.
 full_compile_paladin = paladin.derive(
-  full_paladin,
+  board_replace=True,
+  chrome_binhost_only=True,
   chrome_sdk=False,
   cpe_export=False,
   debug_symbols=False,
@@ -1860,7 +1855,6 @@ full_compile_paladin = paladin.derive(
 _CreateConfigsForBoards(full_compile_paladin,
   ['falco', 'nyan'],
   'full-compile-paladin',
-  important=False,
 )
 
 pre_cq = paladin.derive(
@@ -2068,11 +2062,6 @@ _paladin_chroot_replace_boards = frozenset([
   'daisy_spring',
 ])
 
-_paladin_full_boards = frozenset([
-  'falco',
-  'nyan',
-])
-
 _paladin_separate_symbols = frozenset([
   'amd64-generic',
   'gizmo',
@@ -2090,8 +2079,6 @@ def _CreatePaladinConfigs():
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
       customizations.update(chroot_replace=True)
-    if board in _paladin_full_boards:
-      customizations.update(full_paladin)
     if board in _internal_boards:
       customizations = customizations.derive(
           internal, official_chrome,
