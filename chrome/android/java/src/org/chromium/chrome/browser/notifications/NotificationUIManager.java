@@ -125,14 +125,17 @@ public class NotificationUIManager {
 
         String notificationId = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_ID);
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
-            if (!intent.hasExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA)) {
-                Log.e(TAG, "No notification data has been provided.");
+            if (!intent.hasExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA)
+                    || !intent.hasExtra(NotificationConstants.EXTRA_NOTIFICATION_PLATFORM_ID)) {
+                Log.e(TAG, "Not all required notification data has been set in the intent.");
                 return false;
             }
 
+            int platformId =
+                    intent.getIntExtra(NotificationConstants.EXTRA_NOTIFICATION_PLATFORM_ID, -1);
             byte[] notificationData =
                     intent.getByteArrayExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA);
-            return sInstance.onNotificationClicked(notificationId, notificationData);
+            return sInstance.onNotificationClicked(notificationId, platformId, notificationData);
         }
 
         if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
@@ -148,6 +151,7 @@ public class NotificationUIManager {
         Intent intent = new Intent(action);
         intent.setClass(mAppContext, NotificationService.Receiver.class);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_PLATFORM_ID, platformId);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA, notificationData);
 
         return PendingIntent.getBroadcast(mAppContext, platformId, intent,
@@ -231,9 +235,10 @@ public class NotificationUIManager {
         mNotificationManager.cancel(platformId);
     }
 
-    private boolean onNotificationClicked(String notificationId, byte[] notificationData) {
+    private boolean onNotificationClicked(String notificationId, int platformId,
+                                          byte[] notificationData) {
         return nativeOnNotificationClicked(
-                mNativeNotificationManager, notificationId, notificationData);
+                mNativeNotificationManager, notificationId, platformId, notificationData);
     }
 
     private boolean onNotificationClosed(String notificationId) {
@@ -244,7 +249,7 @@ public class NotificationUIManager {
 
     private native boolean nativeOnNotificationClicked(
             long nativeNotificationUIManagerAndroid, String notificationId,
-            byte[] notificationData);
+            int platformId, byte[] notificationData);
     private native boolean nativeOnNotificationClosed(
             long nativeNotificationUIManagerAndroid, String notificationId);
 }

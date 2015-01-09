@@ -15,6 +15,10 @@ public class NotificationConstants {
             "org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION";
 
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
+
+    // TODO(peter): Remove these extras once Notifications are powered by a database on the
+    // native side, that contains all the additional information.
+    public static final String EXTRA_NOTIFICATION_PLATFORM_ID = "notification_platform_id";
     public static final String EXTRA_NOTIFICATION_DATA = "notification_data";
 
     /**

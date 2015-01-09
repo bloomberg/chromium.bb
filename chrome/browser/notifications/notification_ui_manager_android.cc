@@ -152,6 +152,7 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
     JNIEnv* env,
     jobject java_object,
     jstring notification_id,
+    jint platform_id,
     jbyteArray serialized_notification_data) {
   std::string id = ConvertJavaStringToUTF8(env, notification_id);
 
@@ -183,6 +184,9 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
                                          &service_worker_registration_id)) {
     return false;
   }
+
+  // Store the platform Id of this notification so that it can be closed.
+  platform_notifications_[id] = platform_id;
 
   PlatformNotificationServiceImpl* service =
       PlatformNotificationServiceImpl::GetInstance();
@@ -319,10 +323,15 @@ bool NotificationUIManagerAndroid::CancelById(const std::string& delegate_id,
       ProfileNotification::GetProfileNotificationId(delegate_id, profile_id);
   ProfileNotification* profile_notification =
       FindProfileNotification(profile_notification_id);
-  if (!profile_notification)
-    return false;
+  if (profile_notification) {
+    RemoveProfileNotification(profile_notification);
+    return true;
+  }
 
-  RemoveProfileNotification(profile_notification);
+  // On Android, it's still possible that the notification can be closed in case
+  // the platform Id is known, even if no delegate exists. This happens when the
+  // browser process is started because of interaction with a Notification.
+  PlatformCloseNotification(delegate_id);
   return true;
 }
 
@@ -384,7 +393,7 @@ void NotificationUIManagerAndroid::CancelAll() {
   for (auto iterator : profile_notifications_) {
     ProfileNotification* profile_notification = iterator.second;
 
-    PlatformCloseNotification(profile_notification);
+    PlatformCloseNotification(profile_notification->notification().id());
     delete profile_notification;
   }
 
@@ -396,15 +405,13 @@ bool NotificationUIManagerAndroid::RegisterNotificationUIManager(JNIEnv* env) {
 }
 
 void NotificationUIManagerAndroid::PlatformCloseNotification(
-    ProfileNotification* profile_notification) {
-  std::string id = profile_notification->notification().id();
-
-  auto iterator = platform_notifications_.find(id);
+    const std::string& notification_id) {
+  auto iterator = platform_notifications_.find(notification_id);
   if (iterator == platform_notifications_.end())
     return;
 
   int platform_id = iterator->second;
-  platform_notifications_.erase(id);
+  platform_notifications_.erase(notification_id);
 
   Java_NotificationUIManager_closeNotification(AttachCurrentThread(),
                                                java_object_.obj(),
@@ -423,10 +430,10 @@ void NotificationUIManagerAndroid::AddProfileNotification(
 
 void NotificationUIManagerAndroid::RemoveProfileNotification(
     ProfileNotification* profile_notification) {
-  PlatformCloseNotification(profile_notification);
+  std::string notification_id = profile_notification->notification().id();
+  PlatformCloseNotification(notification_id);
 
-  std::string id = profile_notification->notification().id();
-  profile_notifications_.erase(id);
+  profile_notifications_.erase(notification_id);
   delete profile_notification;
 }
 
