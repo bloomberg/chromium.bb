@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -23,6 +24,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/browser/web_ui.h"
@@ -242,16 +245,27 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
           : IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
 
   base::string16 request_sent_message;
+  base::string16 request_failed_message;
   if (is_child_account) {
-    request_sent_message = l10n_util::GetStringUTF16(
-        second_custodian.empty()
-            ? IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT
-            : IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT);
+    if (second_custodian.empty()) {
+      request_sent_message = l10n_util::GetStringUTF16(
+          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT);
+      request_failed_message = l10n_util::GetStringUTF16(
+          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_SINGLE_PARENT);
+    } else {
+      request_sent_message = l10n_util::GetStringUTF16(
+          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT);
+      request_failed_message = l10n_util::GetStringUTF16(
+          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_MULTI_PARENT);
+    }
   } else {
     request_sent_message = l10n_util::GetStringFUTF16(
         IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE, custodian);
+    request_failed_message = l10n_util::GetStringFUTF16(
+        IDS_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE, custodian);
   }
   strings.SetString("requestSentMessage", request_sent_message);
+  strings.SetString("requestFailedMessage", request_failed_message);
 
   webui::SetFontAndTextDirection(&strings);
 
@@ -333,11 +347,12 @@ void SupervisedUserInterstitial::OnURLFilterChanged() {
 }
 
 void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
-  // TODO(akuegel): Figure out how to show the result of issuing the permission
-  // request in the UI. Currently, we assume the permission request was created
-  // successfully.
   VLOG(1) << "Sent access request for " << url_.spec()
           << (success ? " successfully" : " unsuccessfully");
+  std::string jsFunc =
+      base::StringPrintf("setRequestStatus(%s);", success ? "true" : "false");
+  interstitial_page_->GetMainFrame()->ExecuteJavaScript(
+      base::ASCIIToUTF16(jsFunc));
 }
 
 bool SupervisedUserInterstitial::ShouldProceed() {

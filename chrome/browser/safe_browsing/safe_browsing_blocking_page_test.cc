@@ -508,7 +508,7 @@ class SafeBrowsingBlockingPageBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents());
     if (!interstitial)
       return NULL;
-    return interstitial->GetRenderViewHostForTesting();
+    return interstitial->GetMainFrame()->GetRenderViewHost();
   }
 
   bool WaitForReady() {

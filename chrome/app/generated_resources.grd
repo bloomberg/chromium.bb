@@ -7857,11 +7857,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE" desc="The text that tells the supervised user that a request has been sent.">
         Your request to access this site has been sent to <ph name="NAME">$1<ex>John Doe</ex></ph>.
       </message>
-      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request has been sent to their parent.">
+      <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE" desc="The text that tells the supervised user that a request could not be sent.">
+        Your request to access this site could not be sent to <ph name="NAME">$1<ex>John Doe</ex></ph>. Please try again.
+      </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request has been sent to his/her parent.">
         You asked your parent if it's ok to visit this page.
       </message>
-      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request has been sent to their parents.">
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request has been sent to his/her parents.">
         You asked your parents if it's ok to visit this page.
+      </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request to his/her parent failed.">
+        We could not reach your parent at the moment. Please try again.
+      </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request to his/her parents failed.">
+        We could not reach your parents at the moment. Please try again.
       </message>
       <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT" desc="Message to be shown when a site was blocked due to the default fallback behavior.">
         This site was blocked due to the default fallback behavior.

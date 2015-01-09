@@ -14,7 +14,7 @@ function makeImageSet(url1x, url2x) {
 function initialize() {
   if (loadTimeData.getBoolean('allowAccessRequests')) {
     $('request-access-button').onclick = function(event) {
-      updateAfterRequestSent();
+      $('request-access-button').hidden = true;
       sendCommand('request');
     };
   } else {
@@ -51,15 +51,21 @@ function initialize() {
 }
 
 /**
- * Updates the interstitial to show that the request was sent.
+ * Updates the interstitial to show that the request failed or was sent.
+ * @param {boolean} isSuccessful Whether the request was successful or not.
  */
-function updateAfterRequestSent() {
+function setRequestStatus(isSuccessful) {
   $('error-img').hidden = true;
-  $('request-access-button').hidden = true;
   $('block-page-message').hidden = true;
-  $('request-sent-message').hidden = false;
-  if ($('avatar-img').hidden) {
-    $('request-sent-message').style.marginTop = '40px';
+  if (isSuccessful) {
+    $('request-failed-message').hidden = true;
+    $('request-sent-message').hidden = false;
+    if ($('avatar-img').hidden) {
+      $('request-sent-message').style.marginTop = '40px';
+    }
+  } else {
+    $('request-failed-message').hidden = false;
+    $('request-access-button').hidden = false;
   }
 }
 

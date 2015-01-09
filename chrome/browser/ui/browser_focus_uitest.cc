@@ -30,6 +30,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -172,7 +173,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   std::string GetHTMLContents() override { return html_contents_; }
 
   RenderViewHost* render_view_host() {
-    return interstitial_page_->GetRenderViewHostForTesting();
+    return interstitial_page_->GetMainFrame()->GetRenderViewHost();
   }
 
   void DontProceed() { interstitial_page_->DontProceed(); }

@@ -123,9 +123,10 @@ RenderWidgetHostViewAndroid*
   RenderWidgetHostView* rwhv = NULL;
   rwhv = web_contents_->GetRenderWidgetHostView();
   if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = static_cast<InterstitialPageImpl*>(
-        web_contents_->GetInterstitialPage())->
-            GetRenderViewHost()->GetView();
+    rwhv = web_contents_->GetInterstitialPage()
+               ->GetMainFrame()
+               ->GetRenderViewHost()
+               ->GetView();
   }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }

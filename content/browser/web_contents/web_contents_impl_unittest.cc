@@ -159,17 +159,18 @@ class TestInterstitialPage : public InterstitialPageImpl {
   void TestDidNavigate(int page_id, const GURL& url) {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     InitNavigateParams(&params, page_id, url, ui::PAGE_TRANSITION_TYPED);
-    DidNavigate(GetRenderViewHostForTesting(), params);
+    DidNavigate(GetMainFrame()->GetRenderViewHost(), params);
   }
 
   void TestRenderViewTerminated(base::TerminationStatus status,
                                 int error_code) {
-    RenderViewTerminated(GetRenderViewHostForTesting(), status, error_code);
+    RenderViewTerminated(GetMainFrame()->GetRenderViewHost(), status,
+                         error_code);
   }
 
   bool is_showing() const {
     return static_cast<TestRenderWidgetHostView*>(
-        GetRenderViewHostForTesting()->GetView())->is_showing();
+               GetMainFrame()->GetRenderViewHost()->GetView())->is_showing();
   }
 
   void ClearStates() {
@@ -1904,7 +1905,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
   interstitial->Show();
   interstitial->TestDidNavigate(1, url);
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      interstitial->GetRenderViewHostForTesting());
+      interstitial->GetMainFrame()->GetRenderViewHost());
 
   // Now close the contents.
   DeleteContents();

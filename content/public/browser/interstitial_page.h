@@ -16,7 +16,7 @@ class Size;
 namespace content {
 
 class InterstitialPageDelegate;
-class RenderViewHost;
+class RenderFrameHost;
 class WebContents;
 
 // This class is used for showing interstitial pages, pages that show some
@@ -79,7 +79,10 @@ class InterstitialPage {
   // Sets the focus to the interstitial.
   virtual void Focus() = 0;
 
-  virtual RenderViewHost* GetRenderViewHostForTesting() const = 0;
+  // Gets the RenderFrameHost associated with
+  // the interstitial page's main frame.
+  virtual RenderFrameHost* GetMainFrame() const = 0;
+
   virtual InterstitialPageDelegate* GetDelegateForTesting() = 0;
   virtual void DontCreateViewForTesting() = 0;
 };

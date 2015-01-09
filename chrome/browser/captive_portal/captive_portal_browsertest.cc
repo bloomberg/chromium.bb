@@ -49,7 +49,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -123,13 +122,13 @@ const char* const kInternetConnectedTitle = "Title Of Awesomeness";
 
 // Wait until all resources have loaded in an interstitial page.
 bool WaitForInterstitialReady(content::InterstitialPage* interstitial) {
-  content::RenderViewHost* rvh = interstitial->GetRenderViewHostForTesting();
-  if (!rvh)
+  content::RenderFrameHost* rfh = interstitial->GetMainFrame();
+  if (!rfh)
     return false;
   bool load_complete = false;
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractBool(
-          rvh->GetMainFrame(),
+          rfh,
           "(function() {"
           "  var done = false;"
           "  function checkState() {"
@@ -1985,12 +1984,12 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // trying to click on a button will fail.
   EXPECT_TRUE(WaitForInterstitialReady(
       broken_tab_contents->GetInterstitialPage()));
-  content::RenderViewHost* rvh =
-      broken_tab_contents->GetInterstitialPage()->GetRenderViewHostForTesting();
+  content::RenderFrameHost* rfh =
+      broken_tab_contents->GetInterstitialPage()->GetMainFrame();
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
   EXPECT_TRUE(
-      content::ExecuteScript(rvh->GetMainFrame(), kClickConnectButtonJS));
+      content::ExecuteScript(rfh, kClickConnectButtonJS));
   EXPECT_EQ(login_tab_index, tab_strip_model->active_index());
 
   // For completeness, close the login tab and try clicking |Connect| again.
@@ -2003,7 +2002,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   destroyed_watcher.Wait();
   MultiNavigationObserver navigation_observer;
   EXPECT_TRUE(
-      content::ExecuteScript(rvh->GetMainFrame(), kClickConnectButtonJS));
+      content::ExecuteScript(rfh, kClickConnectButtonJS));
   navigation_observer.WaitForNavigations(1);
   EXPECT_EQ(login_tab_index, tab_strip_model->active_index());
 

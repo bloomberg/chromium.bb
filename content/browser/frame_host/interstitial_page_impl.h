@@ -61,7 +61,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   void Hide() override;
   void DontProceed() override;
   void Proceed() override;
-  RenderViewHost* GetRenderViewHostForTesting() const override;
+  RenderFrameHost* GetMainFrame() const override;
   InterstitialPageDelegate* GetDelegateForTesting() override;
   void DontCreateViewForTesting() override;
   void SetSize(const gfx::Size& size) override;
@@ -83,12 +83,6 @@ class CONTENT_EXPORT InterstitialPageImpl
     reload_on_dont_proceed_ = value;
   }
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
-
-#if defined(OS_ANDROID)
-  // Android shares a single platform window for all tabs, so we need to expose
-  // the RenderViewHost to properly route gestures to the interstitial.
-  RenderViewHost* GetRenderViewHost() const;
-#endif
 
   // TODO(nasko): This should move to InterstitialPageNavigatorImpl, but in
   // the meantime make it public, so it can be called directly.

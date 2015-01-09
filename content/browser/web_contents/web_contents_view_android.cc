@@ -45,9 +45,10 @@ void WebContentsViewAndroid::SetContentViewCore(
 
   if (web_contents_->ShowingInterstitialPage()) {
     rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-        static_cast<InterstitialPageImpl*>(
-            web_contents_->GetInterstitialPage())->
-                GetRenderViewHost()->GetView());
+        web_contents_->GetInterstitialPage()
+            ->GetMainFrame()
+            ->GetRenderViewHost()
+            ->GetView());
     if (rwhv)
       rwhv->SetContentViewCore(content_view_core_);
   }

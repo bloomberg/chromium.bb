@@ -701,15 +701,9 @@ RenderWidgetHostView* InterstitialPageImpl::GetView() {
   return render_view_host_->GetView();
 }
 
-RenderViewHost* InterstitialPageImpl::GetRenderViewHostForTesting() const {
-  return render_view_host_;
+RenderFrameHost* InterstitialPageImpl::GetMainFrame() const {
+  return render_view_host_->GetMainFrame();
 }
-
-#if defined(OS_ANDROID)
-RenderViewHost* InterstitialPageImpl::GetRenderViewHost() const {
-  return render_view_host_;
-}
-#endif
 
 InterstitialPageDelegate* InterstitialPageImpl::GetDelegateForTesting() {
   return delegate_.get();
