@@ -70,10 +70,8 @@ class SyncHTTPServer(testserver_base.ClientRestrictingServerMixIn,
   def GetAuthenticated(self):
     return self.authenticated
 
-  def serve_forever(self):
-    """This is a merge of asyncore.loop() and SocketServer.serve_forever().
-    """
-
+  def handle_request(self):
+    """Adaptation of asyncore.loop"""
     def HandleXmppSocket(fd, socket_map, handler):
       """Runs the handler for the xmpp connection for fd.
 
@@ -92,44 +90,43 @@ class SyncHTTPServer(testserver_base.ClientRestrictingServerMixIn,
       except:
         xmpp_connection.handle_error()
 
-    while True:
-      read_fds = [ self.fileno() ]
-      write_fds = []
-      exceptional_fds = []
+    read_fds = [ self.fileno() ]
+    write_fds = []
+    exceptional_fds = []
 
-      for fd, xmpp_connection in self._xmpp_socket_map.items():
-        is_r = xmpp_connection.readable()
-        is_w = xmpp_connection.writable()
-        if is_r:
-          read_fds.append(fd)
-        if is_w:
-          write_fds.append(fd)
-        if is_r or is_w:
-          exceptional_fds.append(fd)
+    for fd, xmpp_connection in self._xmpp_socket_map.items():
+      is_r = xmpp_connection.readable()
+      is_w = xmpp_connection.writable()
+      if is_r:
+        read_fds.append(fd)
+      if is_w:
+        write_fds.append(fd)
+      if is_r or is_w:
+        exceptional_fds.append(fd)
 
-      try:
-        read_fds, write_fds, exceptional_fds = (
-          select.select(read_fds, write_fds, exceptional_fds))
-      except select.error, err:
-        if err.args[0] != errno.EINTR:
-          raise
-        else:
-          continue
+    try:
+      read_fds, write_fds, exceptional_fds = (
+        select.select(read_fds, write_fds, exceptional_fds))
+    except select.error, err:
+      if err.args[0] != errno.EINTR:
+        raise
+      else:
+        return
 
-      for fd in read_fds:
-        if fd == self.fileno():
-          self.HandleRequestNoBlock()
-          continue
-        HandleXmppSocket(fd, self._xmpp_socket_map,
-                         asyncore.dispatcher.handle_read_event)
+    for fd in read_fds:
+      if fd == self.fileno():
+        self.HandleRequestNoBlock()
+        return
+      HandleXmppSocket(fd, self._xmpp_socket_map,
+                       asyncore.dispatcher.handle_read_event)
 
-      for fd in write_fds:
-        HandleXmppSocket(fd, self._xmpp_socket_map,
-                         asyncore.dispatcher.handle_write_event)
+    for fd in write_fds:
+      HandleXmppSocket(fd, self._xmpp_socket_map,
+                       asyncore.dispatcher.handle_write_event)
 
-      for fd in exceptional_fds:
-        HandleXmppSocket(fd, self._xmpp_socket_map,
-                         asyncore.dispatcher.handle_expt_event)
+    for fd in exceptional_fds:
+      HandleXmppSocket(fd, self._xmpp_socket_map,
+                       asyncore.dispatcher.handle_expt_event)
 
 
 class SyncPageHandler(testserver_base.BasePageHandler):
