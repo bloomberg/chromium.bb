@@ -202,6 +202,8 @@ void BlobStorageContext::FinishBuildingBlob(
     return;
   found->second.data->set_content_type(content_type);
   found->second.flags &= ~BEING_BUILT;
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.ItemCount",
+                       found->second.data->items().size());
   UMA_HISTOGRAM_BOOLEAN(
       "Storage.Blob.ExceededMemory",
       (found->second.flags & EXCEEDED_MEMORY) == EXCEEDED_MEMORY);

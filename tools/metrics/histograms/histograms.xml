@@ -36373,6 +36373,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.ItemCount" units="Blob Items">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The number of blob items in a blob, recorded at blob construction. (Blobs
+    are immutable, so this won't change afterwards).
+  </summary>
+</histogram>
+
 <histogram name="Storage.Blob.StorageSizeAfterAppend" units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
