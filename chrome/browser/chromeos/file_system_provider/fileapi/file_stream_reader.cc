@@ -161,7 +161,9 @@ class FileStreamReader::OperationRunner
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    file_handle_ = file_handle;
+    if (result == base::File::FILE_OK)
+      file_handle_ = file_handle;
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
   }
