@@ -87,6 +87,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     display_list_ = painter->PaintContentsToDisplayList(
         recorded_viewport_, ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
   }
+  display_list_->set_layer_rect(recorded_viewport_);
   is_suitable_for_gpu_rasterization_ =
       display_list_->IsSuitableForGpuRasterization();
 

@@ -31,6 +31,18 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
   canvas->restore();
 }
 
+void DrawingDisplayItem::RasterForTracing(SkCanvas* canvas) const {
+  canvas->save();
+  canvas->translate(location_.x(), location_.y());
+  // The picture debugger in about:tracing doesn't drill down into |drawPicture|
+  // operations. Calling |playback()| rather than |drawPicture()| causes the
+  // skia operations in |picture_| to appear individually in the picture
+  // produced for tracing rather than being hidden inside a drawPicture
+  // operation.
+  picture_->playback(canvas);
+  canvas->restore();
+}
+
 bool DrawingDisplayItem::IsSuitableForGpuRasterization() const {
   return picture_->suitableForGpuRasterization(NULL);
 }

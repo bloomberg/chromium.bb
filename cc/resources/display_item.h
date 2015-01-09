@@ -20,6 +20,7 @@ class CC_EXPORT DisplayItem {
 
   virtual void Raster(SkCanvas* canvas,
                       SkDrawPictureCallback* callback) const = 0;
+  virtual void RasterForTracing(SkCanvas* canvas) const;
 
   virtual bool IsSuitableForGpuRasterization() const = 0;
   virtual int ApproximateOpCount() const = 0;

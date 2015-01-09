@@ -29,6 +29,9 @@ class CC_EXPORT DisplayItemList
 
   void AppendItem(scoped_ptr<DisplayItem> item);
 
+  void set_layer_rect(gfx::Rect layer_rect) { layer_rect_ = layer_rect; }
+  gfx::Rect layer_rect() const { return layer_rect_; }
+
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
   size_t PictureMemoryUsage() const;
@@ -41,6 +44,7 @@ class CC_EXPORT DisplayItemList
   DisplayItemList();
   ~DisplayItemList();
   ScopedPtrVector<DisplayItem> items_;
+  gfx::Rect layer_rect_;
   bool is_suitable_for_gpu_rasterization_;
   int approximate_op_count_;
 

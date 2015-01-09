@@ -4,9 +4,15 @@
 
 #include "cc/resources/display_item_list.h"
 
+#include <string>
+
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
+#include "cc/base/math_util.h"
+#include "cc/debug/picture_debug_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -64,8 +70,23 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> DisplayItemList::AsValue()
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
 
-  // TODO(ajuma): Include the value of each item.
   state->SetInteger("length", items_.size());
+  state->SetValue("params.layer_rect",
+                  MathUtil::AsValue(layer_rect_).release());
+
+  SkPictureRecorder recorder;
+  SkCanvas* canvas =
+      recorder.beginRecording(layer_rect_.width(), layer_rect_.height());
+  canvas->translate(-layer_rect_.x(), -layer_rect_.y());
+  canvas->clipRect(gfx::RectToSkRect(layer_rect_));
+  for (size_t i = 0; i < items_.size(); ++i)
+    items_[i]->RasterForTracing(canvas);
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+
+  std::string b64_picture;
+  PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
+  state->SetString("skp64", b64_picture);
+
   return state;
 }
 
