@@ -451,6 +451,18 @@ void RemoteDesktopBrowserTest::Install() {
   VerifyChromotingLoaded(true);
 }
 
+void RemoteDesktopBrowserTest::LoadBrowserTestJavaScript(
+    content::WebContents* content) {
+  LoadScript(content, FILE_PATH_LITERAL("browser_test.js"));
+  LoadScript(content, FILE_PATH_LITERAL("mock_client_plugin.js"));
+  LoadScript(content, FILE_PATH_LITERAL("mock_host_list_api.js"));
+  LoadScript(content, FILE_PATH_LITERAL("mock_identity.js"));
+  LoadScript(content, FILE_PATH_LITERAL("mock_oauth2_api.js"));
+  LoadScript(content, FILE_PATH_LITERAL("mock_session_connector.js"));
+  LoadScript(content, FILE_PATH_LITERAL("mock_signal_strategy.js"));
+  LoadScript(content, FILE_PATH_LITERAL("timeout_waiter.js"));
+}
+
 void RemoteDesktopBrowserTest::Cleanup() {
   // TODO(weitaosu): Remove this hack by blocking on the appropriate
   // notification.
@@ -474,8 +486,8 @@ void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
   VerifyInternetAccess();
   Install();
   LaunchChromotingApp(false);
+  LoadBrowserTestJavaScript(app_web_content());
   Auth();
-  LoadScript(app_web_content(), FILE_PATH_LITERAL("browser_test.js"));
   ExpandMe2Me();
   // The call to EnsureRemoteConnectionEnabled() does a PIN reset.
   // This causes the test to fail because of a recent bug:

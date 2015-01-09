@@ -143,6 +143,10 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Install the chromoting extension
   void Install();
 
+  // Load the browser-test support JavaScript files, including helper functions
+  // and mocks.
+  void LoadBrowserTestJavaScript(content::WebContents* content);
+
   // Perform all necessary steps (installation, authorization, authentication,
   // expanding the me2me section) so that the app is ready for a me2me
   // connection.

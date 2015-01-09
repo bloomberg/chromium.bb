@@ -283,3 +283,8 @@ Event.prototype.initMouseEvent = function(
  * @return {ArrayBuffer}
  */
 ArrayBuffer.prototype.slice = function(begin, end) {};
+
+/**
+ * @return {string}
+ */
+Date.prototype.toISOString = function() {};

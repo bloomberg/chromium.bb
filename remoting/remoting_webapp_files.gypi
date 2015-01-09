@@ -38,6 +38,7 @@
       'webapp/crd/js/identity.js',
       'webapp/crd/js/oauth2.js',
       'webapp/crd/js/oauth2_api.js',
+      'webapp/crd/js/oauth2_api_impl.js',
     ],
     # Client JavaScript files.
     'remoting_webapp_js_client_files': [
@@ -90,6 +91,7 @@
     'remoting_webapp_js_host_display_files': [
       'webapp/crd/js/host_list.js',
       'webapp/crd/js/host_list_api.js',
+      'webapp/crd/js/host_list_api_impl.js',
       'webapp/crd/js/host_table_entry.js',
     ],
     # Logging and stats JavaScript files.
@@ -146,9 +148,14 @@
       'webapp/browser_test/cancel_pin_browser_test.js',
       'webapp/browser_test/invalid_pin_browser_test.js',
       'webapp/browser_test/mock_client_plugin.js',
+      'webapp/browser_test/mock_host_list_api.js',
+      'webapp/browser_test/mock_identity.js',
+      'webapp/browser_test/mock_oauth2_api.js',
       'webapp/browser_test/mock_session_connector.js',
       'webapp/browser_test/mock_signal_strategy.js',
       'webapp/browser_test/scrollbar_browser_test.js',
+      'webapp/browser_test/timeout_waiter.js',
+      'webapp/browser_test/unauthenticated_browser_test.js',
       'webapp/browser_test/update_pin_browser_test.js',
     ],
     # These product files are excluded from our JavaScript unittest

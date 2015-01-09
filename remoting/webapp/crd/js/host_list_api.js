@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * REST API for host-list management.
+ * API for host-list management.
  */
 
 'use strict';
@@ -12,7 +12,7 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-/** @constructor */
+/** @interface */
 remoting.HostListApi = function() {
 };
 
@@ -23,16 +23,6 @@ remoting.HostListApi = function() {
  * @param {function(remoting.Error):void} onError
  */
 remoting.HostListApi.prototype.get = function(onDone, onError) {
-  /** @type {function(XMLHttpRequest):void} */
-  var parseHostListResponse =
-      this.parseHostListResponse_.bind(this, onDone, onError)
-  /** @param {string} token */
-  var onToken = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.get(remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
-                     parseHostListResponse, '', headers);
-  };
-  remoting.identity.callWithToken(onToken, onError);
 };
 
 /**
@@ -46,26 +36,6 @@ remoting.HostListApi.prototype.get = function(onDone, onError) {
  */
 remoting.HostListApi.prototype.put =
     function(hostId, hostName, hostPublicKey, onDone, onError) {
-  /** @param {string} token */
-  var onToken = function(token) {
-    var headers = {
-      'Authorization': 'OAuth ' + token,
-      'Content-type' : 'application/json; charset=UTF-8'
-    };
-    var newHostDetails = {
-      'data': {
-        'hostId': hostId,
-        'hostName': hostName,
-        'publicKey': hostPublicKey
-      }
-    };
-    remoting.xhr.put(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-        remoting.xhr.defaultResponse(onDone, onError),
-        JSON.stringify(newHostDetails),
-        headers);
-  };
-  remoting.identity.callWithToken(onToken, onError);
 };
 
 /**
@@ -76,43 +46,4 @@ remoting.HostListApi.prototype.put =
  * @param {string} hostId
  */
 remoting.HostListApi.prototype.remove = function(hostId, onDone, onError) {
-  /** @param {string} token */
-  var onToken = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.remove(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-        remoting.xhr.defaultResponse(onDone, onError),
-        '', headers);
-  };
-  remoting.identity.callWithToken(onToken, onError);
 };
-
-/**
- * Handle the results of the host list request.  A success response will
- * include a JSON-encoded list of host descriptions, which is parsed and
- * passed to the callback.
- *
- * @param {function(Array.<remoting.Host>):void} onDone
- * @param {function(remoting.Error):void} onError
- * @param {XMLHttpRequest} xhr
- * @private
- */
-remoting.HostListApi.prototype.parseHostListResponse_ =
-    function(onDone, onError, xhr) {
-  if (xhr.status == 200) {
-    var response = /** @type {{data: {items: Array}}} */
-        (base.jsonParseSafe(xhr.responseText));
-    if (!response || !response.data) {
-      console.error('Invalid "hosts" response from server.');
-      onError(remoting.Error.UNEXPECTED);
-    } else {
-      var hosts = response.data.items || [];
-      onDone(hosts);
-    }
-  } else {
-    onError(remoting.Error.fromHttpError(xhr.status));
-  }
-};
-
-/** @type {remoting.HostListApi} */
-remoting.hostListApi = new remoting.HostListApi();

@@ -44,7 +44,7 @@
 
 'use strict';
 
-var browserTest = {};
+var browserTest = browserTest || {};
 
 browserTest.init = function() {
   // The domAutomationController is used to communicate progress back to the
@@ -107,14 +107,8 @@ browserTest.pass = function() {
 
 browserTest.clickOnControl = function(id) {
   var element = document.getElementById(id);
-  browserTest.expect(element);
+  browserTest.expect(element, 'No such element: ' + id);
   element.click();
-};
-
-/** @enum {number} */
-browserTest.Timeout = {
-  NONE: -1,
-  DEFAULT: 5000
 };
 
 browserTest.onUIMode = function(expectedMode, opt_timeout) {
