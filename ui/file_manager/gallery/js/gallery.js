@@ -146,7 +146,7 @@ function Gallery(volumeManager) {
                                     this.dataModel_,
                                     this.selectionModel_,
                                     this.volumeManager_,
-                                    this.toggleMode_.bind(this));
+                                    this.toggleMode_.bind(this, undefined));
 
   this.slideMode_ = new SlideMode(this.container_,
                                   content,
