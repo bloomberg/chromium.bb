@@ -823,6 +823,19 @@ util.URLsToEntries = function(urls, opt_callback) {
 };
 
 /**
+ * Converts a url into an {!Entry}, if possible.
+ *
+ * @param {string} url
+ *
+ * @return {!Promise.<!Entry>} Promise Resolves with the corresponding
+ *     {!Entry} if possible, else rejects.
+ */
+util.urlToEntry = function(url) {
+  return new Promise(
+      window.webkitResolveLocalFileSystemURL.bind(null, url));
+};
+
+/**
  * Returns whether the window is teleported or not.
  * @param {Window} window Window.
  * @return {Promise.<boolean>} Whether the window is teleported or not.
