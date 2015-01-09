@@ -48,6 +48,22 @@ error::Error GLES2DecoderImpl::HandleBindBuffer(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBindBufferBase(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::BindBufferBase& c =
+      *static_cast<const gles2::cmds::BindBufferBase*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint index = static_cast<GLuint>(c.index);
+  GLuint buffer = c.buffer;
+  group_->GetBufferServiceId(buffer, &buffer);
+  glBindBufferBase(target, index, buffer);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleBindFramebuffer(
     uint32_t immediate_data_size,
     const void* cmd_data) {

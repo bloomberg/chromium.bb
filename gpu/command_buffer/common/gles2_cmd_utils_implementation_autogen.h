@@ -4789,6 +4789,15 @@ std::string GLES2Util::GetStringIndexType(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringIndexedBufferTarget(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_TRANSFORM_FEEDBACK_BUFFER, "GL_TRANSFORM_FEEDBACK_BUFFER"},
+      {GL_UNIFORM_BUFFER, "GL_UNIFORM_BUFFER"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringMatrixMode(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_PATH_PROJECTION_CHROMIUM, "GL_PATH_PROJECTION_CHROMIUM"},

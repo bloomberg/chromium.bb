@@ -8,6 +8,7 @@ GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLidProgram program, GLidShader shader);
 GL_APICALL void         GL_APIENTRY glBindAttribLocation (GLidProgram program, GLuint index, const char* name);
 GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLidBindBuffer buffer);
+GL_APICALL void         GL_APIENTRY glBindBufferBase (GLenumIndexedBufferTarget target, GLuint index, GLidBindBuffer buffer);
 GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLidBindFramebuffer framebuffer);
 GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidBindRenderbuffer renderbuffer);
 GL_APICALL void         GL_APIENTRY glBindSampler (GLuint unit, GLidBindSampler sampler);

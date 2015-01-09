@@ -42,6 +42,13 @@ void BindBuffer(GLenum target, GLuint buffer) {
   }
 }
 
+void BindBufferBase(GLenum target, GLuint index, GLuint buffer) {
+  gles2::cmds::BindBufferBase* c = GetCmdSpace<gles2::cmds::BindBufferBase>();
+  if (c) {
+    c->Init(target, index, buffer);
+  }
+}
+
 void BindFramebuffer(GLenum target, GLuint framebuffer) {
   gles2::cmds::BindFramebuffer* c = GetCmdSpace<gles2::cmds::BindFramebuffer>();
   if (c) {

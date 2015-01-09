@@ -24,6 +24,9 @@ void GLES2BindAttribLocation(GLuint program, GLuint index, const char* name) {
 void GLES2BindBuffer(GLenum target, GLuint buffer) {
   gles2::GetGLContext()->BindBuffer(target, buffer);
 }
+void GLES2BindBufferBase(GLenum target, GLuint index, GLuint buffer) {
+  gles2::GetGLContext()->BindBufferBase(target, index, buffer);
+}
 void GLES2BindFramebuffer(GLenum target, GLuint framebuffer) {
   gles2::GetGLContext()->BindFramebuffer(target, framebuffer);
 }
@@ -1201,6 +1204,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glBindBuffer",
      reinterpret_cast<GLES2FunctionPointer>(glBindBuffer),
+    },
+    {
+     "glBindBufferBase",
+     reinterpret_cast<GLES2FunctionPointer>(glBindBufferBase),
     },
     {
      "glBindFramebuffer",

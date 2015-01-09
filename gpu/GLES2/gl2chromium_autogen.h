@@ -17,6 +17,7 @@
 #define glAttachShader GLES2_GET_FUN(AttachShader)
 #define glBindAttribLocation GLES2_GET_FUN(BindAttribLocation)
 #define glBindBuffer GLES2_GET_FUN(BindBuffer)
+#define glBindBufferBase GLES2_GET_FUN(BindBufferBase)
 #define glBindFramebuffer GLES2_GET_FUN(BindFramebuffer)
 #define glBindRenderbuffer GLES2_GET_FUN(BindRenderbuffer)
 #define glBindSampler GLES2_GET_FUN(BindSampler)

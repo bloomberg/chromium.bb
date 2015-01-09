@@ -34,6 +34,17 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
   CheckGLError();
 }
 
+void GLES2Implementation::BindBufferBase(GLenum target,
+                                         GLuint index,
+                                         GLuint buffer) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindBufferBase("
+                     << GLES2Util::GetStringIndexedBufferTarget(target) << ", "
+                     << index << ", " << buffer << ")");
+  helper_->BindBufferBase(target, index, buffer);
+  CheckGLError();
+}
+
 void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFramebuffer("

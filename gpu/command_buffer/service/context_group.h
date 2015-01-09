@@ -177,6 +177,24 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     draw_buffer_ = buf;
   }
 
+  void AddBufferId(GLuint client_id, GLuint service_id) {
+    buffers_id_map_[client_id] = service_id;
+  }
+
+  bool GetBufferServiceId(GLuint client_id, GLuint* service_id) const {
+    std::map<GLuint, GLuint>::const_iterator iter =
+        buffers_id_map_.find(client_id);
+    if (iter == buffers_id_map_.end())
+      return false;
+    if (service_id)
+      *service_id = iter->second;
+    return true;
+  }
+
+  void RemoveBufferId(GLuint client_id) {
+    buffers_id_map_.erase(client_id);
+  }
+
   void AddSamplerId(GLuint client_id, GLuint service_id) {
     samplers_id_map_[client_id] = service_id;
   }
@@ -265,6 +283,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
 
   // Mappings from client side IDs to service side IDs.
+  std::map<GLuint, GLuint> buffers_id_map_;
   std::map<GLuint, GLuint> samplers_id_map_;
   std::map<GLuint, GLuint> transformfeedbacks_id_map_;
 

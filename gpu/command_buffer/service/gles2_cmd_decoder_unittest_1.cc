@@ -41,6 +41,15 @@ class GLES2DecoderTest1 : public GLES2DecoderTestBase {
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest1, ::testing::Bool());
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::BindBufferBase, 0>(
+    bool valid) {
+  if (valid) {
+    // TODO(zmo): This might affect the states of later tests.
+    group_->AddBufferId(client_buffer_id_, kServiceBufferId);
+  }
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GenerateMipmap, 0>(
     bool valid) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);

@@ -588,6 +588,16 @@ _NAMED_TYPE_INFO = {
       'GL_RENDERBUFFER',
     ],
   },
+  'IndexedBufferTarget': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_TRANSFORM_FEEDBACK_BUFFER',
+      'GL_UNIFORM_BUFFER',
+    ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
+  },
   'BufferUsage': {
     'type': 'GLenum',
     'valid': [
@@ -1417,6 +1427,11 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindBuffer',
     'gen_func': 'GenBuffersARB',
+  },
+  'BindBufferBase': {
+    'type': 'Bind',
+    'id_mapping': [ 'Buffer' ],
+    'unsafe': True,
   },
   'BindFramebuffer': {
     'type': 'Bind',
@@ -4400,7 +4415,7 @@ TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
       self.WriteValidUnitTest(func, file, valid_test, {
           'first_arg': func.GetOriginalArgs()[0].GetValidArg(func),
           'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func),
-          'resource_type': func.GetOriginalArgs()[1].resource_type,
+          'resource_type': func.GetOriginalArgs()[-1].resource_type,
           'gl_gen_func_name': func.GetInfo("gen_func"),
       }, *extras)
 
@@ -4456,7 +4471,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
         name_arg = func.GetOriginalArgs()[0]
       else:
         # Bind functions that have both a target and a name (like BindTexture)
-        name_arg = func.GetOriginalArgs()[1]
+        name_arg = func.GetOriginalArgs()[-1]
 
       file.Write(code % {
           'name': func.name,

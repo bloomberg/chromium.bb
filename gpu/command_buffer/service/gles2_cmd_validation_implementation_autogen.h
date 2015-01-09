@@ -252,6 +252,11 @@ static const GLenum valid_index_type_table[] = {
     GL_UNSIGNED_SHORT,
 };
 
+static const GLenum valid_indexed_buffer_target_table[] = {
+    GL_TRANSFORM_FEEDBACK_BUFFER,
+    GL_UNIFORM_BUFFER,
+};
+
 static const GLenum valid_matrix_mode_table[] = {
     GL_PATH_PROJECTION_CHROMIUM,
     GL_PATH_MODELVIEW_CHROMIUM,
@@ -593,6 +598,8 @@ Validators::Validators()
                             arraysize(valid_image_internal_format_table)),
       image_usage(valid_image_usage_table, arraysize(valid_image_usage_table)),
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
+      indexed_buffer_target(valid_indexed_buffer_target_table,
+                            arraysize(valid_indexed_buffer_target_table)),
       matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_store_alignment(valid_pixel_store_alignment_table,

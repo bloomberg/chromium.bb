@@ -39,6 +39,17 @@ TEST_F(GLES2ImplementationTest, BindBuffer) {
   EXPECT_TRUE(NoCommandsWritten());
 }
 
+TEST_F(GLES2ImplementationTest, BindBufferBase) {
+  struct Cmds {
+    cmds::BindBufferBase cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, 3);
+
+  gl_->BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, 3);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, BindFramebuffer) {
   struct Cmds {
     cmds::BindFramebuffer cmd;

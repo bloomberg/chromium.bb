@@ -35,6 +35,7 @@ static std::string GetStringHintTarget(uint32_t value);
 static std::string GetStringImageInternalFormat(uint32_t value);
 static std::string GetStringImageUsage(uint32_t value);
 static std::string GetStringIndexType(uint32_t value);
+static std::string GetStringIndexedBufferTarget(uint32_t value);
 static std::string GetStringMatrixMode(uint32_t value);
 static std::string GetStringPixelStore(uint32_t value);
 static std::string GetStringPixelType(uint32_t value);

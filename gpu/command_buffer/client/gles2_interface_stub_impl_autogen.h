@@ -23,6 +23,10 @@ void GLES2InterfaceStub::BindAttribLocation(GLuint /* program */,
 }
 void GLES2InterfaceStub::BindBuffer(GLenum /* target */, GLuint /* buffer */) {
 }
+void GLES2InterfaceStub::BindBufferBase(GLenum /* target */,
+                                        GLuint /* index */,
+                                        GLuint /* buffer */) {
+}
 void GLES2InterfaceStub::BindFramebuffer(GLenum /* target */,
                                          GLuint /* framebuffer */) {
 }

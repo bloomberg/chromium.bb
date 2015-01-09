@@ -54,6 +54,19 @@ TEST_P(GLES2DecoderTest1, BindBufferInvalidArgs0_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest1, BindBufferBaseValidArgs) {
+  EXPECT_CALL(
+      *gl_, BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kServiceBufferId));
+  SpecializedSetup<cmds::BindBufferBase, 0>(true);
+  cmds::BindBufferBase cmd;
+  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, client_buffer_id_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest1, BindFramebufferValidArgs) {
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, kServiceFramebufferId));
   SpecializedSetup<cmds::BindFramebuffer, 0>(true);
@@ -1908,41 +1921,6 @@ TEST_P(GLES2DecoderTest1, IsBufferInvalidArgsBadSharedMemoryId) {
   cmd.Init(client_buffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   cmd.Init(client_buffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderTest1, IsEnabledValidArgs) {
-  SpecializedSetup<cmds::IsEnabled, 0>(true);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_BLEND, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, IsEnabledInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, IsEnabled(_)).Times(0);
-  SpecializedSetup<cmds::IsEnabled, 0>(false);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_CLIP_PLANE0, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, IsEnabledInvalidArgs0_1) {
-  EXPECT_CALL(*gl_, IsEnabled(_)).Times(0);
-  SpecializedSetup<cmds::IsEnabled, 0>(false);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_POINT_SPRITE, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, IsEnabledInvalidArgsBadSharedMemoryId) {
-  SpecializedSetup<cmds::IsEnabled, 0>(false);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_BLEND, kInvalidSharedMemoryId, shared_memory_offset_);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(GL_BLEND, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

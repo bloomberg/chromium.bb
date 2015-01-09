@@ -19,6 +19,7 @@ virtual void BindAttribLocation(GLuint program,
                                 GLuint index,
                                 const char* name) = 0;
 virtual void BindBuffer(GLenum target, GLuint buffer) = 0;
+virtual void BindBufferBase(GLenum target, GLuint index, GLuint buffer) = 0;
 virtual void BindFramebuffer(GLenum target, GLuint framebuffer) = 0;
 virtual void BindRenderbuffer(GLenum target, GLuint renderbuffer) = 0;
 virtual void BindSampler(GLuint unit, GLuint sampler) = 0;

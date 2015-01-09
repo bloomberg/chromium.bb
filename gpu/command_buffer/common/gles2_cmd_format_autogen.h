@@ -159,6 +159,47 @@ static_assert(offsetof(BindBuffer, target) == 4,
 static_assert(offsetof(BindBuffer, buffer) == 8,
               "offset of BindBuffer buffer should be 8");
 
+struct BindBufferBase {
+  typedef BindBufferBase ValueType;
+  static const CommandId kCmdId = kBindBufferBase;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target, GLuint _index, GLuint _buffer) {
+    SetHeader();
+    target = _target;
+    index = _index;
+    buffer = _buffer;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLuint _index, GLuint _buffer) {
+    static_cast<ValueType*>(cmd)->Init(_target, _index, _buffer);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t index;
+  uint32_t buffer;
+};
+
+static_assert(sizeof(BindBufferBase) == 16,
+              "size of BindBufferBase should be 16");
+static_assert(offsetof(BindBufferBase, header) == 0,
+              "offset of BindBufferBase header should be 0");
+static_assert(offsetof(BindBufferBase, target) == 4,
+              "offset of BindBufferBase target should be 4");
+static_assert(offsetof(BindBufferBase, index) == 8,
+              "offset of BindBufferBase index should be 8");
+static_assert(offsetof(BindBufferBase, buffer) == 12,
+              "offset of BindBufferBase buffer should be 12");
+
 struct BindFramebuffer {
   typedef BindFramebuffer ValueType;
   static const CommandId kCmdId = kBindFramebuffer;

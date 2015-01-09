@@ -18,6 +18,7 @@ void BindAttribLocation(GLuint program,
                         GLuint index,
                         const char* name) override;
 void BindBuffer(GLenum target, GLuint buffer) override;
+void BindBufferBase(GLenum target, GLuint index, GLuint buffer) override;
 void BindFramebuffer(GLenum target, GLuint framebuffer) override;
 void BindRenderbuffer(GLenum target, GLuint renderbuffer) override;
 void BindSampler(GLuint unit, GLuint sampler) override;
