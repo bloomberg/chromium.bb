@@ -464,6 +464,9 @@ void AutofillOptionsHandler::LoadAutofillData() {
   for (std::vector<CreditCard*>::const_iterator iter = cards.begin();
        iter != cards.end(); ++iter) {
     const CreditCard* card = *iter;
+    if (card->record_type() != CreditCard::LOCAL_CARD)
+      continue;
+
     // TODO(estade): this should be a dictionary.
     base::ListValue* entry = new base::ListValue();
     entry->Append(new base::StringValue(card->guid()));
