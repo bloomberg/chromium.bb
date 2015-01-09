@@ -319,6 +319,8 @@ void getStepsTimingFunctionParameters(const TimingFunction& timingFunction, int&
         break;
     default:
         ASSERT_NOT_REACHED();
+        outStepsStartOffset = 0;
+        break;
     }
 }
 
