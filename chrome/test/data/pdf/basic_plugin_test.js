@@ -45,15 +45,7 @@ var tests = [
       chrome.test.assertEq('some more text',
                            dict.textBox[1].textNodes[0].text);
     }), 0);
-  },
-
-  function testGetSelectedText() {
-    var client = new PDFScriptingAPI(window, window);
-    client.selectAll();
-    client.getSelectedText(chrome.test.callbackPass(function(selectedText) {
-      chrome.test.assertEq('this is some text\nsome more text', selectedText);
-    }));
-  },
+  }
 ];
 
 var scriptingAPI = new PDFScriptingAPI(window, window);

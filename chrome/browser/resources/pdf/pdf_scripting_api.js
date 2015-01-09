@@ -39,12 +39,6 @@ function PDFScriptingAPI(window, plugin) {
           this.accessibilityCallback_ = null;
         }
         break;
-      case 'getSelectedTextReply':
-        if (this.selectedTextCallback_) {
-          this.selectedTextCallback_(event.data.selectedText);
-          this.selectedTextCallback_ = null;
-        }
-        break;
     }
   }.bind(this), false);
 }
@@ -135,8 +129,7 @@ PDFScriptingAPI.prototype = {
   },
 
   /**
-   * Get accessibility JSON for the document. May only be called after document
-   * load.
+   * Get accessibility JSON for the document.
    * @param {Function} callback a callback to be called with the accessibility
    *     json that has been retrieved.
    * @param {number} [page] the 0-indexed page number to get accessibility data
@@ -156,42 +149,6 @@ PDFScriptingAPI.prototype = {
       message.page = page;
     this.sendMessage_(message);
     return true;
-  },
-
-  /**
-   * Select all the text in the document. May only be called after document
-   * load.
-   */
-  selectAll: function() {
-    this.sendMessage_({
-      type: 'selectAll'
-    });
-  },
-
-  /**
-   * Get the selected text in the document. The callback will be called with the
-   * text that is selected. May only be called after document load.
-   * @param {Function} callback a callback to be called with the selected text.
-   * @return {boolean} true if the function is successful, false if there is an
-   *     outstanding request for selected text that has not been answered.
-   */
-  getSelectedText: function(callback) {
-    if (this.selectedTextCallback_)
-      return false;
-    this.selectedTextCallback_ = callback;
-    this.sendMessage_({
-      type: 'getSelectedText'
-    });
-    return true;
-  },
-
-  /**
-   * Print the document. May only be called after document load.
-   */
-  print: function() {
-    this.sendMessage_({
-      type: 'print'
-    });
   },
 
   /**
