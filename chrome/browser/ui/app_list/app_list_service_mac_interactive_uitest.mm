@@ -50,7 +50,7 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
   }
 
   // testing::Test overrides:
-  virtual void TearDown() override {
+  void TearDown() override {
     // At tear-down, NOTIFICATION_APP_TERMINATING should have been sent for the
     // browser shutdown. References to browser-owned objects must be removed
     // from the app list UI.

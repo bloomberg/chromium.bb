@@ -74,7 +74,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
  protected:
   WebAppShortcutCreatorTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     base::mac::SetBaseBundleID(kFakeChromeBundleId);
 
     EXPECT_TRUE(temp_app_data_dir_.CreateUniqueTempDir());

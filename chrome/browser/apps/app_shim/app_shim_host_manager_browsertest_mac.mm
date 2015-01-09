@@ -87,7 +87,7 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
                                       public apps::AppShimHandler {
  public:
   AppShimHostManagerBrowserTest();
-  virtual ~AppShimHostManagerBrowserTest();
+  ~AppShimHostManagerBrowserTest() override;
 
  protected:
   // Wait for OnShimLaunch, then send a quit, and wait for the response. Used to

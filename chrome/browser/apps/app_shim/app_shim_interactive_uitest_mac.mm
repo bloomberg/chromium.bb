@@ -163,7 +163,9 @@ class HostedAppBrowserListObserver : public chrome::BrowserListObserver {
     BrowserList::AddObserver(this);
   }
 
-  ~HostedAppBrowserListObserver() { BrowserList::RemoveObserver(this); }
+  ~HostedAppBrowserListObserver() override {
+    BrowserList::RemoveObserver(this);
+  }
 
   void WaitUntilAdded() {
     if (observed_add_)
@@ -217,7 +219,7 @@ class AppLifetimeMonitorObserver : public apps::AppLifetimeMonitor::Observer {
       : profile_(profile), activated_count_(0), deactivated_count_(0) {
     apps::AppLifetimeMonitorFactory::GetForProfile(profile_)->AddObserver(this);
   }
-  virtual ~AppLifetimeMonitorObserver() {
+  ~AppLifetimeMonitorObserver() override {
     apps::AppLifetimeMonitorFactory::GetForProfile(profile_)
         ->RemoveObserver(this);
   }

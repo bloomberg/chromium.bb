@@ -23,7 +23,7 @@ class AppControllerTest : public PlatformTest {
  protected:
   AppControllerTest() {}
 
-  virtual void TearDown() {
+  void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     base::RunLoop().RunUntilIdle();
   }

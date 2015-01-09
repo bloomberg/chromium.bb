@@ -18,12 +18,6 @@
 
 class PanelDragBrowserTest : public BasePanelBrowserTest {
  public:
-  PanelDragBrowserTest() : BasePanelBrowserTest() {
-  }
-
-  virtual ~PanelDragBrowserTest() {
-  }
-
   void SetUpOnMainThread() override {
     BasePanelBrowserTest::SetUpOnMainThread();
 

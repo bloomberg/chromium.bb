@@ -21,8 +21,8 @@ namespace {
 class PluginInstallerTest : public ChromeRenderViewHostTestHarness {
  public:
   PluginInstallerTest();
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   PluginInstaller* installer() { return installer_.get(); }
 

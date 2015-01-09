@@ -87,7 +87,7 @@ class TestPasswordStoreMac : public PasswordStoreMac {
 
 class PasswordStoreMacInternalsTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     MockAppleKeychain::KeychainTestData test_data[] = {
       // Basic HTML form.
       { kSecAuthenticationTypeHTMLForm, "some.domain.com",
@@ -135,7 +135,7 @@ class PasswordStoreMacInternalsTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ExpectCreatesAndFreesBalanced();
     ExpectCreatorCodesSet();
     delete keychain_;
@@ -1051,7 +1051,7 @@ class PasswordStoreMacTest : public testing::Test {
  public:
   PasswordStoreMacTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     login_db_ = new LoginDatabase();
     ASSERT_TRUE(db_dir_.CreateUniqueTempDir());
     base::FilePath db_file = db_dir_.path().AppendASCII("login.db");
@@ -1067,7 +1067,7 @@ class PasswordStoreMacTest : public testing::Test {
     ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     store_->Shutdown();
     EXPECT_FALSE(store_->GetBackgroundTaskRunner().get());
   }

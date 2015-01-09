@@ -259,9 +259,8 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   ServiceProcessStateFileManipulationTest()
       : io_thread_("ServiceProcessStateFileManipulationTest_IO") {
   }
-  virtual ~ServiceProcessStateFileManipulationTest() { }
 
-  virtual void SetUp() {
+  void SetUp() override {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(options));
