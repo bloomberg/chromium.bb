@@ -11,14 +11,14 @@ layer at (402,0) size 398x600
             text run at (0,203) width 21: "not"
         RenderText {#text} at (0,223) size 32x555
           text run at (0,223) width 217: " cut through the top left corner of "
-          text run at (0,440) width 114: "the blue border. It"
+          text run at (0,440) width 115: "the blue border. It"
           text run at (16,0) width 292: "would cut through with our old behavior, but "
-        RenderInline {A} at (0,0) size 16x24 [color=#0000EE]
-          RenderText {#text} at (16,291) size 16x24
+        RenderInline {A} at (0,0) size 16x25 [color=#0000EE]
+          RenderText {#text} at (16,291) size 16x25
             text run at (16,291) width 24: "this"
-        RenderText {#text} at (16,314) size 32x566
-          text run at (16,314) width 4: " "
-          text run at (16,318) width 248: "bug fix changed our behavior to match"
+        RenderText {#text} at (16,315) size 32x567
+          text run at (16,315) width 4: " "
+          text run at (16,319) width 248: "bug fix changed our behavior to match"
           text run at (32,0) width 56: "the spec."
       RenderBlock {DIV} at (80,32) size 270x520 [border: (1px solid #0000FF)]
         RenderTable {DIV} at (1,1) size 220x115 [border: (1px none #000000)]

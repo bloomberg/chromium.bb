@@ -1813,9 +1813,9 @@ layer at (-3800,0) size 4600x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (2448,0) width 256: "\x{306E}\x{4E8C}\x{4E09}\x{53E5}\x{306E}\x{306A}\x{304B}\x{306B}\x{3053}\x{3093}\x{306A}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
           RenderBR {BR} at (2448,256) size 19x0
         RenderBlock {DIV} at (2468,32) size 100x472
-          RenderText {#text} at (0,0) size 19x184
-            text run at (0,0) width 184: "\x{3000}\x{3000}We look before and after"
-          RenderBR {BR} at (0,183) size 19x1
+          RenderText {#text} at (0,0) size 19x185
+            text run at (0,0) width 185: "\x{3000}\x{3000}We look before and after"
+          RenderBR {BR} at (0,185) size 19x0
           RenderText {#text} at (20,0) size 19x212
             text run at (20,0) width 212: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
           RenderBR {BR} at (20,212) size 19x0
@@ -1824,7 +1824,7 @@ layer at (-3800,0) size 4600x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderBR {BR} at (40,163) size 19x0
           RenderText {#text} at (60,0) size 19x220
             text run at (60,0) width 220: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
-          RenderBR {BR} at (60,219) size 19x1
+          RenderBR {BR} at (60,220) size 19x0
           RenderText {#text} at (80,0) size 19x342
             text run at (80,0) width 342: "Our sweetest songs are those that tell of saddest thought."
           RenderBR {BR} at (80,342) size 19x0

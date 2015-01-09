@@ -22,12 +22,12 @@ layer at (0,0) size 800x600
         RenderText {#text} at (38,417) size 19x6
           text run at (38,417) width 5: " "
         RenderBR {BR} at (43,422) size 0x1
-        RenderInline {SPAN} at (0,0) size 19x442
-          RenderText {#text} at (57,0) size 19x442
-            text run at (57,0) width 442: "This text should have a red shadow that is offset horizontally."
-        RenderText {#text} at (57,441) size 19x6
-          text run at (57,441) width 5: " "
-        RenderBR {BR} at (62,446) size 0x1
+        RenderInline {SPAN} at (0,0) size 19x444
+          RenderText {#text} at (57,0) size 19x444
+            text run at (57,0) width 444: "This text should have a red shadow that is offset horizontally."
+        RenderText {#text} at (57,443) size 19x5
+          text run at (57,443) width 5: " "
+        RenderBR {BR} at (62,447) size 0x1
         RenderBR {BR} at (76,0) size 19x0
         RenderInline {SPAN} at (0,0) size 19x456
           RenderText {#text} at (95,0) size 19x456

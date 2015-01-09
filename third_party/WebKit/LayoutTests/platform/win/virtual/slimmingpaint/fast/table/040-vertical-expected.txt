@@ -50,8 +50,8 @@ layer at (0,0) size 785x2350 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,0) width 192: "Fixed cell in column one with"
                 text run at (18,0) width 66: "some text."
             RenderTableCell {TD} at (0,200) size 36x400 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (0,0) size 35x388
-                text run at (0,0) width 388: "Fixed cell in column two with a lot more text. Will the ratios"
+              RenderText {#text} at (0,0) size 35x389
+                text run at (0,0) width 389: "Fixed cell in column two with a lot more text. Will the ratios"
                 text run at (18,0) width 89: "be preserved?"
           RenderTableRow {TR} at (0,36) size 20x600
             RenderTableCell {TD} at (36,10) size 20x580 [bgcolor=#FFC0CB] [r=1 c=0 rs=1 cs=2]
