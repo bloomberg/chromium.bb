@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -29,6 +30,7 @@
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -39,6 +41,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/common/fileapi/file_system_types.h"
 
@@ -347,6 +350,17 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
     if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
       content_settings::RecordMixedScriptAction(
           content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD);
+
+      rappor::RapporService* rappor_service =
+          g_browser_process->rappor_service();
+      if (rappor_service) {
+        rappor_service->RecordSample(
+            "ContentSettings.MixedScript.DisplayedShield",
+            rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+            net::registry_controlled_domains::GetDomainAndRegistry(
+                base::UTF16ToUTF8(details),
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+      }
     }
   }
 }

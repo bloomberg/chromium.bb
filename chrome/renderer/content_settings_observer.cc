@@ -580,7 +580,7 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, origin.host());
     return false;
   }
 

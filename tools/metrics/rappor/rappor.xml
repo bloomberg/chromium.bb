@@ -66,6 +66,16 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.MixedScript.DisplayedShield"
+    type="ETLD_PLUS_ONE">
+  <owner>lgarron@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that displayed a mixed script shield. Note: this does
+    *not* include pages with mixed scripts where the user has already clicked
+    through the shield.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Search.DefaultSearchProvider" type="ETLD_PLUS_ONE">
   <owner>holte@chromium.org</owner>
   <summary>
