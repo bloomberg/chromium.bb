@@ -126,10 +126,14 @@ void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
 
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
 {
+    ExecutionContext* executionContext = scriptState->executionContext();
+    // FIXME: short-term fix, see details at: https://codereview.chromium.org/535193002/.
+    if (!executionContext)
+        return ScriptPromise();
+
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    ExecutionContext* executionContext = scriptState->executionContext();
     ServiceWorkerGlobalScopeClient::from(executionContext)->skipWaiting(new SkipWaitingCallback(resolver));
     return promise;
 }
