@@ -4,12 +4,14 @@
 
 package org.chromium.base;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Trace;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -61,11 +63,11 @@ public class ResourceExtractor {
             }
 
             String timestampFile = null;
-            Trace.beginSection("checkPakTimeStamp");
+            beginTraceSection("checkPakTimeStamp");
             try {
                 timestampFile = checkPakTimestamp(outputDir);
             } finally {
-                Trace.endSection();
+                endTraceSection();
             }
             if (timestampFile != null) {
                 deleteFiles();
@@ -109,7 +111,7 @@ public class ResourceExtractor {
             Pattern paksToInstall = Pattern.compile(p.toString());
 
             AssetManager manager = mContext.getResources().getAssets();
-            Trace.beginSection("WalkAssets");
+            beginTraceSection("WalkAssets");
             try {
                 // Loop through every asset file that we have in the APK, and look for the
                 // ones that we need to extract by trying to match the Patterns that we
@@ -130,7 +132,7 @@ public class ResourceExtractor {
 
                     InputStream is = null;
                     OutputStream os = null;
-                    Trace.beginSection("ExtractResource");
+                    beginTraceSection("ExtractResource");
                     try {
                         is = manager.open(file);
                         os = new FileOutputStream(output);
@@ -166,7 +168,7 @@ public class ResourceExtractor {
                             if (os != null) {
                                 os.close();
                             }
-                            Trace.endSection(); // ExtractResource
+                            endTraceSection(); // ExtractResource
                         }
                     }
                 }
@@ -179,7 +181,7 @@ public class ResourceExtractor {
                 deleteFiles();
                 return;
             } finally {
-                Trace.endSection(); // WalkAssets
+                endTraceSection(); // WalkAssets
             }
 
             // Finished, write out a timestamp file if we need to.
@@ -203,11 +205,11 @@ public class ResourceExtractor {
             // doInBackgroundImpl) when it will be possible. This is currently
             // not doable since the native library is not loaded yet, and the
             // TraceEvent calls are dropped before this point.
-            Trace.beginSection("ResourceExtractor.ExtractTask.doInBackground");
+            beginTraceSection("ResourceExtractor.ExtractTask.doInBackground");
             try {
                 doInBackgroundImpl();
             } finally {
-                Trace.endSection();
+                endTraceSection();
             }
             return null;
         }
@@ -255,6 +257,18 @@ public class ResourceExtractor {
 
             // timestamp file is already up-to date.
             return null;
+        }
+
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+        private void beginTraceSection(String section) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return;
+            Trace.beginSection(section);
+        }
+
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+        private void endTraceSection() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return;
+            Trace.endSection();
         }
     }
 
