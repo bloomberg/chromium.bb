@@ -16,7 +16,7 @@ TestChromeProviderInitializer::TestChromeProviderInitializer() {
 
 TestChromeProviderInitializer::~TestChromeProviderInitializer() {
   EXPECT_EQ(chrome_browser_provider_.get(), ios::GetChromeBrowserProvider());
-  ios::SetChromeBrowserProvider(NULL);
+  ios::SetChromeBrowserProvider(nullptr);
 }
 
 }  // namespace ios

@@ -108,9 +108,9 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
   int mib[2] = {CTL_KERN, KERN_OSVERSION};
   unsigned int namelen = sizeof(mib) / sizeof(mib[0]);
   size_t bufferSize = 0;
-  sysctl(mib, namelen, NULL, &bufferSize, NULL, 0);
+  sysctl(mib, namelen, nullptr, &bufferSize, nullptr, 0);
   char kernel_version[bufferSize];
-  int result = sysctl(mib, namelen, kernel_version, &bufferSize, NULL, 0);
+  int result = sysctl(mib, namelen, kernel_version, &bufferSize, nullptr, 0);
   DCHECK(result == 0);
 
   UAVersions ua_versions = GetUAVersionsForCurrentOS();

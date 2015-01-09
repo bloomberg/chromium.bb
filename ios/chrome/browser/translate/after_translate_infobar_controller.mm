@@ -17,7 +17,7 @@
 #include "ui/gfx/image/image.h"
 
 @interface AfterTranslateInfoBarController () {
-  __weak translate::TranslateInfoBarDelegate* translateInfoBarDelegate_;
+  __weak translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;
 }
 
 // Action for any of the user defined buttons.
@@ -32,10 +32,10 @@
 
 - (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
                     frame:(CGRect)frame {
-  translateInfoBarDelegate_ = delegate->AsTranslateInfoBarDelegate();
-  DCHECK(translateInfoBarDelegate_);
+  _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
+  DCHECK(_translateInfoBarDelegate);
   infobars::InfoBarDelegate* infoBarDelegate =
-      static_cast<infobars::InfoBarDelegate*>(translateInfoBarDelegate_);
+      static_cast<infobars::InfoBarDelegate*>(_translateInfoBarDelegate);
   DCHECK(!infoBarView_);
   infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
       initWithFrame:frame
@@ -43,12 +43,12 @@
           isWarning:infoBarDelegate->GetInfoBarType() ==
                     infobars::InfoBarDelegate::WARNING_TYPE]);
   // Icon
-  gfx::Image icon = translateInfoBarDelegate_->GetIcon();
+  gfx::Image icon = _translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
     [infoBarView_ addLeftIcon:icon.ToUIImage()];
   // Main text.
   const bool autodeterminedSourceLanguage =
-      translateInfoBarDelegate_->original_language_index() ==
+      _translateInfoBarDelegate->original_language_index() ==
       translate::TranslateInfoBarDelegate::kNoIndex;
   bool swappedLanguageButtons;
   std::vector<base::string16> strings;
@@ -60,12 +60,12 @@
   NSString* label3 = autodeterminedSourceLanguage
                          ? @""
                          : base::SysUTF16ToNSString(strings[2]);
-  base::string16 stdOriginal = translateInfoBarDelegate_->language_name_at(
-      translateInfoBarDelegate_->original_language_index());
+  base::string16 stdOriginal = _translateInfoBarDelegate->language_name_at(
+      _translateInfoBarDelegate->original_language_index());
   NSString* original = base::SysUTF16ToNSString(stdOriginal);
   NSString* target =
-      base::SysUTF16ToNSString(translateInfoBarDelegate_->language_name_at(
-          translateInfoBarDelegate_->target_language_index()));
+      base::SysUTF16ToNSString(_translateInfoBarDelegate->language_name_at(
+          _translateInfoBarDelegate->target_language_index()));
   base::scoped_nsobject<NSString> label(
       [[NSString alloc] initWithFormat:@"%@ %@ %@%@ %@.", label1, original,
                                        label2, label3, target]);
@@ -85,10 +85,10 @@
                     target:self
                     action:@selector(infoBarButtonDidPress:)];
   // Always translate switch.
-  if (translateInfoBarDelegate_->ShouldShowAlwaysTranslateShortcut()) {
+  if (_translateInfoBarDelegate->ShouldShowAlwaysTranslateShortcut()) {
     base::string16 alwaysTranslate = l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, stdOriginal);
-    const BOOL switchValue = translateInfoBarDelegate_->ShouldAlwaysTranslate();
+    const BOOL switchValue = _translateInfoBarDelegate->ShouldAlwaysTranslate();
     [infoBarView_
         addSwitchWithLabel:base::SysUTF16ToNSString(alwaysTranslate)
                       isOn:switchValue
@@ -122,8 +122,8 @@
 - (void)infoBarSwitchDidPress:(id)sender {
   DCHECK_EQ(TranslateInfoBarIOSTag::ALWAYS_TRANSLATE_SWITCH, [sender tag]);
   DCHECK([sender respondsToSelector:@selector(isOn)]);
-  if (translateInfoBarDelegate_->ShouldAlwaysTranslate() != [sender isOn])
-    translateInfoBarDelegate_->ToggleAlwaysTranslate();
+  if (_translateInfoBarDelegate->ShouldAlwaysTranslate() != [sender isOn])
+    _translateInfoBarDelegate->ToggleAlwaysTranslate();
 }
 
 @end

@@ -16,7 +16,7 @@ namespace web {
 // --- in foo.h ---
 // class Foo : public web::WebStateUserData<Foo> {
 //  public:
-//   virtual ~Foo();
+//   ~Foo() override;
 //   // ... more public stuff here ...
 //  private:
 //   explicit Foo(web::WebState* web_state);
@@ -38,7 +38,7 @@ class WebStateUserData : public base::SupportsUserData::Data {
 
   // Retrieves the instance of type T that was attached to the specified
   // WebState (via CreateForWebState above) and returns it. If no instance
-  // of the type was attached, returns NULL.
+  // of the type was attached, returns null.
   static T* FromWebState(WebState* web_state) {
     return static_cast<T*>(web_state->GetUserData(UserDataKey()));
   }

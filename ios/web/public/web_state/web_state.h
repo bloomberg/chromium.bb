@@ -69,7 +69,7 @@ class WebState : public base::SupportsUserData {
   virtual void OpenURL(const OpenURLParams& params) = 0;
 
   // Gets the NavigationManager associated with this WebState. Can never return
-  // NULL.
+  // null.
   virtual NavigationManager* GetNavigationManager() = 0;
 
   // Gets the CRWJSInjectionReceiver associated with this WebState.
